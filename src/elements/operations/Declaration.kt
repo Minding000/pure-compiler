@@ -1,4 +1,4 @@
-package elements
+package elements.operations
 
 import code.InstructionGenerator
 import code.Main
@@ -6,18 +6,18 @@ import objects.Element
 import objects.Register
 import java.lang.StringBuilder
 
-class Program(val statements: List<Element>): Element() {
+class Declaration(val elements: List<Element>): Element() {
 
     override fun generateInstructions(generator: InstructionGenerator): Register {
-        for(statement in statements)
-            statement.generateInstructions(generator)
+        for(element in elements)
+            element.generateInstructions(generator)
         return generator.voidRegister
     }
 
     override fun toString(): String {
         val string = StringBuilder()
-        for(statement in statements)
-            string.append("\n").append(statement.toString())
-        return "Program {${Main.indentText(string.toString())}\n}"
+        for (element in elements)
+            string.append("\n").append(element.toString())
+        return "Declaration {${Main.indentText(string.toString())}\n}"
     }
 }

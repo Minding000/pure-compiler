@@ -3,7 +3,7 @@ package objects
 import code.Main
 import java.lang.StringBuilder
 
-class File(val program: Program, content: String) {
+class File(val project: Project, val name: String, val content: String) {
     val lines: Array<Line>
 
     init {

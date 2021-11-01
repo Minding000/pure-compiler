@@ -1,8 +1,17 @@
 package elements.literals
 
+import code.InstructionGenerator
+import instructions.Init
 import objects.Element
+import objects.Register
 
 class NumberLiteral(val value: Int): Element() {
+
+    override fun generateInstructions(generator: InstructionGenerator): Register {
+        val register = generator.createRegister()
+        generator.instructions.add(Init(register, value))
+        return register
+    }
 
     override fun toString(): String {
         return "NumberLiteral { $value }"

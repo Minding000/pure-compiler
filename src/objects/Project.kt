@@ -3,11 +3,11 @@ package objects
 import code.Main
 import java.lang.StringBuilder
 
-class Program(sourceCode: String) {
+class Project(name: String, sourceCode: String) {
     val files: Array<File>
 
     init {
-        files = arrayOf(File(this, sourceCode))
+        files = arrayOf(File(this, name, sourceCode))
     }
 
     override fun toString(): String {

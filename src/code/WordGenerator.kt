@@ -1,51 +1,66 @@
 package code
 
 import errors.SyntaxError
-import objects.WordType
-import java.util.HashMap
-import objects.Word
+import objects.*
 import util.stringify
 import java.util.regex.Pattern
 
-class WordGenerator(private val sourceCode: String) {
-    private var position = 0
-    private val wordTypes: MutableMap<Pattern, WordType?> = HashMap()
+class WordGenerator(private val project: Project) {
+    private var fileIndex = -1
+    private var lineIndex = -1
+    private var characterIndex = -1
+    private lateinit var file: File
+    private lateinit var line: Line
+    private var position = -1
 
     init {
-        // Whitespace
-        declare("\\s", null)
-        declare("\n", WordType.NEW_LINE)
-        // Binary operators
-        //declare("\\+", WordType.ADD)
-        // Literals
-        declare("\".*?\"", WordType.STRING_LITERAL)
-        declare("\\d+", WordType.NUMBER_LITERAL)
-        // Keywords
-        declare("var\\b", WordType.VAR)
-        // Identifier
+        loadNextFile()
     }
 
-    private fun declare(regex: String, type: WordType?) {
-        wordTypes[Pattern.compile("^${regex}")] = type
+    private fun loadNextFile(): Boolean {
+        fileIndex++
+        if(fileIndex < project.files.size) {
+            file = project.files[fileIndex]
+            lineIndex = -1
+            nextLine()
+            position = 0
+            return true
+        }
+        return false
+    }
+
+    private fun nextLine() {
+        lineIndex++
+        line = file.lines[lineIndex]
+        characterIndex = 0
     }
 
     fun getNextWord(): Word? {
-        val input = sourceCode.substring(position)
+        val input = file.content.substring(position)
         if (input.isEmpty())
             return null
         val matcher = Pattern
             .compile("")
             .matcher(input)
-        for (wordType in wordTypes) {
-            matcher.usePattern(wordType.key)
+        for (wordType in WordType.values()) {
+            matcher.usePattern(wordType.pattern)
             if (matcher.find()) {
                 val rawWord = input.substring(0, matcher.end())
                 position += rawWord.length
-                val type = wordType.value
-                // Ignore null word types
-                return if (type == null) getNextWord() else Word(type, rawWord)
+                val wordStart = characterIndex;
+                characterIndex += rawWord.length
+                val word = if (wordType.ignore) getNextWord() else Word(line, wordStart, wordType, rawWord)
+                // Increment line and character indices
+                if(wordType == WordType.NEW_LINE) {
+                    nextLine()
+                } else if(wordType.isMultiline) {
+                    for(i in 0 until rawWord.count { c -> c == '\n' })
+                        nextLine()
+                    characterIndex = rawWord.length - (rawWord.lastIndexOf('\n') + 1)
+                }
+                return word
             }
         }
-        throw SyntaxError("Unknown word: '${input.first().stringify()}'")
+        throw SyntaxError("Unknown word in ${file.name}:${line.number}:$characterIndex: '${input.first().stringify()}'")
     }
 }

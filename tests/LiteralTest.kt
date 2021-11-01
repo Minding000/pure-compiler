@@ -1,6 +1,4 @@
-import code.ElementGenerator
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 internal class LiteralTest {
 
@@ -9,11 +7,11 @@ internal class LiteralTest {
         val sourceCode = "345"
         val expected =
             """
-                Program {	
+                Program {
                 	NumberLiteral { 345 }
                 }
             """.trimIndent()
-        assertEquals(expected, ElementGenerator(sourceCode).parseProgram().toString())
+        TestUtil.assertAST(expected, sourceCode)
     }
 
     @Test
@@ -21,10 +19,10 @@ internal class LiteralTest {
         val sourceCode = "\"hello world!\""
         val expected =
             """
-                Program {	
+                Program {
                 	StringLiteral { "hello world!" }
                 }
             """.trimIndent()
-        assertEquals(expected, ElementGenerator(sourceCode).parseProgram().toString())
+        TestUtil.assertAST(expected, sourceCode)
     }
 }

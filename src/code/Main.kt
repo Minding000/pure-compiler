@@ -1,5 +1,6 @@
 package code
 
+import objects.Project
 import java.nio.file.Files
 import java.io.IOException
 import java.io.File
@@ -17,23 +18,38 @@ object Main {
             return
         }
         val sourceFile = File(args.first())
-        val sourceFileName = sourceFile.name
-        if (!sourceFileName.endsWith(".pure")) {
+        if (!sourceFile.name.endsWith(".pure")) {
             System.err.println("Wrong extension: The provided file is not PURE source code.")
             return
         }
         val sourceCode = try {
             Files.readString(sourceFile.toPath())
-        } catch (e: IOException) {
+        } catch(e: IOException) {
             System.err.println("Failed to read source file.")
             e.printStackTrace()
             return
         }
+        println("----- Source code: -----")
         println(sourceCode)
-        println(ElementGenerator(sourceCode).parseProgram())
+        println("----- Abstract syntax tree: -----")
+        val program = ElementGenerator(Project("Main", sourceCode)).parseProgram()
+        println(program)
+        println("----- Compiled python code: -----")
+        val instructions = InstructionGenerator().generateInstructions(program)
+        val pythonCode = PythonCompiler.compile(instructions)
+        println(pythonCode)
+        // Write output file
+        println("Creating output file...")
+        val targetFileName = "${sourceFile.nameWithoutExtension}.py"
+        val targetFile = File(sourceFile.parent, targetFileName)
+        targetFile.createNewFile()
+        targetFile.printWriter().use { out ->
+            out.write(pythonCode)
+        }
+        println("Done.")
     }
 
     fun indentText(text: String): String {
-        return "\t" + text.replace("\n", "\n\t")
+        return text.replace("\n", "\n\t")
     }
 }
