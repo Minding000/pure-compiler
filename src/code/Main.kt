@@ -6,6 +6,7 @@ import java.io.IOException
 import java.io.File
 
 object Main {
+	const val DEBUG = true
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -34,8 +35,14 @@ object Main {
         println("----- Abstract syntax tree: -----")
         val program = ElementGenerator(Project("Main", sourceCode)).parseProgram()
         println(program)
-        println("----- Compiled python code: -----")
+        if(DEBUG) {
+            println("----- Intermediate code: -----")
+            println(PythonCompiler.compile(InstructionGenerator().generateInstructions(program)))
+        }
+		println("----- Optimizing: -----")
         val instructions = InstructionGenerator().generateInstructions(program)
+        InstructionOptimizer(instructions).optimize()
+		println("----- Compiled python code: -----")
         val pythonCode = PythonCompiler.compile(instructions)
         println(pythonCode)
         // Write output file

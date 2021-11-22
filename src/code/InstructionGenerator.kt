@@ -8,17 +8,17 @@ import objects.Register
 import java.util.*
 
 class InstructionGenerator {
-    val voidRegister = PlaceholderRegister()
-    val namedRegisters = HashMap<String, Register>()
-    val instructions = LinkedList<Instruction>()
-    var registerCount = 0
+	val voidRegister = PlaceholderRegister()
+	val namedRegisters = HashMap<String, Register>()
+	val instructions = LinkedList<Instruction>()
+	var registerCount = 0
 
-    fun generateInstructions(program: Program): List<Instruction> {
-        program.generateInstructions(this)
-        return instructions
-    }
+	fun generateInstructions(program: Program): MutableList<Instruction> {
+		program.generateInstructions(this)
+		return instructions
+	}
 
-    fun createRegister(): Register {
-        return Register(registerCount++)
-    }
+	fun createRegister(): Register {
+		return Register(registerCount++)
+	}
 }

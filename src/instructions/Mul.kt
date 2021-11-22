@@ -1,6 +1,6 @@
 package instructions
 
-import objects.Instruction
 import objects.Register
 
-class Mul(val outputRegister: Register, val leftRegister: Register, val rightRegister: Register, val isDivision: Boolean): Instruction()
+class Mul(outputRegister: Register, leftRegister: Register, rightRegister: Register, val isDivision: Boolean):
+	BinaryInstruction(outputRegister, leftRegister, rightRegister)
