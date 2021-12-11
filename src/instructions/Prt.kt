@@ -1,21 +1,20 @@
 package instructions
 
-import objects.Instruction
-import objects.Register
-import objects.ValueSource
+import value_analysis.DynamicValue
+import value_analysis.ValueSource
 import java.util.*
 
 class Prt(var valueSources: MutableList<ValueSource>): Instruction() {
 
-	override fun getReadRegisters(): List<Register> {
-		val registers = LinkedList<Register>()
+	override fun getReadDynamicValues(): List<DynamicValue> {
+		val registers = LinkedList<DynamicValue>()
 		for(valueSource in valueSources)
-			if(valueSource is Register)
+			if(valueSource is DynamicValue)
 				registers.add(valueSource)
 		return registers
 	}
 
-	override fun replace(current: Register, new: ValueSource) {
+	override fun replace(current: DynamicValue, new: ValueSource) {
 		val iterator = valueSources.listIterator()
 		while(iterator.hasNext())
 			if(iterator.next() == current)

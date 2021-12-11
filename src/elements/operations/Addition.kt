@@ -2,20 +2,22 @@ package elements.operations
 
 import code.InstructionGenerator
 import instructions.Add
-import objects.Element
-import objects.Register
+import value_analysis.DynamicValue
+import elements.ValueElement
 
-class Addition(val left: Element, val right: Element, val isNegative: Boolean): Element() {
+class Addition(val left: ValueElement, val right: ValueElement, val isSubtraction: Boolean): ValueElement(left.start, right.end, left.type) {
 
-    override fun generateInstructions(generator: InstructionGenerator): Register {
-        val register = generator.createRegister()
-        val leftRegister = left.generateInstructions(generator)
-        val rightRegister = right.generateInstructions(generator)
-        generator.instructions.add(Add(register, leftRegister, rightRegister, isNegative))
-        return register
-    }
+	override fun generateInstructions(generator: InstructionGenerator): DynamicValue {
+		val addInstruction = Add(
+			left.generateInstructions(generator),
+			right.generateInstructions(generator),
+			isSubtraction
+		)
+		generator.instructions.add(addInstruction)
+		return addInstruction.output
+	}
 
-    override fun toString(): String {
-        return "Addition { $left ${ if(isNegative) "-" else "+" } $right }"
-    }
+	override fun toString(): String {
+		return "Addition { $left ${ if(isSubtraction) "-" else "+" } $right }"
+	}
 }

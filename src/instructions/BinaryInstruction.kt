@@ -1,32 +1,36 @@
 package instructions
 
-import objects.Instruction
-import objects.Register
-import objects.ValueSource
+import value_analysis.DynamicValue
+import value_analysis.ValueSource
 import java.util.*
 
-open class BinaryInstruction(var outputRegister: Register, var leftValueSource: ValueSource, var rightValueSource: ValueSource): Instruction() {
+/**
+ *
+ * NOTE: Subclasses need to assign 'this' to output.writeInstruction in their constructor
+ */
+open class BinaryInstruction(var leftValueSource: ValueSource, var rightValueSource: ValueSource): Instruction() {
+	var output = DynamicValue()
 
-	override fun getWrittenRegisters(): List<Register> {
-		val list = LinkedList<Register>()
-		list.add(outputRegister)
+	override fun getWrittenDynamicValues(): List<DynamicValue> {
+		val list = LinkedList<DynamicValue>()
+		list.add(output)
 		return list
 	}
 
-	override fun getReadRegisters(): List<Register> {
-		val list = LinkedList<Register>()
+	override fun getReadDynamicValues(): List<DynamicValue> {
+		val list = LinkedList<DynamicValue>()
 		val left = leftValueSource
-		if(left is Register)
+		if(left is DynamicValue)
 			list.add(left)
 		val right = rightValueSource
-		if(right is Register)
+		if(right is DynamicValue)
 			list.add(right)
 		return list
 	}
 
-	override fun replace(current: Register, new: ValueSource) {
-		if(new is Register && outputRegister == current)
-			outputRegister = new
+	override fun replace(current: DynamicValue, new: ValueSource) {
+		if(new is DynamicValue && output == current)
+			output = new
 		if(leftValueSource == current)
 			leftValueSource = new
 		if(rightValueSource == current)

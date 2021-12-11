@@ -1,17 +1,17 @@
 package instructions
 
-import objects.Instruction
-import objects.Register
-import objects.ValueSource
+import value_analysis.DynamicValue
 import java.util.*
 
-abstract class WriteInstruction(var targetRegister: Register): Instruction() {
+/**
+ *
+ * NOTE: Subclasses need to assign 'this' to targetDynamicValue.writeInstruction in their constructor
+ */
+abstract class WriteInstruction(var targetDynamicValue: DynamicValue): Instruction() {
 
-	override fun getWrittenRegisters(): List<Register> {
-		val list = LinkedList<Register>()
-		list.add(targetRegister)
+	override fun getWrittenDynamicValues(): List<DynamicValue> {
+		val list = LinkedList<DynamicValue>()
+		list.add(targetDynamicValue)
 		return list
 	}
-
-	abstract fun getValueSource(): ValueSource
 }

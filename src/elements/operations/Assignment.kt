@@ -1,21 +1,26 @@
 package elements.operations
 
 import code.InstructionGenerator
-import elements.Identifier
+import elements.identifier.VariableIdentifier
 import instructions.Copy
-import objects.Element
-import objects.Register
+import value_analysis.DynamicValue
+import elements.ValueElement
+import elements.VoidElement
+import elements.identifier.Variable
 
-class Assignment(val identifier: Identifier, val value: Element): Element() {
+class Assignment(val identifier: Variable, val value: ValueElement): VoidElement(identifier.start, value.end) {
 
-    override fun generateInstructions(generator: InstructionGenerator): Register {
-        val targetRegister = identifier.generateInstructions(generator)
-        val sourceRegister = value.generateInstructions(generator)
-        generator.instructions.add(Copy(targetRegister, sourceRegister))
-        return generator.voidRegister
-    }
+	override fun generateInstructions(generator: InstructionGenerator): DynamicValue? {
+		// Mind the execution order
+		val valueSource = value.generateInstructions(generator)
+		generator.instructions.add(Copy(
+			identifier.getNewDynamicValue(generator),
+			valueSource
+		))
+		return null
+	}
 
-    override fun toString(): String {
-        return "Assignment { $identifier = $value }"
-    }
+	override fun toString(): String {
+		return "Assignment { $identifier = $value }"
+	}
 }

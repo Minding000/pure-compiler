@@ -1,30 +1,27 @@
 package instructions
 
-import errors.CompilerError
-import objects.Instruction
-import objects.Register
-import objects.Value
-import objects.ValueSource
+import value_analysis.DynamicValue
+import value_analysis.ValueSource
 import java.util.*
 
-class Copy(targetRegister: Register, var sourceRegister: Register): WriteInstruction(targetRegister) {
+class Copy(targetDynamicValue: DynamicValue, var valueSource: ValueSource): WriteInstruction(targetDynamicValue) {
 
-	override fun getReadRegisters(): List<Register> {
-		val list = LinkedList<Register>()
-		list.add(sourceRegister)
+	init {
+		targetDynamicValue.setWriteInstruction(this)
+	}
+
+	override fun getReadDynamicValues(): List<DynamicValue> {
+		val list = LinkedList<DynamicValue>()
+		val source = valueSource
+		if(source is DynamicValue)
+			list.add(source)
 		return list
 	}
 
-	override fun replace(current: Register, new: ValueSource) {
-		if(new !is Register)
-			throw CompilerError("Cannot use non-register in copy instruction.")
-		if(targetRegister == current)
-			targetRegister = new
-		if(sourceRegister == current)
-			sourceRegister = new
-	}
-
-	override fun getValueSource(): ValueSource {
-		return sourceRegister
+	override fun replace(current: DynamicValue, new: ValueSource) {
+		if(new is DynamicValue && targetDynamicValue == current)
+			targetDynamicValue = new
+		if(valueSource == current)
+			valueSource = new
 	}
 }

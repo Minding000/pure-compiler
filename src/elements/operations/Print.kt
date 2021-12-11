@@ -2,29 +2,30 @@ package elements.operations
 
 import code.InstructionGenerator
 import code.Main
-import elements.Identifier
+import elements.ValueElement
 import instructions.Prt
-import objects.Element
-import objects.Register
-import objects.ValueSource
+import value_analysis.DynamicValue
+import elements.VoidElement
+import source_structure.Position
+import value_analysis.ValueSource
 import java.lang.StringBuilder
 import java.util.*
 
 // NOTE: This instruction is only for development purposes
-class Print(val identifiers: List<Identifier>): Element() {
+class Print(start: Position, end: Position, val elements: List<ValueElement>): VoidElement(start, end) {
 
-	override fun generateInstructions(generator: InstructionGenerator): Register {
+	override fun generateInstructions(generator: InstructionGenerator): DynamicValue? {
 		val valueSources = LinkedList<ValueSource>()
-		for(identifier in identifiers)
-			valueSources.add(identifier.generateInstructions(generator))
+		for(element in elements)
+			valueSources.add(element.generateInstructions(generator))
 		generator.instructions.add(Prt(valueSources))
-		return generator.voidRegister
+		return null
 	}
 
 	override fun toString(): String {
 		val string = StringBuilder()
-		for (identifier in identifiers)
-			string.append("\n").append(identifier.toString())
+		for(element in elements)
+			string.append("\n").append(element.toString())
 		return "Print {${Main.indentText(string.toString())}\n}"
 	}
 }

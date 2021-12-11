@@ -1,158 +1,80 @@
 package code
 
-import analysis.Occurrence
-import analysis.OccurrenceType
-import analysis.ValueScope
-import errors.CompilerError
 import instructions.*
-import objects.Instruction
-import objects.Register
-import objects.Value
-import util.jumpTo
+import value_analysis.*
 import java.util.*
-import kotlin.collections.HashMap
+import kotlin.collections.LinkedHashSet
 
 class InstructionOptimizer(private val instructionList: MutableList<Instruction>) {
 	private val complexInstructions = LinkedList<Instruction>()
-	private val valueScopeList = LinkedList<ValueScope>()
-	//TODO registers don't really matter that much.
-	// So, this can probably be simplified by using value scopes as values and assigning those registers in the end
-	private val valueScopes = HashMap<Register, LinkedList<ValueScope>>()
-	private val instructions = HashMap<Register, LinkedList<Instruction>>()
+	private val dynamicValues = LinkedHashSet<DynamicValue>()
 
 	fun optimize() {
-		generateValueScopes()
+		analyseInstructions()
 		val previousInstructionCount = instructionList.size
-		val previousRegisterCount = instructions.size
-		removeUselessWrites()
-		removeUselessAssignments()
-		reduceRegisterCount()
+		val dynamicValueCount = dynamicValues.size
+		removeRedundantWrites()
+		resolveCopies()
+		computeStaticExpressions()
+		val registerCount = assignRegisters()
 		println("Instruction count: $previousInstructionCount -> ${instructionList.size}")
-		println("Register count: $previousRegisterCount -> ${instructions.size}")
+		println("Register count: $dynamicValueCount -> $registerCount")
 	}
 
-	private fun generateValueScopes() {
+	private fun analyseInstructions() {
 		for(instruction in instructionList) {
 			if(isInstructionComplex(instruction))
 				complexInstructions.add(instruction)
-			for(register in instruction.getRegisters())
-				instructions.getOrPut(register) { LinkedList() }.add(instruction)
-			when(instruction) {
-				is BinaryInstruction -> {
-					when (instruction.outputRegister) {
-						instruction.leftValueSource -> {
-							var valueScope = getCurrentValueScope(instruction.outputRegister)
-							valueScope.occurrences.add(Occurrence(instruction, instruction.outputRegister, OccurrenceType.MODIFY))
-							val rightValueSource = instruction.rightValueSource
-							if(rightValueSource is Register) {
-								valueScope = getCurrentValueScope(rightValueSource)
-								valueScope.occurrences.add(Occurrence(instruction, rightValueSource, OccurrenceType.READ))
-							}
-						}
-						instruction.rightValueSource -> {
-							var valueScope = getCurrentValueScope(instruction.outputRegister)
-							valueScope.occurrences.add(Occurrence(instruction, instruction.outputRegister, OccurrenceType.MODIFY))
-							val leftValueSource = instruction.leftValueSource
-							if(leftValueSource is Register) {
-								valueScope = getCurrentValueScope(leftValueSource)
-								valueScope.occurrences.add(Occurrence(instruction, leftValueSource, OccurrenceType.READ))
-							}
-						}
-						else -> {
-							addValueScope(ValueScope(instruction.outputRegister, instruction))
-							var valueScope: ValueScope
-							val leftValueSource = instruction.leftValueSource
-							if(leftValueSource is Register) {
-								valueScope = getCurrentValueScope(leftValueSource)
-								valueScope.occurrences.add(Occurrence(instruction, leftValueSource, OccurrenceType.READ))
-							}
-							val rightValueSource = instruction.rightValueSource
-							if(rightValueSource is Register) {
-								valueScope = getCurrentValueScope(rightValueSource)
-								valueScope.occurrences.add(Occurrence(instruction, rightValueSource, OccurrenceType.READ))
-							}
-						}
-					}
-				}
-				is Copy -> {
-					addValueScope(ValueScope(instruction.targetRegister, instruction))
-					val valueScope = getCurrentValueScope(instruction.sourceRegister)
-					valueScope.occurrences.add(Occurrence(instruction, instruction.sourceRegister, OccurrenceType.READ))
-				}
-				is Init -> {
-					addValueScope(ValueScope(instruction.targetRegister, instruction))
-				}
-				is Prt -> {
-					for(valueSource in instruction.valueSources) {
-						if(valueSource is Register) {
-							val valueScope = getCurrentValueScope(valueSource)
-							valueScope.occurrences.add(Occurrence(instruction, valueSource, OccurrenceType.READ))
-						}
-					}
-				}
-			}
+			for(writtenDynamicValue in instruction.getWrittenDynamicValues())
+				dynamicValues.add(writtenDynamicValue)
+			for(readDynamicValue in instruction.getReadDynamicValues())
+				readDynamicValue.usages.add(instruction)
 		}
 	}
 
-	private fun addValueScope(valueScope: ValueScope) {
-		valueScopeList.add(valueScope)
-		valueScopes.getOrPut(valueScope.register) { LinkedList() }.add(valueScope)
-	}
-
-	private fun getCurrentValueScope(register: Register): ValueScope {
-		return valueScopes[register]?.lastOrNull() ?: throw CompilerError("Register usage before initialization (Register #${register.index}).")
-	}
-
-	private fun removeUselessWrites() {
-		// Example:
-		// - Write	- invalid: no usages
-		// - Write	- valid
-		// - Modify	- valid
-		// - Modify	- valid
-		// - Read	- valid
-		// - Read	- valid
-		// - Modify	- invalid: no usages
-		// - Modify - invalid: no usages
-		// - Write	- invalid: no usages
+	private fun computeStaticExpressions() {
 		var previousInstructionCount: Int
 		do {
 			previousInstructionCount = instructionList.size
-			val iterator = valueScopeList.descendingIterator()
+			val iterator = instructionList.iterator()
 			while(iterator.hasNext()) {
-				val valueScope = iterator.next()
-				// Remove single writes
-				if(valueScope.occurrences.isEmpty()) {
-					instructionList.remove(valueScope.writeInstruction)
+				val instruction = iterator.next()
+				val result = instruction.getStaticValue()
+				if(result != null) {
 					iterator.remove()
-					for(register in valueScope.writeInstruction.getRegisters()) {
-						instructions[register]?.remove(valueScope.writeInstruction)
-						valueScopes[register]?.remove(valueScope)
-					}
-					continue
-				}
-				while(valueScope.occurrences.last.type != OccurrenceType.READ) {
-					// Remove unnecessary modifications
-					val instruction = valueScope.occurrences.pop().instruction
-					instructionList.remove(instruction)
-					for(register in instruction.getRegisters())
-						instructions[register]?.remove(instruction)
-					// Remove single writes
-					if(valueScope.occurrences.isEmpty()) {
-						instructionList.remove(valueScope.writeInstruction)
-						iterator.remove()
-						for(register in valueScope.writeInstruction.getRegisters()) {
-							instructions[register]?.remove(valueScope.writeInstruction)
-							valueScopes[register]?.remove(valueScope)
-						}
-						break
+					for(dynamicValue in instruction.getWrittenDynamicValues()) {
+						for(readInstruction in dynamicValue.usages)
+							readInstruction.replace(dynamicValue, result)
+						dynamicValues.remove(dynamicValue)
 					}
 				}
 			}
-			// Repeat this process, since removed instructions may have been targets of other instructions
+			// Repeat this process, since computed values may enable other instructions to be statically computed
 		} while(previousInstructionCount > instructionList.size)
 	}
 
-	private fun removeUselessAssignments() {
+	private fun removeRedundantWrites() {
+		var previousInstructionCount: Int
+		do {
+			previousInstructionCount = instructionList.size
+			val iterator = dynamicValues.iterator()
+			while(iterator.hasNext()) {
+				val dynamicValue = iterator.next()
+				// Remove single writes
+				if(dynamicValue.usages.isEmpty()) {
+					instructionList.remove(dynamicValue.getWriteInstruction())
+					iterator.remove()
+					continue
+				}
+			}
+			// Repeat this process, since removed writes may make other writes redundant
+		} while(previousInstructionCount > instructionList.size)
+	}
+
+	/**
+	 * Removes all Copy instructions
+	 */
+	private fun resolveCopies() {
 		// ValueScopes that can be collapsed:
 		// Case 1:
 		// - Write (simple aka. ASSIGN)
@@ -223,28 +145,14 @@ class InstructionOptimizer(private val instructionList: MutableList<Instruction>
 		*   - for external instructions: external instruction order cannot change
 		* */
 
-		val iterator = valueScopeList.listIterator()
+		val iterator = dynamicValues.iterator()
 		while(iterator.hasNext()) {
-			val valueScope = iterator.next()
-			if(valueScope.occurrences.size > 0) {
-				val writeInstruction = valueScope.writeInstruction
-				// Case 1:
-				if(writeInstruction is WriteInstruction) {
-					val readInstructions = LinkedList<Instruction>()
-					var onlyReadOccurrences = true
-					for(occurrence in valueScope.occurrences) {
-						if(occurrence.type != OccurrenceType.READ) {
-							onlyReadOccurrences = false
-							break
-						}
-						readInstructions.add(occurrence.instruction)
-					}
-					if(onlyReadOccurrences && mergeInstructionsIfPossible(writeInstruction, readInstructions)) {
-						// Remove value scope
-						iterator.remove()
-						valueScopes[valueScope.register]?.remove(valueScope)
-					}
-				}
+			val dynamicValue = iterator.next()
+			val writeInstruction = dynamicValue.getWriteInstruction()
+			if(writeInstruction is Copy) {
+				mergeInstructions(writeInstruction, dynamicValue.usages)
+				// Remove dynamic value
+				iterator.remove()
 			}
 		}
 	}
@@ -253,75 +161,25 @@ class InstructionOptimizer(private val instructionList: MutableList<Instruction>
 	 * Checks whether the given instructions can be merged
 	 * @return Whether the merge was successful and the value scope should be deleted
 	 */
-	private fun mergeInstructionsIfPossible(writeInstruction: WriteInstruction, readInstructions: LinkedList<Instruction>): Boolean {
-		if(writeInstruction is Init && !writeInstruction.value.isInlineable)
-			return false
-		// Check if possible
-		val writeIndex = getInstructionIndex(writeInstruction)
-		val distanceMap = HashMap<Instruction, Int>()
-		for(readInstruction in readInstructions) {
-			val readIndex = getInstructionIndex(readInstruction)
-			val distance = readIndex - writeIndex - 1
-			var deltaForwards = 0
-			if(distance > 0) {
-				deltaForwards = if(writeInstruction is Copy)
-					getCopyHaste(writeInstruction, writeIndex, distance)
-				else
-					getComplexHaste(writeInstruction, writeIndex, distance)
-				val deltaBackwards = getReadLaziness(readInstruction, readIndex,distance)
-				if(deltaForwards + deltaBackwards < distance)
-					return false
-			}
-			distanceMap[readInstruction] = deltaForwards
-		}
+	private fun mergeInstructions(copyInstruction: Copy, readInstructions: List<Instruction>) {
+		val valueSource = copyInstruction.valueSource
 		// Remove write instruction
-		instructionList.remove(writeInstruction)
-		for(register in writeInstruction.getRegisters())
-			instructions[register]?.remove(writeInstruction)
-		val valueSource = writeInstruction.getValueSource()
-		val sourceScope = if(valueSource is Register) getValueScope(valueSource, writeIndex - 1) else null
-		for(_readInstruction in readInstructions) {
-			var readInstruction = _readInstruction
-			val newIndex = writeIndex + distanceMap[readInstruction]!! // Indices created using same loop
-			// Remove read
-			val previousReadIndex = getInstructionIndex(readInstruction)
-			instructionList.remove(readInstruction)
-			for(register in readInstruction.getRegisters())
-				instructions[register]?.remove(readInstruction)
+		instructionList.remove(copyInstruction)
+		if(valueSource is DynamicValue)
+			valueSource.usages.remove(copyInstruction)
+		for(readInstruction in readInstructions) {
 			// Modify read instruction
-			if(readInstruction is Copy && valueSource is Value) {
-				readInstruction = Init(readInstruction.targetRegister, valueSource)
-				val targetScope = getValueScope(readInstruction.targetRegister, previousReadIndex)
-				targetScope.writeInstruction = readInstruction
-			} else {
-				readInstruction.replace(writeInstruction.targetRegister, valueSource)
-			}
-			sourceScope?.occurrences?.add(Occurrence(readInstruction, sourceScope.register, OccurrenceType.READ))
-			// Reinsert read instruction at new position
-			instructionList.add(newIndex, readInstruction)
-			for(register in readInstruction.getRegisters())
-				instructions[register]?.add(readInstruction)
-			if(valueSource is Register) {
-				// Insert instruction in source register value scope
-				val valueScope = getValueScope(valueSource, writeIndex)
-				val iterator = valueScope.occurrences.listIterator()
-				while(iterator.hasNext()) {
-					val occurrence = iterator.next()
-					if(getInstructionIndex(occurrence.instruction) >= newIndex) {
-						iterator.previous()
-						val isModification = readInstruction.writesTo(valueSource)
-						iterator.add(Occurrence(readInstruction, valueSource, if (isModification) OccurrenceType.MODIFY else OccurrenceType.READ))
-						break
-					}
-				}
+			readInstruction.replace(copyInstruction.targetDynamicValue, valueSource)
+			if(valueSource is DynamicValue) {
+				// Add value reference
+				valueSource.usages.add(readInstruction)
 			}
 		}
-		return true
 	}
 
 	/**
 	 * Checks whether the given instruction changes the control flow
-	 * Examples: function call, print, jump
+	 * Examples: function call, print, jump //TODO store and load fall into this as well in their own respect
 	 */
 	private fun isInstructionComplex(instruction: Instruction): Boolean {
 		return instruction is Prt
@@ -335,122 +193,33 @@ class InstructionOptimizer(private val instructionList: MutableList<Instruction>
 	}
 
 	/**
-	 * Returns the active value scope of the given register at the given index
-	 */
-	private fun getValueScope(register: Register, index: Int): ValueScope {
-		var activeScope: ValueScope? = null
-		for(valueScope in valueScopes[register] ?: throw CompilerError("Register without value scope: r${register.index}")) {
-			val start = getInstructionIndex(valueScope.writeInstruction)
-			if(start > index)
-				break
-			activeScope = valueScope
-		}
-		if(activeScope == null)
-			throw CompilerError("Register without value scope: r${register.index}")
-		return activeScope
-	}
-
-	/**
-	 * Gets by which distance the given copy instruction can be moved forwards without breaking the code
-	 * @param copyInstruction The copy instruction to be moved
-	 * @param maxDistance The maximum distance to check for
-	 */
-	private fun getCopyHaste(copyInstruction: Copy, index: Int, maxDistance: Int): Int {
-		val register = copyInstruction.sourceRegister
-		val registerInstructions = instructions[register] ?: throw CompilerError("Register without instructions: r${register.index}")
-		val iterator = registerInstructions.iterator()
-		iterator.jumpTo(copyInstruction)
-		while(iterator.hasNext()) {
-			val instruction = iterator.next()
-			if(instruction.writesTo(register)) {
-				val start = getInstructionIndex(instruction)
-				if(start > index)
-					return (start - index - 1).coerceAtMost(maxDistance)
-			}
-		}
-		return maxDistance
-	}
-
-	private fun getComplexHaste(complexInstruction: Instruction, index: Int, maxDistance: Int): Int {
-		//TODO "complex" should be split into:
-		// - write output
-		// - memory access
-		// - unknown (function call)
-		return maxDistance
-	}
-
-	private fun getReadLaziness(readInstruction: Instruction, index: Int, maxDistance: Int): Int {
-		var minDistance = maxDistance
-		if(isInstructionComplex(readInstruction)) {
-			val complexIndex = complexInstructions.indexOf(readInstruction)
-			if(complexIndex > 0) {
-				val previousComplexInstruction = complexInstructions[complexIndex - 1]
-				val distance = index - getInstructionIndex(previousComplexInstruction) - 1
-				if(distance < minDistance)
-					minDistance = distance
-			}
-		}
-		for(register in readInstruction.getWrittenRegisters()) {
-			val registerInstructions = instructions[register] ?: throw CompilerError("Register without instructions: r${register.index}")
-			val iterator = registerInstructions.descendingIterator()
-			iterator.jumpTo(readInstruction)
-			if(iterator.hasNext()) {
-				val distance = index - getInstructionIndex(iterator.next()) - 1
-				if(distance < minDistance)
-					minDistance = distance
-			}
-		}
-		for(register in readInstruction.getReadRegisters()) {
-			val registerInstructions = instructions[register] ?: throw CompilerError("Register without instructions: r${register.index}")
-			val iterator = registerInstructions.descendingIterator()
-			iterator.jumpTo(readInstruction)
-			while(iterator.hasNext()) {
-				val instruction = iterator.next()
-				if(instruction.writesTo(register)) {
-					val distance = index - getInstructionIndex(instruction) - 1
-					if(distance < minDistance)
-						minDistance = distance
-				}
-			}
-		}
-		return minDistance
-	}
-
-	/**
 	 * Compresses value scopes into registers
 	 */
-	private fun reduceRegisterCount() {
-		val remainingValueScopes = LinkedList(valueScopeList)
-		instructions.clear()
-		valueScopes.clear()
+	private fun assignRegisters(): Int {
+		if(dynamicValues.isEmpty())
+			return 0
+		val remainingDynamicValues = LinkedList(dynamicValues)
 		var currentIndex = 0
 		var currentRegister = Register(0)
-		while(!remainingValueScopes.isEmpty()) {
+		while(!remainingDynamicValues.isEmpty()) {
 			var closestStart = instructionList.size
-			var closestValueScope: ValueScope? = null
-			for(valueScope in remainingValueScopes) {
-				val start = getInstructionIndex(valueScope.writeInstruction)
+			var closestDynamicValue: DynamicValue? = null
+			for(dynamicValue in remainingDynamicValues) {
+				val start = getInstructionIndex(dynamicValue.getWriteInstruction())
 				if(start in currentIndex until closestStart) {
 					closestStart = start
-					closestValueScope = valueScope
+					closestDynamicValue = dynamicValue
 				}
 			}
-			if(closestValueScope == null) {
+			if(closestDynamicValue == null) {
 				currentRegister = Register(currentRegister.index + 1)
 				currentIndex = 0
 				continue
 			}
-			remainingValueScopes.remove(closestValueScope)
-			closestValueScope.writeInstruction.replace(closestValueScope.register, currentRegister)
-			for(occurrence in closestValueScope.occurrences)
-				occurrence.instruction.replace(closestValueScope.register, currentRegister)
-			closestValueScope.register = currentRegister
-			currentIndex = getInstructionIndex(closestValueScope.occurrences.last.instruction)
-
-			valueScopes.getOrPut(currentRegister) { LinkedList() }.add(closestValueScope)
-			instructions.getOrPut(currentRegister) { LinkedList() }.add(closestValueScope.writeInstruction)
-			for(occurrence in closestValueScope.occurrences)
-				instructions.getOrPut(currentRegister) { LinkedList() }.add(occurrence.instruction)
+			remainingDynamicValues.remove(closestDynamicValue)
+			closestDynamicValue.register = currentRegister
+			currentIndex = getInstructionIndex(closestDynamicValue.usages.last)
 		}
+		return currentRegister.index + 1
 	}
 }

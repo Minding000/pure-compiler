@@ -7,9 +7,9 @@ internal class NumericalOperatorTest {
 		val sourceCode = "345 + 1"
 		val expected =
 			"""
-                Program {
-                	Addition { NumberLiteral { 345 } + NumberLiteral { 1 } }
-                }
+				Program {
+					Addition { NumberLiteral { 345 } + NumberLiteral { 1 } }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -19,9 +19,9 @@ internal class NumericalOperatorTest {
 		val sourceCode = "345 - 3"
 		val expected =
 			"""
-                Program {
-                	Addition { NumberLiteral { 345 } - NumberLiteral { 3 } }
-                }
+				Program {
+					Addition { NumberLiteral { 345 } - NumberLiteral { 3 } }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -31,9 +31,9 @@ internal class NumericalOperatorTest {
 		val sourceCode = "345 * 2"
 		val expected =
 			"""
-                Program {
-                	Multiplication { NumberLiteral { 345 } * NumberLiteral { 2 } }
-                }
+				Program {
+					Multiplication { NumberLiteral { 345 } * NumberLiteral { 2 } }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -43,9 +43,21 @@ internal class NumericalOperatorTest {
 		val sourceCode = "345 / 5"
 		val expected =
 			"""
-                Program {
-                	Multiplication { NumberLiteral { 345 } / NumberLiteral { 5 } }
-                }
+				Program {
+					Multiplication { NumberLiteral { 345 } / NumberLiteral { 5 } }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testExponentiation() {
+		val sourceCode = "4 ^ 3"
+		val expected =
+			"""
+				Program {
+					Exponentiation { NumberLiteral { 4 } ^ NumberLiteral { 3 } }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -55,9 +67,9 @@ internal class NumericalOperatorTest {
 		val sourceCode = "3 + 345 * 2 - (2 + 1)"
 		val expected =
 			"""
-                Program {
-                	Addition { Addition { NumberLiteral { 3 } + Multiplication { NumberLiteral { 345 } * NumberLiteral { 2 } } } - Addition { NumberLiteral { 2 } + NumberLiteral { 1 } } }
-                }
+				Program {
+					Addition { Addition { NumberLiteral { 3 } + Multiplication { NumberLiteral { 345 } * NumberLiteral { 2 } } } - Addition { NumberLiteral { 2 } + NumberLiteral { 1 } } }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}

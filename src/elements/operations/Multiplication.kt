@@ -2,17 +2,19 @@ package elements.operations
 
 import code.InstructionGenerator
 import instructions.Mul
-import objects.Element
-import objects.Register
+import value_analysis.DynamicValue
+import elements.ValueElement
 
-class Multiplication(val left: Element, val right: Element, val isDivision: Boolean): Element() {
+class Multiplication(val left: ValueElement, val right: ValueElement, val isDivision: Boolean): ValueElement(left.start, right.end, left.type) {
 
-    override fun generateInstructions(generator: InstructionGenerator): Register {
-        val register = generator.createRegister()
-        val leftRegister = left.generateInstructions(generator)
-        val rightRegister = right.generateInstructions(generator)
-        generator.instructions.add(Mul(register, leftRegister, rightRegister, isDivision))
-        return register
+    override fun generateInstructions(generator: InstructionGenerator): DynamicValue {
+        val multiplicationInstruction = Mul(
+            left.generateInstructions(generator),
+            right.generateInstructions(generator),
+            isDivision
+        )
+        generator.instructions.add(multiplicationInstruction)
+        return multiplicationInstruction.output
     }
 
     override fun toString(): String {
