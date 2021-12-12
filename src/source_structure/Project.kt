@@ -2,18 +2,20 @@ package source_structure
 
 import code.Main
 import java.lang.StringBuilder
+import java.util.*
 
-class Project(name: String, sourceCode: String) {
-    val files: Array<File>
+class Project(val name: String) {
+    lateinit var targetPath: String
+    val modules = LinkedList<Module>()
 
-    init {
-        files = arrayOf(File(this, name, sourceCode))
+    fun addModule(module: Module) {
+        modules.add(module)
     }
 
     override fun toString(): String {
         val string = StringBuilder()
-        for (file in files)
-            string.append("\n").append(file.toString())
-        return "Program {${Main.indentText(string.toString())}}"
+        for(module in modules)
+            string.append("\n").append(module.toString())
+        return "Program [$name] {${Main.indentText(string.toString())}\n}"
     }
 }

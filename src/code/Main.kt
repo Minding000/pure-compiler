@@ -1,70 +1,36 @@
 package code
 
-import errors.user.UserError
-import compiler.InstructionGenerator
-import compiler.InstructionOptimizer
-import parsing.ElementGenerator
-import source_structure.Project
-import compiler.targets.PythonCompiler
-import java.nio.file.Files
-import java.io.IOException
-import java.io.File
-
 object Main {
 	const val DEBUG = true
 
 	@JvmStatic
 	fun main(args: Array<String>) {
-		try {
-			if (args.isEmpty()) {
-				println("Nothing to compile.")
-				return
+		if(args.size == 0) {
+			Helper.help()
+			return
+		}
+		val subCommand = args.first()
+		when(subCommand) {
+			"build" -> {
+				if(args.size < 2) {
+					println("Please provide a file or directory to build.")
+					Helper.help("build")
+					return
+				}
+				if(args.size > 2) {
+					println("Too many arguments.")
+					Helper.help("build")
+					return
+				}
+				Builder.build(args[1])
 			}
-			if (args.size > 1) {
-				println("To many arguments (only 1 file required).")
-				return
+			"?",
+			"help" -> {
+				Helper.help()
 			}
-			val sourceFile = File(args.first())
-			if (!sourceFile.name.endsWith(".pure")) {
-				System.err.println("Wrong extension: The provided file is not PURE source code.")
-				return
+			else -> {
+				println("Sub-command '$subCommand' does not exist.")
 			}
-			val sourceCode = try {
-				Files.readString(sourceFile.toPath())
-			} catch(e: IOException) {
-				System.err.println("Failed to read source file.")
-				e.printStackTrace()
-				return
-			}
-			println("----- Source code: -----")
-			println(sourceCode)
-			println("----- Abstract syntax tree: -----")
-			val program = ElementGenerator(Project("Main", sourceCode)).parseProgram()
-			println(program)
-			if(DEBUG) {
-				println("----- Intermediate code: -----")
-				println(PythonCompiler.compile(InstructionGenerator().generateInstructions(program), true))
-			}
-			println("----- Optimizing: -----")
-			val instructions = InstructionGenerator().generateInstructions(program)
-			InstructionOptimizer(instructions).optimize()
-			println("----- Compiled python code: -----")
-			val pythonCode = PythonCompiler.compile(instructions)
-			println(pythonCode)
-			println("-----")
-			// Write output file
-			println("Creating output file...")
-			val targetFileName = "${sourceFile.nameWithoutExtension}.py"
-			val targetFile = File(sourceFile.parent, targetFileName)
-			targetFile.createNewFile()
-			targetFile.printWriter().use { out ->
-				out.write(pythonCode)
-			}
-			println("Done.")
-		} catch(e: UserError) {
-			println("Failed to compile: ${e.message}")
-			if(DEBUG)
-				e.printStackTrace()
 		}
 	}
 

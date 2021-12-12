@@ -1,13 +1,24 @@
+import code.Builder
 import parsing.ElementGenerator
 import errors.user.UserError
+import source_structure.Module
 import source_structure.Project
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 object TestUtil {
 
+    private fun getAST(sourceCode: String): String {
+        val project = Project("Test")
+        val module = Module("Test")
+        module.addFile("Test", sourceCode)
+        project.addModule(module)
+        Builder.loadRequiredModules(project)
+        return ElementGenerator(project).parseProgram().toString()
+    }
+
     fun assertAST(expected_ast: String, sourceCode: String) {
-        val actual_ast = ElementGenerator(Project("Test", sourceCode)).parseProgram().toString()
+        val actual_ast = getAST(sourceCode)
         printDiffPosition(expected_ast, actual_ast)
         assertEquals(expected_ast, actual_ast)
     }
@@ -15,7 +26,7 @@ object TestUtil {
     fun assertUserError(expected_message: String, sourceCode: String) {
         var actual_message = ""
         try {
-            ElementGenerator(Project("Test", sourceCode)).parseProgram().toString()
+            getAST(sourceCode)
         } catch(e: UserError) {
             actual_message = e.message ?: ""
         }
