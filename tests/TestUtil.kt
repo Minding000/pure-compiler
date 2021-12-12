@@ -1,4 +1,4 @@
-import code.ElementGenerator
+import parsing.ElementGenerator
 import errors.user.UserError
 import source_structure.Project
 import kotlin.test.assertContains
@@ -28,8 +28,9 @@ object TestUtil {
         var line = 1
         var index = 1
         for(character in expected) {
-            if(character != actual[position]) {
-                print("Expected '$character' at $line:$index, but got '${actual[position]}' instead.")
+            val actualChar = actual.getOrNull(position)
+            if(character != actualChar) {
+                print("Expected '$character' at $line:$index, but got '${actualChar}' instead.")
                 break
             }
             position++

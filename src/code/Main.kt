@@ -1,8 +1,11 @@
 package code
 
 import errors.user.UserError
+import compiler.InstructionGenerator
+import compiler.InstructionOptimizer
+import parsing.ElementGenerator
 import source_structure.Project
-import targets.PythonCompiler
+import compiler.targets.PythonCompiler
 import java.nio.file.Files
 import java.io.IOException
 import java.io.File

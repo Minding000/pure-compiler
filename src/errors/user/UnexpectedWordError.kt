@@ -1,7 +1,7 @@
 package errors.user
 
-import word_generation.Word
-import word_generation.WordType
+import parsing.tokenizer.Word
+import parsing.tokenizer.WordType
 import util.stringify
 
 /**

@@ -9,7 +9,7 @@ internal class VariableDeclarationTest {
 			"""
 				Program {
 					Declaration {
-						VariableIdentifier { car }
+						TypedIdentifier { Identifier { car } : Identifier { Int } }
 					}
 				}
             """.trimIndent()
@@ -23,8 +23,8 @@ internal class VariableDeclarationTest {
 			"""
 				Program {
 					Declaration {
-						VariableIdentifier { car }
-						VariableIdentifier { tire }
+						TypedIdentifier { Identifier { car } : Identifier { String } }
+						TypedIdentifier { Identifier { tire } : Identifier { Int } }
 					}
 				}
             """.trimIndent()
@@ -38,7 +38,9 @@ internal class VariableDeclarationTest {
 			"""
 				Program {
 					Declaration {
-						Assignment { VariableIdentifier { car } = NumberLiteral { 5 } }
+						Assignment {
+							Identifier { car } = NumberLiteral { 5 }
+						}
 					}
 				}
             """.trimIndent()
@@ -56,9 +58,11 @@ internal class VariableDeclarationTest {
 			"""
 				Program {
 					Declaration {
-						VariableIdentifier { car }
+						TypedIdentifier { Identifier { car } : Identifier { Int } }
 					}
-					Assignment { VariableReference { car } = NumberLiteral { 5 } }
+					Assignment {
+						Identifier { car } = NumberLiteral { 5 }
+					}
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)

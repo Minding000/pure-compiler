@@ -15,12 +15,16 @@ internal class ControlFlowTest {
 			"""
 				Program {
 					Declaration {
-						VariableIdentifier { x }
+						TypedIdentifier { Identifier { x } : Identifier { Int } }
 					}
-					If {
-						Assignment { VariableReference { x } = NumberLiteral { 3 } }
+					If [NumberLiteral { 5 }] {
+						Assignment {
+							Identifier { x } = NumberLiteral { 3 }
+						}
 					} Else {
-						Assignment { VariableReference { x } = NumberLiteral { 2 } }
+						Assignment {
+							Identifier { x } = NumberLiteral { 2 }
+						}
 					}
 				}
             """.trimIndent()
@@ -40,18 +44,20 @@ internal class ControlFlowTest {
 		val expected =
 			"""
 				Program {
-					Class [ClassIdentifier { Human }] {
-						Function [VariableIdentifier { speak }(
-							VariableIdentifier { words }
-						)] {
+					Class [Identifier { Human }] {
+						Function [Identifier { speak }(
+							TypedIdentifier { Identifier { words } : Identifier { String } }
+						): void] {
 							Print {
-								VariableReference { words }
+								Identifier { words }
 							}
 						}
 					}
 					Declaration {
-						Assignment { VariableIdentifier { peter } = FunctionCall [Human] {
-						} }
+						Assignment {
+							Identifier { peter } = FunctionCall [Identifier { Human }] {
+							}
+						}
 					}
 				}
             """.trimIndent()
@@ -72,14 +78,54 @@ internal class ControlFlowTest {
 		val expected =
 			"""
 				Program {
-					Class [ClassIdentifier { Human }] {
-						Function [VariableIdentifier { speak }(
-							VariableIdentifier { words }
-						)] {
+					Class [Identifier { Human }] {
+						Function [Identifier { speak }(
+							TypedIdentifier { Identifier { words } : Identifier { String } }
+						): void] {
+							Print {
+								Identifier { words }
+							}
 						}
 					}
-					FunctionCall [VariableIdentifier { speak }] {
+					Declaration {
+						Assignment {
+							Identifier { peter } = FunctionCall [Identifier { Human }] {
+							}
+						}
+					}
+					FunctionCall [ReferenceChain {
+						Identifier { peter }
+						Identifier { speak }
+					}] {
 						StringLiteral { "Keep up the good work!" }
+					}
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testReturn() {
+		val sourceCode = """
+			class Human {
+				fun speak(words: String): String {
+					echo words
+					return "Done"
+				}
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				Program {
+					Class [Identifier { Human }] {
+						Function [Identifier { speak }(
+							TypedIdentifier { Identifier { words } : Identifier { String } }
+						): Identifier { String }] {
+							Print {
+								Identifier { words }
+							}
+							Return { StringLiteral { "Done" } }
+						}
 					}
 				}
             """.trimIndent()

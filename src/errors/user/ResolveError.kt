@@ -1,7 +1,7 @@
 package errors.user
-
-import elements.identifier.Identifier
-import elements.identifier.IdentifierReference
+/*
+import parsing.ast.literals.Identifier
+import parsing.ast.identifier.IdentifierReference
 
 /**
  * Represents an error in the identifier usage.
@@ -11,3 +11,4 @@ open class ResolveError(message: String): UserError(message) {
 
 	constructor(reference: IdentifierReference<out Identifier>): this("Trying to access undeclared identifier '${reference.getValue()}' at ${reference.getRegionString()}.")
 }
+*/

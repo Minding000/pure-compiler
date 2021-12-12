@@ -1,0 +1,4 @@
+package linter
+
+class Linter {
+}

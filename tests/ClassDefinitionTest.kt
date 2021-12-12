@@ -8,7 +8,7 @@ internal class ClassDefinitionTest {
 		val expected =
 			"""
 				Program {
-					Class [ClassIdentifier { Animal }] {
+					Class [Identifier { Animal }] {
 					}
 				}
             """.trimIndent()
