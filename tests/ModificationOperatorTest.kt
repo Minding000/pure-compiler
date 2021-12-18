@@ -38,7 +38,6 @@ internal class ModificationOperatorTest {
 				x -= 3
 				x *= 4
 				x /= 2
-				x ^= 2
 				echo x
             """.trimIndent()
 		val expected =
@@ -60,9 +59,6 @@ internal class ModificationOperatorTest {
 					}
 					BinaryModification {
 						Identifier { x } /= NumberLiteral { 2 }
-					}
-					BinaryModification {
-						Identifier { x } ^= NumberLiteral { 2 }
 					}
 					Print {
 						Identifier { x }

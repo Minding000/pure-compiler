@@ -52,6 +52,8 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	OBJECT("object\\b"),
 	ECHO("echo\\b"),
 	RETURN("return\\b"),
+	GENERIC("generic\\b"),
+	CONTAINING("containing\\b"),
 	// Identifier
 	IDENTIFIER("\\w+");
 

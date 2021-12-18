@@ -47,12 +47,12 @@ internal class UnaryOperatorTest {
 	@Test
 	fun testMultiNegative() {
 		val sourceCode = "--4"
-		TestUtil.assertUserError("Unexpected UNARY_MODIFICATION", sourceCode)
+		TestUtil.assertUserError("Unexpected DECREMENT", sourceCode)
 	}
 
 	@Test
 	fun testMultiPositive() {
 		val sourceCode = "++8"
-		TestUtil.assertUserError("Unexpected UNARY_MODIFICATION", sourceCode)
+		TestUtil.assertUserError("Unexpected INCREMENT", sourceCode)
 	}
 }

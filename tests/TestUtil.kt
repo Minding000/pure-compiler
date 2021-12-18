@@ -1,4 +1,3 @@
-import code.Builder
 import parsing.ElementGenerator
 import errors.user.UserError
 import source_structure.Module
@@ -13,7 +12,6 @@ object TestUtil {
         val module = Module("Test")
         module.addFile("Test", sourceCode)
         project.addModule(module)
-        Builder.loadRequiredModules(project)
         return ElementGenerator(project).parseProgram().toString()
     }
 

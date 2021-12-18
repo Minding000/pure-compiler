@@ -59,20 +59,6 @@ internal class BinaryOperatorTest {
 	}
 
 	@Test
-	fun testExponentiation() {
-		val sourceCode = "4 ^ 3"
-		val expected =
-			"""
-				Program {
-					BinaryOperator {
-						NumberLiteral { 4 } ^ NumberLiteral { 3 }
-					}
-				}
-            """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
-	}
-
-	@Test
 	fun testBinaryBooleanOperators() {
 		val sourceCode = "yes & no | yes"
 		val expected =

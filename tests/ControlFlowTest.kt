@@ -15,7 +15,7 @@ internal class ControlFlowTest {
 			"""
 				Program {
 					Declaration {
-						TypedIdentifier { Identifier { x } : Identifier { Int } }
+						TypedIdentifier { Identifier { x } : Type { Identifier { Int } } }
 					}
 					If [NumberLiteral { 5 }] {
 						Assignment {
@@ -44,12 +44,14 @@ internal class ControlFlowTest {
 		val expected =
 			"""
 				Program {
-					Class [Identifier { Human }] {
-						Function [Identifier { speak }(
-							TypedIdentifier { Identifier { words } : Identifier { String } }
-						): void] {
-							Print {
-								Identifier { words }
+					TypeDefinition [TypeType { class } Identifier { Human }] {
+						TypeBody {
+							Function [Identifier { speak }(
+								TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
+							): void] {
+								Print {
+									Identifier { words }
+								}
 							}
 						}
 					}
@@ -78,12 +80,14 @@ internal class ControlFlowTest {
 		val expected =
 			"""
 				Program {
-					Class [Identifier { Human }] {
-						Function [Identifier { speak }(
-							TypedIdentifier { Identifier { words } : Identifier { String } }
-						): void] {
-							Print {
-								Identifier { words }
+					TypeDefinition [TypeType { class } Identifier { Human }] {
+						TypeBody {
+							Function [Identifier { speak }(
+								TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
+							): void] {
+								Print {
+									Identifier { words }
+								}
 							}
 						}
 					}
@@ -117,14 +121,16 @@ internal class ControlFlowTest {
 		val expected =
 			"""
 				Program {
-					Class [Identifier { Human }] {
-						Function [Identifier { speak }(
-							TypedIdentifier { Identifier { words } : Identifier { String } }
-						): Identifier { String }] {
-							Print {
-								Identifier { words }
+					TypeDefinition [TypeType { class } Identifier { Human }] {
+						TypeBody {
+							Function [Identifier { speak }(
+								TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
+							): Type { Identifier { String } }] {
+								Print {
+									Identifier { words }
+								}
+								Return { StringLiteral { "Done" } }
 							}
-							Return { StringLiteral { "Done" } }
 						}
 					}
 				}

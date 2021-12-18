@@ -4,11 +4,12 @@ import code.Main
 import parsing.ast.Element
 import source_structure.Position
 import parsing.ast.literals.Identifier
+import parsing.ast.literals.Type
 import java.lang.StringBuilder
 
 class FunctionDefinition(start: Position, end: Position, val identifier: Identifier,
 						 val parameters: List<TypedIdentifier>, val statements: List<Element>,
-						 var returnType: Identifier?): Element(start, end) {
+						 var returnType: Type?): Element(start, end) {
 
 	override fun toString(): String {
 		val parameterString = StringBuilder()

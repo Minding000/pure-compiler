@@ -8,10 +8,12 @@ internal class FunctionDefinitionTest {
 		val expected =
 			"""
 				Program {
-					Class [Identifier { Animal }] {
-						Function [Identifier { getSound }(
-							TypedIdentifier { Identifier { loudness } : Identifier { Int } }
-						): void] {
+					TypeDefinition [TypeType { class } Identifier { Animal }] {
+						TypeBody {
+							Function [Identifier { getSound }(
+								TypedIdentifier { Identifier { loudness } : Type { Identifier { Int } } }
+							): void] {
+							}
 						}
 					}
 				}
@@ -25,14 +27,16 @@ internal class FunctionDefinitionTest {
 		val expected =
 			"""
 				Program {
-					Class [Identifier { Animal }] {
-						Function [Identifier { getSound }(
-							TypedIdentifier { Identifier { loudness } : Identifier { Int } }
-						): void] {
-							Declaration {
-								Assignment {
-									Identifier { energy } = BinaryOperator {
-										Identifier { loudness } * NumberLiteral { 2 }
+					TypeDefinition [TypeType { class } Identifier { Animal }] {
+						TypeBody {
+							Function [Identifier { getSound }(
+								TypedIdentifier { Identifier { loudness } : Type { Identifier { Int } } }
+							): void] {
+								Declaration {
+									Assignment {
+										Identifier { energy } = BinaryOperator {
+											Identifier { loudness } * NumberLiteral { 2 }
+										}
 									}
 								}
 							}

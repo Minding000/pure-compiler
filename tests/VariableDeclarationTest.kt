@@ -9,7 +9,7 @@ internal class VariableDeclarationTest {
 			"""
 				Program {
 					Declaration {
-						TypedIdentifier { Identifier { car } : Identifier { Int } }
+						TypedIdentifier { Identifier { car } : Type { Identifier { Int } } }
 					}
 				}
             """.trimIndent()
@@ -23,8 +23,8 @@ internal class VariableDeclarationTest {
 			"""
 				Program {
 					Declaration {
-						TypedIdentifier { Identifier { car } : Identifier { String } }
-						TypedIdentifier { Identifier { tire } : Identifier { Int } }
+						TypedIdentifier { Identifier { car } : Type { Identifier { String } } }
+						TypedIdentifier { Identifier { tire } : Type { Identifier { Int } } }
 					}
 				}
             """.trimIndent()
@@ -58,7 +58,7 @@ internal class VariableDeclarationTest {
 			"""
 				Program {
 					Declaration {
-						TypedIdentifier { Identifier { car } : Identifier { Int } }
+						TypedIdentifier { Identifier { car } : Type { Identifier { Int } } }
 					}
 					Assignment {
 						Identifier { car } = NumberLiteral { 5 }

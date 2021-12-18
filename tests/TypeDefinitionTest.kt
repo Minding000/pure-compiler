@@ -8,7 +8,9 @@ internal class TypeDefinitionTest {
 		val expected =
 			"""
 				Program {
-					Class [Identifier { Animal }] {
+					TypeDefinition [TypeType { class } Identifier { Animal }] {
+						TypeBody {
+						}
 					}
 				}
             """.trimIndent()
@@ -21,7 +23,9 @@ internal class TypeDefinitionTest {
 		val expected =
 			"""
 				Program {
-					Object [Identifier { Animal }] {
+					TypeDefinition [TypeType { object } Identifier { Animal }] {
+						TypeBody {
+						}
 					}
 				}
             """.trimIndent()
