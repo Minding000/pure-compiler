@@ -8,14 +8,12 @@ import parsing.ast.literals.Identifier
 import parsing.ast.literals.Type
 import java.lang.StringBuilder
 
-class FunctionDefinition(start: Position, val modifierList: ModifierList?, val identifier: Identifier,
-						 val parameters: List<TypedIdentifier>, val body: StatementBlock,
-						 var returnType: Type?): Element(start, body.end) {
+class InitializerDefinition(start: Position, end: Position, val modifierList: ModifierList?, val parameters: List<Element>, val body: StatementBlock?): Element(start, end) {
 
 	override fun toString(): String {
 		val parameterString = StringBuilder()
 		for(parameter in parameters)
 			parameterString.append("\n").append(parameter.toString())
-		return "Function [${if(modifierList == null) "" else "$modifierList "}$identifier(${Main.indentText(parameterString.toString())}\n): ${returnType ?: "void"}] { $body }"
+		return "Initializer [${if(modifierList == null) "" else "$modifierList "}${Main.indentText(parameterString.toString())}\n] { ${body ?: ""} }"
 	}
 }

@@ -1,3 +1,6 @@
+package parser
+
+import TestUtil
 import org.junit.jupiter.api.Test
 
 internal class LiteralTest {

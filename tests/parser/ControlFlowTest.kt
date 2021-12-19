@@ -1,3 +1,6 @@
+package parser
+
+import TestUtil
 import org.junit.jupiter.api.Test
 
 internal class ControlFlowTest {
@@ -14,7 +17,7 @@ internal class ControlFlowTest {
 		val expected =
 			"""
 				Program {
-					Declaration {
+					VariableDeclaration {
 						TypedIdentifier { Identifier { x } : Type { Identifier { Int } } }
 					}
 					If [NumberLiteral { 5 }] {
@@ -44,18 +47,16 @@ internal class ControlFlowTest {
 		val expected =
 			"""
 				Program {
-					TypeDefinition [TypeType { class } Identifier { Human }] {
-						TypeBody {
-							Function [Identifier { speak }(
-								TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
-							): void] {
-								Print {
-									Identifier { words }
-								}
+					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
+						Function [Identifier { speak }(
+							TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
+						): void] { StatementBlock {
+							Print {
+								Identifier { words }
 							}
-						}
-					}
-					Declaration {
+						} }
+					} }
+					VariableDeclaration {
 						Assignment {
 							Identifier { peter } = FunctionCall [Identifier { Human }] {
 							}
@@ -80,18 +81,16 @@ internal class ControlFlowTest {
 		val expected =
 			"""
 				Program {
-					TypeDefinition [TypeType { class } Identifier { Human }] {
-						TypeBody {
-							Function [Identifier { speak }(
-								TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
-							): void] {
-								Print {
-									Identifier { words }
-								}
+					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
+						Function [Identifier { speak }(
+							TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
+						): void] { StatementBlock {
+							Print {
+								Identifier { words }
 							}
-						}
-					}
-					Declaration {
+						} }
+					} }
+					VariableDeclaration {
 						Assignment {
 							Identifier { peter } = FunctionCall [Identifier { Human }] {
 							}
@@ -121,18 +120,16 @@ internal class ControlFlowTest {
 		val expected =
 			"""
 				Program {
-					TypeDefinition [TypeType { class } Identifier { Human }] {
-						TypeBody {
-							Function [Identifier { speak }(
-								TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
-							): Type { Identifier { String } }] {
-								Print {
-									Identifier { words }
-								}
-								Return { StringLiteral { "Done" } }
+					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
+						Function [Identifier { speak }(
+							TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
+						): Type { Identifier { String } }] { StatementBlock {
+							Print {
+								Identifier { words }
 							}
-						}
-					}
+							Return { StringLiteral { "Done" } }
+						} }
+					} }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)

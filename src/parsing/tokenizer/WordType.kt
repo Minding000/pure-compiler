@@ -40,7 +40,9 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 	TYPE_TYPE(
 		WordAtom.CLASS,
 		WordAtom.GENERIC,
-		WordAtom.OBJECT);
+		WordAtom.OBJECT),
+	MODIFIER(
+		WordAtom.NATIVE);
 
 	override fun includes(atom: WordAtom?): Boolean {
 		return atoms.contains(atom)

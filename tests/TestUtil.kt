@@ -2,6 +2,7 @@ import parsing.ElementGenerator
 import errors.user.UserError
 import source_structure.Module
 import source_structure.Project
+import util.stringify
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
@@ -39,7 +40,7 @@ object TestUtil {
         for(character in expected) {
             val actualChar = actual.getOrNull(position)
             if(character != actualChar) {
-                print("Expected '$character' at $line:$index, but got '${actualChar}' instead.")
+                print("Expected '${character.stringify()}' at $line:$index, but got '${actualChar?.stringify()}' instead.")
                 break
             }
             position++

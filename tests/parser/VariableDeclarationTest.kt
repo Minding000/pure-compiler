@@ -1,3 +1,6 @@
+package parser
+
+import TestUtil
 import org.junit.jupiter.api.Test
 
 internal class VariableDeclarationTest {
@@ -8,7 +11,7 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				Program {
-					Declaration {
+					VariableDeclaration {
 						TypedIdentifier { Identifier { car } : Type { Identifier { Int } } }
 					}
 				}
@@ -22,7 +25,7 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				Program {
-					Declaration {
+					VariableDeclaration {
 						TypedIdentifier { Identifier { car } : Type { Identifier { String } } }
 						TypedIdentifier { Identifier { tire } : Type { Identifier { Int } } }
 					}
@@ -37,7 +40,7 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				Program {
-					Declaration {
+					VariableDeclaration {
 						Assignment {
 							Identifier { car } = NumberLiteral { 5 }
 						}
@@ -57,7 +60,7 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				Program {
-					Declaration {
+					VariableDeclaration {
 						TypedIdentifier { Identifier { car } : Type { Identifier { Int } } }
 					}
 					Assignment {
@@ -66,16 +69,5 @@ internal class VariableDeclarationTest {
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
-	}
-
-	@Test
-	fun testRedeclarationError() {
-		val sourceCode =
-			"""
-				var car: Int
-				car = 5
-				var a: String, car: Int
-            """.trimIndent()
-		TestUtil.assertUserError("Cannot redeclare identifier 'car'", sourceCode)
 	}
 }

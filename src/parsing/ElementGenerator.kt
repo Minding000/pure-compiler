@@ -1,13 +1,11 @@
 package parsing
 
 import parsing.ast.*
-import parsing.ast.control_flow.FunctionCall
-import parsing.ast.control_flow.IfStatement
 import parsing.ast.operations.*
 import errors.user.UnexpectedWordError
 import errors.user.UnexpectedEndOfFileError
 import parsing.ast.access.ReferenceChain
-import parsing.ast.control_flow.ReturnStatement
+import parsing.ast.control_flow.*
 import parsing.ast.definitions.*
 import source_structure.Project
 import parsing.ast.literals.*
@@ -70,6 +68,9 @@ class ElementGenerator(project: Project) {
 	 *   <Print>
 	 *   <IfStatement>
 	 *   <ReturnStatement>
+	 *   <LoopStatement>
+	 *   <BreakStatement>
+	 *   <NextStatement>
 	 *   <VariableDeclaration>
 	 *   <TypeDefinition>
 	 *   <Assignment>
@@ -84,9 +85,15 @@ class ElementGenerator(project: Project) {
 			return parseIfStatement()
 		if(currentWord?.type == WordAtom.RETURN)
 			return parseReturnStatement()
+		if(currentWord?.type == WordAtom.LOOP)
+			return parseLoopStatement()
+		if(currentWord?.type == WordAtom.BREAK)
+			return parseBreakStatement()
+		if(currentWord?.type == WordAtom.NEXT)
+			return parseNextStatement()
 		if(currentWord?.type == WordAtom.VAR)
 			return parseVariableDeclaration()
-		if(WordType.TYPE_TYPE.includes(currentWord?.type))
+		if(WordType.MODIFIER.includes(currentWord?.type) || WordType.TYPE_TYPE.includes(currentWord?.type))
 			return parseTypeDefinition()
 		if(nextWord?.type == WordAtom.ASSIGNMENT)
 			return parseAssignment()
@@ -132,6 +139,49 @@ class ElementGenerator(project: Project) {
 	}
 
 	/**
+	 * LoopStatement:
+	 *   loop <StatementBlock>
+	 */
+	private fun parseLoopStatement(): LoopStatement {
+		val start = consume(WordAtom.LOOP).start
+		val body = parseStatementBlock()
+		return LoopStatement(start, body)
+	}
+
+	/**
+	 * StatementBlock:
+	 *   { [<Statement>\n]... }
+	 */
+	private fun parseStatementBlock(): StatementBlock {
+		val start = consume(WordAtom.BRACES_OPEN).start
+		val statements = LinkedList<Element>()
+		while(currentWord?.type != WordAtom.BRACES_CLOSE) {
+			consumeLineBreaks()
+			if(currentWord?.type == WordAtom.BRACES_CLOSE)
+				break
+			statements.add(parseStatement())
+		}
+		val end = consume(WordAtom.BRACES_CLOSE).end
+		return StatementBlock(start, end, statements)
+	}
+
+	/**
+	 * BreakStatement:
+	 *   break
+	 */
+	private fun parseBreakStatement(): BreakStatement {
+		return BreakStatement(consume(WordAtom.BREAK))
+	}
+
+	/**
+	 * NextStatement:
+	 *   next
+	 */
+	private fun parseNextStatement(): NextStatement {
+		return NextStatement(consume(WordAtom.NEXT))
+	}
+
+	/**
 	 * Print:
 	 *   echo <Expression>[,<Expression>]...
 	 */
@@ -148,13 +198,35 @@ class ElementGenerator(project: Project) {
 
 	/**
 	 * TypeDefinition:
-	 *   <TypeType> <Identifier> <TypeBody>
+	 *   <ModifierList> <TypeType> <Identifier> <TypeBody>
 	 */
 	private fun parseTypeDefinition(): TypeDefinition {
+		val modifierList = parseModifierList()
 		val type = parseTypeType()
 		val identifier = parseIdentifier()
 		val body = parseTypeBody()
-		return TypeDefinition(type, identifier, body)
+		return TypeDefinition(modifierList, type, identifier, body)
+	}
+
+	/**
+	 * ModifierList:
+	 *   [<Modifier>[ <Modifier>]...]
+	 */
+	private fun parseModifierList(): ModifierList? {
+		val modifiers = LinkedList<Modifier>()
+		while(WordType.MODIFIER.includes(currentWord?.type))
+			modifiers.add(parseModifier())
+		if(modifiers.isEmpty())
+			return null
+		return ModifierList(modifiers)
+	}
+
+	/**
+	 * Modifier:
+	 *   native
+	 */
+	private fun parseModifier(): Modifier {
+		return Modifier(consume(WordType.MODIFIER))
 	}
 
 	/**
@@ -187,16 +259,20 @@ class ElementGenerator(project: Project) {
 	/**
 	 * MemberDeclaration:
 	 *   <GenericsDeclaration>
-	 *   <PropertyDeclaration>
-	 *   <FunctionDefinition>
+	 *   <ModifierList> <PropertyDeclaration>
+	 *   <ModifierList> <InitializerDefinition>
+	 *   <ModifierList> <FunctionDefinition>
 	 */
 	private fun parseMemberDeclaration(): Element {
 		if(currentWord?.type == WordAtom.CONTAINING)
 			return parseGenericsDeclaration()
+		val modifierList = parseModifierList()
 		if(currentWord?.type == WordAtom.VAR)
-			return parsePropertyDeclaration()
+			return parsePropertyDeclaration(modifierList)
+		if(currentWord?.type == WordAtom.INIT)
+			return parseInitializerDefinition(modifierList)
 		if(currentWord?.type == WordAtom.FUN)
-			return parseFunctionDefinition()
+			return parseFunctionDefinition(modifierList)
 		throw UnexpectedWordError(getCurrentWord(WordType.MEMBER), WordType.MEMBER)
 	}
 
@@ -217,18 +293,49 @@ class ElementGenerator(project: Project) {
 
 	/**
 	 * PropertyDeclaration:
-	 *   <VariableDeclaration>
+	 *   <ModifierList> var <VariableDeclarationPart>[,<VariableDeclarationPart>]...
 	 */
-	private fun parsePropertyDeclaration(): VariableDeclaration {
-		return parseVariableDeclaration()
+	private fun parsePropertyDeclaration(modifierList: ModifierList?): PropertyDeclaration {
+		var start = consume(WordAtom.VAR).start
+		if(modifierList != null)
+			start = modifierList.start
+		val declarationParts = LinkedList<Element>()
+		declarationParts.add(parseVariableDeclarationPart())
+		while(currentWord?.type == WordAtom.COMMA) {
+			consume(WordAtom.COMMA)
+			declarationParts.add(parseVariableDeclarationPart())
+		}
+		return PropertyDeclaration(start, declarationParts.last.end, modifierList, declarationParts)
+	}
+
+	/**
+	 * InitializerDeclaration:
+	 *   init(<OptionallyTypedIdentifier>[,<OptionallyTypedIdentifier>]) <StatementBlock>
+	 */
+	private fun parseInitializerDefinition(modifierList: ModifierList?): Element {
+		var start = consume(WordAtom.INIT).start
+		if(modifierList != null)
+			start = modifierList.start
+		consume(WordAtom.PARENTHESES_OPEN)
+		val parameters = LinkedList<Element>()
+		parameters.add(parseOptionallyTypedIdentifier())
+		while(currentWord?.type == WordAtom.COMMA) {
+			consume(WordAtom.COMMA)
+			parameters.add(parseOptionallyTypedIdentifier())
+		}
+		val parameterListEnd = consume(WordAtom.PARENTHESES_CLOSE).end
+		val body = if(currentWord?.type == WordAtom.BRACES_OPEN) parseStatementBlock() else null
+		return InitializerDefinition(start, body?.end ?: parameterListEnd, modifierList, parameters, body)
 	}
 
 	/**
 	 * FunctionDeclaration:
-	 *   fun <Identifier>(<Parameter>[,<Parameter>])[: <Type>] { [<Statement>\n]... }
+	 *   fun <Identifier>(<Parameter>[,<Parameter>])[: <Type>] <StatementBlock>
 	 */
-	private fun parseFunctionDefinition(): Element {
-		val start = consume(WordAtom.FUN).start
+	private fun parseFunctionDefinition(modifierList: ModifierList?): Element {
+		var start = consume(WordAtom.FUN).start
+		if(modifierList != null)
+			start = modifierList.start
 		val identifier = parseIdentifier()
 		consume(WordAtom.PARENTHESES_OPEN)
 		val parameters = LinkedList<TypedIdentifier>()
@@ -243,16 +350,8 @@ class ElementGenerator(project: Project) {
 			consume(WordAtom.COLON)
 			returnType = parseType()
 		}
-		consume(WordAtom.BRACES_OPEN)
-		val statements = LinkedList<Element>()
-		while(currentWord?.type != WordAtom.BRACES_CLOSE) {
-			consumeLineBreaks()
-			if(currentWord?.type == WordAtom.BRACES_CLOSE)
-				break
-			statements.add(parseStatement())
-		}
-		val end = consume(WordAtom.BRACES_CLOSE).end
-		return FunctionDefinition(start, end, identifier, parameters, statements, returnType)
+		val body = parseStatementBlock()
+		return FunctionDefinition(start, modifierList, identifier, parameters, body, returnType)
 	}
 
 	/**

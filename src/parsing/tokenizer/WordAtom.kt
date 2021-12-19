@@ -46,14 +46,20 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	// Keywords
 	IF("if\\b"),
 	ELSE("else\\b"),
+	LOOP("loop\\b"),
+	BREAK("break\\b"),
+	NEXT("next\\b"),
 	VAR("var\\b"),
+	INIT("init\\b"),
 	FUN("fun\\b"),
 	CLASS("class\\b"),
 	OBJECT("object\\b"),
 	ECHO("echo\\b"),
 	RETURN("return\\b"),
+	NATIVE("native\\b"),
 	GENERIC("generic\\b"),
 	CONTAINING("containing\\b"),
+	OPERATOR("operator\\b"),
 	// Identifier
 	IDENTIFIER("\\w+");
 

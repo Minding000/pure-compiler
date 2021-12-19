@@ -1,3 +1,6 @@
+package parser
+
+import TestUtil
 import org.junit.jupiter.api.Test
 
 internal class ModificationOperatorTest {
@@ -14,7 +17,7 @@ internal class ModificationOperatorTest {
 		val expected =
 			"""
 				Program {
-					Declaration {
+					VariableDeclaration {
 						Assignment {
 							Identifier { x } = NumberLiteral { 0 }
 						}
@@ -43,7 +46,7 @@ internal class ModificationOperatorTest {
 		val expected =
 			"""
 				Program {
-					Declaration {
+					VariableDeclaration {
 						Assignment {
 							Identifier { x } = NumberLiteral { 0 }
 						}
