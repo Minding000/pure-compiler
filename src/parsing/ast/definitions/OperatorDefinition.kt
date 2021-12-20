@@ -3,24 +3,23 @@ package parsing.ast.definitions
 import parsing.ast.Element
 import parsing.ast.control_flow.StatementBlock
 import source_structure.Position
-import parsing.ast.literals.Identifier
 import parsing.ast.literals.Type
-import java.lang.StringBuilder
 
-class FunctionDefinition(start: Position, val modifierList: ModifierList?, val identifier: Identifier,
-						 val parameterList: ParameterList, val body: StatementBlock,
+class OperatorDefinition(start: Position, val modifierList: ModifierList?, val operator: Operator,
+						 val parameterList: ParameterList?, val body: StatementBlock,
 						 var returnType: Type?): Element(start, body.end) {
 
 	override fun toString(): String {
 		val string = StringBuilder()
-		string.append("Function [")
+		string.append("OperatorDefinition [")
 		if(modifierList != null)
 			string.append(modifierList)
 				.append(" ")
-		string.append(identifier)
-			.append(" ")
-			.append(parameterList)
-			.append(": ")
+		string.append(operator)
+		if(parameterList != null)
+			string.append(" ")
+				.append(parameterList)
+		string.append(": ")
 			.append(returnType ?: "void")
 			.append("] { ")
 			.append(body)

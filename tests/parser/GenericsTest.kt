@@ -23,9 +23,9 @@ internal class GenericsTest {
 						GenericsDeclaration {
 							Identifier { Entry }
 						}
-						Function [Identifier { add }(
+						Function [Identifier { add } ParameterList {
 							TypedIdentifier { Identifier { entry } : Type { Identifier { Entry } } }
-						): void] { StatementBlock {
+						}: void] { StatementBlock {
 							Print {
 								StringLiteral { "Adding entry..." }
 							}
@@ -58,9 +58,9 @@ internal class GenericsTest {
 						GenericsDeclaration {
 							Identifier { Entry }
 						}
-						Function [Identifier { add }(
+						Function [Identifier { add } ParameterList {
 							TypedIdentifier { Identifier { entry } : Type { Identifier { Entry } } }
-						): void] { StatementBlock {
+						}: void] { StatementBlock {
 							Print {
 								StringLiteral { "Adding entry..." }
 							}

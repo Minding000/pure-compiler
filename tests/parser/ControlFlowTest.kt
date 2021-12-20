@@ -48,9 +48,9 @@ internal class ControlFlowTest {
 			"""
 				Program {
 					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
-						Function [Identifier { speak }(
+						Function [Identifier { speak } ParameterList {
 							TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
-						): void] { StatementBlock {
+						}: void] { StatementBlock {
 							Print {
 								Identifier { words }
 							}
@@ -82,9 +82,9 @@ internal class ControlFlowTest {
 			"""
 				Program {
 					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
-						Function [Identifier { speak }(
+						Function [Identifier { speak } ParameterList {
 							TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
-						): void] { StatementBlock {
+						}: void] { StatementBlock {
 							Print {
 								Identifier { words }
 							}
@@ -121,9 +121,9 @@ internal class ControlFlowTest {
 			"""
 				Program {
 					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
-						Function [Identifier { speak }(
+						Function [Identifier { speak } ParameterList {
 							TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
-						): Type { Identifier { String } }] { StatementBlock {
+						}: Type { Identifier { String } }] { StatementBlock {
 							Print {
 								Identifier { words }
 							}

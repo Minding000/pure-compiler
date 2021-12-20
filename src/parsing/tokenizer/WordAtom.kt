@@ -36,6 +36,8 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	DOT("\\."),
 	PARENTHESES_OPEN("\\("),
 	PARENTHESES_CLOSE("\\)"),
+	BRACKETS_OPEN("\\["),
+	BRACKETS_CLOSE("]"),
 	BRACES_OPEN("\\{"),
 	BRACES_CLOSE("\\}"),
 	// Literals

@@ -4,6 +4,7 @@ import parsing.ast.*
 import parsing.ast.operations.*
 import errors.user.UnexpectedWordError
 import errors.user.UnexpectedEndOfFileError
+import linter.elements.Parameter
 import parsing.ast.access.ReferenceChain
 import parsing.ast.control_flow.*
 import parsing.ast.definitions.*
@@ -262,6 +263,7 @@ class ElementGenerator(project: Project) {
 	 *   <ModifierList> <PropertyDeclaration>
 	 *   <ModifierList> <InitializerDefinition>
 	 *   <ModifierList> <FunctionDefinition>
+	 *   <ModifierList> <OperatorDefinition>
 	 */
 	private fun parseMemberDeclaration(): Element {
 		if(currentWord?.type == WordAtom.CONTAINING)
@@ -273,6 +275,8 @@ class ElementGenerator(project: Project) {
 			return parseInitializerDefinition(modifierList)
 		if(currentWord?.type == WordAtom.FUN)
 			return parseFunctionDefinition(modifierList)
+		if(currentWord?.type == WordAtom.OPERATOR)
+			return parseOperatorDeclaration(modifierList)
 		throw UnexpectedWordError(getCurrentWord(WordType.MEMBER), WordType.MEMBER)
 	}
 
@@ -310,7 +314,7 @@ class ElementGenerator(project: Project) {
 
 	/**
 	 * InitializerDeclaration:
-	 *   init(<OptionallyTypedIdentifier>[,<OptionallyTypedIdentifier>]) <StatementBlock>
+	 *   init([<OptionallyTypedIdentifier>[,<OptionallyTypedIdentifier>]]) <StatementBlock>
 	 */
 	private fun parseInitializerDefinition(modifierList: ModifierList?): Element {
 		var start = consume(WordAtom.INIT).start
@@ -318,7 +322,8 @@ class ElementGenerator(project: Project) {
 			start = modifierList.start
 		consume(WordAtom.PARENTHESES_OPEN)
 		val parameters = LinkedList<Element>()
-		parameters.add(parseOptionallyTypedIdentifier())
+		if(currentWord?.type != WordAtom.PARENTHESES_CLOSE)
+			parameters.add(parseOptionallyTypedIdentifier())
 		while(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
 			parameters.add(parseOptionallyTypedIdentifier())
@@ -330,28 +335,81 @@ class ElementGenerator(project: Project) {
 
 	/**
 	 * FunctionDeclaration:
-	 *   fun <Identifier>(<Parameter>[,<Parameter>])[: <Type>] <StatementBlock>
+	 *   fun <Identifier><ParameterList>[: <Type>] <StatementBlock>
 	 */
 	private fun parseFunctionDefinition(modifierList: ModifierList?): Element {
 		var start = consume(WordAtom.FUN).start
 		if(modifierList != null)
 			start = modifierList.start
 		val identifier = parseIdentifier()
-		consume(WordAtom.PARENTHESES_OPEN)
-		val parameters = LinkedList<TypedIdentifier>()
-		parameters.add(parseParameter())
-		while(currentWord?.type == WordAtom.COMMA) {
-			consume(WordAtom.COMMA)
-			parameters.add(parseParameter())
-		}
-		consume(WordAtom.PARENTHESES_CLOSE)
+		val parameterList = parseParameterList()
 		var returnType: Type? = null
 		if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
 			returnType = parseType()
 		}
 		val body = parseStatementBlock()
-		return FunctionDefinition(start, modifierList, identifier, parameters, body, returnType)
+		return FunctionDefinition(start, modifierList, identifier, parameterList, body, returnType)
+	}
+
+	/**
+	 * OperatorDeclaration:
+	 *   operator <Operator>[<ParameterList>][: <Type>] <StatementBlock>
+	 */
+	private fun parseOperatorDeclaration(modifierList: ModifierList?): Element {
+		var start = consume(WordAtom.OPERATOR).start
+		if(modifierList != null)
+			start = modifierList.start
+		val operator = parseOperator()
+		val parameterList = if(currentWord?.type == WordAtom.PARENTHESES_OPEN)
+			parseParameterList()
+		else
+			null
+		var returnType: Type? = null
+		if(currentWord?.type == WordAtom.COLON) {
+			consume(WordAtom.COLON)
+			returnType = parseType()
+		}
+		val body = parseStatementBlock()
+		return OperatorDefinition(start, modifierList, operator, parameterList, body, returnType)
+	}
+
+	/**
+	 * Operator:
+	 *   <operator>
+	 *   [<TypedIdentifier[, <TypedIdentifier>]>]
+	 */
+	private fun parseOperator(): Operator {
+		if(currentWord?.type == WordAtom.BRACKETS_OPEN) {
+			val start = consume(WordAtom.BRACKETS_OPEN).start
+			val parameters = LinkedList<TypedIdentifier>()
+			if(currentWord?.type != WordAtom.BRACKETS_CLOSE)
+				parameters.add(parseTypedIdentifier())
+			while(currentWord?.type == WordAtom.COMMA) {
+				consume(WordAtom.COMMA)
+				parameters.add(parseTypedIdentifier())
+			}
+			val end = consume(WordAtom.BRACKETS_CLOSE).end
+			return IndexOperator(start, end, parameters)
+		}
+		return Operator(consume(WordType.OPERATOR))
+	}
+
+	/**
+	 * ParameterList:
+	 *   ([<TypedIdentifier>[, <TypedIdentifier>]])
+	 */
+	private fun parseParameterList(): ParameterList {
+		val start = consume(WordAtom.PARENTHESES_OPEN).start
+		val parameters = LinkedList<TypedIdentifier>()
+		if(currentWord?.type != WordAtom.PARENTHESES_CLOSE)
+			parameters.add(parseParameter())
+		while(currentWord?.type == WordAtom.COMMA) {
+			consume(WordAtom.COMMA)
+			parameters.add(parseParameter())
+		}
+		val end = consume(WordAtom.PARENTHESES_CLOSE).end
+		return ParameterList(start, end, parameters)
 	}
 
 	/**
@@ -459,7 +517,6 @@ class ElementGenerator(project: Project) {
 	 *   <Identifier> -= <Expression>
 	 *   <Identifier> *= <Expression>
 	 *   <Identifier> /= <Expression>
-	 *   <Identifier> ^= <Expression>
 	 */
 	private fun parseBinaryModification(): BinaryModification {
 		val identifier = parseReferenceChain()
