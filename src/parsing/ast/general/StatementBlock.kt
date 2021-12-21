@@ -1,4 +1,4 @@
-package parsing.ast.control_flow
+package parsing.ast.general
 
 import code.Main
 import parsing.ast.Element
@@ -8,9 +8,9 @@ import java.lang.StringBuilder
 class StatementBlock(start: Position, end: Position, val statements: List<Element>): Element(start, end) {
 
 	override fun toString(): String {
-		val string = StringBuilder()
+		val statementString = StringBuilder()
 		for(statement in statements)
-			string.append("\n").append(statement.toString())
-		return "StatementBlock {${Main.indentText(string.toString())}\n}"
+			statementString.append("\n").append(statement.toString())
+		return "StatementBlock {${Main.indentText(statementString.toString())}\n}"
 	}
 }

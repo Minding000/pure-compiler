@@ -1,7 +1,7 @@
 package parsing.ast.definitions
 
 import parsing.ast.Element
-import parsing.ast.control_flow.StatementBlock
+import parsing.ast.general.StatementBlock
 import source_structure.Position
 import parsing.ast.literals.Identifier
 import parsing.ast.literals.Type

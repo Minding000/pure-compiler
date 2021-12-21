@@ -46,6 +46,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	NUMBER_LITERAL("\\d+"),
 	STRING_LITERAL("\".*?\""),
 	// Keywords
+	AS("as\\b"),
 	IF("if\\b"),
 	ELSE("else\\b"),
 	LOOP("loop\\b"),
@@ -62,6 +63,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	GENERIC("generic\\b"),
 	CONTAINING("containing\\b"),
 	OPERATOR("operator\\b"),
+	REFERENCING("referencing\\b"),
 	// Identifier
 	IDENTIFIER("\\w+");
 

@@ -4,10 +4,13 @@ import parsing.ast.*
 import parsing.ast.operations.*
 import errors.user.UnexpectedWordError
 import errors.user.UnexpectedEndOfFileError
-import linter.elements.Parameter
 import parsing.ast.access.ReferenceChain
 import parsing.ast.control_flow.*
 import parsing.ast.definitions.*
+import parsing.ast.general.Alias
+import parsing.ast.general.AliasBlock
+import parsing.ast.general.FileReference
+import parsing.ast.general.StatementBlock
 import source_structure.Project
 import parsing.ast.literals.*
 import parsing.tokenizer.*
@@ -66,6 +69,7 @@ class ElementGenerator(project: Project) {
 
 	/**
 	 * Statement:
+	 *   <FileReference>
 	 *   <Print>
 	 *   <IfStatement>
 	 *   <ReturnStatement>
@@ -80,6 +84,8 @@ class ElementGenerator(project: Project) {
 	 *   <Expression>
 	 */
 	private fun parseStatement(): Element {
+		if(currentWord?.type == WordAtom.REFERENCING)
+			return parseFileReference()
 		if(currentWord?.type == WordAtom.ECHO)
 			return parsePrint()
 		if(currentWord?.type == WordAtom.IF)
@@ -103,6 +109,62 @@ class ElementGenerator(project: Project) {
 		if(WordType.BINARY_MODIFICATION.includes(nextWord?.type))
 			return parseBinaryModification()
 		return parseExpression()
+	}
+
+	/**
+	 * FileReference:
+	 *   referencing <ReferenceChain> [<AliasBlock>]
+	 */
+	private fun parseFileReference(): FileReference {
+		val start = consume(WordAtom.REFERENCING).start
+		val file = parseReferenceChain()
+		val body = parseAliasBlock()
+		return FileReference(start, file, body)
+	}
+
+	/**
+	 * AliasBlock:
+	 *   [{[<Alias>\n]...}]
+	 */
+	private fun parseAliasBlock(): AliasBlock? {
+		if(currentWord?.type != WordAtom.BRACES_OPEN)
+			return null
+		val start = consume(WordAtom.BRACES_OPEN).start
+		val aliases = LinkedList<Alias>()
+		while(currentWord?.type == WordAtom.LINE_BREAK) {
+			while(currentWord?.type == WordAtom.LINE_BREAK)
+				consume(WordAtom.LINE_BREAK)
+			if(currentWord?.type == WordAtom.IDENTIFIER)
+				aliases.add(parseAlias())
+		}
+		val end = consume(WordAtom.BRACES_CLOSE).end
+		return AliasBlock(start, end, aliases)
+	}
+
+	/**
+	 * Alias:
+	 *   <Identifier> as <Identifier>
+	 */
+	private fun parseAlias(): Alias {
+		val originalName = parseIdentifier()
+		consume(WordAtom.AS)
+		val aliasName = parseIdentifier()
+		return Alias(originalName, aliasName)
+	}
+
+	/**
+	 * Print:
+	 *   echo <Expression>[,<Expression>]...
+	 */
+	private fun parsePrint(): Print {
+		val start = consume(WordAtom.ECHO).start
+		val elements = LinkedList<Element>()
+		elements.add(parseExpression())
+		while(currentWord?.type == WordAtom.COMMA) {
+			consume(WordAtom.COMMA)
+			elements.add(parseExpression())
+		}
+		return Print(start, elements.last.end, elements)
 	}
 
 	/**
@@ -180,21 +242,6 @@ class ElementGenerator(project: Project) {
 	 */
 	private fun parseNextStatement(): NextStatement {
 		return NextStatement(consume(WordAtom.NEXT))
-	}
-
-	/**
-	 * Print:
-	 *   echo <Expression>[,<Expression>]...
-	 */
-	private fun parsePrint(): Print {
-		val start = consume(WordAtom.ECHO).start
-		val elements = LinkedList<Element>()
-		elements.add(parseExpression())
-		while(currentWord?.type == WordAtom.COMMA) {
-			consume(WordAtom.COMMA)
-			elements.add(parseExpression())
-		}
-		return Print(start, elements.last.end, elements)
 	}
 
 	/**
@@ -696,7 +743,7 @@ class ElementGenerator(project: Project) {
 		return if(nextWord?.type == WordAtom.DOT) {
 			val identifiers = LinkedList<Identifier>()
 			identifiers.add(parseIdentifier())
-			if(currentWord?.type == WordAtom.DOT) {
+			while(currentWord?.type == WordAtom.DOT) {
 				consume(WordAtom.DOT)
 				identifiers.add(parseIdentifier())
 			}
