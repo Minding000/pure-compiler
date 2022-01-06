@@ -51,8 +51,17 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.GREATER,
 		WordAtom.LOWER),
 	MEMBER(
+		WordAtom.CONST,
 		WordAtom.VAR,
+		WordAtom.VAL,
 		WordAtom.FUN),
+	PROPERTY_DECLARATION(
+		WordAtom.CONST,
+		WordAtom.VAR,
+		WordAtom.VAL),
+	VARIABLE_DECLARATION(
+		WordAtom.VAR,
+		WordAtom.VAL),
 	GENERICS_START(
 		WordAtom.LOWER),
 	GENERICS_END(
@@ -62,7 +71,9 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.GENERIC,
 		WordAtom.OBJECT),
 	MODIFIER(
-		WordAtom.NATIVE);
+		WordAtom.NATIVE,
+		WordAtom.IMM,
+		WordAtom.MUT);
 
 	override fun includes(atom: WordAtom?): Boolean {
 		return atoms.contains(atom)

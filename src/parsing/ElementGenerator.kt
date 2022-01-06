@@ -76,6 +76,7 @@ class ElementGenerator(project: Project) {
 	 *   <LoopStatement>
 	 *   <BreakStatement>
 	 *   <NextStatement>
+	 *   <ModifiedDefinition>
 	 *   <VariableDeclaration>
 	 *   <TypeDefinition>
 	 *   <Assignment>
@@ -98,17 +99,32 @@ class ElementGenerator(project: Project) {
 			return parseBreakStatement()
 		if(currentWord?.type == WordAtom.NEXT)
 			return parseNextStatement()
-		if(currentWord?.type == WordAtom.VAR)
+		if(WordType.MODIFIER.includes(currentWord?.type))
+			return parseModifiedDefinition()
+		if(WordType.VARIABLE_DECLARATION.includes(currentWord?.type))
 			return parseVariableDeclaration()
-		if(WordType.MODIFIER.includes(currentWord?.type) || WordType.TYPE_TYPE.includes(currentWord?.type))
+		if(WordType.TYPE_TYPE.includes(currentWord?.type))
 			return parseTypeDefinition()
 		if(nextWord?.type == WordAtom.ASSIGNMENT)
 			return parseAssignment()
 		if(WordType.UNARY_MODIFICATION.includes(nextWord?.type))
 			return parseUnaryModification()
-		if(WordType.BINARY_MODIFICATION.includes(nextWord?.type))
-			return parseBinaryModification()
 		return parseExpression()
+	}
+
+	/**
+	 * ModifiedDefinition:
+	 *   <ModifierList> <TypeDefinition>
+	 *   <ModifierList> <VariableDeclaration>
+	 */
+	private fun parseModifiedDefinition(): Element {
+		val modifierList = parseModifierList()
+		if(WordType.VARIABLE_DECLARATION.includes(currentWord?.type))
+			return parseVariableDeclaration(modifierList)
+		if(WordType.TYPE_TYPE.includes(currentWord?.type))
+			return parseTypeDefinition(modifierList)
+		val expectation = "DEFINITION"
+		throw UnexpectedWordError(getCurrentWord(expectation), expectation)
 	}
 
 	/**
@@ -245,11 +261,10 @@ class ElementGenerator(project: Project) {
 	}
 
 	/**
-	 * TypeDefinition:
-	 *   <ModifierList> <TypeType> <Identifier> <TypeBody>
+	 * TypeDefinition[modifierList]:
+	 *   <TypeType> <Identifier> <TypeBody>
 	 */
-	private fun parseTypeDefinition(): TypeDefinition {
-		val modifierList = parseModifierList()
+	private fun parseTypeDefinition(modifierList: ModifierList? = null): TypeDefinition {
 		val type = parseTypeType()
 		val identifier = parseIdentifier()
 		val body = parseTypeBody()
@@ -271,7 +286,7 @@ class ElementGenerator(project: Project) {
 
 	/**
 	 * Modifier:
-	 *   native
+	 *   <modifier>
 	 */
 	private fun parseModifier(): Modifier {
 		return Modifier(consume(WordType.MODIFIER))
@@ -279,9 +294,7 @@ class ElementGenerator(project: Project) {
 
 	/**
 	 * TypeType:
-	 *   class
-	 *   generic
-	 *   object
+	 *   <type-type>
 	 */
 	private fun parseTypeType(): TypeType {
 		return TypeType(consume(WordType.TYPE_TYPE))
@@ -316,7 +329,7 @@ class ElementGenerator(project: Project) {
 		if(currentWord?.type == WordAtom.CONTAINING)
 			return parseGenericsDeclaration()
 		val modifierList = parseModifierList()
-		if(currentWord?.type == WordAtom.VAR)
+		if(WordType.PROPERTY_DECLARATION.includes(currentWord?.type))
 			return parsePropertyDeclaration(modifierList)
 		if(currentWord?.type == WordAtom.INIT)
 			return parseInitializerDefinition(modifierList)
@@ -343,20 +356,18 @@ class ElementGenerator(project: Project) {
 	}
 
 	/**
-	 * PropertyDeclaration:
-	 *   <ModifierList> var <VariableDeclarationPart>[,<VariableDeclarationPart>]...
+	 * PropertyDeclaration[modifierList]:
+	 *   <property-declaration> <VariableDeclarationPart>[,<VariableDeclarationPart>]...
 	 */
 	private fun parsePropertyDeclaration(modifierList: ModifierList?): PropertyDeclaration {
-		var start = consume(WordAtom.VAR).start
-		if(modifierList != null)
-			start = modifierList.start
+		val type = consume(WordType.PROPERTY_DECLARATION)
 		val declarationParts = LinkedList<Element>()
 		declarationParts.add(parseVariableDeclarationPart())
 		while(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
 			declarationParts.add(parseVariableDeclarationPart())
 		}
-		return PropertyDeclaration(start, declarationParts.last.end, modifierList, declarationParts)
+		return PropertyDeclaration(modifierList, type, declarationParts)
 	}
 
 	/**
@@ -444,11 +455,11 @@ class ElementGenerator(project: Project) {
 
 	/**
 	 * ParameterList:
-	 *   ([<TypedIdentifier>[, <TypedIdentifier>]])
+	 *   ([<Parameter>[, <Parameter>]])
 	 */
 	private fun parseParameterList(): ParameterList {
 		val start = consume(WordAtom.PARENTHESES_OPEN).start
-		val parameters = LinkedList<TypedIdentifier>()
+		val parameters = LinkedList<Parameter>()
 		if(currentWord?.type != WordAtom.PARENTHESES_CLOSE)
 			parameters.add(parseParameter())
 		while(currentWord?.type == WordAtom.COMMA) {
@@ -499,25 +510,27 @@ class ElementGenerator(project: Project) {
 
 	/**
 	 * Parameter:
-	 *   <TypedIdentifier>
+	 *   <ModifierList> <TypedIdentifier>
 	 */
-	private fun parseParameter(): TypedIdentifier {
-		return parseTypedIdentifier()
+	private fun parseParameter(): Parameter {
+		val modifierList = parseModifierList()
+		val identifier = parseTypedIdentifier()
+		return Parameter(modifierList, identifier)
 	}
 
 	/**
-	 * VariableDeclaration:
-	 *   var <VariableDeclarationPart>[,<VariableDeclarationPart>]...
+	 * VariableDeclaration[modifierList]:
+	 *   <variable-declaration> <VariableDeclarationPart>[,<VariableDeclarationPart>]...
 	 */
-	private fun parseVariableDeclaration(): VariableDeclaration {
-		val start = consume(WordAtom.VAR).start
+	private fun parseVariableDeclaration(modifierList: ModifierList? = null): VariableDeclaration {
+		val type = consume(WordType.VARIABLE_DECLARATION)
 		val declarationParts = LinkedList<Element>()
 		declarationParts.add(parseVariableDeclarationPart())
 		while(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
 			declarationParts.add(parseVariableDeclarationPart())
 		}
-		return VariableDeclaration(start, declarationParts.last.end, declarationParts)
+		return VariableDeclaration(modifierList, type, declarationParts)
 	}
 
 	/**
@@ -559,25 +572,29 @@ class ElementGenerator(project: Project) {
 	}
 
 	/**
-	 * BinaryModification:
-	 *   <Identifier> += <Expression>
-	 *   <Identifier> -= <Expression>
-	 *   <Identifier> *= <Expression>
-	 *   <Identifier> /= <Expression>
+	 * Expression:
+	 *   <BinaryModification>
 	 */
-	private fun parseBinaryModification(): BinaryModification {
-		val identifier = parseReferenceChain()
-		val operator = consume(WordType.BINARY_MODIFICATION)
-		val expression = parseExpression()
-		return BinaryModification(identifier, expression, operator.getValue())
+	private fun parseExpression(): Element {
+		return parseBinaryModification()
 	}
 
 	/**
-	 * Expression:
+	 * BinaryModification:
 	 *   <BinaryBooleanExpression>
+	 *   <BinaryBooleanExpression> += <BinaryBooleanExpression>
+	 *   <BinaryBooleanExpression> -= <BinaryBooleanExpression>
+	 *   <BinaryBooleanExpression> *= <BinaryBooleanExpression>
+	 *   <BinaryBooleanExpression> /= <BinaryBooleanExpression>
 	 */
-	private fun parseExpression(): Element {
-		return parseBinaryBooleanExpression()
+	private fun parseBinaryModification(): Element {
+		var expression = parseBinaryBooleanExpression()
+		if(WordType.BINARY_MODIFICATION.includes(currentWord?.type)) {
+			val operator = consume(WordType.BINARY_MODIFICATION)
+			val value = parseBinaryBooleanExpression()
+			expression = BinaryModification(expression, value, operator.getValue())
+		}
+		return expression
 	}
 
 	/**

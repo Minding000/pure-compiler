@@ -5,7 +5,7 @@ import parsing.ast.Element
 import source_structure.Position
 import java.lang.StringBuilder
 
-class ParameterList(start: Position, end: Position, val parameters: List<TypedIdentifier>): Element(start, end) {
+class ParameterList(start: Position, end: Position, val parameters: List<Parameter>): Element(start, end) {
 
 	override fun toString(): String {
 		val parameterString = StringBuilder()
