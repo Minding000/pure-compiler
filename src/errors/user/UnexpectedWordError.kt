@@ -11,7 +11,7 @@ import util.stringify
  */
 class UnexpectedWordError(message: String): SyntaxError(message) {
 
-	constructor(word: Word, expectation: String): this("Unexpected ${word.type} in ${word.getStartString()}: '${word.getValue().stringify()}'.\nExpected $expectation instead.")
+	constructor(word: Word, expectation: String): this("Unexpected ${word.type} in ${word.getStartString()}: '${word.getValue().stringify()}'.\n${word.getHighlight()}\nExpected $expectation instead.")
 	constructor(word: Word, expectation: WordDescriptor): this(word, expectation.toString())
 
 }

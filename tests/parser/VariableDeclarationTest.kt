@@ -11,7 +11,7 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				Program {
-					VariableDeclaration {
+					VariableDeclaration [ var ] {
 						TypedIdentifier { Identifier { car } : Type { Identifier { Int } } }
 					}
 				}
@@ -25,7 +25,7 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				Program {
-					VariableDeclaration {
+					VariableDeclaration [ var ] {
 						TypedIdentifier { Identifier { car } : Type { Identifier { String } } }
 						TypedIdentifier { Identifier { tire } : Type { Identifier { Int } } }
 					}
@@ -40,9 +40,10 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				Program {
-					VariableDeclaration {
+					VariableDeclaration [ var ] {
 						Assignment {
-							Identifier { car } = NumberLiteral { 5 }
+							Identifier { car }
+							= NumberLiteral { 5 }
 						}
 					}
 				}
@@ -60,11 +61,12 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				Program {
-					VariableDeclaration {
+					VariableDeclaration [ var ] {
 						TypedIdentifier { Identifier { car } : Type { Identifier { Int } } }
 					}
 					Assignment {
-						Identifier { car } = NumberLiteral { 5 }
+						Identifier { car }
+						= NumberLiteral { 5 }
 					}
 				}
             """.trimIndent()

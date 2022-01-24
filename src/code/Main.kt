@@ -33,8 +33,4 @@ object Main {
 			}
 		}
 	}
-
-	fun indentText(text: String): String {
-		return text.replace("\n", "\n\t")
-	}
 }

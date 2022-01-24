@@ -8,8 +8,8 @@ import parsing.ast.literals.Type
 import java.lang.StringBuilder
 
 class FunctionDefinition(start: Position, val modifierList: ModifierList?, val identifier: Identifier,
-						 val parameterList: ParameterList, val body: StatementBlock,
-						 var returnType: Type?): Element(start, body.end) {
+						 val parameterList: ParameterList, val body: StatementBlock?,
+						 var returnType: Type?): Element(start, body?.end ?: returnType?.end ?: parameterList.end) {
 
 	override fun toString(): String {
 		val string = StringBuilder()

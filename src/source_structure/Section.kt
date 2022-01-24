@@ -25,7 +25,8 @@ open class Section(val start: Position, val end: Position): IdentifierSource {
 		val lines = getFile().lines
 		for(i in start.line.number - 1 until end.line.number) {
 			val line = lines[i]
-			sb.append(line.getContent())
+			sb.append(line.getContent().replace("\t", " "))
+			sb.append("\n")
 			val highlightStart = if(line == start.line) start.column else 0
 			val highlightEnd = if(line == end.line) end.column else line.end
 			sb.append(" ".repeat(highlightStart))

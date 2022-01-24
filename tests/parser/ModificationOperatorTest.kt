@@ -17,9 +17,10 @@ internal class ModificationOperatorTest {
 		val expected =
 			"""
 				Program {
-					VariableDeclaration {
+					VariableDeclaration [ var ] {
 						Assignment {
-							Identifier { x } = NumberLiteral { 0 }
+							Identifier { x }
+							= NumberLiteral { 0 }
 						}
 					}
 					UnaryModification { Identifier { x }++ }
@@ -46,9 +47,10 @@ internal class ModificationOperatorTest {
 		val expected =
 			"""
 				Program {
-					VariableDeclaration {
+					VariableDeclaration [ var ] {
 						Assignment {
-							Identifier { x } = NumberLiteral { 0 }
+							Identifier { x }
+							= NumberLiteral { 0 }
 						}
 					}
 					BinaryModification {

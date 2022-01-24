@@ -56,4 +56,51 @@ internal class LiteralTest {
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
+
+	@Test
+	fun testStringWithEscapedQuote() {
+		val sourceCode = "\"Hello!\\nDo you know the \\\"prue\\\" programming language?\""
+		val expected =
+			"""
+				Program {
+					StringLiteral { "Hello!\nDo you know the \"prue\" programming language?" }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testTemplateString() {
+		val sourceCode = "\"Hello \${user.salutation} \$username!\""
+		val expected =
+			"""
+				Program {
+					StringLiteral { "Hello ${'$'}{user.salutation} ${'$'}username!" }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testMultilineString() {
+		val sourceCode =
+			"""
+				${'"'}
+					These are
+					multiple lines
+					:)
+				${'"'}
+            """.trimIndent()
+		val expected =
+			"""
+				Program {
+					StringLiteral { "
+						These are
+						multiple lines
+						:)
+					" }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
 }

@@ -6,8 +6,8 @@ import source_structure.Position
 import parsing.ast.literals.Type
 
 class OperatorDefinition(start: Position, val modifierList: ModifierList?, val operator: Operator,
-						 val parameterList: ParameterList?, val body: StatementBlock,
-						 var returnType: Type?): Element(start, body.end) {
+						 val parameterList: ParameterList?, val body: StatementBlock?,
+						 var returnType: Type?): Element(start, body?.end ?: returnType?.end ?: parameterList?.end ?: operator.end) {
 
 	override fun toString(): String {
 		val string = StringBuilder()

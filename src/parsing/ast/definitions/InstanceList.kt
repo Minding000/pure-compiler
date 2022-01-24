@@ -5,9 +5,9 @@ import source_structure.Position
 import util.indent
 import util.toLines
 
-class ParameterList(start: Position, end: Position, val parameters: List<Parameter>): Element(start, end) {
+class InstanceList(start: Position, val instances: List<Element>): Element(start, instances.last().end) {
 
 	override fun toString(): String {
-		return "ParameterList {${parameters.toLines().indent()}\n}"
+		return "InstanceList {${instances.toLines().indent()}\n}"
 	}
 }

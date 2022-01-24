@@ -1,7 +1,7 @@
 package source_structure
 
-import code.Main
-import java.lang.StringBuilder
+import util.indent
+import util.toLines
 import java.util.*
 
 class Project(val name: String) {
@@ -13,9 +13,6 @@ class Project(val name: String) {
     }
 
     override fun toString(): String {
-        val string = StringBuilder()
-        for(module in modules)
-            string.append("\n").append(module.toString())
-        return "Program [$name] {${Main.indentText(string.toString())}\n}"
+        return "Program [$name] {${modules.toLines().indent()}\n}"
     }
 }

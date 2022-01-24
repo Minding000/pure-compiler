@@ -11,7 +11,7 @@ object TestUtil {
     private fun getAST(sourceCode: String): String {
         val project = Project("Test")
         val module = Module("Test")
-        module.addFile("Test", sourceCode)
+        module.addFile("", "Test", sourceCode)
         project.addModule(module)
         return ElementGenerator(project).parseProgram().toString()
     }

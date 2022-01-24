@@ -1,20 +1,17 @@
 package source_structure
 
-import code.Main
-import java.lang.StringBuilder
+import util.indent
+import util.toLines
 import java.util.*
 
 class Module(val name: String) {
 	val files = LinkedList<File>()
 
-	fun addFile(name: String, content: String) {
-		files.add(File(this, name, content))
+	fun addFile(subPath: String, name: String, content: String) {
+		files.add(File(this, subPath, name, content))
 	}
 
 	override fun toString(): String {
-		val string = StringBuilder()
-		for(file in files)
-			string.append("\n").append(file.toString())
-		return "Module [$name] {${Main.indentText(string.toString())}\n}"
+		return "Module [$name] {${files.toLines().indent()}\n}"
 	}
 }

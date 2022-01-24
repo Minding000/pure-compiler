@@ -50,11 +50,22 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.LOWER_OR_EQUALS,
 		WordAtom.GREATER,
 		WordAtom.LOWER),
+	CAST(
+		WordAtom.AS,
+		WordAtom.OPTIONAL_CAST,
+		WordAtom.FORCE_CAST,
+		WordAtom.IS,
+		WordAtom.IS_NOT),
 	MEMBER(
+		WordAtom.INSTANCES,
 		WordAtom.CONST,
 		WordAtom.VAR,
 		WordAtom.VAL,
-		WordAtom.FUN),
+		WordAtom.IT,
+		WordAtom.TO),
+	FUNCTION_DECLARATION(
+		WordAtom.TO,
+		WordAtom.IT),
 	PROPERTY_DECLARATION(
 		WordAtom.CONST,
 		WordAtom.VAR,
@@ -62,14 +73,21 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 	VARIABLE_DECLARATION(
 		WordAtom.VAR,
 		WordAtom.VAL),
+	COMPUTED_ACCESSOR(
+		WordAtom.GET,
+		WordAtom.SET),
 	GENERICS_START(
 		WordAtom.LOWER),
 	GENERICS_END(
 		WordAtom.GREATER),
+	GENERICS_MODIFIER(
+		WordAtom.CONSUMING,
+		WordAtom.PRODUCING),
 	TYPE_TYPE(
 		WordAtom.CLASS,
-		WordAtom.GENERIC,
-		WordAtom.OBJECT),
+		WordAtom.OBJECT,
+		WordAtom.TRAIT,
+		WordAtom.ENUM),
 	MODIFIER(
 		WordAtom.NATIVE,
 		WordAtom.IMM,

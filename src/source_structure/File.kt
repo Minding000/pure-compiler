@@ -1,9 +1,9 @@
 package source_structure
 
-import code.Main
+import util.indent
 import java.util.*
 
-class File(val module: Module, val name: String, val content: String) {
+class File(val module: Module, val subPath: String, val name: String, val content: String) {
 	val lines = ArrayList<Line>()
 
 	init {
@@ -21,7 +21,11 @@ class File(val module: Module, val name: String, val content: String) {
 		}
 	}
 
+	fun getFullName(): String {
+		return "${module.name}::$subPath$name"
+	}
+
 	override fun toString(): String {
-		return "File [$name] {${Main.indentText("\n$content")}\n}"
+		return "File [$name] {${"\n$content".indent()}\n}"
 	}
 }

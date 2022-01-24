@@ -56,10 +56,10 @@ object Builder {
 		val mainModule = Module("Main")
 		if(source.isFile) {
 			project.targetPath = source.parent
-			addFile(mainModule, source)
+			addFile(mainModule, "", source)
 		} else {
 			project.targetPath = path
-			addDirectory(mainModule, source)
+			addDirectory(mainModule, "", source)
 		}
 		project.addModule(mainModule)
 		return project
@@ -67,24 +67,25 @@ object Builder {
 
 	fun loadRequiredModules(project: Project) {
 		val langModule = Module("Lang")
-		addDirectory(langModule, File(LANG_MODULE_PATH))
+		addDirectory(langModule, "", File(LANG_MODULE_PATH))
 		project.addModule(langModule)
 	}
 
-	private fun addDirectory(module: Module, directory: File) {
+	private fun addDirectory(module: Module, subPath: String, directory: File) {
 		val files = directory.listFiles() ?: throw IOException("Failed to list directory contents of '${directory.name}'.")
+		val childSubPath = "$subPath${directory.name}."
 		for(file in files) {
 			if(file.isFile) {
-				addFile(module, file)
+				addFile(module, childSubPath, file)
 			} else {
-				addDirectory(module, file)
+				addDirectory(module, childSubPath, file)
 			}
 		}
 	}
 
-	private fun addFile(module: Module, file: File) {
+	private fun addFile(module: Module, subPath: String, file: File) {
 		if(!file.name.endsWith(".pure"))
 			return
-		module.addFile(file.nameWithoutExtension, Files.readString(file.toPath()))
+		module.addFile(subPath, file.nameWithoutExtension, Files.readString(file.toPath()))
 	}
 }

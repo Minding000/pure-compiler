@@ -8,6 +8,28 @@ internal class ControlFlowTest {
 	@Test
 	fun testIfStatement() {
 		val sourceCode = """
+			if 2 + 3 == 5 {
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				Program {
+					If [ BinaryOperator {
+						BinaryOperator {
+							NumberLiteral { 2 } + NumberLiteral { 3 }
+						} == NumberLiteral { 5 }
+					} ] {
+						StatementBlock {
+						}
+					}
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testIfElseStatement() {
+		val sourceCode = """
 			var x: Int
 			if 5
 				x = 3
@@ -17,16 +39,18 @@ internal class ControlFlowTest {
 		val expected =
 			"""
 				Program {
-					VariableDeclaration {
+					VariableDeclaration [ var ] {
 						TypedIdentifier { Identifier { x } : Type { Identifier { Int } } }
 					}
-					If [NumberLiteral { 5 }] {
+					If [ NumberLiteral { 5 } ] {
 						Assignment {
-							Identifier { x } = NumberLiteral { 3 }
+							Identifier { x }
+							= NumberLiteral { 3 }
 						}
 					} Else {
 						Assignment {
-							Identifier { x } = NumberLiteral { 2 }
+							Identifier { x }
+							= NumberLiteral { 2 }
 						}
 					}
 				}
@@ -38,7 +62,7 @@ internal class ControlFlowTest {
 	fun testConstructorCall() {
 		val sourceCode = """
 			class Human {
-				fun speak(words: String) {
+				to speak(words: String) {
 					echo words
 				}
 			}
@@ -49,16 +73,17 @@ internal class ControlFlowTest {
 				Program {
 					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
 						Function [Identifier { speak } ParameterList {
-							TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
+							Parameter [] { TypedIdentifier { Identifier { words } : Type { Identifier { String } } } }
 						}: void] { StatementBlock {
 							Print {
 								Identifier { words }
 							}
 						} }
 					} }
-					VariableDeclaration {
+					VariableDeclaration [ var ] {
 						Assignment {
-							Identifier { peter } = FunctionCall [Identifier { Human }] {
+							Identifier { peter }
+							= FunctionCall [Identifier { Human }] {
 							}
 						}
 					}
@@ -71,7 +96,7 @@ internal class ControlFlowTest {
 	fun testFunctionCall() {
 		val sourceCode = """
 			class Human {
-				fun speak(words: String) {
+				to speak(words: String) {
 					echo words
 				}
 			}
@@ -83,16 +108,17 @@ internal class ControlFlowTest {
 				Program {
 					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
 						Function [Identifier { speak } ParameterList {
-							TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
+							Parameter [] { TypedIdentifier { Identifier { words } : Type { Identifier { String } } } }
 						}: void] { StatementBlock {
 							Print {
 								Identifier { words }
 							}
 						} }
 					} }
-					VariableDeclaration {
+					VariableDeclaration [ var ] {
 						Assignment {
-							Identifier { peter } = FunctionCall [Identifier { Human }] {
+							Identifier { peter }
+							= FunctionCall [Identifier { Human }] {
 							}
 						}
 					}
@@ -111,7 +137,7 @@ internal class ControlFlowTest {
 	fun testReturn() {
 		val sourceCode = """
 			class Human {
-				fun speak(words: String): String {
+				to speak(words: String): String {
 					echo words
 					return "Done"
 				}
@@ -122,7 +148,7 @@ internal class ControlFlowTest {
 				Program {
 					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
 						Function [Identifier { speak } ParameterList {
-							TypedIdentifier { Identifier { words } : Type { Identifier { String } } }
+							Parameter [] { TypedIdentifier { Identifier { words } : Type { Identifier { String } } } }
 						}: Type { Identifier { String } }] { StatementBlock {
 							Print {
 								Identifier { words }

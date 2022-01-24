@@ -3,6 +3,7 @@ package parsing.tokenizer
 import java.util.regex.Pattern
 
 enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultiline: Boolean = false): WordDescriptor {
+	FOREIGN_LANGUAGE("$"),
 	// Whitespace
 	LINE_BREAK("\\n"),
 	WHITESPACE("\\s", true),
@@ -29,6 +30,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	STAR("\\*"),
 	SLASH("\\/"),
 	NOT("!"),
+	DOUBLE_COLON("::"),
 	// Symbols
 	ASSIGNMENT("="),
 	COMMA(","),
@@ -44,9 +46,13 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	NULL_LITERAL("null\\b"),
 	BOOLEAN_LITERAL("(yes|no)\\b"),
 	NUMBER_LITERAL("\\d+"),
-	STRING_LITERAL("\".*?\""),
+	STRING_LITERAL("\"(?:[^\"\\\\]|\\\\.)*\"", false, true),
 	// Keywords
+	FORCE_CAST("as!"),
+	OPTIONAL_CAST("as\\?"),
 	AS("as\\b"),
+	IS_NOT("is!"),
+	IS("is\\b"),
 	IF("if\\b"),
 	ELSE("else\\b"),
 	LOOP("loop\\b"),
@@ -55,17 +61,24 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	CONST("const\\b"),
 	VAR("var\\b"),
 	VAL("val\\b"),
+	GET("get\\b"),
+	SET("set\\b"),
 	INIT("init\\b"),
-	FUN("fun\\b"),
+	IT("it\\b"),
+	TO("to\\b"),
 	CLASS("class\\b"),
 	OBJECT("object\\b"),
+	TRAIT("trait\\b"),
+	ENUM("enum\\b"),
 	ECHO("echo\\b"),
 	RETURN("return\\b"),
 	IMM("imm\\b"),
 	MUT("mut\\b"),
 	NATIVE("native\\b"),
-	GENERIC("generic\\b"),
+	INSTANCES("instances\\b"),
 	CONTAINING("containing\\b"),
+	CONSUMING("consuming\\b"),
+	PRODUCING("producing\\b"),
 	OPERATOR("operator\\b"),
 	REFERENCING("referencing\\b"),
 	// Identifier

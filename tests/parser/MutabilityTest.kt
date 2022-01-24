@@ -50,7 +50,8 @@ internal class MutabilityTest {
 					TypeDefinition [TypeType { class } Identifier { Display }] { TypeBody {
 						PropertyDeclaration [ const ] {
 							Assignment {
-								Identifier { PERIPHERAL_TYPE } = StringLiteral { "graphics" }
+								Identifier { PERIPHERAL_TYPE }
+								= StringLiteral { "graphics" }
 							}
 						}
 					} }
@@ -89,7 +90,8 @@ internal class MutabilityTest {
 				Program {
 					VariableDeclaration [ val ] {
 						Assignment {
-							Identifier { text } = StringLiteral { "Irreplaceable!" }
+							Identifier { text }
+							= StringLiteral { "Irreplaceable!" }
 						}
 					}
 				}
@@ -101,7 +103,7 @@ internal class MutabilityTest {
 	fun testImmutableFunction() {
 		val sourceCode = """
 			class Human {
-				imm fun speak(words: String) {
+				imm to speak(words: String) {
 					echo words
 				}
 			}
@@ -127,7 +129,7 @@ internal class MutabilityTest {
 	fun testMutableParameter() {
 		val sourceCode = """
 			class Human {
-				fun chargePhone(mut phone: Phone) {
+				to chargePhone(mut phone: Phone) {
 					phone.chargeInPercent += 5
 				}
 			}
@@ -162,7 +164,8 @@ internal class MutabilityTest {
 				Program {
 					VariableDeclaration [ ModifierList { Modifier { imm } } var ] {
 						Assignment {
-							Identifier { id } = NumberLiteral { 5 }
+							Identifier { id }
+							= NumberLiteral { 5 }
 						}
 					}
 				}
@@ -183,7 +186,8 @@ internal class MutabilityTest {
 					TypeDefinition [TypeType { class } Identifier { Item }] { TypeBody {
 						PropertyDeclaration [ ModifierList { Modifier { imm } } val ] {
 							Assignment {
-								Identifier { id } = NumberLiteral { 71 }
+								Identifier { id }
+								= NumberLiteral { 71 }
 							}
 						}
 					} }

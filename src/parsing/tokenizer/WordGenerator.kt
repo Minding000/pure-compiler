@@ -51,6 +51,23 @@ class WordGenerator(private val project: Project) {
 		characterIndex = 0
 	}
 
+	fun getRemainingLine(): Word? {
+		if(file.content.length == position)
+			return null
+		val input = file.content.substring(position)
+		var lineEnd = input.indexOf('\n')
+		if(lineEnd == 0)
+			return null
+		if(lineEnd == -1)
+			lineEnd = input.length
+		val remainingLine = input.substring(0, lineEnd)
+		val wordStartIndex = position
+		position += remainingLine.length
+		val wordStartColumn = characterIndex
+		characterIndex += remainingLine.length
+		return Word(Position(wordStartIndex, line, wordStartColumn), Position(position, line, characterIndex), WordAtom.FOREIGN_LANGUAGE)
+	}
+
 	fun getNextWord(): Word? {
 		while(file.content.length == position) {
 			if(!nextFile())

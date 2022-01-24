@@ -7,14 +7,18 @@ internal class FunctionDefinitionTest {
 
 	@Test
 	fun testFunctionDeclaration() {
-		val sourceCode = "class Animal { fun getSound(loudness: Int) {  } }"
+		val sourceCode = """
+			class Animal {
+				it canEat(food: Food): Bool {
+				}
+			}""".trimIndent()
 		val expected =
 			"""
 				Program {
 					TypeDefinition [TypeType { class } Identifier { Animal }] { TypeBody {
-						Function [Identifier { getSound } ParameterList {
-							TypedIdentifier { Identifier { loudness } : Type { Identifier { Int } } }
-						}: void] { StatementBlock {
+						Function [Identifier { canEat } ParameterList {
+							Parameter [] { TypedIdentifier { Identifier { food } : Type { Identifier { Food } } } }
+						}: Type { Identifier { Bool } }] { StatementBlock {
 						} }
 					} }
 				}
@@ -24,17 +28,23 @@ internal class FunctionDefinitionTest {
 
 	@Test
 	fun testFunctionBody() {
-		val sourceCode = "class Animal { fun getSound(loudness: Int) { var energy = loudness * 2 } }"
+		val sourceCode = """
+			class Animal {
+				to getSound(loudness: Int) {
+					var energy = loudness * 2
+				}
+			}""".trimIndent()
 		val expected =
 			"""
 				Program {
 					TypeDefinition [TypeType { class } Identifier { Animal }] { TypeBody {
 						Function [Identifier { getSound } ParameterList {
-							TypedIdentifier { Identifier { loudness } : Type { Identifier { Int } } }
+							Parameter [] { TypedIdentifier { Identifier { loudness } : Type { Identifier { Int } } } }
 						}: void] { StatementBlock {
-							VariableDeclaration {
+							VariableDeclaration [ var ] {
 								Assignment {
-									Identifier { energy } = BinaryOperator {
+									Identifier { energy }
+									= BinaryOperator {
 										Identifier { loudness } * NumberLiteral { 2 }
 									}
 								}
@@ -60,7 +70,7 @@ internal class FunctionDefinitionTest {
 			"""
 				Program {
 					TypeDefinition [TypeType { class } Identifier { Animal }] { TypeBody {
-						PropertyDeclaration [] {
+						PropertyDeclaration [ var ] {
 							TypedIdentifier { Identifier { canSwim } : Type { Identifier { Bool } } }
 						}
 						Initializer [
@@ -90,7 +100,7 @@ internal class FunctionDefinitionTest {
 			"""
 				Program {
 					TypeDefinition [TypeType { class } Identifier { Animal }] { TypeBody {
-						PropertyDeclaration [] {
+						PropertyDeclaration [ var ] {
 							TypedIdentifier { Identifier { canSwim } : Type { Identifier { Bool } } }
 						}
 						Initializer [
@@ -121,12 +131,12 @@ internal class FunctionDefinitionTest {
 			"""
 				Program {
 					TypeDefinition [TypeType { class } Identifier { Vector }] { TypeBody {
-						PropertyDeclaration [] {
+						PropertyDeclaration [ var ] {
 							TypedIdentifier { Identifier { x } : Type { Identifier { Int } } }
 							TypedIdentifier { Identifier { y } : Type { Identifier { Int } } }
 						}
 						OperatorDefinition [Operator { += } ParameterList {
-							TypedIdentifier { Identifier { right } : Type { Identifier { Vector } } }
+							Parameter [] { TypedIdentifier { Identifier { right } : Type { Identifier { Vector } } } }
 						}: void] { StatementBlock {
 							BinaryModification {
 								Identifier { x } += ReferenceChain {
@@ -142,7 +152,7 @@ internal class FunctionDefinitionTest {
 							}
 						} }
 						OperatorDefinition [Operator { == } ParameterList {
-							TypedIdentifier { Identifier { right } : Type { Identifier { Vector } } }
+							Parameter [] { TypedIdentifier { Identifier { right } : Type { Identifier { Vector } } } }
 						}: void] { StatementBlock {
 							Return { BinaryOperator {
 								BinaryOperator {
@@ -184,7 +194,7 @@ internal class FunctionDefinitionTest {
 						OperatorDefinition [IndexOperator {
 							TypedIdentifier { Identifier { index } : Type { Identifier { Int } } }
 						} ParameterList {
-							TypedIdentifier { Identifier { value } : Type { Identifier { Book } } }
+							Parameter [] { TypedIdentifier { Identifier { value } : Type { Identifier { Book } } } }
 						}: void] { StatementBlock {
 							Print {
 								StringLiteral { "Adding book" }
@@ -199,6 +209,27 @@ internal class FunctionDefinitionTest {
 								StringLiteral { "Book requested" }
 								Identifier { index }
 							}
+						} }
+					} }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testFunctionTypeDeclaration() {
+		val sourceCode = """
+			class Animal {
+				to getSound(loudness: Int) {
+				}
+			}""".trimIndent()
+		val expected =
+			"""
+				Program {
+					TypeDefinition [TypeType { class } Identifier { Animal }] { TypeBody {
+						Function [Identifier { getSound } ParameterList {
+							Parameter [] { TypedIdentifier { Identifier { loudness } : Type { Identifier { Int } } } }
+						}: void] { StatementBlock {
 						} }
 					} }
 				}
