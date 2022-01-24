@@ -4,6 +4,7 @@ import parsing.ast.*
 import parsing.ast.operations.*
 import errors.user.UnexpectedWordError
 import errors.user.UnexpectedEndOfFileError
+import parsing.ast.access.Index
 import parsing.ast.access.ReferenceChain
 import parsing.ast.control_flow.*
 import parsing.ast.definitions.*
@@ -290,10 +291,10 @@ class ElementGenerator(project: Project) {
 			return null
 		val start = consume(WordAtom.COLON).start
 		val parentTypes = LinkedList<Type>()
-		parentTypes.add(parseType())
+		parentTypes.add(parseType(false))
 		while(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
-			parentTypes.add(parseType())
+			parentTypes.add(parseType(false))
 		}
 		return InheritanceList(start, parentTypes)
 	}
@@ -611,6 +612,11 @@ class ElementGenerator(project: Project) {
 		if(nextWord?.type == WordAtom.ASSIGNMENT)
 			return parseAssignment(true)
 		val identifier = parseTypedIdentifier()
+		if(currentWord?.type == WordAtom.ASSIGNMENT) {
+			consume(WordAtom.ASSIGNMENT)
+			val value = parseExpression()
+			return Assignment(listOf(identifier), value)
+		}
 		var getExpression: Element? = null
 		var setExpression: Element? = null
 		consumeLineBreaks()
@@ -635,7 +641,7 @@ class ElementGenerator(project: Project) {
 	 *   <OptionallyTypedAssignment>
 	 */
 	private fun parseAssignment(declare: Boolean = false): Element {
-		if(declare && nextWord?.type == WordAtom.DOT)
+		if(declare && nextWord?.type == WordAtom.COLON)
 			return parseOptionallyTypedAssignment()
 		val targets = LinkedList<Element>()
 		var lastExpression = parseReferenceChain()
@@ -760,14 +766,28 @@ class ElementGenerator(project: Project) {
 
 	/**
 	 * Multiplication:
-	 *   <Cast>
-	 *   <Cast> * <Cast>
-	 *   <Cast> / <Cast>
+	 *   <NullCoalescence>
+	 *   <NullCoalescence> * <NullCoalescence>
+	 *   <NullCoalescence> / <NullCoalescence>
 	 */
 	private fun parseMultiplication(): Element {
-		var expression: Element = parseCast()
+		var expression: Element = parseNullCoalescence()
 		while(WordType.MULTIPLICATION.includes(currentWord?.type)) {
 			val operator = consume(WordType.MULTIPLICATION)
+			expression = BinaryOperator(expression, parseNullCoalescence(), operator.getValue())
+		}
+		return expression
+	}
+
+	/**
+	 * NullCoalescence:
+	 *   <Cast>
+	 *   <Cast> ?? <Cast>
+	 */
+	private fun parseNullCoalescence(): Element {
+		var expression: Element = parseCast()
+		while(currentWord?.type == WordAtom.NULL_COALESCENCE) {
+			val operator = consume(WordAtom.NULL_COALESCENCE)
 			expression = BinaryOperator(expression, parseCast(), operator.getValue())
 		}
 		return expression
@@ -805,9 +825,30 @@ class ElementGenerator(project: Project) {
 	private fun parseUnaryOperator(): Element {
 		if(WordType.UNARY_OPERATOR.includes(currentWord?.type)) {
 			val operator = consume(WordType.UNARY_OPERATOR)
-			return UnaryOperator(parsePrimary(), operator)
+			return UnaryOperator(parseIndex(), operator)
 		}
-		return parsePrimary()
+		return parseIndex()
+	}
+
+	/**
+	 * Index:
+	 *   <Primary>
+	 *   <Primary>[<Expression>[, <Expression>]...]
+	 */
+	private fun parseIndex(): Element {
+		var expression = parsePrimary()
+		if(currentWord?.type == WordAtom.BRACKETS_OPEN) {
+			consume(WordAtom.BRACKETS_OPEN)
+			val indices = LinkedList<Element>()
+			indices.add(parseExpression())
+			while(currentWord?.type == WordAtom.COMMA) {
+				consume(WordAtom.COMMA)
+				indices.add(parseExpression())
+			}
+			val end = consume(WordAtom.BRACKETS_CLOSE).end
+			return Index(expression, indices, end)
+		}
+		return expression
 	}
 
 	/**
@@ -950,12 +991,17 @@ class ElementGenerator(project: Project) {
 
 	/**
 	 * Type:
-	 *   <TypeList><Identifier>
+	 *   <TypeList><Identifier>[?]
 	 */
-	private fun parseType(): Type {
+	private fun parseType(optionalAllowed: Boolean = true): Type {
 		val typeList = parseTypeList()
 		val identifier = parseIdentifier()
-		return Type(identifier, typeList)
+		var isOptional = false
+		if(optionalAllowed && currentWord?.type == WordAtom.QUESTION_MARK) {
+			consume(WordAtom.QUESTION_MARK)
+			isOptional = true
+		}
+		return Type(identifier, isOptional, typeList)
 	}
 
 	/**

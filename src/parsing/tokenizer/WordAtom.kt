@@ -30,11 +30,13 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	STAR("\\*"),
 	SLASH("\\/"),
 	NOT("!"),
+	NULL_COALESCENCE("\\?\\?"),
 	DOUBLE_COLON("::"),
 	// Symbols
 	ASSIGNMENT("="),
 	COMMA(","),
 	COLON(":"),
+	QUESTION_MARK("\\?"),
 	DOT("\\."),
 	PARENTHESES_OPEN("\\("),
 	PARENTHESES_CLOSE("\\)"),

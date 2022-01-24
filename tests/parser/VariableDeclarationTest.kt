@@ -72,4 +72,29 @@ internal class VariableDeclarationTest {
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
+
+	@Test
+	fun testOptionalType() {
+		val sourceCode =
+			"""
+				var car: Int? = null
+				car = 9
+            """.trimIndent()
+		val expected =
+			"""
+				Program {
+					VariableDeclaration [ var ] {
+						Assignment {
+							TypedIdentifier { Identifier { car } : Type { Identifier { Int }? } }
+							= NullLiteral
+						}
+					}
+					Assignment {
+						Identifier { car }
+						= NumberLiteral { 9 }
+					}
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
 }

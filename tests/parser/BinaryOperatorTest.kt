@@ -62,6 +62,20 @@ internal class BinaryOperatorTest {
 	}
 
 	@Test
+	fun testNullCoalescence() {
+		val sourceCode = "repetitions ?? 1"
+		val expected =
+			"""
+				Program {
+					BinaryOperator {
+						Identifier { repetitions } ?? NumberLiteral { 1 }
+					}
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
 	fun testBinaryBooleanOperators() {
 		val sourceCode = "yes & no | yes"
 		val expected =
