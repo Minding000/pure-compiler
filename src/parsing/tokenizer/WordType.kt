@@ -24,7 +24,8 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 	UNARY_OPERATOR(
 		WordAtom.NOT,
 		WordAtom.PLUS,
-		WordAtom.MINUS),
+		WordAtom.MINUS,
+		WordAtom.TRIPLE_DOT),
 	UNARY_MODIFICATION(
 		WordAtom.INCREMENT,
 		WordAtom.DECREMENT),
@@ -91,7 +92,16 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 	MODIFIER(
 		WordAtom.NATIVE,
 		WordAtom.IMM,
-		WordAtom.MUT);
+		WordAtom.MUT,
+		WordAtom.TRIPLE_DOT),
+	DEFINITION_MODIFIER(
+		WordAtom.NATIVE,
+		WordAtom.IMM,
+		WordAtom.MUT),
+	PARAMETER_MODIFIER(
+		WordAtom.IMM,
+		WordAtom.MUT,
+		WordAtom.TRIPLE_DOT);
 
 	override fun includes(atom: WordAtom?): Boolean {
 		return atoms.contains(atom)

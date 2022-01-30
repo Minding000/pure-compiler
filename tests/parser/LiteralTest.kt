@@ -34,12 +34,48 @@ internal class LiteralTest {
 	}
 
 	@Test
-	fun testNumberLiteral() {
+	fun testSimpleNumberLiteral() {
 		val sourceCode = "345"
 		val expected =
 			"""
 				Program {
 					NumberLiteral { 345 }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testFloatingPointNumberLiteral() {
+		val sourceCode = "6.5"
+		val expected =
+			"""
+				Program {
+					NumberLiteral { 6.5 }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testSectionedNumberLiteral() {
+		val sourceCode = "456_345"
+		val expected =
+			"""
+				Program {
+					NumberLiteral { 456_345 }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testScientificNumberNotation() {
+		val sourceCode = "10.4e-18"
+		val expected =
+			"""
+				Program {
+					NumberLiteral { 10.4e-18 }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)

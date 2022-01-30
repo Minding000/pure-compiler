@@ -32,6 +32,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	NOT("!"),
 	NULL_COALESCENCE("\\?\\?"),
 	DOUBLE_COLON("::"),
+	TRIPLE_DOT("\\.\\.\\."),
 	// Symbols
 	ASSIGNMENT("="),
 	COMMA(","),
@@ -47,7 +48,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	// Literals
 	NULL_LITERAL("null\\b"),
 	BOOLEAN_LITERAL("(yes|no)\\b"),
-	NUMBER_LITERAL("\\d+"),
+	NUMBER_LITERAL("\\d[\\d_]*(?:\\.\\d[\\d_]*)?(?:e-?\\d+)?"),
 	STRING_LITERAL("\"(?:[^\"\\\\]|\\\\.)*\"", false, true),
 	// Keywords
 	FORCE_CAST("as!"),

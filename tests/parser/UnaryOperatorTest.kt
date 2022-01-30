@@ -42,6 +42,18 @@ internal class UnaryOperatorTest {
 	}
 
 	@Test
+	fun testSpread() {
+		val sourceCode = "...parameters"
+		val expected =
+			"""
+				Program {
+					UnaryOperator { ...Identifier { parameters } }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
 	fun testMultipleNot() {
 		val sourceCode = "!!yes"
 		TestUtil.assertUserError("Unexpected NOT", sourceCode)

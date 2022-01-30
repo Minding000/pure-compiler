@@ -236,4 +236,25 @@ internal class FunctionDefinitionTest {
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
+
+	@Test
+	fun testVariableArguments() {
+		val sourceCode = """
+			class Animal {
+				to setSounds(...sounds: ...Sound) {
+				}
+			}""".trimIndent()
+		val expected =
+			"""
+				Program {
+					TypeDefinition [TypeType { class } Identifier { Animal }] { TypeBody {
+						Function [Identifier { setSounds } ParameterList {
+							Parameter [ ModifierList { Modifier { ... } } ] { TypedIdentifier { Identifier { sounds } : Type { ...Identifier { Sound } } } }
+						}: void] { StatementBlock {
+						} }
+					} }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
 }

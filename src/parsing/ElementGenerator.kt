@@ -109,7 +109,7 @@ class ElementGenerator(project: Project) {
 			return parseBreakStatement()
 		if(currentWord?.type == WordAtom.NEXT)
 			return parseNextStatement()
-		if(WordType.MODIFIER.includes(currentWord?.type))
+		if(WordType.DEFINITION_MODIFIER.includes(currentWord?.type))
 			return parseModifiedDefinition()
 		if(WordType.VARIABLE_DECLARATION.includes(currentWord?.type))
 			return parseVariableDeclaration()
@@ -128,7 +128,7 @@ class ElementGenerator(project: Project) {
 	 *   <ModifierList> <VariableDeclaration>
 	 */
 	private fun parseModifiedDefinition(): Element {
-		val modifierList = parseModifierList()
+		val modifierList = parseModifierList(WordType.DEFINITION_MODIFIER)
 		if(WordType.VARIABLE_DECLARATION.includes(currentWord?.type))
 			return parseVariableDeclaration(modifierList)
 		if(WordType.TYPE_TYPE.includes(currentWord?.type))
@@ -303,9 +303,9 @@ class ElementGenerator(project: Project) {
 	 * ModifierList:
 	 *   [<Modifier>[ <Modifier>]...]
 	 */
-	private fun parseModifierList(): ModifierList? {
+	private fun parseModifierList(allowedModifiers: WordDescriptor): ModifierList? {
 		val modifiers = LinkedList<Modifier>()
-		while(WordType.MODIFIER.includes(currentWord?.type))
+		while(allowedModifiers.includes(currentWord?.type))
 			modifiers.add(parseModifier())
 		if(modifiers.isEmpty())
 			return null
@@ -360,7 +360,7 @@ class ElementGenerator(project: Project) {
 			return parseGenericsDeclaration()
 		if(currentWord?.type == WordAtom.INSTANCES)
 			return parseInstanceList()
-		val modifierList = parseModifierList()
+		val modifierList = parseModifierList(WordType.DEFINITION_MODIFIER)
 		if(WordType.PROPERTY_DECLARATION.includes(currentWord?.type))
 			return parsePropertyDeclaration(modifierList)
 		if(currentWord?.type == WordAtom.INIT)
@@ -583,7 +583,7 @@ class ElementGenerator(project: Project) {
 	 *   <ModifierList> <TypedIdentifier>
 	 */
 	private fun parseParameter(): Parameter {
-		val modifierList = parseModifierList()
+		val modifierList = parseModifierList(WordType.PARAMETER_MODIFIER)
 		val identifier = parseTypedIdentifier()
 		return Parameter(modifierList, identifier)
 	}
@@ -821,6 +821,7 @@ class ElementGenerator(project: Project) {
 	 *   !<Primary>
 	 *   +<Primary>
 	 *   -<Primary>
+	 *   ...<Primary>
 	 */
 	private fun parseUnaryOperator(): Element {
 		if(WordType.UNARY_OPERATOR.includes(currentWord?.type)) {
@@ -846,7 +847,7 @@ class ElementGenerator(project: Project) {
 				indices.add(parseExpression())
 			}
 			val end = consume(WordAtom.BRACKETS_CLOSE).end
-			return Index(expression, indices, end)
+			expression = Index(expression, indices, end)
 		}
 		return expression
 	}
@@ -991,9 +992,14 @@ class ElementGenerator(project: Project) {
 
 	/**
 	 * Type:
-	 *   <TypeList><Identifier>[?]
+	 *   [...]<TypeList><Identifier>[?]
 	 */
 	private fun parseType(optionalAllowed: Boolean = true): Type {
+		var hasDynamicQuantity = false
+		if(currentWord?.type == WordAtom.TRIPLE_DOT) {
+			consume(WordAtom.TRIPLE_DOT)
+			hasDynamicQuantity = true
+		}
 		val typeList = parseTypeList()
 		val identifier = parseIdentifier()
 		var isOptional = false
@@ -1001,7 +1007,7 @@ class ElementGenerator(project: Project) {
 			consume(WordAtom.QUESTION_MARK)
 			isOptional = true
 		}
-		return Type(identifier, isOptional, typeList)
+		return Type(identifier, hasDynamicQuantity, isOptional, typeList)
 	}
 
 	/**
