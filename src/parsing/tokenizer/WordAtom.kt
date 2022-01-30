@@ -31,6 +31,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	SLASH("\\/"),
 	NOT("!"),
 	NULL_COALESCENCE("\\?\\?"),
+	OPTIONAL_ACCESSOR("\\?\\."),
 	DOUBLE_COLON("::"),
 	TRIPLE_DOT("\\.\\.\\."),
 	// Symbols
@@ -59,6 +60,8 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	IF("if\\b"),
 	ELSE("else\\b"),
 	LOOP("loop\\b"),
+	OVER("over\\b"),
+	WHILE("while\\b"),
 	BREAK("break\\b"),
 	NEXT("next\\b"),
 	CONST("const\\b"),

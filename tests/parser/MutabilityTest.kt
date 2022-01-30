@@ -142,9 +142,8 @@ internal class MutabilityTest {
 							Parameter [ ModifierList { Modifier { mut } } ] { TypedIdentifier { Identifier { phone } : Type { Identifier { Phone } } } }
 						}: void] { StatementBlock {
 							BinaryModification {
-								ReferenceChain {
-									Identifier { phone }
-									Identifier { chargeInPercent }
+								MemberAccess {
+									Identifier { phone }.Identifier { chargeInPercent }
 								} += NumberLiteral { 5 }
 							}
 						} }

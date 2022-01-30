@@ -72,4 +72,88 @@ internal class LoopTest {
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
+
+	@Test
+	fun testPreWhileLoop() {
+		val sourceCode = """
+			loop while x < 5 {
+				x++
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				Program {
+					Loop [ WhileGenerator [pre] {
+						BinaryOperator {
+							Identifier { x } < NumberLiteral { 5 }
+						}
+					} ] { StatementBlock {
+						UnaryModification { Identifier { x }++ }
+					} }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testPostWhileLoop() {
+		val sourceCode = """
+			loop {
+				x++
+			} while x < 5
+			""".trimIndent()
+		val expected =
+			"""
+				Program {
+					Loop [ WhileGenerator [post] {
+						BinaryOperator {
+							Identifier { x } < NumberLiteral { 5 }
+						}
+					} ] { StatementBlock {
+						UnaryModification { Identifier { x }++ }
+					} }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testLoopOver() {
+		val sourceCode = """
+			loop over files as file {
+				x++
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				Program {
+					Loop [ OverGenerator {
+						Identifier { files } as Identifier { file }
+					} ] { StatementBlock {
+						UnaryModification { Identifier { x }++ }
+					} }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testLoopOverIndex() {
+		val sourceCode = """
+			loop over files as index, file {
+				x++
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				Program {
+					Loop [ OverGenerator {
+						Identifier { files } as Identifier { index }, Identifier { file }
+					} ] { StatementBlock {
+						UnaryModification { Identifier { x }++ }
+					} }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
 }

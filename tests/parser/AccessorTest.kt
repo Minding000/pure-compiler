@@ -13,9 +13,24 @@ internal class AccessorTest {
 		val expected =
 			"""
 				Program {
-					ReferenceChain {
-						Identifier { player }
-						Identifier { inventory }
+					MemberAccess {
+						Identifier { player }.Identifier { inventory }
+					}
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testOptionalChaining() {
+		val sourceCode = """
+			teammate?.inventory
+			""".trimIndent()
+		val expected =
+			"""
+				Program {
+					MemberAccess {
+						Identifier { teammate }?.Identifier { inventory }
 					}
 				}
             """.trimIndent()

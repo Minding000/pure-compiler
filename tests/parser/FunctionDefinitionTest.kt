@@ -73,10 +73,10 @@ internal class FunctionDefinitionTest {
 						PropertyDeclaration [ var ] {
 							TypedIdentifier { Identifier { canSwim } : Type { Identifier { Bool } } }
 						}
-						Initializer [
-							TypedIdentifier { Identifier { name } : Type { Identifier { String } } }
-							Identifier { canSwim }
-						] { StatementBlock {
+						Initializer [ParameterList {
+							Parameter [] { TypedIdentifier { Identifier { name } : Type { Identifier { String } } } }
+							Parameter [] { Identifier { canSwim } }
+						}] { StatementBlock {
 							Print {
 								StringLiteral { "Creating" }
 								Identifier { name }
@@ -103,9 +103,9 @@ internal class FunctionDefinitionTest {
 						PropertyDeclaration [ var ] {
 							TypedIdentifier { Identifier { canSwim } : Type { Identifier { Bool } } }
 						}
-						Initializer [
-							Identifier { canSwim }
-						] {  }
+						Initializer [ParameterList {
+							Parameter [] { Identifier { canSwim } }
+						}] {  }
 					} }
 				}
             """.trimIndent()
@@ -139,15 +139,13 @@ internal class FunctionDefinitionTest {
 							Parameter [] { TypedIdentifier { Identifier { right } : Type { Identifier { Vector } } } }
 						}: void] { StatementBlock {
 							BinaryModification {
-								Identifier { x } += ReferenceChain {
-									Identifier { right }
-									Identifier { x }
+								Identifier { x } += MemberAccess {
+									Identifier { right }.Identifier { x }
 								}
 							}
 							BinaryModification {
-								Identifier { y } += ReferenceChain {
-									Identifier { right }
-									Identifier { y }
+								Identifier { y } += MemberAccess {
+									Identifier { right }.Identifier { y }
 								}
 							}
 						} }
@@ -156,14 +154,12 @@ internal class FunctionDefinitionTest {
 						}: void] { StatementBlock {
 							Return { BinaryOperator {
 								BinaryOperator {
-									ReferenceChain {
-										Identifier { right }
-										Identifier { x }
+									MemberAccess {
+										Identifier { right }.Identifier { x }
 									} == Identifier { x }
 								} & BinaryOperator {
-									ReferenceChain {
-										Identifier { right }
-										Identifier { y }
+									MemberAccess {
+										Identifier { right }.Identifier { y }
 									} == Identifier { y }
 								}
 							} }

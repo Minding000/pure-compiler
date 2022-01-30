@@ -122,11 +122,10 @@ internal class ControlFlowTest {
 							}
 						}
 					}
-					FunctionCall [ReferenceChain {
-						Identifier { peter }
-						Identifier { speak }
-					}] {
-						StringLiteral { "Keep up the good work!" }
+					MemberAccess {
+						Identifier { peter }.FunctionCall [Identifier { speak }] {
+							StringLiteral { "Keep up the good work!" }
+						}
 					}
 				}
             """.trimIndent()

@@ -74,9 +74,9 @@ internal class GenericsTest {
 					VariableDeclaration [ var ] {
 						Assignment {
 							Identifier { fruitList }
-							= FunctionCall [TypeList {
+							= FunctionCall [Type { TypeList {
 								TypeParameter [] { Type { Identifier { Fruit } } }
-							} Identifier { ShoppingList }] {
+							} Identifier { ShoppingList } }] {
 							}
 						}
 					}

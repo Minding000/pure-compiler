@@ -4,9 +4,9 @@ import parsing.ast.Element
 import parsing.ast.general.StatementBlock
 import source_structure.Position
 
-class LoopStatement(start: Position, val body: StatementBlock): Element(start, body.end) {
+class LoopStatement(start: Position, val generator: Element?, val body: StatementBlock): Element(start, body.end) {
 
 	override fun toString(): String {
-		return "Loop { $body }"
+		return "Loop${if(generator == null) "" else " [ $generator ]"} { $body }"
 	}
 }

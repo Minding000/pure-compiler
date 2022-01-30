@@ -77,6 +77,9 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 	COMPUTED_ACCESSOR(
 		WordAtom.GET,
 		WordAtom.SET),
+	MEMBER_ACCESSOR(
+		WordAtom.DOT,
+		WordAtom.OPTIONAL_ACCESSOR),
 	GENERICS_START(
 		WordAtom.LOWER),
 	GENERICS_END(

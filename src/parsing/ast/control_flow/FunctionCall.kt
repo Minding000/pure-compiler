@@ -6,9 +6,9 @@ import parsing.ast.literals.TypeList
 import util.indent
 import util.toLines
 
-class FunctionCall(val typeList: TypeList?, val functionReference: Element, val parameters: List<Element>, start: Position, end: Position): Element(start, end) {
+class FunctionCall(val functionReference: Element, val parameters: List<Element>, end: Position): Element(functionReference.start, end) {
 
 	override fun toString(): String {
-		return "FunctionCall [${if(typeList != null) "$typeList " else ""}$functionReference] {${parameters.toLines().indent()}\n}"
+		return "FunctionCall [$functionReference] {${parameters.toLines().indent()}\n}"
 	}
 }
