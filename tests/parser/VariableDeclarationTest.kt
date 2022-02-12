@@ -10,10 +10,8 @@ internal class VariableDeclarationTest {
 		val sourceCode = "var car: Int"
 		val expected =
 			"""
-				Program {
-					VariableDeclaration [ var ] {
-						TypedIdentifier { Identifier { car } : Type { Identifier { Int } } }
-					}
+				VariableDeclaration [ var ] {
+					TypedIdentifier { Identifier { car } : Type { SimpleType { Identifier { Int } } } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -24,11 +22,9 @@ internal class VariableDeclarationTest {
 		val sourceCode = "var car: String, tire: Int"
 		val expected =
 			"""
-				Program {
-					VariableDeclaration [ var ] {
-						TypedIdentifier { Identifier { car } : Type { Identifier { String } } }
-						TypedIdentifier { Identifier { tire } : Type { Identifier { Int } } }
-					}
+				VariableDeclaration [ var ] {
+					TypedIdentifier { Identifier { car } : Type { SimpleType { Identifier { String } } } }
+					TypedIdentifier { Identifier { tire } : Type { SimpleType { Identifier { Int } } } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -39,12 +35,10 @@ internal class VariableDeclarationTest {
 		val sourceCode = "var car = 5"
 		val expected =
 			"""
-				Program {
-					VariableDeclaration [ var ] {
-						Assignment {
-							Identifier { car }
-							= NumberLiteral { 5 }
-						}
+				VariableDeclaration [ var ] {
+					Assignment {
+						Identifier { car }
+						= NumberLiteral { 5 }
 					}
 				}
             """.trimIndent()
@@ -60,14 +54,12 @@ internal class VariableDeclarationTest {
             """.trimIndent()
 		val expected =
 			"""
-				Program {
-					VariableDeclaration [ var ] {
-						TypedIdentifier { Identifier { car } : Type { Identifier { Int } } }
-					}
-					Assignment {
-						Identifier { car }
-						= NumberLiteral { 5 }
-					}
+				VariableDeclaration [ var ] {
+					TypedIdentifier { Identifier { car } : Type { SimpleType { Identifier { Int } } } }
+				}
+				Assignment {
+					Identifier { car }
+					= NumberLiteral { 5 }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -82,17 +74,49 @@ internal class VariableDeclarationTest {
             """.trimIndent()
 		val expected =
 			"""
-				Program {
-					VariableDeclaration [ var ] {
-						Assignment {
-							TypedIdentifier { Identifier { car } : Type { Identifier { Int }? } }
-							= NullLiteral
-						}
-					}
+				VariableDeclaration [ var ] {
 					Assignment {
-						Identifier { car }
-						= NumberLiteral { 9 }
+						TypedIdentifier { Identifier { car } : Type { SimpleType { Identifier { Int } }? } }
+						= NullLiteral
 					}
+				}
+				Assignment {
+					Identifier { car }
+					= NumberLiteral { 9 }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testOrUnionType() {
+		val sourceCode =
+			"""
+				var car: Int | Float
+            """.trimIndent()
+		val expected =
+			"""
+				VariableDeclaration [ var ] {
+					TypedIdentifier { Identifier { car } : Type { BinaryOperator {
+						SimpleType { Identifier { Int } } | SimpleType { Identifier { Float } }
+					} } }
+				}
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testAndUnionType() {
+		val sourceCode =
+			"""
+				var refuge: Park & NatureReserve
+            """.trimIndent()
+		val expected =
+			"""
+				VariableDeclaration [ var ] {
+					TypedIdentifier { Identifier { refuge } : Type { BinaryOperator {
+						SimpleType { Identifier { Park } } & SimpleType { Identifier { NatureReserve } }
+					} } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)

@@ -13,9 +13,7 @@ internal class ForeignLanguageTest {
 		""".trimIndent()
 		val expected =
 			"""
-				Program {
-					ForeignLanguageExpression [ Identifier { RegExp } ] { ForeignLanguageLiteral { /^hello .*!/ } }
-				}
+				ForeignLanguageExpression [ Identifier { RegExp } ] { ForeignLanguageLiteral { /^hello .*!/ } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -27,9 +25,7 @@ internal class ForeignLanguageTest {
 		""".trimIndent()
 		val expected =
 			"""
-				Program {
-					ForeignLanguageExpression [ Identifier { Json } ] { ForeignLanguageLiteral { {status: "GREAT"} } }
-				}
+				ForeignLanguageExpression [ Identifier { Json } ] { ForeignLanguageLiteral { {status: "GREAT"} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -43,11 +39,9 @@ internal class ForeignLanguageTest {
 		""".trimIndent()
 		val expected =
 			"""
-				Program {
-					ForeignLanguageExpression [ Identifier { Color } ] { ForeignLanguageLiteral { ff22c8 } }
-					ForeignLanguageExpression [ Identifier { Color } ] { ForeignLanguageLiteral { rgba(99, 3, 4) } }
-					ForeignLanguageExpression [ Identifier { Color } ] { ForeignLanguageLiteral { hsl(45, 123, 233) } }
-				}
+				ForeignLanguageExpression [ Identifier { Color } ] { ForeignLanguageLiteral { ff22c8 } }
+				ForeignLanguageExpression [ Identifier { Color } ] { ForeignLanguageLiteral { rgba(99, 3, 4) } }
+				ForeignLanguageExpression [ Identifier { Color } ] { ForeignLanguageLiteral { hsl(45, 123, 233) } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -59,9 +53,7 @@ internal class ForeignLanguageTest {
 		""".trimIndent()
 		val expected =
 			"""
-				Program {
-					ForeignLanguageExpression [ Identifier { Html } ] { ForeignLanguageLiteral { <div></div> } }
-				}
+				ForeignLanguageExpression [ Identifier { Html } ] { ForeignLanguageLiteral { <div></div> } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}

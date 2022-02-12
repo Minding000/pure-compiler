@@ -13,10 +13,8 @@ internal class MutabilityTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					TypeDefinition [ModifierList { Modifier { imm } } TypeType { object } Identifier { MainMonitor }] { TypeBody {
-					} }
-				}
+				TypeDefinition [ ModifierList { Modifier { imm } } TypeType { object } Identifier { MainMonitor } ] { TypeBody {
+				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -29,10 +27,8 @@ internal class MutabilityTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					TypeDefinition [ModifierList { Modifier { imm } } TypeType { class } Identifier { Monitor }] { TypeBody {
-					} }
-				}
+				TypeDefinition [ ModifierList { Modifier { imm } } TypeType { class } Identifier { Monitor } ] { TypeBody {
+				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -46,16 +42,14 @@ internal class MutabilityTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					TypeDefinition [TypeType { class } Identifier { Display }] { TypeBody {
-						PropertyDeclaration [ const ] {
-							Assignment {
-								Identifier { PERIPHERAL_TYPE }
-								= StringLiteral { "graphics" }
-							}
+				TypeDefinition [ TypeType { class } Identifier { Display } ] { TypeBody {
+					PropertyDeclaration [ const ] {
+						Assignment {
+							Identifier { PERIPHERAL_TYPE }
+							= StringLiteral { "graphics" }
 						}
-					} }
-				}
+					}
+				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -69,13 +63,11 @@ internal class MutabilityTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					TypeDefinition [TypeType { class } Identifier { Display }] { TypeBody {
-						PropertyDeclaration [ val ] {
-							TypedIdentifier { Identifier { resolution } : Type { Identifier { Resolution } } }
-						}
-					} }
-				}
+				TypeDefinition [ TypeType { class } Identifier { Display } ] { TypeBody {
+					PropertyDeclaration [ val ] {
+						TypedIdentifier { Identifier { resolution } : Type { SimpleType { Identifier { Resolution } } } }
+					}
+				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -87,12 +79,10 @@ internal class MutabilityTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					VariableDeclaration [ val ] {
-						Assignment {
-							Identifier { text }
-							= StringLiteral { "Irreplaceable!" }
-						}
+				VariableDeclaration [ val ] {
+					Assignment {
+						Identifier { text }
+						= StringLiteral { "Irreplaceable!" }
 					}
 				}
             """.trimIndent()
@@ -110,17 +100,15 @@ internal class MutabilityTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
-						Function [ModifierList { Modifier { imm } } Identifier { speak } ParameterList {
-							Parameter [] { TypedIdentifier { Identifier { words } : Type { Identifier { String } } } }
-						}: void] { StatementBlock {
-							Print {
-								Identifier { words }
-							}
-						} }
-					} }
-				}
+				TypeDefinition [ TypeType { class } Identifier { Human } ] { TypeBody {
+					Function [ ModifierList { Modifier { imm } } Identifier { speak } ParameterList {
+						Parameter [] { TypedIdentifier { Identifier { words } : Type { SimpleType { Identifier { String } } } } }
+					}: void ] { StatementSection { StatementBlock {
+						Print {
+							Identifier { words }
+						}
+					} } }
+				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -136,19 +124,17 @@ internal class MutabilityTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
-						Function [Identifier { chargePhone } ParameterList {
-							Parameter [ ModifierList { Modifier { mut } } ] { TypedIdentifier { Identifier { phone } : Type { Identifier { Phone } } } }
-						}: void] { StatementBlock {
-							BinaryModification {
-								MemberAccess {
-									Identifier { phone }.Identifier { chargeInPercent }
-								} += NumberLiteral { 5 }
-							}
-						} }
-					} }
-				}
+				TypeDefinition [ TypeType { class } Identifier { Human } ] { TypeBody {
+					Function [ Identifier { chargePhone } ParameterList {
+						Parameter [ ModifierList { Modifier { mut } } ] { TypedIdentifier { Identifier { phone } : Type { SimpleType { Identifier { Phone } } } } }
+					}: void ] { StatementSection { StatementBlock {
+						BinaryModification {
+							MemberAccess {
+								Identifier { phone }.Identifier { chargeInPercent }
+							} += NumberLiteral { 5 }
+						}
+					} } }
+				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -160,12 +146,10 @@ internal class MutabilityTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					VariableDeclaration [ ModifierList { Modifier { imm } } var ] {
-						Assignment {
-							Identifier { id }
-							= NumberLiteral { 5 }
-						}
+				VariableDeclaration [ ModifierList { Modifier { imm } } var ] {
+					Assignment {
+						Identifier { id }
+						= NumberLiteral { 5 }
 					}
 				}
             """.trimIndent()
@@ -181,16 +165,14 @@ internal class MutabilityTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					TypeDefinition [TypeType { class } Identifier { Item }] { TypeBody {
-						PropertyDeclaration [ ModifierList { Modifier { imm } } val ] {
-							Assignment {
-								Identifier { id }
-								= NumberLiteral { 71 }
-							}
+				TypeDefinition [ TypeType { class } Identifier { Item } ] { TypeBody {
+					PropertyDeclaration [ ModifierList { Modifier { imm } } val ] {
+						Assignment {
+							Identifier { id }
+							= NumberLiteral { 71 }
 						}
-					} }
-				}
+					}
+				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}

@@ -10,9 +10,7 @@ internal class LiteralTest {
 		val sourceCode = "null"
 		val expected =
 			"""
-				Program {
-					NullLiteral
-				}
+				NullLiteral
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -25,10 +23,8 @@ internal class LiteralTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					BooleanLiteral { yes }
-					BooleanLiteral { no }
-				}
+				BooleanLiteral { yes }
+				BooleanLiteral { no }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -38,9 +34,7 @@ internal class LiteralTest {
 		val sourceCode = "345"
 		val expected =
 			"""
-				Program {
-					NumberLiteral { 345 }
-				}
+				NumberLiteral { 345 }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -50,9 +44,7 @@ internal class LiteralTest {
 		val sourceCode = "6.5"
 		val expected =
 			"""
-				Program {
-					NumberLiteral { 6.5 }
-				}
+				NumberLiteral { 6.5 }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -62,9 +54,7 @@ internal class LiteralTest {
 		val sourceCode = "456_345"
 		val expected =
 			"""
-				Program {
-					NumberLiteral { 456_345 }
-				}
+				NumberLiteral { 456_345 }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -74,9 +64,7 @@ internal class LiteralTest {
 		val sourceCode = "10.4e-18"
 		val expected =
 			"""
-				Program {
-					NumberLiteral { 10.4e-18 }
-				}
+				NumberLiteral { 10.4e-18 }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -86,9 +74,7 @@ internal class LiteralTest {
 		val sourceCode = "\"hello world!\""
 		val expected =
 			"""
-				Program {
-					StringLiteral { "hello world!" }
-				}
+				StringLiteral { "hello world!" }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -98,9 +84,7 @@ internal class LiteralTest {
 		val sourceCode = "\"Hello!\\nDo you know the \\\"prue\\\" programming language?\""
 		val expected =
 			"""
-				Program {
-					StringLiteral { "Hello!\nDo you know the \"prue\" programming language?" }
-				}
+				StringLiteral { "Hello!\nDo you know the \"prue\" programming language?" }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -110,9 +94,7 @@ internal class LiteralTest {
 		val sourceCode = "\"Hello \${user.salutation} \$username!\""
 		val expected =
 			"""
-				Program {
-					StringLiteral { "Hello ${'$'}{user.salutation} ${'$'}username!" }
-				}
+				StringLiteral { "Hello ${'$'}{user.salutation} ${'$'}username!" }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -129,13 +111,11 @@ internal class LiteralTest {
             """.trimIndent()
 		val expected =
 			"""
-				Program {
-					StringLiteral { "
-						These are
-						multiple lines
-						:)
-					" }
-				}
+				StringLiteral { "
+					These are
+					multiple lines
+					:)
+				" }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}

@@ -9,6 +9,6 @@ import util.toLines
 class FunctionCall(val functionReference: Element, val parameters: List<Element>, end: Position): Element(functionReference.start, end) {
 
 	override fun toString(): String {
-		return "FunctionCall [$functionReference] {${parameters.toLines().indent()}\n}"
+		return "FunctionCall [ $functionReference ] {${parameters.toLines().indent()}\n}"
 	}
 }

@@ -14,13 +14,11 @@ internal class LoopTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					Loop { StatementBlock {
-						Print {
-							StringLiteral { "Hello!" }
-						}
-					} }
-				}
+				Loop { StatementSection { StatementBlock {
+					Print {
+						StringLiteral { "Hello!" }
+					}
+				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -35,14 +33,12 @@ internal class LoopTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					Loop { StatementBlock {
-						Print {
-							StringLiteral { "Hello!" }
-						}
-						Break {  }
-					} }
-				}
+				Loop { StatementSection { StatementBlock {
+					Print {
+						StringLiteral { "Hello!" }
+					}
+					Break {  }
+				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -58,17 +54,15 @@ internal class LoopTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					Loop { StatementBlock {
-						Print {
-							StringLiteral { "Hello!" }
-						}
-						Next {  }
-						Print {
-							StringLiteral { "You'll never see me :(" }
-						}
-					} }
-				}
+				Loop { StatementSection { StatementBlock {
+					Print {
+						StringLiteral { "Hello!" }
+					}
+					Next {  }
+					Print {
+						StringLiteral { "You'll never see me :(" }
+					}
+				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -82,15 +76,13 @@ internal class LoopTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					Loop [ WhileGenerator [pre] {
-						BinaryOperator {
-							Identifier { x } < NumberLiteral { 5 }
-						}
-					} ] { StatementBlock {
-						UnaryModification { Identifier { x }++ }
-					} }
-				}
+				Loop [ WhileGenerator [pre] {
+					BinaryOperator {
+						Identifier { x } < NumberLiteral { 5 }
+					}
+				} ] { StatementSection { StatementBlock {
+					UnaryModification { Identifier { x }++ }
+				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -104,15 +96,13 @@ internal class LoopTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					Loop [ WhileGenerator [post] {
-						BinaryOperator {
-							Identifier { x } < NumberLiteral { 5 }
-						}
-					} ] { StatementBlock {
-						UnaryModification { Identifier { x }++ }
-					} }
-				}
+				Loop [ WhileGenerator [post] {
+					BinaryOperator {
+						Identifier { x } < NumberLiteral { 5 }
+					}
+				} ] { StatementSection { StatementBlock {
+					UnaryModification { Identifier { x }++ }
+				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -126,13 +116,11 @@ internal class LoopTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					Loop [ OverGenerator {
-						Identifier { files } as Identifier { file }
-					} ] { StatementBlock {
-						UnaryModification { Identifier { x }++ }
-					} }
-				}
+				Loop [ OverGenerator {
+					Identifier { files } as Identifier { file }
+				} ] { StatementSection { StatementBlock {
+					UnaryModification { Identifier { x }++ }
+				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -146,13 +134,11 @@ internal class LoopTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					Loop [ OverGenerator {
-						Identifier { files } as Identifier { index }, Identifier { file }
-					} ] { StatementBlock {
-						UnaryModification { Identifier { x }++ }
-					} }
-				}
+				Loop [ OverGenerator {
+					Identifier { files } as Identifier { index }, Identifier { file }
+				} ] { StatementSection { StatementBlock {
+					UnaryModification { Identifier { x }++ }
+				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}

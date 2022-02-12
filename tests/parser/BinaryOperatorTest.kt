@@ -10,10 +10,8 @@ internal class BinaryOperatorTest {
 		val sourceCode = "345 + 1"
 		val expected =
 			"""
-				Program {
-					BinaryOperator {
-						NumberLiteral { 345 } + NumberLiteral { 1 }
-					}
+				BinaryOperator {
+					NumberLiteral { 345 } + NumberLiteral { 1 }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -24,10 +22,8 @@ internal class BinaryOperatorTest {
 		val sourceCode = "345 - 3"
 		val expected =
 			"""
-				Program {
-					BinaryOperator {
-						NumberLiteral { 345 } - NumberLiteral { 3 }
-					}
+				BinaryOperator {
+					NumberLiteral { 345 } - NumberLiteral { 3 }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -38,10 +34,8 @@ internal class BinaryOperatorTest {
 		val sourceCode = "345 * 2"
 		val expected =
 			"""
-				Program {
-					BinaryOperator {
-						NumberLiteral { 345 } * NumberLiteral { 2 }
-					}
+				BinaryOperator {
+					NumberLiteral { 345 } * NumberLiteral { 2 }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -52,10 +46,8 @@ internal class BinaryOperatorTest {
 		val sourceCode = "345 / 5"
 		val expected =
 			"""
-				Program {
-					BinaryOperator {
-						NumberLiteral { 345 } / NumberLiteral { 5 }
-					}
+				BinaryOperator {
+					NumberLiteral { 345 } / NumberLiteral { 5 }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -66,10 +58,8 @@ internal class BinaryOperatorTest {
 		val sourceCode = "repetitions ?? 1"
 		val expected =
 			"""
-				Program {
-					BinaryOperator {
-						Identifier { repetitions } ?? NumberLiteral { 1 }
-					}
+				BinaryOperator {
+					Identifier { repetitions } ?? NumberLiteral { 1 }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -80,12 +70,10 @@ internal class BinaryOperatorTest {
 		val sourceCode = "yes & no | yes"
 		val expected =
 			"""
-				Program {
+				BinaryOperator {
 					BinaryOperator {
-						BinaryOperator {
-							BooleanLiteral { yes } & BooleanLiteral { no }
-						} | BooleanLiteral { yes }
-					}
+						BooleanLiteral { yes } & BooleanLiteral { no }
+					} | BooleanLiteral { yes }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -96,15 +84,13 @@ internal class BinaryOperatorTest {
 		val sourceCode = "3 + 345 * 2 - (2 + 1)"
 		val expected =
 			"""
-				Program {
+				BinaryOperator {
 					BinaryOperator {
-						BinaryOperator {
-							NumberLiteral { 3 } + BinaryOperator {
-								NumberLiteral { 345 } * NumberLiteral { 2 }
-							}
-						} - BinaryOperator {
-							NumberLiteral { 2 } + NumberLiteral { 1 }
+						NumberLiteral { 3 } + BinaryOperator {
+							NumberLiteral { 345 } * NumberLiteral { 2 }
 						}
+					} - BinaryOperator {
+						NumberLiteral { 2 } + NumberLiteral { 1 }
 					}
 				}
             """.trimIndent()
@@ -116,17 +102,15 @@ internal class BinaryOperatorTest {
 		val sourceCode = "9 + 534 > 234 == no & 2 == 2"
 		val expected =
 			"""
-				Program {
+				BinaryOperator {
 					BinaryOperator {
 						BinaryOperator {
 							BinaryOperator {
-								BinaryOperator {
-									NumberLiteral { 9 } + NumberLiteral { 534 }
-								} > NumberLiteral { 234 }
-							} == BooleanLiteral { no }
-						} & BinaryOperator {
-							NumberLiteral { 2 } == NumberLiteral { 2 }
-						}
+								NumberLiteral { 9 } + NumberLiteral { 534 }
+							} > NumberLiteral { 234 }
+						} == BooleanLiteral { no }
+					} & BinaryOperator {
+						NumberLiteral { 2 } == NumberLiteral { 2 }
 					}
 				}
             """.trimIndent()

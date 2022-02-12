@@ -1,7 +1,8 @@
-import parsing.ElementGenerator
+import parsing.element_generator.ElementGenerator
 import errors.user.UserError
 import source_structure.Module
 import source_structure.Project
+import util.indent
 import util.stringify
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -18,6 +19,7 @@ object TestUtil {
 
     fun assertAST(expected_ast: String, sourceCode: String) {
         val actual_ast = getAST(sourceCode)
+        val expected_ast = "Program {${"\n$expected_ast".indent()}\n}"
         printDiffPosition(expected_ast, actual_ast)
         assertEquals(expected_ast, actual_ast)
     }

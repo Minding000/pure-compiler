@@ -10,9 +10,7 @@ internal class UnaryOperatorTest {
 		val sourceCode = "!yes"
 		val expected =
 			"""
-				Program {
-					UnaryOperator { !BooleanLiteral { yes } }
-				}
+				UnaryOperator { !BooleanLiteral { yes } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -22,9 +20,7 @@ internal class UnaryOperatorTest {
 		val sourceCode = "+2"
 		val expected =
 			"""
-				Program {
-					UnaryOperator { +NumberLiteral { 2 } }
-				}
+				UnaryOperator { +NumberLiteral { 2 } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -34,9 +30,7 @@ internal class UnaryOperatorTest {
 		val sourceCode = "-6"
 		val expected =
 			"""
-				Program {
-					UnaryOperator { -NumberLiteral { 6 } }
-				}
+				UnaryOperator { -NumberLiteral { 6 } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
@@ -46,9 +40,17 @@ internal class UnaryOperatorTest {
 		val sourceCode = "...parameters"
 		val expected =
 			"""
-				Program {
-					UnaryOperator { ...Identifier { parameters } }
-				}
+				UnaryOperator { ...Identifier { parameters } }
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testNullCheck() {
+		val sourceCode = "x?"
+		val expected =
+			"""
+				NullCheck { Identifier { x } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}

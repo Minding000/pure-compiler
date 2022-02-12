@@ -45,8 +45,8 @@ class WordGenerator(private val project: Project) {
 		}
 	}
 
-	private fun nextLine() {
-		lineIndex++
+	private fun nextLine(count: Int = 1) {
+		lineIndex += count
 		line = file.lines[lineIndex]
 		characterIndex = 0
 	}
@@ -90,9 +90,11 @@ class WordGenerator(private val project: Project) {
 				if(wordType == WordAtom.LINE_BREAK) {
 					nextLine()
 				} else if(wordType.isMultiline) {
-					for(i in 0 until rawWord.count { c -> c == '\n' })
-						nextLine()
-					characterIndex = rawWord.length - (rawWord.lastIndexOf('\n') + 1)
+					val containedLineBreaks = rawWord.count { c -> c == '\n' }
+					if(containedLineBreaks > 0) {
+						nextLine(containedLineBreaks)
+						characterIndex = rawWord.length - (rawWord.lastIndexOf('\n') + 1)
+					}
 				}
 				return word
 			}

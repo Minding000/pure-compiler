@@ -13,15 +13,13 @@ internal class ControlFlowTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					If [ BinaryOperator {
-						BinaryOperator {
-							NumberLiteral { 2 } + NumberLiteral { 3 }
-						} == NumberLiteral { 5 }
-					} ] {
-						StatementBlock {
-						}
-					}
+				If [ BinaryOperator {
+					BinaryOperator {
+						NumberLiteral { 2 } + NumberLiteral { 3 }
+					} == NumberLiteral { 5 }
+				} ] {
+					StatementSection { StatementBlock {
+					} }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -38,20 +36,18 @@ internal class ControlFlowTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					VariableDeclaration [ var ] {
-						TypedIdentifier { Identifier { x } : Type { Identifier { Int } } }
+				VariableDeclaration [ var ] {
+					TypedIdentifier { Identifier { x } : Type { SimpleType { Identifier { Int } } } }
+				}
+				If [ NumberLiteral { 5 } ] {
+					Assignment {
+						Identifier { x }
+						= NumberLiteral { 3 }
 					}
-					If [ NumberLiteral { 5 } ] {
-						Assignment {
-							Identifier { x }
-							= NumberLiteral { 3 }
-						}
-					} Else {
-						Assignment {
-							Identifier { x }
-							= NumberLiteral { 2 }
-						}
+				} Else {
+					Assignment {
+						Identifier { x }
+						= NumberLiteral { 2 }
 					}
 				}
             """.trimIndent()
@@ -70,21 +66,19 @@ internal class ControlFlowTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
-						Function [Identifier { speak } ParameterList {
-							Parameter [] { TypedIdentifier { Identifier { words } : Type { Identifier { String } } } }
-						}: void] { StatementBlock {
-							Print {
-								Identifier { words }
-							}
-						} }
-					} }
-					VariableDeclaration [ var ] {
-						Assignment {
-							Identifier { peter }
-							= FunctionCall [Identifier { Human }] {
-							}
+				TypeDefinition [ TypeType { class } Identifier { Human } ] { TypeBody {
+					Function [ Identifier { speak } ParameterList {
+						Parameter [] { TypedIdentifier { Identifier { words } : Type { SimpleType { Identifier { String } } } } }
+					}: void ] { StatementSection { StatementBlock {
+						Print {
+							Identifier { words }
+						}
+					} } }
+				} }
+				VariableDeclaration [ var ] {
+					Assignment {
+						Identifier { peter }
+						= FunctionCall [ Identifier { Human } ] {
 						}
 					}
 				}
@@ -105,27 +99,25 @@ internal class ControlFlowTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
-						Function [Identifier { speak } ParameterList {
-							Parameter [] { TypedIdentifier { Identifier { words } : Type { Identifier { String } } } }
-						}: void] { StatementBlock {
-							Print {
-								Identifier { words }
-							}
-						} }
-					} }
-					VariableDeclaration [ var ] {
-						Assignment {
-							Identifier { peter }
-							= FunctionCall [Identifier { Human }] {
-							}
+				TypeDefinition [ TypeType { class } Identifier { Human } ] { TypeBody {
+					Function [ Identifier { speak } ParameterList {
+						Parameter [] { TypedIdentifier { Identifier { words } : Type { SimpleType { Identifier { String } } } } }
+					}: void ] { StatementSection { StatementBlock {
+						Print {
+							Identifier { words }
+						}
+					} } }
+				} }
+				VariableDeclaration [ var ] {
+					Assignment {
+						Identifier { peter }
+						= FunctionCall [ Identifier { Human } ] {
 						}
 					}
-					MemberAccess {
-						Identifier { peter }.FunctionCall [Identifier { speak }] {
-							StringLiteral { "Keep up the good work!" }
-						}
+				}
+				MemberAccess {
+					Identifier { peter }.FunctionCall [ Identifier { speak } ] {
+						StringLiteral { "Keep up the good work!" }
 					}
 				}
             """.trimIndent()
@@ -144,17 +136,44 @@ internal class ControlFlowTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					TypeDefinition [TypeType { class } Identifier { Human }] { TypeBody {
-						Function [Identifier { speak } ParameterList {
-							Parameter [] { TypedIdentifier { Identifier { words } : Type { Identifier { String } } } }
-						}: Type { Identifier { String } }] { StatementBlock {
-							Print {
-								Identifier { words }
-							}
-							Return { StringLiteral { "Done" } }
-						} }
-					} }
+				TypeDefinition [ TypeType { class } Identifier { Human } ] { TypeBody {
+					Function [ Identifier { speak } ParameterList {
+						Parameter [] { TypedIdentifier { Identifier { words } : Type { SimpleType { Identifier { String } } } } }
+					}: Type { SimpleType { Identifier { String } } } ] { StatementSection { StatementBlock {
+						Print {
+							Identifier { words }
+						}
+						Return { StringLiteral { "Done" } }
+					} } }
+				} }
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testSwitch() {
+		val sourceCode = """
+			switch x {
+				ExitCode.SUCCESS:
+					echo "Success"
+				else:
+					echo "Failed"
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				Switch [ Identifier { x } ] {
+					Case [ MemberAccess {
+						Identifier { ExitCode }.Identifier { SUCCESS }
+					} ] {
+						Print {
+							StringLiteral { "Success" }
+						}
+					}
+				} Else {
+					Print {
+						StringLiteral { "Failed" }
+					}
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)

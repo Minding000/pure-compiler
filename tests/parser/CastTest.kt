@@ -10,10 +10,8 @@ internal class CastTest {
 		val sourceCode = "10 as Float"
 		val expected =
 			"""
-				Program {
-					Cast {
-						NumberLiteral { 10 } as Type { Identifier { Float } }
-					}
+				Cast {
+					NumberLiteral { 10 } as Type { SimpleType { Identifier { Float } } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -24,10 +22,8 @@ internal class CastTest {
 		val sourceCode = "quoteSource as? Book"
 		val expected =
 			"""
-				Program {
-					Cast {
-						Identifier { quoteSource } as? Type { Identifier { Book } }
-					}
+				Cast {
+					Identifier { quoteSource } as? Type { SimpleType { Identifier { Book } } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -38,10 +34,8 @@ internal class CastTest {
 		val sourceCode = "food as! Fruit"
 		val expected =
 			"""
-				Program {
-					Cast {
-						Identifier { food } as! Type { Identifier { Fruit } }
-					}
+				Cast {
+					Identifier { food } as! Type { SimpleType { Identifier { Fruit } } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -56,13 +50,11 @@ internal class CastTest {
             """.trimIndent()
 		val expected =
 			"""
-				Program {
-					If [ Cast {
-						Identifier { inputDevice } is TypedIdentifier { Identifier { keyboard } : Type { Identifier { Keyboard } } }
-					} ] {
-						StatementBlock {
-						}
-					}
+				If [ Cast {
+					Identifier { inputDevice } is TypedIdentifier { Identifier { keyboard } : Type { SimpleType { Identifier { Keyboard } } } }
+				} ] {
+					StatementSection { StatementBlock {
+					} }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -77,13 +69,11 @@ internal class CastTest {
             """.trimIndent()
 		val expected =
 			"""
-				Program {
-					If [ Cast {
-						Identifier { inputDevice } is! TypedIdentifier { Identifier { keyboard } : Type { Identifier { Keyboard } } }
-					} ] {
-						StatementBlock {
-						}
-					}
+				If [ Cast {
+					Identifier { inputDevice } is! TypedIdentifier { Identifier { keyboard } : Type { SimpleType { Identifier { Keyboard } } } }
+				} ] {
+					StatementSection { StatementBlock {
+					} }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)

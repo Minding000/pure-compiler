@@ -37,6 +37,9 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 	BINARY_BOOLEAN_OPERATOR(
 		WordAtom.AND,
 		WordAtom.OR),
+	UNION_OPERATOR(
+		WordAtom.AND,
+		WordAtom.OR),
 	ADDITION(
 		WordAtom.PLUS,
 		WordAtom.MINUS),
@@ -104,7 +107,10 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 	PARAMETER_MODIFIER(
 		WordAtom.IMM,
 		WordAtom.MUT,
-		WordAtom.TRIPLE_DOT);
+		WordAtom.TRIPLE_DOT),
+	TRY(
+		WordAtom.TRY_OPTIONAL,
+		WordAtom.TRY_UNCHECK);
 
 	override fun includes(atom: WordAtom?): Boolean {
 		return atoms.contains(atom)

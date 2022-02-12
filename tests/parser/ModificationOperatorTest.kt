@@ -16,18 +16,16 @@ internal class ModificationOperatorTest {
             """.trimIndent()
 		val expected =
 			"""
-				Program {
-					VariableDeclaration [ var ] {
-						Assignment {
-							Identifier { x }
-							= NumberLiteral { 0 }
-						}
-					}
-					UnaryModification { Identifier { x }++ }
-					UnaryModification { Identifier { x }-- }
-					Print {
+				VariableDeclaration [ var ] {
+					Assignment {
 						Identifier { x }
+						= NumberLiteral { 0 }
 					}
+				}
+				UnaryModification { Identifier { x }++ }
+				UnaryModification { Identifier { x }-- }
+				Print {
+					Identifier { x }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -46,28 +44,26 @@ internal class ModificationOperatorTest {
             """.trimIndent()
 		val expected =
 			"""
-				Program {
-					VariableDeclaration [ var ] {
-						Assignment {
-							Identifier { x }
-							= NumberLiteral { 0 }
-						}
-					}
-					BinaryModification {
-						Identifier { x } += NumberLiteral { 4 }
-					}
-					BinaryModification {
-						Identifier { x } -= NumberLiteral { 3 }
-					}
-					BinaryModification {
-						Identifier { x } *= NumberLiteral { 4 }
-					}
-					BinaryModification {
-						Identifier { x } /= NumberLiteral { 2 }
-					}
-					Print {
+				VariableDeclaration [ var ] {
+					Assignment {
 						Identifier { x }
+						= NumberLiteral { 0 }
 					}
+				}
+				BinaryModification {
+					Identifier { x } += NumberLiteral { 4 }
+				}
+				BinaryModification {
+					Identifier { x } -= NumberLiteral { 3 }
+				}
+				BinaryModification {
+					Identifier { x } *= NumberLiteral { 4 }
+				}
+				BinaryModification {
+					Identifier { x } /= NumberLiteral { 2 }
+				}
+				Print {
+					Identifier { x }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)

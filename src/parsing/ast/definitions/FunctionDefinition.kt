@@ -1,19 +1,19 @@
 package parsing.ast.definitions
 
 import parsing.ast.Element
-import parsing.ast.general.StatementBlock
+import parsing.ast.general.StatementSection
 import source_structure.Position
 import parsing.ast.literals.Identifier
 import parsing.ast.literals.Type
 import java.lang.StringBuilder
 
 class FunctionDefinition(start: Position, val modifierList: ModifierList?, val identifier: Identifier,
-						 val parameterList: ParameterList, val body: StatementBlock?,
+						 val parameterList: ParameterList, val body: StatementSection?,
 						 var returnType: Type?): Element(start, body?.end ?: returnType?.end ?: parameterList.end) {
 
 	override fun toString(): String {
 		val string = StringBuilder()
-		string.append("Function [")
+		string.append("Function [ ")
 		if(modifierList != null)
 			string.append(modifierList)
 				.append(" ")
@@ -22,7 +22,7 @@ class FunctionDefinition(start: Position, val modifierList: ModifierList?, val i
 			.append(parameterList)
 			.append(": ")
 			.append(returnType ?: "void")
-			.append("] { ")
+			.append(" ] { ")
 			.append(body)
 			.append(" }")
 		return string.toString()

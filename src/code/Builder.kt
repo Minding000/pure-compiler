@@ -4,7 +4,7 @@ import compiler.InstructionGenerator
 import compiler.InstructionOptimizer
 import compiler.targets.PythonCompiler
 import errors.user.UserError
-import parsing.ElementGenerator
+import parsing.element_generator.ElementGenerator
 import source_structure.Module
 import source_structure.Project
 import java.io.File

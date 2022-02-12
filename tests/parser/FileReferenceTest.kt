@@ -12,10 +12,8 @@ internal class FileReferenceTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					FileReference {
-						Identifier { pure }
-					}
+				FileReference {
+					Identifier { pure }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -28,13 +26,11 @@ internal class FileReferenceTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					FileReference {
-						Identifier { pure }
-						Identifier { lang }
-						Identifier { dataTypes }
-						Identifier { String }
-					}
+				FileReference {
+					Identifier { pure }
+					Identifier { lang }
+					Identifier { dataTypes }
+					Identifier { String }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -49,12 +45,10 @@ internal class FileReferenceTest {
 			""".trimIndent()
 		val expected =
 			"""
-				Program {
-					FileReference {
-						Identifier { pure }
-						AliasBlock {
-							Alias { Identifier { String } as Identifier { Text } }
-						}
+				FileReference {
+					Identifier { pure }
+					AliasBlock {
+						Alias { Identifier { String } as Identifier { Text } }
 					}
 				}
             """.trimIndent()

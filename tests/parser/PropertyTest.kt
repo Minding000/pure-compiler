@@ -28,60 +28,58 @@ internal class PropertyTest {
 		""".trimIndent()
 		val expected =
 			"""
-				Program {
-					TypeDefinition [TypeType { class } Identifier { Rectangle }] { TypeBody {
-						GenericsDeclaration {
-							TypedIdentifier { Identifier { Unit } : Type { Identifier { Number } } }
-						}
-						PropertyDeclaration [ var ] {
-							Assignment {
-								Identifier { left }
-								Identifier { right }
-								Identifier { top }
-								Identifier { bottom }
-								= Cast {
-									NumberLiteral { 0 } as Type { Identifier { Unit } }
-								}
+				TypeDefinition [ TypeType { class } Identifier { Rectangle } ] { TypeBody {
+					GenericsDeclaration {
+						TypedIdentifier { Identifier { Unit } : Type { SimpleType { Identifier { Number } } } }
+					}
+					PropertyDeclaration [ var ] {
+						Assignment {
+							Identifier { left }
+							Identifier { right }
+							Identifier { top }
+							Identifier { bottom }
+							= Cast {
+								NumberLiteral { 0 } as Type { SimpleType { Identifier { Unit } } }
 							}
 						}
-						PropertyDeclaration [ val ] {
-							ComputedProperty {
-								TypedIdentifier { Identifier { width } : Type { Identifier { Unit } } }
-								get BinaryOperator {
-									Identifier { right } - Identifier { left }
-								}
+					}
+					PropertyDeclaration [ val ] {
+						ComputedProperty {
+							TypedIdentifier { Identifier { width } : Type { SimpleType { Identifier { Unit } } } }
+							get BinaryOperator {
+								Identifier { right } - Identifier { left }
 							}
-							ComputedProperty {
-								TypedIdentifier { Identifier { height } : Type { Identifier { Unit } } }
-								get BinaryOperator {
-									Identifier { bottom } - Identifier { top }
-								}
+						}
+						ComputedProperty {
+							TypedIdentifier { Identifier { height } : Type { SimpleType { Identifier { Unit } } } }
+							get BinaryOperator {
+								Identifier { bottom } - Identifier { top }
 							}
-							ComputedProperty {
-								TypedIdentifier { Identifier { centerX } : Type { Identifier { Unit } } }
-								get BinaryOperator {
-									Identifier { left } + BinaryOperator {
-										Identifier { width } / NumberLiteral { 2 }
-									}
-								}
-							}
-							ComputedProperty {
-								TypedIdentifier { Identifier { centerY } : Type { Identifier { Unit } } }
-								get BinaryOperator {
-									Identifier { top } + BinaryOperator {
-										Identifier { height } / NumberLiteral { 2 }
-									}
-								}
-							}
-							ComputedProperty {
-								TypedIdentifier { Identifier { isSquare } : Type { Identifier { Bool } } }
-								get BinaryOperator {
-									Identifier { width } == Identifier { height }
+						}
+						ComputedProperty {
+							TypedIdentifier { Identifier { centerX } : Type { SimpleType { Identifier { Unit } } } }
+							get BinaryOperator {
+								Identifier { left } + BinaryOperator {
+									Identifier { width } / NumberLiteral { 2 }
 								}
 							}
 						}
-					} }
-				}
+						ComputedProperty {
+							TypedIdentifier { Identifier { centerY } : Type { SimpleType { Identifier { Unit } } } }
+							get BinaryOperator {
+								Identifier { top } + BinaryOperator {
+									Identifier { height } / NumberLiteral { 2 }
+								}
+							}
+						}
+						ComputedProperty {
+							TypedIdentifier { Identifier { isSquare } : Type { SimpleType { Identifier { Bool } } } }
+							get BinaryOperator {
+								Identifier { width } == Identifier { height }
+							}
+						}
+					}
+				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
