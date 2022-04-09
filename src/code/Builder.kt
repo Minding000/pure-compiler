@@ -1,15 +1,15 @@
 package code
 
-import compiler.InstructionGenerator
-import compiler.InstructionOptimizer
-import compiler.targets.PythonCompiler
+import compiler.targets.LLVMIRCompiler
 import errors.user.UserError
+import linter.Linter
 import parsing.element_generator.ElementGenerator
 import source_structure.Module
 import source_structure.Project
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
+import java.util.*
 
 object Builder {
 	private const val LANG_MODULE_PATH = "D:\\Daten\\Projekte\\Pure\\packages\\lang"
@@ -23,6 +23,15 @@ object Builder {
 			println("----- Abstract syntax tree: -----")
 			val program = ElementGenerator(project).parseProgram()
 			println(program)
+			println("----- Linter messages: -----")
+			val linter = Linter()
+			val lintedProgram = linter.lint(program)
+			for(message in linter.messages) {
+				println(message.description)
+			}
+			println("----- JIT output: -----")
+			LLVMIRCompiler.compile()
+			/*
 			if(Main.DEBUG) {
 				println("----- Intermediate code: -----")
 				println(PythonCompiler.compile(InstructionGenerator().generateInstructions(program), true))
@@ -42,6 +51,7 @@ object Builder {
 			targetFile.printWriter().use { out ->
 				out.write(pythonCode)
 			}
+			*/
 			println("Done.")
 		} catch(e: UserError) {
 			println("Failed to compile: ${e.message}")
@@ -56,36 +66,37 @@ object Builder {
 		val mainModule = Module("Main")
 		if(source.isFile) {
 			project.targetPath = source.parent
-			addFile(mainModule, "", source)
+			addFile(mainModule, LinkedList(), source)
 		} else {
 			project.targetPath = path
-			addDirectory(mainModule, "", source)
+			addDirectory(mainModule, LinkedList(), source)
 		}
 		project.addModule(mainModule)
 		return project
 	}
 
-	fun loadRequiredModules(project: Project) {
+	private fun loadRequiredModules(project: Project) {
 		val langModule = Module("Lang")
-		addDirectory(langModule, "", File(LANG_MODULE_PATH))
+		addDirectory(langModule, LinkedList(), File(LANG_MODULE_PATH))
 		project.addModule(langModule)
 	}
 
-	private fun addDirectory(module: Module, subPath: String, directory: File) {
+	private fun addDirectory(module: Module, parts: List<String>, directory: File) {
 		val files = directory.listFiles() ?: throw IOException("Failed to list directory contents of '${directory.name}'.")
-		val childSubPath = "$subPath${directory.name}."
+		val childPathParts = LinkedList(parts)
+		childPathParts.add(directory.name)
 		for(file in files) {
 			if(file.isFile) {
-				addFile(module, childSubPath, file)
+				addFile(module, childPathParts, file)
 			} else {
-				addDirectory(module, childSubPath, file)
+				addDirectory(module, childPathParts, file)
 			}
 		}
 	}
 
-	private fun addFile(module: Module, subPath: String, file: File) {
+	private fun addFile(module: Module, pathParts: List<String>, file: File) {
 		if(!file.name.endsWith(".pure"))
 			return
-		module.addFile(subPath, file.nameWithoutExtension, Files.readString(file.toPath()))
+		module.addFile(pathParts, file.nameWithoutExtension, Files.readString(file.toPath()))
 	}
 }

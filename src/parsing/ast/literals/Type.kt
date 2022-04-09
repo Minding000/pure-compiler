@@ -1,11 +1,12 @@
 package parsing.ast.literals
 
-import parsing.ast.Element
+import linter.Linter
+import linter.elements.literals.Type
+import linter.scopes.Scope
+import parsing.ast.general.Element
+import source_structure.Position
 
-class Type(val baseType: Element, val hasDynamicQuantity: Boolean, val isOptional: Boolean, val typeList: TypeList?):
-	Element(typeList?.start ?: baseType.start, baseType.end) {
+abstract class Type(start: Position, end: Position): Element(start, end) {
 
-	override fun toString(): String {
-		return "Type { ${if(hasDynamicQuantity) "..." else ""}${if(typeList == null) "" else "$typeList "}$baseType${if(isOptional) "?" else ""} }"
-	}
+	abstract override fun concretize(linter: Linter, scope: Scope): Type
 }

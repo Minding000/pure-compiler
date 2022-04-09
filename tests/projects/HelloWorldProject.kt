@@ -7,6 +7,8 @@ internal class HelloWorldProject {
 
 	@Test
 	fun testParsing() {
+		TestUtil.recordErrorStream()
 		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Hello World\\Main.pure"))
+		TestUtil.assertErrorStreamEmpty()
 	}
 }

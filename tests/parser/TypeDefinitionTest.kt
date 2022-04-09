@@ -10,7 +10,7 @@ internal class TypeDefinitionTest {
 		val sourceCode = "class Animal {}"
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Animal } ] { TypeBody {
+				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -21,7 +21,7 @@ internal class TypeDefinitionTest {
 		val sourceCode = "object Dog {}"
 		val expected =
 			"""
-				TypeDefinition [ TypeType { object } Identifier { Dog } ] { TypeBody {
+				TypeDefinition [ object Identifier { Dog } ] { TypeBody {
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -32,20 +32,20 @@ internal class TypeDefinitionTest {
 		val sourceCode = "native class Goldfish {}"
 		val expected =
 			"""
-				TypeDefinition [ ModifierList { Modifier { native } } TypeType { class } Identifier { Goldfish } ] { TypeBody {
-				} }
+				ModifierSection [ ModifierList { Modifier { native } } ] {
+					TypeDefinition [ class Identifier { Goldfish } ] { TypeBody {
+					} }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
 
 	@Test
 	fun testInheritance() {
-		val sourceCode = "class Dog: Animal {}"
+		val sourceCode = "class Dog: Animal & Soulmate {}"
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Dog } InheritanceList {
-					Type { SimpleType { Identifier { Animal } } }
-				} ] { TypeBody {
+				TypeDefinition [ class Identifier { Dog } UnionType { SimpleType { Identifier { Animal } } & SimpleType { Identifier { Soulmate } } } ] { TypeBody {
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -61,8 +61,8 @@ internal class TypeDefinitionTest {
             """.trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { String } ] { TypeBody {
-					TypeDefinition [ TypeType { class } Identifier { Index } ] { TypeBody {
+				TypeDefinition [ class Identifier { String } ] { TypeBody {
+					TypeDefinition [ class Identifier { Index } ] { TypeBody {
 					} }
 				} }
             """.trimIndent()
@@ -78,7 +78,7 @@ internal class TypeDefinitionTest {
             """.trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { trait } Identifier { Printable } ] { TypeBody {
+				TypeDefinition [ trait Identifier { Printable } ] { TypeBody {
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -94,7 +94,7 @@ internal class TypeDefinitionTest {
             """.trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { trait } Identifier { Comparable } ] { TypeBody {
+				TypeDefinition [ trait Identifier { Comparable } ] { TypeBody {
 					GenericsDeclaration {
 						Identifier { Target }
 					}
@@ -113,13 +113,28 @@ internal class TypeDefinitionTest {
             """.trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { enum } Identifier { DeliveryStatus } ] { TypeBody {
+				TypeDefinition [ enum Identifier { DeliveryStatus } ] { TypeBody {
 					InstanceList {
 						Identifier { Pending }
 						Identifier { Cancelled }
 						Identifier { Delivered }
 					}
 				} }
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testTypeAlias() {
+		val sourceCode =
+			"""
+				alias EventHandler = (Event) =>;
+            """.trimIndent()
+		val expected =
+			"""
+				TypeAlias [ Identifier { EventHandler } ] { LambdaFunctionType { LambdaParameterList {
+					SimpleType { Identifier { Event } }
+				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}

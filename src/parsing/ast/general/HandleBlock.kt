@@ -1,13 +1,23 @@
 package parsing.ast.general
 
-import parsing.ast.Element
+import linter.Linter
+import linter.elements.general.HandleBlock
+import linter.elements.values.VariableValueDeclaration
+import linter.scopes.Scope
 import parsing.ast.literals.Identifier
 import parsing.ast.literals.Type
 import source_structure.Position
-import util.indent
-import util.toLines
+import parsing.ast.general.StatementBlock
 
-class HandleBlock(start: Position, val type: Type, val identifier: Identifier?, val block: StatementBlock): Element(start, block.end) {
+class HandleBlock(start: Position, private val type: Type, private val identifier: Identifier?, private val block: StatementBlock): Element(start, block.end) {
+
+	override fun concretize(linter: Linter, scope: Scope): HandleBlock {
+		val variableValueDeclaration = if(identifier == null)
+			null
+		else
+			VariableValueDeclaration(identifier, identifier.getValue())
+		return HandleBlock(this, type.concretize(linter, scope), variableValueDeclaration, block.concretize(linter, scope))
+	}
 
 	override fun toString(): String {
 		return "Handle [ $type${if(identifier == null) "" else " $identifier"} ] { $block }"

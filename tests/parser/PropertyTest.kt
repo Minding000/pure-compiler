@@ -6,75 +6,97 @@ import org.junit.jupiter.api.Test
 internal class PropertyTest {
 
 	@Test
-	fun testComputedProperty() {
+	fun testConstant() {
 		val sourceCode = """
-			class Rectangle {
-				containing Unit: Number
-				
-				var left = right = top = bottom = 0 as Unit
-				val {
-					width: Unit
-						get right - left
-					height: Unit
-						get bottom - top
-					centerX: Unit
-						get left + width / 2
-					centerY: Unit
-						get top + height / 2
-					isSquare: Bool
-						get width == height
+			class Human {
+				const: Int {
+					EYE_COUNT = 2
+					ARM_COUNT = 2
+					LEG_COUNT = 2
 				}
 			}
 		""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Rectangle } ] { TypeBody {
+				TypeDefinition [ class Identifier { Human } ] { TypeBody {
+					VariableSection [ const: SimpleType { Identifier { Int } } ] {
+						VariableDeclaration { Identifier { EYE_COUNT } = NumberLiteral { 2 } }
+						VariableDeclaration { Identifier { ARM_COUNT } = NumberLiteral { 2 } }
+						VariableDeclaration { Identifier { LEG_COUNT } = NumberLiteral { 2 } }
+					}
+				} }
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testComputedProperty() {
+		val sourceCode = """
+			class Rectangle {
+				containing Unit: Number
+				
+				var: Unit = 0 {
+					left
+					right
+					top
+					bottom
+				}
+				val: Unit {
+					width gets right - left
+					height gets bottom - top
+					centerX gets left + width / 2
+					centerY gets top + height / 2
+				}
+				val isSquare: Bool
+					gets width == height
+			}
+		""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ class Identifier { Rectangle } ] { TypeBody {
 					GenericsDeclaration {
-						TypedIdentifier { Identifier { Unit } : Type { SimpleType { Identifier { Number } } } }
+						TypedIdentifier { Identifier { Unit }: SimpleType { Identifier { Number } } }
 					}
-					PropertyDeclaration [ var ] {
-						Assignment {
-							Identifier { left }
-							Identifier { right }
-							Identifier { top }
-							Identifier { bottom }
-							= Cast {
-								NumberLiteral { 0 } as Type { SimpleType { Identifier { Unit } } }
-							}
-						}
+					VariableSection [ var: SimpleType { Identifier { Unit } } = NumberLiteral { 0 } ] {
+						VariableDeclaration { Identifier { left } }
+						VariableDeclaration { Identifier { right } }
+						VariableDeclaration { Identifier { top } }
+						VariableDeclaration { Identifier { bottom } }
 					}
-					PropertyDeclaration [ val ] {
+					VariableSection [ val: SimpleType { Identifier { Unit } } ] {
 						ComputedProperty {
-							TypedIdentifier { Identifier { width } : Type { SimpleType { Identifier { Unit } } } }
-							get BinaryOperator {
+							Identifier { width }
+							gets BinaryOperator {
 								Identifier { right } - Identifier { left }
 							}
 						}
 						ComputedProperty {
-							TypedIdentifier { Identifier { height } : Type { SimpleType { Identifier { Unit } } } }
-							get BinaryOperator {
+							Identifier { height }
+							gets BinaryOperator {
 								Identifier { bottom } - Identifier { top }
 							}
 						}
 						ComputedProperty {
-							TypedIdentifier { Identifier { centerX } : Type { SimpleType { Identifier { Unit } } } }
-							get BinaryOperator {
+							Identifier { centerX }
+							gets BinaryOperator {
 								Identifier { left } + BinaryOperator {
 									Identifier { width } / NumberLiteral { 2 }
 								}
 							}
 						}
 						ComputedProperty {
-							TypedIdentifier { Identifier { centerY } : Type { SimpleType { Identifier { Unit } } } }
-							get BinaryOperator {
+							Identifier { centerY }
+							gets BinaryOperator {
 								Identifier { top } + BinaryOperator {
 									Identifier { height } / NumberLiteral { 2 }
 								}
 							}
 						}
+					}
+					VariableSection [ val ] {
 						ComputedProperty {
-							TypedIdentifier { Identifier { isSquare } : Type { SimpleType { Identifier { Bool } } } }
-							get BinaryOperator {
+							Identifier { isSquare }: SimpleType { Identifier { Bool } }
+							gets BinaryOperator {
 								Identifier { width } == Identifier { height }
 							}
 						}

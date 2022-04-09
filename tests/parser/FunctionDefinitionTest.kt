@@ -14,11 +14,13 @@ internal class FunctionDefinitionTest {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Animal } ] { TypeBody {
-					Function [ Identifier { canEat } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { food } : Type { SimpleType { Identifier { Food } } } } }
-					}: Type { SimpleType { Identifier { Bool } } } ] { StatementSection { StatementBlock {
-					} } }
+				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+					FunctionSection [ it ] {
+						Function [ Identifier { canEat } ParameterList {
+							Parameter { TypedIdentifier { Identifier { food }: SimpleType { Identifier { Food } } } }
+						}: SimpleType { Identifier { Bool } } ] { StatementSection { StatementBlock {
+						} } }
+					}
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -34,19 +36,18 @@ internal class FunctionDefinitionTest {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Animal } ] { TypeBody {
-					Function [ Identifier { getSound } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { loudness } : Type { SimpleType { Identifier { Int } } } } }
-					}: void ] { StatementSection { StatementBlock {
-						VariableDeclaration [ var ] {
-							Assignment {
-								Identifier { energy }
-								= BinaryOperator {
+				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { getSound } ParameterList {
+							Parameter { TypedIdentifier { Identifier { loudness }: SimpleType { Identifier { Int } } } }
+						}: void ] { StatementSection { StatementBlock {
+							VariableSection [ var ] {
+								VariableDeclaration { Identifier { energy } = BinaryOperator {
 									Identifier { loudness } * NumberLiteral { 2 }
-								}
+								} }
 							}
-						}
-					} } }
+						} } }
+					}
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -64,13 +65,13 @@ internal class FunctionDefinitionTest {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Animal } ] { TypeBody {
-					PropertyDeclaration [ var ] {
-						TypedIdentifier { Identifier { canSwim } : Type { SimpleType { Identifier { Bool } } } }
+				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+					VariableSection [ var ] {
+						VariableDeclaration { Identifier { canSwim }: SimpleType { Identifier { Bool } } }
 					}
 					Initializer [ ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { name } : Type { SimpleType { Identifier { String } } } } }
-						Parameter [] { Identifier { canSwim } }
+						Parameter { TypedIdentifier { Identifier { name }: SimpleType { Identifier { String } } } }
+						Parameter { Identifier { canSwim } }
 					} ] { StatementSection { StatementBlock {
 						Print {
 							StringLiteral { "Creating" }
@@ -92,12 +93,12 @@ internal class FunctionDefinitionTest {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Animal } ] { TypeBody {
-					PropertyDeclaration [ var ] {
-						TypedIdentifier { Identifier { canSwim } : Type { SimpleType { Identifier { Bool } } } }
+				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+					VariableSection [ var ] {
+						VariableDeclaration { Identifier { canSwim }: SimpleType { Identifier { Bool } } }
 					}
 					Initializer [ ParameterList {
-						Parameter [] { Identifier { canSwim } }
+						Parameter { Identifier { canSwim } }
 					} ] {  }
 				} }
             """.trimIndent()
@@ -116,11 +117,11 @@ internal class FunctionDefinitionTest {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Animal } ] { TypeBody {
-					PropertyDeclaration [ var ] {
-						TypedIdentifier { Identifier { name } : Type { SimpleType { Identifier { String } } } }
+				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+					VariableSection [ var ] {
+						VariableDeclaration { Identifier { name }: SimpleType { Identifier { String } } }
 					}
-					Deinitializer [  ] { StatementSection { StatementBlock {
+					Deinitializer { StatementSection { StatementBlock {
 						Print {
 							StringLiteral { "Animal '${'$'}name' has been deallocated." }
 						}
@@ -134,7 +135,10 @@ internal class FunctionDefinitionTest {
 	fun testOperatorDefinition() {
 		val sourceCode = """
 			class Vector {
-				var x: Int, y: Int
+				var: Int {
+					x
+					y
+				}
 				
 				operator +=(right: Vector) {
 					x += right.x
@@ -147,13 +151,13 @@ internal class FunctionDefinitionTest {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Vector } ] { TypeBody {
-					PropertyDeclaration [ var ] {
-						TypedIdentifier { Identifier { x } : Type { SimpleType { Identifier { Int } } } }
-						TypedIdentifier { Identifier { y } : Type { SimpleType { Identifier { Int } } } }
+				TypeDefinition [ class Identifier { Vector } ] { TypeBody {
+					VariableSection [ var: SimpleType { Identifier { Int } } ] {
+						VariableDeclaration { Identifier { x } }
+						VariableDeclaration { Identifier { y } }
 					}
 					OperatorDefinition [ Operator { += } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { right } : Type { SimpleType { Identifier { Vector } } } } }
+						Parameter { TypedIdentifier { Identifier { right }: SimpleType { Identifier { Vector } } } }
 					}: void ] { StatementSection { StatementBlock {
 						BinaryModification {
 							Identifier { x } += MemberAccess {
@@ -167,7 +171,7 @@ internal class FunctionDefinitionTest {
 						}
 					} } }
 					OperatorDefinition [ Operator { == } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { right } : Type { SimpleType { Identifier { Vector } } } } }
+						Parameter { TypedIdentifier { Identifier { right }: SimpleType { Identifier { Vector } } } }
 					}: void ] { StatementSection { StatementBlock {
 						Return { BinaryOperator {
 							BinaryOperator {
@@ -201,11 +205,11 @@ internal class FunctionDefinitionTest {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { BookSelf } ] { TypeBody {
+				TypeDefinition [ class Identifier { BookSelf } ] { TypeBody {
 					OperatorDefinition [ IndexOperator {
-						TypedIdentifier { Identifier { index } : Type { SimpleType { Identifier { Int } } } }
+						TypedIdentifier { Identifier { index }: SimpleType { Identifier { Int } } }
 					} ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { value } : Type { SimpleType { Identifier { Book } } } } }
+						Parameter { TypedIdentifier { Identifier { value }: SimpleType { Identifier { Book } } } }
 					}: void ] { StatementSection { StatementBlock {
 						Print {
 							StringLiteral { "Adding book" }
@@ -214,8 +218,8 @@ internal class FunctionDefinitionTest {
 						}
 					} } }
 					OperatorDefinition [ IndexOperator {
-						TypedIdentifier { Identifier { index } : Type { SimpleType { Identifier { Int } } } }
-					}: Type { SimpleType { Identifier { Book } } } ] { StatementSection { StatementBlock {
+						TypedIdentifier { Identifier { index }: SimpleType { Identifier { Int } } }
+					}: SimpleType { Identifier { Book } } ] { StatementSection { StatementBlock {
 						Print {
 							StringLiteral { "Book requested" }
 							Identifier { index }
@@ -235,11 +239,13 @@ internal class FunctionDefinitionTest {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Animal } ] { TypeBody {
-					Function [ Identifier { getSound } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { loudness } : Type { SimpleType { Identifier { Int } } } } }
-					}: void ] { StatementSection { StatementBlock {
-					} } }
+				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { getSound } ParameterList {
+							Parameter { TypedIdentifier { Identifier { loudness }: SimpleType { Identifier { Int } } } }
+						}: void ] { StatementSection { StatementBlock {
+						} } }
+					}
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -254,12 +260,35 @@ internal class FunctionDefinitionTest {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Animal } ] { TypeBody {
-					Function [ Identifier { setSounds } ParameterList {
-						Parameter [ ModifierList { Modifier { ... } } ] { TypedIdentifier { Identifier { sounds } : Type { ...SimpleType { Identifier { Sound } } } } }
-					}: void ] { StatementSection { StatementBlock {
-					} } }
+				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { setSounds } ParameterList {
+							Parameter [ ModifierList { Modifier { ... } } ] { TypedIdentifier { Identifier { sounds }: QuantifiedType { ...SimpleType { Identifier { Sound } } } } }
+						}: void ] { StatementSection { StatementBlock {
+						} } }
+					}
 				} }
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testLambdaFunctionDefinition() {
+		val sourceCode = """
+			val condition = (a: Int, b: Int) => { return a < b }
+			""".trimIndent()
+		val expected =
+			"""
+				VariableSection [ val ] {
+					VariableDeclaration { Identifier { condition } = LambdaFunctionDefinition [ ParameterList {
+						Parameter { TypedIdentifier { Identifier { a }: SimpleType { Identifier { Int } } } }
+						Parameter { TypedIdentifier { Identifier { b }: SimpleType { Identifier { Int } } } }
+					} ] { StatementSection { StatementBlock {
+						Return { BinaryOperator {
+							Identifier { a } < Identifier { b }
+						} }
+					} } } }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}

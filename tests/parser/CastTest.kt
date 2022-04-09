@@ -11,7 +11,7 @@ internal class CastTest {
 		val expected =
 			"""
 				Cast {
-					NumberLiteral { 10 } as Type { SimpleType { Identifier { Float } } }
+					NumberLiteral { 10 } as SimpleType { Identifier { Float } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -23,7 +23,7 @@ internal class CastTest {
 		val expected =
 			"""
 				Cast {
-					Identifier { quoteSource } as? Type { SimpleType { Identifier { Book } } }
+					Identifier { quoteSource } as? SimpleType { Identifier { Book } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -35,7 +35,7 @@ internal class CastTest {
 		val expected =
 			"""
 				Cast {
-					Identifier { food } as! Type { SimpleType { Identifier { Fruit } } }
+					Identifier { food } as! SimpleType { Identifier { Fruit } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -51,7 +51,7 @@ internal class CastTest {
 		val expected =
 			"""
 				If [ Cast {
-					Identifier { inputDevice } is TypedIdentifier { Identifier { keyboard } : Type { SimpleType { Identifier { Keyboard } } } }
+					Identifier { inputDevice } is TypedIdentifier { Identifier { keyboard }: SimpleType { Identifier { Keyboard } } }
 				} ] {
 					StatementSection { StatementBlock {
 					} }
@@ -70,7 +70,7 @@ internal class CastTest {
 		val expected =
 			"""
 				If [ Cast {
-					Identifier { inputDevice } is! TypedIdentifier { Identifier { keyboard } : Type { SimpleType { Identifier { Keyboard } } } }
+					Identifier { inputDevice } is! TypedIdentifier { Identifier { keyboard }: SimpleType { Identifier { Keyboard } } }
 				} ] {
 					StatementSection { StatementBlock {
 					} }

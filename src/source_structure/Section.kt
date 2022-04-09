@@ -3,13 +3,11 @@ package source_structure
 import java.lang.StringBuilder
 
 open class Section(val start: Position, val end: Position): IdentifierSource {
-
-	fun getFile(): File {
-		return start.line.file
-	}
+	private val file: File
+		get() = start.line.file
 
 	final override fun getValue(): String {
-		return getFile().content.substring(start.index, end.index)
+		return file.content.substring(start.index, end.index)
 	}
 
 	override fun getStartString(): String {
@@ -21,17 +19,17 @@ open class Section(val start: Position, val end: Position): IdentifierSource {
 	}
 
 	fun getHighlight(): String {
-		val sb = StringBuilder()
-		val lines = getFile().lines
+		val highlight = StringBuilder()
+		val lines = file.lines
 		for(i in start.line.number - 1 until end.line.number) {
 			val line = lines[i]
-			sb.append(line.getContent().replace("\t", " "))
-			sb.append("\n")
+			highlight.append(line.getContent().replace("\t", " "))
+			highlight.append("\n")
 			val highlightStart = if(line == start.line) start.column else 0
 			val highlightEnd = if(line == end.line) end.column else line.end
-			sb.append(" ".repeat(highlightStart))
-			sb.append("^".repeat(highlightEnd - highlightStart))
+			highlight.append(" ".repeat(highlightStart))
+			highlight.append("^".repeat(highlightEnd - highlightStart))
 		}
-		return sb.toString()
+		return highlight.toString()
 	}
 }

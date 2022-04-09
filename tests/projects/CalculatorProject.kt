@@ -7,6 +7,8 @@ internal class CalculatorProject {
 
 	@Test
 	fun testParsing() {
-		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Calculator\\Main.pure"))
+		TestUtil.recordErrorStream()
+		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Calculator"))
+		TestUtil.assertErrorStreamEmpty()
 	}
 }

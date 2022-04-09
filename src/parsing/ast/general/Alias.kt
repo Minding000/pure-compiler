@@ -1,9 +1,15 @@
 package parsing.ast.general
 
-import parsing.ast.Element
+import linter.Linter
+import linter.elements.general.ReferenceAlias
+import linter.scopes.Scope
 import parsing.ast.literals.Identifier
 
-class Alias(val originalName: Identifier, val aliasName: Identifier): Element(originalName.start, aliasName.end) {
+class Alias(private val originalName: Identifier, private val aliasName: Identifier): Element(originalName.start, aliasName.end) {
+
+	override fun concretize(linter: Linter, scope: Scope): ReferenceAlias {
+		return ReferenceAlias(this, originalName.getValue(), aliasName.getValue())
+	}
 
 	override fun toString(): String {
 		return "Alias { $originalName as $aliasName }"

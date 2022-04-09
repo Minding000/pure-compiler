@@ -1,10 +1,12 @@
 package parser
 
 import TestUtil
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 internal class AwaitTest {
 
+	@Disabled
 	@Test
 	fun testAwaitSingle() {
 		val sourceCode = """
@@ -16,6 +18,7 @@ internal class AwaitTest {
 		TestUtil.assertAST(expected, sourceCode)
 	}
 
+	@Disabled
 	@Test
 	fun testAwaitMultiple() {
 		val sourceCode = """
@@ -30,6 +33,7 @@ internal class AwaitTest {
 		TestUtil.assertAST(expected, sourceCode)
 	}
 
+	@Disabled
 	@Test
 	fun testCompleteMultiple() {
 		val sourceCode = """
@@ -44,6 +48,7 @@ internal class AwaitTest {
 		TestUtil.assertAST(expected, sourceCode)
 	}
 
+	@Disabled
 	@Test
 	fun testCompleteMultipleOptional() {
 		val sourceCode = """
@@ -58,6 +63,7 @@ internal class AwaitTest {
 		TestUtil.assertAST(expected, sourceCode)
 	}
 
+	@Disabled
 	@Test
 	fun testAnyMultiple() {
 		val sourceCode = """

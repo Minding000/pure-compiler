@@ -5,12 +5,11 @@ object Main {
 
 	@JvmStatic
 	fun main(args: Array<String>) {
-		if(args.size == 0) {
+		if(args.isEmpty()) {
 			Helper.help()
 			return
 		}
-		val subCommand = args.first()
-		when(subCommand) {
+		when(val subCommand = args.first()) {
 			"build" -> {
 				if(args.size < 2) {
 					println("Please provide a file or directory to build.")

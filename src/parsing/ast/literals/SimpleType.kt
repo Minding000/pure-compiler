@@ -1,8 +1,20 @@
 package parsing.ast.literals
 
-import parsing.ast.Element
+import linter.Linter
+import linter.elements.literals.SimpleType
+import linter.scopes.Scope
+import java.util.*
 
-class SimpleType(val typeList: TypeList?, val identifier: Identifier): Element(identifier.start, typeList?.end ?: identifier.end) {
+class SimpleType(private val typeList: TypeList?, private val identifier: Identifier): Type(identifier.start, typeList?.end ?: identifier.end) {
+
+	override fun concretize(linter: Linter, scope: Scope): SimpleType {
+		val types = LinkedList<linter.elements.literals.Type>()
+		if(typeList != null) {
+			for(type in typeList.typeParameters)
+				types.add(type.concretize(linter, scope))
+		}
+		return SimpleType(this, types, identifier.getValue())
+	}
 
 	override fun toString(): String {
 		return "SimpleType { ${if(typeList == null) "" else "$typeList "}$identifier }"

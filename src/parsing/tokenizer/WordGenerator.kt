@@ -14,35 +14,39 @@ class WordGenerator(private val project: Project) {
 	private lateinit var file: File
 	private lateinit var line: Line
 	private var position = -1
+	var done = false
 
 	init {
-		nextModule()
+		loadNextModule()
 	}
 
-	private fun nextModule(): Boolean {
+	private fun loadNextModule() {
 		moduleIndex++
 		val modules = project.modules
-		return if(moduleIndex < modules.size) {
-			module = modules[moduleIndex]
-			fileIndex = -1
-			nextFile()
-		} else {
-			false
+		if(moduleIndex >= modules.size) {
+			done = true
+			return
 		}
+		module = modules[moduleIndex]
+		fileIndex = -1
+		loadNextFile()
 	}
 
-	private fun nextFile(): Boolean {
+	fun loadNextFile() {
 		fileIndex++
 		val files = module.files
-		return if(fileIndex < files.size) {
-			file = files[fileIndex]
-			lineIndex = -1
-			nextLine()
-			position = 0
-			true
-		} else {
-			nextModule()
+		if(fileIndex >= files.size) {
+			loadNextModule()
+			return
 		}
+		file = files[fileIndex]
+		lineIndex = -1
+		nextLine()
+		position = 0
+	}
+
+	fun getFile(): File {
+		return file
 	}
 
 	private fun nextLine(count: Int = 1) {
@@ -69,10 +73,8 @@ class WordGenerator(private val project: Project) {
 	}
 
 	fun getNextWord(): Word? {
-		while(file.content.length == position) {
-			if(!nextFile())
-				return null
-		}
+		if(file.content.length == position)
+			return null
 		val input = file.content.substring(position)
 		val matcher = Pattern
 			.compile("")

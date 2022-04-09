@@ -1,11 +1,23 @@
 package parsing.ast.definitions
 
-import parsing.ast.Element
+import linter.Linter
+import linter.elements.literals.TypeParameter
+import linter.scopes.Scope
 import parsing.ast.literals.Type
+import parsing.tokenizer.Word
+import parsing.tokenizer.WordAtom
 
-class TypeParameter(val type: Type, val modifier: GenericModifier?): Element(type.start, modifier?.end ?: type.end) {
+class TypeParameter(val type: Type, val modifier: Word): Type(type.start, modifier.end) {
+
+    override fun concretize(linter: Linter, scope: Scope): TypeParameter {
+        val mode = if(modifier.type == WordAtom.CONSUMING)
+            TypeParameter.Mode.CONSUMING
+        else
+            TypeParameter.Mode.PRODUCING
+        return TypeParameter(this, mode, type.concretize(linter, scope))
+    }
 
     override fun toString(): String {
-        return "TypeParameter [${if(modifier == null) "" else " $modifier "}] { $type }"
+        return "TypeParameter${" [ ${modifier.getValue()} ]"} { $type }"
     }
 }

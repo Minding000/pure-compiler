@@ -7,8 +7,8 @@ import java.util.*
 class Module(val name: String) {
 	val files = LinkedList<File>()
 
-	fun addFile(subPath: String, name: String, content: String) {
-		files.add(File(this, subPath, name, content))
+	fun addFile(pathParts: List<String>, name: String, content: String) {
+		files.add(File(this, pathParts, name, content))
 	}
 
 	override fun toString(): String {

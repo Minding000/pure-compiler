@@ -1,6 +1,6 @@
 package compiler
 
-import parsing.ast.Program
+import parsing.ast.general.Program
 import compiler.instructions.Instruction
 import java.util.*
 

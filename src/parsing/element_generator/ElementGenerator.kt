@@ -1,15 +1,8 @@
 package parsing.element_generator
 
-import parsing.ast.*
-import parsing.ast.operations.*
 import errors.user.UnexpectedWordError
-import parsing.ast.access.Index
-import parsing.ast.access.MemberAccess
-import parsing.ast.control_flow.*
-import parsing.ast.definitions.*
 import parsing.ast.general.*
 import source_structure.Project
-import parsing.ast.literals.*
 import parsing.tokenizer.*
 import java.util.*
 
@@ -18,15 +11,13 @@ class ElementGenerator(project: Project): Generator() {
 	override var currentWord: Word? = null
 	override var nextWord: Word? = null
 	override var parseForeignLanguageLiteralNext = false
-	private val statementParser = StatementParser(this)
+	val statementParser = StatementParser(this)
 	val expressionParser = ExpressionParser(this)
 	val typeParser = TypeParser(this)
 	val literalParser = LiteralParser(this)
 
 	init {
 		wordGenerator = WordGenerator(project)
-		currentWord = wordGenerator.getNextWord()
-		nextWord = wordGenerator.getNextWord()
 	}
 
 	override fun consume(type: WordDescriptor): Word {
@@ -46,14 +37,26 @@ class ElementGenerator(project: Project): Generator() {
 		return consumedWord
 	}
 
+	fun parseProgram(): Program {
+		val files = LinkedList<File>()
+		while(!wordGenerator.done) {
+			wordGenerator.loadNextFile()
+			currentWord = wordGenerator.getNextWord()
+			nextWord = wordGenerator.getNextWord()
+			files.add(parseFile())
+		}
+		return Program(files)
+	}
+
 	/**
-	 * Program:
+	 * File:
 	 *   <empty>
 	 *   <Program>\n
 	 *   <Statement>
 	 *   <Program>\n<Statement>
 	 */
-	fun parseProgram(): Program {
+	private fun parseFile(): File {
+		val file = wordGenerator.getFile()
 		val statements = LinkedList<Element>()
 		while(currentWord != null) {
 			consumeLineBreaks()
@@ -61,6 +64,6 @@ class ElementGenerator(project: Project): Generator() {
 				break
 			statements.add(statementParser.parseStatement())
 		}
-		return Program(statements)
+		return File(file.getStart(), file.getEnd(), file, statements)
 	}
 }

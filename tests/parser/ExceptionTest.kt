@@ -33,7 +33,7 @@ internal class ExceptionTest {
 					Print {
 						Identifier { words }
 					}
-				} Handle [ Type { SimpleType { Identifier { NoWordsException } } } Identifier { e } ] { StatementBlock {
+				} Handle [ SimpleType { Identifier { NoWordsException } } Identifier { e } ] { StatementBlock {
 				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -54,9 +54,7 @@ internal class ExceptionTest {
 					Print {
 						Identifier { words }
 					}
-				} Handle [ Type { BinaryOperator {
-					SimpleType { Identifier { NoWordsException } } | SimpleType { Identifier { OverthinkException } }
-				} } ] { StatementBlock {
+				} Handle [ UnionType { SimpleType { Identifier { NoWordsException } } | SimpleType { Identifier { OverthinkException } } } ] { StatementBlock {
 				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -75,15 +73,17 @@ internal class ExceptionTest {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Human } ] { TypeBody {
-					Function [ Identifier { speak } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { words } : Type { SimpleType { Identifier { String } } } } }
-					}: void ] { StatementSection { StatementBlock {
-						Print {
-							Identifier { words }
-						}
-					} Handle [ Type { SimpleType { Identifier { NoWordsException } } } Identifier { e } ] { StatementBlock {
-					} } } }
+				TypeDefinition [ class Identifier { Human } ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { speak } ParameterList {
+							Parameter { TypedIdentifier { Identifier { words }: SimpleType { Identifier { String } } } }
+						}: void ] { StatementSection { StatementBlock {
+							Print {
+								Identifier { words }
+							}
+						} Handle [ SimpleType { Identifier { NoWordsException } } Identifier { e } ] { StatementBlock {
+						} } } }
+					}
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -131,11 +131,11 @@ internal class ExceptionTest {
 					Print {
 						Identifier { words }
 					}
-				} Always { StatementBlock {
+				} StatementBlock {
 					Print {
 						StringLiteral { "Stopped" }
 					}
-				} } }
+				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}

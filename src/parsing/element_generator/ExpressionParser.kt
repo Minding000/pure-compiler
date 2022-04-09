@@ -1,12 +1,15 @@
 package parsing.element_generator
 
-import parsing.ast.*
 import parsing.ast.operations.*
 import errors.user.UnexpectedWordError
 import parsing.ast.access.Index
 import parsing.ast.access.InstanceAccess
 import parsing.ast.access.MemberAccess
 import parsing.ast.control_flow.*
+import parsing.ast.definitions.LambdaFunctionDefinition
+import parsing.ast.definitions.Parameter
+import parsing.ast.definitions.ParameterList
+import parsing.ast.definitions.TypedIdentifier
 import parsing.ast.general.*
 import parsing.ast.literals.*
 import parsing.tokenizer.*
@@ -23,6 +26,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 		get() = elementGenerator.parseForeignLanguageLiteralNext
 		set(value) { elementGenerator.parseForeignLanguageLiteralNext = value }
 
+	private val statementParser
+		get() = elementGenerator.statementParser
 	private val typeParser
 		get() = elementGenerator.typeParser
 	private val literalParser
@@ -159,7 +164,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   try? <UnaryOperator>
 	 *   try! <UnaryOperator>
 	 */
-	private fun parseTry(): Element {
+	fun parseTry(): Element {
 		if(WordType.TRY.includes(currentWord?.type)) {
 			val operator = consume(WordType.TRY)
 			return Try(parseUnaryOperator(), operator.type == WordAtom.TRY_OPTIONAL, operator.start)
@@ -188,7 +193,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <FunctionCall>
 	 *   <FunctionCall>[[?].<FunctionCall>]
 	 */
-	fun parseReferenceChain(): Element {
+	private fun parseReferenceChain(): Element {
 		var expression = parseFunctionCall()
 		while(WordType.MEMBER_ACCESSOR.includes(currentWord?.type)) {
 			val accessor = consume(WordType.MEMBER_ACCESSOR)
@@ -225,7 +230,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Primary>
 	 *   <Primary>[<Expression>[, <Expression>]...]
 	 */
-	fun parseIndex(): Element {
+	private fun parseIndex(): Element {
 		var expression = parsePrimary()
 		if(currentWord?.type == WordAtom.BRACKETS_OPEN) {
 			consume(WordAtom.BRACKETS_OPEN)
@@ -245,10 +250,28 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 * Primary:
 	 *   <Atom>
 	 *   (<Expression>)
+	 *   <LambdaFunction>
 	 */
 	private fun parsePrimary(): Element {
 		if(currentWord?.type == WordAtom.PARENTHESES_OPEN) {
-			consume(WordAtom.PARENTHESES_OPEN)
+			val start = consume(WordAtom.PARENTHESES_OPEN).start
+			val isEmptyParameterListVisible = currentWord?.type == WordAtom.PARENTHESES_CLOSE && nextWord?.type == WordAtom.ARROW
+			val isParameterVisible = currentWord?.type == WordAtom.IDENTIFIER && (nextWord?.type == WordAtom.COMMA || nextWord?.type == WordAtom.COLON)
+			val isParameterModifierVisible = WordType.PARAMETER_MODIFIER.includes(currentWord?.type)
+			if(isEmptyParameterListVisible || isParameterVisible || isParameterModifierVisible) {
+				val parameters = LinkedList<Parameter>()
+				while(currentWord?.type != WordAtom.PARENTHESES_CLOSE) {
+					parameters.add(statementParser.parseParameter(false))
+					if(currentWord?.type != WordAtom.COMMA)
+						break
+					consume(WordAtom.COMMA)
+				}
+				val end = consume(WordAtom.PARENTHESES_CLOSE).end
+				consume(WordAtom.ARROW)
+				val parameterList = ParameterList(start, end, parameters)
+				val body = statementParser.parseStatementSection()
+				return LambdaFunctionDefinition(start, parameterList, body)
+			}
 			val expression = parseExpression()
 			consume(WordAtom.PARENTHESES_CLOSE)
 			return expression

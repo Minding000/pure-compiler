@@ -1,6 +1,5 @@
 package util
 
-import code.Main
 import java.lang.StringBuilder
 
 fun <E> List<E>.toLines(): String {

@@ -3,7 +3,7 @@ package source_structure
 import util.indent
 import java.util.*
 
-class File(val module: Module, val subPath: String, val name: String, val content: String) {
+class File(val module: Module, val pathParts: List<String>, val name: String, val content: String) {
 	val lines = ArrayList<Line>()
 
 	init {
@@ -21,8 +21,17 @@ class File(val module: Module, val subPath: String, val name: String, val conten
 		}
 	}
 
-	fun getFullName(): String {
-		return "${module.name}::$subPath$name"
+	fun getIdentifier(): String {
+		return "${module.name}.${pathParts.joinToString(".")}$name"
+	}
+
+	fun getStart(): Position {
+		return Position(0, lines.first(), 0)
+	}
+
+	fun getEnd(): Position {
+		val line = lines.last()
+		return Position(content.length, line, line.getLength())
 	}
 
 	override fun toString(): String {

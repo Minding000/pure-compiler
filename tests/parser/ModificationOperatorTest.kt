@@ -16,11 +16,8 @@ internal class ModificationOperatorTest {
             """.trimIndent()
 		val expected =
 			"""
-				VariableDeclaration [ var ] {
-					Assignment {
-						Identifier { x }
-						= NumberLiteral { 0 }
-					}
+				VariableSection [ var ] {
+					VariableDeclaration { Identifier { x } = NumberLiteral { 0 } }
 				}
 				UnaryModification { Identifier { x }++ }
 				UnaryModification { Identifier { x }-- }
@@ -44,11 +41,8 @@ internal class ModificationOperatorTest {
             """.trimIndent()
 		val expected =
 			"""
-				VariableDeclaration [ var ] {
-					Assignment {
-						Identifier { x }
-						= NumberLiteral { 0 }
-					}
+				VariableSection [ var ] {
+					VariableDeclaration { Identifier { x } = NumberLiteral { 0 } }
 				}
 				BinaryModification {
 					Identifier { x } += NumberLiteral { 4 }

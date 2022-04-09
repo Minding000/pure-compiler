@@ -36,8 +36,8 @@ internal class ControlFlowTest {
 			""".trimIndent()
 		val expected =
 			"""
-				VariableDeclaration [ var ] {
-					TypedIdentifier { Identifier { x } : Type { SimpleType { Identifier { Int } } } }
+				VariableSection [ var ] {
+					VariableDeclaration { Identifier { x }: SimpleType { Identifier { Int } } }
 				}
 				If [ NumberLiteral { 5 } ] {
 					Assignment {
@@ -66,21 +66,20 @@ internal class ControlFlowTest {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Human } ] { TypeBody {
-					Function [ Identifier { speak } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { words } : Type { SimpleType { Identifier { String } } } } }
-					}: void ] { StatementSection { StatementBlock {
-						Print {
-							Identifier { words }
-						}
-					} } }
-				} }
-				VariableDeclaration [ var ] {
-					Assignment {
-						Identifier { peter }
-						= FunctionCall [ Identifier { Human } ] {
-						}
+				TypeDefinition [ class Identifier { Human } ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { speak } ParameterList {
+							Parameter { TypedIdentifier { Identifier { words }: SimpleType { Identifier { String } } } }
+						}: void ] { StatementSection { StatementBlock {
+							Print {
+								Identifier { words }
+							}
+						} } }
 					}
+				} }
+				VariableSection [ var ] {
+					VariableDeclaration { Identifier { peter } = FunctionCall [ Identifier { Human } ] {
+					} }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -99,21 +98,20 @@ internal class ControlFlowTest {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Human } ] { TypeBody {
-					Function [ Identifier { speak } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { words } : Type { SimpleType { Identifier { String } } } } }
-					}: void ] { StatementSection { StatementBlock {
-						Print {
-							Identifier { words }
-						}
-					} } }
-				} }
-				VariableDeclaration [ var ] {
-					Assignment {
-						Identifier { peter }
-						= FunctionCall [ Identifier { Human } ] {
-						}
+				TypeDefinition [ class Identifier { Human } ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { speak } ParameterList {
+							Parameter { TypedIdentifier { Identifier { words }: SimpleType { Identifier { String } } } }
+						}: void ] { StatementSection { StatementBlock {
+							Print {
+								Identifier { words }
+							}
+						} } }
 					}
+				} }
+				VariableSection [ var ] {
+					VariableDeclaration { Identifier { peter } = FunctionCall [ Identifier { Human } ] {
+					} }
 				}
 				MemberAccess {
 					Identifier { peter }.FunctionCall [ Identifier { speak } ] {
@@ -136,15 +134,17 @@ internal class ControlFlowTest {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Human } ] { TypeBody {
-					Function [ Identifier { speak } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { words } : Type { SimpleType { Identifier { String } } } } }
-					}: Type { SimpleType { Identifier { String } } } ] { StatementSection { StatementBlock {
-						Print {
-							Identifier { words }
-						}
-						Return { StringLiteral { "Done" } }
-					} } }
+				TypeDefinition [ class Identifier { Human } ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { speak } ParameterList {
+							Parameter { TypedIdentifier { Identifier { words }: SimpleType { Identifier { String } } } }
+						}: SimpleType { Identifier { String } } ] { StatementSection { StatementBlock {
+							Print {
+								Identifier { words }
+							}
+							Return { StringLiteral { "Done" } }
+						} } }
+					}
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)

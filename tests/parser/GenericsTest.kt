@@ -18,17 +18,19 @@ internal class GenericsTest {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { ShoppingList } ] { TypeBody {
+				TypeDefinition [ class Identifier { ShoppingList } ] { TypeBody {
 					GenericsDeclaration {
 						Identifier { Entry }
 					}
-					Function [ Identifier { add } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { entry } : Type { SimpleType { Identifier { Entry } } } } }
-					}: void ] { StatementSection { StatementBlock {
-						Print {
-							StringLiteral { "Adding entry..." }
-						}
-					} } }
+					FunctionSection [ to ] {
+						Function [ Identifier { add } ParameterList {
+							Parameter { TypedIdentifier { Identifier { entry }: SimpleType { Identifier { Entry } } } }
+						}: void ] { StatementSection { StatementBlock {
+							Print {
+								StringLiteral { "Adding entry..." }
+							}
+						} } }
+					}
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -51,31 +53,30 @@ internal class GenericsTest {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { ShoppingList } ] { TypeBody {
+				TypeDefinition [ class Identifier { ShoppingList } ] { TypeBody {
 					GenericsDeclaration {
 						Identifier { Entry }
 					}
-					Function [ Identifier { add } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { entry } : Type { SimpleType { Identifier { Entry } } } } }
-					}: void ] { StatementSection { StatementBlock {
-						Print {
-							StringLiteral { "Adding entry..." }
-						}
-					} } }
-				} }
-				TypeDefinition [ TypeType { class } Identifier { Fruit } ] { TypeBody {
-					PropertyDeclaration [ var ] {
-						TypedIdentifier { Identifier { name } : Type { SimpleType { Identifier { String } } } }
+					FunctionSection [ to ] {
+						Function [ Identifier { add } ParameterList {
+							Parameter { TypedIdentifier { Identifier { entry }: SimpleType { Identifier { Entry } } } }
+						}: void ] { StatementSection { StatementBlock {
+							Print {
+								StringLiteral { "Adding entry..." }
+							}
+						} } }
 					}
 				} }
-				VariableDeclaration [ var ] {
-					Assignment {
-						Identifier { fruitList }
-						= FunctionCall [ SimpleType { TypeList {
-							TypeParameter [] { Type { SimpleType { Identifier { Fruit } } } }
-						} Identifier { ShoppingList } } ] {
-						}
+				TypeDefinition [ class Identifier { Fruit } ] { TypeBody {
+					VariableSection [ var ] {
+						VariableDeclaration { Identifier { name }: SimpleType { Identifier { String } } }
 					}
+				} }
+				VariableSection [ var ] {
+					VariableDeclaration { Identifier { fruitList } = FunctionCall [ SimpleType { TypeList {
+						SimpleType { Identifier { Fruit } }
+					} Identifier { ShoppingList } } ] {
+					} }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -91,13 +92,15 @@ internal class GenericsTest {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { Fridge } ] { TypeBody {
-					Function [ Identifier { add } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { foodList } : Type { TypeList {
-							TypeParameter [ GenericModifier { producing } ] { Type { SimpleType { Identifier { Food } } } }
-						} SimpleType { Identifier { List } } } } }
-					}: void ] { StatementSection { StatementBlock {
-					} } }
+				TypeDefinition [ class Identifier { Fridge } ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { add } ParameterList {
+							Parameter { TypedIdentifier { Identifier { foodList }: SimpleType { TypeList {
+								TypeParameter [ producing ] { SimpleType { Identifier { Food } } }
+							} Identifier { List } } } }
+						}: void ] { StatementSection { StatementBlock {
+						} } }
+					}
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -113,13 +116,40 @@ internal class GenericsTest {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ TypeType { class } Identifier { SodaMachine } ] { TypeBody {
-					Function [ Identifier { refill } ParameterList {
-						Parameter [] { TypedIdentifier { Identifier { glass } : Type { TypeList {
-							TypeParameter [ GenericModifier { consuming } ] { Type { SimpleType { Identifier { Soda } } } }
-						} SimpleType { Identifier { LiquidContainer } } } } }
-					}: void ] { StatementSection { StatementBlock {
-					} } }
+				TypeDefinition [ class Identifier { SodaMachine } ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { refill } ParameterList {
+							Parameter { TypedIdentifier { Identifier { glass }: SimpleType { TypeList {
+								TypeParameter [ consuming ] { SimpleType { Identifier { Soda } } }
+							} Identifier { LiquidContainer } } } }
+						}: void ] { StatementSection { StatementBlock {
+						} } }
+					}
+				} }
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testGenericFunction() {
+		val sourceCode = """
+			object Math {
+				to max<N: Number>(a: N, b: N): N {
+				}
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ object Identifier { Math } ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { max } GenericsList {
+							GenericsListElement [ Identifier { N } ] { SimpleType { Identifier { Number } } }
+						} ParameterList {
+							Parameter { TypedIdentifier { Identifier { a }: SimpleType { Identifier { N } } } }
+							Parameter { TypedIdentifier { Identifier { b }: SimpleType { Identifier { N } } } }
+						}: SimpleType { Identifier { N } } ] { StatementSection { StatementBlock {
+						} } }
+					}
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)

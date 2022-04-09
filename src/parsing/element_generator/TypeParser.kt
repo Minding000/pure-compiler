@@ -1,8 +1,7 @@
 package parsing.element_generator
 
-import parsing.ast.*
-import parsing.ast.operations.*
 import parsing.ast.definitions.*
+import parsing.ast.general.Element
 import parsing.ast.literals.*
 import parsing.tokenizer.*
 import java.util.*
@@ -54,7 +53,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 
 	/**
 	 * Type:
-	 *   [...]<UnionType>...[?]
+	 *   [...]<UnionType>[?]
 	 */
 	fun parseType(optionalAllowed: Boolean = true): Type {
 		var hasDynamicQuantity = false
@@ -62,14 +61,15 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 			consume(WordAtom.TRIPLE_DOT)
 			hasDynamicQuantity = true
 		}
-		val typeList = parseTypeList()
 		val baseType = parseUnionType()
 		var isOptional = false
 		if(optionalAllowed && currentWord?.type == WordAtom.QUESTION_MARK) {
 			consume(WordAtom.QUESTION_MARK)
 			isOptional = true
 		}
-		return Type(baseType, hasDynamicQuantity, isOptional, typeList)
+		if(isOptional || hasDynamicQuantity)
+			return QuantifiedType(baseType, hasDynamicQuantity, isOptional)
+		return baseType
 	}
 
 	/**
@@ -78,13 +78,24 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 *   <SimpleType> & <SimpleType>
 	 *   <SimpleType> | <SimpleType>
 	 */
-	private fun parseUnionType(): Element {
-		var element: Element = parseSimpleType()
+	fun parseUnionType(): Type {
+		var element = parseTypeAtom()
 		while(WordType.UNION_OPERATOR.includes(currentWord?.type)) {
 			val operator = consume(WordType.UNION_OPERATOR)
-			element = BinaryOperator(element, parseSimpleType(), operator.getValue())
+			element = UnionType(element, parseTypeAtom(), UnionType.Mode.bySymbol(operator.getValue()))
 		}
 		return element
+	}
+
+	/**
+	 * TypeAtom:
+	 *   <SimpleType>
+	 *   <LambdaFunction>
+	 */
+	private fun parseTypeAtom(): Type {
+		if(currentWord?.type == WordAtom.PARENTHESES_OPEN || currentWord?.type == WordAtom.ARROW)
+			return parseLambdaFunction()
+		return parseSimpleType()
 	}
 
 	/**
@@ -98,11 +109,41 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	}
 
 	/**
-	 * GenericModifier:
-	 *   <generic-modifier>
+	 * LambdaFunction:
+	 *   [<ParameterList>] => <Type>|;
 	 */
-	private fun parseGenericModifier(): GenericModifier {
-		return GenericModifier(consume(WordType.GENERICS_MODIFIER))
+	private fun parseLambdaFunction(): LambdaFunctionType {
+		val parameterList = if(currentWord?.type == WordAtom.ARROW)
+			null
+		else
+			parseLambdaParameterList()
+		var start = consume(WordAtom.ARROW).start
+		if(parameterList != null)
+			start = parameterList.start
+		var returnType: Type? = null
+		val end = if(currentWord?.type == WordAtom.SEMICOLON) {
+			consume(WordAtom.SEMICOLON).end
+		} else {
+			returnType = parseType()
+			returnType.end
+		}
+		return LambdaFunctionType(start, parameterList, returnType, end)
+	}
+
+	/**
+	 * LambdaParameterList:
+	 *   ([<TypeParameter>][, <TypeParameter>]...)
+	 */
+	private fun parseLambdaParameterList(): LambdaParameterList {
+		val start = consume(WordAtom.PARENTHESES_OPEN).start
+		val types = LinkedList<Type>()
+		types.add(parseType())
+		while(currentWord?.type == WordAtom.COMMA) {
+			consume(WordAtom.COMMA)
+			types.add(parseType())
+		}
+		val end = consume(WordAtom.PARENTHESES_CLOSE).end
+		return LambdaParameterList(start, types, end)
 	}
 
 	/**
@@ -111,7 +152,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 */
 	private fun parseTypeList(): TypeList? {
 		if(WordType.GENERICS_START.includes(currentWord?.type)) {
-			val types = LinkedList<TypeParameter>()
+			val types = LinkedList<Type>()
 			val start = consume(WordType.GENERICS_START).start
 			types.add(parseTypeParameter())
 			while(currentWord?.type == WordAtom.COMMA) {
@@ -126,14 +167,14 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 
 	/**
 	 * TypeParameter:
-	 *   <Type>[ <GenericModifier>]
+	 *   <Type>[ <generics-modifier>]
 	 */
-	private fun parseTypeParameter(): TypeParameter {
+	private fun parseTypeParameter(): Type {
 		val type = parseType()
-		var genericModifier: GenericModifier? = null
 		if(WordType.GENERICS_MODIFIER.includes(currentWord?.type)) {
-			genericModifier = parseGenericModifier()
+			val genericsModifier = consume(WordType.GENERICS_MODIFIER)
+			return TypeParameter(type, genericsModifier)
 		}
-		return TypeParameter(type, genericModifier)
+		return type
 	}
 }

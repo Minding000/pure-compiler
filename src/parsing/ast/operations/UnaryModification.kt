@@ -1,12 +1,20 @@
 package parsing.ast.operations
 
-import parsing.ast.Element
+import linter.Linter
+import linter.elements.general.Unit
+import linter.elements.operators.UnaryModification
+import linter.scopes.Scope
+import parsing.ast.general.Element
 import parsing.tokenizer.Word
+import parsing.tokenizer.WordAtom
 
-class UnaryModification(val target: Element, operator: Word): Element(target.start, operator.end) {
-	val operator = operator.getValue()
+class UnaryModification(val target: Element, val operator: Word): Element(target.start, operator.end) {
+
+	override fun concretize(linter: Linter, scope: Scope): Unit {
+		return UnaryModification(this, target.concretize(linter, scope), operator.type == WordAtom.INCREMENT)
+	}
 
 	override fun toString(): String {
-		return "UnaryModification { $target$operator }"
+		return "UnaryModification { $target${operator.getValue()} }"
 	}
 }
