@@ -6,7 +6,7 @@ import parsing.ast.definitions.GeneratorDefinition
 
 class GeneratorDefinition(override val source: GeneratorDefinition, name: String, val parameters: List<Unit>,
 						  val keyReturnType: Unit?, val valueReturnType: Unit, val body: Unit):
-	VariableValueDeclaration(source, name) {
+	VariableValueDeclaration(source, name, true) {
 
 	init {
 		units.addAll(parameters)

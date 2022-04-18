@@ -51,7 +51,7 @@ internal class CastTest {
 		val expected =
 			"""
 				If [ Cast {
-					Identifier { inputDevice } is TypedIdentifier { Identifier { keyboard }: SimpleType { Identifier { Keyboard } } }
+					Identifier { inputDevice } is Identifier { keyboard }: SimpleType { Identifier { Keyboard } }
 				} ] {
 					StatementSection { StatementBlock {
 					} }
@@ -70,7 +70,7 @@ internal class CastTest {
 		val expected =
 			"""
 				If [ Cast {
-					Identifier { inputDevice } is! TypedIdentifier { Identifier { keyboard }: SimpleType { Identifier { Keyboard } } }
+					Identifier { inputDevice } is! Identifier { keyboard }: SimpleType { Identifier { Keyboard } }
 				} ] {
 					StatementSection { StatementBlock {
 					} }

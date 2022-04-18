@@ -8,7 +8,6 @@ import linter.scopes.Scope
 import parsing.ast.definitions.sections.FunctionSection
 import parsing.ast.general.Element
 import parsing.ast.general.StatementSection
-import source_structure.Position
 import parsing.ast.literals.Identifier
 import parsing.ast.literals.Type
 import java.lang.StringBuilder
@@ -37,7 +36,10 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 		val parameters = LinkedList<Unit>()
 		for(parameter in parameterList.parameters)
 			parameters.add(parameter.concretize(linter, scope))
-		return FunctionDefinition(this, identifier.getValue(), genericParameters, parameters, body?.concretize(linter, scope), returnType?.concretize(linter, scope), isNative)
+		val functionDefinition = FunctionDefinition(this, identifier.getValue(), genericParameters, parameters,
+			body?.concretize(linter, scope), returnType?.concretize(linter, scope), isNative)
+		scope.declareValue(functionDefinition)
+		return functionDefinition
 	}
 
 	override fun toString(): String {

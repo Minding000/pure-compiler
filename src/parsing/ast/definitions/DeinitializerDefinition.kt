@@ -5,12 +5,14 @@ import linter.elements.definitions.DeinitializerDefinition
 import linter.messages.Message
 import linter.scopes.Scope
 import parsing.ast.definitions.sections.ModifierSection
+import parsing.ast.definitions.sections.ModifierSectionChild
 import parsing.ast.general.Element
 import parsing.ast.general.StatementSection
 import source_structure.Position
 
-class DeinitializerDefinition(start: Position, end: Position, private val body: StatementSection?): Element(start, end) {
-	var parent: ModifierSection? = null
+class DeinitializerDefinition(start: Position, end: Position, private val body: StatementSection?):
+	Element(start, end), ModifierSectionChild {
+	override var parent: ModifierSection? = null
 
 	override fun concretize(linter: Linter, scope: Scope): DeinitializerDefinition {
 		var isNative = false

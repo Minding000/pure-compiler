@@ -21,9 +21,11 @@ class GeneratorDefinition(start: Position, private val identifier: Identifier, p
 		for(parameter in parameterList.parameters) {
 			//TODO continue...
 		}
-		return GeneratorDefinition(this, identifier.getValue(), parameters,
+		val generatorDefinition = GeneratorDefinition(this, identifier.getValue(), parameters,
 			keyReturnType?.concretize(linter, scope), valueReturnType.concretize(linter, scope),
 			body.concretize(linter, scope))
+		scope.declareValue(generatorDefinition)
+		return generatorDefinition
 	}
 
 	override fun toString(): String {

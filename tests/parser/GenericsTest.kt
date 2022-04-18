@@ -20,11 +20,11 @@ internal class GenericsTest {
 			"""
 				TypeDefinition [ class Identifier { ShoppingList } ] { TypeBody {
 					GenericsDeclaration {
-						Identifier { Entry }
+						GenericsListElement { Identifier { Entry } }
 					}
 					FunctionSection [ to ] {
 						Function [ Identifier { add } ParameterList {
-							Parameter { TypedIdentifier { Identifier { entry }: SimpleType { Identifier { Entry } } } }
+							Parameter { Identifier { entry }: SimpleType { Identifier { Entry } } }
 						}: void ] { StatementSection { StatementBlock {
 							Print {
 								StringLiteral { "Adding entry..." }
@@ -55,11 +55,11 @@ internal class GenericsTest {
 			"""
 				TypeDefinition [ class Identifier { ShoppingList } ] { TypeBody {
 					GenericsDeclaration {
-						Identifier { Entry }
+						GenericsListElement { Identifier { Entry } }
 					}
 					FunctionSection [ to ] {
 						Function [ Identifier { add } ParameterList {
-							Parameter { TypedIdentifier { Identifier { entry }: SimpleType { Identifier { Entry } } } }
+							Parameter { Identifier { entry }: SimpleType { Identifier { Entry } } }
 						}: void ] { StatementSection { StatementBlock {
 							Print {
 								StringLiteral { "Adding entry..." }
@@ -95,9 +95,9 @@ internal class GenericsTest {
 				TypeDefinition [ class Identifier { Fridge } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { add } ParameterList {
-							Parameter { TypedIdentifier { Identifier { foodList }: SimpleType { TypeList {
+							Parameter { Identifier { foodList }: SimpleType { TypeList {
 								TypeParameter [ producing ] { SimpleType { Identifier { Food } } }
-							} Identifier { List } } } }
+							} Identifier { List } } }
 						}: void ] { StatementSection { StatementBlock {
 						} } }
 					}
@@ -119,9 +119,9 @@ internal class GenericsTest {
 				TypeDefinition [ class Identifier { SodaMachine } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { refill } ParameterList {
-							Parameter { TypedIdentifier { Identifier { glass }: SimpleType { TypeList {
+							Parameter { Identifier { glass }: SimpleType { TypeList {
 								TypeParameter [ consuming ] { SimpleType { Identifier { Soda } } }
-							} Identifier { LiquidContainer } } } }
+							} Identifier { LiquidContainer } } }
 						}: void ] { StatementSection { StatementBlock {
 						} } }
 					}
@@ -143,10 +143,10 @@ internal class GenericsTest {
 				TypeDefinition [ object Identifier { Math } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { max } GenericsList {
-							GenericsListElement [ Identifier { N } ] { SimpleType { Identifier { Number } } }
+							GenericsListElement [ SimpleType { Identifier { Number } } ] { Identifier { N } }
 						} ParameterList {
-							Parameter { TypedIdentifier { Identifier { a }: SimpleType { Identifier { N } } } }
-							Parameter { TypedIdentifier { Identifier { b }: SimpleType { Identifier { N } } } }
+							Parameter { Identifier { a }: SimpleType { Identifier { N } } }
+							Parameter { Identifier { b }: SimpleType { Identifier { N } } }
 						}: SimpleType { Identifier { N } } ] { StatementSection { StatementBlock {
 						} } }
 					}

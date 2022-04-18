@@ -7,9 +7,7 @@ import parsing.ast.access.Index
 import parsing.ast.access.MemberAccess
 import parsing.ast.control_flow.*
 import parsing.ast.definitions.*
-import parsing.ast.definitions.sections.FunctionSection
-import parsing.ast.definitions.sections.ModifierSection
-import parsing.ast.definitions.sections.VariableSection
+import parsing.ast.definitions.sections.*
 import parsing.ast.general.*
 import parsing.ast.literals.*
 import parsing.tokenizer.*
@@ -509,15 +507,15 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * GenericsDeclaration:
-	 *   containing <TypedIdentifier>[,<TypedIdentifier>]...
+	 *   containing <GenericProperty>[,<GenericProperty>]...
 	 */
 	private fun parseGenericsDeclaration(): GenericsDeclaration {
 		val start = consume(WordAtom.CONTAINING).start
-		val types = LinkedList<Element>()
-		types.add(typeParser.parseOptionallyTypedIdentifier())
+		val types = LinkedList<GenericsListElement>()
+		types.add(parseGenericsListElement())
 		while(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
-			types.add(typeParser.parseOptionallyTypedIdentifier())
+			types.add(parseGenericsListElement())
 		}
 		return GenericsDeclaration(start, types)
 	}
@@ -575,10 +573,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 */
 	private fun parseInitializerDefinition(): Element {
 		val declarationWord = consume(WordAtom.INIT)
-		val parameterList = if(currentWord?.type == WordAtom.PARENTHESES_OPEN)
-			parseParameterList(false)
-		else
-			null
+		val parameterList = if(currentWord?.type == WordAtom.PARENTHESES_OPEN) parseParameterList() else null
 		val body = if(currentWord?.type == WordAtom.BRACES_OPEN) parseStatementSection() else null
 		val end = body?.end ?: parameterList?.end ?: declarationWord.end
 		return InitializerDefinition(declarationWord.start, parameterList, body, end)
@@ -599,7 +594,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 * FunctionDeclaration:
 	 *   <Identifier><TypeList><ParameterList>[: <Type>] [<StatementSection>]
 	 */
-	private fun parseFunctionDefinition(): Element {
+	private fun parseFunctionDefinition(): FunctionDefinition {
 		val identifier = parseIdentifier()
 		val genericsList = parseGenericsList()
 		val parameterList = parseParameterList()
@@ -641,12 +636,12 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	private fun parseOperator(): Operator {
 		if(currentWord?.type == WordAtom.BRACKETS_OPEN) {
 			val start = consume(WordAtom.BRACKETS_OPEN).start
-			val parameters = LinkedList<TypedIdentifier>()
+			val parameters = LinkedList<Parameter>()
 			if(currentWord?.type != WordAtom.BRACKETS_CLOSE)
-				parameters.add(typeParser.parseTypedIdentifier())
+				parameters.add(parseParameter())
 			while(currentWord?.type == WordAtom.COMMA) {
 				consume(WordAtom.COMMA)
-				parameters.add(typeParser.parseTypedIdentifier())
+				parameters.add(parseParameter())
 			}
 			val end = consume(WordAtom.BRACKETS_CLOSE).end
 			return IndexOperator(start, end, parameters)
@@ -655,35 +650,34 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	}
 
 	/**
-	 * ParameterList[areTypesRequired]:
-	 *   ([<Parameter[areTypesRequired]>[, <Parameter[areTypesRequired]>]])
+	 * ParameterList:
+	 *   ([<Parameter>[, <Parameter>]])
 	 */
-	private fun parseParameterList(areTypesRequired: Boolean = true): ParameterList {
+	private fun parseParameterList(): ParameterList {
 		val start = consume(WordAtom.PARENTHESES_OPEN).start
 		val parameters = LinkedList<Parameter>()
 		if(currentWord?.type != WordAtom.PARENTHESES_CLOSE)
-			parameters.add(parseParameter(areTypesRequired))
+			parameters.add(parseParameter())
 		while(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
-			parameters.add(parseParameter(areTypesRequired))
+			parameters.add(parseParameter())
 		}
 		val end = consume(WordAtom.PARENTHESES_CLOSE).end
 		return ParameterList(start, end, parameters)
 	}
 
 	/**
-	 * Parameter[isTypeRequired]:
-	 *   <ModifierList> <TypedIdentifier>
 	 * Parameter:
-	 *   <ModifierList> <OptionallyTypedIdentifier>
+	 *   <ModifierList> <Identifier>[: <Type>]
 	 */
-	fun parseParameter(isTypeRequired: Boolean = true): Parameter {
+	fun parseParameter(): Parameter {
 		val modifierList = parseModifierList(WordType.PARAMETER_MODIFIER)
-		val identifier = if(isTypeRequired)
-			typeParser.parseTypedIdentifier()
-		else
-			typeParser.parseOptionallyTypedIdentifier()
-		return Parameter(modifierList, identifier)
+		val identifier = parseIdentifier()
+		val type = if(currentWord?.type == WordAtom.COLON) {
+			consume(WordAtom.COLON)
+			typeParser.parseType()
+		} else null
+		return Parameter(modifierList, identifier, type)
 	}
 
 	/**
@@ -760,7 +754,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			consume(WordAtom.ASSIGNMENT)
 			parseExpression()
 		} else null
-		val variables = LinkedList<Element>()
+		val variables = LinkedList<VariableSectionElement>()
 		val end = if(currentWord?.type == WordAtom.BRACES_OPEN) {
 			consume(WordAtom.BRACES_OPEN)
 			consumeLineBreaks()
@@ -781,7 +775,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   <Identifier>[: <Type>] [get <Expression>] [set <Expression>]
 	 *   <Identifier>[: <Type>] [= <Expression>]
 	 */
-	private fun parseVariableSectionPart(): Element {
+	private fun parseVariableSectionPart(): VariableSectionElement {
 		val identifier = parseIdentifier()
 		val type = if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
@@ -816,7 +810,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 */
 	private fun parseFunctionSection(): FunctionSection {
 		val type = consume(WordType.FUNCTION_DECLARATION)
-		val functions = LinkedList<Element>()
+		val functions = LinkedList<FunctionDefinition>()
 		val end = if(currentWord?.type == WordAtom.BRACES_OPEN) {
 			consume(WordAtom.BRACES_OPEN)
 			while(currentWord?.type != WordAtom.BRACES_CLOSE) {

@@ -3,7 +3,6 @@ package parsing.ast.general
 import linter.Linter
 import linter.elements.general.StatementBlock
 import linter.scopes.Scope
-import parsing.ast.general.Element
 import source_structure.Position
 import util.concretize
 import util.indent

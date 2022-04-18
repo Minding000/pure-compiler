@@ -1,7 +1,6 @@
 package parsing.element_generator
 
 import parsing.ast.definitions.*
-import parsing.ast.general.Element
 import parsing.ast.literals.*
 import parsing.tokenizer.*
 import java.util.*
@@ -26,29 +25,6 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 
 	private fun parseIdentifier(): Identifier {
 		return literalParser.parseIdentifier()
-	}
-
-	/**
-	 * OptionallyTypedIdentifier:
-	 *   <Identifier>
-	 *   <TypedIdentifier>
-	 */
-	fun parseOptionallyTypedIdentifier(): Element {
-		return if(nextWord?.type == WordAtom.COLON)
-			parseTypedIdentifier()
-		else
-			parseIdentifier()
-	}
-
-	/**
-	 * TypedIdentifier:
-	 *   <Identifier>: <Type>
-	 */
-	fun parseTypedIdentifier(): TypedIdentifier {
-		val identifier = parseIdentifier()
-		consume(WordAtom.COLON)
-		val type = parseType()
-		return TypedIdentifier(identifier, type)
 	}
 
 	/**

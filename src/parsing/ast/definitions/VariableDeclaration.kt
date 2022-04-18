@@ -3,15 +3,14 @@ package parsing.ast.definitions
 import linter.Linter
 import linter.elements.definitions.VariableDeclaration
 import linter.scopes.Scope
-import parsing.ast.definitions.sections.VariableSection
+import parsing.ast.definitions.sections.VariableSectionElement
 import parsing.ast.general.Element
 import parsing.ast.literals.Identifier
 import parsing.ast.literals.Type
 import java.lang.StringBuilder
 
 class VariableDeclaration(private val identifier: Identifier, private val type: Type?, private val value: Element?):
-	Element(identifier.start, (value ?: type ?: identifier).end) {
-	lateinit var parent: VariableSection
+	VariableSectionElement(identifier.start, (value ?: type ?: identifier).end) {
 
 	override fun concretize(linter: Linter, scope: Scope): VariableDeclaration {
 		//TODO include modifiers
@@ -22,7 +21,7 @@ class VariableDeclaration(private val identifier: Identifier, private val type: 
 			value?.concretize(linter, scope),
 			parent.isConstant
 		)
-		//scope.declareValue(variableDeclaration)
+		scope.declareValue(variableDeclaration)
 		return variableDeclaration
 	}
 

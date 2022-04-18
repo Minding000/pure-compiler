@@ -14,7 +14,7 @@ class File(start: Position, end: Position, private val file: SourceFile, private
     override fun concretize(linter: Linter, scope: Scope): File {
         val file = File(this, file, scope as FileScope)
         for(statement in statements)
-            file.units.add(statement.concretize(linter, scope))
+            statement.concretize(linter, scope, file.units)
         return file
     }
 

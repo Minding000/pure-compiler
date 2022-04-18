@@ -9,7 +9,6 @@ import parsing.ast.control_flow.*
 import parsing.ast.definitions.LambdaFunctionDefinition
 import parsing.ast.definitions.Parameter
 import parsing.ast.definitions.ParameterList
-import parsing.ast.definitions.TypedIdentifier
 import parsing.ast.general.*
 import parsing.ast.literals.*
 import parsing.tokenizer.*
@@ -142,18 +141,20 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Try> as <Type>
 	 *   <Try> as? <Type>
 	 *   <Try> as! <Type>
-	 *   <Try> is <TypedIdentifier>
-	 *   <Try> !is <TypedIdentifier>
+	 *   <Try> is [<Identifier>: ]<Type>
+	 *   <Try> !is [<Identifier>: ]<Type>
 	 */
 	private fun parseCast(): Element {
 		var expression: Element = parseTry()
 		if(WordType.CAST.includes(currentWord?.type)) {
 			val operator = consume(WordType.CAST)
-			val type = if(nextWord?.type == WordAtom.COLON)
-				typeParser.parseTypedIdentifier()
-			else
-				typeParser.parseType()
-			expression = Cast(expression, operator.getValue(), type)
+			var identifier: Identifier? = null
+			if(nextWord?.type == WordAtom.COLON) {
+				identifier = literalParser.parseIdentifier()
+				consume(WordAtom.COLON)
+			}
+			val type = typeParser.parseType()
+			expression = Cast(expression, operator.getValue(), identifier, type)
 		}
 		return expression
 	}
@@ -261,7 +262,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 			if(isEmptyParameterListVisible || isParameterVisible || isParameterModifierVisible) {
 				val parameters = LinkedList<Parameter>()
 				while(currentWord?.type != WordAtom.PARENTHESES_CLOSE) {
-					parameters.add(statementParser.parseParameter(false))
+					parameters.add(statementParser.parseParameter())
 					if(currentWord?.type != WordAtom.COMMA)
 						break
 					consume(WordAtom.COMMA)

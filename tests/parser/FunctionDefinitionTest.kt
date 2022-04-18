@@ -17,7 +17,7 @@ internal class FunctionDefinitionTest {
 				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
 					FunctionSection [ it ] {
 						Function [ Identifier { canEat } ParameterList {
-							Parameter { TypedIdentifier { Identifier { food }: SimpleType { Identifier { Food } } } }
+							Parameter { Identifier { food }: SimpleType { Identifier { Food } } }
 						}: SimpleType { Identifier { Bool } } ] { StatementSection { StatementBlock {
 						} } }
 					}
@@ -39,7 +39,7 @@ internal class FunctionDefinitionTest {
 				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { getSound } ParameterList {
-							Parameter { TypedIdentifier { Identifier { loudness }: SimpleType { Identifier { Int } } } }
+							Parameter { Identifier { loudness }: SimpleType { Identifier { Int } } }
 						}: void ] { StatementSection { StatementBlock {
 							VariableSection [ var ] {
 								VariableDeclaration { Identifier { energy } = BinaryOperator {
@@ -70,7 +70,7 @@ internal class FunctionDefinitionTest {
 						VariableDeclaration { Identifier { canSwim }: SimpleType { Identifier { Bool } } }
 					}
 					Initializer [ ParameterList {
-						Parameter { TypedIdentifier { Identifier { name }: SimpleType { Identifier { String } } } }
+						Parameter { Identifier { name }: SimpleType { Identifier { String } } }
 						Parameter { Identifier { canSwim } }
 					} ] { StatementSection { StatementBlock {
 						Print {
@@ -157,7 +157,7 @@ internal class FunctionDefinitionTest {
 						VariableDeclaration { Identifier { y } }
 					}
 					OperatorDefinition [ Operator { += } ParameterList {
-						Parameter { TypedIdentifier { Identifier { right }: SimpleType { Identifier { Vector } } } }
+						Parameter { Identifier { right }: SimpleType { Identifier { Vector } } }
 					}: void ] { StatementSection { StatementBlock {
 						BinaryModification {
 							Identifier { x } += MemberAccess {
@@ -171,7 +171,7 @@ internal class FunctionDefinitionTest {
 						}
 					} } }
 					OperatorDefinition [ Operator { == } ParameterList {
-						Parameter { TypedIdentifier { Identifier { right }: SimpleType { Identifier { Vector } } } }
+						Parameter { Identifier { right }: SimpleType { Identifier { Vector } } }
 					}: void ] { StatementSection { StatementBlock {
 						Return { BinaryOperator {
 							BinaryOperator {
@@ -207,9 +207,9 @@ internal class FunctionDefinitionTest {
 			"""
 				TypeDefinition [ class Identifier { BookSelf } ] { TypeBody {
 					OperatorDefinition [ IndexOperator {
-						TypedIdentifier { Identifier { index }: SimpleType { Identifier { Int } } }
+						Parameter { Identifier { index }: SimpleType { Identifier { Int } } }
 					} ParameterList {
-						Parameter { TypedIdentifier { Identifier { value }: SimpleType { Identifier { Book } } } }
+						Parameter { Identifier { value }: SimpleType { Identifier { Book } } }
 					}: void ] { StatementSection { StatementBlock {
 						Print {
 							StringLiteral { "Adding book" }
@@ -218,7 +218,7 @@ internal class FunctionDefinitionTest {
 						}
 					} } }
 					OperatorDefinition [ IndexOperator {
-						TypedIdentifier { Identifier { index }: SimpleType { Identifier { Int } } }
+						Parameter { Identifier { index }: SimpleType { Identifier { Int } } }
 					}: SimpleType { Identifier { Book } } ] { StatementSection { StatementBlock {
 						Print {
 							StringLiteral { "Book requested" }
@@ -242,7 +242,7 @@ internal class FunctionDefinitionTest {
 				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { getSound } ParameterList {
-							Parameter { TypedIdentifier { Identifier { loudness }: SimpleType { Identifier { Int } } } }
+							Parameter { Identifier { loudness }: SimpleType { Identifier { Int } } }
 						}: void ] { StatementSection { StatementBlock {
 						} } }
 					}
@@ -263,7 +263,7 @@ internal class FunctionDefinitionTest {
 				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { setSounds } ParameterList {
-							Parameter [ ModifierList { Modifier { ... } } ] { TypedIdentifier { Identifier { sounds }: QuantifiedType { ...SimpleType { Identifier { Sound } } } } }
+							Parameter [ ModifierList { Modifier { ... } } ] { Identifier { sounds }: QuantifiedType { ...SimpleType { Identifier { Sound } } } }
 						}: void ] { StatementSection { StatementBlock {
 						} } }
 					}
@@ -281,8 +281,8 @@ internal class FunctionDefinitionTest {
 			"""
 				VariableSection [ val ] {
 					VariableDeclaration { Identifier { condition } = LambdaFunctionDefinition [ ParameterList {
-						Parameter { TypedIdentifier { Identifier { a }: SimpleType { Identifier { Int } } } }
-						Parameter { TypedIdentifier { Identifier { b }: SimpleType { Identifier { Int } } } }
+						Parameter { Identifier { a }: SimpleType { Identifier { Int } } }
+						Parameter { Identifier { b }: SimpleType { Identifier { Int } } }
 					} ] { StatementSection { StatementBlock {
 						Return { BinaryOperator {
 							Identifier { a } < Identifier { b }

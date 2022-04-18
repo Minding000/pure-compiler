@@ -2,9 +2,11 @@ package linter.elements.definitions
 
 import linter.elements.general.Unit
 import linter.elements.literals.Type
+import linter.elements.values.VariableValueDeclaration
 import parsing.ast.definitions.VariableDeclaration
 
-class VariableDeclaration(val source: VariableDeclaration, val name: String, val type: Type?, val value: Unit?, val isConstant: Boolean): Unit() {
+class VariableDeclaration(override val source: VariableDeclaration, name: String, val type: Type?, val value: Unit?,
+						  isConstant: Boolean): VariableValueDeclaration(source, name, isConstant) {
 
 	init {
 		if(type != null)

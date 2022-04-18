@@ -7,8 +7,8 @@ import parsing.ast.general.Element
 import java.util.*
 
 fun List<Element>.concretize(linter: Linter, scope: Scope): List<Unit> {
-	val list = LinkedList<Unit>()
+	val units = LinkedList<Unit>()
 	for(index in this)
-		list.add(index.concretize(linter, scope))
-	return list
+		index.concretize(linter, scope, units)
+	return units
 }

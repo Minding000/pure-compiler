@@ -55,7 +55,7 @@ internal class PropertyTest {
 			"""
 				TypeDefinition [ class Identifier { Rectangle } ] { TypeBody {
 					GenericsDeclaration {
-						TypedIdentifier { Identifier { Unit }: SimpleType { Identifier { Number } } }
+						GenericsListElement [ SimpleType { Identifier { Number } } ] { Identifier { Unit } }
 					}
 					VariableSection [ var: SimpleType { Identifier { Unit } } = NumberLiteral { 0 } ] {
 						VariableDeclaration { Identifier { left } }

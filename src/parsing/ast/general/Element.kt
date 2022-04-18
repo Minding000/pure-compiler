@@ -12,4 +12,8 @@ abstract class Element(start: Position, end: Position): Section(start, end) {
 	constructor(word: Word): this(word.start, word.end)
 
 	abstract fun concretize(linter: Linter, scope: Scope): Unit
+
+	open fun concretize(linter: Linter, scope: Scope, units: MutableList<Unit>) {
+		units.add(concretize(linter, scope))
+	}
 }

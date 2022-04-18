@@ -1,9 +1,11 @@
 package linter.elements.definitions
 
 import linter.elements.general.Unit
-import parsing.ast.definitions.TypeDefinition
+import linter.elements.values.TypeDefinition
+import parsing.ast.definitions.TypeDefinition as ASTTypeDefinition
 
-class Class(val source: TypeDefinition, val name: String, val superType: Unit?): Unit() {
+class Class(val source: ASTTypeDefinition, name: String, superType: Unit?):
+	TypeDefinition(name, superType, false) {
 
 	init {
 		if(superType != null)

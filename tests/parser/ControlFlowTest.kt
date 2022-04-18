@@ -69,7 +69,7 @@ internal class ControlFlowTest {
 				TypeDefinition [ class Identifier { Human } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { speak } ParameterList {
-							Parameter { TypedIdentifier { Identifier { words }: SimpleType { Identifier { String } } } }
+							Parameter { Identifier { words }: SimpleType { Identifier { String } } }
 						}: void ] { StatementSection { StatementBlock {
 							Print {
 								Identifier { words }
@@ -101,7 +101,7 @@ internal class ControlFlowTest {
 				TypeDefinition [ class Identifier { Human } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { speak } ParameterList {
-							Parameter { TypedIdentifier { Identifier { words }: SimpleType { Identifier { String } } } }
+							Parameter { Identifier { words }: SimpleType { Identifier { String } } }
 						}: void ] { StatementSection { StatementBlock {
 							Print {
 								Identifier { words }
@@ -137,7 +137,7 @@ internal class ControlFlowTest {
 				TypeDefinition [ class Identifier { Human } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { speak } ParameterList {
-							Parameter { TypedIdentifier { Identifier { words }: SimpleType { Identifier { String } } } }
+							Parameter { Identifier { words }: SimpleType { Identifier { String } } }
 						}: SimpleType { Identifier { String } } ] { StatementSection { StatementBlock {
 							Print {
 								Identifier { words }

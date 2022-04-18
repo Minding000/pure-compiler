@@ -4,6 +4,8 @@ import linter.Linter
 import linter.elements.definitions.InitializerDefinition
 import linter.elements.general.Unit
 import linter.scopes.Scope
+import parsing.ast.definitions.sections.ModifierSection
+import parsing.ast.definitions.sections.ModifierSectionChild
 import parsing.ast.general.Element
 import parsing.ast.general.StatementSection
 import source_structure.Position
@@ -11,7 +13,8 @@ import java.util.*
 
 class InitializerDefinition(start: Position, private val parameterList: ParameterList?,
 							private val body: StatementSection?, end: Position):
-	Element(start, end) {
+	Element(start, end), ModifierSectionChild {
+	override var parent: ModifierSection? = null
 
 	override fun concretize(linter: Linter, scope: Scope): InitializerDefinition {
 		//TODO concretize modifiers

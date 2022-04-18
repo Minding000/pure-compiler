@@ -1,5 +1,8 @@
 package parsing.ast.definitions.sections
 
+import linter.Linter
+import linter.elements.general.Unit
+import linter.scopes.Scope
 import parsing.ast.general.Element
 import parsing.ast.literals.Type
 import parsing.tokenizer.Word
@@ -10,10 +13,21 @@ import util.toLines
 import java.lang.StringBuilder
 
 class VariableSection(val declarationType: Word, val type: Type?, val value: Element?,
-					  val variables: List<Element>, end: Position): DeclarationSection(declarationType.start, end) {
-
+					  val variables: List<VariableSectionElement>, end: Position):
+	DeclarationSection(declarationType.start, end), ModifierSectionChild {
+	override var parent: ModifierSection? = null
 	val isConstant: Boolean
 		get() = declarationType.type == WordAtom.VAL
+
+	init {
+		for(variable in variables)
+			variable.parent = this
+	}
+
+	override fun concretize(linter: Linter, scope: Scope, units: MutableList<Unit>) {
+		for(variable in variables)
+			variable.concretize(linter, scope, units)
+	}
 
 	override fun toString(): String {
 		val string = StringBuilder()

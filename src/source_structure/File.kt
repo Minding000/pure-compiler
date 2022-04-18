@@ -22,7 +22,12 @@ class File(val module: Module, val pathParts: List<String>, val name: String, va
 	}
 
 	fun getIdentifier(): String {
-		return "${module.name}.${pathParts.joinToString(".")}$name"
+		val identifier = java.lang.StringBuilder()
+		identifier.append(module.name).append('.')
+		for(pathPart in pathParts)
+			identifier.append(pathPart).append('.')
+		identifier.append(name)
+		return identifier.toString()
 	}
 
 	fun getStart(): Position {

@@ -15,6 +15,6 @@ class GenericsListElement(private val identifier: Identifier, private val type: 
     }
 
     override fun toString(): String {
-        return "GenericsListElement [ $identifier ] { ${type ?: ""} }"
+        return "GenericsListElement${if(type == null) "" else " [ $type ]"} { $identifier }"
     }
 }

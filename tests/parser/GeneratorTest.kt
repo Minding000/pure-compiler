@@ -17,7 +17,7 @@ internal class GeneratorTest {
 		val expected =
 			"""
 				Generator [ Identifier { fibonacciSeries } ParameterList {
-					Parameter { TypedIdentifier { Identifier { index }: SimpleType { Identifier { Int } } } }
+					Parameter { Identifier { index }: SimpleType { Identifier { Int } } }
 				}: SimpleType { Identifier { Int } }, SimpleType { Identifier { Int } } ] { StatementSection { StatementBlock {
 					If [ BinaryOperator {
 						Identifier { index } == NumberLiteral { 1 }

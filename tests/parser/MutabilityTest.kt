@@ -102,7 +102,7 @@ internal class MutabilityTest {
 					ModifierSection [ ModifierList { Modifier { imm } } ] {
 						FunctionSection [ to ] {
 							Function [ Identifier { speak } ParameterList {
-								Parameter { TypedIdentifier { Identifier { words }: SimpleType { Identifier { String } } } }
+								Parameter { Identifier { words }: SimpleType { Identifier { String } } }
 							}: void ] { StatementSection { StatementBlock {
 								Print {
 									Identifier { words }
@@ -129,7 +129,7 @@ internal class MutabilityTest {
 				TypeDefinition [ class Identifier { Human } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { chargePhone } ParameterList {
-							Parameter [ ModifierList { Modifier { mut } } ] { TypedIdentifier { Identifier { phone }: SimpleType { Identifier { Phone } } } }
+							Parameter [ ModifierList { Modifier { mut } } ] { Identifier { phone }: SimpleType { Identifier { Phone } } }
 						}: void ] { StatementSection { StatementBlock {
 							BinaryModification {
 								MemberAccess {

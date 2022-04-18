@@ -2,7 +2,7 @@ package linter.elements.values
 
 import linter.elements.general.Unit
 
-class TypeDefinition(val name: String, val superType: Unit? = null, val isGeneric: Boolean = false): Unit() {
+open class TypeDefinition(val name: String, val superType: Unit?, val isGeneric: Boolean): Unit() {
 
 	init {
 		if(superType != null)

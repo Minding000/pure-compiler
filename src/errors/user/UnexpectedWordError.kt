@@ -1,7 +1,6 @@
 package errors.user
 
 import parsing.tokenizer.Word
-import parsing.tokenizer.WordAtom
 import parsing.tokenizer.WordDescriptor
 import util.stringify
 

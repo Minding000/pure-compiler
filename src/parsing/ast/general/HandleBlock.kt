@@ -7,7 +7,6 @@ import linter.scopes.Scope
 import parsing.ast.literals.Identifier
 import parsing.ast.literals.Type
 import source_structure.Position
-import parsing.ast.general.StatementBlock
 
 class HandleBlock(start: Position, private val type: Type, private val identifier: Identifier?, private val block: StatementBlock): Element(start, block.end) {
 
@@ -15,7 +14,7 @@ class HandleBlock(start: Position, private val type: Type, private val identifie
 		val variableValueDeclaration = if(identifier == null)
 			null
 		else
-			VariableValueDeclaration(identifier, identifier.getValue())
+			VariableValueDeclaration(identifier, identifier.getValue(), true)
 		return HandleBlock(this, type.concretize(linter, scope), variableValueDeclaration, block.concretize(linter, scope))
 	}
 

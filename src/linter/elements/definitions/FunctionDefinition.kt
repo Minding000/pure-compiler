@@ -6,7 +6,7 @@ import parsing.ast.definitions.FunctionDefinition
 
 class FunctionDefinition(override val source: FunctionDefinition, name: String, val genericParameters: List<Unit>,
 						 val parameters: List<Unit>, val body: Unit?, val returnType: Unit?, val isNative: Boolean):
-	VariableValueDeclaration(source, name) {
+	VariableValueDeclaration(source, name, true) {
 
 	init {
 		units.addAll(genericParameters)

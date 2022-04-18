@@ -25,7 +25,7 @@ object Builder {
 			println(program)
 			println("----- Linter messages: -----")
 			val linter = Linter()
-			val lintedProgram = linter.lint(program)
+			//val lintedProgram = linter.lint(program)
 			for(message in linter.messages) {
 				println(message.description)
 			}

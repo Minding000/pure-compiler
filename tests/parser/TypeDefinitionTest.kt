@@ -96,7 +96,7 @@ internal class TypeDefinitionTest {
 			"""
 				TypeDefinition [ trait Identifier { Comparable } ] { TypeBody {
 					GenericsDeclaration {
-						Identifier { Target }
+						GenericsListElement { Identifier { Target } }
 					}
 				} }
             """.trimIndent()
