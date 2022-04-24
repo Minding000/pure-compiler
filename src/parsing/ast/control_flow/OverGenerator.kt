@@ -10,11 +10,12 @@ import source_structure.Position
 import util.indent
 
 class OverGenerator(start: Position, private val collection: Element, private val keyDeclaration: Identifier?,
-					private val valueDeclaration: Identifier): Element(start, valueDeclaration.end) {
+					private val valueDeclaration: Identifier?): Element(start, valueDeclaration?.end ?: collection.end) {
 
 	override fun concretize(linter: Linter, scope: Scope): OverGenerator {
 		return OverGenerator(this, collection.concretize(linter, scope),
-			keyDeclaration?.let { LocalVariableDeclaration(it) }, LocalVariableDeclaration(valueDeclaration))
+			keyDeclaration?.let { LocalVariableDeclaration(it) },
+			valueDeclaration?.let { LocalVariableDeclaration(it) })
 	}
 
 	override fun toString(): String {

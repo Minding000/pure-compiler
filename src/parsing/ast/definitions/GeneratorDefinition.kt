@@ -24,7 +24,7 @@ class GeneratorDefinition(start: Position, private val identifier: Identifier, p
 		val generatorDefinition = GeneratorDefinition(this, identifier.getValue(), parameters,
 			keyReturnType?.concretize(linter, scope), valueReturnType.concretize(linter, scope),
 			body.concretize(linter, scope))
-		scope.declareValue(generatorDefinition)
+		scope.declareValue(linter, generatorDefinition)
 		return generatorDefinition
 	}
 

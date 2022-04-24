@@ -1,4 +1,4 @@
-package linter.elements.operators
+package linter.elements.operations
 
 import linter.elements.general.Unit
 import parsing.ast.operations.UnaryModification

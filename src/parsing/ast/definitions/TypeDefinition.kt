@@ -29,22 +29,22 @@ class TypeDefinition(private val modifierList: ModifierList?, private val type: 
 		val typeDefinition = when(type.type) {
 			WordAtom.CLASS -> {
 				val clazz = Class(this, name, superType)
-				scope.declareType(clazz)
+				scope.declareType(linter, clazz)
 				clazz
 			}
 			WordAtom.OBJECT -> {
 				val obj = Object(this, name, superType)
-				scope.declareValue(obj)
+				scope.declareValue(linter, obj)
 				obj
 			}
 			WordAtom.ENUM -> {
 				val enum = Enum(this, name, superType)
-				scope.declareType(enum)
+				scope.declareType(linter, enum)
 				enum
 			}
 			WordAtom.TRAIT -> {
 				val trait = Trait(this, name, superType)
-				scope.declareType(trait)
+				scope.declareType(linter, trait)
 				trait
 			}
 			else -> throw CompilerError("Encountered unknown type type.")

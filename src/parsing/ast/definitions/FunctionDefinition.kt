@@ -38,7 +38,7 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 			parameters.add(parameter.concretize(linter, scope))
 		val functionDefinition = FunctionDefinition(this, identifier.getValue(), genericParameters, parameters,
 			body?.concretize(linter, scope), returnType?.concretize(linter, scope), isNative)
-		scope.declareValue(functionDefinition)
+		scope.declareValue(linter, functionDefinition)
 		return functionDefinition
 	}
 

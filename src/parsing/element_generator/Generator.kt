@@ -1,7 +1,6 @@
 package parsing.element_generator
 
 import errors.user.UnexpectedEndOfFileError
-import errors.user.UnexpectedWordError
 import parsing.tokenizer.Word
 import parsing.tokenizer.WordAtom
 import parsing.tokenizer.WordDescriptor

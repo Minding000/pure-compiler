@@ -40,10 +40,10 @@ class ElementGenerator(project: Project): Generator() {
 	fun parseProgram(): Program {
 		val files = LinkedList<File>()
 		while(!wordGenerator.done) {
-			wordGenerator.loadNextFile()
 			currentWord = wordGenerator.getNextWord()
 			nextWord = wordGenerator.getNextWord()
 			files.add(parseFile())
+			wordGenerator.loadNextFile()
 		}
 		return Program(files)
 	}

@@ -3,10 +3,10 @@ package parsing.ast.general
 import linter.Linter
 import linter.elements.general.ErrorHandlingContext
 import linter.scopes.Scope
-import parsing.ast.general.StatementBlock
 import java.util.*
 
-class StatementSection(val mainBlock: StatementBlock, val handleBlocks: List<HandleBlock>, val alwaysBlock: StatementBlock?):
+class StatementSection(private val mainBlock: StatementBlock, val handleBlocks: List<HandleBlock> = LinkedList(),
+					   private val alwaysBlock: StatementBlock? = null):
 	Element(mainBlock.start, (alwaysBlock ?: handleBlocks.lastOrNull() ?: mainBlock).end) {
 
 	override fun concretize(linter: Linter, scope: Scope): ErrorHandlingContext {

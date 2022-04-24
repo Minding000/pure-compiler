@@ -3,13 +3,11 @@ package parsing.ast.general
 import linter.Linter
 import linter.elements.general.FileReference
 import linter.elements.general.ReferenceAlias
-import linter.elements.general.Unit
 import linter.scopes.Scope
 import parsing.ast.literals.Identifier
 import source_structure.Position
 import util.indent
 import util.toLines
-import java.lang.StringBuilder
 import java.util.*
 
 class FileReference(start: Position, private val parts: List<Identifier>, private val body: AliasBlock?): Element(start, body?.end ?: parts.last().end) {

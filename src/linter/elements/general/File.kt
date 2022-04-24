@@ -15,13 +15,16 @@ class File(val source: AstFile, val file: SourceFile, val scope: FileScope): Uni
 			if(unit is FileReference) {
 				var noFilesFound = true
 				for(file in program.files) {
+					if(file == this)
+						continue
 					if(file.matches(unit.parts)) {
 						referencedFiles.add(file)
 						noFilesFound = false
+						linter.messages.add(Message("'${file.file.name}' referenced in '${this.file.name}' ${unit.parts}.", Message.Type.DEBUG))
 					}
 				}
 				if(noFilesFound)
-					linter.messages.add(Message("Failed to resolve file '${unit.identifier}'."))
+					linter.messages.add(Message("Failed to resolve file '${unit.identifier}'.", Message.Type.ERROR))
 			}
 		}
 	}
@@ -43,8 +46,6 @@ class File(val source: AstFile, val file: SourceFile, val scope: FileScope): Uni
 	}
 
 	fun linkReferences(linter: Linter) {
-		for(referencedFile in referencedFiles)
-			scope.referenceTypes(referencedFile.scope.declaredTypes)
 		linkReferences(linter, scope)
 	}
 }

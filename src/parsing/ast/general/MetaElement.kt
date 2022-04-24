@@ -12,6 +12,6 @@ abstract class MetaElement(start: Position, end: Position): Element(start, end) 
 	constructor(word: Word): this(word.start, word.end)
 
 	override fun concretize(linter: Linter, scope: Scope): Unit {
-		throw CompilerError("Tried to concretize meta element: $this")
+		throw CompilerError("Tried to concretize meta element at ${getStartString()}:\n$this")
 	}
 }

@@ -1,11 +1,22 @@
 package linter.elements.literals
 
+import linter.Linter
+import linter.elements.values.TypeDefinition
+import linter.messages.Message
+import linter.scopes.Scope
 import parsing.ast.literals.SimpleType
 
 class SimpleType(val source: SimpleType, val genericTypes: List<Type>, val name: String): Type() {
+	var definition: TypeDefinition? = null
 
 	init {
 		units.addAll(genericTypes)
+	}
+
+	override fun linkReferences(linter: Linter, scope: Scope) {
+		definition = scope.resolveType(name)
+		if(definition == null)
+			linter.messages.add(Message("Failed to link type '$name' in ${source.getStartString()}.", Message.Type.ERROR))
 	}
 
 	override fun accepts(sourceType: Type): Boolean {

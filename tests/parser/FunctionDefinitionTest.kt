@@ -140,13 +140,15 @@ internal class FunctionDefinitionTest {
 					y
 				}
 				
-				operator +=(right: Vector) {
-					x += right.x
-					y += right.y
-				}
-				
-				operator ==(right: Vector) {
-					return right.x == x & right.y == y
+				operator {
+					+=(right: Vector) {
+						x += right.x
+						y += right.y
+					}
+					
+					==(right: Vector) {
+						return right.x == x & right.y == y
+					}
 				}
 			}""".trimIndent()
 		val expected =
@@ -156,35 +158,37 @@ internal class FunctionDefinitionTest {
 						VariableDeclaration { Identifier { x } }
 						VariableDeclaration { Identifier { y } }
 					}
-					OperatorDefinition [ Operator { += } ParameterList {
-						Parameter { Identifier { right }: SimpleType { Identifier { Vector } } }
-					}: void ] { StatementSection { StatementBlock {
-						BinaryModification {
-							Identifier { x } += MemberAccess {
-								Identifier { right }.Identifier { x }
-							}
-						}
-						BinaryModification {
-							Identifier { y } += MemberAccess {
-								Identifier { right }.Identifier { y }
-							}
-						}
-					} } }
-					OperatorDefinition [ Operator { == } ParameterList {
-						Parameter { Identifier { right }: SimpleType { Identifier { Vector } } }
-					}: void ] { StatementSection { StatementBlock {
-						Return { BinaryOperator {
-							BinaryOperator {
-								MemberAccess {
+					OperatorSection {
+						OperatorDefinition [ Operator { += } ParameterList {
+							Parameter { Identifier { right }: SimpleType { Identifier { Vector } } }
+						}: void ] { StatementSection { StatementBlock {
+							BinaryModification {
+								Identifier { x } += MemberAccess {
 									Identifier { right }.Identifier { x }
-								} == Identifier { x }
-							} & BinaryOperator {
-								MemberAccess {
-									Identifier { right }.Identifier { y }
-								} == Identifier { y }
+								}
 							}
-						} }
-					} } }
+							BinaryModification {
+								Identifier { y } += MemberAccess {
+									Identifier { right }.Identifier { y }
+								}
+							}
+						} } }
+						OperatorDefinition [ Operator { == } ParameterList {
+							Parameter { Identifier { right }: SimpleType { Identifier { Vector } } }
+						}: void ] { StatementSection { StatementBlock {
+							Return { BinaryOperator {
+								BinaryOperator {
+									MemberAccess {
+										Identifier { right }.Identifier { x }
+									} == Identifier { x }
+								} & BinaryOperator {
+									MemberAccess {
+										Identifier { right }.Identifier { y }
+									} == Identifier { y }
+								}
+							} }
+						} } }
+					}
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -195,36 +199,40 @@ internal class FunctionDefinitionTest {
 		val sourceCode = """
 			class BookSelf {
 				
-				operator [index: Int](value: Book) {
-					echo "Adding book", index, value
-				}
-				
-				operator [index: Int]: Book {
-					echo "Book requested", index
+				operator {
+					[index: Int](value: Book) {
+						echo "Adding book", index, value
+					}
+					
+					[index: Int]: Book {
+						echo "Book requested", index
+					}
 				}
 			}""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ class Identifier { BookSelf } ] { TypeBody {
-					OperatorDefinition [ IndexOperator {
-						Parameter { Identifier { index }: SimpleType { Identifier { Int } } }
-					} ParameterList {
-						Parameter { Identifier { value }: SimpleType { Identifier { Book } } }
-					}: void ] { StatementSection { StatementBlock {
-						Print {
-							StringLiteral { "Adding book" }
-							Identifier { index }
-							Identifier { value }
-						}
-					} } }
-					OperatorDefinition [ IndexOperator {
-						Parameter { Identifier { index }: SimpleType { Identifier { Int } } }
-					}: SimpleType { Identifier { Book } } ] { StatementSection { StatementBlock {
-						Print {
-							StringLiteral { "Book requested" }
-							Identifier { index }
-						}
-					} } }
+					OperatorSection {
+						OperatorDefinition [ IndexOperator {
+							Parameter { Identifier { index }: SimpleType { Identifier { Int } } }
+						} ParameterList {
+							Parameter { Identifier { value }: SimpleType { Identifier { Book } } }
+						}: void ] { StatementSection { StatementBlock {
+							Print {
+								StringLiteral { "Adding book" }
+								Identifier { index }
+								Identifier { value }
+							}
+						} } }
+						OperatorDefinition [ IndexOperator {
+							Parameter { Identifier { index }: SimpleType { Identifier { Int } } }
+						}: SimpleType { Identifier { Book } } ] { StatementSection { StatementBlock {
+							Print {
+								StringLiteral { "Book requested" }
+								Identifier { index }
+							}
+						} } }
+					}
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)

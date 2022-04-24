@@ -10,6 +10,8 @@ import util.toLines
 
 class StatementBlock(start: Position, end: Position, private val statements: List<Element>): Element(start, end) {
 
+	constructor(statement: Element): this(statement.start, statement.end, listOf(statement))
+
 	override fun concretize(linter: Linter, scope: Scope): StatementBlock {
 		return StatementBlock(this, statements.concretize(linter, scope))
 	}

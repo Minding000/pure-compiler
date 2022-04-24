@@ -15,7 +15,7 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
         //TODO include modifiers
         val parameter = Parameter(this, identifier.getValue(), type?.concretize(linter, scope))
         if(type != null)
-            scope.declareValue(parameter)
+            scope.declareValue(linter, parameter)
         return parameter
     }
 

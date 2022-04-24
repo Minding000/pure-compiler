@@ -13,22 +13,26 @@ import java.util.*
 
 object Builder {
 	private const val LANG_MODULE_PATH = "D:\\Daten\\Projekte\\Pure\\packages\\lang"
+	private const val PRINT_SOURCE_CODE = false
+	private const val PRINT_AST = false
 
 	fun build(path: String) {
 		try {
 			val project = loadProject(path)
 			loadRequiredModules(project)
-			println("----- Source code: -----")
-			println(project)
-			println("----- Abstract syntax tree: -----")
+			if(PRINT_SOURCE_CODE) {
+				println("----- Source code: -----")
+				println(project)
+			}
 			val program = ElementGenerator(project).parseProgram()
-			println(program)
+			if(PRINT_AST) {
+				println("----- Abstract syntax tree: -----")
+				println(program)
+			}
 			println("----- Linter messages: -----")
 			val linter = Linter()
-			//val lintedProgram = linter.lint(program)
-			for(message in linter.messages) {
-				println(message.description)
-			}
+			val lintedProgram = linter.lint(program)
+			linter.printMessages()
 			println("----- JIT output: -----")
 			LLVMIRCompiler.compile()
 			/*

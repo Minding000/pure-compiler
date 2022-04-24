@@ -19,7 +19,7 @@ class ComputedProperty(private val identifier: Identifier, private val type: Typ
 		val type = type ?: parent.type ?: throw CompilerError("Computed property is missing type. [should be linker error instead]")
 		val computedProperty = ComputedProperty(this, identifier.getValue(), type.concretize(linter, scope),
 			getExpression?.concretize(linter, scope), setExpression?.concretize(linter, scope))
-		scope.declareValue(computedProperty)
+		scope.declareValue(linter, computedProperty)
 		return computedProperty
 	}
 

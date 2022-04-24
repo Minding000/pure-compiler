@@ -4,19 +4,16 @@ import linter.Linter
 import linter.elements.definitions.OperatorDefinition
 import linter.elements.general.Unit
 import linter.scopes.Scope
-import parsing.ast.definitions.sections.ModifierSection
-import parsing.ast.definitions.sections.ModifierSectionChild
+import parsing.ast.definitions.sections.OperatorSection
 import parsing.ast.general.Element
 import parsing.ast.general.StatementSection
-import source_structure.Position
 import parsing.ast.literals.Type
 import java.util.*
 
-class OperatorDefinition(start: Position, private val operator: Operator,
-						 private val parameterList: ParameterList?, private val body: StatementSection?,
-						 private var returnType: Type?):
-	Element(start, body?.end ?: returnType?.end ?: parameterList?.end ?: operator.end), ModifierSectionChild {
-	override var parent: ModifierSection? = null
+class OperatorDefinition(private val operator: Operator, private val parameterList: ParameterList?,
+						 private val body: StatementSection?, private var returnType: Type?):
+	Element(operator.start, body?.end ?: returnType?.end ?: parameterList?.end ?: operator.end) {
+	lateinit var parent: OperatorSection
 
 	override fun concretize(linter: Linter, scope: Scope): OperatorDefinition {
 		//TODO include modifiers and operator type

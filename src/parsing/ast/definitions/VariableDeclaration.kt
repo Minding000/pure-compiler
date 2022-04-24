@@ -21,7 +21,7 @@ class VariableDeclaration(private val identifier: Identifier, private val type: 
 			value?.concretize(linter, scope),
 			parent.isConstant
 		)
-		scope.declareValue(variableDeclaration)
+		scope.declareValue(linter, variableDeclaration)
 		return variableDeclaration
 	}
 

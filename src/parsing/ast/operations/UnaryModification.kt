@@ -2,7 +2,7 @@ package parsing.ast.operations
 
 import linter.Linter
 import linter.elements.general.Unit
-import linter.elements.operators.UnaryModification
+import linter.elements.operations.UnaryModification
 import linter.scopes.Scope
 import parsing.ast.general.Element
 import parsing.tokenizer.Word

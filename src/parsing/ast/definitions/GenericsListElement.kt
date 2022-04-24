@@ -11,7 +11,7 @@ import parsing.ast.literals.Type
 class GenericsListElement(private val identifier: Identifier, private val type: Type?): Element(identifier.start, type?.end ?: identifier.end) {
 
     override fun concretize(linter: Linter, scope: Scope): Unit {
-        return TypeDefinition(identifier.getValue(), type?.concretize(linter, scope), true)
+        return TypeDefinition(this, identifier.getValue(), type?.concretize(linter, scope), true)
     }
 
     override fun toString(): String {
