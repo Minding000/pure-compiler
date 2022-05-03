@@ -1,11 +1,14 @@
 package linter.elements.definitions
 
 import linter.elements.general.Unit
+import linter.elements.values.TypeDefinition
 import linter.elements.values.VariableValueDeclaration
-import parsing.ast.definitions.TypeDefinition
+import linter.scopes.TypeScope
+import parsing.ast.definitions.TypeDefinition as ASTTypeDefinition
 
-class Object(override val source: TypeDefinition, name: String, val superType: Unit?):
-	VariableValueDeclaration(source, name, true) {
+class Object(override val source: ASTTypeDefinition, name: String, scope: TypeScope, superType: Unit?):
+	TypeDefinition(source, name, scope, superType, false) {
+	val value = VariableValueDeclaration(source, name, true)
 
 	init {
 		if(superType != null)

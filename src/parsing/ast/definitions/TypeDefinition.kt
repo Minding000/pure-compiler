@@ -8,6 +8,7 @@ import linter.elements.definitions.Object
 import linter.elements.definitions.Trait
 import linter.elements.general.Unit
 import linter.scopes.Scope
+import linter.scopes.TypeScope
 import parsing.ast.definitions.sections.ModifierSection
 import parsing.ast.definitions.sections.ModifierSectionChild
 import parsing.ast.general.Element
@@ -26,31 +27,34 @@ class TypeDefinition(private val modifierList: ModifierList?, private val type: 
 		//TODO include modifiers
 		val name = identifier.getValue()
 		val superType = superType?.concretize(linter, scope)
+		val typeScope = TypeScope(scope, superType?.scope)
 		val typeDefinition = when(type.type) {
 			WordAtom.CLASS -> {
-				val clazz = Class(this, name, superType)
+				val clazz = Class(this, name, typeScope, superType)
 				scope.declareType(linter, clazz)
 				clazz
 			}
 			WordAtom.OBJECT -> {
-				val obj = Object(this, name, superType)
-				scope.declareValue(linter, obj)
+				val obj = Object(this, name, typeScope, superType)
+				scope.declareType(linter, obj)
+				scope.declareValue(linter, obj.value)
 				obj
 			}
 			WordAtom.ENUM -> {
-				val enum = Enum(this, name, superType)
+				val enum = Enum(this, name, typeScope, superType)
 				scope.declareType(linter, enum)
+				scope.declareValue(linter, enum.value)
 				enum
 			}
 			WordAtom.TRAIT -> {
-				val trait = Trait(this, name, superType)
+				val trait = Trait(this, name, typeScope, superType)
 				scope.declareType(linter, trait)
 				trait
 			}
 			else -> throw CompilerError("Encountered unknown type type.")
 		}
 		for(member in body.members)
-			member.concretize(linter, scope, typeDefinition.units)
+			member.concretize(linter, typeScope, typeDefinition.units)
 		return typeDefinition
 	}
 

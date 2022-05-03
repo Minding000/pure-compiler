@@ -11,6 +11,9 @@ class SimpleType(val source: SimpleType, val genericTypes: List<Type>, val name:
 
 	init {
 		units.addAll(genericTypes)
+		if(definition != null) {
+			//TODO init scope
+		}
 	}
 
 	override fun linkReferences(linter: Linter, scope: Scope) {

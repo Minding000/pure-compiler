@@ -1,6 +1,5 @@
-package linter.elements.definitions
+package linter.elements.literals
 
-import linter.elements.literals.Type
 import parsing.ast.definitions.LambdaFunctionType as ASTLambdaType
 
 class LambdaFunctionType(val source: ASTLambdaType, val parameters: List<Type>, val returnType: Type?): Type() {

@@ -2,20 +2,25 @@ package parsing.ast.literals
 
 import errors.internal.CompilerError
 import linter.Linter
-import linter.elements.literals.UnionType
+import linter.elements.literals.AndUnionType
+import linter.elements.literals.OrUnionType
+import linter.elements.literals.Type as LinterType
 import linter.scopes.Scope
 import java.util.*
 
 class UnionType(private val left: Type, private val right: Type, private val mode: Mode): Type(left.start, right.end) {
 
-	override fun concretize(linter: Linter, scope: Scope): UnionType {
+	override fun concretize(linter: Linter, scope: Scope): LinterType {
 		val types = LinkedList<linter.elements.literals.Type>()
 		addTypes(linter, scope, types, this)
-		return UnionType(this, types, mode == Mode.AND)
+		return if(mode == Mode.AND)
+			AndUnionType(this, types)
+		else
+			OrUnionType(this, types)
 	}
 
-	private fun addTypes(linter: Linter, scope: Scope, types: LinkedList<linter.elements.literals.Type>, type: Type) {
-		if(type is parsing.ast.literals.UnionType && type.mode == mode) {
+	private fun addTypes(linter: Linter, scope: Scope, types: LinkedList<LinterType>, type: Type) {
+		if(type is UnionType && type.mode == mode) {
 			addTypes(linter, scope, types, type.left)
 			addTypes(linter, scope, types, type.right)
 		} else {

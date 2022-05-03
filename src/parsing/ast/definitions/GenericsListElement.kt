@@ -4,17 +4,20 @@ import linter.Linter
 import linter.elements.general.Unit
 import linter.elements.values.TypeDefinition
 import linter.scopes.Scope
+import linter.scopes.TypeScope
 import parsing.ast.general.Element
 import parsing.ast.literals.Identifier
 import parsing.ast.literals.Type
 
-class GenericsListElement(private val identifier: Identifier, private val type: Type?): Element(identifier.start, type?.end ?: identifier.end) {
+class GenericsListElement(private val identifier: Identifier, private val superType: Type?): Element(identifier.start, superType?.end ?: identifier.end) {
 
     override fun concretize(linter: Linter, scope: Scope): Unit {
-        return TypeDefinition(this, identifier.getValue(), type?.concretize(linter, scope), true)
+        val superType = superType?.concretize(linter, scope)
+        val typeScope = TypeScope(scope, superType?.scope)
+        return TypeDefinition(this, identifier.getValue(), typeScope, superType, true)
     }
 
     override fun toString(): String {
-        return "GenericsListElement${if(type == null) "" else " [ $type ]"} { $identifier }"
+        return "GenericsListElement${if(superType == null) "" else " [ $superType ]"} { $identifier }"
     }
 }

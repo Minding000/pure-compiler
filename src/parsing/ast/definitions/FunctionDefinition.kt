@@ -2,8 +2,10 @@ package parsing.ast.definitions
 
 import linter.Linter
 import linter.elements.definitions.FunctionDefinition
+import linter.elements.definitions.Parameter
 import linter.elements.general.Unit
 import linter.messages.Message
+import linter.scopes.BlockScope
 import linter.scopes.Scope
 import parsing.ast.definitions.sections.FunctionSection
 import parsing.ast.general.Element
@@ -20,6 +22,7 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 	lateinit var parent: FunctionSection
 
 	override fun concretize(linter: Linter, scope: Scope): FunctionDefinition {
+		val functionScope = BlockScope(scope)
 		var isNative = false
 		for(modifier in parent.getModifiers(linter)) {
 			when(val name = modifier.getValue()) {
@@ -33,12 +36,12 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 				//TODO continue...
 			}
 		}
-		val parameters = LinkedList<Unit>()
+		val parameters = LinkedList<Parameter>()
 		for(parameter in parameterList.parameters)
-			parameters.add(parameter.concretize(linter, scope))
+			parameters.add(parameter.concretize(linter, functionScope))
 		val functionDefinition = FunctionDefinition(this, identifier.getValue(), genericParameters, parameters,
-			body?.concretize(linter, scope), returnType?.concretize(linter, scope), isNative)
-		scope.declareValue(linter, functionDefinition)
+			body?.concretize(linter, functionScope), returnType?.concretize(linter, functionScope), isNative)
+		scope.declareFunction(linter, functionDefinition)
 		return functionDefinition
 	}
 

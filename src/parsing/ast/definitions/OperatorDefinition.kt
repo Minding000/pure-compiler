@@ -2,8 +2,9 @@ package parsing.ast.definitions
 
 import linter.Linter
 import linter.elements.definitions.OperatorDefinition
-import linter.elements.general.Unit
+import linter.scopes.BlockScope
 import linter.scopes.Scope
+import linter.elements.definitions.Parameter
 import parsing.ast.definitions.sections.OperatorSection
 import parsing.ast.general.Element
 import parsing.ast.general.StatementSection
@@ -16,13 +17,17 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 	lateinit var parent: OperatorSection
 
 	override fun concretize(linter: Linter, scope: Scope): OperatorDefinition {
+		val operatorScope = BlockScope(scope)
 		//TODO include modifiers and operator type
-		val parameters = LinkedList<Unit>()
+		val parameters = LinkedList<Parameter>()
 		if(parameterList != null) {
 			for(parameter in parameterList.parameters)
-				parameters.add(parameter.concretize(linter, scope))
+				parameters.add(parameter.concretize(linter, operatorScope))
 		}
-		return OperatorDefinition(this, parameters, body?.concretize(linter, scope), returnType?.concretize(linter, scope))
+		val operatorDefinition = OperatorDefinition(this, operator.getValue(), parameters, body?.concretize(linter, operatorScope),
+			returnType?.concretize(linter, operatorScope))
+		scope.declareOperator(linter, operatorDefinition)
+		return operatorDefinition
 	}
 
 	override fun toString(): String {

@@ -8,6 +8,7 @@ import source_structure.Position
 import util.indent
 import util.toLines
 
+//TODO make concretizable to make a type definition form it
 class GenericsDeclaration(start: Position, private val elements: List<GenericsListElement>): MetaElement(start, elements.last().end) {
 
     override fun concretize(linter: Linter, scope: Scope, units: MutableList<Unit>) {

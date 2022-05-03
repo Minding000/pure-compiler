@@ -6,17 +6,12 @@ import linter.elements.values.VariableValueDeclaration
 import linter.messages.Message
 import kotlin.collections.HashMap
 
-class FileScope: Scope() {
-	private val referencedTypes = HashMap<String, TypeDefinition>()
+class InterfaceScope(): Scope() {
 	val declaredTypes = HashMap<String, TypeDefinition>()
 	val declaredValues = HashMap<String, VariableValueDeclaration>()
 
-	fun referenceTypes(types: HashMap<String, TypeDefinition>) {
-		declaredTypes.putAll(types)
-	}
-
 	override fun declareType(linter: Linter, type: TypeDefinition) {
-		val previousDeclaration = referencedTypes[type.name] ?: declaredTypes.putIfAbsent(type.name, type)
+		val previousDeclaration = declaredTypes.putIfAbsent(type.name, type)
 		if(previousDeclaration != null)
 			linter.messages.add(Message(
 				"${type.source.getStartString()}: Redeclaration of type '${type.name}'," +
@@ -24,7 +19,7 @@ class FileScope: Scope() {
 	}
 
 	override fun resolveType(name: String): TypeDefinition? {
-		return declaredTypes[name] ?: referencedTypes[name]
+		return declaredTypes[name]
 	}
 
 	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {

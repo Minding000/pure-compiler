@@ -1,11 +1,8 @@
 package parsing.ast.definitions
 
 import linter.Linter
-import linter.elements.definitions.LambdaFunctionType
-import linter.elements.general.Unit
+import linter.elements.literals.LambdaFunctionType
 import linter.scopes.Scope
-import parsing.ast.general.Element
-import parsing.ast.literals.QuantifiedType
 import parsing.ast.literals.Type
 import source_structure.Position
 import java.util.*
