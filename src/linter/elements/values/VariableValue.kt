@@ -12,6 +12,6 @@ class VariableValue(val source: Identifier): Value() {
 	override fun linkReferences(linter: Linter, scope: Scope) {
 		definition = scope.resolveReference(name)
 		if(definition == null)
-			linter.messages.add(Message("Failed to link value '$name' in ${source.getStartString()}."))
+			linter.messages.add(Message("${source.getStartString()}: Failed to link value '$name'.", Message.Type.ERROR))
 	}
 }

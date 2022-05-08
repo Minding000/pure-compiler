@@ -191,25 +191,47 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 
 	/**
 	 * ReferenceChain:
-	 *   <FunctionCall>
-	 *   <FunctionCall>[[?].<FunctionCall>]
+	 *   <Index>
+	 *   <Index>[[?].<Index>]
 	 */
 	private fun parseReferenceChain(): Element {
-		var expression = parseFunctionCall()
+		var expression = parseIndex()
 		while(WordType.MEMBER_ACCESSOR.includes(currentWord?.type)) {
 			val accessor = consume(WordType.MEMBER_ACCESSOR)
-			expression = MemberAccess(expression, parseFunctionCall(), accessor.type == WordAtom.OPTIONAL_ACCESSOR)
+			expression = MemberAccess(expression, parseIndex(), accessor.type == WordAtom.OPTIONAL_ACCESSOR)
+		}
+		return expression
+	}
+
+	/**
+	 * Index:
+	 *   <FunctionCall>
+	 *   <FunctionCall>[<Expression>[, <Expression>]...]
+	 */
+	private fun parseIndex(): Element {
+		var expression = parseFunctionCall()
+		if(currentWord?.type == WordAtom.BRACKETS_OPEN) {
+			consume(WordAtom.BRACKETS_OPEN)
+			val indices = LinkedList<Element>()
+			indices.add(parseExpression())
+			while(currentWord?.type == WordAtom.COMMA) {
+				consume(WordAtom.COMMA)
+				indices.add(parseExpression())
+			}
+			val end = consume(WordAtom.BRACKETS_CLOSE).end
+			expression = Index(expression, indices, end)
 		}
 		return expression
 	}
 
 	/**
 	 * FunctionCall:
-	 *   <Index>
-	 *   <Index>([<Expression>[, <Expression>]...])
+	 *   <Primary>
+	 *   <Primary>([<Expression>[, <Expression>]...])
 	 */
 	private fun parseFunctionCall(): Element {
-		var expression = parseIndex()
+		//TODO allow for anonymous function calls
+		var expression = parsePrimary()
 		if(currentWord?.type == WordAtom.PARENTHESES_OPEN) {
 			consume(WordAtom.PARENTHESES_OPEN)
 			val parameters = LinkedList<Element>()
@@ -222,27 +244,6 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 			}
 			val end = consume(WordAtom.PARENTHESES_CLOSE).end
 			expression = FunctionCall(expression, parameters, end)
-		}
-		return expression
-	}
-
-	/**
-	 * Index:
-	 *   <Primary>
-	 *   <Primary>[<Expression>[, <Expression>]...]
-	 */
-	private fun parseIndex(): Element {
-		var expression = parsePrimary()
-		if(currentWord?.type == WordAtom.BRACKETS_OPEN) {
-			consume(WordAtom.BRACKETS_OPEN)
-			val indices = LinkedList<Element>()
-			indices.add(parseExpression())
-			while(currentWord?.type == WordAtom.COMMA) {
-				consume(WordAtom.COMMA)
-				indices.add(parseExpression())
-			}
-			val end = consume(WordAtom.BRACKETS_CLOSE).end
-			expression = Index(expression, indices, end)
 		}
 		return expression
 	}

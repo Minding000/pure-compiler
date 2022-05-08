@@ -3,10 +3,11 @@ package linter.elements.control_flow
 import linter.elements.general.Unit
 import parsing.ast.control_flow.FunctionCall
 
-class FunctionCall(val source: FunctionCall, val functionReference: Unit, val parameters: List<Unit>): Unit() {
+class FunctionCall(val source: FunctionCall, val context: Unit?, val name: String, val parameters: List<Unit>): Unit() {
 
 	init {
-		units.add(functionReference)
+		if(context != null)
+			units.add(context)
 		units.addAll(parameters)
 	}
 }

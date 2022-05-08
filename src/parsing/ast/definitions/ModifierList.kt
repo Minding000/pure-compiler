@@ -11,7 +11,7 @@ class ModifierList(val modifiers: List<Modifier>): MetaElement(modifiers.first()
 		for(modifier in modifiers) {
 			val name = modifier.getValue()
 			if(uniqueModifiers.contains(name)) {
-				linter.messages.add(Message("Duplicate '$name' modifier."))
+				linter.messages.add(Message("Duplicate '$name' modifier.", Message.Type.WARNING))
 				continue
 			}
 			uniqueModifiers.add(name)

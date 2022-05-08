@@ -18,8 +18,17 @@ class Linter {
 	}
 
 	fun printMessages() {
-		for(message in messages)
+		val counts = Array<Byte>(4) { 0 }
+		for(message in messages) {
+			counts[message.type.ordinal]++
 			if(message.type >= logLevel)
-				println(message.description)
+				println("${message.type.name}: ${message.description}")
+		}
+		println("Total: "
+				+ "${counts[Message.Type.ERROR.ordinal]} errors, "
+				+ "${counts[Message.Type.WARNING.ordinal]} warnings, "
+				+ "${counts[Message.Type.INFO.ordinal]} infos, "
+				+ "${counts[Message.Type.DEBUG.ordinal]} debug"
+				+ " (Log level: ${logLevel.name})")
 	}
 }

@@ -14,7 +14,9 @@ class GenericsListElement(private val identifier: Identifier, private val superT
     override fun concretize(linter: Linter, scope: Scope): Unit {
         val superType = superType?.concretize(linter, scope)
         val typeScope = TypeScope(scope, superType?.scope)
-        return TypeDefinition(this, identifier.getValue(), typeScope, superType, true)
+        val genericType = TypeDefinition(this, identifier.getValue(), typeScope, superType, true)
+        scope.declareType(linter, genericType)
+        return genericType
     }
 
     override fun toString(): String {

@@ -27,7 +27,7 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 		for(modifier in parent.getModifiers(linter)) {
 			when(val name = modifier.getValue()) {
 				"native" -> isNative = true
-				else -> linter.messages.add(Message("Modifier '$name' is not applicable to functions."))
+				else -> linter.messages.add(Message("Modifier '$name' is not applicable to functions.", Message.Type.ERROR))
 			}
 		}
 		val genericParameters = LinkedList<Unit>()
@@ -39,8 +39,8 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 		val parameters = LinkedList<Parameter>()
 		for(parameter in parameterList.parameters)
 			parameters.add(parameter.concretize(linter, functionScope))
-		val functionDefinition = FunctionDefinition(this, identifier.getValue(), genericParameters, parameters,
-			body?.concretize(linter, functionScope), returnType?.concretize(linter, functionScope), isNative)
+		val functionDefinition = FunctionDefinition(this, identifier.getValue(), functionScope, genericParameters,
+			parameters, body?.concretize(linter, functionScope), returnType?.concretize(linter, functionScope), isNative)
 		scope.declareFunction(linter, functionDefinition)
 		return functionDefinition
 	}

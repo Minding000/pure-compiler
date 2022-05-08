@@ -1,11 +1,14 @@
 package linter.elements.definitions
 
+import linter.Linter
 import linter.elements.general.Unit
 import linter.elements.values.VariableValueDeclaration
+import linter.scopes.BlockScope
+import linter.scopes.Scope
 import parsing.ast.definitions.OperatorDefinition
 
-class OperatorDefinition(override val source: OperatorDefinition, name: String, val parameters: List<Parameter>,
-						  val body: Unit?, val returnType: Unit?):
+class OperatorDefinition(override val source: OperatorDefinition, name: String, val scope: BlockScope,
+						 val parameters: List<Parameter>, val body: Unit?, val returnType: Unit?):
 	VariableValueDeclaration(source, name, true) {
 	val variation = parameters.joinToString { parameter -> "${parameter.name}-${parameter.type}"}
 
@@ -15,5 +18,9 @@ class OperatorDefinition(override val source: OperatorDefinition, name: String, 
 			units.add(body)
 		if(returnType != null)
 			units.add(returnType)
+	}
+
+	override fun linkReferences(linter: Linter, scope: Scope) {
+		super.linkReferences(linter, this.scope)
 	}
 }

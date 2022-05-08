@@ -20,7 +20,7 @@ class DeinitializerDefinition(start: Position, end: Position, private val body: 
 			for(modifier in it.getModifiers(linter)) {
 				when(val name = modifier.getValue()) {
 					"native" -> isNative = true
-					else -> linter.messages.add(Message("Modifier '$name' is not applicable to deinitializers."))
+					else -> linter.messages.add(Message("Modifier '$name' is not applicable to deinitializers.", Message.Type.ERROR))
 				}
 			}
 		}
