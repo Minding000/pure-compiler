@@ -4,10 +4,15 @@ import linter.Linter
 import linter.elements.values.TypeDefinition
 import linter.messages.Message
 import linter.scopes.Scope
-import parsing.ast.literals.SimpleType
+import parsing.ast.general.Element
+import java.util.LinkedList
 
-class SimpleType(val source: SimpleType, val genericTypes: List<Type>, val name: String): Type() {
+class SimpleType(val source: Element, val genericTypes: List<Type>, val name: String): Type() {
 	var definition: TypeDefinition? = null
+
+	constructor(definition: TypeDefinition): this(definition.source, LinkedList(), definition.name) {
+		this.definition = definition
+	}
 
 	init {
 		units.addAll(genericTypes)
@@ -27,13 +32,13 @@ class SimpleType(val source: SimpleType, val genericTypes: List<Type>, val name:
 	}
 
 	override fun isAssignableTo(targetType: Type): Boolean {
-		if(targetType !is linter.elements.literals.SimpleType)
+		if(targetType !is SimpleType)
 			return targetType.accepts(this)
 		return equals(targetType)
 	}
 
 	override fun equals(other: Any?): Boolean {
-		if(other !is linter.elements.literals.SimpleType)
+		if(other !is SimpleType)
 			return false
 		if(name != other.name)
 			return false

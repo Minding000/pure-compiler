@@ -11,6 +11,7 @@ class Enum(override val source: ASTTypeDefinition, name: String, scope: TypeScop
 	val value = VariableValueDeclaration(source, name, null, true) //TODO should provide type
 
 	init {
+		scope.createInstanceConstant(this)
 		if(superType != null)
 			units.add(superType)
 	}

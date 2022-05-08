@@ -9,6 +9,7 @@ class Class(override val source: ASTTypeDefinition, name: String, scope: TypeSco
 	TypeDefinition(source, name, scope, superType, false) {
 
 	init {
+		scope.createInstanceConstant(this)
 		if(superType != null)
 			units.add(superType)
 	}

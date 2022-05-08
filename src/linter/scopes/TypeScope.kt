@@ -3,16 +3,26 @@ package linter.scopes
 import linter.Linter
 import linter.elements.definitions.FunctionDefinition
 import linter.elements.definitions.OperatorDefinition
+import linter.elements.literals.SimpleType
 import linter.elements.values.TypeDefinition
 import linter.elements.values.VariableValueDeclaration
 import linter.messages.Message
 import kotlin.collections.HashMap
 
 class TypeScope(val parentScope: Scope, val superScope: InterfaceScope?): Scope() {
+	var instanceConstant: VariableValueDeclaration? = null
 	val declaredTypes = HashMap<String, TypeDefinition>()
 	val declaredValues = HashMap<String, VariableValueDeclaration>()
 	val functions = HashMap<String, HashMap<String, FunctionDefinition>>()
 	val operators = HashMap<String, HashMap<String, OperatorDefinition>>()
+
+	companion object {
+		const val SELF_REFERENCE = "this"
+	}
+
+	fun createInstanceConstant(definition: TypeDefinition) {
+		instanceConstant = VariableValueDeclaration(definition.source, SELF_REFERENCE, SimpleType(definition), true)
+	}
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {
 		var previousDeclaration = parentScope.resolveType(type.name)
@@ -65,6 +75,8 @@ class TypeScope(val parentScope: Scope, val superScope: InterfaceScope?): Scope(
 	}
 
 	override fun resolveReference(name: String): VariableValueDeclaration? {
+		if(name == SELF_REFERENCE)
+			return instanceConstant
 		return parentScope.resolveReference(name)
 			?: superScope?.resolveReference(name)
 			?: declaredValues[name]
