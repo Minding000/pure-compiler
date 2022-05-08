@@ -1,11 +1,12 @@
 package linter.elements.definitions
 
 import linter.elements.general.Unit
+import linter.elements.literals.Type
 import linter.elements.values.VariableValueDeclaration
 import parsing.ast.definitions.ComputedProperty
 
-class ComputedProperty(override val source: ComputedProperty, name: String, val type: Unit, val getExpression: Unit?, val setExpression: Unit?):
-	VariableValueDeclaration(source, name, setExpression == null) {
+class ComputedProperty(override val source: ComputedProperty, name: String, type: Type, val getExpression: Unit?, val setExpression: Unit?):
+	VariableValueDeclaration(source, name, type, setExpression == null) {
 
 	init {
 		units.add(type)

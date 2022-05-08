@@ -1,10 +1,11 @@
 package linter.elements.general
 
 import linter.Linter
+import linter.elements.literals.Type
 import linter.scopes.Scope
 import java.util.*
 
-open class Unit {
+open class Unit(var type: Type? = null) {
 	val units = LinkedList<Unit>()
 
 	open fun linkTypes(linter: Linter, scope: Scope) {
