@@ -10,6 +10,10 @@ import parsing.ast.literals.Type
 class Parameter(private val modifierList: ModifierList?, private val identifier: Identifier, private val type: Type?):
     Element(modifierList?.start ?: identifier.start, identifier.end) {
 
+    fun getTypeName(): String {
+        return type?.getValue() ?: ""
+    }
+
     override fun concretize(linter: Linter, scope: Scope): Parameter {
         //TODO include modifiers
         val parameter = Parameter(this, identifier.getValue(), type?.concretize(linter, scope))

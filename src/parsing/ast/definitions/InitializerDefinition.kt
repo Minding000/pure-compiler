@@ -2,7 +2,8 @@ package parsing.ast.definitions
 
 import linter.Linter
 import linter.elements.definitions.InitializerDefinition
-import linter.elements.general.Unit
+import linter.elements.definitions.Parameter as LinterParameter
+import linter.scopes.BlockScope
 import linter.scopes.Scope
 import parsing.ast.definitions.sections.ModifierSection
 import parsing.ast.definitions.sections.ModifierSectionChild
@@ -18,12 +19,14 @@ class InitializerDefinition(start: Position, private val parameterList: Paramete
 
 	override fun concretize(linter: Linter, scope: Scope): InitializerDefinition {
 		//TODO concretize modifiers
-		val parameters = LinkedList<Unit>()
+		val initializerScope = BlockScope(scope)
+		val parameters = LinkedList<LinterParameter>()
 		if(parameterList != null) {
 			for(parameter in parameterList.parameters)
-				parameters.add(parameter.concretize(linter, scope))
+				parameters.add(parameter.concretize(linter, initializerScope))
 		}
-		return InitializerDefinition(this, parameters, body?.concretize(linter, scope))
+		return InitializerDefinition(this, initializerScope, parameters,
+			body?.concretize(linter, initializerScope))
 	}
 
 	override fun toString(): String {

@@ -24,7 +24,14 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 			for(parameter in parameterList.parameters)
 				parameters.add(parameter.concretize(linter, operatorScope))
 		}
-		val operatorDefinition = OperatorDefinition(this, operator.getValue(), operatorScope, parameters,
+		val name = if(operator is IndexOperator) {
+			for(parameter in operator.parameters)
+				parameters.add(parameter.concretize(linter, operatorScope))
+			operator.getSignature()
+		} else {
+			operator.getValue()
+		}
+		val operatorDefinition = OperatorDefinition(this, name, operatorScope, parameters,
 			body?.concretize(linter, operatorScope), returnType?.concretize(linter, operatorScope))
 		scope.declareOperator(linter, operatorDefinition)
 		return operatorDefinition

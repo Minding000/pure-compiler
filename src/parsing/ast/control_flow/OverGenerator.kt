@@ -14,8 +14,16 @@ class OverGenerator(start: Position, private val collection: Element, private va
 
 	override fun concretize(linter: Linter, scope: Scope): OverGenerator {
 		return OverGenerator(this, collection.concretize(linter, scope),
-			keyDeclaration?.let { LocalVariableDeclaration(it) },
-			valueDeclaration?.let { LocalVariableDeclaration(it) })
+			keyDeclaration?.let {
+				val variable = LocalVariableDeclaration(it)
+				scope.declareValue(linter, variable)
+				variable
+			},
+			valueDeclaration?.let {
+				val variable = LocalVariableDeclaration(it)
+				scope.declareValue(linter, variable)
+				variable
+			})
 	}
 
 	override fun toString(): String {

@@ -6,7 +6,7 @@ import linter.elements.values.VariableValueDeclaration
 import linter.messages.Message
 import kotlin.collections.HashMap
 
-class InterfaceScope(): Scope() {
+class InterfaceScope: Scope() {
 	val declaredTypes = HashMap<String, TypeDefinition>()
 	val declaredValues = HashMap<String, VariableValueDeclaration>()
 

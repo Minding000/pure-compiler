@@ -1,7 +1,10 @@
 package linter.elements.definitions
 
+import linter.Linter
 import linter.elements.literals.Type
 import linter.elements.values.VariableValueDeclaration
+import linter.scopes.BlockScope
+import linter.scopes.Scope
 import parsing.ast.definitions.Parameter
 
 class Parameter(override val source: Parameter, name: String, type: Type?):
@@ -10,5 +13,11 @@ class Parameter(override val source: Parameter, name: String, type: Type?):
 	init {
 		if(type != null)
 			units.add(type)
+	}
+
+	override fun linkReferences(linter: Linter, scope: Scope) {
+		if(type != null && scope is BlockScope) {
+			//TODO check if the referenced member exists
+		}
 	}
 }

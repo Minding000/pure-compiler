@@ -3,6 +3,7 @@ package parsing.ast.definitions
 import linter.Linter
 import linter.elements.definitions.DeinitializerDefinition
 import linter.messages.Message
+import linter.scopes.BlockScope
 import linter.scopes.Scope
 import parsing.ast.definitions.sections.ModifierSection
 import parsing.ast.definitions.sections.ModifierSectionChild
@@ -24,7 +25,9 @@ class DeinitializerDefinition(start: Position, end: Position, private val body: 
 				}
 			}
 		}
-		return DeinitializerDefinition(this, body?.concretize(linter, scope), isNative)
+		val deinitializerScope = BlockScope(scope)
+		return DeinitializerDefinition(this, deinitializerScope, body?.concretize(linter, deinitializerScope),
+			isNative)
 	}
 
 	override fun toString(): String {
