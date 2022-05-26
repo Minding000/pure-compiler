@@ -63,6 +63,9 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 	FUNCTION_DECLARATION(
 		WordAtom.TO,
 		WordAtom.IT),
+	LAMBDA_FUNCTION(
+		WordAtom.ARROW,
+		WordAtom.ARROW_CAPPED),
 	VARIABLE_DECLARATION(
 		WordAtom.CONST,
 		WordAtom.VAR,

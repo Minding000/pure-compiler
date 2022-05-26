@@ -69,7 +69,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 *   <LambdaFunction>
 	 */
 	private fun parseTypeAtom(): Type {
-		if(currentWord?.type == WordAtom.PARENTHESES_OPEN || currentWord?.type == WordAtom.ARROW)
+		if(currentWord?.type == WordAtom.PARENTHESES_OPEN || WordType.LAMBDA_FUNCTION.includes(currentWord?.type))
 			return parseLambdaFunction()
 		return parseSimpleType()
 	}
@@ -86,19 +86,19 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 
 	/**
 	 * LambdaFunction:
-	 *   [<ParameterList>] => <Type>|;
+	 *   [<ParameterList>] => <Type>
+	 *   [<ParameterList>] =>|
 	 */
 	private fun parseLambdaFunction(): LambdaFunctionType {
-		val parameterList = if(currentWord?.type == WordAtom.ARROW)
+		val parameterList = if(WordType.LAMBDA_FUNCTION.includes(currentWord?.type))
 			null
 		else
 			parseLambdaParameterList()
-		var start = consume(WordAtom.ARROW).start
-		if(parameterList != null)
-			start = parameterList.start
+		val lambdaType = consume(WordType.LAMBDA_FUNCTION)
+		val start = parameterList?.start ?: lambdaType.start
 		var returnType: Type? = null
-		val end = if(currentWord?.type == WordAtom.SEMICOLON) {
-			consume(WordAtom.SEMICOLON).end
+		val end = if(lambdaType.type == WordAtom.ARROW_CAPPED) {
+			lambdaType.end
 		} else {
 			returnType = parseType()
 			returnType.end

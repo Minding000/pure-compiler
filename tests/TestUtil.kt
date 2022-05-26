@@ -1,5 +1,8 @@
 import parsing.element_generator.ElementGenerator
 import errors.user.UserError
+import linter.Linter
+import linter.messages.Message
+import parsing.ast.general.Program
 import source_structure.Module
 import source_structure.Project
 import util.indent
@@ -10,7 +13,6 @@ import java.lang.StringBuilder
 import java.util.*
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 object TestUtil {
     private val defaultErrorStream = System.err
@@ -27,30 +29,51 @@ object TestUtil {
         assertEquals("", actualErrorStream, "Expected error stream to be empty")
     }
 
-    private fun getAST(sourceCode: String): String {
+    private fun parseProgram(sourceCode: String): Program {
         val project = Project("Test")
         val module = Module("Test")
         module.addFile(LinkedList(), "Test", sourceCode)
         project.addModule(module)
-        return ElementGenerator(project).parseProgram().toString()
+        return ElementGenerator(project).parseProgram()
+    }
+
+    private fun getAST(sourceCode: String): String {
+        return parseProgram(sourceCode).toString()
+    }
+
+    private fun getLinter(sourceCode: String): Linter {
+        val linter = Linter()
+        linter.lint(parseProgram(sourceCode))
+        return linter
     }
 
     fun assertAST(expected_ast: String, sourceCode: String) {
-        val actual_ast = getAST(sourceCode)
-        val expected_ast = "Program {\n\tFile {${"\n$expected_ast".indent().indent()}\n\t}\n}"
-        printDiffPosition(expected_ast, actual_ast)
-        assertEquals(expected_ast, actual_ast)
+        val actualAst = getAST(sourceCode)
+        val expectedAst = "Program {\n\tFile {${"\n$expected_ast".indent().indent()}\n\t}\n}"
+        printDiffPosition(expectedAst, actualAst)
+        assertEquals(expectedAst, actualAst)
     }
 
-    fun assertUserError(expected_message: String, sourceCode: String) {
-        var actual_message = ""
+    fun assertUserError(expectedMessage: String, sourceCode: String) {
+        var actualMessage = ""
         try {
             getAST(sourceCode)
         } catch(e: UserError) {
-            actual_message = e.message ?: ""
+            actualMessage = e.message ?: ""
         }
-        printDiffPosition(expected_message, actual_message)
-        assertContains(actual_message, expected_message)
+        printDiffPosition(expectedMessage, actualMessage)
+        assertContains(actualMessage, expectedMessage)
+    }
+
+    fun assertLinterMessage(expectedType: Message.Type, expectedMessage: String, sourceCode: String) {
+        val linter = getLinter(sourceCode)
+        for(message in linter.messages) {
+            if(message.type == expectedType && message.description.contains(expectedMessage)) {
+                return
+            }
+        }
+        linter.printMessages()
+        throw AssertionError("Expected linter message '$expectedMessage' hasn't been emitted.")
     }
 
     private fun printDiffPosition(expected: String, actual: String) {

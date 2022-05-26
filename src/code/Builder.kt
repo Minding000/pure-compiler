@@ -33,8 +33,10 @@ object Builder {
 			val linter = Linter()
 			val lintedProgram = linter.lint(program)
 			linter.printMessages()
+			println("----- JIT example: -----")
+			LLVMIRCompiler.runExampleProgram()
 			println("----- JIT output: -----")
-			LLVMIRCompiler.compile()
+			LLVMIRCompiler.compile(lintedProgram)
 			/*
 			if(Main.DEBUG) {
 				println("----- Intermediate code: -----")

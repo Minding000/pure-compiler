@@ -1,5 +1,6 @@
 package compiler.targets
 
+import linter.elements.general.Program
 import org.bytedeco.javacpp.*
 import org.bytedeco.llvm.LLVM.LLVMExecutionEngineRef
 import org.bytedeco.llvm.LLVM.LLVMMCJITCompilerOptions
@@ -10,9 +11,9 @@ import org.bytedeco.llvm.global.LLVM.*
  */
 object LLVMIRCompiler {
 
-	fun compile() {
+	fun compile(program: Program) {
 		initialize()
-		buildExampleProgram()
+		build(program)
 	}
 
 	private fun initialize() {
@@ -23,7 +24,12 @@ object LLVMIRCompiler {
 		LLVMInitializeNativeTarget()
 	}
 
-	private fun buildExampleProgram() {
+	private fun build(program: Program) {
+
+	}
+
+	fun runExampleProgram() {
+		initialize()
 		val error = BytePointer()
 		// Create context
 		val context = LLVMContextCreate()

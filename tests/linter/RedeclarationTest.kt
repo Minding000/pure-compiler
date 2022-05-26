@@ -1,18 +1,29 @@
 package linter
 
 import TestUtil
+import linter.messages.Message
 import org.junit.jupiter.api.Test
 
 internal class RedeclarationTest {
 
 	@Test
-	fun testRedeclarationError() {
+	fun testRedeclarationOfValue() {
 		val sourceCode =
 			"""
-				var car: Int
-				car = 5
-				var a: String, car: Int
+				class Car {}
+				var car: Car
+				val car: Car
             """.trimIndent()
-		TestUtil.assertUserError("Cannot redeclare identifier 'car'", sourceCode)
+		TestUtil.assertLinterMessage(Message.Type.ERROR, "Redeclaration of value 'car'", sourceCode)
+	}
+
+	@Test
+	fun testRedeclarationOfType() {
+		val sourceCode =
+			"""
+				class Animal {}
+				enum Animal {}
+            """.trimIndent()
+		TestUtil.assertLinterMessage(Message.Type.ERROR, "Redeclaration of type 'Animal'", sourceCode)
 	}
 }

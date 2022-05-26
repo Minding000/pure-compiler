@@ -11,6 +11,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	SINGLE_LINE_COMMENT("\\/\\/.*", true),
 	MULTI_LINE_COMMENT("\\/\\*[\\s\\S]*?\\*\\/", true, true),
 	// Operators
+	ARROW_CAPPED("=>\\|"),
 	ARROW("=>"),
 	INCREMENT("\\+\\+"),
 	DECREMENT("--"),

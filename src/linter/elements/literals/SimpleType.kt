@@ -24,7 +24,7 @@ class SimpleType(val source: Element, val genericTypes: List<Type>, val name: St
 	override fun linkReferences(linter: Linter, scope: Scope) {
 		definition = scope.resolveType(name)
 		if(definition == null)
-			linter.messages.add(Message("${source.getStartString()}: Failed to link type '$name'.", Message.Type.ERROR))
+			linter.messages.add(Message("${source.getStartString()}: Type '$name' hasn't been declared yet.", Message.Type.ERROR))
 	}
 
 	override fun accepts(sourceType: Type): Boolean {
