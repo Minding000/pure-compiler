@@ -6,10 +6,10 @@ import linter.scopes.Scope
 import parsing.ast.definitions.sections.VariableSectionElement
 import parsing.ast.general.Element
 import parsing.ast.literals.Identifier
-import parsing.ast.literals.Type
+import parsing.ast.general.TypeElement
 import java.lang.StringBuilder
 
-class VariableDeclaration(private val identifier: Identifier, private val type: Type?, private val value: Element?):
+class VariableDeclaration(private val identifier: Identifier, private val type: TypeElement?, private val value: Element?):
 	VariableSectionElement(identifier.start, (value ?: type ?: identifier).end) {
 
 	override fun concretize(linter: Linter, scope: Scope): VariableDeclaration {

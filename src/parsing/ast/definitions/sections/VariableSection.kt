@@ -4,7 +4,7 @@ import linter.Linter
 import linter.elements.general.Unit
 import linter.scopes.Scope
 import parsing.ast.general.Element
-import parsing.ast.literals.Type
+import parsing.ast.general.TypeElement
 import parsing.tokenizer.Word
 import parsing.tokenizer.WordAtom
 import source_structure.Position
@@ -12,7 +12,7 @@ import util.indent
 import util.toLines
 import java.lang.StringBuilder
 
-class VariableSection(val declarationType: Word, val type: Type?, val value: Element?,
+class VariableSection(val declarationType: Word, val type: TypeElement?, val value: Element?,
 					  val variables: List<VariableSectionElement>, end: Position):
 	DeclarationSection(declarationType.start, end), ModifierSectionChild {
 	override var parent: ModifierSection? = null

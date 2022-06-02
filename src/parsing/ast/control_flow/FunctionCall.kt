@@ -6,12 +6,15 @@ import linter.scopes.Scope
 import parsing.ast.access.MemberAccess
 import source_structure.Position
 import parsing.ast.general.Element
+import parsing.ast.general.ValueElement
+import parsing.ast.literals.TypeList
 import util.concretize
 import util.indent
 import util.toLines
 
-class FunctionCall(private val functionReference: Element, private val parameters: List<Element>, end: Position):
-	Element(functionReference.start, end) {
+class FunctionCall(private val genericParameterList: TypeList?, private val functionReference: Element,
+				   private val parameters: List<Element>, end: Position):
+	ValueElement(functionReference.start, end) {
 
 	override fun concretize(linter: Linter, scope: Scope): FunctionCall {
 		var context: Element? = null
@@ -25,6 +28,6 @@ class FunctionCall(private val functionReference: Element, private val parameter
 	}
 
 	override fun toString(): String {
-		return "FunctionCall [ $functionReference ] {${parameters.toLines().indent()}\n}"
+		return "FunctionCall [${if(genericParameterList == null) "" else " $genericParameterList"} $functionReference ] {${parameters.toLines().indent()}\n}"
 	}
 }

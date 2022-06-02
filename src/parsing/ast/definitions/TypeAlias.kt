@@ -8,11 +8,12 @@ import parsing.ast.definitions.sections.ModifierSection
 import parsing.ast.definitions.sections.ModifierSectionChild
 import parsing.ast.general.Element
 import parsing.ast.literals.Identifier
-import parsing.ast.literals.Type
+import parsing.ast.general.TypeElement
 import source_structure.Position
 
 class TypeAlias(start: Position, private val modifierList: ModifierList?, private val identifier: Identifier,
-				private val type: Type): Element(start, type.end), ModifierSectionChild {
+				private val type: TypeElement
+): Element(start, type.end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
 
 	override fun concretize(linter: Linter, scope: Scope): TypeAlias {

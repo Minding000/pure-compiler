@@ -2,10 +2,11 @@ package linter.elements.access
 
 import linter.Linter
 import linter.elements.general.Unit
+import linter.elements.values.Value
 import linter.scopes.Scope
 import parsing.ast.access.MemberAccess
 
-class MemberAccess(val source: MemberAccess, val target: Unit, val member: Unit, val isOptional: Boolean): Unit() {
+class MemberAccess(val source: MemberAccess, val target: Unit, val member: Unit, val isOptional: Boolean): Value() {
 
 	init {
 		units.add(target)

@@ -40,7 +40,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 * Expression:
 	 *   <BinaryBooleanExpression>
 	 */
-	fun parseExpression(): Element {
+	fun parseExpression(): ValueElement {
 		return parseBinaryBooleanExpression()
 	}
 
@@ -50,8 +50,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Equality> & <Equality>
 	 *   <Equality> | <Equality>
 	 */
-	private fun parseBinaryBooleanExpression(): Element {
-		var expression: Element = parseEquality()
+	private fun parseBinaryBooleanExpression(): ValueElement {
+		var expression: ValueElement = parseEquality()
 		while(WordType.BINARY_BOOLEAN_OPERATOR.includes(currentWord?.type)) {
 			val operator = consume(WordType.BINARY_BOOLEAN_OPERATOR)
 			expression = BinaryOperator(expression, parseEquality(), operator.getValue())
@@ -67,8 +67,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Comparison> > <Comparison>
 	 *   <Comparison> < <Comparison>
 	 */
-	private fun parseEquality(): Element {
-		var expression: Element = parseComparison()
+	private fun parseEquality(): ValueElement {
+		var expression: ValueElement = parseComparison()
 		while(WordType.EQUALITY.includes(currentWord?.type)) {
 			val operator = consume(WordType.EQUALITY)
 			expression = BinaryOperator(expression, parseComparison(), operator.getValue())
@@ -82,8 +82,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Addition> == <Addition>
 	 *   <Addition> != <Addition>
 	 */
-	private fun parseComparison(): Element {
-		var expression: Element = parseAddition()
+	private fun parseComparison(): ValueElement {
+		var expression: ValueElement = parseAddition()
 		while(WordType.COMPARISON.includes(currentWord?.type)) {
 			val operator = consume(WordType.COMPARISON)
 			expression = BinaryOperator(expression, parseAddition(), operator.getValue())
@@ -97,8 +97,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Multiplication> + <Multiplication>
 	 *   <Multiplication> - <Multiplication>
 	 */
-	private fun parseAddition(): Element {
-		var expression: Element = parseMultiplication()
+	private fun parseAddition(): ValueElement {
+		var expression: ValueElement = parseMultiplication()
 		while(WordType.ADDITION.includes(currentWord?.type)) {
 			val operator = consume(WordType.ADDITION)
 			expression = BinaryOperator(expression, parseMultiplication(), operator.getValue())
@@ -112,8 +112,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <NullCoalescence> * <NullCoalescence>
 	 *   <NullCoalescence> / <NullCoalescence>
 	 */
-	private fun parseMultiplication(): Element {
-		var expression: Element = parseNullCoalescence()
+	private fun parseMultiplication(): ValueElement {
+		var expression: ValueElement = parseNullCoalescence()
 		while(WordType.MULTIPLICATION.includes(currentWord?.type)) {
 			val operator = consume(WordType.MULTIPLICATION)
 			expression = BinaryOperator(expression, parseNullCoalescence(), operator.getValue())
@@ -126,8 +126,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Cast>
 	 *   <Cast> ?? <Cast>
 	 */
-	private fun parseNullCoalescence(): Element {
-		var expression: Element = parseCast()
+	private fun parseNullCoalescence(): ValueElement {
+		var expression: ValueElement = parseCast()
 		while(currentWord?.type == WordAtom.NULL_COALESCENCE) {
 			val operator = consume(WordAtom.NULL_COALESCENCE)
 			expression = BinaryOperator(expression, parseCast(), operator.getValue())
@@ -144,8 +144,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Try> is [<Identifier>: ]<Type>
 	 *   <Try> !is [<Identifier>: ]<Type>
 	 */
-	private fun parseCast(): Element {
-		var expression: Element = parseTry()
+	private fun parseCast(): ValueElement {
+		var expression: ValueElement = parseTry()
 		if(WordType.CAST.includes(currentWord?.type)) {
 			val operator = consume(WordType.CAST)
 			var identifier: Identifier? = null
@@ -165,7 +165,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   try? <UnaryOperator>
 	 *   try! <UnaryOperator>
 	 */
-	fun parseTry(): Element {
+	fun parseTry(): ValueElement {
 		if(WordType.TRY.includes(currentWord?.type)) {
 			val operator = consume(WordType.TRY)
 			return Try(parseUnaryOperator(), operator.type == WordAtom.TRY_OPTIONAL, operator.start)
@@ -181,7 +181,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   -<ReferenceChain>
 	 *   ...<ReferenceChain>
 	 */
-	private fun parseUnaryOperator(): Element {
+	private fun parseUnaryOperator(): ValueElement {
 		if(WordType.UNARY_OPERATOR.includes(currentWord?.type)) {
 			val operator = consume(WordType.UNARY_OPERATOR)
 			return UnaryOperator(parseReferenceChain(), operator)
@@ -194,7 +194,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Index>
 	 *   <Index>[[?].<Index>]
 	 */
-	private fun parseReferenceChain(): Element {
+	private fun parseReferenceChain(): ValueElement {
 		var expression = parseIndex()
 		while(WordType.MEMBER_ACCESSOR.includes(currentWord?.type)) {
 			val accessor = consume(WordType.MEMBER_ACCESSOR)
@@ -208,7 +208,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <FunctionCall>
 	 *   <FunctionCall>[<Expression>[, <Expression>]...]
 	 */
-	private fun parseIndex(): Element {
+	private fun parseIndex(): ValueElement {
 		var expression = parseFunctionCall()
 		if(currentWord?.type == WordAtom.BRACKETS_OPEN) {
 			consume(WordAtom.BRACKETS_OPEN)
@@ -227,12 +227,13 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	/**
 	 * FunctionCall:
 	 *   <Primary>
-	 *   <Primary>([<Expression>[, <Expression>]...])
+	 *   [<TypeList>]<Primary>([<Expression>[, <Expression>]...])
 	 */
-	private fun parseFunctionCall(): Element {
+	private fun parseFunctionCall(): ValueElement {
+		val typeList = typeParser.parseTypeList()
 		//TODO allow for anonymous function calls
 		var expression = parsePrimary()
-		if(currentWord?.type == WordAtom.PARENTHESES_OPEN) {
+		if(typeList != null || currentWord?.type == WordAtom.PARENTHESES_OPEN) {
 			consume(WordAtom.PARENTHESES_OPEN)
 			val parameters = LinkedList<Element>()
 			if(currentWord?.type != WordAtom.PARENTHESES_CLOSE) {
@@ -243,7 +244,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 				}
 			}
 			val end = consume(WordAtom.PARENTHESES_CLOSE).end
-			expression = FunctionCall(expression, parameters, end)
+			expression = FunctionCall(typeList, expression, parameters, end)
 		}
 		return expression
 	}
@@ -254,7 +255,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   (<Expression>)
 	 *   <LambdaFunction>
 	 */
-	private fun parsePrimary(): Element {
+	private fun parsePrimary(): ValueElement {
 		if(currentWord?.type == WordAtom.PARENTHESES_OPEN) {
 			val start = consume(WordAtom.PARENTHESES_OPEN).start
 			val isEmptyParameterListVisible = currentWord?.type == WordAtom.PARENTHESES_CLOSE && nextWord?.type == WordAtom.ARROW
@@ -288,10 +289,9 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <NumberLiteral>
 	 *   <StringLiteral>
 	 *   <Identifier>
-	 *   <SimpleType>
 	 *   <ForeignLanguageExpression>
 	 */
-	private fun parseAtom(): Element {
+	private fun parseAtom(): ValueElement {
 		val word = getCurrentWord("atom")
 		return when(word.type) {
 			WordAtom.NULL_LITERAL -> literalParser.parseNullLiteral()
@@ -306,12 +306,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 				}
 			}
 			WordAtom.DOT -> parseInstanceAccess()
-			else -> {
-				if(WordType.GENERICS_START.includes(word.type))
-					typeParser.parseSimpleType()
-				else
-					throw UnexpectedWordError(word, "atom")
-			}
+			else -> throw UnexpectedWordError(word, "atom")
 		}
 	}
 

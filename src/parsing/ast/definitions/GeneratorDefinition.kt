@@ -8,12 +8,12 @@ import parsing.ast.general.Element
 import parsing.ast.general.StatementSection
 import source_structure.Position
 import parsing.ast.literals.Identifier
-import parsing.ast.literals.Type
+import parsing.ast.general.TypeElement
 import java.lang.StringBuilder
 import java.util.*
 
 class GeneratorDefinition(start: Position, private val identifier: Identifier, private val parameterList: ParameterList,
-						  private var keyReturnType: Type?, private var valueReturnType: Type, private val body: StatementSection):
+						  private var keyReturnType: TypeElement?, private var valueReturnType: TypeElement, private val body: StatementSection):
 	Element(start, body.end) {
 
 	override fun concretize(linter: Linter, scope: Scope): GeneratorDefinition {

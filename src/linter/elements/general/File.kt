@@ -1,8 +1,10 @@
 package linter.elements.general
 
+import compiler.targets.llvm.BuildContext
 import linter.Linter
 import linter.messages.Message
 import linter.scopes.FileScope
+import org.bytedeco.javacpp.Pointer
 import parsing.ast.general.File as AstFile
 import source_structure.File as SourceFile
 import java.util.*
@@ -48,4 +50,10 @@ class File(val source: AstFile, val file: SourceFile, val scope: FileScope): Uni
 	fun linkReferences(linter: Linter) {
 		linkReferences(linter, scope)
 	}
+
+//	override fun compile(context: BuildContext): Pointer? {
+//		for(unit in units)
+//			unit.compile(context)
+//		return null
+//	}
 }

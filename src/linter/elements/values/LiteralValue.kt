@@ -1,5 +1,3 @@
 package linter.elements.values
 
-import linter.elements.general.Unit
-
-open class LiteralValue : Unit()
+abstract class LiteralValue: Value()

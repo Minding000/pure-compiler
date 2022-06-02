@@ -43,11 +43,11 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 				|| expression is Index
 	}
 
-	private fun parseExpression(): Element {
+	private fun parseExpression(): ValueElement {
 		return expressionParser.parseExpression()
 	}
 
-	private fun parseRequiredType(): Type {
+	private fun parseRequiredType(): TypeElement {
 		return typeParser.parseType(false)
 	}
 
@@ -264,15 +264,13 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	/**
 	 * ReturnStatement:
 	 *   return <Expression>
-	 *   return <YieldStatement>
+	 *   <YieldStatement>
 	 */
-	private fun parseReturnStatement(): ReturnStatement {
+	private fun parseReturnStatement(): Element {
+		if(nextWord?.type == WordAtom.YIELD)
+			return parseYieldStatement()
 		val word = consume(WordAtom.RETURN)
-		if(currentWord?.type == WordAtom.YIELD) {
-			val yieldStatement = parseYieldStatement()
-			return ReturnStatement(word.start, yieldStatement, yieldStatement.end)
-		}
-		var value: Element? = null
+		var value: ValueElement? = null
 		if(currentWord?.type != WordAtom.LINE_BREAK)
 			value = parseExpression()
 		return ReturnStatement(word.start, value, value?.end ?: word.end)
@@ -280,10 +278,11 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * YieldStatement:
-	 *   yield <Expression>[, <Expression>]
+	 *   return yield <Expression>[, <Expression>]
 	 */
 	private fun parseYieldStatement(): YieldStatement {
-		val start = consume(WordAtom.YIELD).start
+		val start = consume(WordAtom.RETURN).start
+		consume(WordAtom.YIELD)
 		var key: Element? = null
 		var value = parseExpression()
 		if(currentWord?.type == WordAtom.COMMA) {
@@ -439,7 +438,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	private fun parseTypeDefinition(modifierList: ModifierList? = null): TypeDefinition {
 		val type = consume(WordType.TYPE_TYPE)
 		val identifier = parseIdentifier()
-		var superType: Type? = null
+		var superType: TypeElement? = null
 		if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
 			superType = parseRequiredType()
@@ -872,7 +871,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		val identifier = parseIdentifier()
 		val parameterList = parseParameterList()
 		consume(WordAtom.COLON)
-		var keyReturnType: Type? = null
+		var keyReturnType: TypeElement? = null
 		var valueReturnType = parseRequiredType()
 		if(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)

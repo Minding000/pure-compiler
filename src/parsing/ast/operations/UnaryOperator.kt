@@ -1,11 +1,17 @@
 package parsing.ast.operations
 
-import parsing.ast.general.Element
-import parsing.ast.general.MetaElement
+import linter.Linter
+import linter.elements.operations.UnaryOperator
+import linter.scopes.Scope
+import parsing.ast.general.ValueElement
 import parsing.tokenizer.Word
 
-class UnaryOperator(val target: Element, operator: Word): MetaElement(operator.start, target.end) {
+class UnaryOperator(val target: ValueElement, operator: Word): ValueElement(operator.start, target.end) {
 	val operator = operator.getValue()
+
+	override fun concretize(linter: Linter, scope: Scope): UnaryOperator {
+		return UnaryOperator(this, target.concretize(linter, scope), operator)
+	}
 
 	override fun toString(): String {
 		return "UnaryOperator { $operator$target }"

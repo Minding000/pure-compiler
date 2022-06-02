@@ -11,13 +11,13 @@ import parsing.ast.definitions.sections.FunctionSection
 import parsing.ast.general.Element
 import parsing.ast.general.StatementSection
 import parsing.ast.literals.Identifier
-import parsing.ast.literals.Type
+import parsing.ast.general.TypeElement
 import java.lang.StringBuilder
 import java.util.*
 
 class FunctionDefinition(private val identifier: Identifier, private val genericsList: GenericsList?,
 						 private val parameterList: ParameterList, private val body: StatementSection?,
-						 private var returnType: Type?):
+						 private var returnType: TypeElement?):
 	Element(identifier.start, body?.end ?: returnType?.end ?: parameterList.end) {
 	lateinit var parent: FunctionSection
 

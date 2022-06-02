@@ -3,9 +3,11 @@ package parsing.ast.literals
 import linter.Linter
 import linter.elements.literals.SimpleType
 import linter.scopes.Scope
+import parsing.ast.general.TypeElement
 import java.util.*
 
-class SimpleType(private val typeList: TypeList?, private val identifier: Identifier): Type(identifier.start, typeList?.end ?: identifier.end) {
+class SimpleType(private val typeList: TypeList?, private val identifier: Identifier):
+	TypeElement(identifier.start, typeList?.end ?: identifier.end) {
 
 	override fun concretize(linter: Linter, scope: Scope): SimpleType {
 		val types = LinkedList<linter.elements.literals.Type>()

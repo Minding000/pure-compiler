@@ -8,11 +8,11 @@ import linter.elements.definitions.Parameter
 import parsing.ast.definitions.sections.OperatorSection
 import parsing.ast.general.Element
 import parsing.ast.general.StatementSection
-import parsing.ast.literals.Type
+import parsing.ast.general.TypeElement
 import java.util.*
 
 class OperatorDefinition(private val operator: Operator, private val parameterList: ParameterList?,
-						 private val body: StatementSection?, private var returnType: Type?):
+						 private val body: StatementSection?, private var returnType: TypeElement?):
 	Element(operator.start, body?.end ?: returnType?.end ?: parameterList?.end ?: operator.end) {
 	lateinit var parent: OperatorSection
 

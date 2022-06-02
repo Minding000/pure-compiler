@@ -7,6 +7,9 @@ import linter.scopes.Scope
 import parsing.tokenizer.Word
 import source_structure.Position
 
+/**
+ * Doesn't impact code flow directly
+ */
 abstract class MetaElement(start: Position, end: Position): Element(start, end) {
 
 	constructor(word: Word): this(word.start, word.end)

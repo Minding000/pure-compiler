@@ -28,7 +28,7 @@ class Linter {
 				+ "${counts[Message.Type.ERROR.ordinal]} errors, "
 				+ "${counts[Message.Type.WARNING.ordinal]} warnings, "
 				+ "${counts[Message.Type.INFO.ordinal]} infos, "
-				+ "${counts[Message.Type.DEBUG.ordinal]} debug"
+				+ "${counts[Message.Type.DEBUG.ordinal]} debug messages"
 				+ " (Log level: ${logLevel.name})")
 	}
 }

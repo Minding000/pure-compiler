@@ -5,9 +5,9 @@ import linter.elements.definitions.Parameter
 import linter.scopes.Scope
 import parsing.ast.general.Element
 import parsing.ast.literals.Identifier
-import parsing.ast.literals.Type
+import parsing.ast.general.TypeElement
 
-class Parameter(private val modifierList: ModifierList?, private val identifier: Identifier, private val type: Type?):
+class Parameter(private val modifierList: ModifierList?, private val identifier: Identifier, private val type: TypeElement?):
     Element(modifierList?.start ?: identifier.start, identifier.end) {
 
     fun getTypeName(): String {

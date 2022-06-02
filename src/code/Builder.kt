@@ -1,6 +1,6 @@
 package code
 
-import compiler.targets.LLVMIRCompiler
+import compiler.targets.llvm.LLVMIRCompiler
 import errors.user.UserError
 import linter.Linter
 import parsing.element_generator.ElementGenerator

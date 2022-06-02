@@ -1,5 +1,6 @@
 package linter.elements.general
 
+import compiler.targets.llvm.BuildContext
 import linter.Linter
 import parsing.ast.general.Program
 import java.util.*
@@ -37,5 +38,13 @@ class Program(val source: Program) {
 	fun validate(linter: Linter) {
 		for(file in files)
 			file.validate(linter)
+	}
+
+	/**
+	 * Compiles code to LLVM IR
+	 */
+	fun compile(context: BuildContext) {
+//		for(file in files)
+//			file.compile(context)
 	}
 }

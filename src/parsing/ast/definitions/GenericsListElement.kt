@@ -7,9 +7,9 @@ import linter.scopes.Scope
 import linter.scopes.TypeScope
 import parsing.ast.general.Element
 import parsing.ast.literals.Identifier
-import parsing.ast.literals.Type
+import parsing.ast.general.TypeElement
 
-class GenericsListElement(private val identifier: Identifier, private val superType: Type?): Element(identifier.start, superType?.end ?: identifier.end) {
+class GenericsListElement(private val identifier: Identifier, private val superType: TypeElement?): Element(identifier.start, superType?.end ?: identifier.end) {
 
     override fun concretize(linter: Linter, scope: Scope): Unit {
         val superType = superType?.concretize(linter, scope)

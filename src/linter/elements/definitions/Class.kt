@@ -5,7 +5,8 @@ import linter.elements.values.TypeDefinition
 import linter.scopes.TypeScope
 import parsing.ast.definitions.TypeDefinition as ASTTypeDefinition
 
-class Class(override val source: ASTTypeDefinition, name: String, scope: TypeScope, superType: Unit?):
+class Class(override val source: ASTTypeDefinition, name: String, scope: TypeScope, superType: Unit?,
+			val isNative: Boolean):
 	TypeDefinition(source, name, scope, superType, false) {
 
 	init {

@@ -7,11 +7,11 @@ import linter.scopes.Scope
 import parsing.ast.definitions.sections.VariableSectionElement
 import parsing.ast.general.Element
 import parsing.ast.literals.Identifier
-import parsing.ast.literals.Type
+import parsing.ast.general.TypeElement
 import util.indent
 import java.lang.StringBuilder
 
-class ComputedProperty(private val identifier: Identifier, private val type: Type?, private val getExpression: Element?,
+class ComputedProperty(private val identifier: Identifier, private val type: TypeElement?, private val getExpression: Element?,
 					   private val setExpression: Element?):
 	VariableSectionElement(identifier.start, setExpression?.end ?: getExpression?.end ?: identifier.end) {
 
