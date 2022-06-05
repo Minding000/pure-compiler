@@ -35,7 +35,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	NULL_COALESCENCE("\\?\\?"),
 	OPTIONAL_ACCESSOR("\\?\\."),
 	FOREIGN_EXPRESSION("::"),
-	DYNAMIC_PARAMETER("\\.\\.\\."),
+	SPREAD_GROUP("\\.\\.\\."),
 	// Symbols
 	ASSIGNMENT("="),
 	COMMA(","),

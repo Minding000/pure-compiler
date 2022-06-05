@@ -128,7 +128,7 @@ internal class TypeDefinitionTest {
 	fun testTypeAlias() {
 		val sourceCode =
 			"""
-				alias EventHandler = (Event) =>;
+				alias EventHandler = (Event) =>|
             """.trimIndent()
 		val expected =
 			"""

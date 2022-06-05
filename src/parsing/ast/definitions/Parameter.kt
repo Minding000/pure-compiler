@@ -12,7 +12,7 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
     Element(modifierList?.start ?: identifier.start, identifier.end) {
 
     companion object {
-        val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.MUTABLE, WordAtom.DYNAMIC_PARAMETER)
+        val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.MUTABLE, WordAtom.SPREAD_GROUP)
     }
 
     fun getTypeName(): String {
@@ -22,7 +22,7 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
     override fun concretize(linter: Linter, scope: Scope): Parameter {
         modifierList?.validate(linter, ALLOWED_MODIFIER_TYPES)
         val isMutable = modifierList?.contains(WordAtom.MUTABLE) ?: false
-        val hasDynamicSize = modifierList?.contains(WordAtom.DYNAMIC_PARAMETER) ?: false
+        val hasDynamicSize = modifierList?.contains(WordAtom.SPREAD_GROUP) ?: false
         val parameter = Parameter(this, identifier.getValue(), type?.concretize(linter, scope), isMutable,
                 hasDynamicSize)
         if(type != null)

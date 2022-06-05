@@ -73,9 +73,9 @@ internal class GenericsTest {
 					}
 				} }
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { fruitList } = FunctionCall [ SimpleType { TypeList {
+					VariableDeclaration { Identifier { fruitList } = FunctionCall [ TypeList {
 						SimpleType { Identifier { Fruit } }
-					} Identifier { ShoppingList } } ] {
+					} Identifier { ShoppingList } ] {
 					} }
 				}
             """.trimIndent()

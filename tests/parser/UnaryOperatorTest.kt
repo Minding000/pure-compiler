@@ -37,10 +37,15 @@ internal class UnaryOperatorTest {
 
 	@Test
 	fun testSpread() {
-		val sourceCode = "...parameters"
+		val sourceCode =
+			"""
+				sum(...numbers)
+            """.trimIndent()
 		val expected =
 			"""
-				UnaryOperator { ...Identifier { parameters } }
+				FunctionCall [ Identifier { sum } ] {
+					UnaryOperator { ...Identifier { numbers } }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
