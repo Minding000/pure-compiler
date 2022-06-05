@@ -7,7 +7,7 @@ import linter.scopes.BlockScope
 import linter.scopes.Scope
 import parsing.ast.definitions.Parameter
 
-class Parameter(override val source: Parameter, name: String, type: Type?):
+class Parameter(override val source: Parameter, name: String, type: Type?, isMutable: Boolean, hasDynamicSize: Boolean):
 	VariableValueDeclaration(source, name, type, true) {
 
 	init {

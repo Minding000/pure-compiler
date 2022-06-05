@@ -3,10 +3,12 @@ package parsing.ast.definitions.sections
 import errors.internal.CompilerError
 import linter.Linter
 import linter.elements.general.Unit
+import linter.messages.Message
 import linter.scopes.Scope
 import parsing.ast.definitions.Modifier
 import parsing.ast.definitions.ModifierList
 import parsing.ast.general.Element
+import parsing.tokenizer.WordAtom
 import source_structure.Position
 import util.indent
 import util.toLines
@@ -30,6 +32,29 @@ class ModifierSection(private val modifierList: ModifierList, private val sectio
 
 	override fun getOwnModifiers(): List<Modifier> {
 		return modifierList.modifiers
+	}
+
+	override fun validate(linter: Linter, allowedModifierTypes: List<WordAtom>) { //TODO deduplicate validate() and contains() / ModifierList
+		val uniqueModifiers = HashSet<String>()
+		for(modifier in getModifiers()) {
+			val name = modifier.getValue()
+			if(!allowedModifierTypes.contains(modifier.type)) {
+				linter.messages.add(Message("${modifier.getStartString()}: Modifier '$name' is not allowed here.", Message.Type.WARNING))
+				continue
+			}
+			if(uniqueModifiers.contains(name)) {
+				linter.messages.add(Message("${modifier.getStartString()}: Duplicate '$name' modifier.", Message.Type.WARNING))
+				continue
+			}
+			uniqueModifiers.add(name)
+		}
+	}
+
+	override fun containsModifier(searchedModifierType: WordAtom): Boolean {
+		for(presentModifier in getModifiers())
+			if(presentModifier.type == searchedModifierType)
+				return true
+		return false
 	}
 
 	override fun toString(): String {

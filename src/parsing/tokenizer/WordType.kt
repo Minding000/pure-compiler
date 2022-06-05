@@ -25,7 +25,7 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.NOT,
 		WordAtom.PLUS,
 		WordAtom.MINUS,
-		WordAtom.TRIPLE_DOT),
+		WordAtom.DYNAMIC_PARAMETER),
 	UNARY_MODIFICATION(
 		WordAtom.INCREMENT,
 		WordAtom.DECREMENT),
@@ -88,22 +88,9 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 	MODIFIER(
 		WordAtom.NATIVE,
 		WordAtom.OVERRIDE,
-		WordAtom.IMM,
-		WordAtom.MUT,
-		WordAtom.TRIPLE_DOT),
-	DEFINITION_MODIFIER(
-		WordAtom.NATIVE,
-		WordAtom.IMM,
-		WordAtom.MUT),
-	MEMBER_MODIFIER(
-		WordAtom.NATIVE,
-		WordAtom.OVERRIDE,
-		WordAtom.IMM,
-		WordAtom.MUT),
-	PARAMETER_MODIFIER(
-		WordAtom.IMM,
-		WordAtom.MUT,
-		WordAtom.TRIPLE_DOT),
+		WordAtom.IMMUTABLE,
+		WordAtom.MUTABLE,
+		WordAtom.DYNAMIC_PARAMETER),
 	TRY(
 		WordAtom.TRY_OPTIONAL,
 		WordAtom.TRY_UNCHECK);

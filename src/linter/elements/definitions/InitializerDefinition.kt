@@ -7,7 +7,7 @@ import linter.scopes.Scope
 import parsing.ast.definitions.InitializerDefinition
 
 class InitializerDefinition(val source: InitializerDefinition, val scope: BlockScope, val parameters: List<Parameter>,
-							val body: Unit?): Unit() {
+							val body: Unit?, val isNative: Boolean): Unit() {
 
 	init {
 		units.addAll(parameters)

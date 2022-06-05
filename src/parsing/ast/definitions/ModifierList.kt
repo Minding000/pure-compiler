@@ -12,11 +12,11 @@ class ModifierList(val modifiers: List<Modifier>): MetaElement(modifiers.first()
 		for(modifier in modifiers) {
 			val name = modifier.getValue()
 			if(!allowedModifierTypes.contains(modifier.type)) {
-				linter.messages.add(Message("Modifier '$name' is not allowed here.", Message.Type.WARNING))
+				linter.messages.add(Message("${modifier.getStartString()}: Modifier '$name' is not allowed here.", Message.Type.WARNING))
 				continue
 			}
 			if(uniqueModifiers.contains(name)) {
-				linter.messages.add(Message("Duplicate '$name' modifier.", Message.Type.WARNING))
+				linter.messages.add(Message("${modifier.getStartString()}: Duplicate '$name' modifier.", Message.Type.WARNING))
 				continue
 			}
 			uniqueModifiers.add(name)

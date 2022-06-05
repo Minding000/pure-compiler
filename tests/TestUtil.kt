@@ -68,7 +68,9 @@ object TestUtil {
     fun assertLinterMessage(expectedType: Message.Type, expectedMessage: String, sourceCode: String) {
         val linter = getLinter(sourceCode)
         for(message in linter.messages) {
-            if(message.type == expectedType && message.description.contains(expectedMessage)) {
+            if(message.description.contains(expectedMessage)) {
+                if(message.type != expectedType)
+                    throw AssertionError("Linter message '$expectedMessage' has type '${message.type}' instead of expected type '$expectedType'.")
                 return
             }
         }

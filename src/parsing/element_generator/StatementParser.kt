@@ -1,6 +1,5 @@
 package parsing.element_generator
 
-import errors.internal.CompilerError
 import errors.user.UnexpectedWordError
 import parsing.ast.operations.*
 import parsing.ast.access.Index
@@ -102,7 +101,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			return parseNextStatement()
 		if(currentWord?.type == WordAtom.ALIAS)
 			return parseTypeAlias()
-		if(WordType.DEFINITION_MODIFIER.includes(currentWord?.type))
+		if(WordType.MODIFIER.includes(currentWord?.type))
 			return parseModifierSection()
 		if(WordType.VARIABLE_DECLARATION.includes(currentWord?.type))
 			return parseVariableSection()
@@ -432,10 +431,10 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	}
 
 	/**
-	 * TypeDefinition[modifierList]:
+	 * TypeDefinition:
 	 *   <type-type> <Identifier>[: <Type>] <TypeBody>
 	 */
-	private fun parseTypeDefinition(modifierList: ModifierList? = null): TypeDefinition {
+	private fun parseTypeDefinition(): TypeDefinition {
 		val type = consume(WordType.TYPE_TYPE)
 		val identifier = parseIdentifier()
 		var superType: TypeElement? = null
@@ -444,19 +443,20 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			superType = parseRequiredType()
 		}
 		val body = parseTypeBody()
-		return TypeDefinition(modifierList, type, identifier, superType, body)
+		return TypeDefinition(type, identifier, superType, body)
 	}
 
 	/**
 	 * ModifierList:
 	 *   [<Modifier>[ <Modifier>]...]
 	 */
-	private fun parseModifierList(allowedModifiers: WordDescriptor): ModifierList? {
-		val modifiers = LinkedList<Modifier>()
-		while(allowedModifiers.includes(currentWord?.type))
-			modifiers.add(parseModifier())
-		if(modifiers.isEmpty())
+	private fun parseModifierList(): ModifierList? {
+		if(!WordType.MODIFIER.includes(currentWord?.type))
 			return null
+		val modifiers = LinkedList<Modifier>()
+		do
+			modifiers.add(parseModifier())
+		while(WordType.MODIFIER.includes(currentWord?.type))
 		return ModifierList(modifiers)
 	}
 
@@ -678,7 +678,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   <ModifierList> <Identifier>[: <Type>]
 	 */
 	fun parseParameter(): Parameter {
-		val modifierList = parseModifierList(WordType.PARAMETER_MODIFIER)
+		val modifierList = parseModifierList()
 		val identifier = parseIdentifier()
 		val type = if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
@@ -713,7 +713,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			return parseTypeDefinition()
 		if(currentWord?.type == WordAtom.ALIAS)
 			return parseTypeAlias()
-		if(WordType.MEMBER_MODIFIER.includes(currentWord?.type))
+		if(WordType.MODIFIER.includes(currentWord?.type))
 			return parseModifierSection()
 		val expectation = "declaration"
 		throw UnexpectedWordError(elementGenerator.getCurrentWord(expectation), expectation)
@@ -727,7 +727,8 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   }
 	 */
 	private fun parseModifierSection(): ModifierSection {
-		val modifierList = parseModifierList(WordType.MEMBER_MODIFIER) ?: throw CompilerError("Missing modifier list. [should be unexpected word error]")
+		val modifierList = parseModifierList()
+				?: throw UnexpectedWordError(getCurrentWord(WordType.MODIFIER), WordType.MODIFIER)
 		val sections = LinkedList<Element>()
 		val end = if(currentWord?.type == WordAtom.BRACES_OPEN) {
 			consume(WordAtom.BRACES_OPEN)

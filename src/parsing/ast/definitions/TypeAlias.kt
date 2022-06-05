@@ -17,6 +17,7 @@ class TypeAlias(start: Position, private val modifierList: ModifierList?, privat
 	override var parent: ModifierSection? = null
 
 	override fun concretize(linter: Linter, scope: Scope): TypeAlias {
+		modifierList?.validate(linter)
 		val type = type.concretize(linter, scope)
 		val typeScope = TypeScope(scope, type.scope)
 		val typeAlias = TypeAlias(this, identifier.getValue(), type, typeScope)

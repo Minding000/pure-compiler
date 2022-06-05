@@ -1,38 +1,32 @@
 package parsing.ast.definitions.sections
 
 import linter.Linter
-import linter.messages.Message
 import parsing.ast.definitions.Modifier
 import parsing.ast.general.MetaElement
+import parsing.tokenizer.WordAtom
 import source_structure.Position
 import java.util.*
-import kotlin.collections.HashSet
 
 abstract class DeclarationSection(start: Position, end: Position): MetaElement(start, end) {
 	open var parent: ModifierSection? = null
 
-	fun getModifiers(linter: Linter): List<Modifier> {
+	open fun validate(linter: Linter, allowedModifierTypes: List<WordAtom> = listOf()) {
+		parent?.validate(linter, allowedModifierTypes)
+	}
+
+	open fun containsModifier(searchedModifierType: WordAtom): Boolean {
+		return parent?.containsModifier(searchedModifierType) ?: false
+	}
+
+	fun getModifiers(): List<Modifier> {
 		var modifiers = getOwnModifiers()
 		parent?.let {
-			modifiers = modifiers.plus(it.getModifiers(linter))
+			modifiers = modifiers.plus(it.getModifiers())
 		}
-		checkForDuplicates(linter, modifiers)
 		return modifiers
 	}
 
 	protected open fun getOwnModifiers(): List<Modifier> {
 		return LinkedList()
-	}
-
-	private fun checkForDuplicates(linter: Linter, modifiers: List<Modifier>) {
-		val uniqueModifiers = HashSet<String>()
-		for(modifier in modifiers) {
-			val name = modifier.getValue()
-			if(uniqueModifiers.contains(name)) {
-				linter.messages.add(Message("Duplicate '$name' modifier.", Message.Type.WARNING))
-				continue
-			}
-			uniqueModifiers.add(name)
-		}
 	}
 }

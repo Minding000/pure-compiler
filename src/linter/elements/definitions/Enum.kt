@@ -12,7 +12,5 @@ class Enum(override val source: ASTTypeDefinition, name: String, scope: TypeScop
 
 	init {
 		scope.createInstanceConstant(this)
-		if(superType != null)
-			units.add(superType)
 	}
 }

@@ -4,7 +4,6 @@ import linter.Linter
 import linter.elements.definitions.FunctionDefinition
 import linter.elements.definitions.Parameter
 import linter.elements.general.Unit
-import linter.messages.Message
 import linter.scopes.BlockScope
 import linter.scopes.Scope
 import parsing.ast.definitions.sections.FunctionSection
@@ -12,6 +11,7 @@ import parsing.ast.general.Element
 import parsing.ast.general.StatementSection
 import parsing.ast.literals.Identifier
 import parsing.ast.general.TypeElement
+import parsing.tokenizer.WordAtom
 import java.lang.StringBuilder
 import java.util.*
 
@@ -21,15 +21,14 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 	Element(identifier.start, body?.end ?: returnType?.end ?: parameterList.end) {
 	lateinit var parent: FunctionSection
 
+	companion object {
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE)
+	}
+
 	override fun concretize(linter: Linter, scope: Scope): FunctionDefinition {
+		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
+		val isNative = parent.containsModifier(WordAtom.NATIVE)
 		val functionScope = BlockScope(scope)
-		var isNative = false
-		for(modifier in parent.getModifiers(linter)) {
-			when(val name = modifier.getValue()) {
-				"native" -> isNative = true
-				else -> linter.messages.add(Message("Modifier '$name' is not applicable to functions.", Message.Type.ERROR))
-			}
-		}
 		val genericParameters = LinkedList<Unit>()
 		if(genericsList != null) {
 			for(parameter in genericsList.elements) {

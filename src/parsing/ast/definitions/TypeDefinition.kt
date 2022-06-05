@@ -17,15 +17,10 @@ import parsing.ast.general.TypeElement
 import parsing.tokenizer.Word
 import parsing.tokenizer.WordAtom
 
-class TypeDefinition(private val modifierList: ModifierList?, private val type: Word,
-					 private val identifier: Identifier, private val superType: TypeElement?,
+class TypeDefinition(private val type: Word, private val identifier: Identifier, private val superType: TypeElement?,
 					 private val body: TypeBody):
-	Element(modifierList?.start ?: type.start, body.end), ModifierSectionChild {
+	Element(type.start, body.end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
-
-	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE)
-	}
 
 	override fun concretize(linter: Linter, scope: Scope): Unit {
 		val name = identifier.getValue()
@@ -33,28 +28,28 @@ class TypeDefinition(private val modifierList: ModifierList?, private val type: 
 		val typeScope = TypeScope(scope, superType?.scope)
 		val typeDefinition = when(type.type) {
 			WordAtom.CLASS -> {
-				modifierList?.validate(linter, ALLOWED_MODIFIER_TYPES)
-				val isNative = modifierList?.contains(WordAtom.NATIVE) ?: false
+				parent?.validate(linter, Class.ALLOWED_MODIFIER_TYPES)
+				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val clazz = Class(this, name, typeScope, superType, isNative)
 				scope.declareType(linter, clazz)
 				clazz
 			}
 			WordAtom.OBJECT -> {
-				modifierList?.validate(linter)
+				parent?.validate(linter)
 				val obj = Object(this, name, typeScope, superType)
 				scope.declareType(linter, obj)
 				scope.declareValue(linter, obj.value)
 				obj
 			}
 			WordAtom.ENUM -> {
-				modifierList?.validate(linter)
+				parent?.validate(linter)
 				val enum = Enum(this, name, typeScope, superType)
 				scope.declareType(linter, enum)
 				scope.declareValue(linter, enum.value)
 				enum
 			}
 			WordAtom.TRAIT -> {
-				modifierList?.validate(linter)
+				parent?.validate(linter)
 				val trait = Trait(this, name, typeScope, superType)
 				scope.declareType(linter, trait)
 				trait
@@ -67,6 +62,6 @@ class TypeDefinition(private val modifierList: ModifierList?, private val type: 
 	}
 
 	override fun toString(): String {
-		return "TypeDefinition [ ${if(modifierList == null) "" else "$modifierList "}${type.getValue()} $identifier${if(superType == null) "" else " $superType"} ] { $body }"
+		return "TypeDefinition [ ${type.getValue()} $identifier${if(superType == null) "" else " $superType"} ] { $body }"
 	}
 }

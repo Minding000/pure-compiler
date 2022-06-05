@@ -260,7 +260,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 			val start = consume(WordAtom.PARENTHESES_OPEN).start
 			val isEmptyParameterListVisible = currentWord?.type == WordAtom.PARENTHESES_CLOSE && nextWord?.type == WordAtom.ARROW
 			val isParameterVisible = currentWord?.type == WordAtom.IDENTIFIER && (nextWord?.type == WordAtom.COMMA || nextWord?.type == WordAtom.COLON)
-			val isParameterModifierVisible = WordType.PARAMETER_MODIFIER.includes(currentWord?.type)
+			val isParameterModifierVisible = WordType.MODIFIER.includes(currentWord?.type)
 			if(isEmptyParameterListVisible || isParameterVisible || isParameterModifierVisible) {
 				val parameters = LinkedList<Parameter>()
 				while(currentWord?.type != WordAtom.PARENTHESES_CLOSE) {
@@ -300,7 +300,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 			WordAtom.STRING_LITERAL -> literalParser.parseStringLiteral()
 			WordAtom.IDENTIFIER -> {
 				when(nextWord?.type) {
-					WordAtom.DOUBLE_COLON -> parseForeignLanguageExpression()
+					WordAtom.FOREIGN_EXPRESSION -> parseForeignLanguageExpression()
 					WordAtom.QUESTION_MARK -> parseNullCheck()
 					else -> literalParser.parseIdentifier()
 				}
@@ -317,7 +317,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	private fun parseForeignLanguageExpression(): ForeignLanguageExpression {
 		parseForeignLanguageLiteralNext = true
 		val identifier = literalParser.parseIdentifier()
-		consume(WordAtom.DOUBLE_COLON)
+		consume(WordAtom.FOREIGN_EXPRESSION)
 		val foreignLanguage = parseForeignLanguageLiteral()
 		return ForeignLanguageExpression(identifier, foreignLanguage)
 	}

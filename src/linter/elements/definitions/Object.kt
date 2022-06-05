@@ -13,7 +13,5 @@ class Object(override val source: ASTTypeDefinition, name: String, scope: TypeSc
 
 	init {
 		scope.instanceConstant = value
-		if(superType != null)
-			units.add(superType)
 	}
 }

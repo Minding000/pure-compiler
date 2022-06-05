@@ -34,8 +34,8 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 */
 	fun parseType(optionalAllowed: Boolean = true): TypeElement {
 		var hasDynamicQuantity = false
-		if(currentWord?.type == WordAtom.TRIPLE_DOT) {
-			consume(WordAtom.TRIPLE_DOT)
+		if(currentWord?.type == WordAtom.DYNAMIC_PARAMETER) {
+			consume(WordAtom.DYNAMIC_PARAMETER)
 			hasDynamicQuantity = true
 		}
 		val baseType = parseUnionType()
