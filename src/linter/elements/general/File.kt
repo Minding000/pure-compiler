@@ -1,10 +1,8 @@
 package linter.elements.general
 
-import compiler.targets.llvm.BuildContext
 import linter.Linter
 import linter.messages.Message
 import linter.scopes.FileScope
-import org.bytedeco.javacpp.Pointer
 import parsing.ast.general.File as AstFile
 import source_structure.File as SourceFile
 import java.util.*

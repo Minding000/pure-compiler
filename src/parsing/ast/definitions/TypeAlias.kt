@@ -2,7 +2,7 @@ package parsing.ast.definitions
 
 import linter.Linter
 import linter.elements.definitions.TypeAlias
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import linter.scopes.TypeScope
 import parsing.ast.definitions.sections.ModifierSection
 import parsing.ast.definitions.sections.ModifierSectionChild
@@ -16,7 +16,7 @@ class TypeAlias(start: Position, private val modifierList: ModifierList?, privat
 ): Element(start, type.end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
 
-	override fun concretize(linter: Linter, scope: Scope): TypeAlias {
+	override fun concretize(linter: Linter, scope: MutableScope): TypeAlias {
 		modifierList?.validate(linter)
 		val type = type.concretize(linter, scope)
 		val typeScope = TypeScope(scope, type.scope)

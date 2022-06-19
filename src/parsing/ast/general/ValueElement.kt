@@ -2,7 +2,7 @@ package parsing.ast.general
 
 import linter.Linter
 import linter.elements.values.Value
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.tokenizer.Word
 import source_structure.Position
 
@@ -13,5 +13,5 @@ abstract class ValueElement(start: Position, end: Position): Element(start, end)
 
 	constructor(word: Word): this(word.start, word.end)
 
-	abstract override fun concretize(linter: Linter, scope: Scope): Value
+	abstract override fun concretize(linter: Linter, scope: MutableScope): Value
 }

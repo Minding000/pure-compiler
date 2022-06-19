@@ -2,29 +2,29 @@ package parsing.ast.control_flow
 
 import linter.Linter
 import linter.elements.control_flow.FunctionCall
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.access.MemberAccess
 import source_structure.Position
-import parsing.ast.general.Element
 import parsing.ast.general.ValueElement
 import parsing.ast.literals.TypeList
-import util.concretize
+import util.concretizeValues
 import util.indent
 import util.toLines
 
-class FunctionCall(private val genericParameterList: TypeList?, private val functionReference: Element,
-				   private val parameters: List<Element>, end: Position):
+class FunctionCall(private val genericParameterList: TypeList?, private val functionReference: ValueElement,
+				   private val parameters: List<ValueElement>, end: Position):
 	ValueElement(functionReference.start, end) {
 
-	override fun concretize(linter: Linter, scope: Scope): FunctionCall {
-		var context: Element? = null
+	override fun concretize(linter: Linter, scope: MutableScope): FunctionCall {
+		var context: ValueElement? = null
 		val name = if(functionReference is MemberAccess) {
 			context = functionReference.target
 			functionReference.member.getValue()
 		} else {
 			functionReference.getValue()
 		}
-		return FunctionCall(this, context?.concretize(linter, scope), name, parameters.concretize(linter, scope))
+		return FunctionCall(this, context?.concretize(linter, scope), name,
+			parameters.concretizeValues(linter, scope))
 	}
 
 	override fun toString(): String {

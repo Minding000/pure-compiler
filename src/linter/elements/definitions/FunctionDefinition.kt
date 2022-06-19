@@ -1,24 +1,18 @@
 package linter.elements.definitions
 
-import compiler.targets.llvm.BuildContext
-import compiler.targets.llvm.LLVMIRCompiler
 import linter.Linter
 import linter.elements.general.Unit
 import linter.elements.literals.Type
 import linter.elements.values.VariableValueDeclaration
 import linter.scopes.BlockScope
 import linter.scopes.Scope
-import org.bytedeco.javacpp.Pointer
-import org.bytedeco.javacpp.PointerPointer
-import org.bytedeco.llvm.LLVM.LLVMValueRef
-import org.bytedeco.llvm.global.LLVM.*
 import parsing.ast.definitions.FunctionDefinition
 
 class FunctionDefinition(override val source: FunctionDefinition, name: String, val scope: BlockScope,
 						 val genericParameters: List<Unit>, val parameters: List<Parameter>, val body: Unit?,
 						 val returnType: Type?, val isNative: Boolean):
 	VariableValueDeclaration(source, name, returnType, true) {
-	val variation = parameters.joinToString { parameter -> "${parameter.name}-${parameter.type}"}
+	val variation = parameters.joinToString { parameter -> parameter.type.toString() }
 
 	init {
 		units.addAll(genericParameters)
@@ -31,6 +25,10 @@ class FunctionDefinition(override val source: FunctionDefinition, name: String, 
 
 	override fun linkReferences(linter: Linter, scope: Scope) {
 		super.linkReferences(linter, this.scope)
+	}
+
+	override fun toString(): String {
+		return "$name($variation)"
 	}
 
 //	override fun compile(context: BuildContext): LLVMValueRef {

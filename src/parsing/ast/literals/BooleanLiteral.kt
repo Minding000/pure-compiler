@@ -2,13 +2,13 @@ package parsing.ast.literals
 
 import linter.Linter
 import linter.elements.values.BooleanLiteral
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.general.ValueElement
 import parsing.tokenizer.Word
 
 class BooleanLiteral(word: Word): ValueElement(word) {
 
-	override fun concretize(linter: Linter, scope: Scope): BooleanLiteral {
+	override fun concretize(linter: Linter, scope: MutableScope): BooleanLiteral {
 		return BooleanLiteral(this, getValue() == "yes")
 	}
 

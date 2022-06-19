@@ -3,7 +3,7 @@ package parsing.ast.definitions
 import linter.Linter
 import linter.elements.definitions.DeinitializerDefinition
 import linter.scopes.BlockScope
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.definitions.sections.ModifierSection
 import parsing.ast.definitions.sections.ModifierSectionChild
 import parsing.ast.general.Element
@@ -19,7 +19,7 @@ class DeinitializerDefinition(start: Position, end: Position, private val body: 
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE)
 	}
 
-	override fun concretize(linter: Linter, scope: Scope): DeinitializerDefinition {
+	override fun concretize(linter: Linter, scope: MutableScope): DeinitializerDefinition {
 		parent?.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 		val deinitializerScope = BlockScope(scope)

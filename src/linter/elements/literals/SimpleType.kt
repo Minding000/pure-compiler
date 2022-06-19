@@ -50,10 +50,30 @@ class SimpleType(val source: Element, val genericTypes: List<Type>, val name: St
 		return true
 	}
 
+	override fun getKeyType(linter: Linter): Type? {
+		if(genericTypes.size != 2) {
+			linter.messages.add(Message("Type '$this' doesn't have a key type.", Message.Type.ERROR))
+			return null
+		}
+		return genericTypes.first()
+	}
+
+	override fun getValueType(linter: Linter): Type? {
+		if(!(genericTypes.size == 1 || genericTypes.size == 2)) {
+			linter.messages.add(Message("Type '$this' doesn't have a value type.", Message.Type.ERROR))
+			return null
+		}
+		return genericTypes.last()
+	}
+
 	override fun hashCode(): Int {
 		var result = source.hashCode()
 		result = 31 * result + genericTypes.hashCode()
 		result = 31 * result + name.hashCode()
 		return result
+	}
+
+	override fun toString(): String {
+		return name
 	}
 }

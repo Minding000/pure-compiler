@@ -24,4 +24,8 @@ class AndUnionType(val source: UnionType, val types: List<Type>): Type() {
 				return true
 		return false
 	}
+
+	override fun toString(): String {
+		return types.joinToString(" & ")
+	}
 }

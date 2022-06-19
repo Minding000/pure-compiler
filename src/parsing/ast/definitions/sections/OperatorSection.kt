@@ -2,7 +2,7 @@ package parsing.ast.definitions.sections
 
 import linter.Linter
 import linter.elements.general.Unit
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.definitions.OperatorDefinition
 import parsing.tokenizer.Word
 import source_structure.Position
@@ -19,7 +19,7 @@ class OperatorSection(declarationType: Word, private val operators: List<Operato
 			operator.parent = this
 	}
 
-	override fun concretize(linter: Linter, scope: Scope, units: MutableList<Unit>) {
+	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
 		for(function in operators)
 			function.concretize(linter, scope, units)
 	}

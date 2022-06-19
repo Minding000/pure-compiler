@@ -3,7 +3,7 @@ package parsing.ast.definitions
 import errors.internal.CompilerError
 import linter.Linter
 import linter.elements.definitions.ComputedProperty
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.definitions.sections.VariableSectionElement
 import parsing.ast.general.Element
 import parsing.ast.literals.Identifier
@@ -15,7 +15,7 @@ class ComputedProperty(private val identifier: Identifier, private val type: Typ
 					   private val setExpression: Element?):
 	VariableSectionElement(identifier.start, setExpression?.end ?: getExpression?.end ?: identifier.end) {
 
-	override fun concretize(linter: Linter, scope: Scope): ComputedProperty {
+	override fun concretize(linter: Linter, scope: MutableScope): ComputedProperty {
 		val type = type ?: parent.type ?: throw CompilerError("Computed property is missing type. [should be linker error instead]")
 		val computedProperty = ComputedProperty(this, identifier.getValue(), type.concretize(linter, scope),
 			getExpression?.concretize(linter, scope), setExpression?.concretize(linter, scope))

@@ -2,7 +2,7 @@ package parsing.ast.definitions.sections
 
 import linter.Linter
 import linter.elements.general.Unit
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.general.Element
 import parsing.ast.general.TypeElement
 import parsing.tokenizer.Word
@@ -24,7 +24,7 @@ class VariableSection(val declarationType: Word, val type: TypeElement?, val val
 			variable.parent = this
 	}
 
-	override fun concretize(linter: Linter, scope: Scope, units: MutableList<Unit>) {
+	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
 		for(variable in variables)
 			variable.concretize(linter, scope, units)
 	}

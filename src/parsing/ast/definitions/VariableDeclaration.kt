@@ -2,18 +2,17 @@ package parsing.ast.definitions
 
 import linter.Linter
 import linter.elements.definitions.VariableDeclaration
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.definitions.sections.VariableSectionElement
-import parsing.ast.general.Element
 import parsing.ast.literals.Identifier
 import parsing.ast.general.TypeElement
+import parsing.ast.general.ValueElement
 import java.lang.StringBuilder
 
-class VariableDeclaration(private val identifier: Identifier, private val type: TypeElement?, private val value: Element?):
+class VariableDeclaration(private val identifier: Identifier, private val type: TypeElement?, private val value: ValueElement?):
 	VariableSectionElement(identifier.start, (value ?: type ?: identifier).end) {
 
-	override fun concretize(linter: Linter, scope: Scope): VariableDeclaration {
-		//TODO include modifiers
+	override fun concretize(linter: Linter, scope: MutableScope): VariableDeclaration {
 		val variableDeclaration = VariableDeclaration(
 			this,
 			identifier.getValue(),

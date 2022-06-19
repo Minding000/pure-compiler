@@ -2,7 +2,7 @@ package parsing.ast.general
 
 import linter.Linter
 import linter.elements.general.StatementBlock
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import source_structure.Position
 import util.concretize
 import util.indent
@@ -12,7 +12,7 @@ class StatementBlock(start: Position, end: Position, private val statements: Lis
 
 	constructor(statement: Element): this(statement.start, statement.end, listOf(statement))
 
-	override fun concretize(linter: Linter, scope: Scope): StatementBlock {
+	override fun concretize(linter: Linter, scope: MutableScope): StatementBlock {
 		return StatementBlock(this, statements.concretize(linter, scope))
 	}
 

@@ -22,4 +22,8 @@ class OrUnionType(val source: UnionType, val types: List<Type>): Type() {
 				return false
 		return true
 	}
+
+	override fun toString(): String {
+		return types.joinToString(" | ")
+	}
 }

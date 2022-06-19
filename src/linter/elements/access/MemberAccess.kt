@@ -6,7 +6,7 @@ import linter.elements.values.Value
 import linter.scopes.Scope
 import parsing.ast.access.MemberAccess
 
-class MemberAccess(val source: MemberAccess, val target: Unit, val member: Unit, val isOptional: Boolean): Value() {
+class MemberAccess(val source: MemberAccess, val target: Value, val member: Value, val isOptional: Boolean): Value() {
 
 	init {
 		units.add(target)

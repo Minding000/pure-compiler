@@ -2,7 +2,7 @@ package parsing.ast.general
 
 import linter.Linter
 import linter.elements.general.Unit
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.tokenizer.Word
 import source_structure.Position
 import source_structure.Section
@@ -14,9 +14,9 @@ abstract class Element(start: Position, end: Position): Section(start, end) {
 
 	constructor(word: Word): this(word.start, word.end)
 
-	abstract fun concretize(linter: Linter, scope: Scope): Unit
+	abstract fun concretize(linter: Linter, scope: MutableScope): Unit
 
-	open fun concretize(linter: Linter, scope: Scope, units: MutableList<Unit>) {
+	open fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
 		units.add(concretize(linter, scope))
 	}
 }

@@ -5,13 +5,13 @@ import linter.Linter
 import linter.elements.literals.AndUnionType
 import linter.elements.literals.OrUnionType
 import linter.elements.literals.Type as LinterType
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.general.TypeElement
 import java.util.*
 
 class UnionType(private val left: TypeElement, private val right: TypeElement, private val mode: Mode): TypeElement(left.start, right.end) {
 
-	override fun concretize(linter: Linter, scope: Scope): LinterType {
+	override fun concretize(linter: Linter, scope: MutableScope): LinterType {
 		val types = LinkedList<linter.elements.literals.Type>()
 		addTypes(linter, scope, types, this)
 		return if(mode == Mode.AND)
@@ -20,7 +20,7 @@ class UnionType(private val left: TypeElement, private val right: TypeElement, p
 			OrUnionType(this, types)
 	}
 
-	private fun addTypes(linter: Linter, scope: Scope, types: LinkedList<LinterType>, type: TypeElement) {
+	private fun addTypes(linter: Linter, scope: MutableScope, types: LinkedList<LinterType>, type: TypeElement) {
 		if(type is UnionType && type.mode == mode) {
 			addTypes(linter, scope, types, type.left)
 			addTypes(linter, scope, types, type.right)

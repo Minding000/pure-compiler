@@ -113,7 +113,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		val statement = expressionParser.parseExpression()
 		if(isExpressionAssignable(statement)) {
 			if(currentWord?.type == WordAtom.ASSIGNMENT) {
-				val targets = LinkedList<Element>()
+				val targets = LinkedList<ValueElement>()
 				var lastExpression = statement
 				do {
 					consume(WordAtom.ASSIGNMENT)
@@ -802,7 +802,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		} else null
 		if(getExpression != null || setExpression != null)
 			return ComputedProperty(identifier, type, getExpression, setExpression)
-		var value: Element? = null
+		var value: ValueElement? = null
 		if(currentWord?.type == WordAtom.ASSIGNMENT) {
 			consume(WordAtom.ASSIGNMENT)
 			value = parseExpression()

@@ -2,18 +2,17 @@ package parsing.ast.access
 
 import linter.Linter
 import linter.elements.access.Index
-import linter.scopes.Scope
-import parsing.ast.general.Element
+import linter.scopes.MutableScope
 import parsing.ast.general.ValueElement
 import source_structure.Position
-import util.concretize
+import util.concretizeValues
 import util.indent
 import util.toLines
 
-class Index(private val target: Element, private val indices: List<Element>, end: Position): ValueElement(target.start, end) {
+class Index(private val target: ValueElement, private val indices: List<ValueElement>, end: Position): ValueElement(target.start, end) {
 
-	override fun concretize(linter: Linter, scope: Scope): Index {
-		return Index(this, target.concretize(linter, scope), indices.concretize(linter, scope))
+	override fun concretize(linter: Linter, scope: MutableScope): Index {
+		return Index(this, target.concretize(linter, scope), indices.concretizeValues(linter, scope))
 	}
 
 	override fun toString(): String {

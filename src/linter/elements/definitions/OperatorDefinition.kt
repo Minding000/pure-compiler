@@ -11,7 +11,7 @@ import parsing.ast.definitions.OperatorDefinition
 class OperatorDefinition(override val source: OperatorDefinition, name: String, val scope: BlockScope,
 						 val parameters: List<Parameter>, val body: Unit?, val returnType: Type?):
 	VariableValueDeclaration(source, name, returnType, true) {
-	val variation = parameters.joinToString { parameter -> "${parameter.name}-${parameter.type}"}
+	val variation = parameters.joinToString { parameter -> parameter.type.toString() }
 
 	init {
 		units.addAll(parameters)
@@ -23,5 +23,9 @@ class OperatorDefinition(override val source: OperatorDefinition, name: String, 
 
 	override fun linkReferences(linter: Linter, scope: Scope) {
 		super.linkReferences(linter, this.scope)
+	}
+
+	override fun toString(): String {
+		return "$name($variation)"
 	}
 }

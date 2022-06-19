@@ -2,14 +2,14 @@ package parsing.ast.general
 
 import linter.Linter
 import linter.elements.general.ErrorHandlingContext
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import java.util.*
 
 class StatementSection(private val mainBlock: StatementBlock, val handleBlocks: List<HandleBlock> = LinkedList(),
 					   private val alwaysBlock: StatementBlock? = null):
 	Element(mainBlock.start, (alwaysBlock ?: handleBlocks.lastOrNull() ?: mainBlock).end) {
 
-	override fun concretize(linter: Linter, scope: Scope): ErrorHandlingContext {
+	override fun concretize(linter: Linter, scope: MutableScope): ErrorHandlingContext {
 		val handleBlocks = LinkedList<linter.elements.general.HandleBlock>()
 		for(handleBlock in this.handleBlocks)
 			handleBlocks.add(handleBlock.concretize(linter, scope))

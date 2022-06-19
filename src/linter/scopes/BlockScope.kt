@@ -1,36 +1,52 @@
 package linter.scopes
 
 import linter.Linter
+import linter.elements.definitions.FunctionDefinition
+import linter.elements.definitions.OperatorDefinition
 import linter.elements.values.TypeDefinition
 import linter.elements.values.VariableValueDeclaration
 import linter.messages.Message
 import kotlin.collections.HashMap
 
-class BlockScope(val parentScope: Scope): Scope() {
+class BlockScope(val parentScope: MutableScope): MutableScope() {
 	val declaredTypes = HashMap<String, TypeDefinition>()
 	val declaredValues = HashMap<String, VariableValueDeclaration>()
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {
 		val previousDeclaration = parentScope.resolveType(type.name) ?: declaredTypes.putIfAbsent(type.name, type)
-		if(previousDeclaration != null)
+		if(previousDeclaration == null)
+			linter.messages.add(Message(
+				"${type.source.getStartString()}: Declaration of type '${type.name}'.", Message.Type.DEBUG))
+		else
 			linter.messages.add(Message(
 				"${type.source.getStartString()}: Redeclaration of type '${type.name}'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
 	}
 
 	override fun resolveType(name: String): TypeDefinition? {
-		return parentScope.resolveType(name) ?: declaredTypes[name]
+		return declaredTypes[name] ?: parentScope.resolveType(name)
 	}
 
 	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
 		val previousDeclaration = parentScope.resolveReference(value.name) ?: declaredValues.putIfAbsent(value.name, value)
-		if(previousDeclaration != null)
+		if(previousDeclaration == null)
+			linter.messages.add(Message(
+				"${value.source.getStartString()}: Declaration of value '${value.name}'.", Message.Type.DEBUG))
+		else
 			linter.messages.add(Message(
 				"${value.source.getStartString()}: Redeclaration of value '${value.name}'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
 	}
 
 	override fun resolveReference(name: String): VariableValueDeclaration? {
-		return parentScope.resolveReference(name) ?: declaredValues[name]
+		return declaredValues[name] ?: parentScope.resolveReference(name)
+	}
+
+	override fun resolveFunction(name: String, variation: String): FunctionDefinition? {
+		return parentScope.resolveFunction(name, variation)
+	}
+
+	override fun resolveOperator(name: String, variation: String): OperatorDefinition? {
+		return parentScope.resolveOperator(name, variation)
 	}
 }

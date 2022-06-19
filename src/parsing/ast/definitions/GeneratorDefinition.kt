@@ -3,7 +3,7 @@ package parsing.ast.definitions
 import linter.Linter
 import linter.elements.definitions.GeneratorDefinition
 import linter.elements.general.Unit
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.general.Element
 import parsing.ast.general.StatementSection
 import source_structure.Position
@@ -16,7 +16,7 @@ class GeneratorDefinition(start: Position, private val identifier: Identifier, p
 						  private var keyReturnType: TypeElement?, private var valueReturnType: TypeElement, private val body: StatementSection):
 	Element(start, body.end) {
 
-	override fun concretize(linter: Linter, scope: Scope): GeneratorDefinition {
+	override fun concretize(linter: Linter, scope: MutableScope): GeneratorDefinition {
 		val parameters = LinkedList<Unit>()
 		for(parameter in parameterList.parameters) {
 			//TODO continue...

@@ -7,7 +7,7 @@ import linter.elements.definitions.Enum
 import linter.elements.definitions.Object
 import linter.elements.definitions.Trait
 import linter.elements.general.Unit
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import linter.scopes.TypeScope
 import parsing.ast.definitions.sections.ModifierSection
 import parsing.ast.definitions.sections.ModifierSectionChild
@@ -22,7 +22,7 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 	Element(type.start, body.end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
 
-	override fun concretize(linter: Linter, scope: Scope): Unit {
+	override fun concretize(linter: Linter, scope: MutableScope): Unit {
 		val name = identifier.getValue()
 		val superType = superType?.concretize(linter, scope)
 		val typeScope = TypeScope(scope, superType?.scope)

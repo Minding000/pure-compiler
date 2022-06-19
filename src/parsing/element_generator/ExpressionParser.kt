@@ -212,7 +212,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 		var expression = parseFunctionCall()
 		if(currentWord?.type == WordAtom.BRACKETS_OPEN) {
 			consume(WordAtom.BRACKETS_OPEN)
-			val indices = LinkedList<Element>()
+			val indices = LinkedList<ValueElement>()
 			indices.add(parseExpression())
 			while(currentWord?.type == WordAtom.COMMA) {
 				consume(WordAtom.COMMA)
@@ -235,7 +235,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 		var expression = parsePrimary()
 		if(typeList != null || currentWord?.type == WordAtom.PARENTHESES_OPEN) {
 			consume(WordAtom.PARENTHESES_OPEN)
-			val parameters = LinkedList<Element>()
+			val parameters = LinkedList<ValueElement>()
 			if(currentWord?.type != WordAtom.PARENTHESES_CLOSE) {
 				parameters.add(parseExpression())
 				while(currentWord?.type == WordAtom.COMMA) {

@@ -5,7 +5,7 @@ import linter.elements.definitions.FunctionDefinition
 import linter.elements.definitions.Parameter
 import linter.elements.general.Unit
 import linter.scopes.BlockScope
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.definitions.sections.FunctionSection
 import parsing.ast.general.Element
 import parsing.ast.general.StatementSection
@@ -25,7 +25,7 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE)
 	}
 
-	override fun concretize(linter: Linter, scope: Scope): FunctionDefinition {
+	override fun concretize(linter: Linter, scope: MutableScope): FunctionDefinition {
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
 		val functionScope = BlockScope(scope)

@@ -26,4 +26,8 @@ class TypeParameter(val source: TypeParameter, val mode: Mode, val baseType: Typ
 		PRODUCING, // effective input type: None
 		CONSUMING  // effective output type: Any
 	}
+
+	override fun toString(): String {
+		return "$mode $baseType"
+	}
 }

@@ -3,7 +3,7 @@ package parsing.ast.definitions
 import linter.Linter
 import linter.elements.definitions.OperatorDefinition
 import linter.scopes.BlockScope
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import linter.elements.definitions.Parameter
 import parsing.ast.definitions.sections.OperatorSection
 import parsing.ast.general.Element
@@ -16,7 +16,7 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 	Element(operator.start, body?.end ?: returnType?.end ?: parameterList?.end ?: operator.end) {
 	lateinit var parent: OperatorSection
 
-	override fun concretize(linter: Linter, scope: Scope): OperatorDefinition {
+	override fun concretize(linter: Linter, scope: MutableScope): OperatorDefinition {
 		val operatorScope = BlockScope(scope)
 		//TODO include modifiers and operator type
 		val parameters = LinkedList<Parameter>()

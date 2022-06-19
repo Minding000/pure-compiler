@@ -1,3 +1,4 @@
+import code.Builder
 import parsing.element_generator.ElementGenerator
 import errors.user.UserError
 import linter.Linter
@@ -17,6 +18,7 @@ import kotlin.test.assertEquals
 object TestUtil {
     private val defaultErrorStream = System.err
     private val testErrorStream = ByteArrayOutputStream()
+    var includeRequiredModules = false
 
     fun recordErrorStream() {
         System.setErr(PrintStream(testErrorStream))
@@ -31,9 +33,13 @@ object TestUtil {
 
     private fun parseProgram(sourceCode: String): Program {
         val project = Project("Test")
-        val module = Module("Test")
-        module.addFile(LinkedList(), "Test", sourceCode)
-        project.addModule(module)
+        val testModule = Module("Test")
+        testModule.addFile(LinkedList(), "Test", sourceCode)
+        project.addModule(testModule)
+        if(includeRequiredModules) {
+            Builder.loadRequiredModules(project)
+            includeRequiredModules = false
+        }
         return ElementGenerator(project).parseProgram()
     }
 

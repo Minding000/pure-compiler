@@ -39,4 +39,8 @@ class LambdaFunctionType(val source: ASTLambdaType, val parameters: List<Type>, 
 		result = 31 * result + (returnType?.hashCode() ?: 0)
 		return result
 	}
+
+	override fun toString(): String {
+		return "(${parameters.joinToString()}) ->${if(returnType == null) "|" else " $returnType"}"
+	}
 }

@@ -4,7 +4,7 @@ import errors.internal.CompilerError
 import linter.Linter
 import linter.elements.general.Unit
 import linter.messages.Message
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.definitions.Modifier
 import parsing.ast.definitions.ModifierList
 import parsing.ast.general.Element
@@ -25,7 +25,7 @@ class ModifierSection(private val modifierList: ModifierList, private val sectio
 		}
 	}
 
-	override fun concretize(linter: Linter, scope: Scope, units: MutableList<Unit>) {
+	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
 		for(section in sections)
 			section.concretize(linter, scope, units)
 	}

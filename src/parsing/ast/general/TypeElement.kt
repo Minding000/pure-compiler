@@ -2,7 +2,7 @@ package parsing.ast.general
 
 import linter.Linter
 import linter.elements.literals.Type
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import source_structure.Position
 
 /**
@@ -10,5 +10,5 @@ import source_structure.Position
  */
 abstract class TypeElement(start: Position, end: Position): Element(start, end) {
 
-	abstract override fun concretize(linter: Linter, scope: Scope): Type
+	abstract override fun concretize(linter: Linter, scope: MutableScope): Type
 }

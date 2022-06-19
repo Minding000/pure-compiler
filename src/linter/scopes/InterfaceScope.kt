@@ -1,36 +1,37 @@
 package linter.scopes
 
-import linter.Linter
+import linter.elements.definitions.FunctionDefinition
+import linter.elements.definitions.OperatorDefinition
 import linter.elements.values.TypeDefinition
 import linter.elements.values.VariableValueDeclaration
-import linter.messages.Message
-import kotlin.collections.HashMap
+import java.util.*
 
 class InterfaceScope: Scope() {
-	val declaredTypes = HashMap<String, TypeDefinition>()
-	val declaredValues = HashMap<String, VariableValueDeclaration>()
-
-	override fun declareType(linter: Linter, type: TypeDefinition) {
-		val previousDeclaration = declaredTypes.putIfAbsent(type.name, type)
-		if(previousDeclaration != null)
-			linter.messages.add(Message(
-				"${type.source.getStartString()}: Redeclaration of type '${type.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
-	}
+	val scopes = LinkedList<MutableScope>()
 
 	override fun resolveType(name: String): TypeDefinition? {
-		return declaredTypes[name]
-	}
-
-	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
-		val previousDeclaration = declaredValues.putIfAbsent(value.name, value)
-		if(previousDeclaration != null)
-			linter.messages.add(Message(
-				"${value.source.getStartString()}: Redeclaration of value '${value.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+		for(scope in scopes) {
+			val definition = scope.resolveType(name)
+			if(definition != null)
+				return definition
+		}
+		return null
 	}
 
 	override fun resolveReference(name: String): VariableValueDeclaration? {
-		return declaredValues[name]
+		for(scope in scopes) {
+			val declaration = scope.resolveReference(name)
+			if(declaration != null)
+				return declaration
+		}
+		return null
+	}
+
+	override fun resolveFunction(name: String, variation: String): FunctionDefinition? {
+		return resolveReference("$name-$variation") as? FunctionDefinition
+	}
+
+	override fun resolveOperator(name: String, variation: String): OperatorDefinition? {
+		return resolveReference("$name-$variation") as? OperatorDefinition
 	}
 }

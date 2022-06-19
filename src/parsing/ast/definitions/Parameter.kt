@@ -2,7 +2,7 @@ package parsing.ast.definitions
 
 import linter.Linter
 import linter.elements.definitions.Parameter
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.general.Element
 import parsing.ast.literals.Identifier
 import parsing.ast.general.TypeElement
@@ -19,7 +19,7 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
         return type?.getValue() ?: ""
     }
 
-    override fun concretize(linter: Linter, scope: Scope): Parameter {
+    override fun concretize(linter: Linter, scope: MutableScope): Parameter {
         modifierList?.validate(linter, ALLOWED_MODIFIER_TYPES)
         val isMutable = modifierList?.contains(WordAtom.MUTABLE) ?: false
         val hasDynamicSize = modifierList?.contains(WordAtom.SPREAD_GROUP) ?: false

@@ -3,7 +3,7 @@ package parsing.ast.general
 import linter.Linter
 import linter.elements.general.FileReference
 import linter.elements.general.ReferenceAlias
-import linter.scopes.Scope
+import linter.scopes.MutableScope
 import parsing.ast.literals.Identifier
 import source_structure.Position
 import util.indent
@@ -12,7 +12,7 @@ import java.util.*
 
 class FileReference(start: Position, private val parts: List<Identifier>, private val body: AliasBlock?): Element(start, body?.end ?: parts.last().end) {
 
-	override fun concretize(linter: Linter, scope: Scope): FileReference {
+	override fun concretize(linter: Linter, scope: MutableScope): FileReference {
 		val parts = LinkedList<String>()
 		for(part in this.parts)
 			parts.add(part.getValue())
