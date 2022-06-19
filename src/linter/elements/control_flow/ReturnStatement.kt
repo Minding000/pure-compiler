@@ -9,7 +9,7 @@ import org.bytedeco.llvm.LLVM.LLVMValueRef
 import org.bytedeco.llvm.global.LLVM.*
 import parsing.ast.control_flow.ReturnStatement
 
-class ReturnStatement(val source: ReturnStatement, val value: Value?): Value() {
+class ReturnStatement(override val source: ReturnStatement, val value: Value?): Value(source) {
 
 	init {
 		if(value != null)
@@ -25,7 +25,7 @@ class ReturnStatement(val source: ReturnStatement, val value: Value?): Value() {
 		if(value != null) {
 			value.validate(linter)
 			if(type == null)
-				linter.messages.add(Message("Failed to resolve type of value '${this.javaClass.name}'.",
+				linter.messages.add(Message("${source.getStartString()}: Failed to resolve type of value '${this.javaClass.name}'.",
 					Message.Type.ERROR))
 		}
 	}

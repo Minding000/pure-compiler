@@ -6,7 +6,7 @@ import linter.messages.Message
 import linter.scopes.Scope
 import parsing.ast.access.Index
 
-class Index(val source: Index, val target: Value, val indices: List<Value>): Value() {
+class Index(override val source: Index, val target: Value, val indices: List<Value>): Value(source) {
 
 	init {
 		units.add(target)

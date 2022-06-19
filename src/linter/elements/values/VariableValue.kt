@@ -5,7 +5,7 @@ import linter.messages.Message
 import linter.scopes.Scope
 import parsing.ast.literals.Identifier
 
-class VariableValue(val source: Identifier): Value() {
+class VariableValue(override val source: Identifier): Value(source) {
 	val name = source.getValue()
 	private var definition: VariableValueDeclaration? = null
 

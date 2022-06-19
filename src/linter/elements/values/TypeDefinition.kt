@@ -15,6 +15,14 @@ open class TypeDefinition(open val source: Element, val name: String, val scope:
 			units.add(superType)
 	}
 
+	override fun linkTypes(linter: Linter, scope: Scope) {
+		super.linkTypes(linter, this.scope)
+	}
+
+	override fun linkPropertyParameters(linter: Linter, scope: MutableScope) {
+		super.linkPropertyParameters(linter, this.scope)
+	}
+
 	override fun linkReferences(linter: Linter, scope: Scope) {
 		super.linkReferences(linter, this.scope)
 	}

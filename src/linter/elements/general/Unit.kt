@@ -1,6 +1,7 @@
 package linter.elements.general
 
 import linter.Linter
+import linter.scopes.MutableScope
 import linter.scopes.Scope
 import java.util.*
 
@@ -10,6 +11,11 @@ abstract class Unit {
 	open fun linkTypes(linter: Linter, scope: Scope) {
 		for(unit in units)
 			unit.linkTypes(linter, scope)
+	}
+
+	open fun linkPropertyParameters(linter: Linter, scope: MutableScope) {
+		for(unit in units)
+			unit.linkPropertyParameters(linter, scope)
 	}
 
 	open fun linkReferences(linter: Linter, scope: Scope) {

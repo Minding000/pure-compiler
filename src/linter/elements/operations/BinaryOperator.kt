@@ -5,7 +5,8 @@ import linter.elements.values.Value
 import linter.scopes.Scope
 import parsing.ast.operations.BinaryOperator
 
-class BinaryOperator(val source: BinaryOperator, val left: Value, val right: Value, val operator: String): Value() {
+class BinaryOperator(override val source: BinaryOperator, val left: Value, val right: Value, val operator: String):
+	Value(source) {
 
 	init {
 		units.add(left)

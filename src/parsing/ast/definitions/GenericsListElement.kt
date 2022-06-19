@@ -15,6 +15,7 @@ class GenericsListElement(private val identifier: Identifier, private val superT
         val superType = superType?.concretize(linter, scope)
         val typeScope = TypeScope(scope, superType?.scope)
         val genericType = TypeDefinition(this, identifier.getValue(), typeScope, superType, true)
+        typeScope.typeDefinition = genericType
         scope.declareType(linter, genericType)
         return genericType
     }

@@ -1,7 +1,9 @@
 package linter.elements.definitions
 
+import linter.Linter
 import linter.elements.general.Unit
 import linter.elements.values.TypeDefinition
+import linter.scopes.Scope
 import linter.scopes.TypeScope
 import parsing.tokenizer.WordAtom
 import parsing.ast.definitions.TypeDefinition as ASTTypeDefinition

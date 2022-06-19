@@ -4,7 +4,7 @@ import linter.elements.general.Unit
 import linter.elements.values.Value
 import parsing.ast.control_flow.YieldStatement
 
-class YieldStatement(val source: YieldStatement, val key: Unit?, val value: Unit): Value() {
+class YieldStatement(override val source: YieldStatement, val key: Unit?, val value: Unit): Value(source) {
 
 	init {
 		if(key != null)

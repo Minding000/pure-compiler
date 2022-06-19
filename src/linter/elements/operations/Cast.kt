@@ -5,8 +5,8 @@ import linter.elements.values.Value
 import linter.elements.values.VariableValue
 import parsing.ast.operations.Cast
 
-class Cast(val source: Cast, val value: Value, val variable: VariableValue?, type: Type, val operator: Operator):
-	Value() {
+class Cast(override val source: Cast, val value: Value, val variable: VariableValue?, type: Type, val operator: Operator):
+	Value(source) {
 
 	init {
 		units.add(value)

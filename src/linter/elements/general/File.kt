@@ -45,6 +45,10 @@ class File(val source: AstFile, val file: SourceFile, val scope: FileScope): Uni
 		linkTypes(linter, scope)
 	}
 
+	fun linkPropertyParameters(linter: Linter) {
+		linkPropertyParameters(linter, scope)
+	}
+
 	fun linkReferences(linter: Linter) {
 		linkReferences(linter, scope)
 	}

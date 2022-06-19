@@ -5,7 +5,8 @@ import linter.elements.general.Unit
 import linter.elements.values.Value
 import parsing.ast.definitions.LambdaFunctionDefinition as ASTLambdaDefinition
 
-class LambdaFunctionDefinition(val source: ASTLambdaDefinition, val parameters: List<Unit>, val body: ErrorHandlingContext): Value() {
+class LambdaFunctionDefinition(override val source: ASTLambdaDefinition, val parameters: List<Unit>,
+							   val body: ErrorHandlingContext): Value(source) {
 
 	init {
 		units.addAll(parameters)

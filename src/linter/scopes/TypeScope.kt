@@ -2,6 +2,7 @@ package linter.scopes
 
 import linter.Linter
 import linter.elements.definitions.FunctionDefinition
+import linter.elements.definitions.InitializerDefinition
 import linter.elements.definitions.OperatorDefinition
 import linter.elements.literals.SimpleType
 import linter.elements.values.TypeDefinition
@@ -11,8 +12,10 @@ import kotlin.collections.HashMap
 
 class TypeScope(val parentScope: MutableScope, val superScope: InterfaceScope?): MutableScope() {
 	var instanceConstant: VariableValueDeclaration? = null
+	var typeDefinition: TypeDefinition? = null
 	private val declaredTypes = HashMap<String, TypeDefinition>()
 	private val declaredValues = HashMap<String, VariableValueDeclaration>()
+	private val initializers = HashMap<String, InitializerDefinition>()
 	private val functions = HashMap<String, HashMap<String, FunctionDefinition>>()
 	private val operators = HashMap<String, HashMap<String, OperatorDefinition>>()
 
@@ -22,6 +25,17 @@ class TypeScope(val parentScope: MutableScope, val superScope: InterfaceScope?):
 
 	fun createInstanceConstant(definition: TypeDefinition) {
 		instanceConstant = VariableValueDeclaration(definition.source, SELF_REFERENCE, SimpleType(definition), true)
+	}
+
+	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
+		val previousDeclaration = initializers.putIfAbsent(initializer.variation, initializer)
+		if(previousDeclaration == null)
+			linter.messages.add(Message(
+				"${initializer.source.getStartString()}: Declaration of initializer '${typeDefinition?.name}(${initializer.variation})'.", Message.Type.DEBUG))
+		else
+			linter.messages.add(Message(
+				"${initializer.source.getStartString()}: Redeclaration of initializer '${typeDefinition?.name}(${initializer.variation})'," +
+						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
 	}
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {
@@ -46,6 +60,10 @@ class TypeScope(val parentScope: MutableScope, val superScope: InterfaceScope?):
 			linter.messages.add(Message(
 				"${type.source.getStartString()}: Redeclaration of type '${type.name}'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+	}
+
+	fun resolveInitializer(variation: String): InitializerDefinition? {
+		return initializers[variation]
 	}
 
 	override fun resolveType(name: String): TypeDefinition? {

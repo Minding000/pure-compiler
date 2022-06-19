@@ -1,3 +1,5 @@
 package linter.elements.values
 
-abstract class LiteralValue: Value()
+import parsing.ast.general.Element
+
+abstract class LiteralValue(source: Element): Value(source)

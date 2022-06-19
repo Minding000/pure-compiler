@@ -21,6 +21,7 @@ class TypeAlias(start: Position, private val modifierList: ModifierList?, privat
 		val type = type.concretize(linter, scope)
 		val typeScope = TypeScope(scope, type.scope)
 		val typeAlias = TypeAlias(this, identifier.getValue(), type, typeScope)
+		typeScope.typeDefinition = typeAlias
 		scope.declareType(linter, typeAlias)
 		return typeAlias
 	}

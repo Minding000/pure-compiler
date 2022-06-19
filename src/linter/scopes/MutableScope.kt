@@ -14,21 +14,21 @@ abstract class MutableScope: Scope() {
 
 	abstract fun declareValue(linter: Linter, value: VariableValueDeclaration)
 
-	open fun declareInitializer(linter: Linter, function: InitializerDefinition) {
+	open fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
 		linter.messages.add(Message(
-			"${function.source.getStartString()}: Initializer definitions aren't allowed here.",
+			"${initializer.source.getStartString()}: Initializer declarations aren't allowed in ${this.javaClass.simpleName}.",
 			Message.Type.ERROR))
 	}
 
 	open fun declareFunction(linter: Linter, function: FunctionDefinition) {
 		linter.messages.add(Message(
-			"${function.source.getStartString()}: Function definitions aren't allowed here.",
+			"${function.source.getStartString()}: Function declarations aren't allowed in ${this.javaClass.simpleName}.",
 			Message.Type.ERROR))
 	}
 
 	open fun declareOperator(linter: Linter, operator: OperatorDefinition) {
 		linter.messages.add(Message(
-			"${operator.source.getStartString()}: Operator definitions aren't allowed here.",
+			"${operator.source.getStartString()}: Operator declarations aren't allowed in ${this.javaClass.simpleName}.",
 			Message.Type.ERROR))
 	}
 }

@@ -16,6 +16,8 @@ class Linter {
 		program.resolveFileReferences(this)
 		messages.add(Message("----- Linter stage: Type linking -----", Message.Type.DEBUG))
 		program.linkTypes(this)
+		messages.add(Message("----- Linter stage: Property parameter linking -----", Message.Type.DEBUG))
+		program.linkPropertyParameters(this)
 		messages.add(Message("----- Linter stage: Reference linking -----", Message.Type.DEBUG))
 		program.linkReferences(this)
 		messages.add(Message("----- Linter stage: Validation -----", Message.Type.DEBUG))

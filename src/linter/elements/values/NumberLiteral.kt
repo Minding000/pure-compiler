@@ -7,7 +7,7 @@ import org.bytedeco.llvm.LLVM.LLVMValueRef
 import org.bytedeco.llvm.global.LLVM.*
 import parsing.ast.literals.NumberLiteral
 
-class NumberLiteral(val source: NumberLiteral, val value: String): LiteralValue() {
+class NumberLiteral(override val source: NumberLiteral, val value: String): LiteralValue(source) {
 
 	init {
 		//TODO allow for floating point numbers

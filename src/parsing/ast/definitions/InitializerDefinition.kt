@@ -31,10 +31,8 @@ class InitializerDefinition(start: Position, private val parameterList: Paramete
 			for(parameter in parameterList.parameters)
 				parameters.add(parameter.concretize(linter, initializerScope))
 		}
-		val initializerDefinition = InitializerDefinition(this, initializerScope, parameters,
+		return InitializerDefinition(this, initializerScope, parameters,
 			body?.concretize(linter, initializerScope), isNative)
-		//scope.declareFunction(linter, initializerDefinition)
-		return initializerDefinition
 	}
 
 	override fun toString(): String {

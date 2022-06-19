@@ -5,7 +5,7 @@ import org.bytedeco.llvm.LLVM.LLVMValueRef
 import org.bytedeco.llvm.global.LLVM
 import parsing.ast.literals.NullLiteral
 
-class NullLiteral(val source: NullLiteral): LiteralValue() {
+class NullLiteral(override val source: NullLiteral): LiteralValue(source) {
 
 //	override fun compile(context: BuildContext): LLVMValueRef {
 //		return LLVM.LLVMConstNull(resolveType())

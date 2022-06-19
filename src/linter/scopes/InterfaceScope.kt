@@ -28,10 +28,20 @@ class InterfaceScope: Scope() {
 	}
 
 	override fun resolveFunction(name: String, variation: String): FunctionDefinition? {
-		return resolveReference("$name-$variation") as? FunctionDefinition
+		for(scope in scopes) {
+			val declaration = scope.resolveFunction(name, variation)
+			if(declaration != null)
+				return declaration
+		}
+		return null
 	}
 
 	override fun resolveOperator(name: String, variation: String): OperatorDefinition? {
-		return resolveReference("$name-$variation") as? OperatorDefinition
+		for(scope in scopes) {
+			val declaration = scope.resolveOperator(name, variation)
+			if(declaration != null)
+				return declaration
+		}
+		return null
 	}
 }

@@ -25,6 +25,14 @@ class Program(val source: Program) {
 	}
 
 	/**
+	 * Links properties in initializer parameters.
+	 */
+	fun linkPropertyParameters(linter: Linter) {
+		for(file in files)
+			file.linkPropertyParameters(linter)
+	}
+
+	/**
 	 * Links type usages to the declaration of the type.
 	 */
 	fun linkReferences(linter: Linter) {
