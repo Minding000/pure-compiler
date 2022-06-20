@@ -1,10 +1,9 @@
 package linter.elements.literals
 
 import linter.Linter
-import linter.messages.Message
-import parsing.ast.literals.QuantifiedType
+import parsing.ast.literals.QuantifiedType as ASTQuantifiedType
 
-class QuantifiedType(val source: QuantifiedType, val baseType: Type, val hasDynamicQuantity: Boolean,
+class QuantifiedType(val source: ASTQuantifiedType, val baseType: Type, val hasDynamicQuantity: Boolean,
 					 val isOptional: Boolean): Type() {
 
 	init {
@@ -14,7 +13,7 @@ class QuantifiedType(val source: QuantifiedType, val baseType: Type, val hasDyna
 	override fun accepts(sourceType: Type): Boolean {
 		if(hasDynamicQuantity)
 			return false
-		if(sourceType is linter.elements.literals.QuantifiedType) {
+		if(sourceType is QuantifiedType) {
 			if(sourceType.isOptional && !isOptional)
 				return false
 		}
@@ -24,7 +23,7 @@ class QuantifiedType(val source: QuantifiedType, val baseType: Type, val hasDyna
 	override fun isAssignableTo(targetType: Type): Boolean {
 		if(hasDynamicQuantity)
 			return false
-		if(targetType is linter.elements.literals.QuantifiedType) {
+		if(targetType is QuantifiedType) {
 			if(isOptional && !targetType.isOptional)
 				return false
 		}
@@ -41,6 +40,25 @@ class QuantifiedType(val source: QuantifiedType, val baseType: Type, val hasDyna
 		if(!hasDynamicQuantity)
 			return super.getValueType(linter)
 		return baseType
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if(other !is QuantifiedType)
+			return false
+		if(baseType != other.baseType)
+			return false
+		if(hasDynamicQuantity != other.hasDynamicQuantity)
+			return false
+		if(isOptional != other.isOptional)
+			return false
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = baseType.hashCode()
+		result = 31 * result + hasDynamicQuantity.hashCode()
+		result = 31 * result + isOptional.hashCode()
+		return result
 	}
 
 	override fun toString(): String {

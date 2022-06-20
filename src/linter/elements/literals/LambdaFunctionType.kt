@@ -27,15 +27,14 @@ class LambdaFunctionType(val source: ASTLambdaType, val parameters: List<Type>, 
 			return false
 		if(parameters.size != other.parameters.size)
 			return false
-		for(i in 0..parameters.size)
+		for(i in parameters.indices)
 			if(parameters[i] != other.parameters[i])
 				return false
 		return true
 	}
 
 	override fun hashCode(): Int {
-		var result = source.hashCode()
-		result = 31 * result + parameters.hashCode()
+		var result = parameters.hashCode()
 		result = 31 * result + (returnType?.hashCode() ?: 0)
 		return result
 	}

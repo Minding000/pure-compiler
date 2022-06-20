@@ -26,7 +26,7 @@ class FunctionCall(override val source: FunctionCall, val context: Value?, val n
 			else
 				type = definition.returnType
 		} else {
-			val initializer = initializerType.scope.resolveInitializer(variation)
+			val initializer = initializerType.scope.resolveInitializer(parameters)
 			if(initializer == null)
 				linter.messages.add(Message("${source.getStartString()}: Initializer '$name($variation)' hasn't been declared yet.", Message.Type.ERROR))
 			else

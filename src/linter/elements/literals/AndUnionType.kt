@@ -25,6 +25,21 @@ class AndUnionType(val source: UnionType, val types: List<Type>): Type() {
 		return false
 	}
 
+	override fun equals(other: Any?): Boolean {
+		if(other !is AndUnionType)
+			return false
+		if(types.size != other.types.size)
+			return false
+		for(type in types)
+			if(!other.types.contains(type))
+				return false
+		return true
+	}
+
+	override fun hashCode(): Int {
+		return types.hashCode()
+	}
+
 	override fun toString(): String {
 		return types.joinToString(" & ")
 	}

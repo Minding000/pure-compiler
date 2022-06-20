@@ -6,16 +6,18 @@ import linter.elements.definitions.InitializerDefinition
 import linter.elements.definitions.OperatorDefinition
 import linter.elements.literals.SimpleType
 import linter.elements.values.TypeDefinition
+import linter.elements.values.Value
 import linter.elements.values.VariableValueDeclaration
 import linter.messages.Message
+import java.util.*
 import kotlin.collections.HashMap
 
-class TypeScope(val parentScope: MutableScope, val superScope: InterfaceScope?): MutableScope() {
+class TypeScope(private val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
 	var instanceConstant: VariableValueDeclaration? = null
 	var typeDefinition: TypeDefinition? = null
 	private val declaredTypes = HashMap<String, TypeDefinition>()
 	private val declaredValues = HashMap<String, VariableValueDeclaration>()
-	private val initializers = HashMap<String, InitializerDefinition>()
+	private val initializers = LinkedList<InitializerDefinition>()
 	private val functions = HashMap<String, HashMap<String, FunctionDefinition>>()
 	private val operators = HashMap<String, HashMap<String, OperatorDefinition>>()
 
@@ -28,14 +30,26 @@ class TypeScope(val parentScope: MutableScope, val superScope: InterfaceScope?):
 	}
 
 	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
-		val previousDeclaration = initializers.putIfAbsent(initializer.variation, initializer)
-		if(previousDeclaration == null)
+		var previousDeclaration: InitializerDefinition? = null
+		initializerIteration@for(declaredInitializer in initializers) {
+			if(declaredInitializer.parameters.size != initializer.parameters.size)
+				continue
+			for(i in initializer.parameters.indices) {
+				if(declaredInitializer.parameters[i].type != initializer.parameters[i].type)
+					continue@initializerIteration
+			}
+			previousDeclaration = declaredInitializer
+			break
+		}
+		if(previousDeclaration == null) {
+			initializers.add(initializer)
 			linter.messages.add(Message(
 				"${initializer.source.getStartString()}: Declaration of initializer '${typeDefinition?.name}(${initializer.variation})'.", Message.Type.DEBUG))
-		else
+		} else {
 			linter.messages.add(Message(
 				"${initializer.source.getStartString()}: Redeclaration of initializer '${typeDefinition?.name}(${initializer.variation})'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+		}
 	}
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {
@@ -62,8 +76,17 @@ class TypeScope(val parentScope: MutableScope, val superScope: InterfaceScope?):
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
 	}
 
-	fun resolveInitializer(variation: String): InitializerDefinition? {
-		return initializers[variation]
+	fun resolveInitializer(suppliedValues: List<Value>): InitializerDefinition? {
+		initializerIteration@for(initializer in initializers) {
+			if(initializer.parameters.size != suppliedValues.size)
+				continue
+			for(i in suppliedValues.indices) {
+				if(suppliedValues[i].type?.let { initializer.parameters[i].type?.accepts(it) } == false)
+					continue@initializerIteration
+			}
+			return initializer
+		}
+		return null
 	}
 
 	override fun resolveType(name: String): TypeDefinition? {

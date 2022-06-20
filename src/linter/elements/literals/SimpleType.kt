@@ -21,7 +21,7 @@ class SimpleType(val source: Element, val genericTypes: List<Type>, val name: St
 		}
 	}
 
-	override fun linkReferences(linter: Linter, scope: Scope) {
+	override fun linkTypes(linter: Linter, scope: Scope) {
 		definition = scope.resolveType(name)
 		if(definition == null)
 			linter.messages.add(Message("${source.getStartString()}: Type '$name' hasn't been declared yet.", Message.Type.ERROR))
@@ -35,19 +35,6 @@ class SimpleType(val source: Element, val genericTypes: List<Type>, val name: St
 		if(targetType !is SimpleType)
 			return targetType.accepts(this)
 		return equals(targetType)
-	}
-
-	override fun equals(other: Any?): Boolean {
-		if(other !is SimpleType)
-			return false
-		if(name != other.name)
-			return false
-		if(genericTypes.size != other.genericTypes.size)
-			return false
-		for(i in 0..genericTypes.size)
-			if(genericTypes[i] == other.genericTypes[i])
-				return false
-		return true
 	}
 
 	override fun getKeyType(linter: Linter): Type? {
@@ -66,10 +53,22 @@ class SimpleType(val source: Element, val genericTypes: List<Type>, val name: St
 		return genericTypes.last()
 	}
 
+	override fun equals(other: Any?): Boolean {
+		if(other !is SimpleType)
+			return false
+		if(definition != other.definition)
+			return false
+		if(genericTypes.size != other.genericTypes.size)
+			return false
+		for(i in genericTypes.indices)
+			if(genericTypes[i] == other.genericTypes[i])
+				return false
+		return true
+	}
+
 	override fun hashCode(): Int {
-		var result = source.hashCode()
-		result = 31 * result + genericTypes.hashCode()
-		result = 31 * result + name.hashCode()
+		var result = genericTypes.hashCode()
+		result = 31 * result + (definition?.hashCode() ?: 0)
 		return result
 	}
 

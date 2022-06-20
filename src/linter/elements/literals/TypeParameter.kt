@@ -1,8 +1,8 @@
 package linter.elements.literals
 
-import parsing.ast.definitions.TypeParameter
+import parsing.ast.definitions.TypeParameter as ASTTypeParameter
 
-class TypeParameter(val source: TypeParameter, val mode: Mode, val baseType: Type): Type() {
+class TypeParameter(val source: ASTTypeParameter, val mode: Mode, val baseType: Type): Type() {
 
 	init {
 		units.add(baseType)
@@ -25,6 +25,22 @@ class TypeParameter(val source: TypeParameter, val mode: Mode, val baseType: Typ
 	enum class Mode {
 		PRODUCING, // effective input type: None
 		CONSUMING  // effective output type: Any
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if(other !is TypeParameter)
+			return false
+		if(baseType != other.baseType)
+			return false
+		if(mode != other.mode)
+			return false
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = mode.hashCode()
+		result = 31 * result + baseType.hashCode()
+		return result
 	}
 
 	override fun toString(): String {
