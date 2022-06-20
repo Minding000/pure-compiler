@@ -3,6 +3,7 @@ package linter.scopes
 import linter.elements.definitions.FunctionDefinition
 import linter.elements.definitions.OperatorDefinition
 import linter.elements.values.TypeDefinition
+import linter.elements.values.Value
 import linter.elements.values.VariableValueDeclaration
 import java.util.*
 
@@ -27,18 +28,18 @@ class InterfaceScope: Scope() {
 		return null
 	}
 
-	override fun resolveFunction(name: String, variation: String): FunctionDefinition? {
+	override fun resolveFunction(name: String, suppliedValues: List<Value>): FunctionDefinition? {
 		for(scope in scopes) {
-			val declaration = scope.resolveFunction(name, variation)
+			val declaration = scope.resolveFunction(name, suppliedValues)
 			if(declaration != null)
 				return declaration
 		}
 		return null
 	}
 
-	override fun resolveOperator(name: String, variation: String): OperatorDefinition? {
+	override fun resolveOperator(name: String, suppliedValues: List<Value>): OperatorDefinition? {
 		for(scope in scopes) {
-			val declaration = scope.resolveOperator(name, variation)
+			val declaration = scope.resolveOperator(name, suppliedValues)
 			if(declaration != null)
 				return declaration
 		}

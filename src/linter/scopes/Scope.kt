@@ -3,6 +3,7 @@ package linter.scopes
 import linter.elements.definitions.FunctionDefinition
 import linter.elements.definitions.OperatorDefinition
 import linter.elements.values.TypeDefinition
+import linter.elements.values.Value
 import linter.elements.values.VariableValueDeclaration
 
 abstract class Scope {
@@ -11,7 +12,10 @@ abstract class Scope {
 
 	abstract fun resolveReference(name: String): VariableValueDeclaration?
 
-	abstract fun resolveFunction(name: String, variation: String): FunctionDefinition?
+	abstract fun resolveFunction(name: String, suppliedValues: List<Value>): FunctionDefinition?
 
-	abstract fun resolveOperator(name: String, variation: String): OperatorDefinition?
+	abstract fun resolveOperator(name: String, suppliedValues: List<Value>): OperatorDefinition?
+
+	fun resolveOperator(name: String, suppliedValue: Value): OperatorDefinition?
+		= resolveOperator(name, listOf(suppliedValue))
 }

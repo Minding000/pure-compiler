@@ -8,6 +8,8 @@ import linter.scopes.Scope
 import parsing.ast.control_flow.FunctionCall
 
 class FunctionCall(override val source: FunctionCall, val context: Value?, val name: String, val parameters: List<Value>): Value(source) {
+	val variation: String
+		get() = parameters.joinToString { parameter -> parameter.type.toString()}
 
 	init {
 		if(context != null)
@@ -17,10 +19,9 @@ class FunctionCall(override val source: FunctionCall, val context: Value?, val n
 
 	override fun linkReferences(linter: Linter, scope: Scope) {
 		super.linkReferences(linter, scope)
-		val variation = parameters.joinToString { parameter -> parameter.type.toString()}
 		val initializerType = scope.resolveType(name)
 		if(initializerType == null) {
-			val definition = scope.resolveFunction(name, variation)
+			val definition = scope.resolveFunction(name, parameters)
 			if(definition == null)
 				linter.messages.add(Message("${source.getStartString()}: Function '$name($variation)' hasn't been declared yet.", Message.Type.ERROR))
 			else

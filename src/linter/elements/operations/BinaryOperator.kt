@@ -15,6 +15,6 @@ class BinaryOperator(override val source: BinaryOperator, val left: Value, val r
 
 	override fun linkReferences(linter: Linter, scope: Scope) {
 		super.linkReferences(linter, scope)
-		type = left.type?.scope?.resolveOperator(operator, right.type.toString())?.returnType
+		type = left.type?.scope?.resolveOperator(operator, right)?.returnType
 	}
 }

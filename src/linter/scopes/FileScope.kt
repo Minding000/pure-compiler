@@ -4,6 +4,7 @@ import linter.Linter
 import linter.elements.definitions.FunctionDefinition
 import linter.elements.definitions.OperatorDefinition
 import linter.elements.values.TypeDefinition
+import linter.elements.values.Value
 import linter.elements.values.VariableValueDeclaration
 import linter.messages.Message
 import kotlin.collections.HashMap
@@ -47,11 +48,11 @@ class FileScope: MutableScope() {
 		return declaredValues[name]
 	}
 
-	override fun resolveFunction(name: String, variation: String): FunctionDefinition? {
+	override fun resolveFunction(name: String, suppliedValues: List<Value>): FunctionDefinition? {
 		return null
 	}
 
-	override fun resolveOperator(name: String, variation: String): OperatorDefinition? {
+	override fun resolveOperator(name: String, suppliedValues: List<Value>): OperatorDefinition? {
 		return null
 	}
 }

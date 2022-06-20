@@ -4,6 +4,7 @@ import linter.Linter
 import linter.elements.definitions.FunctionDefinition
 import linter.elements.definitions.OperatorDefinition
 import linter.elements.values.TypeDefinition
+import linter.elements.values.Value
 import linter.elements.values.VariableValueDeclaration
 import linter.messages.Message
 import kotlin.collections.HashMap
@@ -42,11 +43,11 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 		return declaredValues[name] ?: parentScope.resolveReference(name)
 	}
 
-	override fun resolveFunction(name: String, variation: String): FunctionDefinition? {
-		return parentScope.resolveFunction(name, variation)
+	override fun resolveFunction(name: String, suppliedValues: List<Value>): FunctionDefinition? {
+		return parentScope.resolveFunction(name, suppliedValues)
 	}
 
-	override fun resolveOperator(name: String, variation: String): OperatorDefinition? {
-		return parentScope.resolveOperator(name, variation)
+	override fun resolveOperator(name: String, suppliedValues: List<Value>): OperatorDefinition? {
+		return parentScope.resolveOperator(name, suppliedValues)
 	}
 }

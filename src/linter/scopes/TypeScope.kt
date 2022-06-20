@@ -18,8 +18,8 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	private val declaredTypes = HashMap<String, TypeDefinition>()
 	private val declaredValues = HashMap<String, VariableValueDeclaration>()
 	private val initializers = LinkedList<InitializerDefinition>()
-	private val functions = HashMap<String, HashMap<String, FunctionDefinition>>()
-	private val operators = HashMap<String, HashMap<String, OperatorDefinition>>()
+	private val functions = HashMap<String, LinkedList<FunctionDefinition>>()
+	private val operators = HashMap<String, LinkedList<OperatorDefinition>>()
 
 	companion object {
 		const val SELF_REFERENCE = "this"
@@ -128,38 +128,82 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	override fun declareFunction(linter: Linter, function: FunctionDefinition) {
-		val signatures = functions.getOrPut(function.name) { HashMap() }
-		val previousDeclaration = signatures.putIfAbsent(function.variation, function)
-		if(previousDeclaration == null)
+		val definitions = functions.getOrPut(function.name) { LinkedList() }
+		var previousDeclaration: FunctionDefinition? = null
+		functionIteration@for(declaredFunction in definitions) {
+			if(declaredFunction.parameters.size != function.parameters.size)
+				continue
+			for(i in function.parameters.indices) {
+				if(declaredFunction.parameters[i].type != function.parameters[i].type)
+					continue@functionIteration
+			}
+			previousDeclaration = declaredFunction
+			break
+		}
+		if(previousDeclaration == null) {
+			definitions.add(function)
 			linter.messages.add(Message(
 				"${function.source.getStartString()}: Declaration of function '$function'.", Message.Type.DEBUG))
-		else
+		} else {
 			linter.messages.add(Message(
 				"${function.source.getStartString()}: Redeclaration of function '$function'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+		}
 	}
 
 	override fun declareOperator(linter: Linter, operator: OperatorDefinition) {
-		val signatures = operators.getOrPut(operator.name) { HashMap() }
-		val previousDeclaration = signatures.putIfAbsent(operator.variation, operator)
-		if(previousDeclaration == null)
+		val definitions = operators.getOrPut(operator.name) { LinkedList() } //TODO use equality and assignability checks for index operators (i.e. their parameters) as well
+		var previousDeclaration: OperatorDefinition? = null
+		operatorIteration@for(declaredOperator in definitions) {
+			if(declaredOperator.parameters.size != operator.parameters.size)
+				continue
+			for(i in operator.parameters.indices) {
+				if(declaredOperator.parameters[i].type != operator.parameters[i].type)
+					continue@operatorIteration
+			}
+			previousDeclaration = declaredOperator
+			break
+		}
+		if(previousDeclaration == null) {
+			definitions.add(operator)
 			linter.messages.add(Message(
 				"${operator.source.getStartString()}: Declaration of operator '$operator'.", Message.Type.DEBUG))
-		else
+		} else {
 			linter.messages.add(Message(
-			"${operator.source.getStartString()}: Redeclaration of operator '$operator'," +
-					" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+				"${operator.source.getStartString()}: Redeclaration of operator '$operator'," +
+						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+		}
 	}
 
-	override fun resolveFunction(name: String, variation: String): FunctionDefinition? {
-		return functions[name]?.get(variation)
-			?: superScope?.resolveFunction(name, variation)
-			?: parentScope.resolveFunction(name, variation)
+	override fun resolveFunction(name: String, suppliedValues: List<Value>): FunctionDefinition? {
+		functions[name]?.let { definitions ->
+			functionIteration@for(function in definitions) {
+				if(function.parameters.size != suppliedValues.size)
+					continue
+				for(i in suppliedValues.indices) {
+					if(suppliedValues[i].type?.let { function.parameters[i].type?.accepts(it) } == false)
+						continue@functionIteration
+				}
+				return function
+			}
+		}
+		return superScope?.resolveFunction(name, suppliedValues)
+			?: parentScope.resolveFunction(name, suppliedValues)
 	}
 
-	override fun resolveOperator(name: String, variation: String): OperatorDefinition? {
-		return operators[name]?.get(variation)
-			?: superScope?.resolveOperator(name, variation)
-			?: parentScope.resolveOperator(name, variation)
+	override fun resolveOperator(name: String, suppliedValues: List<Value>): OperatorDefinition? {
+		operators[name]?.let { definitions ->
+			operatorIteration@for(operator in definitions) {
+				if(operator.parameters.size != suppliedValues.size)
+					continue
+				for(i in suppliedValues.indices) {
+					if(suppliedValues[i].type?.let { operator.parameters[i].type?.accepts(it) } == false)
+						continue@operatorIteration
+				}
+				return operator
+			}
+		}
+		return superScope?.resolveOperator(name, suppliedValues)
+			?: parentScope.resolveOperator(name, suppliedValues)
 	}
 }
