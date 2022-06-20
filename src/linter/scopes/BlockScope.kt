@@ -29,7 +29,7 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 	}
 
 	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
-		val previousDeclaration = parentScope.resolveReference(value.name) ?: declaredValues.putIfAbsent(value.name, value)
+		val previousDeclaration = parentScope.resolveValue(value.name) ?: declaredValues.putIfAbsent(value.name, value)
 		if(previousDeclaration == null)
 			linter.messages.add(Message(
 				"${value.source.getStartString()}: Declaration of value '${value.name}'.", Message.Type.DEBUG))
@@ -39,8 +39,8 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
 	}
 
-	override fun resolveReference(name: String): VariableValueDeclaration? {
-		return declaredValues[name] ?: parentScope.resolveReference(name)
+	override fun resolveValue(name: String): VariableValueDeclaration? {
+		return declaredValues[name] ?: parentScope.resolveValue(name)
 	}
 
 	override fun resolveFunction(name: String, suppliedValues: List<Value>): FunctionDefinition? {

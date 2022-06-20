@@ -2,25 +2,28 @@ package parsing.tokenizer
 
 enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 	OPERATOR(
+		// Returns boolean
 		WordAtom.NOT,
 		WordAtom.AND,
 		WordAtom.OR,
-		WordAtom.INCREMENT,
-		WordAtom.DECREMENT,
-		WordAtom.PLUS,
-		WordAtom.MINUS,
-		WordAtom.STAR,
-		WordAtom.SLASH,
-		WordAtom.ADD,
-		WordAtom.SUBTRACT,
-		WordAtom.MULTIPLY,
-		WordAtom.DIVIDE,
 		WordAtom.EQUALS,
 		WordAtom.NOT_EQUALS,
 		WordAtom.GREATER_OR_EQUALS,
 		WordAtom.LOWER_OR_EQUALS,
 		WordAtom.GREATER,
-		WordAtom.LOWER),
+		WordAtom.LOWER,
+		// Returns nothing
+		WordAtom.INCREMENT,
+		WordAtom.DECREMENT,
+		WordAtom.ADD,
+		WordAtom.SUBTRACT,
+		WordAtom.MULTIPLY,
+		WordAtom.DIVIDE,
+		// Returns input type
+		WordAtom.PLUS,
+		WordAtom.MINUS,
+		WordAtom.STAR,
+		WordAtom.SLASH,),
 	UNARY_OPERATOR(
 		WordAtom.NOT,
 		WordAtom.PLUS,

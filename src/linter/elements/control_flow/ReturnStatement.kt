@@ -25,7 +25,7 @@ class ReturnStatement(override val source: ReturnStatement, val value: Value?): 
 		if(value != null) {
 			value.validate(linter)
 			if(type == null)
-				linter.messages.add(Message("${source.getStartString()}: Failed to resolve type of value '${this.javaClass.name}'.",
+				linter.messages.add(Message("${source.getStartString()}: Failed to resolve type of value '${source.getValue()}'.",
 					Message.Type.ERROR))
 		}
 	}

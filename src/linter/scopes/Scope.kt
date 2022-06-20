@@ -10,7 +10,7 @@ abstract class Scope {
 
 	abstract fun resolveType(name: String): TypeDefinition?
 
-	abstract fun resolveReference(name: String): VariableValueDeclaration?
+	abstract fun resolveValue(name: String): VariableValueDeclaration?
 
 	abstract fun resolveFunction(name: String, suppliedValues: List<Value>): FunctionDefinition?
 

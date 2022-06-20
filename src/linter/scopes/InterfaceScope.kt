@@ -19,9 +19,9 @@ class InterfaceScope: Scope() {
 		return null
 	}
 
-	override fun resolveReference(name: String): VariableValueDeclaration? {
+	override fun resolveValue(name: String): VariableValueDeclaration? {
 		for(scope in scopes) {
-			val declaration = scope.resolveReference(name)
+			val declaration = scope.resolveValue(name)
 			if(declaration != null)
 				return declaration
 		}

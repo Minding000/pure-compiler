@@ -76,32 +76,13 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
 	}
 
-	fun resolveInitializer(suppliedValues: List<Value>): InitializerDefinition? {
-		initializerIteration@for(initializer in initializers) {
-			if(initializer.parameters.size != suppliedValues.size)
-				continue
-			for(i in suppliedValues.indices) {
-				if(suppliedValues[i].type?.let { initializer.parameters[i].type?.accepts(it) } == false)
-					continue@initializerIteration
-			}
-			return initializer
-		}
-		return null
-	}
-
-	override fun resolveType(name: String): TypeDefinition? {
-		return declaredTypes[name]
-			?: superScope?.resolveType(name)
-			?: parentScope.resolveType(name)
-	}
-
 	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
-		var previousDeclaration = parentScope.resolveReference(value.name)
+		var previousDeclaration = parentScope.resolveValue(value.name)
 		if(previousDeclaration != null) {
 			linter.messages.add(Message(
 				"${value.source.getStartString()}: '${value.name}' shadows a variable.", Message.Type.WARNING))
 		}
-		previousDeclaration = superScope?.resolveReference(value.name)
+		previousDeclaration = superScope?.resolveValue(value.name)
 		if(previousDeclaration != null) {
 			linter.messages.add(Message(
 				"${value.source.getStartString()}: Redeclaration of type '${value.name}'," +
@@ -117,14 +98,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			linter.messages.add(Message(
 			"${value.source.getStartString()}: Redeclaration of value '${value.name}'," +
 					" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
-	}
-
-	override fun resolveReference(name: String): VariableValueDeclaration? {
-		if(name == SELF_REFERENCE)
-			return instanceConstant
-		return declaredValues[name]
-			?: superScope?.resolveReference(name)
-			?: parentScope.resolveReference(name)
 	}
 
 	override fun declareFunction(linter: Linter, function: FunctionDefinition) {
@@ -173,6 +146,33 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				"${operator.source.getStartString()}: Redeclaration of operator '$operator'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
 		}
+	}
+
+	override fun resolveValue(name: String): VariableValueDeclaration? {
+		if(name == SELF_REFERENCE)
+			return instanceConstant
+		return declaredValues[name]
+			?: superScope?.resolveValue(name)
+			?: parentScope.resolveValue(name)
+	}
+
+	override fun resolveType(name: String): TypeDefinition? {
+		return declaredTypes[name]
+			?: superScope?.resolveType(name)
+			?: parentScope.resolveType(name)
+	}
+
+	fun resolveInitializer(suppliedValues: List<Value>): InitializerDefinition? {
+		initializerIteration@for(initializer in initializers) {
+			if(initializer.parameters.size != suppliedValues.size)
+				continue
+			for(i in suppliedValues.indices) {
+				if(suppliedValues[i].type?.let { initializer.parameters[i].type?.accepts(it) } == false)
+					continue@initializerIteration
+			}
+			return initializer
+		}
+		return null
 	}
 
 	override fun resolveFunction(name: String, suppliedValues: List<Value>): FunctionDefinition? {

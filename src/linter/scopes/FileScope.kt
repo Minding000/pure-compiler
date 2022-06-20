@@ -44,7 +44,7 @@ class FileScope: MutableScope() {
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
 	}
 
-	override fun resolveReference(name: String): VariableValueDeclaration? {
+	override fun resolveValue(name: String): VariableValueDeclaration? {
 		return declaredValues[name]
 	}
 
