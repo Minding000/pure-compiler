@@ -2,6 +2,7 @@ package linter.scopes
 
 import linter.Linter
 import linter.elements.definitions.FunctionDefinition
+import linter.elements.definitions.IndexOperatorDefinition
 import linter.elements.definitions.OperatorDefinition
 import linter.elements.values.TypeDefinition
 import linter.elements.values.Value
@@ -48,6 +49,11 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 	}
 
 	override fun resolveOperator(name: String, suppliedValues: List<Value>): OperatorDefinition? {
-		return parentScope.resolveOperator(name, suppliedValues)
+		return null
+	}
+
+	override fun resolveIndexOperator(name: String, suppliedIndices: List<Value>, suppliedValues: List<Value>):
+			IndexOperatorDefinition? {
+		return null
 	}
 }

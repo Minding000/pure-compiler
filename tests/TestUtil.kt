@@ -71,17 +71,32 @@ object TestUtil {
         assertContains(actualMessage, expectedMessage)
     }
 
-    fun assertLinterMessage(expectedType: Message.Type, expectedMessage: String, sourceCode: String) {
+    fun assertLinterMessageEmitted(expectedType: Message.Type, expectedMessage: String, sourceCode: String) {
         val linter = getLinter(sourceCode)
         for(message in linter.messages) {
             if(message.description.contains(expectedMessage)) {
-                if(message.type != expectedType)
+                if(message.type != expectedType) {
+                    linter.printMessages()
                     throw AssertionError("Linter message '$expectedMessage' has type '${message.type}' instead of expected type '$expectedType'.")
+                }
                 return
             }
         }
         linter.printMessages()
         throw AssertionError("Expected linter message '$expectedMessage' hasn't been emitted.")
+    }
+
+    fun assertLinterMessageNotEmitted(expectedType: Message.Type, expectedMessage: String, sourceCode: String) {
+        val linter = getLinter(sourceCode)
+        for(message in linter.messages) {
+            if(message.description.contains(expectedMessage)) {
+                linter.printMessages()
+                if(message.type != expectedType)
+                    throw AssertionError("Linter message '$expectedMessage' has type '${message.type}' instead of expected type '$expectedType'.")
+                throw AssertionError("Unexpected linter message '$expectedMessage' has been emitted.")
+            }
+        }
+        return
     }
 
     private fun printDiffPosition(expected: String, actual: String) {

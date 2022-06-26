@@ -6,7 +6,10 @@ class OrUnionType(val source: UnionType, val types: List<Type>): Type() {
 
 	init {
 		units.addAll(types)
-		//TODO init scope to overlap of scopes
+		for(type in types) {
+			scope.addScope(type.scope)
+			//TODO remove members not shared by all types
+		}
 	}
 
 	override fun accepts(sourceType: Type): Boolean {

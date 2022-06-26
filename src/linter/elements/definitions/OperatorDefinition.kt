@@ -8,8 +8,8 @@ import linter.scopes.BlockScope
 import linter.scopes.Scope
 import parsing.ast.definitions.OperatorDefinition
 
-class OperatorDefinition(override val source: OperatorDefinition, name: String, val scope: BlockScope,
-						 val parameters: List<Parameter>, val body: Unit?, val returnType: Type?):
+open class OperatorDefinition(override val source: OperatorDefinition, name: String, val scope: BlockScope,
+							  val parameters: List<Parameter>, val body: Unit?, val returnType: Type?):
 	VariableValueDeclaration(source, name, returnType, true) {
 	val variation = parameters.joinToString { parameter -> parameter.type.toString() }
 

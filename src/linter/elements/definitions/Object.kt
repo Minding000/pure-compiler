@@ -12,6 +12,7 @@ class Object(override val source: ASTTypeDefinition, name: String, scope: TypeSc
 	val value = VariableValueDeclaration(source, name, SimpleType(this), true)
 
 	init {
+		units.add(value)
 		scope.instanceConstant = value
 	}
 }

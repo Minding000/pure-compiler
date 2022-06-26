@@ -14,7 +14,7 @@ internal class RedeclarationTest {
 				var car: Car
 				val car: Car
             """.trimIndent()
-		TestUtil.assertLinterMessage(Message.Type.ERROR, "Redeclaration of value 'car'", sourceCode)
+		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Redeclaration of value 'car'", sourceCode)
 	}
 
 	@Test
@@ -24,6 +24,6 @@ internal class RedeclarationTest {
 				class Animal {}
 				enum Animal {}
             """.trimIndent()
-		TestUtil.assertLinterMessage(Message.Type.ERROR, "Redeclaration of type 'Animal'", sourceCode)
+		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Redeclaration of type 'Animal'", sourceCode)
 	}
 }

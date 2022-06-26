@@ -17,7 +17,7 @@ class Program(val source: Program) {
 	}
 
 	/**
-	 * Links types from file references and type aliases.
+	 * Links type usages to their declaration.
 	 */
 	fun linkTypes(linter: Linter) {
 		for(file in files)
@@ -33,11 +33,11 @@ class Program(val source: Program) {
 	}
 
 	/**
-	 * Links type usages to the declaration of the type.
+	 * Links value usages to their declaration.
 	 */
-	fun linkReferences(linter: Linter) {
+	fun linkValues(linter: Linter) {
 		for(file in files)
-			file.linkReferences(linter)
+			file.linkValues(linter)
 	}
 
 	/**

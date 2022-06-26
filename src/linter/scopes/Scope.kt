@@ -1,6 +1,7 @@
 package linter.scopes
 
 import linter.elements.definitions.FunctionDefinition
+import linter.elements.definitions.IndexOperatorDefinition
 import linter.elements.definitions.OperatorDefinition
 import linter.elements.values.TypeDefinition
 import linter.elements.values.Value
@@ -18,4 +19,7 @@ abstract class Scope {
 
 	fun resolveOperator(name: String, suppliedValue: Value): OperatorDefinition?
 		= resolveOperator(name, listOf(suppliedValue))
+
+	abstract fun resolveIndexOperator(name: String, suppliedIndices: List<Value>, suppliedValues: List<Value>):
+			IndexOperatorDefinition?
 }

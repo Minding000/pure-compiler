@@ -2,6 +2,7 @@ package linter.elements.operations
 
 import linter.Linter
 import linter.elements.values.Value
+import linter.messages.Message
 import linter.scopes.Scope
 import parsing.ast.operations.BinaryOperator
 
@@ -15,8 +16,17 @@ class BinaryOperator(override val source: BinaryOperator, val left: Value, val r
 
 	override fun linkReferences(linter: Linter, scope: Scope) {
 		super.linkReferences(linter, scope)
-		//TODO get return type depending on operator type
-		// -> make operator an enum with return type property
-		type = left.type?.scope?.resolveOperator(operator, right)?.returnType
+		left.type?.let {
+			val operator = it.scope.resolveOperator(operator, right)
+			if(operator == null)
+				linter.messages.add(
+					Message(
+						"${source.getStartString()}: Operator '${this.operator}(${right.type})' hasn't been declared yet.",
+						Message.Type.ERROR
+					)
+				)
+			else
+				type = operator.returnType
+		}
 	}
 }

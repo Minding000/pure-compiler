@@ -15,6 +15,6 @@ internal class InvalidAssignmentTest {
 				b = a
             """.trimIndent()
 		TestUtil.includeRequiredModules = true
-		TestUtil.assertLinterMessage(Message.Type.ERROR, "Type 'Int' is not assignable to type 'String'.", sourceCode)
+		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Type 'Int' is not assignable to type 'String'.", sourceCode)
 	}
 }

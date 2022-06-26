@@ -1,6 +1,7 @@
 package parsing.ast.definitions
 
 import linter.Linter
+import linter.elements.definitions.IndexOperatorDefinition
 import linter.elements.definitions.OperatorDefinition
 import linter.scopes.BlockScope
 import linter.scopes.MutableScope
@@ -12,7 +13,7 @@ import parsing.ast.general.TypeElement
 import java.util.*
 
 class OperatorDefinition(private val operator: Operator, private val parameterList: ParameterList?,
-						 private val body: StatementSection?, private var returnType: TypeElement?):
+							  private val body: StatementSection?, private var returnType: TypeElement?):
 	Element(operator.start, body?.end ?: returnType?.end ?: parameterList?.end ?: operator.end) {
 	lateinit var parent: OperatorSection
 
@@ -24,12 +25,16 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 			for(parameter in parameterList.parameters)
 				parameters.add(parameter.concretize(linter, operatorScope))
 		}
-		val name = if(operator is IndexOperator)
-			operator.getSignature()
-		else
-			operator.getValue()
-		val operatorDefinition = OperatorDefinition(this, name, operatorScope, parameters,
-			body?.concretize(linter, operatorScope), returnType?.concretize(linter, operatorScope))
+		val operatorDefinition = if(operator is IndexOperator) {
+			val indices = LinkedList<Parameter>()
+			for(index in operator.indices)
+				indices.add(index.concretize(linter, operatorScope))
+			IndexOperatorDefinition(this, operatorScope, indices, parameters,
+				body?.concretize(linter, operatorScope), returnType?.concretize(linter, operatorScope))
+		} else {
+			OperatorDefinition(this, operator.getValue(), operatorScope, parameters,
+				body?.concretize(linter, operatorScope), returnType?.concretize(linter, operatorScope))
+		}
 		scope.declareOperator(linter, operatorDefinition)
 		return operatorDefinition
 	}

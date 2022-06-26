@@ -14,17 +14,26 @@ class SimpleType(val source: Element, val genericTypes: List<Type>, val name: St
 		this.definition = definition
 	}
 
+	constructor(linter: Linter, definition: TypeDefinition): this(definition.source, LinkedList(), definition.name) {
+		this.definition = definition
+		if(linter.hasCompleted(Linter.Phase.TYPE_LINKING))
+			scope.addScope(definition.scope)
+	}
+
 	init {
 		units.addAll(genericTypes)
-		if(definition != null) {
-			//TODO init scope
-		}
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		definition = scope.resolveType(name)
-		if(definition == null)
-			linter.messages.add(Message("${source.getStartString()}: Type '$name' hasn't been declared yet.", Message.Type.ERROR))
+		if(definition == null) {
+			definition = scope.resolveType(name)
+			if(definition == null)
+				linter.messages.add(Message("${source.getStartString()}: Type '$name' hasn't been declared yet.", Message.Type.ERROR))
+		}
+		definition?.let {
+			this.scope.addScope(it.scope)
+			//TODO resolve generic types
+		}
 	}
 
 	override fun accepts(sourceType: Type): Boolean {

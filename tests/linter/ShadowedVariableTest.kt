@@ -16,6 +16,6 @@ internal class ShadowedVariableTest {
 					const defaultHandler: Handler
 				}
             """.trimIndent()
-		TestUtil.assertLinterMessage(Message.Type.WARNING, "'defaultHandler' shadows a variable.", sourceCode)
+		TestUtil.assertLinterMessageEmitted(Message.Type.WARNING, "'defaultHandler' shadows a variable.", sourceCode)
 	}
 }

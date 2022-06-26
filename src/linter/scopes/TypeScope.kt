@@ -2,6 +2,7 @@ package linter.scopes
 
 import linter.Linter
 import linter.elements.definitions.FunctionDefinition
+import linter.elements.definitions.IndexOperatorDefinition
 import linter.elements.definitions.InitializerDefinition
 import linter.elements.definitions.OperatorDefinition
 import linter.elements.literals.SimpleType
@@ -19,7 +20,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	private val declaredValues = HashMap<String, VariableValueDeclaration>()
 	private val initializers = LinkedList<InitializerDefinition>()
 	private val functions = HashMap<String, LinkedList<FunctionDefinition>>()
-	private val operators = HashMap<String, LinkedList<OperatorDefinition>>()
+	private val operators = LinkedList<OperatorDefinition>()
 
 	companion object {
 		const val SELF_REFERENCE = "this"
@@ -125,9 +126,20 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	override fun declareOperator(linter: Linter, operator: OperatorDefinition) {
-		val definitions = operators.getOrPut(operator.name) { LinkedList() } //TODO use equality and assignability checks for index operators (i.e. their parameters) as well
 		var previousDeclaration: OperatorDefinition? = null
-		operatorIteration@for(declaredOperator in definitions) {
+		operatorIteration@for(declaredOperator in operators) {
+			if(declaredOperator.name != operator.name)
+				continue
+			if(declaredOperator is IndexOperatorDefinition) {
+				if(operator !is IndexOperatorDefinition)
+					continue
+				if(declaredOperator.indices.size != operator.indices.size)
+					continue
+				for(i in operator.indices.indices) {
+					if(declaredOperator.indices[i].type != operator.indices[i].type)
+						continue@operatorIteration
+				}
+			}
 			if(declaredOperator.parameters.size != operator.parameters.size)
 				continue
 			for(i in operator.parameters.indices) {
@@ -138,7 +150,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			break
 		}
 		if(previousDeclaration == null) {
-			definitions.add(operator)
+			operators.add(operator)
 			linter.messages.add(Message(
 				"${operator.source.getStartString()}: Declaration of operator '$operator'.", Message.Type.DEBUG))
 		} else {
@@ -191,19 +203,45 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			?: parentScope.resolveFunction(name, suppliedValues)
 	}
 
-	override fun resolveOperator(name: String, suppliedValues: List<Value>): OperatorDefinition? {
-		operators[name]?.let { definitions ->
-			operatorIteration@for(operator in definitions) {
-				if(operator.parameters.size != suppliedValues.size)
-					continue
-				for(i in suppliedValues.indices) {
-					if(suppliedValues[i].type?.let { operator.parameters[i].type?.accepts(it) } == false)
-						continue@operatorIteration
-				}
-				return operator
+	override fun resolveOperator(name: String, suppliedValues: List<Value>):
+			OperatorDefinition? {
+		operatorIteration@for(operator in operators) {
+			if(operator.name != name)
+				continue
+			if(operator.parameters.size != suppliedValues.size)
+				continue
+			for(i in suppliedValues.indices) {
+				if(suppliedValues[i].type?.let { operator.parameters[i].type?.accepts(it) } == false)
+					continue@operatorIteration
 			}
+			return operator
 		}
 		return superScope?.resolveOperator(name, suppliedValues)
 			?: parentScope.resolveOperator(name, suppliedValues)
+	}
+
+	override fun resolveIndexOperator(name: String, suppliedIndices: List<Value>, suppliedValues: List<Value>):
+			IndexOperatorDefinition? {
+		operatorIteration@for(operator in operators) {
+			if(operator.name != name)
+				continue
+			if(operator !is IndexOperatorDefinition)
+				continue
+			if(operator.indices.size != suppliedIndices.size)
+				continue
+			for(i in suppliedIndices.indices) {
+				if(suppliedIndices[i].type?.let { operator.indices[i].type?.accepts(it) } == false)
+					continue@operatorIteration
+			}
+			if(operator.parameters.size != suppliedValues.size)
+				continue
+			for(i in suppliedValues.indices) {
+				if(suppliedValues[i].type?.let { operator.parameters[i].type?.accepts(it) } == false)
+					continue@operatorIteration
+			}
+			return operator
+		}
+		return superScope?.resolveIndexOperator(name, suppliedIndices, suppliedValues)
+			?: parentScope.resolveIndexOperator(name, suppliedIndices, suppliedValues)
 	}
 }

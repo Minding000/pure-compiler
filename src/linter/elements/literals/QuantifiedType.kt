@@ -8,6 +8,9 @@ class QuantifiedType(val source: ASTQuantifiedType, val baseType: Type, val hasD
 
 	init {
 		units.add(baseType)
+		//TODO mind optionality as well
+		if(!hasDynamicQuantity)
+			scope.addScope(baseType.scope)
 	}
 
 	override fun accepts(sourceType: Type): Boolean {

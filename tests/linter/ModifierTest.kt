@@ -12,7 +12,7 @@ internal class ModifierTest {
 			"""
 				override class House {}
             """.trimIndent()
-		TestUtil.assertLinterMessage(Message.Type.WARNING, "Modifier 'override' is not allowed here", sourceCode)
+		TestUtil.assertLinterMessageEmitted(Message.Type.WARNING, "Modifier 'override' is not allowed here", sourceCode)
 	}
 
 	@Test
@@ -21,6 +21,6 @@ internal class ModifierTest {
 			"""
 				native native class Memory {}
             """.trimIndent()
-		TestUtil.assertLinterMessage(Message.Type.WARNING, "Duplicate 'native' modifier", sourceCode)
+		TestUtil.assertLinterMessageEmitted(Message.Type.WARNING, "Duplicate 'native' modifier", sourceCode)
 	}
 }

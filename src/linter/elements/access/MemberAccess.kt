@@ -13,13 +13,6 @@ class MemberAccess(override val source: MemberAccess, val target: Value, val mem
 		units.add(member)
 	}
 
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		target.linkTypes(linter, scope)
-		target.type?.let {
-			member.linkTypes(linter, it.scope)
-		}
-	}
-
 	override fun linkReferences(linter: Linter, scope: Scope) {
 		target.linkReferences(linter, scope)
 		target.type?.let {

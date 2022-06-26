@@ -7,7 +7,8 @@ class AndUnionType(val source: UnionType, val types: List<Type>): Type() {
 	init {
 		units.addAll(types)
 		for(type in types) {
-			//TODO init scope
+			scope.addScope(type.scope)
+			//TODO remove members not shared by all types
 		}
 	}
 

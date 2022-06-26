@@ -31,7 +31,7 @@ class FunctionCall(override val source: FunctionCall, val context: Value?, val n
 			if(initializer == null)
 				linter.messages.add(Message("${source.getStartString()}: Initializer '$name($variation)' hasn't been declared yet.", Message.Type.ERROR))
 			else
-				type = SimpleType(initializerType)
+				type = SimpleType(linter, initializerType)
 		}
 	}
 }
