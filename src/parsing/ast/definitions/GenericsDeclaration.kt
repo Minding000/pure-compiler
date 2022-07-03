@@ -10,12 +10,12 @@ import util.toLines
 
 class GenericsDeclaration(start: Position, private val elements: List<GenericsListElement>): MetaElement(start, elements.last().end) {
 
-    override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
-        for(element in elements)
-            element.concretize(linter, scope, units)
-    }
+	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
+		for(element in elements)
+			element.concretize(linter, scope, units)
+	}
 
-    override fun toString(): String {
-        return "GenericsDeclaration {${elements.toLines().indent()}\n}"
-    }
+	override fun toString(): String {
+		return "GenericsDeclaration {${elements.toLines().indent()}\n}"
+	}
 }

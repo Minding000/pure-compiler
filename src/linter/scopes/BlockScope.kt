@@ -4,8 +4,8 @@ import linter.Linter
 import linter.elements.definitions.FunctionDefinition
 import linter.elements.definitions.IndexOperatorDefinition
 import linter.elements.definitions.OperatorDefinition
+import linter.elements.literals.Type
 import linter.elements.values.TypeDefinition
-import linter.elements.values.Value
 import linter.elements.values.VariableValueDeclaration
 import linter.messages.Message
 import kotlin.collections.HashMap
@@ -44,15 +44,15 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 		return declaredValues[name] ?: parentScope.resolveValue(name)
 	}
 
-	override fun resolveFunction(name: String, suppliedValues: List<Value>): FunctionDefinition? {
-		return parentScope.resolveFunction(name, suppliedValues)
+	override fun resolveFunction(name: String, suppliedTypes: List<Type?>): FunctionDefinition? {
+		return parentScope.resolveFunction(name, suppliedTypes)
 	}
 
-	override fun resolveOperator(name: String, suppliedValues: List<Value>): OperatorDefinition? {
+	override fun resolveOperator(name: String, suppliedTypes: List<Type?>): OperatorDefinition? {
 		return null
 	}
 
-	override fun resolveIndexOperator(name: String, suppliedIndices: List<Value>, suppliedValues: List<Value>):
+	override fun resolveIndexOperator(name: String, suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
 			IndexOperatorDefinition? {
 		return null
 	}

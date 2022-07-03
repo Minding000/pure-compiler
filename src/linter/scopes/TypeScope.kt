@@ -6,6 +6,7 @@ import linter.elements.definitions.IndexOperatorDefinition
 import linter.elements.definitions.InitializerDefinition
 import linter.elements.definitions.OperatorDefinition
 import linter.elements.literals.SimpleType
+import linter.elements.literals.Type
 import linter.elements.values.TypeDefinition
 import linter.elements.values.Value
 import linter.elements.values.VariableValueDeclaration
@@ -16,11 +17,11 @@ import kotlin.collections.HashMap
 class TypeScope(private val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
 	var instanceConstant: VariableValueDeclaration? = null
 	var typeDefinition: TypeDefinition? = null
-	private val declaredTypes = HashMap<String, TypeDefinition>()
-	private val declaredValues = HashMap<String, VariableValueDeclaration>()
-	private val initializers = LinkedList<InitializerDefinition>()
-	private val functions = HashMap<String, LinkedList<FunctionDefinition>>()
-	private val operators = LinkedList<OperatorDefinition>()
+	val types = HashMap<String, TypeDefinition>()
+	val values = HashMap<String, VariableValueDeclaration>()
+	val initializers = LinkedList<InitializerDefinition>()
+	val functions = HashMap<String, LinkedList<FunctionDefinition>>()
+	val operators = LinkedList<OperatorDefinition>()
 
 	companion object {
 		const val SELF_REFERENCE = "this"
@@ -67,7 +68,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 						" Use the 'override' keyword to modify it.", Message.Type.ERROR))
 			return
 		}
-		previousDeclaration = declaredTypes.putIfAbsent(type.name, type)
+		previousDeclaration = types.putIfAbsent(type.name, type)
 		if(previousDeclaration == null)
 			linter.messages.add(Message(
 				"${type.source.getStartString()}: Declaration of type '${type.name}'.", Message.Type.DEBUG))
@@ -91,7 +92,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 						" Use the 'override' keyword to modify it.", Message.Type.ERROR))
 			return
 		}
-		previousDeclaration = declaredValues.putIfAbsent(value.name, value)
+		previousDeclaration = values.putIfAbsent(value.name, value)
 		if(previousDeclaration == null)
 			linter.messages.add(Message(
 				"${value.source.getStartString()}: Declaration of value '${value.name}'.", Message.Type.DEBUG))
@@ -163,13 +164,13 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	override fun resolveValue(name: String): VariableValueDeclaration? {
 		if(name == SELF_REFERENCE)
 			return instanceConstant
-		return declaredValues[name]
+		return values[name]
 			?: superScope?.resolveValue(name)
 			?: parentScope.resolveValue(name)
 	}
 
 	override fun resolveType(name: String): TypeDefinition? {
-		return declaredTypes[name]
+		return types[name]
 			?: superScope?.resolveType(name)
 			?: parentScope.resolveType(name)
 	}
@@ -187,61 +188,69 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		return null
 	}
 
-	override fun resolveFunction(name: String, suppliedValues: List<Value>): FunctionDefinition? {
+	override fun resolveFunction(name: String, suppliedTypes: List<Type?>): FunctionDefinition? {
 		functions[name]?.let { definitions ->
 			functionIteration@for(function in definitions) {
-				if(function.parameters.size != suppliedValues.size)
+				if(function.parameters.size != suppliedTypes.size)
 					continue
-				for(i in suppliedValues.indices) {
-					if(suppliedValues[i].type?.let { function.parameters[i].type?.accepts(it) } == false)
+				for(i in suppliedTypes.indices) {
+					if(suppliedTypes[i]?.let { function.parameters[i].type?.accepts(it) } != true)
 						continue@functionIteration
 				}
 				return function
 			}
 		}
-		return superScope?.resolveFunction(name, suppliedValues)
-			?: parentScope.resolveFunction(name, suppliedValues)
+		return superScope?.resolveFunction(name, suppliedTypes)
+			?: parentScope.resolveFunction(name, suppliedTypes)
 	}
 
-	override fun resolveOperator(name: String, suppliedValues: List<Value>):
+	override fun resolveOperator(name: String, suppliedTypes: List<Type?>):
 			OperatorDefinition? {
 		operatorIteration@for(operator in operators) {
 			if(operator.name != name)
 				continue
-			if(operator.parameters.size != suppliedValues.size)
+			if(operator.parameters.size != suppliedTypes.size)
 				continue
-			for(i in suppliedValues.indices) {
-				if(suppliedValues[i].type?.let { operator.parameters[i].type?.accepts(it) } == false)
+			for(i in suppliedTypes.indices) {
+				if(suppliedTypes[i]?.let { operator.parameters[i].type?.accepts(it) } != true)
 					continue@operatorIteration
 			}
 			return operator
 		}
-		return superScope?.resolveOperator(name, suppliedValues)
-			?: parentScope.resolveOperator(name, suppliedValues)
+		return superScope?.resolveOperator(name, suppliedTypes)
+			?: parentScope.resolveOperator(name, suppliedTypes)
 	}
 
-	override fun resolveIndexOperator(name: String, suppliedIndices: List<Value>, suppliedValues: List<Value>):
+	override fun resolveIndexOperator(name: String, suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
 			IndexOperatorDefinition? {
 		operatorIteration@for(operator in operators) {
 			if(operator.name != name)
 				continue
 			if(operator !is IndexOperatorDefinition)
 				continue
-			if(operator.indices.size != suppliedIndices.size)
+			if(operator.indices.size != suppliedIndexTypes.size)
 				continue
-			for(i in suppliedIndices.indices) {
-				if(suppliedIndices[i].type?.let { operator.indices[i].type?.accepts(it) } == false)
+			for(i in suppliedIndexTypes.indices) {
+				if(suppliedIndexTypes[i]?.let { operator.indices[i].type?.accepts(it) } != true)
 					continue@operatorIteration
 			}
-			if(operator.parameters.size != suppliedValues.size)
+			if(operator.parameters.size != suppliedParameterTypes.size)
 				continue
-			for(i in suppliedValues.indices) {
-				if(suppliedValues[i].type?.let { operator.parameters[i].type?.accepts(it) } == false)
+			for(i in suppliedParameterTypes.indices) {
+				if(suppliedParameterTypes[i]?.let { operator.parameters[i].type?.accepts(it) } != true)
 					continue@operatorIteration
 			}
 			return operator
 		}
-		return superScope?.resolveIndexOperator(name, suppliedIndices, suppliedValues)
-			?: parentScope.resolveIndexOperator(name, suppliedIndices, suppliedValues)
+		return superScope?.resolveIndexOperator(name, suppliedIndexTypes, suppliedParameterTypes)
+			?: parentScope.resolveIndexOperator(name, suppliedIndexTypes, suppliedParameterTypes)
+	}
+
+	fun getGenericTypes(): LinkedList<Type> {
+		val genericTypes = LinkedList<Type>()
+		for((_, typeDefinition) in types)
+			if(typeDefinition.isGeneric)
+				genericTypes.add(SimpleType(typeDefinition))
+		return genericTypes
 	}
 }

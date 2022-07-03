@@ -1,6 +1,8 @@
 package linter.elements.literals
 
 import linter.Linter
+import linter.elements.definitions.FunctionDefinition
+import java.util.*
 import parsing.ast.literals.QuantifiedType as ASTQuantifiedType
 
 class QuantifiedType(val source: ASTQuantifiedType, val baseType: Type, val hasDynamicQuantity: Boolean,
@@ -9,8 +11,26 @@ class QuantifiedType(val source: ASTQuantifiedType, val baseType: Type, val hasD
 	init {
 		units.add(baseType)
 		//TODO mind optionality as well
-		if(!hasDynamicQuantity)
-			scope.addScope(baseType.scope)
+		if(!hasDynamicQuantity) {
+			for((name, type) in baseType.scope.types) {
+				this.scope.types[name] = type
+			}
+			for((name, value) in baseType.scope.values) {
+				this.scope.values[name] = value
+			}
+			for(initializer in baseType.scope.initializers) {
+				this.scope.initializers.add(initializer)
+			}
+			for((name, originalFunctions) in baseType.scope.functions) {
+				val functions = LinkedList<FunctionDefinition>()
+				for(function in originalFunctions)
+					functions.add(function)
+				this.scope.functions[name] = functions
+			}
+			for(operator in baseType.scope.operators) {
+				this.scope.operators.add(operator)
+			}
+		}
 	}
 
 	override fun accepts(sourceType: Type): Boolean {

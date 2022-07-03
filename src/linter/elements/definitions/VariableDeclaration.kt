@@ -11,8 +11,6 @@ class VariableDeclaration(override val source: VariableDeclaration, name: String
 						  isConstant: Boolean): VariableValueDeclaration(source, name, type, isConstant) {
 
 	init {
-		if(type != null)
-			units.add(type)
 		if(value != null)
 			units.add(value)
 	}

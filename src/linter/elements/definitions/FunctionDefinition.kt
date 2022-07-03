@@ -6,9 +6,9 @@ import linter.elements.literals.Type
 import linter.elements.values.VariableValueDeclaration
 import linter.scopes.BlockScope
 import linter.scopes.Scope
-import parsing.ast.definitions.FunctionDefinition
+import parsing.ast.definitions.FunctionDefinition as ASTFunctionDefinition
 
-class FunctionDefinition(override val source: FunctionDefinition, name: String, val scope: BlockScope,
+class FunctionDefinition(override val source: ASTFunctionDefinition, name: String, val scope: BlockScope,
 						 val genericParameters: List<Unit>, val parameters: List<Parameter>, val body: Unit?,
 						 val returnType: Type?, val isNative: Boolean):
 	VariableValueDeclaration(source, name, returnType, true) {

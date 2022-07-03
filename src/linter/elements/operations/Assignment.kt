@@ -15,7 +15,7 @@ class Assignment(val source: Assignment, val targets: List<Value>, val sourceExp
 	}
 
 	override fun linkReferences(linter: Linter, scope: Scope) {
-		sourceExpression.linkReferences(linter, scope)
+		super.linkReferences(linter, scope)
 		sourceExpression.type?.let {
 			for(target in targets) {
 				val targetType = target.type

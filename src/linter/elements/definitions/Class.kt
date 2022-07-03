@@ -1,14 +1,12 @@
 package linter.elements.definitions
 
-import linter.Linter
-import linter.elements.general.Unit
+import linter.elements.literals.Type
 import linter.elements.values.TypeDefinition
-import linter.scopes.Scope
 import linter.scopes.TypeScope
 import parsing.tokenizer.WordAtom
 import parsing.ast.definitions.TypeDefinition as ASTTypeDefinition
 
-class Class(override val source: ASTTypeDefinition, name: String, scope: TypeScope, superType: Unit?,
+class Class(override val source: ASTTypeDefinition, name: String, scope: TypeScope, superType: Type?,
 			val isNative: Boolean):
 	TypeDefinition(source, name, scope, superType, false) {
 

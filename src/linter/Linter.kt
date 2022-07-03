@@ -20,6 +20,9 @@ class Linter {
 		messages.add(Message("----- Linter stage: Type linking -----", Message.Type.DEBUG))
 		phase = Phase.TYPE_LINKING
 		program.linkTypes(this)
+		messages.add(Message("----- Linter stage: Type alias resolution -----", Message.Type.DEBUG))
+		phase = Phase.TYPE_ALIAS_RESOLUTION
+		//program.resolveTypeAliases(this)
 		messages.add(Message("----- Linter stage: Property parameter linking -----", Message.Type.DEBUG))
 		phase = Phase.PROPERTY_PARAMETER_LINKING
 		program.linkPropertyParameters(this)
@@ -58,6 +61,7 @@ class Linter {
 		CONCRETIZATION,
 		FILE_REFERENCE_RESOLUTION,
 		TYPE_LINKING,
+		TYPE_ALIAS_RESOLUTION,
 		PROPERTY_PARAMETER_LINKING,
 		VALUE_LINKING,
 		VALIDATION,

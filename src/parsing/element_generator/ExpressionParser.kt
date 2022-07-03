@@ -184,17 +184,30 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	private fun parseUnaryOperator(): ValueElement {
 		if(WordType.UNARY_OPERATOR.includes(currentWord?.type)) {
 			val operator = consume(WordType.UNARY_OPERATOR)
-			return UnaryOperator(parseReferenceChain(), operator)
+			return UnaryOperator(parseMemberAccess(), operator)
 		}
-		return parseReferenceChain()
+		return parseMemberAccess()
 	}
 
 	/**
-	 * ReferenceChain:
+	 * Accessor:
+	 *   <MemberAccess>
+	 *   <Index>
+	 *   <FunctionCall>
+	 */
+	private fun parseAccessor() {
+		val expression = parsePrimary()
+		while(WordType.ACCESSOR.includes(currentWord?.type)) {
+
+		}
+	}
+
+	/**
+	 * MemberAccess:
 	 *   <Index>
 	 *   <Index>[[?].<Index>]
 	 */
-	private fun parseReferenceChain(): ValueElement {
+	private fun parseMemberAccess(): ValueElement {
 		var expression = parseIndex()
 		while(WordType.MEMBER_ACCESSOR.includes(currentWord?.type)) {
 			val accessor = consume(WordType.MEMBER_ACCESSOR)

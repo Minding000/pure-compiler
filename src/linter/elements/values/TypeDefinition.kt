@@ -2,12 +2,13 @@ package linter.elements.values
 
 import linter.Linter
 import linter.elements.general.Unit
+import linter.elements.literals.Type
 import linter.scopes.MutableScope
 import linter.scopes.Scope
 import linter.scopes.TypeScope
 import parsing.ast.general.Element
 
-open class TypeDefinition(open val source: Element, val name: String, val scope: TypeScope, val superType: Unit?,
+open class TypeDefinition(open val source: Element, val name: String, val scope: TypeScope, val superType: Type?,
 						  val isGeneric: Boolean): Unit() {
 
 	init {

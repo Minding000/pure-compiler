@@ -1,14 +1,33 @@
 package linter.elements.literals
 
+import linter.elements.definitions.FunctionDefinition
 import parsing.ast.literals.UnionType
+import java.util.*
 
 class OrUnionType(val source: UnionType, val types: List<Type>): Type() {
 
 	init {
 		units.addAll(types)
-		for(type in types) {
-			scope.addScope(type.scope)
-			//TODO remove members not shared by all types
+		//TODO remove members not shared by all types
+		for(originType in types) {
+			for((name, type) in originType.scope.types) {
+				this.scope.types[name] = type
+			}
+			for((name, value) in originType.scope.values) {
+				this.scope.values[name] = value
+			}
+			for(initializer in originType.scope.initializers) {
+				this.scope.initializers.add(initializer)
+			}
+			for((name, originalFunctions) in originType.scope.functions) {
+				val functions = LinkedList<FunctionDefinition>()
+				for(function in originalFunctions)
+					functions.add(function)
+				this.scope.functions[name] = functions
+			}
+			for(operator in originType.scope.operators) {
+				this.scope.operators.add(operator)
+			}
 		}
 	}
 

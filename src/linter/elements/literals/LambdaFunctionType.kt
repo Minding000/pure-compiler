@@ -15,6 +15,8 @@ class LambdaFunctionType(val source: ASTLambdaType, val parameters: List<Type>, 
 	}
 
 	override fun isAssignableTo(targetType: Type): Boolean {
+		if(targetType is SimpleType)
+			return false
 		if(targetType !is LambdaFunctionType)
 			return targetType.accepts(this)
 		return equals(targetType)
@@ -40,6 +42,6 @@ class LambdaFunctionType(val source: ASTLambdaType, val parameters: List<Type>, 
 	}
 
 	override fun toString(): String {
-		return "(${parameters.joinToString()}) ->${if(returnType == null) "|" else " $returnType"}"
+		return "(${parameters.joinToString()}) =>${if(returnType == null) "|" else " $returnType"}"
 	}
 }

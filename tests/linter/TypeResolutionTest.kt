@@ -53,4 +53,42 @@ internal class TypeResolutionTest {
 		TestUtil.assertLinterMessageNotEmitted(Message.Type.ERROR, "Type 'Feedable' hasn't been declared yet", sourceCode)
 		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Type 'Feeding' hasn't been declared yet", sourceCode)
 	}
+
+	@Test
+	fun testTypeAlias() {
+		val sourceCode =
+			"""
+				class Event {}
+				alias EventHandler = (Event) =>|
+				var correct: EventHandler
+				var incorrect: EventEmitter
+				var original: (Event) =>|
+				original = correct
+				original = incorrect
+            """.trimIndent()
+		TestUtil.assertLinterMessageNotEmitted(Message.Type.ERROR, "Type 'EventHandler' hasn't been declared yet", sourceCode)
+		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Type 'EventEmitter' hasn't been declared yet", sourceCode)
+		TestUtil.assertLinterMessageNotEmitted(Message.Type.ERROR, "Type 'EventHandler' is not assignable to type '(Event) =>|'", sourceCode)
+		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Type 'EventEmitter' is not assignable to type '(Event) =>|'", sourceCode)
+	}
+
+	@Test
+	fun testGenericType() {
+		val sourceCode =
+			"""
+				class List {
+					containing Element
+					init
+					to add(element: Element) {}
+				}
+				class Country {}
+				object Germany: Country {}
+				object Banana {}
+				val list = <Country>List()
+				list.add(Germany)
+				list.add(Banana)
+            """.trimIndent()
+		TestUtil.assertLinterMessageNotEmitted(Message.Type.ERROR, "Function 'add(Germany)' hasn't been declared yet", sourceCode)
+		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Function 'add(Banana)' hasn't been declared yet", sourceCode)
+	}
 }

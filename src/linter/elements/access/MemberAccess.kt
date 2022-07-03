@@ -1,7 +1,6 @@
 package linter.elements.access
 
 import linter.Linter
-import linter.elements.general.Unit
 import linter.elements.values.Value
 import linter.scopes.Scope
 import parsing.ast.access.MemberAccess
@@ -17,7 +16,7 @@ class MemberAccess(override val source: MemberAccess, val target: Value, val mem
 		target.linkReferences(linter, scope)
 		target.type?.let {
 			member.linkReferences(linter, it.scope)
-			type = member.type
+			type = scope.resolveGenerics(member.type)
 		}
 	}
 }

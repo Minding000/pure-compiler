@@ -70,6 +70,11 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.CONST,
 		WordAtom.VAR,
 		WordAtom.VAL),
+	ACCESSOR(
+		WordAtom.PARENTHESES_OPEN,
+		WordAtom.BRACKETS_OPEN,
+		WordAtom.DOT,
+		WordAtom.OPTIONAL_ACCESSOR),
 	MEMBER_ACCESSOR(
 		WordAtom.DOT,
 		WordAtom.OPTIONAL_ACCESSOR),

@@ -17,7 +17,7 @@ class BinaryOperator(override val source: BinaryOperator, val left: Value, val r
 	override fun linkReferences(linter: Linter, scope: Scope) {
 		super.linkReferences(linter, scope)
 		left.type?.let {
-			val operator = it.scope.resolveOperator(operator, right)
+			val operator = it.scope.resolveOperator(operator, right.type)
 			if(operator == null)
 				linter.messages.add(
 					Message(
