@@ -175,91 +175,82 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 
 	/**
 	 * UnaryOperator:
-	 *   <ReferenceChain>
-	 *   !<ReferenceChain>
-	 *   +<ReferenceChain>
-	 *   -<ReferenceChain>
-	 *   ...<ReferenceChain>
+	 *   <Accessor>
+	 *   !<Accessor>
+	 *   +<Accessor>
+	 *   -<Accessor>
+	 *   ...<Accessor>
 	 */
 	private fun parseUnaryOperator(): ValueElement {
 		if(WordType.UNARY_OPERATOR.includes(currentWord?.type)) {
 			val operator = consume(WordType.UNARY_OPERATOR)
-			return UnaryOperator(parseMemberAccess(), operator)
+			return UnaryOperator(parseAccessor(), operator)
 		}
-		return parseMemberAccess()
+		return parseAccessor()
 	}
 
 	/**
 	 * Accessor:
-	 *   <MemberAccess>
-	 *   <Index>
-	 *   <FunctionCall>
+	 *   <Primary>
+	 *   <Accessor><MemberAccess>
+	 *   <Accessor><Index>
+	 *   [<TypeList>]<Accessor><FunctionCall>
 	 */
-	private fun parseAccessor() {
-		val expression = parsePrimary()
+	private fun parseAccessor(): ValueElement {
+		val typeList = typeParser.parseTypeList()
+		var expression = parsePrimary()
 		while(WordType.ACCESSOR.includes(currentWord?.type)) {
-
+			if(currentWord?.type == WordAtom.PARENTHESES_OPEN)
+				expression = parseFunctionCall(typeList, expression)
+			if(currentWord?.type == WordAtom.BRACKETS_OPEN)
+				expression = parseIndex(expression)
+			if(WordType.MEMBER_ACCESSOR.includes(currentWord?.type))
+				expression = parseMemberAccess(expression)
 		}
+		return expression
 	}
 
 	/**
 	 * MemberAccess:
-	 *   <Index>
-	 *   <Index>[[?].<Index>]
+	 *   <Accessor>[?].<Identifier>
 	 */
-	private fun parseMemberAccess(): ValueElement {
-		var expression = parseIndex()
-		while(WordType.MEMBER_ACCESSOR.includes(currentWord?.type)) {
-			val accessor = consume(WordType.MEMBER_ACCESSOR)
-			expression = MemberAccess(expression, parseIndex(), accessor.type == WordAtom.OPTIONAL_ACCESSOR)
-		}
-		return expression
+	private fun parseMemberAccess(expression: ValueElement): ValueElement {
+		val accessor = consume(WordType.MEMBER_ACCESSOR)
+		return MemberAccess(expression, literalParser.parseIdentifier(), accessor.type == WordAtom.OPTIONAL_ACCESSOR)
 	}
 
 	/**
 	 * Index:
-	 *   <FunctionCall>
-	 *   <FunctionCall>[<Expression>[, <Expression>]...]
+	 *   <Accessor>[<Expression>[, <Expression>]...]
 	 */
-	private fun parseIndex(): ValueElement {
-		var expression = parseFunctionCall()
-		if(currentWord?.type == WordAtom.BRACKETS_OPEN) {
-			consume(WordAtom.BRACKETS_OPEN)
-			val indices = LinkedList<ValueElement>()
+	private fun parseIndex(expression: ValueElement): ValueElement {
+		consume(WordAtom.BRACKETS_OPEN)
+		val indices = LinkedList<ValueElement>()
+		indices.add(parseExpression())
+		while(currentWord?.type == WordAtom.COMMA) {
+			consume(WordAtom.COMMA)
 			indices.add(parseExpression())
-			while(currentWord?.type == WordAtom.COMMA) {
-				consume(WordAtom.COMMA)
-				indices.add(parseExpression())
-			}
-			val end = consume(WordAtom.BRACKETS_CLOSE).end
-			expression = Index(expression, indices, end)
 		}
-		return expression
+		val end = consume(WordAtom.BRACKETS_CLOSE).end
+		return Index(expression, indices, end)
 	}
 
 	/**
 	 * FunctionCall:
-	 *   <Primary>
-	 *   [<TypeList>]<Primary>([<Expression>[, <Expression>]...])
+	 *   [<TypeList>]<Accessor>([<Expression>[, <Expression>]...])
 	 */
-	private fun parseFunctionCall(): ValueElement {
-		val typeList = typeParser.parseTypeList()
-		//TODO allow for anonymous function calls
-		var expression = parsePrimary()
-		if(typeList != null || currentWord?.type == WordAtom.PARENTHESES_OPEN) {
-			consume(WordAtom.PARENTHESES_OPEN)
-			val parameters = LinkedList<ValueElement>()
-			if(currentWord?.type != WordAtom.PARENTHESES_CLOSE) {
+	private fun parseFunctionCall(typeList: TypeList?, expression: ValueElement): ValueElement {
+		consume(WordAtom.PARENTHESES_OPEN)
+		val parameters = LinkedList<ValueElement>()
+		if(currentWord?.type != WordAtom.PARENTHESES_CLOSE) {
+			parameters.add(parseExpression())
+			while(currentWord?.type == WordAtom.COMMA) {
+				consume(WordAtom.COMMA)
 				parameters.add(parseExpression())
-				while(currentWord?.type == WordAtom.COMMA) {
-					consume(WordAtom.COMMA)
-					parameters.add(parseExpression())
-				}
 			}
-			val end = consume(WordAtom.PARENTHESES_CLOSE).end
-			expression = FunctionCall(typeList, expression, parameters, end)
 		}
-		return expression
+		val end = consume(WordAtom.PARENTHESES_CLOSE).end
+		return FunctionCall(typeList, expression, parameters, end)
 	}
 
 	/**
