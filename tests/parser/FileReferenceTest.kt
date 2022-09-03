@@ -1,6 +1,6 @@
 package parser
 
-import TestUtil
+import util.TestUtil
 import org.junit.jupiter.api.Test
 
 internal class FileReferenceTest {

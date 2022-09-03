@@ -1,12 +1,10 @@
 package linter.scopes
 
 import linter.Linter
-import linter.elements.definitions.FunctionDefinition
-import linter.elements.definitions.IndexOperatorDefinition
-import linter.elements.definitions.InitializerDefinition
-import linter.elements.definitions.OperatorDefinition
-import linter.elements.literals.SimpleType
+import linter.elements.definitions.*
+import linter.elements.literals.ObjectType
 import linter.elements.literals.Type
+import linter.elements.values.Function
 import linter.elements.values.TypeDefinition
 import linter.elements.values.Value
 import linter.elements.values.VariableValueDeclaration
@@ -19,16 +17,40 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	var typeDefinition: TypeDefinition? = null
 	val types = HashMap<String, TypeDefinition>()
 	val values = HashMap<String, VariableValueDeclaration>()
-	val initializers = LinkedList<InitializerDefinition>()
-	val functions = HashMap<String, LinkedList<FunctionDefinition>>()
-	val operators = LinkedList<OperatorDefinition>()
+	private val initializers = LinkedList<InitializerDefinition>()
+	private val operators = LinkedList<OperatorDefinition>()
 
 	companion object {
 		const val SELF_REFERENCE = "this"
 	}
 
+	fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>, superScope: InterfaceScope?): TypeScope {
+		val specificTypeScope = TypeScope(parentScope, superScope)
+		for((name, type) in types)
+			specificTypeScope.types[name] = type.withTypeSubstitutions(typeSubstitution)
+		for((name, value) in values)
+			specificTypeScope.values[name] = value.withTypeSubstitutions(typeSubstitution)
+		for(initializer in initializers)
+			specificTypeScope.initializers.add(initializer.withTypeSubstitutions(typeSubstitution))
+		for(operator in operators)
+			specificTypeScope.operators.add(operator.withTypeSubstitutions(typeSubstitution))
+		return specificTypeScope
+	}
+
 	fun createInstanceConstant(definition: TypeDefinition) {
-		instanceConstant = VariableValueDeclaration(definition.source, SELF_REFERENCE, SimpleType(definition), true)
+		instanceConstant = VariableValueDeclaration(definition.source, SELF_REFERENCE, ObjectType(definition), null, true)
+	}
+
+	override fun subscribe(type: Type) {
+		super.subscribe(type)
+		for((_, typeDefinition) in types)
+			type.onNewType(typeDefinition)
+		for((_, value) in values)
+			type.onNewValue(value)
+		for(initializer in initializers)
+			type.onNewInitializer(initializer)
+		for(operator in operators)
+			type.onNewOperator(operator)
 	}
 
 	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
@@ -45,11 +67,15 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		}
 		if(previousDeclaration == null) {
 			initializers.add(initializer)
+			onNewInitializer(initializer)
 			linter.messages.add(Message(
-				"${initializer.source.getStartString()}: Declaration of initializer '${typeDefinition?.name}(${initializer.variation})'.", Message.Type.DEBUG))
+				"${initializer.source.getStartString()}: " +
+						"Declaration of initializer '${typeDefinition?.name}(${initializer.variation})'.",
+				Message.Type.DEBUG))
 		} else {
 			linter.messages.add(Message(
-				"${initializer.source.getStartString()}: Redeclaration of initializer '${typeDefinition?.name}(${initializer.variation})'," +
+				"${initializer.source.getStartString()}: " +
+						"Redeclaration of initializer '${typeDefinition?.name}(${initializer.variation})'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
 		}
 	}
@@ -69,60 +95,45 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			return
 		}
 		previousDeclaration = types.putIfAbsent(type.name, type)
-		if(previousDeclaration == null)
+		if(previousDeclaration == null) {
+			onNewType(type)
 			linter.messages.add(Message(
 				"${type.source.getStartString()}: Declaration of type '${type.name}'.", Message.Type.DEBUG))
-		else
+		} else {
 			linter.messages.add(Message(
 				"${type.source.getStartString()}: Redeclaration of type '${type.name}'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+		}
 	}
 
-	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
-		var previousDeclaration = parentScope.resolveValue(value.name)
-		if(previousDeclaration != null) {
-			linter.messages.add(Message(
-				"${value.source.getStartString()}: '${value.name}' shadows a variable.", Message.Type.WARNING))
-		}
-		previousDeclaration = superScope?.resolveValue(value.name)
-		if(previousDeclaration != null) {
-			linter.messages.add(Message(
-				"${value.source.getStartString()}: Redeclaration of type '${value.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}." +
-						" Use the 'override' keyword to modify it.", Message.Type.ERROR))
-			return
-		}
-		previousDeclaration = values.putIfAbsent(value.name, value)
-		if(previousDeclaration == null)
-			linter.messages.add(Message(
-				"${value.source.getStartString()}: Declaration of value '${value.name}'.", Message.Type.DEBUG))
-		else
-			linter.messages.add(Message(
-			"${value.source.getStartString()}: Redeclaration of value '${value.name}'," +
-					" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
-	}
-
-	override fun declareFunction(linter: Linter, function: FunctionDefinition) {
-		val definitions = functions.getOrPut(function.name) { LinkedList() }
-		var previousDeclaration: FunctionDefinition? = null
-		functionIteration@for(declaredFunction in definitions) {
-			if(declaredFunction.parameters.size != function.parameters.size)
-				continue
-			for(i in function.parameters.indices) {
-				if(declaredFunction.parameters[i].type != function.parameters[i].type)
-					continue@functionIteration
+	override fun declareFunction(linter: Linter, name: String, newImplementation: FunctionImplementation) {
+		when(val existingDeclaration = values[name]?.value) {
+			null -> {
+				val newFunction = Function(newImplementation.source, newImplementation)
+				val newValue = VariableValueDeclaration(newImplementation.source, name, newFunction.type, newFunction, true)
+				values[name] = newValue
+				onNewValue(newValue)
+				linter.messages.add(Message(
+					"${newImplementation.source.getStartString()}: Declaration of function '$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.", Message.Type.DEBUG))
 			}
-			previousDeclaration = declaredFunction
-			break
-		}
-		if(previousDeclaration == null) {
-			definitions.add(function)
-			linter.messages.add(Message(
-				"${function.source.getStartString()}: Declaration of function '$function'.", Message.Type.DEBUG))
-		} else {
-			linter.messages.add(Message(
-				"${function.source.getStartString()}: Redeclaration of function '$function'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+			is Function -> {
+				functionIteration@for(existingImplementation in existingDeclaration.implementations) {
+					if(existingImplementation.signature == newImplementation.signature) {
+						linter.messages.add(Message(
+							"${newImplementation.source.getStartString()}: Redeclaration of function '$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'," +
+									" previously declared in ${existingImplementation.source.getStartString()}.", Message.Type.ERROR))
+						return
+					}
+				}
+				existingDeclaration.addImplementation(newImplementation)
+				linter.messages.add(Message(
+					"${newImplementation.source.getStartString()}: Declaration of function '$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.", Message.Type.DEBUG))
+			}
+			else -> {
+				linter.messages.add(Message(
+					"${newImplementation.source.getStartString()}: Redeclaration of member '$name', " +
+							"previously declared in ${existingDeclaration.source.getStartString()}.", Message.Type.ERROR))
+			}
 		}
 	}
 
@@ -152,11 +163,39 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		}
 		if(previousDeclaration == null) {
 			operators.add(operator)
+			onNewOperator(operator)
 			linter.messages.add(Message(
 				"${operator.source.getStartString()}: Declaration of operator '$operator'.", Message.Type.DEBUG))
 		} else {
 			linter.messages.add(Message(
 				"${operator.source.getStartString()}: Redeclaration of operator '$operator'," +
+						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+		}
+	}
+
+
+	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
+		var previousDeclaration = parentScope.resolveValue(value.name)
+		if(previousDeclaration != null) {
+			linter.messages.add(Message(
+				"${value.source.getStartString()}: '${value.name}' shadows a variable.", Message.Type.WARNING))
+		}
+		previousDeclaration = superScope?.resolveValue(value.name)
+		if(previousDeclaration != null) {
+			linter.messages.add(Message(
+				"${value.source.getStartString()}: Redeclaration of type '${value.name}'," +
+						" previously declared in ${previousDeclaration.source.getStartString()}." +
+						" Use the 'override' keyword to modify it.", Message.Type.ERROR))
+			return
+		}
+		previousDeclaration = values.putIfAbsent(value.name, value)
+		if(previousDeclaration == null) {
+			onNewValue(value)
+			linter.messages.add(Message(
+				"${value.source.getStartString()}: Declaration of value '${value.name}'.", Message.Type.DEBUG))
+		} else {
+			linter.messages.add(Message(
+				"${value.source.getStartString()}: Redeclaration of value '${value.name}'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
 		}
 	}
@@ -186,22 +225,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			return initializer
 		}
 		return null
-	}
-
-	override fun resolveFunction(name: String, suppliedTypes: List<Type?>): FunctionDefinition? {
-		functions[name]?.let { definitions ->
-			functionIteration@for(function in definitions) {
-				if(function.parameters.size != suppliedTypes.size)
-					continue
-				for(i in suppliedTypes.indices) {
-					if(suppliedTypes[i]?.let { function.parameters[i].type?.accepts(it) } != true)
-						continue@functionIteration
-				}
-				return function
-			}
-		}
-		return superScope?.resolveFunction(name, suppliedTypes)
-			?: parentScope.resolveFunction(name, suppliedTypes)
 	}
 
 	override fun resolveOperator(name: String, suppliedTypes: List<Type?>):
@@ -250,7 +273,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		val genericTypes = LinkedList<Type>()
 		for((_, typeDefinition) in types)
 			if(typeDefinition.isGeneric)
-				genericTypes.add(SimpleType(typeDefinition))
+				genericTypes.add(ObjectType(typeDefinition))
 		return genericTypes
 	}
 }

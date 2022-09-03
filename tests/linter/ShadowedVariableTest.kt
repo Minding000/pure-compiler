@@ -1,6 +1,6 @@
 package linter
 
-import TestUtil
+import util.TestUtil
 import linter.messages.Message
 import org.junit.jupiter.api.Test
 
@@ -16,6 +16,7 @@ internal class ShadowedVariableTest {
 					const defaultHandler: Handler
 				}
             """.trimIndent()
-		TestUtil.assertLinterMessageEmitted(Message.Type.WARNING, "'defaultHandler' shadows a variable.", sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageEmitted(Message.Type.WARNING, "'defaultHandler' shadows a variable.")
 	}
 }

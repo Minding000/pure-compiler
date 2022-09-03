@@ -33,10 +33,11 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 				val clazz = Class(this, name, typeScope, superType, isNative)
 				typeScope.typeDefinition = clazz
 				scope.declareType(linter, clazz)
+				scope.declareValue(linter, clazz.value)
 				clazz
 			}
 			WordAtom.OBJECT -> {
-				parent?.validate(linter)
+				parent?.validate(linter, Object.ALLOWED_MODIFIER_TYPES)
 				val obj = Object(this, name, typeScope, superType)
 				typeScope.typeDefinition = obj
 				scope.declareType(linter, obj)

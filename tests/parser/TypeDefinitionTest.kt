@@ -1,6 +1,6 @@
 package parser
 
-import TestUtil
+import util.TestUtil
 import org.junit.jupiter.api.Test
 
 internal class TypeDefinitionTest {
@@ -45,7 +45,7 @@ internal class TypeDefinitionTest {
 		val sourceCode = "class Dog: Animal & Soulmate {}"
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Dog } UnionType { SimpleType { Identifier { Animal } } & SimpleType { Identifier { Soulmate } } } ] { TypeBody {
+				TypeDefinition [ class Identifier { Dog } UnionType { ObjectType { Identifier { Animal } } & ObjectType { Identifier { Soulmate } } } ] { TypeBody {
 				} }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -132,8 +132,8 @@ internal class TypeDefinitionTest {
             """.trimIndent()
 		val expected =
 			"""
-				TypeAlias [ Identifier { EventHandler } ] { LambdaFunctionType { LambdaParameterList {
-					SimpleType { Identifier { Event } }
+				TypeAlias [ Identifier { EventHandler } ] { FunctionType { ParameterTypeList {
+					ObjectType { Identifier { Event } }
 				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)

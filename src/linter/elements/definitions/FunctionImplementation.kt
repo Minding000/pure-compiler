@@ -1,18 +1,18 @@
 package linter.elements.definitions
 
 import linter.Linter
+import linter.elements.general.ErrorHandlingContext
 import linter.elements.general.Unit
 import linter.elements.literals.Type
-import linter.elements.values.VariableValueDeclaration
+import linter.elements.values.TypeDefinition
 import linter.scopes.BlockScope
 import linter.scopes.Scope
-import parsing.ast.definitions.FunctionDefinition as ASTFunctionDefinition
+import parsing.ast.general.Element
 
-class FunctionDefinition(override val source: ASTFunctionDefinition, name: String, val scope: BlockScope,
-						 val genericParameters: List<Unit>, val parameters: List<Parameter>, val body: Unit?,
-						 val returnType: Type?, val isNative: Boolean):
-	VariableValueDeclaration(source, name, returnType, true) {
-	val variation = parameters.joinToString { parameter -> parameter.type.toString() }
+class FunctionImplementation(val source: Element, val scope: BlockScope, val genericParameters: List<TypeDefinition>,
+							 val parameters: List<Parameter>, body: ErrorHandlingContext?,
+							 val returnType: Type?, val isNative: Boolean = false): Unit() {
+	val signature = FunctionSignature(source, genericParameters, parameters.map { p -> p.type }, returnType)
 
 	init {
 		units.addAll(genericParameters)
@@ -23,12 +23,8 @@ class FunctionDefinition(override val source: ASTFunctionDefinition, name: Strin
 			units.add(returnType)
 	}
 
-	override fun linkReferences(linter: Linter, scope: Scope) {
-		super.linkReferences(linter, this.scope)
-	}
-
-	override fun toString(): String {
-		return "$name($variation)"
+	override fun linkValues(linter: Linter, scope: Scope) {
+		super.linkValues(linter, this.scope)
 	}
 
 //	override fun compile(context: BuildContext): LLVMValueRef {

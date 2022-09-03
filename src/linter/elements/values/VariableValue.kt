@@ -9,7 +9,7 @@ class VariableValue(override val source: Identifier): Value(source) {
 	val name = source.getValue()
 	private var definition: VariableValueDeclaration? = null
 
-	override fun linkReferences(linter: Linter, scope: Scope) {
+	override fun linkValues(linter: Linter, scope: Scope) {
 		definition = scope.resolveValue(name)
 		if(definition == null)
 			linter.messages.add(Message("${source.getStartString()}: Value '$name' hasn't been declared yet.", Message.Type.ERROR))

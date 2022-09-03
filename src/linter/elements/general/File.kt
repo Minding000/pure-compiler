@@ -29,10 +29,12 @@ class File(val source: AstFile, val file: SourceFile, val scope: FileScope): Uni
 		}
 	}
 
-	private fun matches(parts: List<String>): Boolean {
-		if(parts.size > file.pathParts.size)
+	fun matches(parts: List<String>): Boolean {
+		if(parts.size > file.pathParts.size + 1)
 			return false
 		for(p in parts.indices) {
+			if(p == file.pathParts.size)
+				return parts[p] == file.name
 			if(parts[p] != file.pathParts[p])
 				return false
 		}
@@ -41,7 +43,7 @@ class File(val source: AstFile, val file: SourceFile, val scope: FileScope): Uni
 
 	fun linkTypes(linter: Linter) {
 		for(referencedFile in referencedFiles)
-			scope.referenceTypes(referencedFile.scope.declaredTypes)
+			scope.reference(referencedFile.scope)
 		linkTypes(linter, scope)
 	}
 
@@ -50,7 +52,7 @@ class File(val source: AstFile, val file: SourceFile, val scope: FileScope): Uni
 	}
 
 	fun linkValues(linter: Linter) {
-		linkReferences(linter, scope)
+		linkValues(linter, scope)
 	}
 
 //	override fun compile(context: BuildContext): Pointer? {

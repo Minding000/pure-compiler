@@ -1,9 +1,7 @@
 package parsing.ast.definitions
 
 import linter.Linter
-import linter.elements.definitions.FunctionDefinition
-import linter.elements.definitions.Parameter
-import linter.elements.general.Unit
+import linter.elements.definitions.FunctionImplementation
 import linter.scopes.BlockScope
 import linter.scopes.MutableScope
 import parsing.ast.definitions.sections.FunctionSection
@@ -13,7 +11,6 @@ import parsing.ast.literals.Identifier
 import parsing.ast.general.TypeElement
 import parsing.tokenizer.WordAtom
 import java.lang.StringBuilder
-import java.util.*
 
 class FunctionDefinition(private val identifier: Identifier, private val genericsList: GenericsList?,
 						 private val parameterList: ParameterList, private val body: StatementSection?,
@@ -25,23 +22,17 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE)
 	}
 
-	override fun concretize(linter: Linter, scope: MutableScope): FunctionDefinition {
+	override fun concretize(linter: Linter, scope: MutableScope): FunctionImplementation {
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
 		val functionScope = BlockScope(scope)
-		val genericParameters = LinkedList<Unit>()
-		if(genericsList != null) {
-			for(parameter in genericsList.elements) {
-				//TODO continue...
-			}
-		}
-		val parameters = LinkedList<Parameter>()
-		for(parameter in parameterList.parameters)
-			parameters.add(parameter.concretize(linter, functionScope))
-		val functionDefinition = FunctionDefinition(this, identifier.getValue(), functionScope, genericParameters,
-			parameters, body?.concretize(linter, functionScope), returnType?.concretize(linter, functionScope), isNative)
-		scope.declareFunction(linter, functionDefinition)
-		return functionDefinition
+		val genericParameters = genericsList?.concretizeGenerics(linter, scope) ?: listOf()
+		val parameters = parameterList.concretizeParameters(linter, functionScope)
+		val returnType = returnType?.concretize(linter, scope)
+		val implementation = FunctionImplementation(this, functionScope, genericParameters, parameters,
+			body?.concretize(linter, functionScope), returnType, isNative)
+		scope.declareFunction(linter, identifier.getValue(), implementation)
+		return implementation
 	}
 
 	override fun toString(): String {

@@ -1,6 +1,6 @@
 package parser
 
-import TestUtil
+import util.TestUtil
 import org.junit.jupiter.api.Test
 
 internal class VariableDeclarationTest {
@@ -11,7 +11,7 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { car }: SimpleType { Identifier { Int } } }
+					VariableDeclaration { Identifier { car }: ObjectType { Identifier { Int } } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -27,7 +27,7 @@ internal class VariableDeclarationTest {
 		""".trimIndent()
 		val expected =
 			"""
-				VariableSection [ var: SimpleType { Identifier { Float } } = NumberLiteral { 0 } ] {
+				VariableSection [ var: ObjectType { Identifier { Float } } = NumberLiteral { 0 } ] {
 					VariableDeclaration { Identifier { x } }
 					VariableDeclaration { Identifier { y } }
 				}
@@ -57,7 +57,7 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { car }: SimpleType { Identifier { Int } } }
+					VariableDeclaration { Identifier { car }: ObjectType { Identifier { Int } } }
 				}
 				Assignment {
 					Identifier { car }
@@ -77,7 +77,7 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { car }: QuantifiedType { SimpleType { Identifier { Int } }? } = NullLiteral }
+					VariableDeclaration { Identifier { car }: QuantifiedType { ObjectType { Identifier { Int } }? } = NullLiteral }
 				}
 				Assignment {
 					Identifier { car }
@@ -96,7 +96,7 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { car }: UnionType { SimpleType { Identifier { Int } } | SimpleType { Identifier { Float } } } }
+					VariableDeclaration { Identifier { car }: UnionType { ObjectType { Identifier { Int } } | ObjectType { Identifier { Float } } } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -111,7 +111,7 @@ internal class VariableDeclarationTest {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { refuge }: UnionType { SimpleType { Identifier { Park } } & SimpleType { Identifier { NatureReserve } } } }
+					VariableDeclaration { Identifier { refuge }: UnionType { ObjectType { Identifier { Park } } & ObjectType { Identifier { NatureReserve } } } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)

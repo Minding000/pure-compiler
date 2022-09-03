@@ -6,7 +6,7 @@ import linter.scopes.TypeScope
 import parsing.ast.definitions.TypeDefinition as ASTTypeDefinition
 
 class Trait(override val source: ASTTypeDefinition, name: String, scope: TypeScope, superType: Type?):
-	TypeDefinition(source, name, scope, superType, false) {
+	TypeDefinition(source, name, scope, superType) {
 
 	init {
 		scope.createInstanceConstant(this)

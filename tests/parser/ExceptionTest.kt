@@ -1,6 +1,6 @@
 package parser
 
-import TestUtil
+import util.TestUtil
 import org.junit.jupiter.api.Test
 
 internal class ExceptionTest {
@@ -33,7 +33,7 @@ internal class ExceptionTest {
 					Print {
 						Identifier { words }
 					}
-				} Handle [ SimpleType { Identifier { NoWordsException } } Identifier { e } ] { StatementBlock {
+				} Handle [ ObjectType { Identifier { NoWordsException } } Identifier { e } ] { StatementBlock {
 				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -54,7 +54,7 @@ internal class ExceptionTest {
 					Print {
 						Identifier { words }
 					}
-				} Handle [ UnionType { SimpleType { Identifier { NoWordsException } } | SimpleType { Identifier { OverthinkException } } } ] { StatementBlock {
+				} Handle [ UnionType { ObjectType { Identifier { NoWordsException } } | ObjectType { Identifier { OverthinkException } } } ] { StatementBlock {
 				} } }
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -76,12 +76,12 @@ internal class ExceptionTest {
 				TypeDefinition [ class Identifier { Human } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { speak } ParameterList {
-							Parameter { Identifier { words }: SimpleType { Identifier { String } } }
+							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
 						}: void ] { StatementSection { StatementBlock {
 							Print {
 								Identifier { words }
 							}
-						} Handle [ SimpleType { Identifier { NoWordsException } } Identifier { e } ] { StatementBlock {
+						} Handle [ ObjectType { Identifier { NoWordsException } } Identifier { e } ] { StatementBlock {
 						} } } }
 					}
 				} }

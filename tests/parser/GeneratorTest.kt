@@ -1,6 +1,6 @@
 package parser
 
-import TestUtil
+import util.TestUtil
 import org.junit.jupiter.api.Test
 
 internal class GeneratorTest {
@@ -17,8 +17,8 @@ internal class GeneratorTest {
 		val expected =
 			"""
 				Generator [ Identifier { fibonacciSeries } ParameterList {
-					Parameter { Identifier { index }: SimpleType { Identifier { Int } } }
-				}: SimpleType { Identifier { Int } }, SimpleType { Identifier { Int } } ] { StatementSection { StatementBlock {
+					Parameter { Identifier { index }: ObjectType { Identifier { Int } } }
+				}: ObjectType { Identifier { Int } }, ObjectType { Identifier { Int } } ] { StatementSection { StatementBlock {
 					If [ BinaryOperator {
 						Identifier { index } == NumberLiteral { 1 }
 					} ] {
@@ -54,7 +54,7 @@ internal class GeneratorTest {
 		val expected =
 			"""
 				Generator [ Identifier { fibonacciSeries } ParameterList {
-				}: SimpleType { Identifier { Int } }, SimpleType { Identifier { Int } } ] { StatementSection { StatementBlock {
+				}: ObjectType { Identifier { Int } }, ObjectType { Identifier { Int } } ] { StatementSection { StatementBlock {
 					VariableSection [ var = NumberLiteral { 1 } ] {
 						VariableDeclaration { Identifier { index } }
 						VariableDeclaration { Identifier { sum } }

@@ -8,6 +8,13 @@ import java.util.*
 class Program(val source: Program) {
 	val files = LinkedList<File>()
 
+	fun getFile(pathParts: List<String>): File? {
+		for(file in files)
+			if(file.matches(pathParts))
+				return file
+		return null
+	}
+
 	/**
 	 * Resolves file references by listing files providing types.
 	 */

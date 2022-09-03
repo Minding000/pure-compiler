@@ -2,6 +2,7 @@ package projects
 
 import code.Main
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class SimplestProject {
 

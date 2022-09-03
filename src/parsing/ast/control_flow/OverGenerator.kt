@@ -2,7 +2,7 @@ package parsing.ast.control_flow
 
 import linter.Linter
 import linter.elements.control_flow.OverGenerator
-import linter.elements.values.LocalVariableDeclaration
+import linter.elements.values.VariableValueDeclaration
 import linter.scopes.MutableScope
 import parsing.ast.general.Element
 import parsing.ast.general.ValueElement
@@ -16,12 +16,12 @@ class OverGenerator(start: Position, private val collection: ValueElement, priva
 	override fun concretize(linter: Linter, scope: MutableScope): OverGenerator {
 		return OverGenerator(this, collection.concretize(linter, scope),
 			keyDeclaration?.let {
-				val variable = LocalVariableDeclaration(it)
+				val variable = VariableValueDeclaration(it)
 				scope.declareValue(linter, variable)
 				variable
 			},
 			valueDeclaration?.let {
-				val variable = LocalVariableDeclaration(it)
+				val variable = VariableValueDeclaration(it)
 				scope.declareValue(linter, variable)
 				variable
 			})

@@ -1,6 +1,6 @@
 package parser
 
-import TestUtil
+import util.TestUtil
 import org.junit.jupiter.api.Test
 
 internal class ControlFlowTest {
@@ -37,7 +37,7 @@ internal class ControlFlowTest {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { x }: SimpleType { Identifier { Int } } }
+					VariableDeclaration { Identifier { x }: ObjectType { Identifier { Int } } }
 				}
 				If [ NumberLiteral { 5 } ] {
 					Assignment {
@@ -69,7 +69,7 @@ internal class ControlFlowTest {
 				TypeDefinition [ class Identifier { Human } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { speak } ParameterList {
-							Parameter { Identifier { words }: SimpleType { Identifier { String } } }
+							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
 						}: void ] { StatementSection { StatementBlock {
 							Print {
 								Identifier { words }
@@ -101,7 +101,7 @@ internal class ControlFlowTest {
 				TypeDefinition [ class Identifier { Human } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { speak } ParameterList {
-							Parameter { Identifier { words }: SimpleType { Identifier { String } } }
+							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
 						}: void ] { StatementSection { StatementBlock {
 							Print {
 								Identifier { words }
@@ -113,10 +113,10 @@ internal class ControlFlowTest {
 					VariableDeclaration { Identifier { peter } = FunctionCall [ Identifier { Human } ] {
 					} }
 				}
-				MemberAccess {
-					Identifier { peter }.FunctionCall [ Identifier { speak } ] {
-						StringLiteral { "Keep up the good work!" }
-					}
+				FunctionCall [ MemberAccess {
+					Identifier { peter }.Identifier { speak }
+				} ] {
+					StringLiteral { "Keep up the good work!" }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -137,8 +137,8 @@ internal class ControlFlowTest {
 				TypeDefinition [ class Identifier { Human } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { speak } ParameterList {
-							Parameter { Identifier { words }: SimpleType { Identifier { String } } }
-						}: SimpleType { Identifier { String } } ] { StatementSection { StatementBlock {
+							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
+						}: ObjectType { Identifier { String } } ] { StatementSection { StatementBlock {
 							Print {
 								Identifier { words }
 							}

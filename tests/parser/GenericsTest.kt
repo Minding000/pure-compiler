@@ -1,6 +1,6 @@
 package parser
 
-import TestUtil
+import util.TestUtil
 import org.junit.jupiter.api.Test
 
 internal class GenericsTest {
@@ -24,7 +24,7 @@ internal class GenericsTest {
 					}
 					FunctionSection [ to ] {
 						Function [ Identifier { add } ParameterList {
-							Parameter { Identifier { entry }: SimpleType { Identifier { Entry } } }
+							Parameter { Identifier { entry }: ObjectType { Identifier { Entry } } }
 						}: void ] { StatementSection { StatementBlock {
 							Print {
 								StringLiteral { "Adding entry..." }
@@ -59,7 +59,7 @@ internal class GenericsTest {
 					}
 					FunctionSection [ to ] {
 						Function [ Identifier { add } ParameterList {
-							Parameter { Identifier { entry }: SimpleType { Identifier { Entry } } }
+							Parameter { Identifier { entry }: ObjectType { Identifier { Entry } } }
 						}: void ] { StatementSection { StatementBlock {
 							Print {
 								StringLiteral { "Adding entry..." }
@@ -69,13 +69,13 @@ internal class GenericsTest {
 				} }
 				TypeDefinition [ class Identifier { Fruit } ] { TypeBody {
 					VariableSection [ var ] {
-						VariableDeclaration { Identifier { name }: SimpleType { Identifier { String } } }
+						VariableDeclaration { Identifier { name }: ObjectType { Identifier { String } } }
 					}
 				} }
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { fruitList } = FunctionCall [ TypeList {
-						SimpleType { Identifier { Fruit } }
-					} Identifier { ShoppingList } ] {
+					VariableDeclaration { Identifier { fruitList } = FunctionCall [ TypeSpecification [ TypeList {
+						ObjectType { Identifier { Fruit } }
+					} ] { Identifier { ShoppingList } } ] {
 					} }
 				}
             """.trimIndent()
@@ -95,8 +95,8 @@ internal class GenericsTest {
 				TypeDefinition [ class Identifier { Fridge } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { add } ParameterList {
-							Parameter { Identifier { foodList }: SimpleType { TypeList {
-								TypeParameter [ producing ] { SimpleType { Identifier { Food } } }
+							Parameter { Identifier { foodList }: ObjectType { TypeList {
+								TypeParameter [ producing ] { ObjectType { Identifier { Food } } }
 							} Identifier { List } } }
 						}: void ] { StatementSection { StatementBlock {
 						} } }
@@ -119,8 +119,8 @@ internal class GenericsTest {
 				TypeDefinition [ class Identifier { SodaMachine } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { refill } ParameterList {
-							Parameter { Identifier { glass }: SimpleType { TypeList {
-								TypeParameter [ consuming ] { SimpleType { Identifier { Soda } } }
+							Parameter { Identifier { glass }: ObjectType { TypeList {
+								TypeParameter [ consuming ] { ObjectType { Identifier { Soda } } }
 							} Identifier { LiquidContainer } } }
 						}: void ] { StatementSection { StatementBlock {
 						} } }
@@ -134,7 +134,7 @@ internal class GenericsTest {
 	fun testGenericFunction() {
 		val sourceCode = """
 			object Math {
-				to max<N: Number>(a: N, b: N): N {
+				to greatest<N: Number>(a: N, b: N): N {
 				}
 			}
 			""".trimIndent()
@@ -142,15 +142,34 @@ internal class GenericsTest {
 			"""
 				TypeDefinition [ object Identifier { Math } ] { TypeBody {
 					FunctionSection [ to ] {
-						Function [ Identifier { max } GenericsList {
-							GenericsListElement [ SimpleType { Identifier { Number } } ] { Identifier { N } }
+						Function [ Identifier { greatest } GenericsList {
+							GenericsListElement [ ObjectType { Identifier { Number } } ] { Identifier { N } }
 						} ParameterList {
-							Parameter { Identifier { a }: SimpleType { Identifier { N } } }
-							Parameter { Identifier { b }: SimpleType { Identifier { N } } }
-						}: SimpleType { Identifier { N } } ] { StatementSection { StatementBlock {
+							Parameter { Identifier { a }: ObjectType { Identifier { N } } }
+							Parameter { Identifier { b }: ObjectType { Identifier { N } } }
+						}: ObjectType { Identifier { N } } ] { StatementSection { StatementBlock {
 						} } }
 					}
 				} }
+            """.trimIndent()
+		TestUtil.assertAST(expected, sourceCode)
+	}
+
+	@Test
+	fun testGenericFunctionCall() {
+		val sourceCode = """
+			Math.greatest$<Int>(1, 2)
+			""".trimIndent()
+		val expected =
+			"""
+				FunctionCall [ TypeSpecification [ TypeList {
+					ObjectType { Identifier { Int } }
+				} ] { MemberAccess {
+					Identifier { Math }.Identifier { greatest }
+				} } ] {
+					NumberLiteral { 1 }
+					NumberLiteral { 2 }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}

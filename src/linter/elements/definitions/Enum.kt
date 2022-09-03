@@ -7,8 +7,8 @@ import linter.scopes.TypeScope
 import parsing.ast.definitions.TypeDefinition as ASTTypeDefinition
 
 class Enum(override val source: ASTTypeDefinition, name: String, scope: TypeScope, superType: Type?):
-	TypeDefinition(source, name, scope, superType, false) {
-	val value = VariableValueDeclaration(source, name, null, true) //TODO should provide type
+	TypeDefinition(source, name, scope, superType) {
+	val value = VariableValueDeclaration(source, name, null, null, true) //TODO should provide type
 
 	init {
 		scope.createInstanceConstant(this)

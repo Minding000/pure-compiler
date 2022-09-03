@@ -1,5 +1,6 @@
 package parsing.element_generator
 
+import errors.internal.CompilerError
 import parsing.ast.operations.*
 import errors.user.UnexpectedWordError
 import parsing.ast.access.Index
@@ -9,6 +10,7 @@ import parsing.ast.control_flow.*
 import parsing.ast.definitions.LambdaFunctionDefinition
 import parsing.ast.definitions.Parameter
 import parsing.ast.definitions.ParameterList
+import parsing.ast.definitions.TypeSpecification
 import parsing.ast.general.*
 import parsing.ast.literals.*
 import parsing.tokenizer.*
@@ -193,30 +195,49 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 * Accessor:
 	 *   <Primary>
 	 *   <Accessor><MemberAccess>
+	 *   <Accessor><FunctionCall>
 	 *   <Accessor><Index>
-	 *   [<TypeList>]<Accessor><FunctionCall>
+	 *   <Accessor>$<TypeList>
 	 */
 	private fun parseAccessor(): ValueElement {
-		val typeList = typeParser.parseTypeList()
 		var expression = parsePrimary()
 		while(WordType.ACCESSOR.includes(currentWord?.type)) {
-			if(currentWord?.type == WordAtom.PARENTHESES_OPEN)
-				expression = parseFunctionCall(typeList, expression)
-			if(currentWord?.type == WordAtom.BRACKETS_OPEN)
-				expression = parseIndex(expression)
-			if(WordType.MEMBER_ACCESSOR.includes(currentWord?.type))
-				expression = parseMemberAccess(expression)
+			expression =  if(WordType.MEMBER_ACCESSOR.includes(currentWord?.type))
+				parseMemberAccess(expression)
+			else if(currentWord?.type == WordAtom.PARENTHESES_OPEN)
+				parseFunctionCall(expression)
+			else if(currentWord?.type == WordAtom.BRACKETS_OPEN)
+				parseIndex(expression)
+			else if(currentWord?.type == WordAtom.TYPE_SPECIFICATION)
+				parseTypeSpecification(expression)
+			else
+				throw CompilerError("Failed to parse accessor: '${currentWord?.type}'")
 		}
 		return expression
 	}
 
 	/**
-	 * MemberAccess:
-	 *   <Accessor>[?].<Identifier>
+	 * TypeSpecification:
+	 *   <Accessor>$<TypeList>
 	 */
-	private fun parseMemberAccess(expression: ValueElement): ValueElement {
+	private fun parseTypeSpecification(expression: ValueElement): ValueElement {
+		consume(WordAtom.TYPE_SPECIFICATION)
+		val typeList = typeParser.parseTypeList()
+		return TypeSpecification(expression.start, typeList.end, expression, typeList)
+	}
+
+	/**
+	 * MemberAccess:
+	 *   <Accessor>[?].[<TypeList>]<Identifier>
+	 */
+	private fun parseMemberAccess(rootExpression: ValueElement): ValueElement {
 		val accessor = consume(WordType.MEMBER_ACCESSOR)
-		return MemberAccess(expression, literalParser.parseIdentifier(), accessor.type == WordAtom.OPTIONAL_ACCESSOR)
+		val typeList = typeParser.parseOptionalTypeList()
+		var expression: ValueElement = MemberAccess(rootExpression, literalParser.parseIdentifier(),
+			accessor.type == WordAtom.OPTIONAL_ACCESSOR)
+		if(typeList != null)
+			expression = TypeSpecification(typeList.start, expression.end, expression, typeList)
+		return expression
 	}
 
 	/**
@@ -237,9 +258,9 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 
 	/**
 	 * FunctionCall:
-	 *   [<TypeList>]<Accessor>([<Expression>[, <Expression>]...])
+	 *   <Accessor>([<Expression>[, <Expression>]...])
 	 */
-	private fun parseFunctionCall(typeList: TypeList?, expression: ValueElement): ValueElement {
+	private fun parseFunctionCall(expression: ValueElement): ValueElement {
 		consume(WordAtom.PARENTHESES_OPEN)
 		val parameters = LinkedList<ValueElement>()
 		if(currentWord?.type != WordAtom.PARENTHESES_CLOSE) {
@@ -250,7 +271,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 			}
 		}
 		val end = consume(WordAtom.PARENTHESES_CLOSE).end
-		return FunctionCall(typeList, expression, parameters, end)
+		return FunctionCall(expression, parameters, end)
 	}
 
 	/**
@@ -262,8 +283,10 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	private fun parsePrimary(): ValueElement {
 		if(currentWord?.type == WordAtom.PARENTHESES_OPEN) {
 			val start = consume(WordAtom.PARENTHESES_OPEN).start
-			val isEmptyParameterListVisible = currentWord?.type == WordAtom.PARENTHESES_CLOSE && nextWord?.type == WordAtom.ARROW
-			val isParameterVisible = currentWord?.type == WordAtom.IDENTIFIER && (nextWord?.type == WordAtom.COMMA || nextWord?.type == WordAtom.COLON)
+			val isEmptyParameterListVisible = currentWord?.type == WordAtom.PARENTHESES_CLOSE
+					&& nextWord?.type == WordAtom.ARROW
+			val isParameterVisible = currentWord?.type == WordAtom.IDENTIFIER
+					&& (nextWord?.type == WordAtom.COMMA || nextWord?.type == WordAtom.COLON)
 			val isParameterModifierVisible = WordType.MODIFIER.includes(currentWord?.type)
 			if(isEmptyParameterListVisible || isParameterVisible || isParameterModifierVisible) {
 				val parameters = LinkedList<Parameter>()
@@ -274,10 +297,14 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 					consume(WordAtom.COMMA)
 				}
 				val end = consume(WordAtom.PARENTHESES_CLOSE).end
+				val returnType = if(currentWord?.type == WordAtom.COLON) {
+					consume(WordAtom.COLON)
+					typeParser.parseType()
+				} else null
 				consume(WordAtom.ARROW)
 				val parameterList = ParameterList(start, end, parameters)
 				val body = statementParser.parseStatementSection()
-				return LambdaFunctionDefinition(start, parameterList, body)
+				return LambdaFunctionDefinition(start, parameterList, body, returnType)
 			}
 			val expression = parseExpression()
 			consume(WordAtom.PARENTHESES_CLOSE)
@@ -293,6 +320,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <NumberLiteral>
 	 *   <StringLiteral>
 	 *   <Identifier>
+	 *   <TypeSpecification>
 	 *   <ForeignLanguageExpression>
 	 */
 	private fun parseAtom(): ValueElement {
@@ -310,7 +338,15 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 				}
 			}
 			WordAtom.DOT -> parseInstanceAccess()
-			else -> throw UnexpectedWordError(word, "atom")
+			else -> {
+				if(WordType.GENERICS_START.includes(word.type)) {
+					val typeList = typeParser.parseTypeList()
+					val identifier = literalParser.parseIdentifier()
+					TypeSpecification(typeList.start, identifier.end, identifier, typeList)
+				} else {
+					throw UnexpectedWordError(word, "atom")
+				}
+			}
 		}
 	}
 

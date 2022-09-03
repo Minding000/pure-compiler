@@ -1,6 +1,6 @@
 package linter
 
-import TestUtil
+import util.TestUtil
 import linter.messages.Message
 import org.junit.jupiter.api.Test
 
@@ -14,7 +14,8 @@ internal class RedeclarationTest {
 				var car: Car
 				val car: Car
             """.trimIndent()
-		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Redeclaration of value 'car'", sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Redeclaration of value 'car'")
 	}
 
 	@Test
@@ -24,6 +25,7 @@ internal class RedeclarationTest {
 				class Animal {}
 				enum Animal {}
             """.trimIndent()
-		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Redeclaration of type 'Animal'", sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Redeclaration of type 'Animal'")
 	}
 }

@@ -1,7 +1,7 @@
 package parsing.ast.definitions
 
 import linter.Linter
-import linter.elements.definitions.VariableDeclaration
+import linter.elements.values.VariableValueDeclaration
 import linter.scopes.MutableScope
 import parsing.ast.definitions.sections.VariableSectionElement
 import parsing.ast.literals.Identifier
@@ -13,8 +13,8 @@ class VariableDeclaration(private val identifier: Identifier, private val type: 
 						  private val value: ValueElement?):
 	VariableSectionElement(identifier.start, (value ?: type ?: identifier).end) {
 
-	override fun concretize(linter: Linter, scope: MutableScope): VariableDeclaration {
-		val variableDeclaration = VariableDeclaration(
+	override fun concretize(linter: Linter, scope: MutableScope): VariableValueDeclaration {
+		val variableDeclaration = VariableValueDeclaration(
 			this,
 			identifier.getValue(),
 			(type ?: parent.type)?.concretize(linter, scope),

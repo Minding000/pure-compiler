@@ -1,69 +1,75 @@
 package linter.elements.literals
 
+import errors.internal.CompilerError
 import linter.Linter
-import linter.elements.definitions.FunctionDefinition
-import linter.elements.definitions.TypeAlias
+import linter.elements.definitions.OperatorDefinition
 import linter.elements.values.TypeDefinition
+import linter.elements.values.VariableValueDeclaration
 import linter.messages.Message
 import linter.scopes.Scope
-import linter.scopes.TypeScope
 import parsing.ast.general.Element
 import java.util.LinkedList
 
-class SimpleType(val source: Element, val genericParameters: List<Type>, val name: String): Type() {
+class ObjectType(val source: Element, val genericParameters: List<Type>, val name: String): Type() {
 	var definition: TypeDefinition? = null
 
 	constructor(definition: TypeDefinition): this(definition.source, LinkedList(), definition.name) {
-		this.definition = definition
+		setDefinition(null, definition)
 	}
 
-	constructor(linter: Linter, definition: TypeDefinition): this(definition.source, LinkedList(), definition.name) {
-		this.definition = definition
-		if(linter.hasCompleted(Linter.Phase.TYPE_LINKING))
-			addScope(linter, definition.scope)
+	constructor(linter: Linter, genericParameters: List<Type>, definition: TypeDefinition):
+			this(definition.source, genericParameters, definition.name) {
+		setDefinition(linter, definition)
 	}
 
 	init {
 		units.addAll(genericParameters)
 	}
 
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		if(definition == null) {
-			definition = scope.resolveType(name)
-			if(definition == null)
-				linter.messages.add(Message("${source.getStartString()}: Type '$name' hasn't been declared yet.", Message.Type.ERROR))
-		}
-		definition?.let {
-			addScope(linter, it.scope)
-		}
-	}
-
-	private fun addScope(linter: Linter, scope: TypeScope) {
+	private fun setDefinition(linter: Linter?, definition: TypeDefinition?) {
+		this.definition = definition
 		definition?.let {
 			val genericTypes = it.scope.getGenericTypes()
 			if(genericTypes.size == genericParameters.size) {
 				for(i in genericTypes.indices)
 					this.scope.genericTypes[genericTypes[i]] = genericParameters[i]
 			} else {
+				if(linter == null)
+					throw CompilerError("Invalid condition: Unable to log linter message.")
 				linter.messages.add(Message(
 					"${source.getStartString()}: Number of provided generic parameters " +
 							"(${genericParameters.size}) doesn't match declared number of declared " +
 							"generic parameters (${genericTypes.size})", Message.Type.ERROR))
 			}
-			for((name, type) in scope.types)
-				this.scope.types[name] = type
-			for((name, value) in scope.values)
-				this.scope.values[name] = value
-			for(initializer in scope.initializers)
-				this.scope.initializers.add(initializer)
-			for((name, originalFunctions) in scope.functions) {
-				val functions = LinkedList<FunctionDefinition>()
-				for(function in originalFunctions)
-					functions.add(function)
-				this.scope.functions[name] = functions
-			}
-			for(operator in scope.operators)
-				this.scope.operators.add(operator)
+			it.scope.subscribe(this)
+		}
+	}
+
+	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): Type {
+		val specificGenericParameters = LinkedList<Type>()
+		for(genericParameter in genericParameters)
+			specificGenericParameters.add(typeSubstitution[genericParameter] ?: genericParameter)
+		return ObjectType(source, specificGenericParameters, name)
+	}
+
+	override fun onNewType(type: TypeDefinition) {
+		this.scope.addType(type)
+	}
+
+	override fun onNewValue(value: VariableValueDeclaration) {
+		this.scope.addValue(value)
+	}
+
+	override fun onNewOperator(operator: OperatorDefinition) {
+		this.scope.addOperator(operator)
+	}
+
+	override fun linkTypes(linter: Linter, scope: Scope) {
+		if(definition == null) {
+			setDefinition(linter, scope.resolveType(name))
+			if(definition == null)
+				linter.messages.add(Message(
+					"${source.getStartString()}: Type '$name' hasn't been declared yet.", Message.Type.ERROR))
 		}
 	}
 
@@ -72,9 +78,9 @@ class SimpleType(val source: Element, val genericParameters: List<Type>, val nam
 	}
 
 	override fun isAssignableTo(targetType: Type): Boolean {
-		if(targetType is LambdaFunctionType)
+		if(targetType is FunctionType)
 			return false
-		if(targetType !is SimpleType)
+		if(targetType !is ObjectType)
 			return targetType.accepts(this)
 		if(equals(targetType))
 			return true
@@ -98,7 +104,7 @@ class SimpleType(val source: Element, val genericParameters: List<Type>, val nam
 	}
 
 	override fun equals(other: Any?): Boolean {
-		if(other !is SimpleType)
+		if(other !is ObjectType)
 			return false
 		if(definition != other.definition)
 			return false
@@ -117,6 +123,8 @@ class SimpleType(val source: Element, val genericParameters: List<Type>, val nam
 	}
 
 	override fun toString(): String {
-		return name
+		if(genericParameters.isEmpty())
+			return name
+		return genericParameters.joinToString(", ", "<", ">$name")
 	}
 }

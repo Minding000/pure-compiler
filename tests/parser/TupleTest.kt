@@ -1,6 +1,6 @@
 package parser
 
-import TestUtil
+import util.TestUtil
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
@@ -22,7 +22,7 @@ internal class TupleTest {
 			"""
 				TypeDefinition [ TypeType { class } Identifier { Player } ] { TypeBody {
 					Function [ Identifier { calculateCoordinates } ParameterList {
-					}: Type { SimpleType { Int }, SimpleType { Int } } ] { StatementSection { StatementBlock {
+					}: Type { ObjectType { Int }, ObjectType { Int } } ] { StatementSection { StatementBlock {
 						Return {
 							Tuple {
 								Identifier { x }

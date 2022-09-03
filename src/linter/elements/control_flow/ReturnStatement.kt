@@ -1,12 +1,9 @@
 package linter.elements.control_flow
 
-import compiler.targets.llvm.BuildContext
 import linter.Linter
 import linter.elements.values.Value
 import linter.messages.Message
 import linter.scopes.Scope
-import org.bytedeco.llvm.LLVM.LLVMValueRef
-import org.bytedeco.llvm.global.LLVM.*
 import parsing.ast.control_flow.ReturnStatement
 
 class ReturnStatement(override val source: ReturnStatement, val value: Value?): Value(source) {
@@ -16,8 +13,8 @@ class ReturnStatement(override val source: ReturnStatement, val value: Value?): 
 			units.add(value)
 	}
 
-	override fun linkReferences(linter: Linter, scope: Scope) {
-		super.linkReferences(linter, scope)
+	override fun linkValues(linter: Linter, scope: Scope) {
+		super.linkValues(linter, scope)
 		type = value?.type
 	}
 

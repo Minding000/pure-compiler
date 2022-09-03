@@ -1,6 +1,6 @@
 package parser
 
-import TestUtil
+import util.TestUtil
 import org.junit.jupiter.api.Test
 
 internal class PropertyTest {
@@ -19,7 +19,7 @@ internal class PropertyTest {
 		val expected =
 			"""
 				TypeDefinition [ class Identifier { Human } ] { TypeBody {
-					VariableSection [ const: SimpleType { Identifier { Int } } ] {
+					VariableSection [ const: ObjectType { Identifier { Int } } ] {
 						VariableDeclaration { Identifier { EYE_COUNT } = NumberLiteral { 2 } }
 						VariableDeclaration { Identifier { ARM_COUNT } = NumberLiteral { 2 } }
 						VariableDeclaration { Identifier { LEG_COUNT } = NumberLiteral { 2 } }
@@ -55,15 +55,15 @@ internal class PropertyTest {
 			"""
 				TypeDefinition [ class Identifier { Rectangle } ] { TypeBody {
 					GenericsDeclaration {
-						GenericsListElement [ SimpleType { Identifier { Number } } ] { Identifier { Unit } }
+						GenericsListElement [ ObjectType { Identifier { Number } } ] { Identifier { Unit } }
 					}
-					VariableSection [ var: SimpleType { Identifier { Unit } } = NumberLiteral { 0 } ] {
+					VariableSection [ var: ObjectType { Identifier { Unit } } = NumberLiteral { 0 } ] {
 						VariableDeclaration { Identifier { left } }
 						VariableDeclaration { Identifier { right } }
 						VariableDeclaration { Identifier { top } }
 						VariableDeclaration { Identifier { bottom } }
 					}
-					VariableSection [ val: SimpleType { Identifier { Unit } } ] {
+					VariableSection [ val: ObjectType { Identifier { Unit } } ] {
 						ComputedProperty {
 							Identifier { width }
 							gets BinaryOperator {
@@ -95,7 +95,7 @@ internal class PropertyTest {
 					}
 					VariableSection [ val ] {
 						ComputedProperty {
-							Identifier { isSquare }: SimpleType { Identifier { Bool } }
+							Identifier { isSquare }: ObjectType { Identifier { Bool } }
 							gets BinaryOperator {
 								Identifier { width } == Identifier { height }
 							}

@@ -1,6 +1,6 @@
 package parser
 
-import TestUtil
+import util.TestUtil
 import org.junit.jupiter.api.Test
 
 internal class MutabilityTest {
@@ -66,7 +66,7 @@ internal class MutabilityTest {
 			"""
 				TypeDefinition [ class Identifier { Display } ] { TypeBody {
 					VariableSection [ val ] {
-						VariableDeclaration { Identifier { resolution }: SimpleType { Identifier { Resolution } } }
+						VariableDeclaration { Identifier { resolution }: ObjectType { Identifier { Resolution } } }
 					}
 				} }
             """.trimIndent()
@@ -102,7 +102,7 @@ internal class MutabilityTest {
 					ModifierSection [ ModifierList { Modifier { imm } } ] {
 						FunctionSection [ to ] {
 							Function [ Identifier { speak } ParameterList {
-								Parameter { Identifier { words }: SimpleType { Identifier { String } } }
+								Parameter { Identifier { words }: ObjectType { Identifier { String } } }
 							}: void ] { StatementSection { StatementBlock {
 								Print {
 									Identifier { words }
@@ -129,7 +129,7 @@ internal class MutabilityTest {
 				TypeDefinition [ class Identifier { Human } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { chargePhone } ParameterList {
-							Parameter [ ModifierList { Modifier { mut } } ] { Identifier { phone }: SimpleType { Identifier { Phone } } }
+							Parameter [ ModifierList { Modifier { mut } } ] { Identifier { phone }: ObjectType { Identifier { Phone } } }
 						}: void ] { StatementSection { StatementBlock {
 							BinaryModification {
 								MemberAccess {

@@ -8,6 +8,10 @@ class TypeParameter(val source: ASTTypeParameter, val mode: Mode, val baseType: 
 		units.add(baseType)
 	}
 
+	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): TypeParameter {
+		return TypeParameter(source, mode, baseType.withTypeSubstitutions(typeSubstitution))
+	}
+
 	override fun accepts(sourceType: Type): Boolean {
 		// If assigning object to collection (different logic applies when assigning a collection)
 		if(mode == Mode.PRODUCING)

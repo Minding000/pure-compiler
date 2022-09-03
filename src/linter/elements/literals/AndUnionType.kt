@@ -1,6 +1,8 @@
 package linter.elements.literals
 
-import linter.elements.definitions.FunctionDefinition
+import linter.elements.definitions.OperatorDefinition
+import linter.elements.values.TypeDefinition
+import linter.elements.values.VariableValueDeclaration
 import parsing.ast.literals.UnionType
 import java.util.*
 
@@ -8,27 +10,27 @@ class AndUnionType(val source: UnionType, val types: List<Type>): Type() {
 
 	init {
 		units.addAll(types)
-		//TODO remove members not shared by all types
-		for(originType in types) {
-			for((name, type) in originType.scope.types) {
-				this.scope.types[name] = type
-			}
-			for((name, value) in originType.scope.values) {
-				this.scope.values[name] = value
-			}
-			for(initializer in originType.scope.initializers) {
-				this.scope.initializers.add(initializer)
-			}
-			for((name, originalFunctions) in originType.scope.functions) {
-				val functions = LinkedList<FunctionDefinition>()
-				for(function in originalFunctions)
-					functions.add(function)
-				this.scope.functions[name] = functions
-			}
-			for(operator in originType.scope.operators) {
-				this.scope.operators.add(operator)
-			}
-		}
+		for(type in types)
+			type.scope.subscribe(this)
+	}
+
+	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): AndUnionType {
+		val specificTypes = LinkedList<Type>()
+		for(type in types)
+			specificTypes.add(typeSubstitution[type] ?: type)
+		return AndUnionType(source, specificTypes)
+	}
+
+	override fun onNewType(type: TypeDefinition) {
+		this.scope.addType(type)
+	}
+
+	override fun onNewValue(value: VariableValueDeclaration) {
+		this.scope.addValue(value)
+	}
+
+	override fun onNewOperator(operator: OperatorDefinition) {
+		this.scope.addOperator(operator)
 	}
 
 	override fun accepts(sourceType: Type): Boolean {

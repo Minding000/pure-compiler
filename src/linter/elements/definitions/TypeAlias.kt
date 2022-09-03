@@ -6,6 +6,4 @@ import linter.scopes.TypeScope
 import parsing.ast.definitions.TypeAlias as ASTTypeAlias
 
 class TypeAlias(override val source: ASTTypeAlias, name: String, referenceType: Type, scope: TypeScope):
-	TypeDefinition(source, name, scope, referenceType, false) {
-
-}
+	TypeDefinition(source, name, scope, referenceType)

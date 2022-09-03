@@ -6,11 +6,12 @@ import linter.elements.literals.Type
 import linter.elements.values.VariableValueDeclaration
 import linter.scopes.BlockScope
 import linter.scopes.Scope
-import parsing.ast.definitions.OperatorDefinition
+import java.util.LinkedList
+import parsing.ast.definitions.OperatorDefinition as ASTOperatorDefinition
 
-open class OperatorDefinition(override val source: OperatorDefinition, name: String, val scope: BlockScope,
+open class OperatorDefinition(override val source: ASTOperatorDefinition, name: String, val scope: BlockScope,
 							  val parameters: List<Parameter>, val body: Unit?, val returnType: Type?):
-	VariableValueDeclaration(source, name, returnType, true) {
+	VariableValueDeclaration(source, name, returnType, null, true) {
 	val variation = parameters.joinToString { parameter -> parameter.type.toString() }
 
 	init {
@@ -21,8 +22,25 @@ open class OperatorDefinition(override val source: OperatorDefinition, name: Str
 			units.add(returnType)
 	}
 
-	override fun linkReferences(linter: Linter, scope: Scope) {
-		super.linkReferences(linter, this.scope)
+	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): OperatorDefinition {
+		val specificParameters = LinkedList<Parameter>()
+		for(parameter in parameters)
+			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
+		return OperatorDefinition(source, name, scope, specificParameters, body,
+				returnType?.withTypeSubstitutions(typeSubstitution))
+	}
+
+	fun accepts(types: List<Type?>): Boolean {
+		if(parameters.size != types.size)
+			return false
+		for(i in parameters.indices)
+			if(types[i]?.let { parameters[i].type?.accepts(it) } != true)
+				return false
+		return true
+	}
+
+	override fun linkValues(linter: Linter, scope: Scope) {
+		super.linkValues(linter, this.scope)
 	}
 
 	override fun toString(): String {

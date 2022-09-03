@@ -1,6 +1,6 @@
 package linter
 
-import TestUtil
+import util.TestUtil
 import linter.messages.Message
 import org.junit.jupiter.api.Test
 
@@ -12,7 +12,8 @@ internal class ModifierTest {
 			"""
 				override class House {}
             """.trimIndent()
-		TestUtil.assertLinterMessageEmitted(Message.Type.WARNING, "Modifier 'override' is not allowed here", sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageEmitted(Message.Type.WARNING, "Modifier 'override' is not allowed here")
 	}
 
 	@Test
@@ -21,6 +22,7 @@ internal class ModifierTest {
 			"""
 				native native class Memory {}
             """.trimIndent()
-		TestUtil.assertLinterMessageEmitted(Message.Type.WARNING, "Duplicate 'native' modifier", sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageEmitted(Message.Type.WARNING, "Duplicate 'native' modifier")
 	}
 }

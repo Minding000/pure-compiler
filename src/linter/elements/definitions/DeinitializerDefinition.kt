@@ -14,7 +14,7 @@ class DeinitializerDefinition(val source: DeinitializerDefinition, val scope: Bl
 			units.add(body)
 	}
 
-	override fun linkReferences(linter: Linter, scope: Scope) {
-		super.linkReferences(linter, this.scope)
+	override fun linkValues(linter: Linter, scope: Scope) {
+		super.linkValues(linter, this.scope)
 	}
 }

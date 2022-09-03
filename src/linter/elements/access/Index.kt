@@ -13,8 +13,8 @@ class Index(override val source: Index, val target: Value, val indices: List<Val
 		units.addAll(indices)
 	}
 
-	override fun linkReferences(linter: Linter, scope: Scope) {
-		super.linkReferences(linter, scope)
+	override fun linkValues(linter: Linter, scope: Scope) {
+		super.linkValues(linter, scope)
 		//TODO check if the index operator is taking parameters (is target of an assignment)
 		val targetScope = target.type?.scope
 		val definition = targetScope?.resolveIndexOperator("[]", indices.map { i -> i.type }, listOf())
@@ -22,6 +22,6 @@ class Index(override val source: Index, val target: Value, val indices: List<Val
 			val name = "[${indices.joinToString { index -> index.type.toString() }}]"
 			linter.messages.add(Message("${source.getStartString()}: Operator '$name()' hasn't been declared yet.", Message.Type.ERROR))
 		}
-		type = targetScope?.resolveGenerics(definition?.returnType)
+		type = definition?.returnType
 	}
 }

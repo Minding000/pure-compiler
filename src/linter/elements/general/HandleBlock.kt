@@ -10,7 +10,7 @@ class HandleBlock(val source: HandleBlock, val eventType: Type, val identifier: 
 	val eventVariable = if(identifier == null)
 		null
 	else
-		VariableValueDeclaration(identifier, identifier.getValue(), eventType, true)
+		VariableValueDeclaration(identifier, identifier.getValue(), eventType, null, true)
 
 	init {
 		units.add(eventType)

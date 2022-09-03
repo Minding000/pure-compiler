@@ -1,6 +1,6 @@
 package linter
 
-import TestUtil
+import util.TestUtil
 import linter.messages.Message
 import org.junit.jupiter.api.Test
 
@@ -14,8 +14,9 @@ internal class ReferenceResolutionTest {
 				numberOfCats
 				numberOfDogs
             """.trimIndent()
-		TestUtil.assertLinterMessageNotEmitted(Message.Type.ERROR, "Value 'numberOfCats' hasn't been declared yet", sourceCode)
-		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Value 'numberOfDogs' hasn't been declared yet", sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Value 'numberOfCats' hasn't been declared yet")
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Value 'numberOfDogs' hasn't been declared yet")
 	}
 
 	@Test
@@ -28,8 +29,9 @@ internal class ReferenceResolutionTest {
 				House.livingAreaInSquareMeters
 				House.totalAreaInSquareMeters
             """.trimIndent()
-		TestUtil.assertLinterMessageNotEmitted(Message.Type.ERROR, "Value 'livingAreaInSquareMeters' hasn't been declared yet", sourceCode)
-		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Value 'totalAreaInSquareMeters' hasn't been declared yet", sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Value 'livingAreaInSquareMeters' hasn't been declared yet")
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Value 'totalAreaInSquareMeters' hasn't been declared yet")
 	}
 
 	@Test
@@ -43,8 +45,9 @@ internal class ReferenceResolutionTest {
 					}
 				}
             """.trimIndent()
-		TestUtil.assertLinterMessageNotEmitted(Message.Type.ERROR, "Value 'speed' hasn't been declared yet", sourceCode)
-		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Value 'distance' hasn't been declared yet", sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Value 'speed' hasn't been declared yet")
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Value 'distance' hasn't been declared yet")
 	}
 
 	@Test
@@ -58,8 +61,19 @@ internal class ReferenceResolutionTest {
 				Window(2, 2)
 				Window(2)
             """.trimIndent()
-		TestUtil.assertLinterMessageNotEmitted(Message.Type.ERROR, "Initializer 'Window(Int, Int)' hasn't been declared yet", sourceCode)
-		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Initializer 'Window(Int)' hasn't been declared yet", sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Initializer 'Window(Int, Int)' hasn't been declared yet")
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Initializer 'Window(Int)' hasn't been declared yet")
+
+
+		/*lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Value 'Window' hasn't been declared yet")
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Value 'Window' hasn't been declared yet")
+		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "'Window' is not callable")
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "'Window' is not callable")
+		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Call to function 'Window()' is ambiguous")
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Call to function 'Window()' is ambiguous")
+		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "The provided values don't match any signature of function 'Window'")
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "The provided values don't match any signature of function 'Window'")*/
 	}
 
 	@Test
@@ -72,8 +86,9 @@ internal class ReferenceResolutionTest {
 				Door.open()
 				Door.close()
             """.trimIndent()
-		TestUtil.assertLinterMessageNotEmitted(Message.Type.ERROR, "Function 'open()' hasn't been declared yet", sourceCode)
-		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Function 'close()' hasn't been declared yet", sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Function 'open()' hasn't been declared yet")
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Function 'close()' hasn't been declared yet")
 	}
 
 	@Test
@@ -91,7 +106,8 @@ internal class ReferenceResolutionTest {
 				var c = a + b
 				var d = a - b
             """.trimIndent()
-		TestUtil.assertLinterMessageNotEmitted(Message.Type.ERROR, "Operator '+(Matrix)' hasn't been declared yet", sourceCode)
-		TestUtil.assertLinterMessageEmitted(Message.Type.ERROR, "Operator '-(Matrix)' hasn't been declared yet", sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Operator '+(Matrix)' hasn't been declared yet")
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Operator '-(Matrix)' hasn't been declared yet")
 	}
 }

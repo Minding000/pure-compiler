@@ -2,13 +2,13 @@ package linter.elements.control_flow
 
 import linter.Linter
 import linter.elements.general.Unit
-import linter.elements.values.LocalVariableDeclaration
 import linter.elements.values.Value
+import linter.elements.values.VariableValueDeclaration
 import linter.scopes.Scope
 import parsing.ast.control_flow.OverGenerator
 
-class OverGenerator(val source: OverGenerator, val collection: Value, val keyDeclaration: LocalVariableDeclaration?,
-					val valueDeclaration: LocalVariableDeclaration?): Unit() {
+class OverGenerator(val source: OverGenerator, val collection: Value, val keyDeclaration: VariableValueDeclaration?,
+					val valueDeclaration: VariableValueDeclaration?): Unit() {
 
 	init {
 		units.add(collection)
@@ -18,8 +18,8 @@ class OverGenerator(val source: OverGenerator, val collection: Value, val keyDec
 			units.add(valueDeclaration)
 	}
 
-	override fun linkReferences(linter: Linter, scope: Scope) {
-		collection.linkReferences(linter, scope)
+	override fun linkValues(linter: Linter, scope: Scope) {
+		collection.linkValues(linter, scope)
 		if(keyDeclaration != null)
 			keyDeclaration.type = collection.type?.getKeyType(linter)
 		if(valueDeclaration != null)

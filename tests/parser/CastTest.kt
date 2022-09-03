@@ -1,6 +1,6 @@
 package parser
 
-import TestUtil
+import util.TestUtil
 import org.junit.jupiter.api.Test
 
 internal class CastTest {
@@ -11,7 +11,7 @@ internal class CastTest {
 		val expected =
 			"""
 				Cast {
-					NumberLiteral { 10 } as SimpleType { Identifier { Float } }
+					NumberLiteral { 10 } as ObjectType { Identifier { Float } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -23,7 +23,7 @@ internal class CastTest {
 		val expected =
 			"""
 				Cast {
-					Identifier { quoteSource } as? SimpleType { Identifier { Book } }
+					Identifier { quoteSource } as? ObjectType { Identifier { Book } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -35,7 +35,7 @@ internal class CastTest {
 		val expected =
 			"""
 				Cast {
-					Identifier { food } as! SimpleType { Identifier { Fruit } }
+					Identifier { food } as! ObjectType { Identifier { Fruit } }
 				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
@@ -51,7 +51,7 @@ internal class CastTest {
 		val expected =
 			"""
 				If [ Cast {
-					Identifier { inputDevice } is Identifier { keyboard }: SimpleType { Identifier { Keyboard } }
+					Identifier { inputDevice } is Identifier { keyboard }: ObjectType { Identifier { Keyboard } }
 				} ] {
 					StatementSection { StatementBlock {
 					} }
@@ -70,7 +70,7 @@ internal class CastTest {
 		val expected =
 			"""
 				If [ Cast {
-					Identifier { inputDevice } is! Identifier { keyboard }: SimpleType { Identifier { Keyboard } }
+					Identifier { inputDevice } is! Identifier { keyboard }: ObjectType { Identifier { Keyboard } }
 				} ] {
 					StatementSection { StatementBlock {
 					} }

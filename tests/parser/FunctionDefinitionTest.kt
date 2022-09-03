@@ -1,6 +1,6 @@
 package parser
 
-import TestUtil
+import util.TestUtil
 import org.junit.jupiter.api.Test
 
 internal class FunctionDefinitionTest {
@@ -17,8 +17,8 @@ internal class FunctionDefinitionTest {
 				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
 					FunctionSection [ it ] {
 						Function [ Identifier { canEat } ParameterList {
-							Parameter { Identifier { food }: SimpleType { Identifier { Food } } }
-						}: SimpleType { Identifier { Bool } } ] { StatementSection { StatementBlock {
+							Parameter { Identifier { food }: ObjectType { Identifier { Food } } }
+						}: ObjectType { Identifier { Bool } } ] { StatementSection { StatementBlock {
 						} } }
 					}
 				} }
@@ -39,7 +39,7 @@ internal class FunctionDefinitionTest {
 				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { getSound } ParameterList {
-							Parameter { Identifier { loudness }: SimpleType { Identifier { Int } } }
+							Parameter { Identifier { loudness }: ObjectType { Identifier { Int } } }
 						}: void ] { StatementSection { StatementBlock {
 							VariableSection [ var ] {
 								VariableDeclaration { Identifier { energy } = BinaryOperator {
@@ -67,10 +67,10 @@ internal class FunctionDefinitionTest {
 			"""
 				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
 					VariableSection [ var ] {
-						VariableDeclaration { Identifier { canSwim }: SimpleType { Identifier { Bool } } }
+						VariableDeclaration { Identifier { canSwim }: ObjectType { Identifier { Bool } } }
 					}
 					Initializer [ ParameterList {
-						Parameter { Identifier { name }: SimpleType { Identifier { String } } }
+						Parameter { Identifier { name }: ObjectType { Identifier { String } } }
 						Parameter { Identifier { canSwim } }
 					} ] { StatementSection { StatementBlock {
 						Print {
@@ -95,7 +95,7 @@ internal class FunctionDefinitionTest {
 			"""
 				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
 					VariableSection [ var ] {
-						VariableDeclaration { Identifier { canSwim }: SimpleType { Identifier { Bool } } }
+						VariableDeclaration { Identifier { canSwim }: ObjectType { Identifier { Bool } } }
 					}
 					Initializer [ ParameterList {
 						Parameter { Identifier { canSwim } }
@@ -119,7 +119,7 @@ internal class FunctionDefinitionTest {
 			"""
 				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
 					VariableSection [ var ] {
-						VariableDeclaration { Identifier { name }: SimpleType { Identifier { String } } }
+						VariableDeclaration { Identifier { name }: ObjectType { Identifier { String } } }
 					}
 					Deinitializer { StatementSection { StatementBlock {
 						Print {
@@ -154,13 +154,13 @@ internal class FunctionDefinitionTest {
 		val expected =
 			"""
 				TypeDefinition [ class Identifier { Vector } ] { TypeBody {
-					VariableSection [ var: SimpleType { Identifier { Int } } ] {
+					VariableSection [ var: ObjectType { Identifier { Int } } ] {
 						VariableDeclaration { Identifier { x } }
 						VariableDeclaration { Identifier { y } }
 					}
 					OperatorSection {
 						OperatorDefinition [ Operator { += } ParameterList {
-							Parameter { Identifier { right }: SimpleType { Identifier { Vector } } }
+							Parameter { Identifier { right }: ObjectType { Identifier { Vector } } }
 						}: void ] { StatementSection { StatementBlock {
 							BinaryModification {
 								Identifier { x } += MemberAccess {
@@ -174,7 +174,7 @@ internal class FunctionDefinitionTest {
 							}
 						} } }
 						OperatorDefinition [ Operator { == } ParameterList {
-							Parameter { Identifier { right }: SimpleType { Identifier { Vector } } }
+							Parameter { Identifier { right }: ObjectType { Identifier { Vector } } }
 						}: void ] { StatementSection { StatementBlock {
 							Return { BinaryOperator {
 								BinaryOperator {
@@ -214,9 +214,9 @@ internal class FunctionDefinitionTest {
 				TypeDefinition [ class Identifier { BookSelf } ] { TypeBody {
 					OperatorSection {
 						OperatorDefinition [ IndexOperator {
-							Parameter { Identifier { index }: SimpleType { Identifier { Int } } }
+							Parameter { Identifier { index }: ObjectType { Identifier { Int } } }
 						} ParameterList {
-							Parameter { Identifier { value }: SimpleType { Identifier { Book } } }
+							Parameter { Identifier { value }: ObjectType { Identifier { Book } } }
 						}: void ] { StatementSection { StatementBlock {
 							Print {
 								StringLiteral { "Adding book" }
@@ -225,8 +225,8 @@ internal class FunctionDefinitionTest {
 							}
 						} } }
 						OperatorDefinition [ IndexOperator {
-							Parameter { Identifier { index }: SimpleType { Identifier { Int } } }
-						}: SimpleType { Identifier { Book } } ] { StatementSection { StatementBlock {
+							Parameter { Identifier { index }: ObjectType { Identifier { Int } } }
+						}: ObjectType { Identifier { Book } } ] { StatementSection { StatementBlock {
 							Print {
 								StringLiteral { "Book requested" }
 								Identifier { index }
@@ -250,7 +250,7 @@ internal class FunctionDefinitionTest {
 				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { getSound } ParameterList {
-							Parameter { Identifier { loudness }: SimpleType { Identifier { Int } } }
+							Parameter { Identifier { loudness }: ObjectType { Identifier { Int } } }
 						}: void ] { StatementSection { StatementBlock {
 						} } }
 					}
@@ -271,7 +271,7 @@ internal class FunctionDefinitionTest {
 				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { setSounds } ParameterList {
-							Parameter [ ModifierList { Modifier { ... } } ] { Identifier { sounds }: QuantifiedType { ...SimpleType { Identifier { Sound } } } }
+							Parameter [ ModifierList { Modifier { ... } } ] { Identifier { sounds }: QuantifiedType { ...ObjectType { Identifier { Sound } } } }
 						}: void ] { StatementSection { StatementBlock {
 						} } }
 					}
@@ -289,8 +289,8 @@ internal class FunctionDefinitionTest {
 			"""
 				VariableSection [ val ] {
 					VariableDeclaration { Identifier { condition } = LambdaFunctionDefinition [ ParameterList {
-						Parameter { Identifier { a }: SimpleType { Identifier { Int } } }
-						Parameter { Identifier { b }: SimpleType { Identifier { Int } } }
+						Parameter { Identifier { a }: ObjectType { Identifier { Int } } }
+						Parameter { Identifier { b }: ObjectType { Identifier { Int } } }
 					} ] { StatementSection { StatementBlock {
 						Return { BinaryOperator {
 							Identifier { a } < Identifier { b }

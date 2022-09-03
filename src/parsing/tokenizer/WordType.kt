@@ -1,16 +1,16 @@
 package parsing.tokenizer
 
-enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
+enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 	OPERATOR(
 		WordAtom.NOT,
 		WordAtom.AND,
 		WordAtom.OR,
 		WordAtom.EQUALS,
 		WordAtom.NOT_EQUALS,
-		WordAtom.GREATER_OR_EQUALS,
-		WordAtom.LOWER_OR_EQUALS,
-		WordAtom.GREATER,
-		WordAtom.LOWER,
+		WordAtom.GREATER_OR_EQUALS_THAN,
+		WordAtom.LOWER_OR_EQUALS_THAN,
+		WordAtom.GREATER_THAN,
+		WordAtom.LOWER_THAN,
 		WordAtom.INCREMENT,
 		WordAtom.DECREMENT,
 		WordAtom.ADD,
@@ -50,10 +50,10 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.EQUALS,
 		WordAtom.NOT_EQUALS),
 	COMPARISON(
-		WordAtom.GREATER_OR_EQUALS,
-		WordAtom.LOWER_OR_EQUALS,
-		WordAtom.GREATER,
-		WordAtom.LOWER),
+		WordAtom.GREATER_OR_EQUALS_THAN,
+		WordAtom.LOWER_OR_EQUALS_THAN,
+		WordAtom.GREATER_THAN,
+		WordAtom.LOWER_THAN),
 	CAST(
 		WordAtom.AS,
 		WordAtom.OPTIONAL_CAST,
@@ -71,17 +71,18 @@ enum class WordType(vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.VAR,
 		WordAtom.VAL),
 	ACCESSOR(
+		WordAtom.DOT,
+		WordAtom.OPTIONAL_ACCESSOR,
 		WordAtom.PARENTHESES_OPEN,
 		WordAtom.BRACKETS_OPEN,
-		WordAtom.DOT,
-		WordAtom.OPTIONAL_ACCESSOR),
+		WordAtom.TYPE_SPECIFICATION),
 	MEMBER_ACCESSOR(
 		WordAtom.DOT,
 		WordAtom.OPTIONAL_ACCESSOR),
 	GENERICS_START(
-		WordAtom.LOWER),
+		WordAtom.LOWER_THAN),
 	GENERICS_END(
-		WordAtom.GREATER),
+		WordAtom.GREATER_THAN),
 	GENERICS_MODIFIER(
 		WordAtom.CONSUMING,
 		WordAtom.PRODUCING),

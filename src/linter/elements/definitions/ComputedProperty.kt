@@ -6,7 +6,7 @@ import linter.elements.values.VariableValueDeclaration
 import parsing.ast.definitions.ComputedProperty
 
 class ComputedProperty(override val source: ComputedProperty, name: String, type: Type, val getExpression: Unit?, val setExpression: Unit?):
-	VariableValueDeclaration(source, name, type, setExpression == null) {
+	VariableValueDeclaration(source, name, type, null, setExpression == null) {
 
 	init {
 		units.add(type)

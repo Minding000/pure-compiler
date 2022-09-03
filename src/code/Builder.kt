@@ -82,7 +82,7 @@ object Builder {
 	}
 
 	fun loadRequiredModules(project: Project) {
-		val langModule = Module("Lang")
+		val langModule = Module("Pure")
 		addDirectory(langModule, LinkedList(), File(LANG_MODULE_PATH))
 		project.addModule(langModule)
 	}

@@ -1,13 +1,12 @@
+package util
+
 import code.Builder
 import parsing.element_generator.ElementGenerator
 import errors.user.UserError
 import linter.Linter
-import linter.messages.Message
 import parsing.ast.general.Program
 import source_structure.Module
 import source_structure.Project
-import util.indent
-import util.stringify
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.lang.StringBuilder
@@ -18,7 +17,6 @@ import kotlin.test.assertEquals
 object TestUtil {
     private val defaultErrorStream = System.err
     private val testErrorStream = ByteArrayOutputStream()
-    var includeRequiredModules = false
 
     fun recordErrorStream() {
         System.setErr(PrintStream(testErrorStream))
@@ -31,15 +29,13 @@ object TestUtil {
         assertEquals("", actualErrorStream, "Expected error stream to be empty")
     }
 
-    private fun parseProgram(sourceCode: String): Program {
+    private fun parseProgram(sourceCode: String, includeRequiredModules: Boolean = false): Program {
         val project = Project("Test")
         val testModule = Module("Test")
         testModule.addFile(LinkedList(), "Test", sourceCode)
         project.addModule(testModule)
-        if(includeRequiredModules) {
+        if(includeRequiredModules)
             Builder.loadRequiredModules(project)
-            includeRequiredModules = false
-        }
         return ElementGenerator(project).parseProgram()
     }
 
@@ -47,10 +43,11 @@ object TestUtil {
         return parseProgram(sourceCode).toString()
     }
 
-    private fun getLinter(sourceCode: String): Linter {
+    fun lint(sourceCode: String, includeRequiredModules: Boolean): LintResult {
         val linter = Linter()
-        linter.lint(parseProgram(sourceCode))
-        return linter
+        val program = linter.lint(parseProgram(sourceCode, includeRequiredModules))
+        linter.printMessages()
+        return LintResult(linter, program)
     }
 
     fun assertAST(expected_ast: String, sourceCode: String) {
@@ -69,34 +66,6 @@ object TestUtil {
         }
         printDiffPosition(expectedMessage, actualMessage)
         assertContains(actualMessage, expectedMessage)
-    }
-
-    fun assertLinterMessageEmitted(expectedType: Message.Type, expectedMessage: String, sourceCode: String) {
-        val linter = getLinter(sourceCode)
-        for(message in linter.messages) {
-            if(message.description.contains(expectedMessage)) {
-                if(message.type != expectedType) {
-                    linter.printMessages()
-                    throw AssertionError("Linter message '$expectedMessage' has type '${message.type}' instead of expected type '$expectedType'.")
-                }
-                return
-            }
-        }
-        linter.printMessages()
-        throw AssertionError("Expected linter message '$expectedMessage' hasn't been emitted.")
-    }
-
-    fun assertLinterMessageNotEmitted(expectedType: Message.Type, expectedMessage: String, sourceCode: String) {
-        val linter = getLinter(sourceCode)
-        for(message in linter.messages) {
-            if(message.description.contains(expectedMessage)) {
-                linter.printMessages()
-                if(message.type != expectedType)
-                    throw AssertionError("Linter message '$expectedMessage' has type '${message.type}' instead of expected type '$expectedType'.")
-                throw AssertionError("Unexpected linter message '$expectedMessage' has been emitted.")
-            }
-        }
-        return
     }
 
     private fun printDiffPosition(expected: String, actual: String) {

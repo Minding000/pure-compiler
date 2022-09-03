@@ -1,19 +1,21 @@
 package linter.elements.values
 
-import compiler.targets.llvm.BuildContext
-import compiler.targets.llvm.LLVMIRCompiler
-import linter.elements.literals.SimpleType
-import org.bytedeco.llvm.LLVM.LLVMValueRef
-import org.bytedeco.llvm.global.LLVM.*
+import linter.Linter
+import linter.elements.literals.ObjectType
+import linter.scopes.Scope
 import parsing.ast.literals.NumberLiteral
 
 class NumberLiteral(override val source: NumberLiteral, val value: String): LiteralValue(source) {
 
 	init {
 		//TODO allow for floating point numbers
-		val type = SimpleType(source, listOf(), "Int")
+		val type = ObjectType(source, listOf(), "Int")
 		units.add(type)
 		this.type = type
+	}
+
+	override fun linkTypes(linter: Linter, scope: Scope) {
+		linter.numberLiteralScope?.let { super.linkTypes(linter, it) }
 	}
 
 //	override fun compile(context: BuildContext): LLVMValueRef {

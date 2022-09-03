@@ -1,36 +1,37 @@
 package linter.elements.literals
 
 import linter.Linter
-import linter.elements.definitions.FunctionDefinition
-import java.util.*
-import parsing.ast.literals.QuantifiedType as ASTQuantifiedType
+import linter.elements.definitions.OperatorDefinition
+import linter.elements.values.TypeDefinition
+import linter.elements.values.VariableValueDeclaration
+import parsing.ast.general.Element
 
-class QuantifiedType(val source: ASTQuantifiedType, val baseType: Type, val hasDynamicQuantity: Boolean,
+class QuantifiedType(val source: Element, val baseType: Type, val hasDynamicQuantity: Boolean,
 					 val isOptional: Boolean): Type() {
 
 	init {
 		units.add(baseType)
-		//TODO mind optionality as well
-		if(!hasDynamicQuantity) {
-			for((name, type) in baseType.scope.types) {
-				this.scope.types[name] = type
-			}
-			for((name, value) in baseType.scope.values) {
-				this.scope.values[name] = value
-			}
-			for(initializer in baseType.scope.initializers) {
-				this.scope.initializers.add(initializer)
-			}
-			for((name, originalFunctions) in baseType.scope.functions) {
-				val functions = LinkedList<FunctionDefinition>()
-				for(function in originalFunctions)
-					functions.add(function)
-				this.scope.functions[name] = functions
-			}
-			for(operator in baseType.scope.operators) {
-				this.scope.operators.add(operator)
-			}
-		}
+		if(!hasDynamicQuantity)
+			baseType.scope.subscribe(this)
+	}
+
+	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): QuantifiedType {
+		return QuantifiedType(source, baseType.withTypeSubstitutions(typeSubstitution), hasDynamicQuantity, isOptional)
+	}
+
+	override fun onNewType(type: TypeDefinition) {
+		//TODO mind optionality
+		this.scope.addType(type)
+	}
+
+	override fun onNewValue(value: VariableValueDeclaration) {
+		//TODO mind optionality
+		this.scope.addValue(value)
+	}
+
+	override fun onNewOperator(operator: OperatorDefinition) {
+		//TODO mind optionality
+		this.scope.addOperator(operator)
 	}
 
 	override fun accepts(sourceType: Type): Boolean {
@@ -56,7 +57,7 @@ class QuantifiedType(val source: ASTQuantifiedType, val baseType: Type, val hasD
 	override fun getKeyType(linter: Linter): Type? {
 		if(!hasDynamicQuantity)
 			return super.getKeyType(linter)
-		return SimpleType(source, listOf(), "Int")
+		return ObjectType(source, listOf(), "Int")
 	}
 
 	override fun getValueType(linter: Linter): Type? {
