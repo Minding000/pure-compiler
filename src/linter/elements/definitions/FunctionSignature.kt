@@ -1,25 +1,27 @@
 package linter.elements.definitions
 
+import linter.Linter
 import linter.elements.general.Unit
+import linter.elements.literals.ObjectType
 import linter.elements.literals.Type
 import linter.elements.values.TypeDefinition
-import linter.scopes.InterfaceScope
+import linter.scopes.Scope
 import parsing.ast.general.Element
 import java.util.*
 
 class FunctionSignature(val source: Element, val genericParameters: List<TypeDefinition>,
-						val parameterTypes: List<Type?>, val returnType: Type?): Unit() {
+						val parameterTypes: List<Type?>, returnType: Type?): Unit() {
+	val returnType = returnType ?: ObjectType(source, Linter.Literals.NOTHING)
 
-	init {
+	init { //TODO these are already part of the unit tree (added by FunctionImplementation) and will therefore receive events twice
 		units.addAll(genericParameters)
 		for(type in parameterTypes)
 			if(type != null)
 				units.add(type)
-		if(returnType != null)
-			units.add(returnType)
+		units.add(this.returnType)
 	}
 
-	fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): FunctionSignature {
+	fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): FunctionSignature {
 		val specificGenericParameters = LinkedList<TypeDefinition>()
 		for(genericParameter in genericParameters)
 			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
@@ -27,10 +29,17 @@ class FunctionSignature(val source: Element, val genericParameters: List<TypeDef
 		for(parameterType in parameterTypes)
 			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitution))
 		return FunctionSignature(source, specificGenericParameters, specificParametersTypes,
-				returnType?.withTypeSubstitutions(typeSubstitution))
+				returnType.withTypeSubstitutions(typeSubstitution))
 	}
 
-	fun accepts(scope: InterfaceScope, types: List<Type?>): Boolean {
+	override fun linkTypes(linter: Linter, scope: Scope) {
+		if(returnType.toString() == Linter.Literals.NOTHING)
+			linter.nothingLiteralScope?.let { super.linkTypes(linter, it) }
+		else
+			super.linkTypes(linter, scope)
+	}
+
+	fun accepts(types: List<Type?>): Boolean {
 		if(parameterTypes.size != types.size)
 			return false
 		for(i in parameterTypes.indices)
@@ -46,19 +55,27 @@ class FunctionSignature(val source: Element, val genericParameters: List<TypeDef
 			return false
 		if(parameterTypes.size != other.parameterTypes.size)
 			return false
-		for(i in parameterTypes.indices)
-			if(parameterTypes[i] != other.parameterTypes[i])
+		for(parameterIndex in parameterTypes.indices)
+			if(parameterTypes[parameterIndex] != other.parameterTypes[parameterIndex])
 				return false
 		return true
 	}
 
 	override fun hashCode(): Int {
-		var result = parameterTypes.hashCode()
-		result = 31 * result + (returnType?.hashCode() ?: 0)
+		var result = genericParameters.hashCode()
+		result = 31 * result + parameterTypes.hashCode()
+		result = 31 * result + returnType.hashCode()
 		return result
 	}
 
 	override fun toString(): String {
-		return "(${parameterTypes.joinToString()}) =>${if(returnType == null) "|" else " $returnType"}"
+		return toString(true)
+	}
+
+	fun toString(useLambdaStyle: Boolean): String {
+		return if(useLambdaStyle)
+			"(${parameterTypes.joinToString()}) =>${if(returnType.toString() == Linter.Literals.NOTHING) "|" else " $returnType"}"
+		else
+			"(${parameterTypes.joinToString()})${if(returnType.toString() == Linter.Literals.NOTHING) "" else ": $returnType"}"
 	}
 }

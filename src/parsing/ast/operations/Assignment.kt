@@ -9,7 +9,8 @@ import util.concretizeValues
 import util.indent
 import util.toLines
 
-class Assignment(val targets: List<ValueElement>, val source: ValueElement): Element(targets.first().start, source.end) {
+class Assignment(private val targets: List<ValueElement>, val source: ValueElement):
+	Element(targets.first().start, source.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): Assignment {
 		return Assignment(this, targets.concretizeValues(linter, scope), source.concretize(linter, scope))

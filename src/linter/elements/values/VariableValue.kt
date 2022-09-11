@@ -7,7 +7,7 @@ import parsing.ast.literals.Identifier
 
 class VariableValue(override val source: Identifier): Value(source) {
 	val name = source.getValue()
-	private var definition: VariableValueDeclaration? = null
+	var definition: VariableValueDeclaration? = null
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		definition = scope.resolveValue(name)

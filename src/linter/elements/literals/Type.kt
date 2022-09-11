@@ -3,6 +3,7 @@ package linter.elements.literals
 import linter.Linter
 import linter.elements.definitions.InitializerDefinition
 import linter.elements.definitions.OperatorDefinition
+import linter.elements.definitions.TypeAlias
 import linter.elements.general.Unit
 import linter.elements.values.TypeDefinition
 import linter.elements.values.VariableValueDeclaration
@@ -14,7 +15,7 @@ abstract class Type: Unit() {
 	val scope = InterfaceScope(this)
 	var llvmType: LLVMTypeRef? = null
 
-	abstract fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): Type
+	abstract fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Type
 
 	open fun onNewType(type: TypeDefinition) {
 	}
@@ -28,8 +29,8 @@ abstract class Type: Unit() {
 	open fun onNewOperator(operator: OperatorDefinition) {
 	}
 
-	abstract fun accepts(sourceType: Type): Boolean
-	abstract fun isAssignableTo(targetType: Type): Boolean
+	abstract fun accepts(unresolvedSourceType: Type): Boolean
+	abstract fun isAssignableTo(unresolvedTargetType: Type): Boolean
 
 	open fun getKeyType(linter: Linter): Type? {
 		linter.messages.add(Message("Type '$this' doesn't have a key type.", Message.Type.ERROR))
@@ -39,6 +40,15 @@ abstract class Type: Unit() {
 	open fun getValueType(linter: Linter): Type? {
 		linter.messages.add(Message("Type '$this' doesn't have a value type.", Message.Type.ERROR))
 		return null
+	}
+
+	internal fun resolveTypeAlias(sourceType: Type): Type {
+		if(sourceType is ObjectType) {
+			(sourceType.definition as? TypeAlias)?.let { typeAlias ->
+				return typeAlias.referenceType
+			}
+		}
+		return sourceType
 	}
 
 //	abstract override fun compile(context: BuildContext): LLVMTypeRef

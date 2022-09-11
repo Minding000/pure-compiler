@@ -1,5 +1,6 @@
 package linter
 
+import linter.elements.access.MemberAccess
 import linter.elements.literals.ObjectType
 import linter.elements.values.*
 import util.TestUtil
@@ -43,7 +44,7 @@ internal class TypeResolution {
 	}
 
 	@Test
-	fun `produces error for undeclared types`() {
+	fun `emits error for undeclared types`() {
 		val sourceCode =
 			"""
 				var eagle: Eagle
@@ -142,7 +143,7 @@ internal class TypeResolution {
 				list.add(Germany)
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		val declaration = lintResult.find<VariableValue> { declaration -> declaration.name == "add" }
-		assertEquals("Element", (declaration?.type as? ObjectType)?.definition?.name)
+		val memberAccess = lintResult.find<MemberAccess> { memberAccess -> memberAccess.member.name == "add" }
+		assertEquals("(Country) =>|", memberAccess?.type.toString())
 	}
 }

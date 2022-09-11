@@ -15,6 +15,7 @@ class Linter {
 	var numberLiteralScope: Scope? = null
 	var booleanLiteralScope: Scope? = null
 	var nullLiteralScope: Scope? = null
+	var nothingLiteralScope: Scope? = null
 
 	fun lint(ast: ProgramAST): Program {
 		messages.add(Message("----- Linter stage: Concretization -----", Message.Type.DEBUG))
@@ -27,6 +28,7 @@ class Linter {
 		numberLiteralScope = getLiteralScope(program, listOf("Pure", "lang", "dataTypes", "Int"))
 		booleanLiteralScope = getLiteralScope(program, listOf("Pure", "lang", "dataTypes", "Bool"))
 		nullLiteralScope = getLiteralScope(program, listOf("Pure", "lang", "dataTypes", "Null"))
+		nothingLiteralScope = getLiteralScope(program, listOf("Pure", "lang", "dataTypes", "Nothing"))
 		phase = Phase.FILE_REFERENCE_RESOLUTION
 		program.resolveFileReferences(this)
 		messages.add(Message("----- Linter stage: Type linking -----", Message.Type.DEBUG))
@@ -82,5 +84,13 @@ class Linter {
 		VALUE_LINKING,
 		VALIDATION,
 		DONE
+	}
+
+	object Literals {
+		const val STRING = "String"
+		const val NUMBER = "Int"
+		const val BOOLEAN = "Bool"
+		const val NULL = "Null"
+		const val NOTHING = "Nothing"
 	}
 }

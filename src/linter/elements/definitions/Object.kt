@@ -20,4 +20,8 @@ class Object(override val source: ASTTypeDefinition, name: String, scope: TypeSc
 		units.add(value)
 		scope.instanceConstant = value
 	}
+
+	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Object {
+		return this
+	}
 }

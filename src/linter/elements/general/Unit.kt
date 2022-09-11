@@ -1,5 +1,6 @@
 package linter.elements.general
 
+import errors.internal.CompilerError
 import linter.Linter
 import linter.scopes.MutableScope
 import linter.scopes.Scope
@@ -24,8 +25,13 @@ abstract class Unit {
 	}
 
 	open fun validate(linter: Linter) {
-		for(unit in units)
+		val unitIterator = units.iterator()
+		for(unit in unitIterator) {
+			unitIterator.forEachRemaining { otherUnit ->
+				if(otherUnit == unit) throw CompilerError("Unit '$unit' has been added more than once.")
+			}
 			unit.validate(linter)
+		}
 	}
 
 	inline fun <reified T: Unit>find(noinline predicate: (T) -> Boolean): T? {

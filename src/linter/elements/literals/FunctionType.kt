@@ -9,41 +9,49 @@ class FunctionType(val source: Element): Type() {
 	private val signatures = LinkedList<FunctionSignature>()
 
 	constructor(source: Element, signature: FunctionSignature): this(source) {
+		addSignature(signature)
+	}
+
+	fun addSignature(signature: FunctionSignature) {
+		units.add(signature)
 		signatures.add(signature)
 	}
 
 	fun resolveSignature(suppliedTypes: List<Type?>): FunctionSignature? {
 		val validSignatures = LinkedList<FunctionSignature>()
 		for(signature in signatures) {
-			if(signature.accepts(scope, suppliedTypes))
+			if(signature.accepts(suppliedTypes))
 				validSignatures.add(signature)
 		}
 		if(validSignatures.isEmpty())
 			return null
-		signatureCheck@for(signature in validSignatures) {
+		specificityPrecedenceLoop@for(signature in validSignatures) {
 			for(otherSignature in validSignatures) {
-				if(otherSignature == signature)
+				if(otherSignature === signature)
 					continue
-				if(!otherSignature.accepts(scope, signature.parameterTypes))
-					continue@signatureCheck
+				if(otherSignature.parameterTypes == signature.parameterTypes)
+					continue@specificityPrecedenceLoop
+				if(!otherSignature.accepts(signature.parameterTypes))
+					continue@specificityPrecedenceLoop
 			}
 			return signature
 		}
 		throw SignatureResolutionAmbiguityError(validSignatures)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): Type {
+	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Type {
 		val specificFunctionType = FunctionType(source)
 		for(signature in signatures)
-			signature.withTypeSubstitutions(typeSubstitution)
+			specificFunctionType.signatures.add(signature.withTypeSubstitutions(typeSubstitution))
 		return specificFunctionType
 	}
 
-	override fun accepts(sourceType: Type): Boolean {
-		return sourceType.isAssignableTo(this)
+	override fun accepts(unresolvedSourceType: Type): Boolean {
+		return unresolvedSourceType.isAssignableTo(this)
 	}
 
-	override fun isAssignableTo(targetType: Type): Boolean {
+	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
+		val targetType = resolveTypeAlias(unresolvedTargetType)
 		if(targetType is ObjectType)
 			return false
 		if(targetType !is FunctionType)

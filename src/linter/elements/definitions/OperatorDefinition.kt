@@ -2,6 +2,7 @@ package linter.elements.definitions
 
 import linter.Linter
 import linter.elements.general.Unit
+import linter.elements.literals.ObjectType
 import linter.elements.literals.Type
 import linter.elements.values.VariableValueDeclaration
 import linter.scopes.BlockScope
@@ -22,7 +23,7 @@ open class OperatorDefinition(override val source: ASTOperatorDefinition, name: 
 			units.add(returnType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): OperatorDefinition {
+	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): OperatorDefinition {
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))

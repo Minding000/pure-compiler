@@ -14,7 +14,7 @@ class AndUnionType(val source: UnionType, val types: List<Type>): Type() {
 			type.scope.subscribe(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): AndUnionType {
+	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): AndUnionType {
 		val specificTypes = LinkedList<Type>()
 		for(type in types)
 			specificTypes.add(typeSubstitution[type] ?: type)
@@ -33,14 +33,16 @@ class AndUnionType(val source: UnionType, val types: List<Type>): Type() {
 		this.scope.addOperator(operator)
 	}
 
-	override fun accepts(sourceType: Type): Boolean {
+	override fun accepts(unresolvedSourceType: Type): Boolean {
+		val sourceType = resolveTypeAlias(unresolvedSourceType)
 		for(type in types)
 			if(!type.accepts(sourceType))
 				return false
 		return true
 	}
 
-	override fun isAssignableTo(targetType: Type): Boolean {
+	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
+		val targetType = resolveTypeAlias(unresolvedTargetType)
 		for(type in types)
 			if(type.isAssignableTo(targetType))
 				return true

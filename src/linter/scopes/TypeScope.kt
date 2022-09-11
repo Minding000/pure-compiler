@@ -6,7 +6,6 @@ import linter.elements.literals.ObjectType
 import linter.elements.literals.Type
 import linter.elements.values.Function
 import linter.elements.values.TypeDefinition
-import linter.elements.values.Value
 import linter.elements.values.VariableValueDeclaration
 import linter.messages.Message
 import java.util.*
@@ -15,8 +14,8 @@ import kotlin.collections.HashMap
 class TypeScope(private val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
 	var instanceConstant: VariableValueDeclaration? = null
 	var typeDefinition: TypeDefinition? = null
-	val types = HashMap<String, TypeDefinition>()
-	val values = HashMap<String, VariableValueDeclaration>()
+	private val typeDefinitions = HashMap<String, TypeDefinition>()
+	private val valueDeclarations = HashMap<String, VariableValueDeclaration>()
 	private val initializers = LinkedList<InitializerDefinition>()
 	private val operators = LinkedList<OperatorDefinition>()
 
@@ -24,12 +23,15 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		const val SELF_REFERENCE = "this"
 	}
 
-	fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>, superScope: InterfaceScope?): TypeScope {
+	fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>, superScope: InterfaceScope?): TypeScope {
 		val specificTypeScope = TypeScope(parentScope, superScope)
-		for((name, type) in types)
-			specificTypeScope.types[name] = type.withTypeSubstitutions(typeSubstitution)
-		for((name, value) in values)
-			specificTypeScope.values[name] = value.withTypeSubstitutions(typeSubstitution)
+		for((name, typeDefinition) in typeDefinitions) {
+			if(typeDefinition is GenericTypeDefinition)
+				continue
+			specificTypeScope.typeDefinitions[name] = typeDefinition.withTypeSubstitutions(typeSubstitution)
+		}
+		for((name, valueDeclaration) in valueDeclarations)
+			specificTypeScope.valueDeclarations[name] = valueDeclaration.withTypeSubstitutions(typeSubstitution)
 		for(initializer in initializers)
 			specificTypeScope.initializers.add(initializer.withTypeSubstitutions(typeSubstitution))
 		for(operator in operators)
@@ -43,9 +45,9 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 
 	override fun subscribe(type: Type) {
 		super.subscribe(type)
-		for((_, typeDefinition) in types)
+		for((_, typeDefinition) in typeDefinitions)
 			type.onNewType(typeDefinition)
-		for((_, value) in values)
+		for((_, value) in valueDeclarations)
 			type.onNewValue(value)
 		for(initializer in initializers)
 			type.onNewInitializer(initializer)
@@ -53,31 +55,38 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			type.onNewOperator(operator)
 	}
 
-	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
-		var previousDeclaration: InitializerDefinition? = null
-		initializerIteration@for(declaredInitializer in initializers) {
-			if(declaredInitializer.parameters.size != initializer.parameters.size)
+	fun ensureUniqueSignatures(linter: Linter) {
+		val initializerIterator = initializers.iterator()
+		val redeclarations = LinkedList<InitializerDefinition>()
+		for(initializer in initializerIterator) {
+			if(redeclarations.contains(initializer))
 				continue
-			for(i in initializer.parameters.indices) {
-				if(declaredInitializer.parameters[i].type != initializer.parameters[i].type)
-					continue@initializerIteration
+			initializerIterator.forEachRemaining { otherInitializer ->
+				if(otherInitializer.parameters.size != initializer.parameters.size)
+					return@forEachRemaining
+				for(parameterIndex in initializer.parameters.indices) {
+					if(otherInitializer.parameters[parameterIndex].type != initializer.parameters[parameterIndex].type)
+						return@forEachRemaining
+				}
+				redeclarations.add(otherInitializer)
+				linter.messages.add(
+					Message(
+						"${otherInitializer.source.getStartString()}: Redeclaration of" +
+								" initializer '${typeDefinition?.name}(${otherInitializer.variation})'," +
+								" previously declared in ${initializer.source.getStartString()}.", Message.Type.ERROR)
+				)
 			}
-			previousDeclaration = declaredInitializer
-			break
 		}
-		if(previousDeclaration == null) {
-			initializers.add(initializer)
-			onNewInitializer(initializer)
-			linter.messages.add(Message(
-				"${initializer.source.getStartString()}: " +
-						"Declaration of initializer '${typeDefinition?.name}(${initializer.variation})'.",
-				Message.Type.DEBUG))
-		} else {
-			linter.messages.add(Message(
-				"${initializer.source.getStartString()}: " +
-						"Redeclaration of initializer '${typeDefinition?.name}(${initializer.variation})'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
-		}
+		initializers.removeAll(redeclarations)
+	}
+
+	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
+		initializers.add(initializer)
+		onNewInitializer(initializer)
+		linter.messages.add(Message(
+			"${initializer.source.getStartString()}: " +
+					"Declaration of initializer '${typeDefinition?.name}(${initializer.variation})'.",
+			Message.Type.DEBUG))
 	}
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {
@@ -94,7 +103,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 						" Use the 'override' keyword to modify it.", Message.Type.ERROR))
 			return
 		}
-		previousDeclaration = types.putIfAbsent(type.name, type)
+		previousDeclaration = typeDefinitions.putIfAbsent(type.name, type)
 		if(previousDeclaration == null) {
 			onNewType(type)
 			linter.messages.add(Message(
@@ -107,27 +116,19 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	override fun declareFunction(linter: Linter, name: String, newImplementation: FunctionImplementation) {
-		when(val existingDeclaration = values[name]?.value) {
+		when(val existingDeclaration = valueDeclarations[name]?.value) {
 			null -> {
-				val newFunction = Function(newImplementation.source, newImplementation)
+				val newFunction = Function(newImplementation.source, newImplementation, name)
 				val newValue = VariableValueDeclaration(newImplementation.source, name, newFunction.type, newFunction, true)
-				values[name] = newValue
+				valueDeclarations[name] = newValue
 				onNewValue(newValue)
 				linter.messages.add(Message(
 					"${newImplementation.source.getStartString()}: Declaration of function '$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.", Message.Type.DEBUG))
 			}
 			is Function -> {
-				functionIteration@for(existingImplementation in existingDeclaration.implementations) {
-					if(existingImplementation.signature == newImplementation.signature) {
-						linter.messages.add(Message(
-							"${newImplementation.source.getStartString()}: Redeclaration of function '$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'," +
-									" previously declared in ${existingImplementation.source.getStartString()}.", Message.Type.ERROR))
-						return
-					}
-				}
 				existingDeclaration.addImplementation(newImplementation)
 				linter.messages.add(Message(
-					"${newImplementation.source.getStartString()}: Declaration of function '$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.", Message.Type.DEBUG))
+					"${newImplementation.source.getStartString()}: Declaration of function signature '$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.", Message.Type.DEBUG))
 			}
 			else -> {
 				linter.messages.add(Message(
@@ -188,7 +189,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 						" Use the 'override' keyword to modify it.", Message.Type.ERROR))
 			return
 		}
-		previousDeclaration = values.putIfAbsent(value.name, value)
+		previousDeclaration = valueDeclarations.putIfAbsent(value.name, value)
 		if(previousDeclaration == null) {
 			onNewValue(value)
 			linter.messages.add(Message(
@@ -203,28 +204,15 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	override fun resolveValue(name: String): VariableValueDeclaration? {
 		if(name == SELF_REFERENCE)
 			return instanceConstant
-		return values[name]
+		return valueDeclarations[name]
 			?: superScope?.resolveValue(name)
 			?: parentScope.resolveValue(name)
 	}
 
 	override fun resolveType(name: String): TypeDefinition? {
-		return types[name]
+		return typeDefinitions[name]
 			?: superScope?.resolveType(name)
 			?: parentScope.resolveType(name)
-	}
-
-	fun resolveInitializer(suppliedValues: List<Value>): InitializerDefinition? {
-		initializerIteration@for(initializer in initializers) {
-			if(initializer.parameters.size != suppliedValues.size)
-				continue
-			for(i in suppliedValues.indices) {
-				if(suppliedValues[i].type?.let { initializer.parameters[i].type?.accepts(it) } == false)
-					continue@initializerIteration
-			}
-			return initializer
-		}
-		return null
 	}
 
 	override fun resolveOperator(name: String, suppliedTypes: List<Type?>):
@@ -244,11 +232,9 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			?: parentScope.resolveOperator(name, suppliedTypes)
 	}
 
-	override fun resolveIndexOperator(name: String, suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
+	override fun resolveIndexOperator(suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
 			IndexOperatorDefinition? {
 		operatorIteration@for(operator in operators) {
-			if(operator.name != name)
-				continue
 			if(operator !is IndexOperatorDefinition)
 				continue
 			if(operator.indices.size != suppliedIndexTypes.size)
@@ -265,15 +251,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			}
 			return operator
 		}
-		return superScope?.resolveIndexOperator(name, suppliedIndexTypes, suppliedParameterTypes)
-			?: parentScope.resolveIndexOperator(name, suppliedIndexTypes, suppliedParameterTypes)
-	}
-
-	fun getGenericTypes(): LinkedList<Type> {
-		val genericTypes = LinkedList<Type>()
-		for((_, typeDefinition) in types)
-			if(typeDefinition.isGeneric)
-				genericTypes.add(ObjectType(typeDefinition))
-		return genericTypes
+		return superScope?.resolveIndexOperator(suppliedIndexTypes, suppliedParameterTypes)
+			?: parentScope.resolveIndexOperator(suppliedIndexTypes, suppliedParameterTypes)
 	}
 }

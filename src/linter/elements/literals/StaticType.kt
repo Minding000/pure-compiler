@@ -10,8 +10,8 @@ class StaticType(val definition: TypeDefinition): Type() {
 		definition.scope.subscribe(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): StaticType {
-		return this
+	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): StaticType {
+		return StaticType(definition.withTypeSubstitutions(typeSubstitution))
 	}
 
 	override fun onNewType(type: TypeDefinition) {
@@ -27,11 +27,12 @@ class StaticType(val definition: TypeDefinition): Type() {
 		this.scope.addInitializer(initializer)
 	}
 
-	override fun accepts(sourceType: Type): Boolean {
-		return sourceType.isAssignableTo(this)
+	override fun accepts(unresolvedSourceType: Type): Boolean {
+		return unresolvedSourceType.isAssignableTo(this)
 	}
 
-	override fun isAssignableTo(targetType: Type): Boolean {
+	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
+		val targetType = resolveTypeAlias(unresolvedTargetType)
 		if(targetType is FunctionType)
 			return false
 		if(targetType !is StaticType)

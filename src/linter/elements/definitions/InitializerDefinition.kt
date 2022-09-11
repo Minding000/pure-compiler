@@ -2,6 +2,7 @@ package linter.elements.definitions
 
 import linter.Linter
 import linter.elements.general.Unit
+import linter.elements.literals.ObjectType
 import linter.elements.literals.Type
 import linter.scopes.BlockScope
 import linter.scopes.MutableScope
@@ -20,7 +21,7 @@ class InitializerDefinition(val source: ASTInitializerDefinition, val scope: Blo
 			units.add(body)
 	}
 
-	fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): InitializerDefinition {
+	fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): InitializerDefinition {
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))

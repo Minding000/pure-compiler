@@ -59,7 +59,7 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 		return null
 	}
 
-	override fun resolveIndexOperator(name: String, suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
+	override fun resolveIndexOperator(suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
 			IndexOperatorDefinition? {
 		return null
 	}

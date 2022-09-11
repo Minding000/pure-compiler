@@ -1,8 +1,8 @@
 package linter.elements.literals
 
-import errors.internal.CompilerError
 import linter.Linter
 import linter.elements.definitions.OperatorDefinition
+import linter.elements.definitions.TypeAlias
 import linter.elements.values.TypeDefinition
 import linter.elements.values.VariableValueDeclaration
 import linter.messages.Message
@@ -10,46 +10,36 @@ import linter.scopes.Scope
 import parsing.ast.general.Element
 import java.util.LinkedList
 
-class ObjectType(val source: Element, val genericParameters: List<Type>, val name: String): Type() {
+class ObjectType(val source: Element, val name: String, val genericParameters: List<Type> = listOf()): Type() {
 	var definition: TypeDefinition? = null
+		set(value) {
+			value?.scope?.subscribe(this)
+			field = value
+		}
 
-	constructor(definition: TypeDefinition): this(definition.source, LinkedList(), definition.name) {
-		setDefinition(null, definition)
+	constructor(definition: TypeDefinition): this(definition.source, definition.name) {
+		this.definition = definition
 	}
 
-	constructor(linter: Linter, genericParameters: List<Type>, definition: TypeDefinition):
-			this(definition.source, genericParameters, definition.name) {
-		setDefinition(linter, definition)
+	constructor(genericParameters: List<Type>, definition: TypeDefinition):
+			this(definition.source, definition.name, genericParameters) {
+		this.definition = definition
 	}
 
 	init {
 		units.addAll(genericParameters)
 	}
 
-	private fun setDefinition(linter: Linter?, definition: TypeDefinition?) {
-		this.definition = definition
-		definition?.let {
-			val genericTypes = it.scope.getGenericTypes()
-			if(genericTypes.size == genericParameters.size) {
-				for(i in genericTypes.indices)
-					this.scope.genericTypes[genericTypes[i]] = genericParameters[i]
-			} else {
-				if(linter == null)
-					throw CompilerError("Invalid condition: Unable to log linter message.")
-				linter.messages.add(Message(
-					"${source.getStartString()}: Number of provided generic parameters " +
-							"(${genericParameters.size}) doesn't match declared number of declared " +
-							"generic parameters (${genericTypes.size})", Message.Type.ERROR))
-			}
-			it.scope.subscribe(this)
-		}
-	}
-
-	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): Type {
+	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Type {
+		val substituteType = typeSubstitution[this]
+		if(substituteType != null)
+			return substituteType
 		val specificGenericParameters = LinkedList<Type>()
 		for(genericParameter in genericParameters)
-			specificGenericParameters.add(typeSubstitution[genericParameter] ?: genericParameter)
-		return ObjectType(source, specificGenericParameters, name)
+			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
+		val specificType = ObjectType(source, name, specificGenericParameters)
+		specificType.definition = definition
+		return specificType
 	}
 
 	override fun onNewType(type: TypeDefinition) {
@@ -66,18 +56,29 @@ class ObjectType(val source: Element, val genericParameters: List<Type>, val nam
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		if(definition == null) {
-			setDefinition(linter, scope.resolveType(name))
+			definition = scope.resolveType(name)
 			if(definition == null)
 				linter.messages.add(Message(
 					"${source.getStartString()}: Type '$name' hasn't been declared yet.", Message.Type.ERROR))
 		}
 	}
 
-	override fun accepts(sourceType: Type): Boolean {
-		return sourceType.isAssignableTo(this)
+	fun acceptsSubstituteType(substituteType: Type): Boolean {
+		return definition?.superType?.accepts(substituteType) ?: true
 	}
 
-	override fun isAssignableTo(targetType: Type): Boolean {
+	override fun accepts(unresolvedSourceType: Type): Boolean {
+		(definition as? TypeAlias)?.let { typeAlias ->
+			return unresolvedSourceType.isAssignableTo(typeAlias.referenceType)
+		}
+		return unresolvedSourceType.isAssignableTo(this)
+	}
+
+	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
+		val targetType = resolveTypeAlias(unresolvedTargetType)
+		(definition as? TypeAlias)?.let { typeAlias ->
+			return typeAlias.referenceType.isAssignableTo(targetType)
+		}
 		if(targetType is FunctionType)
 			return false
 		if(targetType !is ObjectType)

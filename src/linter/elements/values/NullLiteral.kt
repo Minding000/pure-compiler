@@ -8,7 +8,7 @@ import parsing.ast.literals.NullLiteral
 class NullLiteral(override val source: NullLiteral): LiteralValue(source) {
 
 	init {
-		val type = ObjectType(source, listOf(), "Null")
+		val type = ObjectType(source, Linter.Literals.NULL)
 		this.type = type
 		units.add(type)
 	}

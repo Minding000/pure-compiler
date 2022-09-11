@@ -1,6 +1,7 @@
 package parsing.ast.definitions
 
 import linter.Linter
+import linter.elements.definitions.GenericTypeDefinition
 import linter.elements.values.TypeDefinition
 import linter.scopes.MutableScope
 import linter.scopes.TypeScope
@@ -14,10 +15,10 @@ class GenericsListElement(private val identifier: Identifier, private val superT
     override fun concretize(linter: Linter, scope: MutableScope): TypeDefinition {
         val superType = superType?.concretize(linter, scope)
         val typeScope = TypeScope(scope, superType?.scope)
-        val genericType = TypeDefinition(this, identifier.getValue(), typeScope, superType, true)
-        typeScope.typeDefinition = genericType
-        scope.declareType(linter, genericType)
-        return genericType
+        val genericTypeDefinition = GenericTypeDefinition(this, identifier.getValue(), typeScope, superType)
+        typeScope.typeDefinition = genericTypeDefinition
+        scope.declareType(linter, genericTypeDefinition)
+        return genericTypeDefinition
     }
 
     override fun toString(): String {

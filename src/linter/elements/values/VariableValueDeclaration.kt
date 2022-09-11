@@ -3,6 +3,7 @@ package linter.elements.values
 import linter.Linter
 import linter.elements.literals.Type
 import linter.elements.general.Unit
+import linter.elements.literals.ObjectType
 import linter.scopes.Scope
 import parsing.ast.general.Element
 import parsing.ast.literals.Identifier
@@ -20,7 +21,7 @@ open class VariableValueDeclaration(open val source: Element, val name: String, 
 
 	constructor(source: Identifier): this(source, source.getValue(), null, null, true)
 
-	open fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): VariableValueDeclaration {
+	open fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): VariableValueDeclaration {
 		return VariableValueDeclaration(source, name, type?.withTypeSubstitutions(typeSubstitution), value, isConstant)
 	}
 

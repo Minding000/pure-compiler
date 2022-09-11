@@ -1,9 +1,11 @@
 package linter.scopes
 
+import linter.elements.definitions.GenericTypeDefinition
 import linter.elements.definitions.IndexOperatorDefinition
 import linter.elements.definitions.InitializerDefinition
 import linter.elements.definitions.OperatorDefinition
 import linter.elements.literals.FunctionType
+import linter.elements.literals.ObjectType
 import linter.elements.literals.Type
 import linter.elements.values.TypeDefinition
 import linter.elements.values.VariableValueDeclaration
@@ -15,7 +17,6 @@ class InterfaceScope(private val type: Type): Scope() {
 	private val values = HashMap<String, VariableValueDeclaration>()
 	private val initializers = LinkedList<InitializerDefinition>()
 	private val operators = LinkedList<OperatorDefinition>()
-	val genericTypes = HashMap<Type, Type>()
 
 	fun hasType(type: TypeDefinition): Boolean = types.containsValue(type)
 
@@ -87,6 +88,8 @@ class InterfaceScope(private val type: Type): Scope() {
 			OperatorDefinition? {
 		val validSignatures = LinkedList<OperatorDefinition>()
 		for(signature in operators) {
+			if(signature.name != name)
+				continue
 			if(signature.accepts(suppliedTypes))
 				validSignatures.add(signature)
 		}
@@ -104,7 +107,7 @@ class InterfaceScope(private val type: Type): Scope() {
 		throw FunctionType.SignatureResolutionAmbiguityError(validSignatures)
 	}
 
-	override fun resolveIndexOperator(name: String, suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
+	override fun resolveIndexOperator(suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
 			IndexOperatorDefinition? {
 		val validSignatures = LinkedList<IndexOperatorDefinition>()
 		for(signature in operators) {
@@ -123,6 +126,14 @@ class InterfaceScope(private val type: Type): Scope() {
 			return signature
 		}
 		throw FunctionType.SignatureResolutionAmbiguityError(validSignatures)
+	}
+
+	fun getGenericTypes(): LinkedList<ObjectType> {
+		val genericTypes = LinkedList<ObjectType>()
+		for((_, typeDefinition) in types)
+			if(typeDefinition is GenericTypeDefinition)
+				genericTypes.add(ObjectType(typeDefinition))
+		return genericTypes
 	}
 
 	override fun toString(): String {

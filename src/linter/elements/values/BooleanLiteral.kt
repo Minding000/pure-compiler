@@ -8,7 +8,7 @@ import parsing.ast.literals.BooleanLiteral
 class BooleanLiteral(override val source: BooleanLiteral, val value: Boolean): LiteralValue(source) {
 
 	init {
-		val type = ObjectType(source, listOf(), "Bool")
+		val type = ObjectType(source, Linter.Literals.BOOLEAN)
 		units.add(type)
 		this.type = type
 	}

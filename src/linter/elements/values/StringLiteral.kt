@@ -8,7 +8,7 @@ import parsing.ast.literals.StringLiteral
 class StringLiteral(override val source: StringLiteral, val value: String): LiteralValue(source) {
 
 	init {
-		val type = ObjectType(source, listOf(), "String")
+		val type = ObjectType(source, Linter.Literals.STRING)
 		units.add(type)
 		this.type = type
 	}

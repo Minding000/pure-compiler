@@ -45,6 +45,6 @@ abstract class Scope {
 	fun resolveOperator(name: String, suppliedType: Type?): OperatorDefinition?
 		= resolveOperator(name, listOf(suppliedType))
 
-	abstract fun resolveIndexOperator(name: String, suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
+	abstract fun resolveIndexOperator(suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
 			IndexOperatorDefinition?
 }

@@ -12,7 +12,8 @@ import parsing.ast.general.Element
 class FunctionImplementation(val source: Element, val scope: BlockScope, val genericParameters: List<TypeDefinition>,
 							 val parameters: List<Parameter>, body: ErrorHandlingContext?,
 							 val returnType: Type?, val isNative: Boolean = false): Unit() {
-	val signature = FunctionSignature(source, genericParameters, parameters.map { p -> p.type }, returnType)
+	val signature = FunctionSignature(source, genericParameters, parameters.map { parameter -> parameter.type },
+		returnType)
 
 	init {
 		units.addAll(genericParameters)

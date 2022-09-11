@@ -9,8 +9,10 @@ class ObjectType(private val typeList: TypeList?, private val identifier: Identi
 	TypeElement(identifier.start, typeList?.end ?: identifier.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): ObjectType {
-		return ObjectType(this, typeList?.concretizeTypes(linter, scope) ?: listOf(),
-			identifier.getValue())
+		return ObjectType(
+			this, identifier.getValue(),
+			typeList?.concretizeTypes(linter, scope) ?: listOf()
+		)
 	}
 
 	override fun toString(): String {

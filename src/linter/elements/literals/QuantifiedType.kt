@@ -15,7 +15,7 @@ class QuantifiedType(val source: Element, val baseType: Type, val hasDynamicQuan
 			baseType.scope.subscribe(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): QuantifiedType {
+	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): QuantifiedType {
 		return QuantifiedType(source, baseType.withTypeSubstitutions(typeSubstitution), hasDynamicQuantity, isOptional)
 	}
 
@@ -34,9 +34,10 @@ class QuantifiedType(val source: Element, val baseType: Type, val hasDynamicQuan
 		this.scope.addOperator(operator)
 	}
 
-	override fun accepts(sourceType: Type): Boolean {
+	override fun accepts(unresolvedSourceType: Type): Boolean {
 		if(hasDynamicQuantity)
 			return false
+		val sourceType = resolveTypeAlias(unresolvedSourceType)
 		if(sourceType is QuantifiedType) {
 			if(sourceType.isOptional && !isOptional)
 				return false
@@ -44,9 +45,10 @@ class QuantifiedType(val source: Element, val baseType: Type, val hasDynamicQuan
 		return baseType.accepts(sourceType)
 	}
 
-	override fun isAssignableTo(targetType: Type): Boolean {
+	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
 		if(hasDynamicQuantity)
 			return false
+		val targetType = resolveTypeAlias(unresolvedTargetType)
 		if(targetType is QuantifiedType) {
 			if(isOptional && !targetType.isOptional)
 				return false
@@ -57,7 +59,7 @@ class QuantifiedType(val source: Element, val baseType: Type, val hasDynamicQuan
 	override fun getKeyType(linter: Linter): Type? {
 		if(!hasDynamicQuantity)
 			return super.getKeyType(linter)
-		return ObjectType(source, listOf(), "Int")
+		return ObjectType(source, "Int")
 	}
 
 	override fun getValueType(linter: Linter): Type? {

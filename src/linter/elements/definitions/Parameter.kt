@@ -1,6 +1,7 @@
 package linter.elements.definitions
 
 import linter.Linter
+import linter.elements.literals.ObjectType
 import linter.elements.literals.Type
 import linter.elements.values.VariableValueDeclaration
 import linter.scopes.MutableScope
@@ -14,7 +15,7 @@ class Parameter(override val source: ASTParameter, name: String, type: Type?, va
 			units.add(type)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): Parameter {
+	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Parameter {
 		return Parameter(source, name, type?.withTypeSubstitutions(typeSubstitution), isMutable, hasDynamicSize)
 	}
 

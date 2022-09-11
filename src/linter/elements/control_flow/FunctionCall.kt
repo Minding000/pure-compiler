@@ -2,6 +2,7 @@ package linter.elements.control_flow
 
 import linter.Linter
 import linter.elements.access.MemberAccess
+import linter.elements.definitions.TypeSpecification
 import linter.elements.literals.FunctionType
 import linter.elements.literals.ObjectType
 import linter.elements.literals.StaticType
@@ -27,7 +28,7 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val p
 				linter.messages.add(Message("${source.getStartString()}: " +
 						"Initializer '${getSignature()}' hasn't been declared yet.", Message.Type.ERROR))
 			else
-				type = ObjectType(linter, listOf(), functionType.definition)
+				type = ObjectType(listOf(), functionType.definition)
 		} else if(functionType is FunctionType) {
 			try {
 				val signature = functionType.resolveSignature(parameters.map { p -> p.type })
@@ -51,6 +52,9 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val p
 
 	private fun getSignature(): String {
 		var signature = ""
+		var function = function
+		if(function is TypeSpecification)
+			function = function.baseValue
 		signature += when(function) {
 			is VariableValue -> function.name
 			is MemberAccess -> "${function.target.type}.${function.member.name}"

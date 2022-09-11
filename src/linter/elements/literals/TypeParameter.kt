@@ -8,18 +8,20 @@ class TypeParameter(val source: ASTTypeParameter, val mode: Mode, val baseType: 
 		units.add(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<Type, Type>): TypeParameter {
+	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): TypeParameter {
 		return TypeParameter(source, mode, baseType.withTypeSubstitutions(typeSubstitution))
 	}
 
-	override fun accepts(sourceType: Type): Boolean {
+	override fun accepts(unresolvedSourceType: Type): Boolean {
+		val sourceType = resolveTypeAlias(unresolvedSourceType)
 		// If assigning object to collection (different logic applies when assigning a collection)
 		if(mode == Mode.PRODUCING)
 			return false
 		return baseType.accepts(sourceType)
 	}
 
-	override fun isAssignableTo(targetType: Type): Boolean {
+	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
+		val targetType = resolveTypeAlias(unresolvedTargetType)
 		// If assigning collection to object (different logic applies when assigning to a collection)
 		if(mode == Mode.CONSUMING)
 			return false
