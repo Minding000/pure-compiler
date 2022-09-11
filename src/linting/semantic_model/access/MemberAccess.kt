@@ -17,8 +17,8 @@ class MemberAccess(override val source: MemberAccess, val target: Value, val mem
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		target.linkValues(linter, scope)
-		target.type?.let {
-			member.linkValues(linter, it.scope)
+		target.type?.let { targetType ->
+			member.linkValues(linter, targetType.scope)
 			member.type?.let { baseType ->
 				type = if(isOptional && !(baseType is QuantifiedType && baseType.isOptional))
 					QuantifiedType(source, baseType, hasDynamicQuantity = false, isOptional = true)

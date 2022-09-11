@@ -20,8 +20,8 @@ abstract class DeclarationSection(start: Position, end: Position): MetaElement(s
 
 	fun getModifiers(): List<Modifier> {
 		var modifiers = getOwnModifiers()
-		parent?.let {
-			modifiers = modifiers.plus(it.getModifiers())
+		parent?.let { parent ->
+			modifiers = modifiers.plus(parent.getModifiers())
 		}
 		return modifiers
 	}

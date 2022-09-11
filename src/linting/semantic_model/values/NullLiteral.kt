@@ -14,7 +14,7 @@ class NullLiteral(override val source: NullLiteral): LiteralValue(source) {
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		linter.nullLiteralScope?.let { super.linkTypes(linter, it) }
+		linter.nullLiteralScope?.let { literalScope -> super.linkTypes(linter, literalScope) }
 	}
 
 //	override fun compile(context: BuildContext): LLVMValueRef {

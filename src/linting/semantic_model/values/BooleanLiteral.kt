@@ -14,6 +14,6 @@ class BooleanLiteral(override val source: BooleanLiteral, val value: Boolean): L
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		linter.booleanLiteralScope?.let { super.linkTypes(linter, it) }
+		linter.booleanLiteralScope?.let { literalScope -> super.linkTypes(linter, literalScope) }
 	}
 }

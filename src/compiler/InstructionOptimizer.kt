@@ -74,7 +74,7 @@ class InstructionOptimizer(private val instructionList: MutableList<Instruction>
 	}
 
 	/**
-	 * Removes all Copy compiler.instructions
+	 * Removes all Copy instructions
 	 */
 	private fun resolveCopies() {
 		// ValueScopes that can be collapsed:
@@ -160,7 +160,7 @@ class InstructionOptimizer(private val instructionList: MutableList<Instruction>
 	}
 
 	/**
-	 * Checks whether the given compiler.instructions can be merged
+	 * Checks whether the given instructions can be merged
 	 * @return Whether the merge was successful and the value scope should be deleted
 	 */
 	private fun mergeInstructions(copyInstruction: Copy, readInstructions: List<Instruction>) {

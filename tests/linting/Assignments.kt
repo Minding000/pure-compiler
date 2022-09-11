@@ -2,7 +2,9 @@ package linting
 
 import util.TestUtil
 import linting.messages.Message
+import linting.semantic_model.access.IndexAccess
 import org.junit.jupiter.api.Test
+import kotlin.test.assertNotNull
 
 internal class Assignments {
 
@@ -56,5 +58,56 @@ internal class Assignments {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
 		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Type 'EventHandler' is not assignable to type '(Event) =>|'")
+	}
+
+	@Test
+	fun `emits error for assignment to nonexistent index operator`() {
+		val sourceCode =
+			"""
+				class Position {
+					init
+				}
+				object ChessBoard {}
+				val firstField = ChessBoard[Position()]
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Operator '[Position]()' hasn't been declared yet.")
+	}
+
+	@Test
+	fun `emits error for assignment to readonly index operator`() {
+		val sourceCode =
+			"""
+				class Position {
+					init
+				}
+				class Field {
+					init
+				}
+				object ChessBoard {
+					native operator[position: Position](): Field
+				}
+				ChessBoard[Position()] = Field()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Operator '[Position](Field)' hasn't been declared yet.")
+	}
+
+	@Test
+	fun `resolves index operators`() {
+		val sourceCode =
+			"""
+				class Position {
+					init
+				}
+				class Field {}
+				object ChessBoard {
+					native operator[position: Position](): Field
+				}
+				ChessBoard[Position()]
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val indexAccess = lintResult.find<IndexAccess>()
+		assertNotNull(indexAccess?.type)
 	}
 }

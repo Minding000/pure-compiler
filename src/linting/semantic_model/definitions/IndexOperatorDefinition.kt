@@ -20,10 +20,10 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 		if(parameters.size != parameterTypes.size)
 			return false
 		for(i in indices.indices)
-			if(indexTypes[i]?.let { indices[i].type?.accepts(it) } != true)
+			if(indexTypes[i]?.let { indexType -> indices[i].type?.accepts(indexType) } != true)
 				return false
 		for(i in parameters.indices)
-			if(parameterTypes[i]?.let { parameters[i].type?.accepts(it) } != true)
+			if(parameterTypes[i]?.let { parameterType -> parameters[i].type?.accepts(parameterType) } != true)
 				return false
 		return true
 	}

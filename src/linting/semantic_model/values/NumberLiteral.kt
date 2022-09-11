@@ -15,7 +15,7 @@ class NumberLiteral(override val source: NumberLiteral, val value: String): Lite
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		linter.numberLiteralScope?.let { super.linkTypes(linter, it) }
+		linter.numberLiteralScope?.let { literalScope -> super.linkTypes(linter, literalScope) }
 	}
 
 //	override fun compile(context: BuildContext): LLVMValueRef {

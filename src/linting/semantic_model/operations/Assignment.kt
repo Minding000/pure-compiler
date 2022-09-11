@@ -1,7 +1,7 @@
 package linting.semantic_model.operations
 
 import linting.Linter
-import linting.semantic_model.access.Index
+import linting.semantic_model.access.IndexAccess
 import linting.semantic_model.access.MemberAccess
 import linting.semantic_model.general.Unit
 import linting.semantic_model.values.Value
@@ -19,17 +19,22 @@ class Assignment(val source: Assignment, private val targets: List<Value>, priva
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+		sourceExpression.linkValues(linter, scope)
+		for(target in targets) {
+			if(target is IndexAccess)
+				target.assignedType = sourceExpression.type
+			target.linkValues(linter, scope)
+		}
 		verifyAssignability(linter)
-		sourceExpression.type?.let {
+		sourceExpression.type?.let { sourceType ->
 			for(target in targets) {
 				val targetType = target.type
 				if(targetType == null) {
-					target.type = it
+					target.type = sourceType
 				} else {
-					if(!it.isAssignableTo(targetType))
+					if(!sourceType.isAssignableTo(targetType))
 						linter.messages.add(Message("${target.source.getStartString()}: " +
-								"Type '$it' is not assignable to type '$targetType'.", Message.Type.ERROR))
+								"Type '$sourceType' is not assignable to type '$targetType'.", Message.Type.ERROR))
 				}
 			}
 		}
@@ -48,7 +53,7 @@ class Assignment(val source: Assignment, private val targets: List<Value>, priva
 						linter.messages.add(Message("${target.source.getStartString()}: " +
 								"'${target.member.name}' cannot be reassigned, because it is constant.", Message.Type.ERROR))
 				}
-				is Index -> {
+				is IndexAccess -> {
 					target.target.type?.let { targetType ->
 						targetType.scope.resolveIndexOperator(target.indices.map { index -> index.type },
 							listOf(sourceExpression.type))

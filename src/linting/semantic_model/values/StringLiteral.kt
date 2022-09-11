@@ -14,6 +14,6 @@ class StringLiteral(override val source: StringLiteral, val value: String): Lite
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		linter.stringLiteralScope?.let { super.linkTypes(linter, it) }
+		linter.stringLiteralScope?.let { literalScope -> super.linkTypes(linter, literalScope) }
 	}
 }

@@ -223,7 +223,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			if(operator.parameters.size != suppliedTypes.size)
 				continue
 			for(i in suppliedTypes.indices) {
-				if(suppliedTypes[i]?.let { operator.parameters[i].type?.accepts(it) } != true)
+				if(suppliedTypes[i]?.let { suppliedType -> operator.parameters[i].type?.accepts(suppliedType) } != true)
 					continue@operatorIteration
 			}
 			return operator
@@ -240,13 +240,15 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			if(operator.indices.size != suppliedIndexTypes.size)
 				continue
 			for(i in suppliedIndexTypes.indices) {
-				if(suppliedIndexTypes[i]?.let { operator.indices[i].type?.accepts(it) } != true)
+				if(suppliedIndexTypes[i]?.let { suppliedIndexType ->
+						operator.indices[i].type?.accepts(suppliedIndexType) } != true)
 					continue@operatorIteration
 			}
 			if(operator.parameters.size != suppliedParameterTypes.size)
 				continue
 			for(i in suppliedParameterTypes.indices) {
-				if(suppliedParameterTypes[i]?.let { operator.parameters[i].type?.accepts(it) } != true)
+				if(suppliedParameterTypes[i]?.let { suppliedParameterType ->
+						operator.parameters[i].type?.accepts(suppliedParameterType) } != true)
 					continue@operatorIteration
 			}
 			return operator

@@ -34,16 +34,16 @@ class FunctionSignature(val source: Element, val genericParameters: List<TypeDef
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		if(returnType.toString() == Linter.Literals.NOTHING)
-			linter.nothingLiteralScope?.let { super.linkTypes(linter, it) }
+			linter.nothingLiteralScope?.let { literalScope -> super.linkTypes(linter, literalScope) }
 		else
 			super.linkTypes(linter, scope)
 	}
 
-	fun accepts(types: List<Type?>): Boolean {
-		if(parameterTypes.size != types.size)
+	fun accepts(suppliedTypes: List<Type?>): Boolean {
+		if(parameterTypes.size != suppliedTypes.size)
 			return false
 		for(i in parameterTypes.indices)
-			if(types[i]?.let { parameterTypes[i]?.accepts(it) } != true)
+			if(suppliedTypes[i]?.let { suppliedType -> parameterTypes[i]?.accepts(suppliedType) } != true)
 				return false
 		return true
 	}

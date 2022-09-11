@@ -12,8 +12,8 @@ open class VariableValueDeclaration(open val source: Element, val name: String, 
 									val isConstant: Boolean): Unit() {
 
 	init {
-		type?.let {
-			units.add(it)
+		type?.let { type ->
+			units.add(type)
 		}
 		if(value != null)
 			units.add(value)

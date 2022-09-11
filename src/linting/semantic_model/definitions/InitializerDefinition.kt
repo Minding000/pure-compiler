@@ -28,11 +28,11 @@ class InitializerDefinition(val source: InitializerDefinitionSyntaxTree, val sco
 		return InitializerDefinition(source, scope, specificParameters, body, isNative)
 	}
 
-	fun accepts(types: List<Type?>): Boolean {
-		if(parameters.size != types.size)
+	fun accepts(suppliedTypes: List<Type?>): Boolean {
+		if(parameters.size != suppliedTypes.size)
 			return false
 		for(i in parameters.indices)
-			if(types[i]?.let { parameters[i].type?.accepts(it) } != true)
+			if(suppliedTypes[i]?.let { suppliedType -> parameters[i].type?.accepts(suppliedType) } != true)
 				return false
 		return true
 	}

@@ -13,7 +13,7 @@ class Cast(val value: ValueElement, val operator: String, val identifier: Identi
 	ValueElement(value.start, type.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): Cast {
-		val operator = Cast.Operator.values().find { it.stringRepresentation == operator }
+		val operator = Cast.Operator.values().find { castType -> castType.stringRepresentation == operator }
 			?: throw CompilerError("Unknown cast operator '$operator'.")
 		return Cast(this, value.concretize(linter, scope), identifier?.concretize(linter, scope),
 			type.concretize(linter, scope), operator)

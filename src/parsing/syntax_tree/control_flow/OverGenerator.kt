@@ -15,13 +15,13 @@ class OverGenerator(start: Position, private val collection: ValueElement, priva
 
 	override fun concretize(linter: Linter, scope: MutableScope): OverGenerator {
 		return OverGenerator(this, collection.concretize(linter, scope),
-			keyDeclaration?.let {
-				val variable = VariableValueDeclaration(it)
+			keyDeclaration?.let { keyDeclaration ->
+				val variable = VariableValueDeclaration(keyDeclaration)
 				scope.declareValue(linter, variable)
 				variable
 			},
-			valueDeclaration?.let {
-				val variable = VariableValueDeclaration(it)
+			valueDeclaration?.let { valueDeclaration ->
+				val variable = VariableValueDeclaration(valueDeclaration)
 				scope.declareValue(linter, variable)
 				variable
 			})
