@@ -1,79 +1,80 @@
-package parser
+package parsing
 
 import util.TestUtil
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-internal class AwaitTest {
+internal class AccessorTest {
 
-	@Disabled
 	@Test
-	fun testAwaitSingle() {
+	fun testReferenceChain() {
 		val sourceCode = """
-			let data = await fetchData()
+			player.inventory
 			""".trimIndent()
 		val expected =
 			"""
+				MemberAccess {
+					Identifier { player }.Identifier { inventory }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
 
-	@Disabled
 	@Test
-	fun testAwaitMultiple() {
+	fun testOptionalChaining() {
 		val sourceCode = """
-			let (config, data) = await (
-				loadConfig(),
-				fetchData()
-			)
+			teammate?.inventory
 			""".trimIndent()
 		val expected =
 			"""
+				MemberAccess {
+					Identifier { teammate }?.Identifier { inventory }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
 
-	@Disabled
 	@Test
-	fun testCompleteMultiple() {
+	fun testSingleIndex() {
 		val sourceCode = """
-			let (configResult, dataResult) = await all {
-				loadConfig()
-				fetchData()
-			}
+			students[i]
 			""".trimIndent()
 		val expected =
 			"""
+				Index [ Identifier { students } ] {
+					Identifier { i }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
 
-	@Disabled
 	@Test
-	fun testCompleteMultipleOptional() {
+	fun testMultiIndex() {
 		val sourceCode = """
-			let (configResult, dataResult) = await all? {
-				loadConfig()
-				fetchData()
-			}
+			tiles[x, y]
 			""".trimIndent()
 		val expected =
 			"""
+				Index [ Identifier { tiles } ] {
+					Identifier { x }
+					Identifier { y }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
 
-	@Disabled
 	@Test
-	fun testAnyMultiple() {
+	fun testInstanceAccess() {
 		val sourceCode = """
-			any {
-				let config = async loadConfig()
-				let data = async fetchData()
-			}
+			disk.state = .READY
 			""".trimIndent()
 		val expected =
 			"""
+				Assignment {
+					MemberAccess {
+						Identifier { disk }.Identifier { state }
+					}
+					= InstanceAccess { Identifier { READY } }
+				}
             """.trimIndent()
 		TestUtil.assertAST(expected, sourceCode)
 	}
