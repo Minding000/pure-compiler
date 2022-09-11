@@ -1,6 +1,6 @@
 package compiler.targets.llvm
 
-import linter.elements.general.Program
+import linting.semantic_model.general.Program
 import org.bytedeco.javacpp.*
 import org.bytedeco.llvm.LLVM.LLVMExecutionEngineRef
 import org.bytedeco.llvm.LLVM.LLVMMCJITCompilerOptions

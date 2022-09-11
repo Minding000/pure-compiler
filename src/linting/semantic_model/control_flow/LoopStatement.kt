@@ -1,0 +1,20 @@
+package linting.semantic_model.control_flow
+
+import linting.Linter
+import linting.semantic_model.general.Unit
+import linting.semantic_model.scopes.BlockScope
+import linting.semantic_model.scopes.Scope
+import parsing.syntax_tree.control_flow.LoopStatement
+
+class LoopStatement(val source: LoopStatement, val scope: BlockScope, val generator: Unit?, val body: Unit): Unit() {
+
+	init {
+		if(generator != null)
+			units.add(generator)
+		units.add(body)
+	}
+
+	override fun linkValues(linter: Linter, scope: Scope) {
+		super.linkValues(linter, this.scope)
+	}
+}

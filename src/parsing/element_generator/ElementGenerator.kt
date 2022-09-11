@@ -1,7 +1,7 @@
 package parsing.element_generator
 
 import errors.user.UnexpectedWordError
-import parsing.ast.general.*
+import parsing.syntax_tree.general.*
 import source_structure.Project
 import parsing.tokenizer.*
 import java.util.*

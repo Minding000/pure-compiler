@@ -1,17 +1,17 @@
 package parsing.element_generator
 
 import errors.user.UnexpectedWordError
-import parsing.ast.operations.*
-import parsing.ast.access.Index
-import parsing.ast.access.MemberAccess
-import parsing.ast.control_flow.*
-import parsing.ast.definitions.*
-import parsing.ast.definitions.sections.*
-import parsing.ast.general.*
-import parsing.ast.literals.*
+import parsing.syntax_tree.operations.*
+import parsing.syntax_tree.access.Index
+import parsing.syntax_tree.access.MemberAccess
+import parsing.syntax_tree.control_flow.*
+import parsing.syntax_tree.definitions.*
+import parsing.syntax_tree.definitions.sections.*
+import parsing.syntax_tree.general.*
+import parsing.syntax_tree.literals.*
 import parsing.tokenizer.*
 import source_structure.Position
-import parsing.ast.general.StatementBlock
+import parsing.syntax_tree.general.StatementBlock
 import java.util.*
 
 class StatementParser(private val elementGenerator: ElementGenerator): Generator() {

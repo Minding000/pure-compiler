@@ -2,7 +2,7 @@ package code
 
 import compiler.targets.llvm.LLVMIRCompiler
 import errors.user.UserError
-import linter.Linter
+import linting.Linter
 import parsing.element_generator.ElementGenerator
 import source_structure.Module
 import source_structure.Project

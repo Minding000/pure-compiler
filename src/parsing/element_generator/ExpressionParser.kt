@@ -1,18 +1,18 @@
 package parsing.element_generator
 
 import errors.internal.CompilerError
-import parsing.ast.operations.*
+import parsing.syntax_tree.operations.*
 import errors.user.UnexpectedWordError
-import parsing.ast.access.Index
-import parsing.ast.access.InstanceAccess
-import parsing.ast.access.MemberAccess
-import parsing.ast.control_flow.*
-import parsing.ast.definitions.LambdaFunctionDefinition
-import parsing.ast.definitions.Parameter
-import parsing.ast.definitions.ParameterList
-import parsing.ast.definitions.TypeSpecification
-import parsing.ast.general.*
-import parsing.ast.literals.*
+import parsing.syntax_tree.access.Index
+import parsing.syntax_tree.access.InstanceAccess
+import parsing.syntax_tree.access.MemberAccess
+import parsing.syntax_tree.control_flow.*
+import parsing.syntax_tree.definitions.LambdaFunctionDefinition
+import parsing.syntax_tree.definitions.Parameter
+import parsing.syntax_tree.definitions.ParameterList
+import parsing.syntax_tree.definitions.TypeSpecification
+import parsing.syntax_tree.general.*
+import parsing.syntax_tree.literals.*
 import parsing.tokenizer.*
 import java.util.*
 

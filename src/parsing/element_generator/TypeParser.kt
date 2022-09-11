@@ -1,8 +1,8 @@
 package parsing.element_generator
 
-import parsing.ast.definitions.*
-import parsing.ast.general.TypeElement
-import parsing.ast.literals.*
+import parsing.syntax_tree.definitions.*
+import parsing.syntax_tree.general.TypeElement
+import parsing.syntax_tree.literals.*
 import parsing.tokenizer.*
 import java.util.*
 

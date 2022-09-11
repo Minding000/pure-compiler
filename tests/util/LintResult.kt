@@ -1,9 +1,9 @@
 package util
 
-import linter.Linter
-import linter.elements.general.Program
-import linter.elements.general.Unit
-import linter.messages.Message
+import linting.Linter
+import linting.semantic_model.general.Program
+import linting.semantic_model.general.Unit
+import linting.messages.Message
 
 class LintResult(private val linter: Linter, val program: Program) {
 

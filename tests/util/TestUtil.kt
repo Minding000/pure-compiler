@@ -3,8 +3,8 @@ package util
 import code.Builder
 import parsing.element_generator.ElementGenerator
 import errors.user.UserError
-import linter.Linter
-import parsing.ast.general.Program
+import linting.Linter
+import parsing.syntax_tree.general.Program
 import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream

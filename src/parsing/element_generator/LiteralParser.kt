@@ -1,6 +1,6 @@
 package parsing.element_generator
 
-import parsing.ast.literals.*
+import parsing.syntax_tree.literals.*
 import parsing.tokenizer.*
 
 class LiteralParser(private val elementGenerator: ElementGenerator): Generator() {
