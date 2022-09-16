@@ -2,7 +2,7 @@ package parsing.element_generator
 
 import errors.user.UnexpectedWordError
 import parsing.syntax_tree.operations.*
-import parsing.syntax_tree.access.Index
+import parsing.syntax_tree.access.IndexAccess
 import parsing.syntax_tree.access.MemberAccess
 import parsing.syntax_tree.control_flow.*
 import parsing.syntax_tree.definitions.*
@@ -39,7 +39,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	private fun isExpressionAssignable(expression: Element): Boolean {
 		return expression is Identifier
 				|| expression is MemberAccess
-				|| expression is Index
+				|| expression is IndexAccess
 	}
 
 	private fun parseExpression(): ValueElement {
@@ -561,17 +561,25 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * InstanceList:
-	 *   instances <Identifier>[,<Identifier>]...
+	 *   instances <Instance>[,<Instance>]...
 	 */
 	private fun parseInstanceList(): InstanceList {
 		val start = consume(WordAtom.INSTANCES).start
-		val types = LinkedList<Element>()
-		types.add(parseIdentifier())
+		val instances = LinkedList<Instance>()
+		instances.add(parseInstance())
 		while(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
-			types.add(parseIdentifier())
+			instances.add(parseInstance())
 		}
-		return InstanceList(start, types)
+		return InstanceList(start, instances)
+	}
+
+	/**
+	 * Instance:
+	 *   <Identifier>
+	 */
+	private fun parseInstance(): Instance {
+		return Instance(parseIdentifier())
 	}
 
 	/**

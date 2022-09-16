@@ -2,6 +2,7 @@ package parsing.syntax_tree.definitions
 
 import errors.internal.CompilerError
 import linting.Linter
+import linting.messages.Message
 import linting.semantic_model.definitions.Class
 import linting.semantic_model.definitions.Enum
 import linting.semantic_model.definitions.Object
@@ -61,8 +62,16 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 			}
 			else -> throw CompilerError("Encountered unknown type type.")
 		}
-		for(member in body.members)
+		for(member in body.members) {
+			if(typeDefinition is Object || typeDefinition is Trait) {
+				if(member is Instance) {
+					linter.messages.add(Message("${member.getStartString()}: " +
+							"Instance declarations are not allowed in objects and traits.", Message.Type.WARNING))
+					continue
+				}
+			}
 			member.concretize(linter, typeScope, typeDefinition.units)
+		}
 		return typeDefinition
 	}
 

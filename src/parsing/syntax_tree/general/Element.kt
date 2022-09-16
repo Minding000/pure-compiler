@@ -8,7 +8,7 @@ import source_structure.Position
 import source_structure.Section
 
 /**
- * Impacts code flow directly, but doesn't return
+ * Impacts semantic model directly and doesn't return
  */
 abstract class Element(start: Position, end: Position): Section(start, end) {
 

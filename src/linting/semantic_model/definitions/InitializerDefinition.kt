@@ -7,6 +7,7 @@ import linting.semantic_model.literals.Type
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.scopes.Scope
+import linting.semantic_model.values.Value
 import java.util.*
 import parsing.syntax_tree.definitions.InitializerDefinition as InitializerDefinitionSyntaxTree
 
@@ -28,12 +29,36 @@ class InitializerDefinition(val source: InitializerDefinitionSyntaxTree, val sco
 		return InitializerDefinition(source, scope, specificParameters, body, isNative)
 	}
 
-	fun accepts(suppliedTypes: List<Type?>): Boolean {
-		if(parameters.size != suppliedTypes.size)
+	fun accepts(suppliedValues: List<Value>): Boolean {
+		if(parameters.size != suppliedValues.size)
 			return false
-		for(i in parameters.indices)
-			if(suppliedTypes[i]?.let { suppliedType -> parameters[i].type?.accepts(suppliedType) } != true)
+		for(parameterIndex in parameters.indices) {
+			if(!suppliedValues[parameterIndex].isAssignableTo(parameters[parameterIndex].type))
 				return false
+		}
+		return true
+	}
+
+	fun isMoreSpecificThan(otherInitializerDefinition: InitializerDefinition): Boolean {
+		if(parameters.size != otherInitializerDefinition.parameters.size)
+			return false
+		var hasSameSpecificity = true
+		for(parameterIndex in parameters.indices) {
+			val parameterType = parameters[parameterIndex].type
+			val otherParameterType = otherInitializerDefinition.parameters[parameterIndex].type
+			if(parameterType != otherParameterType) {
+				hasSameSpecificity = false
+				break
+			}
+		}
+		if(hasSameSpecificity)
+			return false
+		for(parameterIndex in parameters.indices) {
+			val parameterType = parameters[parameterIndex].type ?: return false
+			val otherParameterType = otherInitializerDefinition.parameters[parameterIndex].type ?: continue
+			if(!otherParameterType.accepts(parameterType))
+				return false
+		}
 		return true
 	}
 

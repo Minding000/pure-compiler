@@ -1,13 +1,13 @@
 package linting.semantic_model.access
 
 import linting.Linter
-import linting.semantic_model.values.Value
 import linting.messages.Message
 import linting.semantic_model.literals.Type
 import linting.semantic_model.scopes.Scope
-import parsing.syntax_tree.access.Index
+import linting.semantic_model.values.Value
+import parsing.syntax_tree.access.IndexAccess as IndexAccessSyntaxTree
 
-class IndexAccess(override val source: Index, val target: Value, val indices: List<Value>): Value(source) {
+class IndexAccess(override val source: IndexAccessSyntaxTree, val target: Value, val indices: List<Value>): Value(source) {
 	var assignedType: Type? = null
 
 	init {

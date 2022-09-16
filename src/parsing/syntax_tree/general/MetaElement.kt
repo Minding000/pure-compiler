@@ -8,7 +8,7 @@ import parsing.tokenizer.Word
 import source_structure.Position
 
 /**
- * Doesn't impact code flow directly
+ * Doesn't impact semantic model directly
  */
 abstract class MetaElement(start: Position, end: Position): Element(start, end) {
 

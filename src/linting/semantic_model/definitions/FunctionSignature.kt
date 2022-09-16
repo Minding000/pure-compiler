@@ -6,6 +6,7 @@ import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.Type
 import linting.semantic_model.values.TypeDefinition
 import linting.semantic_model.scopes.Scope
+import linting.semantic_model.values.Value
 import parsing.syntax_tree.general.Element
 import java.util.*
 
@@ -39,12 +40,26 @@ class FunctionSignature(val source: Element, val genericParameters: List<TypeDef
 			super.linkTypes(linter, scope)
 	}
 
-	fun accepts(suppliedTypes: List<Type?>): Boolean {
-		if(parameterTypes.size != suppliedTypes.size)
+	fun accepts(suppliedValues: List<Value>): Boolean {
+		if(parameterTypes.size != suppliedValues.size)
 			return false
-		for(i in parameterTypes.indices)
-			if(suppliedTypes[i]?.let { suppliedType -> parameterTypes[i]?.accepts(suppliedType) } != true)
+		for(parameterIndex in parameterTypes.indices)
+			if(!suppliedValues[parameterIndex].isAssignableTo(parameterTypes[parameterIndex]))
 				return false
+		return true
+	}
+
+	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean {
+		if(parameterTypes.size != otherSignature.parameterTypes.size)
+			return false
+		if(otherSignature.parameterTypes == parameterTypes)
+			return false
+		for(parameterIndex in parameterTypes.indices) {
+			val parameterType = parameterTypes[parameterIndex] ?: return false
+			val otherParameterType = otherSignature.parameterTypes[parameterIndex] ?: continue
+			if(!otherParameterType.accepts(parameterType))
+				return false
+		}
 		return true
 	}
 

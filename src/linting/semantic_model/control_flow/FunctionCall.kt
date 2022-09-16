@@ -23,7 +23,7 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val p
 		super.linkValues(linter, scope)
 		val functionType = function.type
 		if(functionType is StaticType) {
-			val initializer = functionType.scope.resolveInitializer(parameters.map { p -> p.type })
+			val initializer = functionType.scope.resolveInitializer(parameters)
 			if(initializer == null)
 				linter.messages.add(Message("${source.getStartString()}: " +
 						"Initializer '${getSignature()}' hasn't been declared yet.", Message.Type.ERROR))
@@ -31,7 +31,7 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val p
 				type = ObjectType(listOf(), functionType.definition)
 		} else if(functionType is FunctionType) {
 			try {
-				val signature = functionType.resolveSignature(parameters.map { p -> p.type })
+				val signature = functionType.resolveSignature(parameters)
 				if(signature == null)
 					linter.messages.add(Message("${source.getStartString()}: " +
 							"The provided values don't match any signature of function '${function.source.getValue()}'.",

@@ -115,9 +115,9 @@ internal class TypeDefinitionTest {
 			"""
 				TypeDefinition [ enum Identifier { DeliveryStatus } ] { TypeBody {
 					InstanceList {
-						Identifier { Pending }
-						Identifier { Cancelled }
-						Identifier { Delivered }
+						Instance { Identifier { Pending } }
+						Instance { Identifier { Cancelled } }
+						Instance { Identifier { Delivered } }
 					}
 				} }
             """.trimIndent()

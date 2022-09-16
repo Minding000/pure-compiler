@@ -1,12 +1,21 @@
 package linting.semantic_model.values
 
 import linting.Linter
+import linting.messages.Message
 import linting.semantic_model.general.Unit
 import linting.semantic_model.literals.Type
-import linting.messages.Message
 import parsing.syntax_tree.general.Element
 
 abstract class Value(open val source: Element, var type: Type? = null): Unit() {
+
+	open fun isAssignableTo(targetType: Type?): Boolean {
+		return type?.let { type -> targetType?.accepts(type) } ?: false
+	}
+
+	fun setInferredType(inferredType: Type?) {
+		if(type == null)
+			type = inferredType
+	}
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)

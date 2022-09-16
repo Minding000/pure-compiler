@@ -45,7 +45,7 @@ abstract class Type: Unit() {
 	internal fun resolveTypeAlias(sourceType: Type): Type {
 		if(sourceType is ObjectType) {
 			(sourceType.definition as? TypeAlias)?.let { typeAlias ->
-				return typeAlias.referenceType
+				return resolveTypeAlias(typeAlias.referenceType)
 			}
 		}
 		return sourceType

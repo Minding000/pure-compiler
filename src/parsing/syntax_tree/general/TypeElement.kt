@@ -6,7 +6,7 @@ import linting.semantic_model.scopes.MutableScope
 import source_structure.Position
 
 /**
- * Impacts code flow directly and returns a type
+ * Impacts semantic model directly and returns a type
  */
 abstract class TypeElement(start: Position, end: Position): Element(start, end) {
 

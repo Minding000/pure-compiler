@@ -33,34 +33,6 @@ internal class Assignments {
 	}
 
 	@Test
-	fun `complex types can be assigned to type aliases`() {
-		val sourceCode =
-			"""
-				class Event {}
-				alias EventHandler = (Event) =>|
-				var typeAliasValue: EventHandler
-				val complexTypeValue: (Event) =>|
-				typeAliasValue = complexTypeValue
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Type '(Event) =>|' is not assignable to type 'EventHandler'")
-	}
-
-	@Test
-	fun `type aliases can be assigned to complex types`() {
-		val sourceCode =
-			"""
-				class Event {}
-				alias EventHandler = (Event) =>|
-				val typeAliasValue: EventHandler
-				var complexTypeValue: (Event) =>|
-				complexTypeValue = typeAliasValue
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Type 'EventHandler' is not assignable to type '(Event) =>|'")
-	}
-
-	@Test
 	fun `emits error for assignment to nonexistent index operator`() {
 		val sourceCode =
 			"""
@@ -109,5 +81,33 @@ internal class Assignments {
 		val lintResult = TestUtil.lint(sourceCode, false)
 		val indexAccess = lintResult.find<IndexAccess>()
 		assertNotNull(indexAccess?.type)
+	}
+
+	@Test
+	fun `complex types can be assigned to type aliases`() {
+		val sourceCode =
+			"""
+				class Event {}
+				alias EventHandler = (Event) =>|
+				var typeAliasValue: EventHandler
+				val complexTypeValue: (Event) =>|
+				typeAliasValue = complexTypeValue
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Type '(Event) =>|' is not assignable to type 'EventHandler'")
+	}
+
+	@Test
+	fun `type aliases can be assigned to complex types`() {
+		val sourceCode =
+			"""
+				class Event {}
+				alias EventHandler = (Event) =>|
+				val typeAliasValue: EventHandler
+				var complexTypeValue: (Event) =>|
+				complexTypeValue = typeAliasValue
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Type 'EventHandler' is not assignable to type '(Event) =>|'")
 	}
 }

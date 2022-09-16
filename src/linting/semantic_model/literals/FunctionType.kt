@@ -2,6 +2,7 @@ package linting.semantic_model.literals
 
 import linting.semantic_model.definitions.FunctionSignature
 import linting.semantic_model.general.Unit
+import linting.semantic_model.values.Value
 import parsing.syntax_tree.general.Element
 import java.util.*
 
@@ -17,10 +18,10 @@ class FunctionType(val source: Element): Type() {
 		signatures.add(signature)
 	}
 
-	fun resolveSignature(suppliedTypes: List<Type?>): FunctionSignature? {
+	fun resolveSignature(suppliedValues: List<Value>): FunctionSignature? {
 		val validSignatures = LinkedList<FunctionSignature>()
 		for(signature in signatures) {
-			if(signature.accepts(suppliedTypes))
+			if(signature.accepts(suppliedValues))
 				validSignatures.add(signature)
 		}
 		if(validSignatures.isEmpty())
@@ -29,11 +30,11 @@ class FunctionType(val source: Element): Type() {
 			for(otherSignature in validSignatures) {
 				if(otherSignature === signature)
 					continue
-				if(otherSignature.parameterTypes == signature.parameterTypes)
-					continue@specificityPrecedenceLoop
-				if(!otherSignature.accepts(signature.parameterTypes))
+				if(!signature.isMoreSpecificThan(otherSignature))
 					continue@specificityPrecedenceLoop
 			}
+			for(parameterIndex in suppliedValues.indices)
+				suppliedValues[parameterIndex].setInferredType(signature.parameterTypes[parameterIndex])
 			return signature
 		}
 		throw SignatureResolutionAmbiguityError(validSignatures)

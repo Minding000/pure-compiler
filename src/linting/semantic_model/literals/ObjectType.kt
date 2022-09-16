@@ -105,14 +105,20 @@ class ObjectType(val source: Element, val name: String, val genericParameters: L
 	}
 
 	override fun equals(other: Any?): Boolean {
-		if(other !is ObjectType)
+		if(other !is Type)
 			return false
-		if(definition != other.definition)
+		val otherType = resolveTypeAlias(other)
+		(definition as? TypeAlias)?.let { typeAlias ->
+			return typeAlias.referenceType == otherType
+		}
+		if(otherType !is ObjectType)
 			return false
-		if(genericParameters.size != other.genericParameters.size)
+		if(definition != otherType.definition)
+			return false
+		if(genericParameters.size != otherType.genericParameters.size)
 			return false
 		for(i in genericParameters.indices)
-			if(genericParameters[i] == other.genericParameters[i])
+			if(genericParameters[i] == otherType.genericParameters[i])
 				return false
 		return true
 	}

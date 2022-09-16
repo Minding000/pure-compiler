@@ -1,11 +1,11 @@
 package linting
 
 import linting.semantic_model.literals.FunctionType
-import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.values.TypeDefinition
 import linting.semantic_model.values.VariableValue
 import util.TestUtil
 import linting.messages.Message
+import linting.semantic_model.access.InstanceAccess
+import linting.semantic_model.control_flow.FunctionCall
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 
@@ -66,18 +66,17 @@ internal class ReferenceResolution {
 	fun `resolves initializer calls`() {
 		val sourceCode =
 			"""
-				native class Int {}
+				native class Int {
+					init
+				}
 				class Window {
 					init(width: Int, height: Int) {}
 				}
-				Window(2, 2)
+				Window(Int(), Int())
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		val intDefinition = lintResult.find<TypeDefinition> { typeDefinition -> typeDefinition.name == "Int" }
-		assertNotNull(intDefinition)
-		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "Window" }
-		val initializer = variableValue?.type?.scope?.resolveInitializer(listOf(ObjectType(intDefinition), ObjectType(intDefinition)))
-		assertNotNull(initializer)
+		val initializerCall = lintResult.find<FunctionCall>()
+		assertNotNull(initializerCall?.type)
 	}
 
 	@Test
@@ -194,5 +193,24 @@ internal class ReferenceResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
 		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Call to function 'List.exists(Int)' is ambiguous")
+	}
+
+	@Test
+	fun `resolves enum instance accesses`() {
+		val sourceCode =
+			"""
+				enum TransportLayerProtocol {
+					instances TCP, UDP
+				}
+				class Stream {
+					val protocol: TransportLayerProtocol
+				
+					init(protocol)
+				}
+				val stream = Stream(.TCP)
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val instanceAccess = lintResult.find<InstanceAccess>()
+		assertNotNull(instanceAccess?.type)
 	}
 }

@@ -7,10 +7,11 @@ import linting.semantic_model.definitions.OperatorDefinition
 import linting.semantic_model.literals.FunctionType
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.Type
+import linting.semantic_model.values.Instance
 import linting.semantic_model.values.TypeDefinition
+import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValueDeclaration
 import java.util.*
-import kotlin.collections.HashMap
 
 class InterfaceScope(private val type: Type): Scope() {
 	private val types = HashMap<String, TypeDefinition>()
@@ -21,6 +22,14 @@ class InterfaceScope(private val type: Type): Scope() {
 	fun hasType(type: TypeDefinition): Boolean = types.containsValue(type)
 
 	fun hasValue(value: VariableValueDeclaration): Boolean = values.containsValue(value)
+
+	fun hasInstance(name: String): Boolean {
+		for((_, value) in values) {
+			if(value is Instance && value.name == name)
+				return true
+		}
+		return false
+	}
 
 	fun hasOperator(operator: OperatorDefinition): Boolean = operators.contains(operator)
 
@@ -64,10 +73,10 @@ class InterfaceScope(private val type: Type): Scope() {
 		return types[name]
 	}
 
-	fun resolveInitializer(suppliedTypes: List<Type?>): InitializerDefinition? {
+	fun resolveInitializer(suppliedValues: List<Value>): InitializerDefinition? {
 		val validSignatures = LinkedList<InitializerDefinition>()
 		for(signature in initializers) {
-			if(signature.accepts(suppliedTypes))
+			if(signature.accepts(suppliedValues))
 				validSignatures.add(signature)
 		}
 		if(validSignatures.isEmpty())
@@ -76,9 +85,11 @@ class InterfaceScope(private val type: Type): Scope() {
 			for(otherSignature in validSignatures) {
 				if(otherSignature == signature)
 					continue
-				if(!otherSignature.accepts(signature.parameters.map { p -> p.type }))
+				if(!signature.isMoreSpecificThan(otherSignature))
 					continue@signatureCheck
 			}
+			for(parameterIndex in suppliedValues.indices)
+				suppliedValues[parameterIndex].setInferredType(signature.parameters[parameterIndex].type)
 			return signature
 		}
 		throw FunctionType.SignatureResolutionAmbiguityError(validSignatures)

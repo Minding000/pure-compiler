@@ -3,7 +3,7 @@ package parsing.element_generator
 import errors.internal.CompilerError
 import parsing.syntax_tree.operations.*
 import errors.user.UnexpectedWordError
-import parsing.syntax_tree.access.Index
+import parsing.syntax_tree.access.IndexAccess
 import parsing.syntax_tree.access.InstanceAccess
 import parsing.syntax_tree.access.MemberAccess
 import parsing.syntax_tree.control_flow.*
@@ -253,7 +253,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 			indices.add(parseExpression())
 		}
 		val end = consume(WordAtom.BRACKETS_CLOSE).end
-		return Index(expression, indices, end)
+		return IndexAccess(expression, indices, end)
 	}
 
 	/**

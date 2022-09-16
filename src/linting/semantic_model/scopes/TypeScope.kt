@@ -123,7 +123,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				valueDeclarations[name] = newValue
 				onNewValue(newValue)
 				linter.messages.add(Message(
-					"${newImplementation.source.getStartString()}: Declaration of function '$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.", Message.Type.DEBUG))
+					"${newImplementation.source.getStartString()}: Declaration of function signature '$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.", Message.Type.DEBUG))
 			}
 			is Function -> {
 				existingDeclaration.addImplementation(newImplementation)

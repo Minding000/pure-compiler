@@ -4,6 +4,8 @@ import util.TestUtil
 import org.junit.jupiter.api.Test
 
 internal class AccessorTest {
+	//TODO also test parser error messages
+	//TODO try to recover after error in parser
 
 	@Test
 	fun testReferenceChain() {
