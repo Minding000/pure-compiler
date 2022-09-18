@@ -3,10 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class FileReferenceTest {
+internal class FileReferences {
 
 	@Test
-	fun testSimpleReference() {
+	fun `parses file references`() {
 		val sourceCode = """
 			referencing pure
 			""".trimIndent()
@@ -16,11 +16,11 @@ internal class FileReferenceTest {
 					Identifier { pure }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testReferenceChain() {
+	fun `parses file references with multiple path elements`() {
 		val sourceCode = """
 			referencing pure.lang.dataTypes.String
 			""".trimIndent()
@@ -33,11 +33,11 @@ internal class FileReferenceTest {
 					Identifier { String }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testReferenceAlias() {
+	fun `parses file references with type aliases`() {
 		val sourceCode = """
 			referencing pure {
 				String as Text
@@ -52,6 +52,6 @@ internal class FileReferenceTest {
 					}
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

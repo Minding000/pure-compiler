@@ -3,10 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class VariableDeclarationTest {
+internal class VariableDeclarations {
 
 	@Test
-	fun testVariableDeclaration() {
+	fun `parses variable declarations with type`() {
 		val sourceCode = "var car: Int"
 		val expected =
 			"""
@@ -14,11 +14,11 @@ internal class VariableDeclarationTest {
 					VariableDeclaration { Identifier { car }: ObjectType { Identifier { Int } } }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testMultipleDeclarations() {
+	fun `parses variable declarations with multiple variables`() {
 		val sourceCode = """
 			var: Float = 0 {
 				x
@@ -32,11 +32,11 @@ internal class VariableDeclarationTest {
 					VariableDeclaration { Identifier { y } }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testAssigningDeclaration() {
+	fun `parses variable declarations with assignment`() {
 		val sourceCode = "var car = 5"
 		val expected =
 			"""
@@ -44,11 +44,11 @@ internal class VariableDeclarationTest {
 					VariableDeclaration { Identifier { car } = NumberLiteral { 5 } }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testAssignment() {
+	fun `parses assignments`() {
 		val sourceCode =
 			"""
 				var car: Int
@@ -64,11 +64,11 @@ internal class VariableDeclarationTest {
 					= NumberLiteral { 5 }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testOptionalType() {
+	fun `parses optional types`() {
 		val sourceCode =
 			"""
 				var car: Int? = null
@@ -84,11 +84,11 @@ internal class VariableDeclarationTest {
 					= NumberLiteral { 9 }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testOrUnionType() {
+	fun `parses or-union types`() {
 		val sourceCode =
 			"""
 				var car: Int | Float
@@ -99,11 +99,11 @@ internal class VariableDeclarationTest {
 					VariableDeclaration { Identifier { car }: UnionType { ObjectType { Identifier { Int } } | ObjectType { Identifier { Float } } } }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testAndUnionType() {
+	fun `parses and-union types`() {
 		val sourceCode =
 			"""
 				var refuge: Park & NatureReserve
@@ -114,6 +114,6 @@ internal class VariableDeclarationTest {
 					VariableDeclaration { Identifier { refuge }: UnionType { ObjectType { Identifier { Park } } & ObjectType { Identifier { NatureReserve } } } }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

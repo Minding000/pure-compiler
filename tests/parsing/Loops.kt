@@ -3,10 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class LoopTest {
+internal class Loops {
 
 	@Test
-	fun testLoop() {
+	fun `parses loops`() {
 		val sourceCode = """
 			loop {
 				echo "Hello!"
@@ -20,11 +20,11 @@ internal class LoopTest {
 					}
 				} } }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testBreak() {
+	fun `parses break statements`() {
 		val sourceCode = """
 			loop {
 				echo "Hello!"
@@ -40,11 +40,11 @@ internal class LoopTest {
 					Break {  }
 				} } }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testNext() {
+	fun `parses next statements`() {
 		val sourceCode = """
 			loop {
 				echo "Hello!"
@@ -64,11 +64,11 @@ internal class LoopTest {
 					}
 				} } }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testPreWhileLoop() {
+	fun `parses pre-while-loops`() {
 		val sourceCode = """
 			loop while x < 5 {
 				x++
@@ -84,11 +84,11 @@ internal class LoopTest {
 					UnaryModification { Identifier { x }++ }
 				} } }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testPostWhileLoop() {
+	fun `parses post-while-loops`() {
 		val sourceCode = """
 			loop {
 				x++
@@ -104,11 +104,11 @@ internal class LoopTest {
 					UnaryModification { Identifier { x }++ }
 				} } }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testLoopOver() {
+	fun `parses over-loops`() {
 		val sourceCode = """
 			loop over files as file {
 				x++
@@ -122,11 +122,11 @@ internal class LoopTest {
 					UnaryModification { Identifier { x }++ }
 				} } }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testLoopOverIndex() {
+	fun `parses over-index-loops`() {
 		val sourceCode = """
 			loop over files as index, file {
 				x++
@@ -140,6 +140,6 @@ internal class LoopTest {
 					UnaryModification { Identifier { x }++ }
 				} } }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

@@ -3,7 +3,7 @@ package linting
 import linting.semantic_model.literals.FunctionType
 import linting.semantic_model.values.VariableValue
 import util.TestUtil
-import linting.messages.Message
+import messages.Message
 import linting.semantic_model.access.InstanceAccess
 import linting.semantic_model.control_flow.FunctionCall
 import org.junit.jupiter.api.Test
@@ -18,7 +18,7 @@ internal class ReferenceResolution {
 				numberOfDogs
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Value 'numberOfDogs' hasn't been declared yet")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Value 'numberOfDogs' hasn't been declared yet")
 	}
 
 	@Test
@@ -89,7 +89,7 @@ internal class ReferenceResolution {
 				Item(Item())
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Initializer 'Item(Item)' hasn't been declared yet")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Initializer 'Item(Item)' hasn't been declared yet")
 	}
 
 	@Test
@@ -123,7 +123,7 @@ internal class ReferenceResolution {
 				var c = a - b
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Operator '-(Matrix)' hasn't been declared yet")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '-(Matrix)' hasn't been declared yet")
 	}
 
 	@Test
@@ -156,7 +156,7 @@ internal class ReferenceResolution {
 				Bird.age()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "'Bird.age' is not callable")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "'Bird.age' is not callable")
 	}
 
 	@Test
@@ -170,7 +170,7 @@ internal class ReferenceResolution {
 				Light.shine(Bright)
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "The provided values don't match any signature of function 'Light.shine'")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "The provided values don't match any signature of function 'Light.shine'")
 	}
 
 	@Test
@@ -192,7 +192,7 @@ internal class ReferenceResolution {
 				numbers.exists(Int())
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Call to function 'List.exists(Int)' is ambiguous")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Call to function 'List.exists(Int)' is ambiguous")
 	}
 
 	@Test

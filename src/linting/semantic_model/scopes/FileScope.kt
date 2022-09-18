@@ -6,7 +6,7 @@ import linting.semantic_model.definitions.OperatorDefinition
 import linting.semantic_model.literals.Type
 import linting.semantic_model.values.TypeDefinition
 import linting.semantic_model.values.VariableValueDeclaration
-import linting.messages.Message
+import messages.Message
 import kotlin.collections.HashMap
 
 class FileScope: MutableScope() {
@@ -32,12 +32,11 @@ class FileScope: MutableScope() {
 		val previousDeclaration = referencedTypes[type.name] ?: types.putIfAbsent(type.name, type)
 		if(previousDeclaration == null) {
 			onNewType(type)
-			linter.messages.add(Message(
-				"${type.source.getStartString()}: Declaration of type '${type.name}'.", Message.Type.DEBUG))
+			linter.addMessage(type.source, "Declaration of type '${type.name}'.",
+				Message.Type.DEBUG)
 		} else {
-			linter.messages.add(Message(
-				"${type.source.getStartString()}: Redeclaration of type '${type.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+			linter.addMessage(type.source, "Redeclaration of type '${type.name}'," +
+						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
 		}
 	}
 
@@ -49,12 +48,11 @@ class FileScope: MutableScope() {
 		val previousDeclaration = referencedValues[value.name] ?: values.putIfAbsent(value.name, value)
 		if(previousDeclaration == null) {
 			onNewValue(value)
-			linter.messages.add(Message(
-				"${value.source.getStartString()}: Declaration of value '${value.name}'.", Message.Type.DEBUG))
+			linter.addMessage(value.source, "Declaration of value '${value.name}'.",
+				Message.Type.DEBUG)
 		} else {
-			linter.messages.add(Message(
-				"${value.source.getStartString()}: Redeclaration of value '${value.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+			linter.addMessage(value.source, "Redeclaration of value '${value.name}'," +
+					" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
 		}
 	}
 

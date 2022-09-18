@@ -8,7 +8,7 @@ import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.StaticType
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValue
-import linting.messages.Message
+import messages.Message
 import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.control_flow.FunctionCall
 
@@ -25,28 +25,25 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val p
 		if(functionType is StaticType) {
 			val initializer = functionType.scope.resolveInitializer(parameters)
 			if(initializer == null)
-				linter.messages.add(Message("${source.getStartString()}: " +
-						"Initializer '${getSignature()}' hasn't been declared yet.", Message.Type.ERROR))
+				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
+					Message.Type.ERROR)
 			else
 				type = ObjectType(listOf(), functionType.definition)
 		} else if(functionType is FunctionType) {
 			try {
 				val signature = functionType.resolveSignature(parameters)
 				if(signature == null)
-					linter.messages.add(Message("${source.getStartString()}: " +
-							"The provided values don't match any signature of function '${function.source.getValue()}'.",
-						Message.Type.ERROR))
+					linter.addMessage(source, "The provided values don't match any signature of function '${function.source.getValue()}'.",
+						Message.Type.ERROR)
 				else
 					type = signature.returnType
 			} catch(e: FunctionType.SignatureResolutionAmbiguityError) {
-				linter.messages.add(Message("${source.getStartString()}: " +
-						"Call to function '${getSignature()}' is ambiguous. " +
-						"Matching signatures:" +
-						e.signatures.joinToString("\n - ", "\n - "), Message.Type.ERROR))
+				linter.addMessage(source, "Call to function '${getSignature()}' is ambiguous. " +
+						"Matching signatures:" + e.signatures.joinToString("\n - ", "\n - "),
+					Message.Type.ERROR)
 			}
 		} else {
-			linter.messages.add(Message("${source.getStartString()}: " +
-					"'${function.source.getValue()}' is not callable.", Message.Type.ERROR))
+			linter.addMessage(source, "'${function.source.getValue()}' is not callable.", Message.Type.ERROR)
 		}
 	}
 

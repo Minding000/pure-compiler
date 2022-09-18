@@ -1,7 +1,7 @@
 package linting.semantic_model.access
 
 import linting.Linter
-import linting.messages.Message
+import messages.Message
 import linting.semantic_model.literals.Type
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
@@ -21,8 +21,8 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, val target: Value,
 		val definition = targetScope?.resolveIndexOperator(indices.map { i -> i.type }, listOfNotNull(assignedType))
 		if(definition == null) {
 			val name = "[${indices.joinToString { index -> index.type.toString() }}]"
-			linter.messages.add(Message("${source.getStartString()}: " +
-					"Operator '$name(${assignedType ?: ""})' hasn't been declared yet.", Message.Type.ERROR))
+			linter.addMessage(source, "Operator '$name(${assignedType ?: ""})' hasn't been declared yet.",
+				Message.Type.ERROR)
 		}
 		type = definition?.returnType
 	}

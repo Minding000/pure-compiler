@@ -3,10 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class GeneratorTest {
+internal class Generators {
 
 	@Test
-	fun testRecursiveGenerator() {
+	fun `parses recursive generators`() {
 		val sourceCode = """
 			generate fibonacciSeries(index: Int): Int, Int {
 				if(index == 1)
@@ -33,11 +33,11 @@ internal class GeneratorTest {
 					} } }
 				} } }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testInfiniteGenerator() {
+	fun `parses infinite generators`() {
 		val sourceCode = """
 			generate fibonacciSeries(): Int, Int {
 				var = 1 {
@@ -68,11 +68,11 @@ internal class GeneratorTest {
 					} } }
 				} } }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testLoopUsingGenerator() {
+	fun `parses loops over generators`() {
 		val sourceCode = """
 			loop over fibonacciSeries() as fibonacciNumber {
 				echo fibonacciNumber
@@ -89,6 +89,6 @@ internal class GeneratorTest {
 					}
 				} } }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

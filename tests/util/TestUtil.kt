@@ -2,16 +2,13 @@ package util
 
 import code.Builder
 import parsing.element_generator.ElementGenerator
-import errors.user.UserError
 import linting.Linter
-import parsing.syntax_tree.general.Program
 import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.lang.StringBuilder
 import java.util.*
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 object TestUtil {
@@ -29,43 +26,33 @@ object TestUtil {
         assertEquals("", actualErrorStream, "Expected error stream to be empty")
     }
 
-    private fun parseProgram(sourceCode: String, includeRequiredModules: Boolean = false): Program {
+    fun parse(sourceCode: String, includeRequiredModules: Boolean = false): ParseResult {
         val project = Project("Test")
         val testModule = Module("Test")
         testModule.addFile(LinkedList(), "Test", sourceCode)
         project.addModule(testModule)
         if(includeRequiredModules)
             Builder.loadRequiredModules(project)
-        return ElementGenerator(project).parseProgram()
-    }
-
-    private fun getAST(sourceCode: String): String {
-        return parseProgram(sourceCode).toString()
+        val elementGenerator = ElementGenerator(project)
+        val program = elementGenerator.parseProgram()
+        elementGenerator.printMessages()
+        return ParseResult(elementGenerator, program)
     }
 
     fun lint(sourceCode: String, includeRequiredModules: Boolean): LintResult {
+        val parseResult = parse(sourceCode, includeRequiredModules)
         val linter = Linter()
-        val program = linter.lint(parseProgram(sourceCode, includeRequiredModules))
+        val program = linter.lint(parseResult.program)
         linter.printMessages()
         return LintResult(linter, program)
     }
 
-    fun assertAST(expected_ast: String, sourceCode: String) {
-        val actualAst = getAST(sourceCode)
-        val expectedAst = "Program {\n\tFile {${"\n$expected_ast".indent().indent()}\n\t}\n}"
-        printDiffPosition(expectedAst, actualAst)
-        assertEquals(expectedAst, actualAst)
-    }
-
-    fun assertUserError(expectedMessage: String, sourceCode: String) {
-        var actualMessage = ""
-        try {
-            getAST(sourceCode)
-        } catch(e: UserError) {
-            actualMessage = e.message ?: ""
-        }
-        printDiffPosition(expectedMessage, actualMessage)
-        assertContains(actualMessage, expectedMessage)
+    fun assertSameSyntaxTree(expectedFileSyntaxTree: String, sourceCode: String) {
+        val actualSyntaxTree = parse(sourceCode).program.toString()
+        val expectedSyntaxTree = "Program {\n\tFile {${if(expectedFileSyntaxTree == "") ""
+            else "\n$expectedFileSyntaxTree".indent().indent()}\n\t}\n}"
+        printDiffPosition(expectedSyntaxTree, actualSyntaxTree)
+        assertEquals(expectedSyntaxTree, actualSyntaxTree)
     }
 
     private fun printDiffPosition(expected: String, actual: String) {

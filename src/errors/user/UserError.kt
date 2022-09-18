@@ -2,4 +2,4 @@ package errors.user
 
 import java.lang.Exception
 
-open class UserError(message: String): Exception(message)
+open class UserError(override val message: String): Exception(message)

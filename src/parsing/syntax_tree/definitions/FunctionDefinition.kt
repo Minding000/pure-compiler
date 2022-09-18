@@ -46,7 +46,7 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 			.append(": ")
 			.append(returnType ?: "void")
 			.append(" ] { ")
-			.append(body)
+			.append(body ?: "")
 			.append(" }")
 		return string.toString()
 	}

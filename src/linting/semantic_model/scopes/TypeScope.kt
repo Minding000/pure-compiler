@@ -7,7 +7,7 @@ import linting.semantic_model.literals.Type
 import linting.semantic_model.values.Function
 import linting.semantic_model.values.TypeDefinition
 import linting.semantic_model.values.VariableValueDeclaration
-import linting.messages.Message
+import messages.Message
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -69,12 +69,9 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 						return@forEachRemaining
 				}
 				redeclarations.add(otherInitializer)
-				linter.messages.add(
-					Message(
-						"${otherInitializer.source.getStartString()}: Redeclaration of" +
+				linter.addMessage(otherInitializer.source, "Redeclaration of" +
 								" initializer '${typeDefinition?.name}(${otherInitializer.variation})'," +
 								" previously declared in ${initializer.source.getStartString()}.", Message.Type.ERROR)
-				)
 			}
 		}
 		initializers.removeAll(redeclarations)
@@ -83,35 +80,29 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
 		initializers.add(initializer)
 		onNewInitializer(initializer)
-		linter.messages.add(Message(
-			"${initializer.source.getStartString()}: " +
-					"Declaration of initializer '${typeDefinition?.name}(${initializer.variation})'.",
-			Message.Type.DEBUG))
+		linter.addMessage(initializer.source, "Declaration of initializer '${typeDefinition?.name}(${initializer.variation})'.",
+			Message.Type.DEBUG)
 	}
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {
 		var previousDeclaration = parentScope.resolveType(type.name)
 		if(previousDeclaration != null) {
-			linter.messages.add(Message(
-				"${type.source.getStartString()}: '${type.name}' shadows a type.", Message.Type.WARNING))
+			linter.addMessage(type.source, "'${type.name}' shadows a type.", Message.Type.WARNING)
 		}
 		previousDeclaration = superScope?.resolveType(type.name)
 		if(previousDeclaration != null) {
-			linter.messages.add(Message(
-				"${type.source.getStartString()}: Redeclaration of type '${type.name}'," +
+			linter.addMessage(type.source, "Redeclaration of type '${type.name}'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}." +
-						" Use the 'override' keyword to modify it.", Message.Type.ERROR))
+						" Use the 'override' keyword to modify it.", Message.Type.ERROR)
 			return
 		}
 		previousDeclaration = typeDefinitions.putIfAbsent(type.name, type)
 		if(previousDeclaration == null) {
 			onNewType(type)
-			linter.messages.add(Message(
-				"${type.source.getStartString()}: Declaration of type '${type.name}'.", Message.Type.DEBUG))
+			linter.addMessage(type.source, "Declaration of type '${type.name}'.", Message.Type.DEBUG)
 		} else {
-			linter.messages.add(Message(
-				"${type.source.getStartString()}: Redeclaration of type '${type.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+			linter.addMessage(type.source, "Redeclaration of type '${type.name}'," +
+						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
 		}
 	}
 
@@ -122,18 +113,19 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				val newValue = VariableValueDeclaration(newImplementation.source, name, newFunction.type, newFunction, true)
 				valueDeclarations[name] = newValue
 				onNewValue(newValue)
-				linter.messages.add(Message(
-					"${newImplementation.source.getStartString()}: Declaration of function signature '$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.", Message.Type.DEBUG))
+				linter.addMessage(newImplementation.source, "Declaration of function signature " +
+						"'$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.",
+					Message.Type.DEBUG)
 			}
 			is Function -> {
 				existingDeclaration.addImplementation(newImplementation)
-				linter.messages.add(Message(
-					"${newImplementation.source.getStartString()}: Declaration of function signature '$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.", Message.Type.DEBUG))
+				linter.addMessage(newImplementation.source, "Declaration of function signature " +
+						"'$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.",
+					Message.Type.DEBUG)
 			}
 			else -> {
-				linter.messages.add(Message(
-					"${newImplementation.source.getStartString()}: Redeclaration of member '$name', " +
-							"previously declared in ${existingDeclaration.source.getStartString()}.", Message.Type.ERROR))
+				linter.addMessage(newImplementation.source, "Redeclaration of member '$name', " +
+							"previously declared in ${existingDeclaration.source.getStartString()}.", Message.Type.ERROR)
 			}
 		}
 	}
@@ -165,12 +157,10 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		if(previousDeclaration == null) {
 			operators.add(operator)
 			onNewOperator(operator)
-			linter.messages.add(Message(
-				"${operator.source.getStartString()}: Declaration of operator '$operator'.", Message.Type.DEBUG))
+			linter.addMessage(operator.source, "Declaration of operator '$operator'.", Message.Type.DEBUG)
 		} else {
-			linter.messages.add(Message(
-				"${operator.source.getStartString()}: Redeclaration of operator '$operator'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+			linter.addMessage(operator.source, "Redeclaration of operator '$operator'," +
+						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
 		}
 	}
 
@@ -178,26 +168,22 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
 		var previousDeclaration = parentScope.resolveValue(value.name)
 		if(previousDeclaration != null) {
-			linter.messages.add(Message(
-				"${value.source.getStartString()}: '${value.name}' shadows a variable.", Message.Type.WARNING))
+			linter.addMessage(value.source, "'${value.name}' shadows a variable.", Message.Type.WARNING)
 		}
 		previousDeclaration = superScope?.resolveValue(value.name)
 		if(previousDeclaration != null) {
-			linter.messages.add(Message(
-				"${value.source.getStartString()}: Redeclaration of type '${value.name}'," +
+			linter.addMessage(value.source, "Redeclaration of type '${value.name}'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}." +
-						" Use the 'override' keyword to modify it.", Message.Type.ERROR))
+						" Use the 'override' keyword to modify it.", Message.Type.ERROR)
 			return
 		}
 		previousDeclaration = valueDeclarations.putIfAbsent(value.name, value)
 		if(previousDeclaration == null) {
 			onNewValue(value)
-			linter.messages.add(Message(
-				"${value.source.getStartString()}: Declaration of value '${value.name}'.", Message.Type.DEBUG))
+			linter.addMessage(value.source, "Declaration of value '${value.name}'.", Message.Type.DEBUG)
 		} else {
-			linter.messages.add(Message(
-				"${value.source.getStartString()}: Redeclaration of value '${value.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR))
+			linter.addMessage(value.source, "Redeclaration of value '${value.name}'," +
+						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
 		}
 	}
 

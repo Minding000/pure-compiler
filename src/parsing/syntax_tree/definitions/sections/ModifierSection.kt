@@ -3,7 +3,7 @@ package parsing.syntax_tree.definitions.sections
 import errors.internal.CompilerError
 import linting.Linter
 import linting.semantic_model.general.Unit
-import linting.messages.Message
+import messages.Message
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.definitions.Modifier
 import parsing.syntax_tree.definitions.ModifierList

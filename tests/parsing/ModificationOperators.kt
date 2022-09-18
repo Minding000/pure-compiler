@@ -3,10 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class ModificationOperatorTest {
+internal class ModificationOperators {
 
 	@Test
-	fun testUnaryModification() {
+	fun `parses unary modification operators`() {
 		val sourceCode =
 			"""
 				var x = 0
@@ -25,11 +25,11 @@ internal class ModificationOperatorTest {
 					Identifier { x }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testBinaryModification() {
+	fun `parses binary modification operators`() {
 		val sourceCode =
 			"""
 				var x = 0
@@ -60,6 +60,6 @@ internal class ModificationOperatorTest {
 					Identifier { x }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

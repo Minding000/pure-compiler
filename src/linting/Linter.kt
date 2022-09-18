@@ -2,8 +2,9 @@ package linting
 
 import parsing.syntax_tree.general.Program as ProgramSyntaxTree
 import linting.semantic_model.general.Program as SemanticProgramModel
-import linting.messages.Message
+import messages.Message
 import linting.semantic_model.scopes.Scope
+import parsing.syntax_tree.general.Element
 import java.util.*
 
 class Linter {
@@ -53,6 +54,14 @@ class Linter {
 		if(file == null)
 			messages.add(Message("Failed to get literal scope '${pathParts.joinToString(".")}'.", Message.Type.ERROR))
 		return file?.scope
+	}
+
+	fun addMessage(description: String, type: Message.Type = Message.Type.INFO) {
+		messages.add(Message(description, type))
+	}
+
+	fun addMessage(element: Element, description: String, type: Message.Type = Message.Type.INFO) {
+		addMessage("${element.getStartString()}: $description", type)
 	}
 
 	fun printMessages() {

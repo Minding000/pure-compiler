@@ -3,10 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class ControlFlowTest {
+internal class ControlFlow {
 
 	@Test
-	fun testIfStatement() {
+	fun `parses if statements`() {
 		val sourceCode = """
 			if 2 + 3 == 5 {
 			}
@@ -22,11 +22,11 @@ internal class ControlFlowTest {
 					} }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testIfElseStatement() {
+	fun `parses if statements with else branch`() {
 		val sourceCode = """
 			var x: Int
 			if 5
@@ -51,11 +51,11 @@ internal class ControlFlowTest {
 					}
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testConstructorCall() {
+	fun `parses initializer calls`() {
 		val sourceCode = """
 			class Human {
 				to speak(words: String) {
@@ -82,11 +82,11 @@ internal class ControlFlowTest {
 					} }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testFunctionCall() {
+	fun `parses function calls`() {
 		val sourceCode = """
 			class Human {
 				to speak(words: String) {
@@ -119,11 +119,11 @@ internal class ControlFlowTest {
 					StringLiteral { "Keep up the good work!" }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testReturn() {
+	fun `parses return statements`() {
 		val sourceCode = """
 			class Human {
 				to speak(words: String): String {
@@ -147,11 +147,11 @@ internal class ControlFlowTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testSwitch() {
+	fun `parses switch statements`() {
 		val sourceCode = """
 			switch x {
 				ExitCode.SUCCESS:
@@ -176,6 +176,6 @@ internal class ControlFlowTest {
 					}
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

@@ -1,7 +1,7 @@
 package parsing.syntax_tree.definitions
 
 import linting.Linter
-import linting.messages.Message
+import messages.Message
 import parsing.syntax_tree.general.MetaElement
 import parsing.tokenizer.WordAtom
 

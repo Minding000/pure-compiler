@@ -4,7 +4,7 @@ import linting.semantic_model.access.MemberAccess
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.values.*
 import util.TestUtil
-import linting.messages.Message
+import messages.Message
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -50,7 +50,7 @@ internal class TypeResolution {
 				var eagle: Eagle
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Type 'Eagle' hasn't been declared yet")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Eagle' hasn't been declared yet")
 	}
 
 	@Test

@@ -1,7 +1,7 @@
 package linting
 
 import util.TestUtil
-import linting.messages.Message
+import messages.Message
 import org.junit.jupiter.api.Test
 
 internal class Declarations {
@@ -17,7 +17,7 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.WARNING, "'defaultHandler' shadows a variable.")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "'defaultHandler' shadows a variable.")
 	}
 
 	@Test
@@ -29,7 +29,7 @@ internal class Declarations {
 				val car: Car
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Redeclaration of value 'car'")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of value 'car'")
 	}
 
 	@Test
@@ -40,7 +40,7 @@ internal class Declarations {
 				enum Animal {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Redeclaration of type 'Animal'")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of type 'Animal'")
 	}
 
 	@Test
@@ -50,7 +50,7 @@ internal class Declarations {
 				override class House {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.WARNING, "Modifier 'override' is not allowed here")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'override' is not allowed here")
 	}
 
 	@Test
@@ -60,6 +60,6 @@ internal class Declarations {
 				native native class Memory {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.WARNING, "Duplicate 'native' modifier")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Duplicate 'native' modifier")
 	}
 }

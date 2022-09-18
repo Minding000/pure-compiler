@@ -6,7 +6,7 @@ import linting.semantic_model.access.MemberAccess
 import linting.semantic_model.general.Unit
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValue
-import linting.messages.Message
+import messages.Message
 import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.operations.Assignment
 
@@ -33,8 +33,8 @@ class Assignment(val source: Assignment, private val targets: List<Value>, priva
 					target.type = sourceType
 				} else {
 					if(!sourceType.isAssignableTo(targetType))
-						linter.messages.add(Message("${target.source.getStartString()}: " +
-								"Type '$sourceType' is not assignable to type '$targetType'.", Message.Type.ERROR))
+						linter.addMessage(target.source, "Type '$sourceType' is not assignable to type '$targetType'.",
+							Message.Type.ERROR)
 				}
 			}
 		}
@@ -45,13 +45,13 @@ class Assignment(val source: Assignment, private val targets: List<Value>, priva
 			when(target) {
 				is VariableValue -> {
 					if(target.definition?.isConstant == true)
-						linter.messages.add(Message("${target.source.getStartString()}: " +
-								"'${target.name}' cannot be reassigned, because it is constant.", Message.Type.ERROR))
+						linter.addMessage(target.source, "'${target.name}' cannot be reassigned, because it is constant.",
+							Message.Type.ERROR)
 				}
 				is MemberAccess -> {
 					if(target.member.definition?.isConstant == true)
-						linter.messages.add(Message("${target.source.getStartString()}: " +
-								"'${target.member.name}' cannot be reassigned, because it is constant.", Message.Type.ERROR))
+						linter.addMessage(target.source, "'${target.member.name}' cannot be reassigned, because it is constant.",
+							Message.Type.ERROR)
 				}
 				is IndexAccess -> {
 					target.target.type?.let { targetType ->
@@ -60,8 +60,7 @@ class Assignment(val source: Assignment, private val targets: List<Value>, priva
 					}
 				}
 				else -> {
-					linter.messages.add(Message("${target.source.getStartString()}: " +
-							"Expression is not assignable.", Message.Type.ERROR))
+					linter.addMessage(target.source, "Expression is not assignable.", Message.Type.ERROR)
 				}
 			}
 		}

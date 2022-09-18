@@ -3,10 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class BinaryOperatorTest {
+internal class BinaryOperators {
 
 	@Test
-	fun testAddition() {
+	fun `parses additions`() {
 		val sourceCode = "345 + 1"
 		val expected =
 			"""
@@ -14,11 +14,11 @@ internal class BinaryOperatorTest {
 					NumberLiteral { 345 } + NumberLiteral { 1 }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testSubtraction() {
+	fun `parses subtractions`() {
 		val sourceCode = "345 - 3"
 		val expected =
 			"""
@@ -26,11 +26,11 @@ internal class BinaryOperatorTest {
 					NumberLiteral { 345 } - NumberLiteral { 3 }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testMultiplication() {
+	fun `parses multiplications`() {
 		val sourceCode = "345 * 2"
 		val expected =
 			"""
@@ -38,11 +38,11 @@ internal class BinaryOperatorTest {
 					NumberLiteral { 345 } * NumberLiteral { 2 }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testDivision() {
+	fun `parses divisions`() {
 		val sourceCode = "345 / 5"
 		val expected =
 			"""
@@ -50,11 +50,11 @@ internal class BinaryOperatorTest {
 					NumberLiteral { 345 } / NumberLiteral { 5 }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testNullCoalescence() {
+	fun `parses null coalescence operators`() {
 		val sourceCode = "repetitions ?? 1"
 		val expected =
 			"""
@@ -62,11 +62,11 @@ internal class BinaryOperatorTest {
 					Identifier { repetitions } ?? NumberLiteral { 1 }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testBinaryBooleanOperators() {
+	fun `parses binary boolean operators`() {
 		val sourceCode = "yes & no | yes"
 		val expected =
 			"""
@@ -76,11 +76,11 @@ internal class BinaryOperatorTest {
 					} | BooleanLiteral { yes }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testNumberPrecedence() {
+	fun `parses binary number operators with correct precedence`() {
 		val sourceCode = "3 + 345 * 2 - (2 + 1)"
 		val expected =
 			"""
@@ -94,11 +94,11 @@ internal class BinaryOperatorTest {
 					}
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testBooleanPrecedence() {
+	fun `parses binary number and boolean operators with correct precedence`() {
 		val sourceCode = "9 + 534 > 234 == no & 2 == 2"
 		val expected =
 			"""
@@ -114,6 +114,6 @@ internal class BinaryOperatorTest {
 					}
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

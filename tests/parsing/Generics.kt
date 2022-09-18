@@ -3,10 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class GenericsTest {
+internal class Generics {
 
 	@Test
-	fun testGenericsDeclaration() {
+	fun `parses generics declarations`() {
 		val sourceCode = """
 			class ShoppingList {
 				containing Entry
@@ -33,11 +33,36 @@ internal class GenericsTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testTypeList() {
+	fun `parses generic function definitions`() {
+		val sourceCode = """
+			object Math {
+				to greatest<N: Number>(a: N, b: N): N {
+				}
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ object Identifier { Math } ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { greatest } GenericsList {
+							GenericsListElement [ ObjectType { Identifier { Number } } ] { Identifier { N } }
+						} ParameterList {
+							Parameter { Identifier { a }: ObjectType { Identifier { N } } }
+							Parameter { Identifier { b }: ObjectType { Identifier { N } } }
+						}: ObjectType { Identifier { N } } ] { StatementSection { StatementBlock {
+						} } }
+					}
+				} }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses specific initializer calls`() {
 		val sourceCode = """
 			class ShoppingList {
 				containing Entry
@@ -79,11 +104,30 @@ internal class GenericsTest {
 					} }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testConsumingType() {
+	fun `parses specific function calls`() {
+		val sourceCode = """
+			Math.greatest$<Int>(1, 2)
+			""".trimIndent()
+		val expected =
+			"""
+				FunctionCall [ TypeSpecification [ TypeList {
+					ObjectType { Identifier { Int } }
+				} ] { MemberAccess {
+					Identifier { Math }.Identifier { greatest }
+				} } ] {
+					NumberLiteral { 1 }
+					NumberLiteral { 2 }
+				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses producing types`() {
 		val sourceCode = """
 			class Fridge {
 				to add(foodList: <Food producing>List) {
@@ -103,11 +147,11 @@ internal class GenericsTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testProducingType() {
+	fun `parses consuming types`() {
 		val sourceCode = """
 			class SodaMachine {
 				to refill(glass: <Soda consuming>LiquidContainer) {
@@ -127,50 +171,6 @@ internal class GenericsTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
-	}
-
-	@Test
-	fun testGenericFunction() {
-		val sourceCode = """
-			object Math {
-				to greatest<N: Number>(a: N, b: N): N {
-				}
-			}
-			""".trimIndent()
-		val expected =
-			"""
-				TypeDefinition [ object Identifier { Math } ] { TypeBody {
-					FunctionSection [ to ] {
-						Function [ Identifier { greatest } GenericsList {
-							GenericsListElement [ ObjectType { Identifier { Number } } ] { Identifier { N } }
-						} ParameterList {
-							Parameter { Identifier { a }: ObjectType { Identifier { N } } }
-							Parameter { Identifier { b }: ObjectType { Identifier { N } } }
-						}: ObjectType { Identifier { N } } ] { StatementSection { StatementBlock {
-						} } }
-					}
-				} }
-            """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
-	}
-
-	@Test
-	fun testGenericFunctionCall() {
-		val sourceCode = """
-			Math.greatest$<Int>(1, 2)
-			""".trimIndent()
-		val expected =
-			"""
-				FunctionCall [ TypeSpecification [ TypeList {
-					ObjectType { Identifier { Int } }
-				} ] { MemberAccess {
-					Identifier { Math }.Identifier { greatest }
-				} } ] {
-					NumberLiteral { 1 }
-					NumberLiteral { 2 }
-				}
-            """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

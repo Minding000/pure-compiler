@@ -3,20 +3,20 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class LiteralTest {
+internal class Literals {
 
 	@Test
-	fun testNullLiteral() {
+	fun `parses null literals`() {
 		val sourceCode = "null"
 		val expected =
 			"""
 				NullLiteral
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testBooleanLiteral() {
+	fun `parses boolean literals`() {
 		val sourceCode = """
 				yes
 				no
@@ -26,81 +26,81 @@ internal class LiteralTest {
 				BooleanLiteral { yes }
 				BooleanLiteral { no }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testSimpleNumberLiteral() {
+	fun `parses number literals`() {
 		val sourceCode = "345"
 		val expected =
 			"""
 				NumberLiteral { 345 }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testFloatingPointNumberLiteral() {
+	fun `parses number literals with decimal places`() {
 		val sourceCode = "6.5"
 		val expected =
 			"""
 				NumberLiteral { 6.5 }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testSectionedNumberLiteral() {
+	fun `parses number literals with thousands separators`() {
 		val sourceCode = "456_345"
 		val expected =
 			"""
 				NumberLiteral { 456_345 }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testScientificNumberNotation() {
+	fun `parses number literals denoted using scientific notation`() {
 		val sourceCode = "10.4e-18"
 		val expected =
 			"""
 				NumberLiteral { 10.4e-18 }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testStringLiteral() {
+	fun `parses string literals`() {
 		val sourceCode = "\"hello world!\""
 		val expected =
 			"""
 				StringLiteral { "hello world!" }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testStringWithEscapedQuote() {
+	fun `parses string literals with escaped quotes`() {
 		val sourceCode = "\"Hello!\\nDo you know the \\\"prue\\\" programming language?\""
 		val expected =
 			"""
 				StringLiteral { "Hello!\nDo you know the \"prue\" programming language?" }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testTemplateString() {
+	fun `parses string literals with templates`() {
 		val sourceCode = "\"Hello \${user.salutation} \$username!\""
 		val expected =
 			"""
 				StringLiteral { "Hello ${'$'}{user.salutation} ${'$'}username!" }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testMultilineString() {
+	fun `parses string literals over multiple lines`() {
 		val sourceCode =
 			"""
 				${'"'}
@@ -117,6 +117,6 @@ internal class LiteralTest {
 					:)
 				" }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

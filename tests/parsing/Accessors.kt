@@ -3,12 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class AccessorTest {
-	//TODO also test parser error messages
-	//TODO try to recover after error in parser
+internal class Accessors {
 
 	@Test
-	fun testReferenceChain() {
+	fun `parses member accesses`() {
 		val sourceCode = """
 			player.inventory
 			""".trimIndent()
@@ -18,11 +16,11 @@ internal class AccessorTest {
 					Identifier { player }.Identifier { inventory }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testOptionalChaining() {
+	fun `parses optional member accesses`() {
 		val sourceCode = """
 			teammate?.inventory
 			""".trimIndent()
@@ -32,11 +30,11 @@ internal class AccessorTest {
 					Identifier { teammate }?.Identifier { inventory }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testSingleIndex() {
+	fun `parses index access with one parameter`() {
 		val sourceCode = """
 			students[i]
 			""".trimIndent()
@@ -46,11 +44,11 @@ internal class AccessorTest {
 					Identifier { i }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testMultiIndex() {
+	fun `parses index access with multiple parameters`() {
 		val sourceCode = """
 			tiles[x, y]
 			""".trimIndent()
@@ -61,11 +59,11 @@ internal class AccessorTest {
 					Identifier { y }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testInstanceAccess() {
+	fun `parses instance access`() {
 		val sourceCode = """
 			disk.state = .READY
 			""".trimIndent()
@@ -78,6 +76,6 @@ internal class AccessorTest {
 					= InstanceAccess { Identifier { READY } }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

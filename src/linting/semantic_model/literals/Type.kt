@@ -7,7 +7,7 @@ import linting.semantic_model.definitions.TypeAlias
 import linting.semantic_model.general.Unit
 import linting.semantic_model.values.TypeDefinition
 import linting.semantic_model.values.VariableValueDeclaration
-import linting.messages.Message
+import messages.Message
 import linting.semantic_model.scopes.InterfaceScope
 import org.bytedeco.llvm.LLVM.LLVMTypeRef
 
@@ -33,12 +33,12 @@ abstract class Type: Unit() {
 	abstract fun isAssignableTo(unresolvedTargetType: Type): Boolean
 
 	open fun getKeyType(linter: Linter): Type? {
-		linter.messages.add(Message("Type '$this' doesn't have a key type.", Message.Type.ERROR))
+		linter.addMessage("Type '$this' doesn't have a key type.", Message.Type.ERROR)
 		return null
 	}
 
 	open fun getValueType(linter: Linter): Type? {
-		linter.messages.add(Message("Type '$this' doesn't have a value type.", Message.Type.ERROR))
+		linter.addMessage("Type '$this' doesn't have a value type.", Message.Type.ERROR)
 		return null
 	}
 

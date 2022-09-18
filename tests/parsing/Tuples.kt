@@ -4,11 +4,11 @@ import util.TestUtil
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-internal class TupleTest {
+internal class Tuples {
 
 	@Disabled
 	@Test
-	fun testReturnTuple() {
+	fun `parses tuple construction`() {
 		val sourceCode = """
 			class Player {
 				var x = y = 0
@@ -32,12 +32,12 @@ internal class TupleTest {
 					} } }
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Disabled
 	@Test
-	fun testDeconstructTuple() {
+	fun `parses tuple deconstruction`() {
 		val sourceCode = """
 			val (x, y) = player.calculateCoordinates()
 			""".trimIndent()
@@ -56,6 +56,6 @@ internal class TupleTest {
 					}
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

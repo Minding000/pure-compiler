@@ -5,7 +5,7 @@ import linting.semantic_model.definitions.OperatorDefinition
 import linting.semantic_model.definitions.TypeAlias
 import linting.semantic_model.values.TypeDefinition
 import linting.semantic_model.values.VariableValueDeclaration
-import linting.messages.Message
+import messages.Message
 import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.general.Element
 import java.util.LinkedList
@@ -58,8 +58,7 @@ class ObjectType(val source: Element, val name: String, val genericParameters: L
 		if(definition == null) {
 			definition = scope.resolveType(name)
 			if(definition == null)
-				linter.messages.add(Message(
-					"${source.getStartString()}: Type '$name' hasn't been declared yet.", Message.Type.ERROR))
+				linter.addMessage(source, "Type '$name' hasn't been declared yet.", Message.Type.ERROR)
 		}
 	}
 
@@ -90,7 +89,7 @@ class ObjectType(val source: Element, val name: String, val genericParameters: L
 
 	override fun getKeyType(linter: Linter): Type? {
 		if(genericParameters.size != 2) {
-			linter.messages.add(Message("Type '$this' doesn't have a key type.", Message.Type.ERROR))
+			linter.addMessage("Type '$this' doesn't have a key type.", Message.Type.ERROR)
 			return null
 		}
 		return genericParameters.first()
@@ -98,7 +97,7 @@ class ObjectType(val source: Element, val name: String, val genericParameters: L
 
 	override fun getValueType(linter: Linter): Type? {
 		if(!(genericParameters.size == 1 || genericParameters.size == 2)) {
-			linter.messages.add(Message("Type '$this' doesn't have a value type.", Message.Type.ERROR))
+			linter.addMessage("Type '$this' doesn't have a value type.", Message.Type.ERROR)
 			return null
 		}
 		return genericParameters.last()

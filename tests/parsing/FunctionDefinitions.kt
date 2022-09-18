@@ -3,31 +3,29 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class FunctionDefinitionTest {
+internal class FunctionDefinitions {
 
 	@Test
-	fun testFunctionDeclaration() {
+	fun `parses function definitions`() {
 		val sourceCode = """
-			class Animal {
-				it canEat(food: Food): Bool {
-				}
+			trait Animal {
+				it canEat(food: Food): Bool
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+				TypeDefinition [ trait Identifier { Animal } ] { TypeBody {
 					FunctionSection [ it ] {
 						Function [ Identifier { canEat } ParameterList {
 							Parameter { Identifier { food }: ObjectType { Identifier { Food } } }
-						}: ObjectType { Identifier { Bool } } ] { StatementSection { StatementBlock {
-						} } }
+						}: ObjectType { Identifier { Bool } } ] {  }
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testFunctionBody() {
+	fun `parses function definitions with body`() {
 		val sourceCode = """
 			class Animal {
 				to getSound(loudness: Int) {
@@ -50,11 +48,33 @@ internal class FunctionDefinitionTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testInitializerDeclaration() {
+	fun `parses initializer definitions`() {
+		val sourceCode = """
+			class Animal {
+				var canSwim: Bool
+				
+				init(canSwim)
+			}""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+					VariableSection [ var ] {
+						VariableDeclaration { Identifier { canSwim }: ObjectType { Identifier { Bool } } }
+					}
+					Initializer [ ParameterList {
+						Parameter { Identifier { canSwim } }
+					} ] {  }
+				} }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses initializer definitions with body`() {
 		val sourceCode = """
 			class Animal {
 				var canSwim: Bool
@@ -80,33 +100,11 @@ internal class FunctionDefinitionTest {
 					} } }
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testInitializerShorthand() {
-		val sourceCode = """
-			class Animal {
-				var canSwim: Bool
-				
-				init(canSwim)
-			}""".trimIndent()
-		val expected =
-			"""
-				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
-					VariableSection [ var ] {
-						VariableDeclaration { Identifier { canSwim }: ObjectType { Identifier { Bool } } }
-					}
-					Initializer [ ParameterList {
-						Parameter { Identifier { canSwim } }
-					} ] {  }
-				} }
-            """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
-	}
-
-	@Test
-	fun testDeinitializerShorthand() {
+	fun `parses deinitializer definitions`() {
 		val sourceCode = """
 			class Animal {
 				var name: String
@@ -128,11 +126,11 @@ internal class FunctionDefinitionTest {
 					} } }
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testOperatorDefinition() {
+	fun `parses operator definitions`() {
 		val sourceCode = """
 			class Vector {
 				var: Int {
@@ -191,11 +189,11 @@ internal class FunctionDefinitionTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testIndexOperatorDefinition() {
+	fun `parses index operator definitions`() {
 		val sourceCode = """
 			class BookSelf {
 				
@@ -235,32 +233,11 @@ internal class FunctionDefinitionTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testFunctionTypeDeclaration() {
-		val sourceCode = """
-			class Animal {
-				to getSound(loudness: Int) {
-				}
-			}""".trimIndent()
-		val expected =
-			"""
-				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
-					FunctionSection [ to ] {
-						Function [ Identifier { getSound } ParameterList {
-							Parameter { Identifier { loudness }: ObjectType { Identifier { Int } } }
-						}: void ] { StatementSection { StatementBlock {
-						} } }
-					}
-				} }
-            """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
-	}
-
-	@Test
-	fun testVariableArguments() {
+	fun `parses dynamically sized parameters`() {
 		val sourceCode = """
 			class Animal {
 				to setSounds(...sounds: ...Sound) {
@@ -277,11 +254,11 @@ internal class FunctionDefinitionTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testLambdaFunctionDefinition() {
+	fun `parses lambda function definitions`() {
 		val sourceCode = """
 			val condition = (a: Int, b: Int) => { return a < b }
 			""".trimIndent()
@@ -298,6 +275,6 @@ internal class FunctionDefinitionTest {
 					} } } }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

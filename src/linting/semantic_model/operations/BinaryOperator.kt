@@ -2,7 +2,7 @@ package linting.semantic_model.operations
 
 import linting.Linter
 import linting.semantic_model.values.Value
-import linting.messages.Message
+import messages.Message
 import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.operations.BinaryOperator
 
@@ -19,12 +19,8 @@ class BinaryOperator(override val source: BinaryOperator, val left: Value, val r
 		left.type?.let { leftType ->
 			val operator = leftType.scope.resolveOperator(operator, right.type)
 			if(operator == null) {
-				linter.messages.add(
-					Message(
-						"${source.getStartString()}: Operator '${this.operator}(${right.type})' hasn't been declared yet.",
-						Message.Type.ERROR
-					)
-				)
+				linter.addMessage(source, "Operator '${this.operator}(${right.type})' hasn't been declared yet.",
+						Message.Type.ERROR)
 			} else {
 				type = operator.returnType
 			}

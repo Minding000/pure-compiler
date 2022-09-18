@@ -1,7 +1,7 @@
 package linting.semantic_model.general
 
 import linting.Linter
-import linting.messages.Message
+import messages.Message
 import linting.semantic_model.scopes.FileScope
 import parsing.syntax_tree.general.File as FileSyntaxTree
 import source_structure.File as SourceFile
@@ -20,11 +20,11 @@ class File(val source: FileSyntaxTree, val file: SourceFile, val scope: FileScop
 					if(file.matches(unit.parts)) {
 						referencedFiles.add(file)
 						noFilesFound = false
-						linter.messages.add(Message("'${file.file.name}' referenced in '${this.file.name}' ${unit.parts}.", Message.Type.DEBUG))
+						linter.addMessage("'${file.file.name}' referenced in '${this.file.name}' ${unit.parts}.", Message.Type.DEBUG)
 					}
 				}
 				if(noFilesFound)
-					linter.messages.add(Message("Failed to resolve file '${unit.identifier}'.", Message.Type.ERROR))
+					linter.addMessage("Failed to resolve file '${unit.identifier}'.", Message.Type.ERROR)
 			}
 		}
 	}

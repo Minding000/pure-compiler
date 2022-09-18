@@ -4,23 +4,23 @@ import util.TestUtil
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-internal class AwaitTest {
+internal class Awaits {
 
 	@Disabled
 	@Test
-	fun testAwaitSingle() {
+	fun `parses awaits with a single value`() {
 		val sourceCode = """
 			let data = await fetchData()
 			""".trimIndent()
 		val expected =
 			"""
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Disabled
 	@Test
-	fun testAwaitMultiple() {
+	fun `parses awaits with multiple values`() {
 		val sourceCode = """
 			let (config, data) = await (
 				loadConfig(),
@@ -30,12 +30,12 @@ internal class AwaitTest {
 		val expected =
 			"""
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Disabled
 	@Test
-	fun testCompleteMultiple() {
+	fun `parses awaits with modifier`() {
 		val sourceCode = """
 			let (configResult, dataResult) = await all {
 				loadConfig()
@@ -45,12 +45,12 @@ internal class AwaitTest {
 		val expected =
 			"""
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Disabled
 	@Test
-	fun testCompleteMultipleOptional() {
+	fun `parses awaits with optional modifier`() {
 		val sourceCode = """
 			let (configResult, dataResult) = await all? {
 				loadConfig()
@@ -60,12 +60,12 @@ internal class AwaitTest {
 		val expected =
 			"""
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Disabled
 	@Test
-	fun testAnyMultiple() {
+	fun `parses awaits for any of multiple values`() {
 		val sourceCode = """
 			any {
 				let config = async loadConfig()
@@ -75,6 +75,6 @@ internal class AwaitTest {
 		val expected =
 			"""
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

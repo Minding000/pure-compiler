@@ -3,10 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class PropertyTest {
+internal class Members {
 
 	@Test
-	fun testConstant() {
+	fun `parses constant members`() {
 		val sourceCode = """
 			class Human {
 				const: Int {
@@ -26,11 +26,11 @@ internal class PropertyTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testComputedProperty() {
+	fun `parses computed members`() {
 		val sourceCode = """
 			class Rectangle {
 				containing Unit: Number
@@ -103,6 +103,6 @@ internal class PropertyTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

@@ -3,10 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class MutabilityTest {
+internal class Mutability {
 
 	@Test
-	fun testImmutableObject() {
+	fun `parses immutable type definitions`() {
 		val sourceCode = """
 			imm object MainMonitor {
 			}
@@ -18,27 +18,11 @@ internal class MutabilityTest {
 					} }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testImmutableClass() {
-		val sourceCode = """
-			imm class Monitor {
-			}
-			""".trimIndent()
-		val expected =
-			"""
-				ModifierSection [ ModifierList { Modifier { imm } } ] {
-					TypeDefinition [ class Identifier { Monitor } ] { TypeBody {
-					} }
-				}
-            """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
-	}
-
-	@Test
-	fun testClassConstant() {
+	fun `parses static constants`() {
 		val sourceCode = """
 			class Display {
 				const PERIPHERAL_TYPE = "graphics"
@@ -52,11 +36,11 @@ internal class MutabilityTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testConstantProperty() {
+	fun `parses constant members`() {
 		val sourceCode = """
 			class Display {
 				val resolution: Resolution
@@ -70,11 +54,11 @@ internal class MutabilityTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testConstantVariable() {
+	fun `parses constant variables`() {
 		val sourceCode = """
 			val text = "Irreplaceable!"
 			""".trimIndent()
@@ -84,11 +68,11 @@ internal class MutabilityTest {
 					VariableDeclaration { Identifier { text } = StringLiteral { "Irreplaceable!" } }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testImmutableFunction() {
+	fun `parses immutable function definitions`() {
 		val sourceCode = """
 			class Human {
 				imm to speak(words: String) {
@@ -112,11 +96,11 @@ internal class MutabilityTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testMutableParameter() {
+	fun `parses mutable parameters`() {
 		val sourceCode = """
 			class Human {
 				to chargePhone(mut phone: Phone) {
@@ -140,11 +124,11 @@ internal class MutabilityTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testImmutableVariable() {
+	fun `parses immutable variables`() {
 		val sourceCode = """
 			imm var id = 5
 			""".trimIndent()
@@ -156,11 +140,11 @@ internal class MutabilityTest {
 					}
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testImmutableProperty() {
+	fun `parses immutable members`() {
 		val sourceCode = """
 			class Item {
 				imm val id = 71
@@ -176,6 +160,6 @@ internal class MutabilityTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

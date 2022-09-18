@@ -3,10 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class ExceptionTest {
+internal class Exceptions {
 
 	@Test
-	fun testRaise() {
+	fun `parses raise statements`() {
 		val sourceCode = """
 			raise Error()
 			""".trimIndent()
@@ -15,11 +15,11 @@ internal class ExceptionTest {
 				Raise { FunctionCall [ Identifier { Error } ] {
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testBlockHandle() {
+	fun `parses handle blocks`() {
 		val sourceCode = """
 			{
 				echo words
@@ -36,11 +36,11 @@ internal class ExceptionTest {
 				} Handle [ ObjectType { Identifier { NoWordsException } } Identifier { e } ] { StatementBlock {
 				} } }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testHandleUnion() {
+	fun `parses handle blocks with multiple types`() {
 		val sourceCode = """
 			{
 				echo words
@@ -57,11 +57,11 @@ internal class ExceptionTest {
 				} Handle [ UnionType { ObjectType { Identifier { NoWordsException } } | ObjectType { Identifier { OverthinkException } } } ] { StatementBlock {
 				} } }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testFunctionHandle() {
+	fun `parses function handle blocks`() {
 		val sourceCode = """
 			class Human {
 				to speak(words: String) {
@@ -86,11 +86,11 @@ internal class ExceptionTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testTryOrNull() {
+	fun `parses optional trys`() {
 		val sourceCode = """
 			try? splitApple()
 			""".trimIndent()
@@ -99,11 +99,11 @@ internal class ExceptionTest {
 				Try [ null ] { FunctionCall [ Identifier { splitApple } ] {
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testTryOrUncheck() {
+	fun `parses force trys`() {
 		val sourceCode = """
 			try! splitApple()
 			""".trimIndent()
@@ -113,11 +113,11 @@ internal class ExceptionTest {
 				} }
             """.trimIndent()
 
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testAlways() {
+	fun `parses always blocks`() {
 		val sourceCode = """
 			{
 				echo words
@@ -137,6 +137,6 @@ internal class ExceptionTest {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

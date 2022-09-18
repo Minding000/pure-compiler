@@ -3,10 +3,10 @@ package parsing
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
-internal class CastTest {
+internal class Casts {
 
 	@Test
-	fun testSafeCast() {
+	fun `parses safe casts`() {
 		val sourceCode = "10 as Float"
 		val expected =
 			"""
@@ -14,11 +14,11 @@ internal class CastTest {
 					NumberLiteral { 10 } as ObjectType { Identifier { Float } }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testOptionalCast() {
+	fun `parses optional casts`() {
 		val sourceCode = "quoteSource as? Book"
 		val expected =
 			"""
@@ -26,11 +26,11 @@ internal class CastTest {
 					Identifier { quoteSource } as? ObjectType { Identifier { Book } }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testForceCast() {
+	fun `parses force casts`() {
 		val sourceCode = "food as! Fruit"
 		val expected =
 			"""
@@ -38,11 +38,11 @@ internal class CastTest {
 					Identifier { food } as! ObjectType { Identifier { Fruit } }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testIs() {
+	fun `parses type checks`() {
 		val sourceCode =
 			"""
 				if inputDevice is keyboard: Keyboard {
@@ -57,11 +57,11 @@ internal class CastTest {
 					} }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun testIsNot() {
+	fun `parses negated type checks`() {
 		val sourceCode =
 			"""
 				if inputDevice is! keyboard: Keyboard {
@@ -76,6 +76,6 @@ internal class CastTest {
 					} }
 				}
             """.trimIndent()
-		TestUtil.assertAST(expected, sourceCode)
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

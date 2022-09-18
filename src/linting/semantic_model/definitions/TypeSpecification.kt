@@ -4,7 +4,7 @@ import linting.Linter
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.Type
 import linting.semantic_model.values.Value
-import linting.messages.Message
+import messages.Message
 import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.definitions.TypeSpecification as TypeSpecificationSyntaxTree
 
@@ -21,10 +21,9 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val ba
 		baseValue.type?.let { baseType ->
 			val placeholders = baseType.scope.getGenericTypes()
 			if(genericParameters.size != placeholders.size) {
-				linter.messages.add(Message(
-					"${source.getStartString()}: Number of provided type parameters " +
+				linter.addMessage(source, "Number of provided type parameters " +
 							"(${genericParameters.size}) doesn't match number of declared " +
-							"generic types (${placeholders.size}).", Message.Type.ERROR))
+							"generic types (${placeholders.size}).", Message.Type.ERROR)
 				return
 			}
 			val substitution = HashMap<ObjectType, Type>()
@@ -34,8 +33,8 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val ba
 				val parameter = genericParameters[parameterIndex]
 				if(!placeholder.acceptsSubstituteType(parameter)) {
 					areParametersCompatible = false
-					linter.messages.add(Message("${source.getStartString()}: The type parameter " +
-							"'$parameter' is not assignable to '$placeholder'.", Message.Type.ERROR))
+					linter.addMessage(source, "The type parameter " +
+							"'$parameter' is not assignable to '$placeholder'.", Message.Type.ERROR)
 				}
 				substitution[placeholder] = parameter
 			}

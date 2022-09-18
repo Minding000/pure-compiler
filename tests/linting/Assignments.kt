@@ -1,7 +1,7 @@
 package linting
 
 import util.TestUtil
-import linting.messages.Message
+import messages.Message
 import linting.semantic_model.access.IndexAccess
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
@@ -17,7 +17,7 @@ internal class Assignments {
 				b = a
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Type 'Int' is not assignable to type 'String'.")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Int' is not assignable to type 'String'.")
 	}
 
 	@Test
@@ -29,7 +29,7 @@ internal class Assignments {
 				b = a
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "'b' cannot be reassigned, because it is constant.")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "'b' cannot be reassigned, because it is constant.")
 	}
 
 	@Test
@@ -43,7 +43,7 @@ internal class Assignments {
 				val firstField = ChessBoard[Position()]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Operator '[Position]()' hasn't been declared yet.")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '[Position]()' hasn't been declared yet.")
 	}
 
 	@Test
@@ -62,7 +62,7 @@ internal class Assignments {
 				ChessBoard[Position()] = Field()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageEmitted(Message.Type.ERROR, "Operator '[Position](Field)' hasn't been declared yet.")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '[Position](Field)' hasn't been declared yet.")
 	}
 
 	@Test
@@ -94,7 +94,7 @@ internal class Assignments {
 				typeAliasValue = complexTypeValue
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Type '(Event) =>|' is not assignable to type 'EventHandler'")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type '(Event) =>|' is not assignable to type 'EventHandler'")
 	}
 
 	@Test
@@ -108,6 +108,6 @@ internal class Assignments {
 				complexTypeValue = typeAliasValue
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertLinterMessageNotEmitted(Message.Type.ERROR, "Type 'EventHandler' is not assignable to type '(Event) =>|'")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type 'EventHandler' is not assignable to type '(Event) =>|'")
 	}
 }
