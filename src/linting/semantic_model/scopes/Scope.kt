@@ -4,7 +4,7 @@ import linting.semantic_model.definitions.IndexOperatorDefinition
 import linting.semantic_model.definitions.InitializerDefinition
 import linting.semantic_model.definitions.OperatorDefinition
 import linting.semantic_model.literals.Type
-import linting.semantic_model.values.TypeDefinition
+import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.values.VariableValueDeclaration
 
 abstract class Scope {
@@ -34,16 +34,17 @@ abstract class Scope {
 			subscriber.onNewOperator(operator)
 	}
 
-	open fun resolveGenerics(type: Type?): Type? = type
-
 	abstract fun resolveType(name: String): TypeDefinition?
 
 	abstract fun resolveValue(name: String): VariableValueDeclaration?
 
-	abstract fun resolveOperator(name: String, suppliedTypes: List<Type?>): OperatorDefinition?
+	fun resolveOperator(name: String): OperatorDefinition?
+		= resolveOperator(name, listOf())
 
 	fun resolveOperator(name: String, suppliedType: Type?): OperatorDefinition?
 		= resolveOperator(name, listOf(suppliedType))
+
+	abstract fun resolveOperator(name: String, suppliedTypes: List<Type?>): OperatorDefinition?
 
 	abstract fun resolveIndexOperator(suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
 			IndexOperatorDefinition?

@@ -5,11 +5,9 @@ import linting.semantic_model.definitions.*
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.Type
 import linting.semantic_model.values.Function
-import linting.semantic_model.values.TypeDefinition
 import linting.semantic_model.values.VariableValueDeclaration
 import messages.Message
 import java.util.*
-import kotlin.collections.HashMap
 
 class TypeScope(private val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
 	var instanceConstant: VariableValueDeclaration? = null
@@ -21,6 +19,10 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 
 	companion object {
 		const val SELF_REFERENCE = "this"
+	}
+
+	fun createInstanceConstant(definition: TypeDefinition) {
+		instanceConstant = VariableValueDeclaration(definition.source, SELF_REFERENCE, ObjectType(definition), null, true)
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>, superScope: InterfaceScope?): TypeScope {
@@ -39,20 +41,28 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		return specificTypeScope
 	}
 
-	fun createInstanceConstant(definition: TypeDefinition) {
-		instanceConstant = VariableValueDeclaration(definition.source, SELF_REFERENCE, ObjectType(definition), null, true)
-	}
-
 	override fun subscribe(type: Type) {
 		super.subscribe(type)
+		superScope?.subscribe(type)
 		for((_, typeDefinition) in typeDefinitions)
 			type.onNewType(typeDefinition)
-		for((_, value) in valueDeclarations)
-			type.onNewValue(value)
+		for((_, valueDeclaration) in valueDeclarations)
+			type.onNewValue(valueDeclaration)
 		for(initializer in initializers)
 			type.onNewInitializer(initializer)
 		for(operator in operators)
 			type.onNewOperator(operator)
+	}
+
+	fun inheritSignatures(linter: Linter) {
+		for((_, valueDeclaration) in valueDeclarations) {
+			if(valueDeclaration.value !is Function)
+				continue
+			val superValue = superScope?.resolveValue(valueDeclaration.name)
+			val superFunction = superValue?.value as? Function
+			valueDeclaration.value.superFunction = superFunction
+			valueDeclaration.value.functionType.superFunctionType = superFunction?.functionType
+		}
 	}
 
 	fun ensureUniqueSignatures(linter: Linter) {
@@ -110,6 +120,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		when(val existingDeclaration = valueDeclarations[name]?.value) {
 			null -> {
 				val newFunction = Function(newImplementation.source, newImplementation, name)
+				typeDefinition?.units?.add(newFunction)
 				val newValue = VariableValueDeclaration(newImplementation.source, name, newFunction.type, newFunction, true)
 				valueDeclarations[name] = newValue
 				onNewValue(newValue)
@@ -163,7 +174,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
 		}
 	}
-
 
 	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
 		var previousDeclaration = parentScope.resolveValue(value.name)

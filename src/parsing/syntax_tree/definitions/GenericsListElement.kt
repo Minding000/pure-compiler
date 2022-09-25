@@ -2,7 +2,7 @@ package parsing.syntax_tree.definitions
 
 import linting.Linter
 import linting.semantic_model.definitions.GenericTypeDefinition
-import linting.semantic_model.values.TypeDefinition
+import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.scopes.TypeScope
 import parsing.syntax_tree.general.Element

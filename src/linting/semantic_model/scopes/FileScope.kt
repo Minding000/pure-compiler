@@ -4,7 +4,7 @@ import linting.Linter
 import linting.semantic_model.definitions.IndexOperatorDefinition
 import linting.semantic_model.definitions.OperatorDefinition
 import linting.semantic_model.literals.Type
-import linting.semantic_model.values.TypeDefinition
+import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.values.VariableValueDeclaration
 import messages.Message
 import kotlin.collections.HashMap

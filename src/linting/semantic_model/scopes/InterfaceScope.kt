@@ -1,14 +1,10 @@
 package linting.semantic_model.scopes
 
-import linting.semantic_model.definitions.GenericTypeDefinition
-import linting.semantic_model.definitions.IndexOperatorDefinition
-import linting.semantic_model.definitions.InitializerDefinition
-import linting.semantic_model.definitions.OperatorDefinition
+import linting.semantic_model.definitions.*
 import linting.semantic_model.literals.FunctionType
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.Type
 import linting.semantic_model.values.Instance
-import linting.semantic_model.values.TypeDefinition
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValueDeclaration
 import java.util.*
@@ -110,7 +106,7 @@ class InterfaceScope(private val type: Type): Scope() {
 			for(otherSignature in validSignatures) {
 				if(otherSignature == signature)
 					continue
-				if(!otherSignature.accepts(signature.parameters.map { p -> p.type }))
+				if(!otherSignature.accepts(signature.parameters.map { parameter -> parameter.type }))
 					continue@signatureCheck
 			}
 			return signature
@@ -131,7 +127,8 @@ class InterfaceScope(private val type: Type): Scope() {
 			for(otherSignature in validSignatures) {
 				if(otherSignature == signature)
 					continue
-				if(!otherSignature.accepts(signature.indices.map { i -> i.type }, signature.parameters.map { p -> p.type }))
+				if(!otherSignature.accepts(signature.indices.map { index -> index.type },
+						signature.parameters.map { parameter -> parameter.type }))
 					continue@signatureCheck
 			}
 			return signature

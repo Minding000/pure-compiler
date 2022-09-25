@@ -7,6 +7,7 @@ import parsing.syntax_tree.general.Element
 import java.util.*
 
 class FunctionType(val source: Element): Type() {
+	var superFunctionType: FunctionType? = null
 	private val signatures = LinkedList<FunctionSignature>()
 
 	constructor(source: Element, signature: FunctionSignature): this(source) {
@@ -18,12 +19,20 @@ class FunctionType(val source: Element): Type() {
 		signatures.add(signature)
 	}
 
-	fun resolveSignature(suppliedValues: List<Value>): FunctionSignature? {
+	private fun getMatchingSignatures(suppliedValues: List<Value>): List<FunctionSignature> {
 		val validSignatures = LinkedList<FunctionSignature>()
 		for(signature in signatures) {
 			if(signature.accepts(suppliedValues))
 				validSignatures.add(signature)
 		}
+		superFunctionType?.let { superFunctionType ->
+			validSignatures.addAll(superFunctionType.getMatchingSignatures(suppliedValues))
+		}
+		return validSignatures
+	}
+
+	fun resolveSignature(suppliedValues: List<Value>): FunctionSignature? {
+		val validSignatures = getMatchingSignatures(suppliedValues)
 		if(validSignatures.isEmpty())
 			return null
 		specificityPrecedenceLoop@for(signature in validSignatures) {
@@ -37,7 +46,7 @@ class FunctionType(val source: Element): Type() {
 				suppliedValues[parameterIndex].setInferredType(signature.parameterTypes[parameterIndex])
 			return signature
 		}
-		throw SignatureResolutionAmbiguityError(validSignatures)
+		throw SignatureResolutionAmbiguityError(validSignatures) //TODO mind override keyword
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Type {

@@ -1,7 +1,7 @@
 package linting.semantic_model.literals
 
 import linting.semantic_model.definitions.InitializerDefinition
-import linting.semantic_model.values.TypeDefinition
+import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.values.VariableValueDeclaration
 
 class StaticType(val definition: TypeDefinition): Type() {

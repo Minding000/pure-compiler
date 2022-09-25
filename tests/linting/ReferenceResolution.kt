@@ -1,12 +1,12 @@
 package linting
 
-import linting.semantic_model.literals.FunctionType
-import linting.semantic_model.values.VariableValue
-import util.TestUtil
-import messages.Message
 import linting.semantic_model.access.InstanceAccess
 import linting.semantic_model.control_flow.FunctionCall
+import linting.semantic_model.literals.FunctionType
+import linting.semantic_model.values.VariableValue
+import messages.Message
 import org.junit.jupiter.api.Test
+import util.TestUtil
 import kotlin.test.assertNotNull
 
 internal class ReferenceResolution {
@@ -110,7 +110,88 @@ internal class ReferenceResolution {
 	}
 
 	@Test
-	fun `emits error for undeclared operators`() {
+	fun `resolves super members`() {
+		val sourceCode =
+			"""
+				class Door {
+					val isOpen = yes
+				}
+				object GlassDoor: Door {
+				}
+				GlassDoor.isOpen
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
+		val member = variableValue?.type?.scope?.resolveValue("isOpen")
+		assertNotNull(member)
+	}
+
+	@Test
+	fun `resolves calls to super function`() {
+		val sourceCode =
+			"""
+				native class Speed {}
+				class Door {
+					to open() {}
+				}
+				object GlassDoor: Door {
+					to open(speed: Speed) {}
+				}
+				GlassDoor.open()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
+		val functionType = variableValue?.type?.scope?.resolveValue("open")?.type as? FunctionType
+		assertNotNull(functionType)
+		val signature = functionType.resolveSignature(listOf())
+		assertNotNull(signature)
+	}
+
+	@Test
+	fun `detects missing override keyword`() {
+		val sourceCode =
+			"""
+				class SuperClass {
+					to run() {}
+				}
+				class BaseClass {
+					to run() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Missing 'override' keyword")
+	}
+
+	@Test
+	fun `emits error for undeclared unary operators`() {
+		val sourceCode =
+			"""
+				val a = 5
+				!a
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '!()' hasn't been declared yet")
+	}
+
+	@Test
+	fun `resolves unary operator calls`() {
+		val sourceCode =
+			"""
+				class Fraction {
+					init
+					operator -() {}
+				}
+				val fraction = Fraction()
+				-fraction
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "fraction" }
+		val operator = variableValue?.type?.scope?.resolveOperator("-")
+		assertNotNull(operator)
+	}
+
+	@Test
+	fun `emits error for undeclared binary operators`() {
 		val sourceCode =
 			"""
 				class Matrix {
@@ -127,7 +208,7 @@ internal class ReferenceResolution {
 	}
 
 	@Test
-	fun `resolves operator calls`() {
+	fun `resolves binary operator calls`() {
 		val sourceCode =
 			"""
 				class Matrix {

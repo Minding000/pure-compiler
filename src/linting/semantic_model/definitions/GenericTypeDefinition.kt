@@ -2,7 +2,6 @@ package linting.semantic_model.definitions
 
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.Type
-import linting.semantic_model.values.TypeDefinition
 import linting.semantic_model.scopes.TypeScope
 import parsing.syntax_tree.definitions.GenericsListElement
 

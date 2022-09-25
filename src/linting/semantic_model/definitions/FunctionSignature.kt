@@ -4,7 +4,6 @@ import linting.Linter
 import linting.semantic_model.general.Unit
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.Type
-import linting.semantic_model.values.TypeDefinition
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
 import parsing.syntax_tree.general.Element

@@ -44,7 +44,63 @@ internal class Declarations {
 	}
 
 	@Test
-	fun `emits warning for invalid modifiers`() {
+	fun `detects redeclarations of initializers signatures`() {
+		val sourceCode =
+			"""
+				class Human {
+					init
+					init
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of initializer '()'")
+	}
+
+	@Test
+	fun `detects redeclarations of function signatures`() {
+		val sourceCode =
+			"""
+				class Human {
+					to sit()
+					to sit()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of function 'sit()'")
+	}
+
+	@Test
+	fun `detects missing override keyword on function declarations`() {
+		val sourceCode =
+			"""
+				class Human {
+					to sit() {}
+				}
+				class Student: Human {
+					to sit() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of function 'sit()'")
+	}
+
+	@Test
+	fun `detects redeclarations of operator signatures`() {
+		val sourceCode =
+			"""
+				native class Time {}
+				alias T = Time
+				class Human {
+					operator[time: T](){}
+					operator[time: Time](){}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of operator '[Time]()'")
+	}
+
+	@Test
+	fun `detects invalid modifiers`() {
 		val sourceCode =
 			"""
 				override class House {}
@@ -54,7 +110,7 @@ internal class Declarations {
 	}
 
 	@Test
-	fun `emits warning for duplicate modifiers`() {
+	fun `detects duplicate modifiers`() {
 		val sourceCode =
 			"""
 				native native class Memory {}

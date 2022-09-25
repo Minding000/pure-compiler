@@ -1,7 +1,7 @@
 package linting.semantic_model.literals
 
 import linting.semantic_model.definitions.OperatorDefinition
-import linting.semantic_model.values.TypeDefinition
+import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.values.VariableValueDeclaration
 import parsing.syntax_tree.literals.UnionType
 import java.util.*

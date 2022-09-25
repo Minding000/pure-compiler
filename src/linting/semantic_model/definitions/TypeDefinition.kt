@@ -1,4 +1,4 @@
-package linting.semantic_model.values
+package linting.semantic_model.definitions
 
 import linting.Linter
 import linting.semantic_model.general.Unit
@@ -21,6 +21,7 @@ abstract class TypeDefinition(open val source: Element, val name: String, val sc
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		super.linkTypes(linter, this.scope)
+		this.scope.inheritSignatures(linter)
 		this.scope.ensureUniqueSignatures(linter)
 	}
 

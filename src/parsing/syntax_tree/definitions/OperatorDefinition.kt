@@ -19,7 +19,7 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 
 	override fun concretize(linter: Linter, scope: MutableScope): OperatorDefinition {
 		val operatorScope = BlockScope(scope)
-		//TODO include modifiers and operator type
+		//TODO include modifiers
 		val parameters = LinkedList<Parameter>()
 		if(parameterList != null) {
 			for(parameter in parameterList.parameters)

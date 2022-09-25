@@ -10,6 +10,7 @@ import java.util.LinkedList
 
 class Function(source: Element, private val implementations: MutableList<FunctionImplementation>,
 			   val functionType: FunctionType, val name: String): Value(source, functionType) {
+	var superFunction: Function? = null
 
 	init {
 		units.addAll(implementations)
@@ -30,7 +31,7 @@ class Function(source: Element, private val implementations: MutableList<Functio
 		ensureUniqueSignatures(linter)
 	}
 
-	private fun ensureUniqueSignatures(linter: Linter) {
+	private fun ensureUniqueSignatures(linter: Linter) { //TODO also check super function
 		val implementationIterator = implementations.iterator()
 		val redeclarations = LinkedList<FunctionImplementation>()
 		for(implementation in implementationIterator) {
@@ -46,6 +47,6 @@ class Function(source: Element, private val implementations: MutableList<Functio
 				}
 			}
 		}
-		implementations.removeAll(redeclarations)
+		implementations.removeAll(redeclarations) //TODO also remove redeclaration signatures from function type
 	}
 }

@@ -2,6 +2,7 @@ package parsing.syntax_tree.definitions
 
 import linting.Linter
 import linting.semantic_model.definitions.FunctionImplementation
+import linting.semantic_model.general.Unit
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.definitions.sections.FunctionSection
@@ -20,6 +21,10 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 
 	companion object {
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE)
+	}
+
+	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
+		concretize(linter, scope)
 	}
 
 	override fun concretize(linter: Linter, scope: MutableScope): FunctionImplementation {
