@@ -53,16 +53,18 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of initializer '()'")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of initializer 'Human()'")
 	}
 
 	@Test
 	fun `detects redeclarations of function signatures`() {
 		val sourceCode =
 			"""
+				native class Pressure {}
 				class Human {
-					to sit()
-					to sit()
+					to sit(): Pressure {}
+					to sit() {}
+					to sit() {}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)

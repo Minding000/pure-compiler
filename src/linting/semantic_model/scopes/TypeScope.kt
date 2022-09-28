@@ -54,7 +54,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			type.onNewOperator(operator)
 	}
 
-	fun inheritSignatures(linter: Linter) {
+	fun inheritSignatures() {
 		for((_, valueDeclaration) in valueDeclarations) {
 			if(valueDeclaration.value !is Function)
 				continue
@@ -65,23 +65,24 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		}
 	}
 
-	fun ensureUniqueSignatures(linter: Linter) {
-		val initializerIterator = initializers.iterator()
+	fun ensureUniqueInitializerSignatures(linter: Linter) {
 		val redeclarations = LinkedList<InitializerDefinition>()
-		for(initializer in initializerIterator) {
+		for(initializerIndex in 0 until initializers.size - 1) {
+			val initializer = initializers[initializerIndex]
 			if(redeclarations.contains(initializer))
 				continue
-			initializerIterator.forEachRemaining { otherInitializer ->
+			for(otherInitializerIndex in initializerIndex + 1 until  initializers.size) {
+				val otherInitializer = initializers[otherInitializerIndex]
 				if(otherInitializer.parameters.size != initializer.parameters.size)
-					return@forEachRemaining
+					continue
 				for(parameterIndex in initializer.parameters.indices) {
 					if(otherInitializer.parameters[parameterIndex].type != initializer.parameters[parameterIndex].type)
-						return@forEachRemaining
+						continue
 				}
 				redeclarations.add(otherInitializer)
 				linter.addMessage(otherInitializer.source, "Redeclaration of" +
-								" initializer '${typeDefinition?.name}(${otherInitializer.variation})'," +
-								" previously declared in ${initializer.source.getStartString()}.", Message.Type.ERROR)
+						" initializer '${typeDefinition?.name}(${otherInitializer.variation})'," +
+						" previously declared in ${initializer.source.getStartString()}.", Message.Type.ERROR)
 			}
 		}
 		initializers.removeAll(redeclarations)
@@ -123,21 +124,19 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				val newValue = VariableValueDeclaration(newImplementation.source, name, newFunction.type, newFunction, true)
 				valueDeclarations[name] = newValue
 				onNewValue(newValue)
-				linter.addMessage(newImplementation.source, "Declaration of function signature " +
-						"'$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.",
-					Message.Type.DEBUG)
 			}
 			is Function -> {
 				existingDeclaration.addImplementation(newImplementation)
-				linter.addMessage(newImplementation.source, "Declaration of function signature " +
-						"'$name(${newImplementation.parameters.joinToString { p -> p.type.toString() }})'.",
-					Message.Type.DEBUG)
 			}
 			else -> {
 				linter.addMessage(newImplementation.source, "Redeclaration of member '$name', " +
 							"previously declared in ${existingDeclaration.source.getStartString()}.", Message.Type.ERROR)
+				return
 			}
 		}
+		linter.addMessage(newImplementation.source, "Declaration of function signature " +
+				"'$name${newImplementation.signature.toString(false)}'.",
+			Message.Type.DEBUG)
 	}
 
 	override fun declareOperator(linter: Linter, operator: OperatorDefinition) {

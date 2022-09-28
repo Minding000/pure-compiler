@@ -21,12 +21,12 @@ abstract class TypeDefinition(open val source: Element, val name: String, val sc
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		super.linkTypes(linter, this.scope)
-		this.scope.inheritSignatures(linter)
-		this.scope.ensureUniqueSignatures(linter)
+		this.scope.inheritSignatures()
 	}
 
 	override fun linkPropertyParameters(linter: Linter, scope: MutableScope) {
 		super.linkPropertyParameters(linter, this.scope)
+		this.scope.ensureUniqueInitializerSignatures(linter)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

@@ -51,19 +51,20 @@ class Function(source: Element, private val implementations: MutableList<Functio
 	}
 
 	private fun ensureUniqueSignatures(linter: Linter) {
-		val implementationIterator = implementations.iterator()
 		val redeclarations = LinkedList<FunctionImplementation>()
-		for(implementation in implementationIterator) {
+		for(initializerIndex in 0 until implementations.size - 1) {
+			val implementation = implementations[initializerIndex]
 			if(redeclarations.contains(implementation))
 				continue
-			implementationIterator.forEachRemaining { otherImplementation ->
-				if(otherImplementation.signature == implementation.signature) {
-					redeclarations.add(otherImplementation)
-					linter.addMessage(otherImplementation.source, "Redeclaration of function " +
-									"'$name${otherImplementation.signature.toString(false)}', " +
-									"previously declared in ${implementation.source.getStartString()}.",
-						Message.Type.ERROR)
-				}
+			for(otherImplementationIndex in initializerIndex + 1 until  implementations.size) {
+				val otherImplementation = implementations[otherImplementationIndex]
+				if(otherImplementation.signature != implementation.signature)
+					continue
+				redeclarations.add(otherImplementation)
+				linter.addMessage(otherImplementation.source, "Redeclaration of function " +
+						"'$name${otherImplementation.signature.toString(false)}', " +
+						"previously declared in ${implementation.source.getStartString()}.",
+					Message.Type.ERROR)
 			}
 		}
 		for(implementation in redeclarations)
