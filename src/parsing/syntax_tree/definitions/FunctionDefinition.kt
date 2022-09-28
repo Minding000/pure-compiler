@@ -20,7 +20,7 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 	lateinit var parent: FunctionSection
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE, WordAtom.OVERRIDE)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE, WordAtom.OVERRIDING)
 	}
 
 	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
@@ -30,7 +30,7 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 	override fun concretize(linter: Linter, scope: MutableScope): FunctionImplementation {
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
-		val isOverriding = parent.containsModifier(WordAtom.OVERRIDE)
+		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val functionScope = BlockScope(scope)
 		val genericParameters = genericsList?.concretizeGenerics(linter, scope) ?: listOf()
 		val parameters = parameterList.concretizeParameters(linter, functionScope)

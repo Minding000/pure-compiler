@@ -95,7 +95,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	IMMUTABLE("imm\\b"),
 	MUTABLE("mut\\b"),
 	NATIVE("native\\b"),
-	OVERRIDE("override\\b"),
+	OVERRIDING("overriding\\b"),
 	INSTANCES("instances\\b"),
 	CONTAINING("containing\\b"),
 	CONSUMING("consuming\\b"), // Alternative: 'taking'

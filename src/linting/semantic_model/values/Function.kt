@@ -42,10 +42,10 @@ class Function(source: Element, private val implementations: MutableList<Functio
 		for(implementation in implementations) {
 			if(functionType.superFunctionType?.hasSignature(implementation.signature) == true) {
 				if(!implementation.isOverriding)
-					linter.addMessage(implementation.source, "Missing 'override' keyword", Message.Type.WARNING)
+					linter.addMessage(implementation.source, "Missing 'overriding' keyword", Message.Type.WARNING)
 			} else {
 				if(implementation.isOverriding)
-					linter.addMessage(implementation.source, "'override' keyword is used, but the function doesn't have a super function", Message.Type.WARNING)
+					linter.addMessage(implementation.source, "'overriding' keyword is used, but the function doesn't have a super function", Message.Type.WARNING)
 			}
 		}
 	}

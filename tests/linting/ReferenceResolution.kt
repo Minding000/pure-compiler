@@ -149,7 +149,7 @@ internal class ReferenceResolution {
 	}
 
 	@Test
-	fun `detects missing override keyword`() {
+	fun `detects missing overriding keyword`() {
 		val sourceCode =
 			"""
 				class Food {
@@ -163,7 +163,7 @@ internal class ReferenceResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Missing 'override' keyword")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Missing 'overriding' keyword")
 	}
 
 	@Test
@@ -175,24 +175,24 @@ internal class ReferenceResolution {
 				}
 				class Vegetable: Food {}
 				class Potato: Vegetable {
-					override to check() {}
+					overriding to check() {}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Missing 'override' keyword")
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Missing 'overriding' keyword")
 	}
 
 	@Test
-	fun `detects override keyword being used without super function`() {
+	fun `detects overriding keyword being used without super function`() {
 		val sourceCode =
 			"""
 				class Room {
-					override to clean() {}
+					overriding to clean() {}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
 		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"'override' keyword is used, but the function doesn't have a super function")
+			"'overriding' keyword is used, but the function doesn't have a super function")
 	}
 
 	@Test

@@ -102,8 +102,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		previousDeclaration = superScope?.resolveType(type.name)
 		if(previousDeclaration != null) {
 			linter.addMessage(type.source, "Redeclaration of type '${type.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}." +
-						" Use the 'override' keyword to modify it.", Message.Type.ERROR)
+						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
 			return
 		}
 		previousDeclaration = typeDefinitions.putIfAbsent(type.name, type)
@@ -182,9 +181,8 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		}
 		previousDeclaration = superScope?.resolveValue(value.name)
 		if(previousDeclaration != null) {
-			linter.addMessage(value.source, "Redeclaration of type '${value.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}." +
-						" Use the 'override' keyword to modify it.", Message.Type.ERROR)
+			linter.addMessage(value.source, "Redeclaration of value '${value.name}'," +
+						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
 			return
 		}
 		previousDeclaration = valueDeclarations.putIfAbsent(value.name, value)

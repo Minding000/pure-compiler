@@ -88,10 +88,10 @@ internal class Declarations {
 	fun `detects invalid modifiers`() {
 		val sourceCode =
 			"""
-				override class House {}
+				overriding class House {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'override' is not allowed here")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
 	}
 
 	@Test
