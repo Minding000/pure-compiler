@@ -46,10 +46,6 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		return expressionParser.parseExpression()
 	}
 
-	private fun parseRequiredType(): TypeElement {
-		return typeParser.parseType(false)
-	}
-
 	private fun parseIdentifier(): Identifier {
 		return literalParser.parseIdentifier()
 	}
@@ -395,7 +391,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 */
 	private fun parseHandleBlock(): HandleBlock {
 		val start = consume(WordAtom.HANDLE).start
-		val type = parseRequiredType()
+		val type = typeParser.parseType(false)
 		val identifier = if(currentWord?.type == WordAtom.IDENTIFIER)
 			parseIdentifier()
 		else
@@ -439,7 +435,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		var superType: TypeElement? = null
 		if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
-			superType = parseRequiredType()
+			superType = typeParser.parseType(false)
 		}
 		val body = parseTypeBody()
 		return TypeDefinition(type, identifier, superType, body)
@@ -615,7 +611,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		val parameterList = parseParameterList()
 		val returnType = if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
-			parseRequiredType()
+			typeParser.parseType()
 		} else null
 		val body = if(currentWord?.type == WordAtom.BRACES_OPEN)
 			parseStatementSection()
@@ -634,7 +630,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		else null
 		val returnType = if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
-			parseRequiredType()
+			typeParser.parseType()
 		} else null
 		val body = if(currentWord?.type == WordAtom.BRACES_OPEN)
 			parseStatementSection()
@@ -880,11 +876,11 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		val parameterList = parseParameterList()
 		consume(WordAtom.COLON)
 		var keyReturnType: TypeElement? = null
-		var valueReturnType = parseRequiredType()
+		var valueReturnType = typeParser.parseType()
 		if(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
 			keyReturnType = valueReturnType
-			valueReturnType = parseRequiredType()
+			valueReturnType = typeParser.parseType()
 		}
 		val body = parseStatementSection()
 		return GeneratorDefinition(start, identifier, parameterList, keyReturnType, valueReturnType, body)

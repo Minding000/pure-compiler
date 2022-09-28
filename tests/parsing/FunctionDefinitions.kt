@@ -35,7 +35,8 @@ internal class FunctionDefinitions {
 				TypeDefinition [ class Identifier { Box } ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { getContent } ParameterList {
-						}: QuantifiedType { ObjectType { Identifier { Box } }? } ] {  }
+						}: QuantifiedType { ObjectType { Identifier { Box } }? } ] { StatementSection { StatementBlock {
+						} } }
 					}
 				} }
             """.trimIndent()
