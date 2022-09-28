@@ -134,7 +134,8 @@ internal class ReferenceResolution {
 				class Door {
 					to open() {}
 				}
-				object GlassDoor: Door {
+				class TransparentDoor: Door {}
+				object GlassDoor: TransparentDoor {
 					to open(speed: Speed) {}
 				}
 				GlassDoor.open()
@@ -151,15 +152,47 @@ internal class ReferenceResolution {
 	fun `detects missing override keyword`() {
 		val sourceCode =
 			"""
-				class SuperClass {
-					to run() {}
+				class Food {
+					to check() {}
 				}
-				class BaseClass {
-					to run() {}
+				class Vegetable: Food {
+					to check(): Vegetable {}
+				}
+				class Potato: Vegetable {
+					to check() {}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Missing 'override' keyword")
+	}
+
+	@Test
+	fun `allows for functions to be overridden`() {
+		val sourceCode =
+			"""
+				class Food {
+					to check() {}
+				}
+				class Vegetable: Food {}
+				class Potato: Vegetable {
+					override to check() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Missing 'override' keyword")
+	}
+
+	@Test
+	fun `detects override keyword being used without super function`() {
+		val sourceCode =
+			"""
+				class Room {
+					override to clean() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"'override' keyword is used, but the function doesn't have a super function")
 	}
 
 	@Test

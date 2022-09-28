@@ -1,6 +1,5 @@
 package linting.semantic_model.general
 
-import errors.internal.CompilerError
 import linting.Linter
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.scopes.Scope
@@ -26,12 +25,8 @@ abstract class Unit {
 
 	open fun validate(linter: Linter) {
 		val unitIterator = units.iterator()
-		for(unit in unitIterator) {
-			unitIterator.forEachRemaining { otherUnit ->
-				if(otherUnit == unit) throw CompilerError("Unit '$unit' has been added more than once.")
-			}
+		for(unit in unitIterator)
 			unit.validate(linter)
-		}
 	}
 
 	inline fun <reified T: Unit>find(noinline predicate: (T) -> Boolean): T? {

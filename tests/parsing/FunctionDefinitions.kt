@@ -25,6 +25,24 @@ internal class FunctionDefinitions {
 	}
 
 	@Test
+	fun `parses function definitions with complex return type`() {
+		val sourceCode = """
+			class Box {
+				to getContent(): Box? {}
+			}""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ class Identifier { Box } ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { getContent } ParameterList {
+						}: QuantifiedType { ObjectType { Identifier { Box } }? } ] {  }
+					}
+				} }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
 	fun `parses function definitions with body`() {
 		val sourceCode = """
 			class Animal {

@@ -70,21 +70,6 @@ internal class Declarations {
 	}
 
 	@Test
-	fun `detects missing override keyword on function declarations`() {
-		val sourceCode =
-			"""
-				class Human {
-					to sit() {}
-				}
-				class Student: Human {
-					to sit() {}
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of function 'sit()'")
-	}
-
-	@Test
 	fun `detects redeclarations of operator signatures`() {
 		val sourceCode =
 			"""

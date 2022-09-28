@@ -26,12 +26,31 @@ class Function(source: Element, private val implementations: MutableList<Functio
 		functionType.addSignature(implementation.signature)
 	}
 
+	fun removeImplementation(implementation: FunctionImplementation) {
+		units.remove(implementation)
+		implementations.remove(implementation)
+		functionType.removeSignature(implementation.signature)
+	}
+
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		super.linkTypes(linter, scope)
 		ensureUniqueSignatures(linter)
 	}
 
-	private fun ensureUniqueSignatures(linter: Linter) { //TODO also check super function
+	override fun validate(linter: Linter) {
+		super.validate(linter)
+		for(implementation in implementations) {
+			if(functionType.superFunctionType?.hasSignature(implementation.signature) == true) {
+				if(!implementation.isOverriding)
+					linter.addMessage(implementation.source, "Missing 'override' keyword", Message.Type.WARNING)
+			} else {
+				if(implementation.isOverriding)
+					linter.addMessage(implementation.source, "'override' keyword is used, but the function doesn't have a super function", Message.Type.WARNING)
+			}
+		}
+	}
+
+	private fun ensureUniqueSignatures(linter: Linter) {
 		val implementationIterator = implementations.iterator()
 		val redeclarations = LinkedList<FunctionImplementation>()
 		for(implementation in implementationIterator) {
@@ -47,6 +66,7 @@ class Function(source: Element, private val implementations: MutableList<Functio
 				}
 			}
 		}
-		implementations.removeAll(redeclarations) //TODO also remove redeclaration signatures from function type
+		for(implementation in redeclarations)
+			removeImplementation(implementation)
 	}
 }

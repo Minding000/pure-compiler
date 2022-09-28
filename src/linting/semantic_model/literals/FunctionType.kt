@@ -6,17 +6,26 @@ import linting.semantic_model.values.Value
 import parsing.syntax_tree.general.Element
 import java.util.*
 
-class FunctionType(val source: Element): Type() {
+class FunctionType(val source: Element) : Type() {
 	var superFunctionType: FunctionType? = null
 	private val signatures = LinkedList<FunctionSignature>()
 
-	constructor(source: Element, signature: FunctionSignature): this(source) {
+	constructor(source: Element, signature: FunctionSignature) : this(source) {
 		addSignature(signature)
+	}
+
+	fun hasSignature(signature: FunctionSignature): Boolean {
+		return signatures.contains(signature) || superFunctionType?.hasSignature(signature) ?: false
 	}
 
 	fun addSignature(signature: FunctionSignature) {
 		units.add(signature)
 		signatures.add(signature)
+	}
+
+	fun removeSignature(signature: FunctionSignature) {
+		units.remove(signature)
+		signatures.remove(signature)
 	}
 
 	private fun getMatchingSignatures(suppliedValues: List<Value>): List<FunctionSignature> {
@@ -35,7 +44,7 @@ class FunctionType(val source: Element): Type() {
 		val validSignatures = getMatchingSignatures(suppliedValues)
 		if(validSignatures.isEmpty())
 			return null
-		specificityPrecedenceLoop@for(signature in validSignatures) {
+		specificityPrecedenceLoop@ for(signature in validSignatures) {
 			for(otherSignature in validSignatures) {
 				if(otherSignature === signature)
 					continue
@@ -83,5 +92,5 @@ class FunctionType(val source: Element): Type() {
 		return signatures.joinToString("\n")
 	}
 
-	class SignatureResolutionAmbiguityError(val signatures: List<Unit>): Error()
+	class SignatureResolutionAmbiguityError(val signatures: List<Unit>) : Error()
 }

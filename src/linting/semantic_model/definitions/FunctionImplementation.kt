@@ -9,8 +9,8 @@ import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.general.Element
 
 class FunctionImplementation(val source: Element, val scope: BlockScope, val genericParameters: List<TypeDefinition>,
-							 val parameters: List<Parameter>, body: ErrorHandlingContext?,
-							 val returnType: Type?, val isNative: Boolean = false): Unit() {
+							 val parameters: List<Parameter>, body: ErrorHandlingContext?, val returnType: Type?,
+							 val isNative: Boolean = false, val isOverriding: Boolean = false): Unit() {
 	val signature = FunctionSignature(source, genericParameters, parameters.map { parameter -> parameter.type },
 		returnType)
 
