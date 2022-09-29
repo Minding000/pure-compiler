@@ -2,7 +2,7 @@ package linting.semantic_model.operations
 
 import linting.Linter
 import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.QuantifiedType
+import linting.semantic_model.literals.OptionalType
 import linting.semantic_model.literals.Type
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
@@ -20,7 +20,7 @@ class Cast(override val source: Cast, val value: Value, val variable: VariableVa
 			units.add(referenceType)
 			ObjectType(source, Linter.Literals.BOOLEAN)
 		} else if(operator == Operator.OPTIONAL_CAST) {
-			val type = QuantifiedType(source, referenceType, hasDynamicQuantity = false, isOptional = true)
+			val type = OptionalType(source, referenceType)
 			units.add(type)
 			type
 		} else {

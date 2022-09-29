@@ -78,8 +78,8 @@ internal class Declarations {
 				native class Time {}
 				alias T = Time
 				class Human {
-					operator[time: T](){}
-					operator[time: Time](){}
+					operator[time: T]() {}
+					operator[time: Time]() {}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)

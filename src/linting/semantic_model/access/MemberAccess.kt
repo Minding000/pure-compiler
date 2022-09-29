@@ -1,10 +1,10 @@
 package linting.semantic_model.access
 
 import linting.Linter
-import linting.semantic_model.literals.QuantifiedType
+import linting.semantic_model.literals.OptionalType
+import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValue
-import linting.semantic_model.scopes.Scope
 import messages.Message
 import parsing.syntax_tree.access.MemberAccess
 
@@ -18,24 +18,26 @@ class MemberAccess(override val source: MemberAccess, val target: Value, val mem
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		target.linkValues(linter, scope)
-		target.type?.let { targetType ->
-			if(isOptional) {
-				if(!(targetType is QuantifiedType && targetType.isOptional))
-					linter.addMessage(source,
-						"Optional member access on guaranteed type '$targetType' is unnecessary.",
-						Message.Type.WARNING)
-			} else {
-				if(targetType is QuantifiedType && targetType.isOptional)
+		target.type?.let { targetTypeVal ->
+			var targetType = targetTypeVal
+			if(targetType is OptionalType) {
+				if(!isOptional)
 					linter.addMessage(source,
 						"Cannot access member of optional type '$targetType' without null check.",
 						Message.Type.ERROR)
+				targetType = targetType.baseType
+			} else {
+				if(isOptional)
+					linter.addMessage(source,
+						"Optional member access on guaranteed type '$targetType' is unnecessary.",
+						Message.Type.WARNING)
 			}
 			member.linkValues(linter, targetType.scope)
-			member.type?.let { baseType ->
-				type = if(baseType is QuantifiedType && baseType.isOptional)
-					baseType.baseType
+			member.type?.let { memberType ->
+				type = if(isOptional)
+					OptionalType(source, memberType)
 				else
-					baseType
+					memberType
 			}
 		}
 	}

@@ -1,8 +1,9 @@
 package linting
 
+import linting.semantic_model.access.MemberAccess
 import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.QuantifiedType
+import linting.semantic_model.literals.OptionalType
 import linting.semantic_model.operations.Cast
 import linting.semantic_model.operations.NullCheck
 import messages.Message
@@ -25,7 +26,24 @@ internal class Expressions {
 	}
 
 	@Test
-	fun `detects missing null checks`() {
+	fun `returns optional type from optional member access`() {
+		val sourceCode =
+			"""
+				class Brightness {}
+				class Star {
+					var brightness: Brightness
+					init
+				}
+				val sun: Star? = Star()
+				sun?.brightness
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val memberAccess = lintResult.find<MemberAccess>()
+		assertIs<OptionalType>(memberAccess?.type)
+	}
+
+	@Test
+	fun `detects member access on optional type`() {
 		val sourceCode =
 			"""
 				class Star {
@@ -41,7 +59,7 @@ internal class Expressions {
 	}
 
 	@Test
-	fun `detects unnecessary null checks`() {
+	fun `detects unnecessary optional member access`() {
 		val sourceCode =
 			"""
 				class Star {
@@ -110,10 +128,8 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode, false)
 		val vehicleClass = lintResult.find<TypeDefinition> { typeDefinition -> typeDefinition.name == "Vehicle" }
 		val cast = lintResult.find<Cast>()
-		val castResultType = cast?.type as? QuantifiedType
+		val castResultType = cast?.type as? OptionalType
 		assertNotNull(castResultType)
-		assertTrue(castResultType.isOptional)
-		assertFalse(castResultType.hasDynamicQuantity)
 		assertEquals(vehicleClass, (castResultType.baseType as? ObjectType)?.definition)
 	}
 }
