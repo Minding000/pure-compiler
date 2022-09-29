@@ -8,12 +8,12 @@ import parsing.syntax_tree.literals.StringLiteral
 class StringLiteral(override val source: StringLiteral, val value: String): LiteralValue(source) {
 
 	init {
-		val type = ObjectType(source, Linter.Literals.STRING)
-		units.add(type)
-		this.type = type
+		val stringType = ObjectType(source, Linter.LiteralType.STRING.className)
+		units.add(stringType)
+		type = stringType
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		linter.stringLiteralScope?.let { literalScope -> super.linkTypes(linter, literalScope) }
+		linter.link(Linter.LiteralType.STRING, type)
 	}
 }

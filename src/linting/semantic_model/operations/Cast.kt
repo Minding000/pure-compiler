@@ -7,6 +7,7 @@ import linting.semantic_model.literals.Type
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValue
+import messages.Message
 import parsing.syntax_tree.operations.Cast
 
 class Cast(override val source: Cast, val value: Value, val variable: VariableValue?, val referenceType: Type,
@@ -16,9 +17,9 @@ class Cast(override val source: Cast, val value: Value, val variable: VariableVa
 		units.add(value)
 		if(variable != null)
 			units.add(variable)
-		type = if(operator.isConditional) {
+		type = if(operator.returnsBoolean) {
 			units.add(referenceType)
-			ObjectType(source, Linter.Literals.BOOLEAN)
+			ObjectType(source, Linter.LiteralType.BOOLEAN.className)
 		} else if(operator == Operator.OPTIONAL_CAST) {
 			val type = OptionalType(source, referenceType)
 			units.add(type)
@@ -31,21 +32,31 @@ class Cast(override val source: Cast, val value: Value, val variable: VariableVa
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		super.linkTypes(linter, scope)
-		if(operator.isConditional)
-			linter.booleanLiteralScope?.let { literalScope -> type?.linkTypes(linter, literalScope) }
+		if(operator.returnsBoolean)
+			linter.link(Linter.LiteralType.BOOLEAN, type)
 	}
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		//TODO check if safe cast is possible
-		//TODO check if optional, force or conditional cast is necessary
+		value.type?.let { valueType ->
+			if(valueType.isAssignableTo(referenceType)) {
+				if(operator.isConditional)
+					linter.addMessage(source, "Cast from '$valueType' to '$referenceType' is safe.",
+						Message.Type.WARNING)
+			} else {
+				if(!operator.isConditional)
+					linter.addMessage(source, "Cannot safely cast '$valueType' to '$referenceType'.",
+						Message.Type.ERROR)
+			}
+		}
 	}
 
-	enum class Operator(val stringRepresentation: String, val isConditional: Boolean = false) {
+	enum class Operator(val stringRepresentation: String, val isConditional: Boolean = false,
+						val returnsBoolean: Boolean = false) {
 		SAFE_CAST("as"),
-		OPTIONAL_CAST("as?"),
-		THROWING_CAST("as!"),
-		CAST_CONDITION("is", true),
-		NEGATED_CAST_CONDITION("is!", true)
+		OPTIONAL_CAST("as?", true),
+		THROWING_CAST("as!", true),
+		CAST_CONDITION("is", true, true),
+		NEGATED_CAST_CONDITION("is!", true, true)
 	}
 }

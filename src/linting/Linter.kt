@@ -1,22 +1,19 @@
 package linting
 
+import linting.semantic_model.literals.Type
 import parsing.syntax_tree.general.Program as ProgramSyntaxTree
 import linting.semantic_model.general.Program as SemanticProgramModel
 import messages.Message
 import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.general.Element
 import java.util.*
+import kotlin.collections.HashMap
 
 class Linter {
-	val logLevel = Message.Type.DEBUG
+	private val logLevel = Message.Type.DEBUG
+	private val literalScopes = HashMap<LiteralType, Scope?>()
 	val messages = LinkedList<Message>()
 	var phase = Phase.PENDING
-
-	var stringLiteralScope: Scope? = null
-	var numberLiteralScope: Scope? = null
-	var booleanLiteralScope: Scope? = null
-	var nullLiteralScope: Scope? = null
-	var nothingLiteralScope: Scope? = null
 
 	fun lint(programSyntaxTree: ProgramSyntaxTree): SemanticProgramModel {
 		messages.add(Message("----- Linter stage: Concretization -----", Message.Type.DEBUG))
@@ -25,11 +22,10 @@ class Linter {
 		messages.add(Message("----- Linter stage: File reference resolution -----", Message.Type.DEBUG))
 		phase = Phase.LITERAL_SCOPE_RESOLUTION
 		messages.add(Message("----- Linter stage: Literal scope resolution -----", Message.Type.DEBUG))
-		stringLiteralScope = getLiteralScope(semanticProgramModel, listOf("Pure", "lang", "dataTypes", "String"))
-		numberLiteralScope = getLiteralScope(semanticProgramModel, listOf("Pure", "lang", "dataTypes", "Int"))
-		booleanLiteralScope = getLiteralScope(semanticProgramModel, listOf("Pure", "lang", "dataTypes", "Bool"))
-		nullLiteralScope = getLiteralScope(semanticProgramModel, listOf("Pure", "lang", "dataTypes", "Null"))
-		nothingLiteralScope = getLiteralScope(semanticProgramModel, listOf("Pure", "lang", "dataTypes", "Nothing"))
+		for(literalType in LiteralType.values()) {
+			literalScopes[literalType] = getLiteralScope(semanticProgramModel,
+				listOf("Pure", "lang", "dataTypes", literalType.className))
+		}
 		phase = Phase.FILE_REFERENCE_RESOLUTION
 		semanticProgramModel.resolveFileReferences(this)
 		messages.add(Message("----- Linter stage: Type linking -----", Message.Type.DEBUG))
@@ -79,6 +75,10 @@ class Linter {
 				+ " (Log level: ${logLevel.name})")
 	}
 
+	fun link(literalType: LiteralType, type: Type?) {
+		literalScopes[literalType]?.let { literalScope -> type?.linkTypes(this, literalScope) }
+	}
+
 	fun hasCompleted(phase: Phase): Boolean {
 		return phase < this.phase
 	}
@@ -95,11 +95,15 @@ class Linter {
 		DONE
 	}
 
-	object Literals {
-		const val STRING = "String"
-		const val NUMBER = "Int"
-		const val BOOLEAN = "Bool"
-		const val NULL = "Null"
-		const val NOTHING = "Nothing"
+	enum class LiteralType(val className: String) {
+		STRING("String"),
+		NUMBER("Int"),
+		BOOLEAN("Bool"),
+		NULL("Null"),
+		NOTHING("Nothing");
+
+		fun matches(type: Type?): Boolean {
+			return type.toString() == className
+		}
 	}
 }

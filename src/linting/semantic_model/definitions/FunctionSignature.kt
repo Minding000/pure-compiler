@@ -11,7 +11,7 @@ import java.util.*
 
 class FunctionSignature(val source: Element, val genericParameters: List<TypeDefinition>,
 						val parameterTypes: List<Type?>, returnType: Type?): Unit() {
-	val returnType = returnType ?: ObjectType(source, Linter.Literals.NOTHING)
+	val returnType = returnType ?: ObjectType(source, Linter.LiteralType.NOTHING.className)
 
 	init { //TODO these are already part of the unit tree (added by FunctionImplementation) and will therefore receive events twice
 		units.addAll(genericParameters)
@@ -33,10 +33,14 @@ class FunctionSignature(val source: Element, val genericParameters: List<TypeDef
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		if(returnType.toString() == Linter.Literals.NOTHING)
-			linter.nothingLiteralScope?.let { literalScope -> super.linkTypes(linter, literalScope) }
-		else
+		if(Linter.LiteralType.NOTHING.matches(returnType)) {
+			for(unit in units)
+				if(unit != returnType)
+					unit.linkTypes(linter, scope)
+			linter.link(Linter.LiteralType.NOTHING, returnType)
+		} else {
 			super.linkTypes(linter, scope)
+		}
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -88,8 +92,8 @@ class FunctionSignature(val source: Element, val genericParameters: List<TypeDef
 
 	fun toString(useLambdaStyle: Boolean): String {
 		return if(useLambdaStyle)
-			"(${parameterTypes.joinToString()}) =>${if(returnType.toString() == Linter.Literals.NOTHING) "|" else " $returnType"}"
+			"(${parameterTypes.joinToString()}) =>${if(Linter.LiteralType.NOTHING.matches(returnType)) "|" else " $returnType"}"
 		else
-			"(${parameterTypes.joinToString()})${if(returnType.toString() == Linter.Literals.NOTHING) "" else ": $returnType"}"
+			"(${parameterTypes.joinToString()})${if(Linter.LiteralType.NOTHING.matches(returnType)) "" else ": $returnType"}"
 	}
 }

@@ -8,12 +8,12 @@ import parsing.syntax_tree.literals.BooleanLiteral
 class BooleanLiteral(override val source: BooleanLiteral, val value: Boolean): LiteralValue(source) {
 
 	init {
-		val type = ObjectType(source, Linter.Literals.BOOLEAN)
+		val type = ObjectType(source, Linter.LiteralType.BOOLEAN.className)
 		units.add(type)
 		this.type = type
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		linter.booleanLiteralScope?.let { literalScope -> super.linkTypes(linter, literalScope) }
+		linter.link(Linter.LiteralType.BOOLEAN, type)
 	}
 }

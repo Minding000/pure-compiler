@@ -10,11 +10,15 @@ class NullCheck(override val source: NullCheck, val value: Value): Value(source)
 
 	init {
 		units.add(value)
-		type = ObjectType(source, Linter.Literals.BOOLEAN)
+		val booleanType = ObjectType(source, Linter.LiteralType.BOOLEAN.className)
+		units.add(booleanType)
+		type = booleanType
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		super.linkTypes(linter, scope)
-		linter.booleanLiteralScope?.let { literalScope -> type?.linkTypes(linter, literalScope) }
+		for(unit in units)
+			if(unit != type)
+				unit.linkTypes(linter, scope)
+		linter.link(Linter.LiteralType.BOOLEAN, type)
 	}
 }

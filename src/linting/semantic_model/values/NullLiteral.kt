@@ -8,13 +8,13 @@ import parsing.syntax_tree.literals.NullLiteral
 class NullLiteral(override val source: NullLiteral): LiteralValue(source) {
 
 	init {
-		val type = ObjectType(source, Linter.Literals.NULL)
-		this.type = type
-		units.add(type)
+		val nullType = ObjectType(source, Linter.LiteralType.NULL.className)
+		units.add(nullType)
+		type = nullType
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		linter.nullLiteralScope?.let { literalScope -> super.linkTypes(linter, literalScope) }
+		linter.link(Linter.LiteralType.NULL, type)
 	}
 
 //	override fun compile(context: BuildContext): LLVMValueRef {

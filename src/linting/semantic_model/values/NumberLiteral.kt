@@ -9,13 +9,13 @@ class NumberLiteral(override val source: NumberLiteral, val value: String): Lite
 
 	init {
 		//TODO allow for floating point numbers
-		val type = ObjectType(source, Linter.Literals.NUMBER)
-		units.add(type)
-		this.type = type
+		val numberType = ObjectType(source, Linter.LiteralType.NUMBER.className)
+		units.add(numberType)
+		type = numberType
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		linter.numberLiteralScope?.let { literalScope -> super.linkTypes(linter, literalScope) }
+		linter.link(Linter.LiteralType.NUMBER, type)
 	}
 
 //	override fun compile(context: BuildContext): LLVMValueRef {

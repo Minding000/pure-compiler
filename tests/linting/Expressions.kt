@@ -22,7 +22,7 @@ internal class Expressions {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val nullCheck = lintResult.find<NullCheck>()
-		assertEquals(Linter.Literals.BOOLEAN, nullCheck?.type.toString())
+		assertTrue(Linter.LiteralType.BOOLEAN.matches(nullCheck?.type))
 	}
 
 	@Test
@@ -108,9 +108,8 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode, false)
 		val positiveCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.CAST_CONDITION }
 		val negativeCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.NEGATED_CAST_CONDITION }
-		assertEquals(Linter.Literals.BOOLEAN, positiveCast?.type.toString())
-		assertEquals(Linter.Literals.BOOLEAN, negativeCast?.type.toString())
-
+		assertTrue(Linter.LiteralType.BOOLEAN.matches(positiveCast?.type))
+		assertTrue(Linter.LiteralType.BOOLEAN.matches(negativeCast?.type))
 	}
 
 	@Test
@@ -131,5 +130,29 @@ internal class Expressions {
 		val castResultType = cast?.type as? OptionalType
 		assertNotNull(castResultType)
 		assertEquals(vehicleClass, (castResultType.baseType as? ObjectType)?.definition)
+	}
+
+	@Test
+	fun `detects missing casts conditions`() {
+		val sourceCode =
+			"""
+				class Orange {}
+				object Apple {}
+				Apple as Orange
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Cannot safely cast 'Apple' to 'Orange'.")
+	}
+
+	@Test
+	fun `detects unnecessary cast conditions`() {
+		val sourceCode =
+			"""
+				class Fruit {}
+				object Apple: Fruit {}
+				Apple as? Fruit
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Cast from 'Apple' to 'Fruit' is safe.")
 	}
 }
