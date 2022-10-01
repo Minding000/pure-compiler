@@ -59,9 +59,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			if(valueDeclaration.value !is Function)
 				continue
 			val superValue = superScope?.resolveValue(valueDeclaration.name)
-			val superFunction = superValue?.value as? Function
-			valueDeclaration.value.superFunction = superFunction
-			valueDeclaration.value.functionType.superFunctionType = superFunction?.functionType
+			valueDeclaration.value.superFunction = superValue?.value as? Function
 		}
 	}
 

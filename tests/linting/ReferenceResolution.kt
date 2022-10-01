@@ -149,6 +149,27 @@ internal class ReferenceResolution {
 	}
 
 	@Test
+	fun `resolves calls to overriding function`() {
+		val sourceCode =
+			"""
+				class Door {
+					to open() {}
+				}
+				class TransparentDoor: Door {}
+				object GlassDoor: TransparentDoor {
+					overriding to open() {}
+				}
+				GlassDoor.open()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
+		val functionType = variableValue?.type?.scope?.resolveValue("open")?.type as? FunctionType
+		assertNotNull(functionType)
+		val signature = functionType.resolveSignature(listOf())
+		assertNotNull(signature)
+	}
+
+	@Test
 	fun `detects missing overriding keyword`() {
 		val sourceCode =
 			"""

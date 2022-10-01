@@ -7,8 +7,8 @@ import parsing.syntax_tree.general.Element
 import java.util.*
 
 class FunctionType(val source: Element) : Type() {
-	var superFunctionType: FunctionType? = null
 	private val signatures = LinkedList<FunctionSignature>()
+	var superFunctionType: FunctionType? = null
 
 	constructor(source: Element, signature: FunctionSignature) : this(source) {
 		addSignature(signature)
@@ -35,7 +35,13 @@ class FunctionType(val source: Element) : Type() {
 				validSignatures.add(signature)
 		}
 		superFunctionType?.let { superFunctionType ->
-			validSignatures.addAll(superFunctionType.getMatchingSignatures(suppliedValues))
+			val validSuperSignatures = superFunctionType.getMatchingSignatures(suppliedValues)
+			validSuperSignatures@for(validSuperSignature in validSuperSignatures) {
+				for(validSignature in validSignatures)
+					if(validSignature.superFunctionSignature == validSuperSignature)
+						continue@validSuperSignatures
+				validSignatures.add(validSuperSignature)
+			}
 		}
 		return validSignatures
 	}
@@ -55,7 +61,7 @@ class FunctionType(val source: Element) : Type() {
 				suppliedValues[parameterIndex].setInferredType(signature.parameterTypes[parameterIndex])
 			return signature
 		}
-		throw SignatureResolutionAmbiguityError(validSignatures) //TODO mind override keyword
+		throw SignatureResolutionAmbiguityError(validSignatures) //TODO mind 'overriding' keyword
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Type {

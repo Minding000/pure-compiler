@@ -12,6 +12,7 @@ import java.util.*
 class FunctionSignature(val source: Element, val genericParameters: List<TypeDefinition>,
 						val parameterTypes: List<Type?>, returnType: Type?): Unit() {
 	val returnType = returnType ?: ObjectType(source, Linter.LiteralType.NOTHING.className)
+	var superFunctionSignature: FunctionSignature? = null
 
 	init { //TODO these are already part of the unit tree (added by FunctionImplementation) and will therefore receive events twice
 		units.addAll(genericParameters)

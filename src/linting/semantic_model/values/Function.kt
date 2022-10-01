@@ -11,6 +11,20 @@ import java.util.LinkedList
 class Function(source: Element, private val implementations: MutableList<FunctionImplementation>,
 			   val functionType: FunctionType, val name: String): Value(source, functionType) {
 	var superFunction: Function? = null
+		set(value) {
+			field = value
+			value?.let {
+				for(implementation in implementations) {
+					for(superImplementation in value.implementations) {
+						if(superImplementation.signature == implementation.signature) {
+							implementation.superFunctionImplementation = superImplementation
+							break
+						}
+					}
+				}
+			}
+			functionType.superFunctionType = value?.functionType
+		}
 
 	init {
 		units.addAll(implementations)

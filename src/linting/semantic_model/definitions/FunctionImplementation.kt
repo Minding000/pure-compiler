@@ -13,6 +13,11 @@ class FunctionImplementation(val source: Element, val scope: BlockScope, val gen
 							 val isNative: Boolean = false, val isOverriding: Boolean = false): Unit() {
 	val signature = FunctionSignature(source, genericParameters, parameters.map { parameter -> parameter.type },
 		returnType)
+	var superFunctionImplementation: FunctionImplementation? = null
+		set(value) {
+			field = value
+			signature.superFunctionSignature = value?.signature
+		}
 
 	init {
 		units.addAll(genericParameters)

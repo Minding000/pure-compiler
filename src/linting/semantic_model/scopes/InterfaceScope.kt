@@ -42,13 +42,17 @@ class InterfaceScope(private val type: Type): Scope() {
 	}
 
 	fun addType(type: TypeDefinition) {
-		types[type.name] = type
-		onNewType(type)
+		if(!types.containsKey(type.name)) {
+			types[type.name] = type
+			onNewType(type)
+		}
 	}
 
 	fun addValue(value: VariableValueDeclaration) {
-		values[value.name] = value
-		onNewValue(value)
+		if(!values.containsKey(value.name)) {
+			values[value.name] = value
+			onNewValue(value)
+		}
 	}
 
 	fun addInitializer(initializer: InitializerDefinition) {
