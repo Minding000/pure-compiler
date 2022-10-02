@@ -92,8 +92,9 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	TRY_UNCHECK("try!"),
 	HANDLE("handle\\b"),
 	ALWAYS("always\\b"),
-	IMMUTABLE("imm\\b"), //TODO Rename to 'immutable'
-	MUTABLE("mut\\b"), //TODO Split into 'mutating' and 'mutable' keywords
+	IMMUTABLE("immutable\\b"),
+	MUTABLE("mutable\\b"),
+	MUTATING("mutating\\b"),
 	NATIVE("native\\b"),
 	OVERRIDING("overriding\\b"),
 	INSTANCES("instances\\b"),

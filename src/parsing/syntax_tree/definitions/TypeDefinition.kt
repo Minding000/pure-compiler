@@ -65,10 +65,8 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 		for(member in body.members) {
 			if(typeDefinition is Object || typeDefinition is Trait) {
 				if(member is Instance) {
-					linter.messages.add(
-						Message("${member.getStartString()}: " +
-							"Instance declarations are not allowed in objects and traits.", Message.Type.WARNING)
-					)
+					linter.addMessage(member, "Instance declarations are not allowed in objects and traits.",
+						Message.Type.WARNING)
 					continue
 				}
 			}

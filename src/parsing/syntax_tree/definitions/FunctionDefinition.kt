@@ -20,7 +20,7 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 	lateinit var parent: FunctionSection
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE, WordAtom.OVERRIDING)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE, WordAtom.OVERRIDING, WordAtom.MUTATING)
 	}
 
 	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {

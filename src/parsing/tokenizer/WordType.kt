@@ -96,6 +96,7 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.OVERRIDING,
 		WordAtom.IMMUTABLE,
 		WordAtom.MUTABLE,
+		WordAtom.MUTATING,
 		WordAtom.SPREAD_GROUP),
 	TRY(
 		WordAtom.TRY_OPTIONAL,

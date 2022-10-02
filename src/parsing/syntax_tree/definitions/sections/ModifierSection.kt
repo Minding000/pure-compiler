@@ -39,11 +39,11 @@ class ModifierSection(private val modifierList: ModifierList, private val sectio
 		for(modifier in getModifiers()) {
 			val name = modifier.getValue()
 			if(!allowedModifierTypes.contains(modifier.type)) {
-				linter.messages.add(Message("${modifier.getStartString()}: Modifier '$name' is not allowed here.", Message.Type.WARNING))
+				linter.addMessage(modifier, "Modifier '$name' is not allowed here.", Message.Type.WARNING)
 				continue
 			}
 			if(uniqueModifiers.contains(name)) {
-				linter.messages.add(Message("${modifier.getStartString()}: Duplicate '$name' modifier.", Message.Type.WARNING))
+				linter.addMessage(modifier, "Duplicate '$name' modifier.", Message.Type.WARNING)
 				continue
 			}
 			uniqueModifiers.add(name)

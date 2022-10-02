@@ -61,7 +61,7 @@ class FunctionType(val source: Element) : Type() {
 				suppliedValues[parameterIndex].setInferredType(signature.parameterTypes[parameterIndex])
 			return signature
 		}
-		throw SignatureResolutionAmbiguityError(validSignatures) //TODO mind 'overriding' keyword
+		throw SignatureResolutionAmbiguityError(validSignatures)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Type {
