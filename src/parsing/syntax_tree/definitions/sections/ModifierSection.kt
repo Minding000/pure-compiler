@@ -3,19 +3,18 @@ package parsing.syntax_tree.definitions.sections
 import errors.internal.CompilerError
 import linting.Linter
 import linting.semantic_model.general.Unit
-import messages.Message
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.definitions.Modifier
 import parsing.syntax_tree.definitions.ModifierList
+import parsing.syntax_tree.definitions.ModifierSpecification
 import parsing.syntax_tree.general.Element
 import parsing.tokenizer.WordAtom
 import source_structure.Position
 import util.indent
 import util.toLines
-import java.lang.StringBuilder
 
 class ModifierSection(private val modifierList: ModifierList, private val sections: List<Element>,
-					  end: Position): DeclarationSection(modifierList.start, end) {
+					  end: Position): DeclarationSection(modifierList.start, end), ModifierSpecification {
 
 	init {
 		for(section in sections) {
@@ -31,30 +30,15 @@ class ModifierSection(private val modifierList: ModifierList, private val sectio
 	}
 
 	override fun getOwnModifiers(): List<Modifier> {
-		return modifierList.modifiers
+		return modifierList.getModifiers()
 	}
 
-	override fun validate(linter: Linter, allowedModifierTypes: List<WordAtom>) { //TODO deduplicate validate() and contains() / ModifierList
-		val uniqueModifiers = HashSet<String>()
-		for(modifier in getModifiers()) {
-			val name = modifier.getValue()
-			if(!allowedModifierTypes.contains(modifier.type)) {
-				linter.addMessage(modifier, "Modifier '$name' is not allowed here.", Message.Type.WARNING)
-				continue
-			}
-			if(uniqueModifiers.contains(name)) {
-				linter.addMessage(modifier, "Duplicate '$name' modifier.", Message.Type.WARNING)
-				continue
-			}
-			uniqueModifiers.add(name)
-		}
+	override fun validate(linter: Linter, allowedModifierTypes: List<WordAtom>) {
+		this@ModifierSection.validate(linter, allowedModifierTypes)
 	}
 
 	override fun containsModifier(searchedModifierType: WordAtom): Boolean {
-		for(presentModifier in getModifiers())
-			if(presentModifier.type == searchedModifierType)
-				return true
-		return false
+		return contains(searchedModifierType)
 	}
 
 	override fun toString(): String {

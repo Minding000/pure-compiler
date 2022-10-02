@@ -10,7 +10,7 @@ import java.util.*
 abstract class DeclarationSection(start: Position, end: Position): MetaElement(start, end) {
 	open var parent: ModifierSection? = null
 
-	open fun validate(linter: Linter, allowedModifierTypes: List<WordAtom> = listOf()) {
+	open fun validate(linter: Linter, allowedModifierTypes: List<WordAtom>) {
 		parent?.validate(linter, allowedModifierTypes)
 	}
 
