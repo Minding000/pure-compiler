@@ -7,8 +7,9 @@ import linting.semantic_model.values.VariableValueDeclaration
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
-class Parameter(override val source: ParameterSyntaxTree, name: String, type: Type?, val isMutable: Boolean,
-				val hasDynamicSize: Boolean): VariableValueDeclaration(source, name, type, null, true) {
+class Parameter(override val source: ParameterSyntaxTree, name: String, type: Type?, isMutable: Boolean,
+				val hasDynamicSize: Boolean):
+	VariableValueDeclaration(source, name, type, null, true, isMutable) {
 
 	init {
 		if(type != null)

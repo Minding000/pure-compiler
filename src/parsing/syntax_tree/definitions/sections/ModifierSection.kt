@@ -34,11 +34,11 @@ class ModifierSection(private val modifierList: ModifierList, private val sectio
 	}
 
 	override fun validate(linter: Linter, allowedModifierTypes: List<WordAtom>) {
-		this@ModifierSection.validate(linter, allowedModifierTypes)
+		super<ModifierSpecification>.validate(linter, allowedModifierTypes)
 	}
 
 	override fun containsModifier(searchedModifierType: WordAtom): Boolean {
-		return contains(searchedModifierType)
+		return super<ModifierSpecification>.containsModifier(searchedModifierType)
 	}
 
 	override fun toString(): String {

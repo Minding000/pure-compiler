@@ -9,7 +9,7 @@ import parsing.syntax_tree.general.Element
 import parsing.syntax_tree.literals.Identifier
 
 open class VariableValueDeclaration(open val source: Element, val name: String, var type: Type?, val value: Value?,
-									val isConstant: Boolean): Unit() {
+									val isConstant: Boolean = true, val isMutable: Boolean = false): Unit() {
 
 	init {
 		type?.let { type ->
@@ -19,10 +19,11 @@ open class VariableValueDeclaration(open val source: Element, val name: String, 
 			units.add(value)
 	}
 
-	constructor(source: Identifier): this(source, source.getValue(), null, null, true)
+	constructor(source: Identifier): this(source, source.getValue(), null, null, true, true)
 
 	open fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): VariableValueDeclaration {
-		return VariableValueDeclaration(source, name, type?.withTypeSubstitutions(typeSubstitution), value, isConstant)
+		return VariableValueDeclaration(source, name, type?.withTypeSubstitutions(typeSubstitution), value, isConstant,
+			isMutable)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

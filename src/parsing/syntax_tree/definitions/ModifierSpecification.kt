@@ -24,7 +24,7 @@ interface ModifierSpecification {
 		}
 	}
 
-	fun contains(searchedModifierType: WordAtom): Boolean {
+	fun containsModifier(searchedModifierType: WordAtom): Boolean {
 		for(presentModifier in getModifiers())
 			if(presentModifier.type == searchedModifierType)
 				return true

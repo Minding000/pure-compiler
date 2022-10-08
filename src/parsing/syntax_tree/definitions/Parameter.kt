@@ -15,14 +15,10 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
         val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.MUTABLE, WordAtom.SPREAD_GROUP)
     }
 
-    fun getTypeName(): String {
-        return type?.getValue() ?: ""
-    }
-
     override fun concretize(linter: Linter, scope: MutableScope): Parameter {
         modifierList?.validate(linter, ALLOWED_MODIFIER_TYPES)
-        val isMutable = modifierList?.contains(WordAtom.MUTABLE) ?: false
-        val hasDynamicSize = modifierList?.contains(WordAtom.SPREAD_GROUP) ?: false
+        val isMutable = modifierList?.containsModifier(WordAtom.MUTABLE) ?: false
+        val hasDynamicSize = modifierList?.containsModifier(WordAtom.SPREAD_GROUP) ?: false
         val parameter = Parameter(this, identifier.getValue(), type?.concretize(linter, scope), isMutable,
                 hasDynamicSize)
         if(type != null)

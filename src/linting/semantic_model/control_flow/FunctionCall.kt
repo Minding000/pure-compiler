@@ -47,6 +47,16 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val p
 		}
 	}
 
+	override fun validate(linter: Linter) {
+		super.validate(linter)
+		if(function is MemberAccess) {
+			//TODO continue
+			// - check if mutability matches
+			// - should mutability be part of the type system? (probably yes)
+			//if(function.target.isMutable)
+		}
+	}
+
 	private fun getSignature(): String {
 		var signature = ""
 		var function = function

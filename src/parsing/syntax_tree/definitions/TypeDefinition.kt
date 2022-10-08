@@ -31,7 +31,8 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 			WordAtom.CLASS -> {
 				parent?.validate(linter, Class.ALLOWED_MODIFIER_TYPES)
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
-				val clazz = Class(this, name, typeScope, superType, isNative)
+				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
+				val clazz = Class(this, name, typeScope, superType, isNative, isMutable)
 				typeScope.typeDefinition = clazz
 				scope.declareType(linter, clazz)
 				scope.declareValue(linter, clazz.value)
@@ -39,7 +40,9 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 			}
 			WordAtom.OBJECT -> {
 				parent?.validate(linter, Object.ALLOWED_MODIFIER_TYPES)
-				val obj = Object(this, name, typeScope, superType)
+				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
+				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
+				val obj = Object(this, name, typeScope, superType, isNative, isMutable)
 				typeScope.typeDefinition = obj
 				scope.declareType(linter, obj)
 				scope.declareValue(linter, obj.value)

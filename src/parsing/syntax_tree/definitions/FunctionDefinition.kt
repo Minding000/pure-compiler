@@ -31,12 +31,13 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
+		val isMutating = parent.containsModifier(WordAtom.MUTATING)
 		val functionScope = BlockScope(scope)
 		val genericParameters = genericsList?.concretizeGenerics(linter, scope) ?: listOf()
 		val parameters = parameterList.concretizeParameters(linter, functionScope)
 		val returnType = returnType?.concretize(linter, scope)
 		val implementation = FunctionImplementation(this, functionScope, genericParameters, parameters,
-			body?.concretize(linter, functionScope), returnType, isNative, isOverriding)
+			body?.concretize(linter, functionScope), returnType, isNative, isOverriding, isMutating)
 		scope.declareFunction(linter, identifier.getValue(), implementation)
 		return implementation
 	}

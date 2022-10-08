@@ -7,19 +7,27 @@ import parsing.syntax_tree.definitions.sections.VariableSectionElement
 import parsing.syntax_tree.literals.Identifier
 import parsing.syntax_tree.general.TypeElement
 import parsing.syntax_tree.general.ValueElement
+import parsing.tokenizer.WordAtom
 import java.lang.StringBuilder
 
 class VariableDeclaration(private val identifier: Identifier, private val type: TypeElement?,
 						  private val value: ValueElement?):
 	VariableSectionElement(identifier.start, (value ?: type ?: identifier).end) {
 
+	companion object {
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.IMMUTABLE)
+	}
+
 	override fun concretize(linter: Linter, scope: MutableScope): VariableValueDeclaration {
+		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
+		val isMutable = !parent.containsModifier(WordAtom.IMMUTABLE)
 		val variableDeclaration = VariableValueDeclaration(
 			this,
 			identifier.getValue(),
 			(type ?: parent.type)?.concretize(linter, scope),
 			(value ?: parent.value)?.concretize(linter, scope),
-			parent.isConstant
+			parent.isConstant,
+			isMutable
 		)
 		scope.declareValue(linter, variableDeclaration)
 		return variableDeclaration

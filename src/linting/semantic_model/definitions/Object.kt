@@ -7,12 +7,13 @@ import linting.semantic_model.values.VariableValueDeclaration
 import parsing.tokenizer.WordAtom
 import parsing.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
-class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?):
+class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?,
+			 val isNative: Boolean, val isMutable: Boolean):
 	TypeDefinition(source, name, scope, superType) {
-	val value = VariableValueDeclaration(source, name, ObjectType(this), null, true)
+	val value = VariableValueDeclaration(source, name, ObjectType(this), null)
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE, WordAtom.IMMUTABLE)
 	}
 
 	init {
