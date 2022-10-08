@@ -1,8 +1,10 @@
 package linting
 
+import linting.semantic_model.values.VariableValue
 import util.TestUtil
 import messages.Message
 import org.junit.jupiter.api.Test
+import kotlin.test.assertNotNull
 
 internal class Declarations {
 
@@ -104,5 +106,22 @@ internal class Declarations {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Duplicate 'native' modifier")
+	}
+
+	@Test
+	fun `handle block declares error variable`() {
+		val sourceCode =
+			"""
+				native class IOError {}
+				class Config {
+					to saveToDisk() {
+					} handle IOError error {
+						error
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val variable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "error" }
+		assertNotNull(variable?.type)
 	}
 }
