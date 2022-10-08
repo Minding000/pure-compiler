@@ -70,6 +70,8 @@ class ObjectType(val source: Element, val name: String, val genericParameters: L
 		(definition as? TypeAlias)?.let { typeAlias ->
 			return unresolvedSourceType.isAssignableTo(typeAlias.referenceType)
 		}
+		if(unresolvedSourceType is StaticType || unresolvedSourceType is FunctionType)
+			return false
 		return unresolvedSourceType.isAssignableTo(this)
 	}
 
@@ -78,7 +80,7 @@ class ObjectType(val source: Element, val name: String, val genericParameters: L
 		(definition as? TypeAlias)?.let { typeAlias ->
 			return typeAlias.referenceType.isAssignableTo(targetType)
 		}
-		if(targetType is FunctionType)
+		if(targetType is StaticType || targetType is FunctionType)
 			return false
 		if(targetType !is ObjectType)
 			return targetType.accepts(this)

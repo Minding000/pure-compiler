@@ -100,7 +100,8 @@ class Linter {
 		NUMBER("Int"),
 		BOOLEAN("Bool"),
 		NULL("Null"),
-		NOTHING("Nothing");
+		NOTHING("Nothing"),
+		ANY("Any");
 
 		fun matches(type: Type?): Boolean {
 			return type.toString() == className

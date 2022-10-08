@@ -1,9 +1,9 @@
 package linting
 
-import util.TestUtil
-import messages.Message
 import linting.semantic_model.access.IndexAccess
+import messages.Message
 import org.junit.jupiter.api.Test
+import util.TestUtil
 import kotlin.test.assertNotNull
 
 internal class Assignments {

@@ -1,5 +1,6 @@
 package linting.semantic_model.literals
 
+import linting.Linter
 import parsing.syntax_tree.definitions.TypeParameter as TypeParameterSyntaxTree
 
 class TypeParameter(val source: TypeParameterSyntaxTree, val mode: Mode, val baseType: Type): Type() {
@@ -24,7 +25,7 @@ class TypeParameter(val source: TypeParameterSyntaxTree, val mode: Mode, val bas
 		val targetType = resolveTypeAlias(unresolvedTargetType)
 		// If assigning collection to object (different logic applies when assigning to a collection)
 		if(mode == Mode.CONSUMING)
-			return false
+			return Linter.LiteralType.ANY.matches(targetType)
 		return baseType.isAssignableTo(targetType)
 	}
 
