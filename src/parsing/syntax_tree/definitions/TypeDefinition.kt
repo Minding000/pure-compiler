@@ -32,21 +32,21 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 				parent?.validate(linter, Class.ALLOWED_MODIFIER_TYPES)
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
-				val clazz = Class(this, name, typeScope, superType, isNative, isMutable)
-				typeScope.typeDefinition = clazz
-				scope.declareType(linter, clazz)
-				scope.declareValue(linter, clazz.value)
-				clazz
+				val `class` = Class(this, name, typeScope, superType, isNative, isMutable)
+				typeScope.typeDefinition = `class`
+				scope.declareType(linter, `class`)
+				scope.declareValue(linter, `class`.value)
+				`class`
 			}
 			WordAtom.OBJECT -> {
 				parent?.validate(linter, Object.ALLOWED_MODIFIER_TYPES)
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
-				val obj = Object(this, name, typeScope, superType, isNative, isMutable)
-				typeScope.typeDefinition = obj
-				scope.declareType(linter, obj)
-				scope.declareValue(linter, obj.value)
-				obj
+				val `object` = Object(this, name, typeScope, superType, isNative, isMutable)
+				typeScope.typeDefinition = `object`
+				scope.declareType(linter, `object`)
+				scope.declareValue(linter, `object`.value)
+				`object`
 			}
 			WordAtom.ENUM -> {
 				parent?.validate(linter)

@@ -1,6 +1,8 @@
 package linting
 
 import linting.semantic_model.access.MemberAccess
+import linting.semantic_model.control_flow.Try
+import linting.semantic_model.definitions.Class
 import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.OptionalType
@@ -154,5 +156,39 @@ internal class Expressions {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Cast from 'Apple' to 'Fruit' is safe.")
+	}
+
+	@Test
+	fun `returns source expression type from uncheck try`() {
+		val sourceCode =
+			"""
+				class PrintResult {}
+				object Printer {
+					to print(): PrintResult {}
+				}
+				try! Printer.print()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val typeDefinition = lintResult.find<Class> { `class` -> `class`.name == "PrintResult" }
+		val tryType = lintResult.find<Try>()?.type
+		assertIs<ObjectType>(tryType)
+		assertEquals(typeDefinition, tryType.definition)
+	}
+
+	@Test
+	fun `returns optional type from optional try`() {
+		val sourceCode =
+			"""
+				class PrintResult {}
+				object Printer {
+					to print(): PrintResult {}
+				}
+				try? Printer.print()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val typeDefinition = lintResult.find<Class> { `class` -> `class`.name == "PrintResult" }
+		val tryType = lintResult.find<Try>()?.type
+		assertIs<OptionalType>(tryType)
+		assertEquals(typeDefinition, (tryType.baseType as? ObjectType)?.definition)
 	}
 }
