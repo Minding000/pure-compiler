@@ -1,6 +1,7 @@
 package linting.semantic_model.access
 
 import linting.Linter
+import linting.semantic_model.literals.OptionalType
 import linting.semantic_model.literals.Type
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
@@ -14,7 +15,10 @@ class InstanceAccess(override val source: InstanceAccess, val instance: Variable
 	}
 
 	override fun isAssignableTo(targetType: Type?): Boolean {
-		return targetType?.scope?.hasInstance(instance.name) ?: false
+		return if(targetType is OptionalType)
+			targetType.baseType.scope.hasInstance(instance.name)
+		else
+			targetType?.scope?.hasInstance(instance.name) ?: false
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

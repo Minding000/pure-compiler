@@ -2,7 +2,6 @@ package parsing.syntax_tree.definitions
 
 import errors.internal.CompilerError
 import linting.Linter
-import messages.Message
 import linting.semantic_model.definitions.Class
 import linting.semantic_model.definitions.Enum
 import linting.semantic_model.definitions.Object
@@ -10,11 +9,12 @@ import linting.semantic_model.definitions.Trait
 import linting.semantic_model.general.Unit
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.scopes.TypeScope
+import messages.Message
 import parsing.syntax_tree.definitions.sections.ModifierSection
 import parsing.syntax_tree.definitions.sections.ModifierSectionChild
 import parsing.syntax_tree.general.Element
-import parsing.syntax_tree.literals.Identifier
 import parsing.syntax_tree.general.TypeElement
+import parsing.syntax_tree.literals.Identifier
 import parsing.tokenizer.Word
 import parsing.tokenizer.WordAtom
 
@@ -66,9 +66,9 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 			else -> throw CompilerError("Encountered unknown type type.")
 		}
 		for(member in body.members) {
-			if(typeDefinition is Object || typeDefinition is Trait) {
-				if(member is Instance) {
-					linter.addMessage(member, "Instance declarations are not allowed in objects and traits.",
+			if(member is InstanceList) {
+				if(!(typeDefinition is Enum || typeDefinition is Class)) {
+					linter.addMessage(member, "Instance declarations are only allowed in enums and classes.",
 						Message.Type.WARNING)
 					continue
 				}

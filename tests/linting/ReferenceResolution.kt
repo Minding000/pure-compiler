@@ -1,6 +1,5 @@
 package linting
 
-import linting.semantic_model.access.InstanceAccess
 import linting.semantic_model.control_flow.FunctionCall
 import linting.semantic_model.literals.FunctionType
 import linting.semantic_model.values.VariableValue
@@ -328,24 +327,5 @@ internal class ReferenceResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Call to function 'List.exists(Int)' is ambiguous")
-	}
-
-	@Test
-	fun `resolves enum instance accesses`() {
-		val sourceCode =
-			"""
-				enum TransportLayerProtocol {
-					instances TCP, UDP
-				}
-				class Stream {
-					val protocol: TransportLayerProtocol
-				
-					init(protocol)
-				}
-				val stream = Stream(.TCP)
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
-		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertNotNull(instanceAccess?.type)
 	}
 }

@@ -12,7 +12,7 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 			val isNative: Boolean, val isMutable: Boolean):
 	TypeDefinition(source, name, scope, superType) {
 	private val specificDefinitions = HashMap<Map<ObjectType, Type>, Class>()
-	val value = VariableValueDeclaration(source, name, StaticType(this), null)
+	val value = VariableValueDeclaration(source, name, StaticType(this))
 
 	companion object {
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE, WordAtom.IMMUTABLE)

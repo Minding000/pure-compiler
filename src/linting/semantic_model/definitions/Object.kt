@@ -10,7 +10,7 @@ import parsing.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTre
 class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?,
 			 val isNative: Boolean, val isMutable: Boolean):
 	TypeDefinition(source, name, scope, superType) {
-	val value = VariableValueDeclaration(source, name, ObjectType(this), null)
+	val value = VariableValueDeclaration(source, name, ObjectType(this))
 
 	companion object {
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE, WordAtom.IMMUTABLE)

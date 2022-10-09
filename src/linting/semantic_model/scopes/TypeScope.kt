@@ -5,13 +5,14 @@ import linting.semantic_model.definitions.*
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.Type
 import linting.semantic_model.values.Function
+import linting.semantic_model.values.Instance
 import linting.semantic_model.values.VariableValueDeclaration
 import messages.Message
 import java.util.*
 
 class TypeScope(private val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
+	lateinit var typeDefinition: TypeDefinition
 	var instanceConstant: VariableValueDeclaration? = null
-	var typeDefinition: TypeDefinition? = null
 	private val typeDefinitions = HashMap<String, TypeDefinition>()
 	private val valueDeclarations = HashMap<String, VariableValueDeclaration>()
 	private val initializers = LinkedList<InitializerDefinition>()
@@ -79,7 +80,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				}
 				redeclarations.add(otherInitializer)
 				linter.addMessage(otherInitializer.source, "Redeclaration of" +
-						" initializer '${typeDefinition?.name}(${otherInitializer.variation})'," +
+						" initializer '${typeDefinition.name}(${otherInitializer.variation})'," +
 						" previously declared in ${initializer.source.getStartString()}.", Message.Type.ERROR)
 			}
 		}
@@ -89,7 +90,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
 		initializers.add(initializer)
 		onNewInitializer(initializer)
-		linter.addMessage(initializer.source, "Declaration of initializer '${typeDefinition?.name}(${initializer.variation})'.",
+		linter.addMessage(initializer.source, "Declaration of initializer '${typeDefinition.name}(${initializer.variation})'.",
 			Message.Type.DEBUG)
 	}
 
@@ -118,7 +119,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		when(val existingDeclaration = valueDeclarations[name]?.value) {
 			null -> {
 				val newFunction = Function(newImplementation.source, newImplementation, name)
-				typeDefinition?.units?.add(newFunction)
+				typeDefinition.units.add(newFunction)
 				val newValue = VariableValueDeclaration(newImplementation.source, name, newFunction.type, newFunction, true)
 				valueDeclarations[name] = newValue
 				onNewValue(newValue)
@@ -184,6 +185,8 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		}
 		previousDeclaration = valueDeclarations.putIfAbsent(value.name, value)
 		if(previousDeclaration == null) {
+			if(value is Instance)
+				value.type = ObjectType(typeDefinition)
 			onNewValue(value)
 			linter.addMessage(value.source, "Declaration of value '${value.name}'.", Message.Type.DEBUG)
 		} else {

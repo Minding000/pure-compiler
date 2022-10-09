@@ -9,6 +9,28 @@ import kotlin.test.assertNotNull
 internal class Declarations {
 
 	@Test
+	fun `emits error for incompatible source expression type`() {
+		val sourceCode =
+			"""
+				class Toast {}
+				object Banana {}
+				var toast: Toast = Banana
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Banana' is not assignable to type 'Toast'")
+	}
+
+	@Test
+	fun `emits error if no type is provided to variable declaration`() {
+		val sourceCode =
+			"""
+				var toast
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type or value is required")
+	}
+
+	@Test
 	fun `detects shadowed variables`() {
 		val sourceCode =
 			"""

@@ -26,15 +26,16 @@ class Assignment(val source: Assignment, private val targets: List<Value>, priva
 			target.linkValues(linter, scope)
 		}
 		verifyAssignability(linter)
-		sourceExpression.type?.let { sourceType ->
-			for(target in targets) {
-				val targetType = target.type
-				if(targetType == null) {
-					target.type = sourceType
-				} else {
-					if(!sourceType.isAssignableTo(targetType))
-						linter.addMessage(target.source, "Type '$sourceType' is not assignable to type '$targetType'.",
-							Message.Type.ERROR)
+		for(target in targets) {
+			val targetType = target.type
+			if(sourceExpression.isAssignableTo(targetType)) {
+				sourceExpression.setInferredType(targetType)
+			} else if(targetType == null) {
+				target.type = sourceExpression.type
+			} else {
+				sourceExpression.type?.let { sourceType ->
+					linter.addMessage(target.source,
+						"Type '$sourceType' is not assignable to type '$targetType'.", Message.Type.ERROR)
 				}
 			}
 		}
