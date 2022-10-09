@@ -1,7 +1,7 @@
 package linting.semantic_model.literals
 
+import errors.user.SignatureResolutionAmbiguityError
 import linting.semantic_model.definitions.FunctionSignature
-import linting.semantic_model.general.Unit
 import linting.semantic_model.values.Value
 import parsing.syntax_tree.general.Element
 import java.util.*
@@ -28,24 +28,6 @@ class FunctionType(val source: Element) : Type() {
 		signatures.remove(signature)
 	}
 
-	private fun getMatchingSignatures(suppliedValues: List<Value>): List<FunctionSignature> {
-		val validSignatures = LinkedList<FunctionSignature>()
-		for(signature in signatures) {
-			if(signature.accepts(suppliedValues))
-				validSignatures.add(signature)
-		}
-		superFunctionType?.let { superFunctionType ->
-			val validSuperSignatures = superFunctionType.getMatchingSignatures(suppliedValues)
-			validSuperSignatures@for(validSuperSignature in validSuperSignatures) {
-				for(validSignature in validSignatures)
-					if(validSignature.superFunctionSignature == validSuperSignature)
-						continue@validSuperSignatures
-				validSignatures.add(validSuperSignature)
-			}
-		}
-		return validSignatures
-	}
-
 	fun resolveSignature(suppliedValues: List<Value>): FunctionSignature? {
 		val validSignatures = getMatchingSignatures(suppliedValues)
 		if(validSignatures.isEmpty())
@@ -62,6 +44,24 @@ class FunctionType(val source: Element) : Type() {
 			return signature
 		}
 		throw SignatureResolutionAmbiguityError(validSignatures)
+	}
+
+	private fun getMatchingSignatures(suppliedValues: List<Value>): List<FunctionSignature> {
+		val validSignatures = LinkedList<FunctionSignature>()
+		for(signature in signatures) {
+			if(signature.accepts(suppliedValues))
+				validSignatures.add(signature)
+		}
+		superFunctionType?.let { superFunctionType ->
+			val validSuperSignatures = superFunctionType.getMatchingSignatures(suppliedValues)
+			validSuperSignatures@for(validSuperSignature in validSuperSignatures) {
+				for(validSignature in validSignatures)
+					if(validSignature.superFunctionSignature == validSuperSignature)
+						continue@validSuperSignatures
+				validSignatures.add(validSuperSignature)
+			}
+		}
+		return validSignatures
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Type {
@@ -97,6 +97,4 @@ class FunctionType(val source: Element) : Type() {
 	override fun toString(): String {
 		return signatures.joinToString("\n")
 	}
-
-	class SignatureResolutionAmbiguityError(val signatures: List<Unit>) : Error()
 }

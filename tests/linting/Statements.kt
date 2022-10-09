@@ -21,8 +21,6 @@ class Statements {
 						cli.printLine("Linux")
 					.WINDOWS:
 						cli.printLine("MacOS")
-					else:
-						cli.printError("Unsupported operating system.")
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)

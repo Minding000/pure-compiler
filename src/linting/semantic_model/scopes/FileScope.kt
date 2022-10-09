@@ -1,13 +1,10 @@
 package linting.semantic_model.scopes
 
 import linting.Linter
-import linting.semantic_model.definitions.IndexOperatorDefinition
-import linting.semantic_model.definitions.OperatorDefinition
-import linting.semantic_model.literals.Type
 import linting.semantic_model.definitions.TypeDefinition
+import linting.semantic_model.literals.Type
 import linting.semantic_model.values.VariableValueDeclaration
 import messages.Message
-import kotlin.collections.HashMap
 
 class FileScope: MutableScope() {
 	private val referencedTypes = HashMap<String, TypeDefinition>()
@@ -58,14 +55,5 @@ class FileScope: MutableScope() {
 
 	override fun resolveValue(name: String): VariableValueDeclaration? {
 		return values[name] ?: referencedValues[name]
-	}
-
-	override fun resolveOperator(name: String, suppliedTypes: List<Type?>): OperatorDefinition? {
-		return null
-	}
-
-	override fun resolveIndexOperator(suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
-			IndexOperatorDefinition? {
-		return null
 	}
 }

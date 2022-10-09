@@ -110,4 +110,18 @@ internal class Assignments {
 		val lintResult = TestUtil.lint(sourceCode, false)
 		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type 'EventHandler' is not assignable to type '(Event) =>|'")
 	}
+
+	@Test
+	fun `can be assigned to optional types`() {
+		val sourceCode =
+			"""
+				class Car {
+					init
+				}
+				val car: Car? = Car()
+				car = null
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type 'Null' is not assignable to type 'Car?'")
+	}
 }

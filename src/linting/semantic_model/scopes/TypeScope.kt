@@ -6,6 +6,7 @@ import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.Type
 import linting.semantic_model.values.Function
 import linting.semantic_model.values.Instance
+import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValueDeclaration
 import messages.Message
 import java.util.*
@@ -23,7 +24,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	fun createInstanceConstant(definition: TypeDefinition) {
-		instanceConstant = VariableValueDeclaration(definition.source, SELF_REFERENCE, ObjectType(definition), null, true)
+		instanceConstant = VariableValueDeclaration(definition.source, SELF_REFERENCE, ObjectType(definition))
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>, superScope: InterfaceScope?): TypeScope {
@@ -120,7 +121,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			null -> {
 				val newFunction = Function(newImplementation.source, newImplementation, name)
 				typeDefinition.units.add(newFunction)
-				val newValue = VariableValueDeclaration(newImplementation.source, name, newFunction.type, newFunction, true)
+				val newValue = VariableValueDeclaration(newImplementation.source, name, newFunction.type, newFunction)
 				valueDeclarations[name] = newValue
 				onNewValue(newValue)
 			}
@@ -209,45 +210,43 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			?: parentScope.resolveType(name)
 	}
 
-	override fun resolveOperator(name: String, suppliedTypes: List<Type?>):
-			OperatorDefinition? {
+	override fun resolveOperator(name: String, suppliedValues: List<Value>):
+			OperatorDefinition? { //TODO this function is outdated (see InterfaceScope)
 		operatorIteration@for(operator in operators) {
 			if(operator.name != name)
 				continue
-			if(operator.parameters.size != suppliedTypes.size)
+			if(operator.parameters.size != suppliedValues.size)
 				continue
-			for(i in suppliedTypes.indices) {
-				if(suppliedTypes[i]?.let { suppliedType -> operator.parameters[i].type?.accepts(suppliedType) } != true)
+			for(i in suppliedValues.indices) {
+				if(!suppliedValues[i].isAssignableTo(operator.parameters[i].type))
 					continue@operatorIteration
 			}
 			return operator
 		}
-		return superScope?.resolveOperator(name, suppliedTypes)
-			?: parentScope.resolveOperator(name, suppliedTypes)
+		return superScope?.resolveOperator(name, suppliedValues)
+			?: parentScope.resolveOperator(name, suppliedValues)
 	}
 
-	override fun resolveIndexOperator(suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
-			IndexOperatorDefinition? {
+	override fun resolveIndexOperator(suppliedIndexValues: List<Value>, suppliedParameterValues: List<Value>):
+			IndexOperatorDefinition? { //TODO this function is outdated (see InterfaceScope)
 		operatorIteration@for(operator in operators) {
 			if(operator !is IndexOperatorDefinition)
 				continue
-			if(operator.indices.size != suppliedIndexTypes.size)
+			if(operator.indices.size != suppliedIndexValues.size)
 				continue
-			for(i in suppliedIndexTypes.indices) {
-				if(suppliedIndexTypes[i]?.let { suppliedIndexType ->
-						operator.indices[i].type?.accepts(suppliedIndexType) } != true)
+			if(operator.parameters.size != suppliedParameterValues.size)
+				continue
+			for(i in suppliedIndexValues.indices) {
+				if(!suppliedIndexValues[i].isAssignableTo(operator.indices[i].type))
 					continue@operatorIteration
 			}
-			if(operator.parameters.size != suppliedParameterTypes.size)
-				continue
-			for(i in suppliedParameterTypes.indices) {
-				if(suppliedParameterTypes[i]?.let { suppliedParameterType ->
-						operator.parameters[i].type?.accepts(suppliedParameterType) } != true)
+			for(i in suppliedParameterValues.indices) {
+				if(!suppliedParameterValues[i].isAssignableTo(operator.parameters[i].type))
 					continue@operatorIteration
 			}
 			return operator
 		}
-		return superScope?.resolveIndexOperator(suppliedIndexTypes, suppliedParameterTypes)
-			?: parentScope.resolveIndexOperator(suppliedIndexTypes, suppliedParameterTypes)
+		return superScope?.resolveIndexOperator(suppliedIndexValues, suppliedParameterValues)
+			?: parentScope.resolveIndexOperator(suppliedIndexValues, suppliedParameterValues)
 	}
 }

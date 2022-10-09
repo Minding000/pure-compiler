@@ -9,7 +9,7 @@ import parsing.syntax_tree.literals.Identifier
 class Instance(val identifier: Identifier): Element(identifier.start, identifier.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticInstanceModel {
-		val instance = SemanticInstanceModel(this, identifier.concretize(linter, scope))
+		val instance = SemanticInstanceModel(this, identifier.getValue())
 		scope.declareValue(linter, instance)
 		return instance
 	}

@@ -1,7 +1,7 @@
 package linting.semantic_model.scopes
 
+import errors.user.SignatureResolutionAmbiguityError
 import linting.semantic_model.definitions.*
-import linting.semantic_model.literals.FunctionType
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.Type
 import linting.semantic_model.values.Instance
@@ -74,70 +74,91 @@ class InterfaceScope(private val type: Type): Scope() {
 	}
 
 	fun resolveInitializer(suppliedValues: List<Value>): InitializerDefinition? {
-		val validSignatures = LinkedList<InitializerDefinition>()
-		for(signature in initializers) {
-			if(signature.accepts(suppliedValues))
-				validSignatures.add(signature)
-		}
+		val validSignatures = getMatchingInitializers(suppliedValues)
 		if(validSignatures.isEmpty())
 			return null
-		signatureCheck@for(signature in validSignatures) {
+		specificityPrecedenceLoop@for(signature in validSignatures) {
 			for(otherSignature in validSignatures) {
 				if(otherSignature == signature)
 					continue
 				if(!signature.isMoreSpecificThan(otherSignature))
-					continue@signatureCheck
+					continue@specificityPrecedenceLoop
 			}
 			for(parameterIndex in suppliedValues.indices)
 				suppliedValues[parameterIndex].setInferredType(signature.parameters[parameterIndex].type)
 			return signature
 		}
-		throw FunctionType.SignatureResolutionAmbiguityError(validSignatures)
+		throw SignatureResolutionAmbiguityError(validSignatures)
 	}
 
-	override fun resolveOperator(name: String, suppliedTypes: List<Type?>):
+	private fun getMatchingInitializers(suppliedValues: List<Value>): List<InitializerDefinition> {
+		val validSignatures = LinkedList<InitializerDefinition>()
+		for(signature in initializers) {
+			if(signature.accepts(suppliedValues))
+				validSignatures.add(signature)
+		}
+		return validSignatures
+	}
+
+	override fun resolveOperator(name: String, suppliedValues: List<Value>):
 			OperatorDefinition? {
+		val validSignatures = getMatchingOperators(name, suppliedValues)
+		if(validSignatures.isEmpty())
+			return null
+		specificityPrecedenceLoop@for(signature in validSignatures) {
+			for(otherSignature in validSignatures) {
+				if(otherSignature == signature)
+					continue
+				if(!signature.isMoreSpecificThan(otherSignature))
+					continue@specificityPrecedenceLoop
+			}
+			for(parameterIndex in suppliedValues.indices)
+				suppliedValues[parameterIndex].setInferredType(signature.parameters[parameterIndex].type)
+			return signature
+		}
+		throw SignatureResolutionAmbiguityError(validSignatures)
+	}
+
+	private fun getMatchingOperators(name: String, suppliedValues: List<Value>): List<OperatorDefinition> {
 		val validSignatures = LinkedList<OperatorDefinition>()
 		for(signature in operators) {
 			if(signature.name != name)
 				continue
-			if(signature.accepts(suppliedTypes))
+			if(signature.accepts(suppliedValues))
 				validSignatures.add(signature)
-		}
-		if(validSignatures.isEmpty())
-			return null
-		signatureCheck@for(signature in validSignatures) {
-			for(otherSignature in validSignatures) {
-				if(otherSignature == signature)
-					continue
-				if(!otherSignature.accepts(signature.parameters.map { parameter -> parameter.type }))
-					continue@signatureCheck
-			}
-			return signature
-		}
-		throw FunctionType.SignatureResolutionAmbiguityError(validSignatures)
+		} //TODO check: should this be as complex as FunctionType.getMatchingSignatures()?
+		return validSignatures
 	}
 
-	override fun resolveIndexOperator(suppliedIndexTypes: List<Type?>, suppliedParameterTypes: List<Type?>):
+	override fun resolveIndexOperator(suppliedIndexValues: List<Value>, suppliedParameterValues: List<Value>):
 			IndexOperatorDefinition? {
-		val validSignatures = LinkedList<IndexOperatorDefinition>()
-		for(signature in operators) {
-			if(signature is IndexOperatorDefinition && signature.accepts(suppliedIndexTypes, suppliedParameterTypes))
-				validSignatures.add(signature)
-		}
+		val validSignatures = getMatchingIndexOperators(suppliedIndexValues, suppliedParameterValues)
 		if(validSignatures.isEmpty())
 			return null
-		signatureCheck@for(signature in validSignatures) {
+		specificityPrecedenceLoop@for(signature in validSignatures) {
 			for(otherSignature in validSignatures) {
 				if(otherSignature == signature)
 					continue
-				if(!otherSignature.accepts(signature.indices.map { index -> index.type },
-						signature.parameters.map { parameter -> parameter.type }))
-					continue@signatureCheck
+				if(!signature.isMoreSpecificThan(otherSignature))
+					continue@specificityPrecedenceLoop
 			}
+			for(indexIndex in suppliedIndexValues.indices)
+				suppliedIndexValues[indexIndex].setInferredType(signature.indices[indexIndex].type)
+			for(parameterIndex in suppliedParameterValues.indices)
+				suppliedParameterValues[parameterIndex].setInferredType(signature.parameters[parameterIndex].type)
 			return signature
 		}
-		throw FunctionType.SignatureResolutionAmbiguityError(validSignatures)
+		throw SignatureResolutionAmbiguityError(validSignatures)
+	}
+
+	private fun getMatchingIndexOperators(suppliedIndexValues: List<Value>, suppliedParameterValues: List<Value>):
+		List<IndexOperatorDefinition> {
+		val validSignatures = LinkedList<IndexOperatorDefinition>()
+		for(signature in operators) {
+			if(signature is IndexOperatorDefinition && signature.accepts(suppliedIndexValues, suppliedParameterValues))
+				validSignatures.add(signature)
+		} //TODO check: should this be as complex as FunctionType.getMatchingSignatures()?
+		return validSignatures
 	}
 
 	fun getGenericTypes(): LinkedList<ObjectType> {

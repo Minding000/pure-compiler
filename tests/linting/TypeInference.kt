@@ -28,28 +28,7 @@ class TypeInference {
 	}
 
 	@Test
-	fun `resolves instance accesses in function calls`() {
-		val sourceCode =
-			"""
-				enum TransportLayerProtocol {
-					instances TCP, UDP
-				}
-				class Stream {
-					val protocol: TransportLayerProtocol
-				
-					init(protocol)
-				}
-				val stream = Stream(.TCP)
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
-		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
-		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertNotNull(type)
-		assertEquals(type, instanceAccess?.type)
-	}
-
-	@Test
-	fun `resolves instance accesses in variable declarations`() { //TODO write this test for usages in initializers, operators and switch cases
+	fun `resolves instance accesses in variable declarations`() {
 		val sourceCode =
 			"""
 				enum TransportLayerProtocol {
@@ -73,6 +52,89 @@ class TypeInference {
 				}
 				var protocol: TransportLayerProtocol? = null
 				protocol = .TCP
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
+		val instanceAccess = lintResult.find<InstanceAccess>()
+		assertNotNull(type)
+		assertEquals(type, instanceAccess?.type)
+	}
+
+	@Test
+	fun `resolves instance accesses in initializer calls`() {
+		val sourceCode =
+			"""
+				enum TransportLayerProtocol {
+					instances TCP, UDP
+				}
+				class Stream {
+					val protocol: TransportLayerProtocol
+
+					init(protocol)
+				}
+				val stream = Stream(.TCP)
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
+		val instanceAccess = lintResult.find<InstanceAccess>()
+		assertNotNull(type)
+		assertEquals(type, instanceAccess?.type)
+	}
+
+	@Test
+	fun `resolves instance accesses in function calls`() {
+		val sourceCode =
+			"""
+				enum TransportLayerProtocol {
+					instances TCP, UDP
+				}
+				class Port {}
+				object NetworkInterface {
+					to getOpenPort(protocol: TransportLayerProtocol): Port {}
+				}
+				val openUdpPort = NetworkInterface.getOpenPort(.UDP)
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
+		val instanceAccess = lintResult.find<InstanceAccess>()
+		assertNotNull(type)
+		assertEquals(type, instanceAccess?.type)
+	}
+
+	@Test
+	fun `resolves instance accesses in operator calls`() {
+		val sourceCode =
+			"""
+				enum TransportLayerProtocol {
+					instances TCP, UDP
+				}
+				class Ports {}
+				object NetworkInterface {
+					operator [protocol: TransportLayerProtocol](): Ports {}
+				}
+				val udpPorts = NetworkInterface[.UDP]
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
+		val instanceAccess = lintResult.find<InstanceAccess>()
+		assertNotNull(type)
+		assertEquals(type, instanceAccess?.type)
+	}
+
+	@Test
+	fun `resolves instance accesses in switch cases`() {
+		val sourceCode =
+			"""
+				enum TransportLayerProtocol {
+					instances TCP, UDP
+				}
+				val protocol = TransportLayerProtocol.TCP
+				switch protocol {
+					.TCP:
+						cli.printLine("TCP")
+					.UDP:
+						cli.printLine("UDP")
+				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
 		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }

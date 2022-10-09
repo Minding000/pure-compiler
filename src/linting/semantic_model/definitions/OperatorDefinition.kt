@@ -7,12 +7,13 @@ import linting.semantic_model.literals.Type
 import linting.semantic_model.values.VariableValueDeclaration
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.Scope
+import linting.semantic_model.values.Value
 import java.util.LinkedList
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
 open class OperatorDefinition(override val source: OperatorDefinitionSyntaxTree, name: String, val scope: BlockScope,
 							  val parameters: List<Parameter>, val body: Unit?, val returnType: Type?):
-	VariableValueDeclaration(source, name, returnType, null, true) {
+	VariableValueDeclaration(source, name, returnType) {
 	val variation = parameters.joinToString { parameter -> parameter.type.toString() }
 
 	init {
@@ -31,13 +32,33 @@ open class OperatorDefinition(override val source: OperatorDefinitionSyntaxTree,
 				returnType?.withTypeSubstitutions(typeSubstitution))
 	}
 
-	fun accepts(suppliedTypes: List<Type?>): Boolean {
-		if(parameters.size != suppliedTypes.size)
+	fun accepts(suppliedValues: List<Value>): Boolean {
+		if(parameters.size != suppliedValues.size)
 			return false
-		for(i in parameters.indices)
-			if(suppliedTypes[i]?.let { suppliedType -> parameters[i].type?.accepts(suppliedType) } != true)
+		for(parameterIndex in parameters.indices)
+			if(!suppliedValues[parameterIndex].isAssignableTo(parameters[parameterIndex].type))
 				return false
 		return true
+	}
+
+	fun isMoreSpecificThan(otherSignature: OperatorDefinition): Boolean {
+		if(otherSignature.parameters.size != parameters.size)
+			return false
+		var areSignaturesEqual = true
+		for(parameterIndex in parameters.indices) {
+			val parameterType = parameters[parameterIndex].type ?: return false
+			val otherParameterType = otherSignature.parameters[parameterIndex].type
+			if(otherParameterType == null) {
+				areSignaturesEqual = false
+				continue
+			}
+			if(otherParameterType != parameterType) {
+				areSignaturesEqual = false
+				if(!otherParameterType.accepts(parameterType))
+					return false
+			}
+		}
+		return !areSignaturesEqual
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

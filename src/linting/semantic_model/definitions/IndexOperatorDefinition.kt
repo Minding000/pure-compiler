@@ -3,6 +3,7 @@ package linting.semantic_model.definitions
 import linting.semantic_model.general.Unit
 import linting.semantic_model.literals.Type
 import linting.semantic_model.scopes.BlockScope
+import linting.semantic_model.values.Value
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
 class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: BlockScope,
@@ -14,18 +15,53 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 		units.addAll(indices)
 	}
 
-	fun accepts(indexTypes: List<Type?>, parameterTypes: List<Type?>): Boolean {
-		if(indices.size != indexTypes.size)
+	fun accepts(indexValues: List<Value>, parameterValues: List<Value>): Boolean {
+		if(indices.size != indexValues.size)
 			return false
-		if(parameters.size != parameterTypes.size)
+		if(parameters.size != parameterValues.size)
 			return false
-		for(i in indices.indices)
-			if(indexTypes[i]?.let { indexType -> indices[i].type?.accepts(indexType) } != true)
+		for(indexIndex in indices.indices)
+			if(!indexValues[indexIndex].isAssignableTo(indices[indexIndex].type))
 				return false
-		for(i in parameters.indices)
-			if(parameterTypes[i]?.let { parameterType -> parameters[i].type?.accepts(parameterType) } != true)
+		for(parameterIndex in parameters.indices)
+			if(!parameterValues[parameterIndex].isAssignableTo(parameters[parameterIndex].type))
 				return false
 		return true
+	}
+
+	fun isMoreSpecificThan(otherSignature: IndexOperatorDefinition): Boolean {
+		if(otherSignature.indices.size != indices.size)
+			return false
+		if(otherSignature.parameters.size != parameters.size)
+			return false
+		var areSignaturesEqual = true
+		for(indexIndex in indices.indices) {
+			val indexType = indices[indexIndex].type ?: return false
+			val otherIndexType = otherSignature.indices[indexIndex].type
+			if(otherIndexType == null) {
+				areSignaturesEqual = false
+				continue
+			}
+			if(otherIndexType != indexType) {
+				areSignaturesEqual = false
+				if(!otherIndexType.accepts(indexType))
+					return false
+			}
+		}
+		for(parameterIndex in parameters.indices) {
+			val parameterType = parameters[parameterIndex].type ?: return false
+			val otherParameterType = otherSignature.parameters[parameterIndex].type
+			if(otherParameterType == null) {
+				areSignaturesEqual = false
+				continue
+			}
+			if(otherParameterType != parameterType) {
+				areSignaturesEqual = false
+				if(!otherParameterType.accepts(parameterType))
+					return false
+			}
+		}
+		return !areSignaturesEqual
 	}
 
 	override fun toString(): String {

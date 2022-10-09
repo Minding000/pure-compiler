@@ -9,7 +9,7 @@ import parsing.syntax_tree.literals.Identifier
 class InstanceAccess(val identifier: Identifier): ValueElement(identifier.start, identifier.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): InstanceAccess {
-		return InstanceAccess(this, identifier.concretize(linter, scope))
+		return InstanceAccess(this, identifier.getValue())
 	}
 
 	override fun toString(): String {

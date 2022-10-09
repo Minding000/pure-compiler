@@ -14,7 +14,7 @@ class HandleBlock(start: Position, private val type: TypeElement, private val id
 		val blockScope = BlockScope(scope)
 		val eventType = type.concretize(linter, scope)
 		val variableValueDeclaration = if(identifier != null) {
-			val declaration = VariableValueDeclaration(identifier, identifier.getValue(), eventType, null)
+			val declaration = VariableValueDeclaration(identifier, identifier.getValue(), eventType)
 			blockScope.declareValue(linter, declaration)
 			declaration
 		} else null

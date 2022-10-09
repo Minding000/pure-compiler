@@ -22,7 +22,7 @@ class Assignment(val source: Assignment, private val targets: List<Value>, priva
 		sourceExpression.linkValues(linter, scope)
 		for(target in targets) {
 			if(target is IndexAccess)
-				target.assignedType = sourceExpression.type
+				target.sourceExpression = sourceExpression
 			target.linkValues(linter, scope)
 		}
 		verifyAssignability(linter)
@@ -55,10 +55,7 @@ class Assignment(val source: Assignment, private val targets: List<Value>, priva
 							Message.Type.ERROR)
 				}
 				is IndexAccess -> {
-					target.target.type?.let { targetType ->
-						targetType.scope.resolveIndexOperator(target.indices.map { index -> index.type },
-							listOf(sourceExpression.type))
-					}
+					target.target.type?.scope?.resolveIndexOperator(target.indices, sourceExpression)
 				}
 				else -> {
 					linter.addMessage(target.source, "Expression is not assignable.", Message.Type.ERROR)

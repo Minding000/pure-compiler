@@ -54,17 +54,23 @@ class FunctionSignature(val source: Element, val genericParameters: List<TypeDef
 	}
 
 	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean {
-		if(parameterTypes.size != otherSignature.parameterTypes.size)
+		if(otherSignature.parameterTypes.size != parameterTypes.size)
 			return false
-		if(otherSignature.parameterTypes == parameterTypes)
-			return false
+		var areSignaturesEqual = true
 		for(parameterIndex in parameterTypes.indices) {
 			val parameterType = parameterTypes[parameterIndex] ?: return false
-			val otherParameterType = otherSignature.parameterTypes[parameterIndex] ?: continue
-			if(!otherParameterType.accepts(parameterType))
-				return false
+			val otherParameterType = otherSignature.parameterTypes[parameterIndex]
+			if(otherParameterType == null) {
+				areSignaturesEqual = false
+				continue
+			}
+			if(otherParameterType != parameterType) {
+				areSignaturesEqual = false
+				if(!otherParameterType.accepts(parameterType))
+					return false
+			}
 		}
-		return true
+		return !areSignaturesEqual
 	}
 
 	override fun equals(other: Any?): Boolean {

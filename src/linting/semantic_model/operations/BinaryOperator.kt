@@ -17,7 +17,7 @@ class BinaryOperator(override val source: BinaryOperator, val left: Value, val r
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
 		left.type?.let { leftType ->
-			val operator = leftType.scope.resolveOperator(operator, right.type)
+			val operator = leftType.scope.resolveOperator(operator, right)
 			if(operator == null) {
 				linter.addMessage(source, "Operator '${this.operator}(${right.type})' hasn't been declared yet.",
 						Message.Type.ERROR)

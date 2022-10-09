@@ -1,5 +1,6 @@
 package linting.semantic_model.control_flow
 
+import errors.user.SignatureResolutionAmbiguityError
 import linting.Linter
 import linting.semantic_model.access.MemberAccess
 import linting.semantic_model.definitions.TypeSpecification
@@ -37,9 +38,9 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val p
 						Message.Type.ERROR)
 				else
 					type = signature.returnType
-			} catch(e: FunctionType.SignatureResolutionAmbiguityError) {
+			} catch(error: SignatureResolutionAmbiguityError) {
 				linter.addMessage(source, "Call to function '${getSignature()}' is ambiguous. " +
-						"Matching signatures:" + e.signatures.joinToString("\n - ", "\n - "),
+						"Matching signatures:" + error.signatures.joinToString("\n - ", "\n - "),
 					Message.Type.ERROR)
 			}
 		} else {

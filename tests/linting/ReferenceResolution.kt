@@ -276,7 +276,7 @@ internal class ReferenceResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "a" }
-		val operator = variableValue?.type?.scope?.resolveOperator("+", variableValue.type)
+		val operator = variableValue?.type?.scope?.resolveOperator("+", variableValue)
 		assertNotNull(operator)
 	}
 
@@ -316,9 +316,9 @@ internal class ReferenceResolution {
 				}
 				class List {
 					containing Element
-				
+
 					init
-					
+
 					it exists(index: Int) {}
 					it exists(element: Element) {}
 				}
