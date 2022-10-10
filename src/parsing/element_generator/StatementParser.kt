@@ -238,6 +238,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 				break
 			}
 			cases.add(parseCase(isExpression))
+			consumeLineBreaks()
 		}
 		consumeLineBreaks()
 		val end = consume(WordAtom.BRACES_CLOSE).end

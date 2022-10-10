@@ -151,7 +151,7 @@ internal class ControlFlow {
 	}
 
 	@Test
-	fun `parses switch statements`() {
+	fun `parses switch statements with else branch`() {
 		val sourceCode = """
 			switch x {
 				ExitCode.SUCCESS:
@@ -173,6 +173,38 @@ internal class ControlFlow {
 				} Else {
 					Print {
 						StringLiteral { "Failed" }
+					}
+				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses switch statements without else branch`() {
+		val sourceCode = """
+			switch x {
+				ExitCode.SUCCESS:
+					echo "Success"
+				ExitCode.FAILURE:
+					echo "Failure"
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				Switch [ Identifier { x } ] {
+					Case [ MemberAccess {
+						Identifier { ExitCode }.Identifier { SUCCESS }
+					} ] {
+						Print {
+							StringLiteral { "Success" }
+						}
+					}
+					Case [ MemberAccess {
+						Identifier { ExitCode }.Identifier { FAILURE }
+					} ] {
+						Print {
+							StringLiteral { "Failure" }
+						}
 					}
 				}
             """.trimIndent()
