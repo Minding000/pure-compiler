@@ -1,8 +1,8 @@
-package linting.semantic_model.access
+package linting.semantic_model.operations
 
 import linting.Linter
-import linting.semantic_model.literals.OptionalType
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.OptionalType
+import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
 import parsing.syntax_tree.access.InstanceAccess as InstanceAccessSyntaxTree

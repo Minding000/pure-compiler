@@ -1,9 +1,9 @@
-package linting.semantic_model.literals
+package linting.semantic_model.types
 
 import linting.Linter
 import parsing.syntax_tree.general.Element
 
-class VariableAmountType(val source: Element, val baseType: Type): Type() {
+class VariableAmountType(override val source: Element, val baseType: Type): Type(source) {
 
 	init {
 		units.add(baseType)

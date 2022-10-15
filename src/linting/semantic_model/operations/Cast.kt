@@ -1,10 +1,12 @@
 package linting.semantic_model.operations
 
 import linting.Linter
-import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.OptionalType
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.OptionalType
+import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.Scope
+import linting.semantic_model.values.BooleanLiteral
+import linting.semantic_model.values.NullLiteral
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValue
 import messages.Message
@@ -12,6 +14,10 @@ import parsing.syntax_tree.operations.Cast
 
 class Cast(override val source: Cast, val value: Value, val variable: VariableValue?, val referenceType: Type,
 		   val operator: Operator): Value(source) {
+	private val isCastAlwaysSuccessful: Boolean
+		get() = (value.staticValue?.type ?: value.type)?.isAssignableTo(referenceType) ?: false
+	private val isCastNeverSuccessful: Boolean
+		get() = value.staticValue is NullLiteral
 
 	init {
 		units.add(value)
@@ -34,6 +40,23 @@ class Cast(override val source: Cast, val value: Value, val variable: VariableVa
 		super.linkTypes(linter, scope)
 		if(operator.returnsBoolean)
 			linter.link(Linter.LiteralType.BOOLEAN, type)
+	}
+
+	override fun linkValues(linter: Linter, scope: Scope) {
+		super.linkValues(linter, scope)
+		if(operator.returnsBoolean) {
+			if(isCastAlwaysSuccessful)
+				staticValue = BooleanLiteral(source, operator == Operator.CAST_CONDITION)
+			else if(isCastNeverSuccessful)
+				staticValue = BooleanLiteral(source, operator == Operator.NEGATED_CAST_CONDITION)
+		} else if(operator == Operator.SAFE_CAST || operator == Operator.THROWING_CAST) {
+			staticValue = value.staticValue
+		} else if(operator == Operator.OPTIONAL_CAST) {
+			if(isCastAlwaysSuccessful)
+				staticValue = value.staticValue
+			else if(isCastNeverSuccessful)
+				staticValue = NullLiteral(source)
+		}
 	}
 
 	override fun validate(linter: Linter) {

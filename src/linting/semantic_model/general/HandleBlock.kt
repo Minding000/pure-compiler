@@ -1,14 +1,14 @@
 package linting.semantic_model.general
 
 import linting.Linter
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.VariableValueDeclaration
 import parsing.syntax_tree.general.HandleBlock
 
-class HandleBlock(val source: HandleBlock, val scope: BlockScope, val eventType: Type,
-				  val eventVariable: VariableValueDeclaration?, val block: StatementBlock): Unit() {
+class HandleBlock(override val source: HandleBlock, val scope: BlockScope, val eventType: Type,
+				  val eventVariable: VariableValueDeclaration?, val block: StatementBlock): Unit(source) {
 
 	init {
 		units.add(eventType)

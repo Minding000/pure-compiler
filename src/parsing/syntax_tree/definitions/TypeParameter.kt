@@ -1,7 +1,7 @@
 package parsing.syntax_tree.definitions
 
 import linting.Linter
-import linting.semantic_model.literals.TypeParameter
+import linting.semantic_model.types.TypeParameter
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.TypeElement
 import parsing.tokenizer.Word

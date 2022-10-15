@@ -1,11 +1,11 @@
 package linting.semantic_model.values
 
 import linting.Linter
-import linting.semantic_model.literals.ObjectType
+import linting.semantic_model.types.ObjectType
 import linting.semantic_model.scopes.Scope
-import parsing.syntax_tree.literals.BooleanLiteral as BooleanLiteralSyntaxTree
+import parsing.syntax_tree.general.Element
 
-class BooleanLiteral(override val source: BooleanLiteralSyntaxTree, val value: Boolean): LiteralValue(source) {
+class BooleanLiteral(override val source: Element, val value: Boolean): LiteralValue(source) {
 
 	init {
 		val type = ObjectType(source, Linter.LiteralType.BOOLEAN.className)

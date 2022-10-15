@@ -1,7 +1,7 @@
 package linting
 
-import linting.semantic_model.access.MemberAccess
-import linting.semantic_model.literals.ObjectType
+import linting.semantic_model.operations.MemberAccess
+import linting.semantic_model.types.ObjectType
 import linting.semantic_model.values.*
 import util.TestUtil
 import messages.Message

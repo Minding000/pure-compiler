@@ -1,7 +1,7 @@
 package parsing.syntax_tree.access
 
 import linting.Linter
-import linting.semantic_model.access.InstanceAccess
+import linting.semantic_model.operations.InstanceAccess
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.ValueElement
 import parsing.syntax_tree.literals.Identifier

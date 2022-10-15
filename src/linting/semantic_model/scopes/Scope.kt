@@ -3,7 +3,7 @@ package linting.semantic_model.scopes
 import linting.semantic_model.definitions.IndexOperatorDefinition
 import linting.semantic_model.definitions.InitializerDefinition
 import linting.semantic_model.definitions.OperatorDefinition
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.Type
 import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValueDeclaration

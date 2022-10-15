@@ -3,10 +3,12 @@ package linting.semantic_model.general
 import linting.Linter
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.scopes.Scope
+import parsing.syntax_tree.general.Element
 import java.util.*
 
-abstract class Unit {
+abstract class Unit(open val source: Element) {
 	val units = LinkedList<Unit>()
+	open val isInterruptingExecution = false
 
 	open fun linkTypes(linter: Linter, scope: Scope) {
 		for(unit in units)

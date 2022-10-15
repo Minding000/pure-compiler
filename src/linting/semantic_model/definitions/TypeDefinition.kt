@@ -2,15 +2,15 @@ package linting.semantic_model.definitions
 
 import linting.Linter
 import linting.semantic_model.general.Unit
-import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.scopes.TypeScope
 import parsing.syntax_tree.general.Element
 
-abstract class TypeDefinition(open val source: Element, val name: String, val scope: TypeScope, val superType: Type?):
-	Unit() {
+abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope,
+							  val superType: Type?): Unit(source) {
 
 	init {
 		if(superType != null)

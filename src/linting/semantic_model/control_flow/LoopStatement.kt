@@ -6,7 +6,8 @@ import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.control_flow.LoopStatement
 
-class LoopStatement(val source: LoopStatement, val scope: BlockScope, val generator: Unit?, val body: Unit): Unit() {
+class LoopStatement(override val source: LoopStatement, val scope: BlockScope, val generator: Unit?, val body: Unit):
+	Unit(source) {
 
 	init {
 		if(generator != null)

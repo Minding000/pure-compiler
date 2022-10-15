@@ -573,10 +573,24 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * Instance:
-	 *   <Identifier>
+	 *   <Identifier>[([<Expression>[, <Expression>]...])]
 	 */
 	private fun parseInstance(): Instance {
-		return Instance(parseIdentifier())
+		val identifier = parseIdentifier()
+		val parameters = LinkedList<ValueElement>()
+		var end = identifier.end
+		if(currentWord?.type == WordAtom.PARENTHESES_OPEN) {
+			consume(WordAtom.PARENTHESES_OPEN)
+			if(currentWord?.type != WordAtom.PARENTHESES_CLOSE) {
+				parameters.add(parseExpression())
+				while(currentWord?.type == WordAtom.COMMA) {
+					consume(WordAtom.COMMA)
+					parameters.add(parseExpression())
+				}
+			}
+			end = consume(WordAtom.PARENTHESES_CLOSE).end
+		}
+		return Instance(identifier, parameters, end)
 	}
 
 	/**

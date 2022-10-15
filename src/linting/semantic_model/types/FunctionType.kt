@@ -1,4 +1,4 @@
-package linting.semantic_model.literals
+package linting.semantic_model.types
 
 import errors.user.SignatureResolutionAmbiguityError
 import linting.semantic_model.definitions.FunctionSignature
@@ -6,7 +6,7 @@ import linting.semantic_model.values.Value
 import parsing.syntax_tree.general.Element
 import java.util.*
 
-class FunctionType(val source: Element) : Type() {
+class FunctionType(override val source: Element) : Type(source) {
 	private val signatures = LinkedList<FunctionSignature>()
 	var superFunctionType: FunctionType? = null
 

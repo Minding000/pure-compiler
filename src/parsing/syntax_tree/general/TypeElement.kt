@@ -1,7 +1,7 @@
 package parsing.syntax_tree.general
 
 import linting.Linter
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.MutableScope
 import source_structure.Position
 

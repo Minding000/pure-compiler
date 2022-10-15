@@ -1,8 +1,8 @@
 package linting.semantic_model.definitions
 
-import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.StaticType
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.StaticType
+import linting.semantic_model.types.Type
 import linting.semantic_model.values.VariableValueDeclaration
 import linting.semantic_model.scopes.TypeScope
 import parsing.tokenizer.WordAtom

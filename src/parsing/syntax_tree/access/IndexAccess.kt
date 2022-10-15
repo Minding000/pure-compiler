@@ -1,7 +1,7 @@
 package parsing.syntax_tree.access
 
 import linting.Linter
-import linting.semantic_model.access.IndexAccess as SemanticIndexAccessModel
+import linting.semantic_model.operations.IndexAccess as SemanticIndexAccessModel
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.ValueElement
 import source_structure.Position

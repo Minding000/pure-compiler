@@ -2,8 +2,8 @@ package linting.semantic_model.scopes
 
 import linting.Linter
 import linting.semantic_model.definitions.*
-import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.Type
 import linting.semantic_model.values.Function
 import linting.semantic_model.values.Instance
 import linting.semantic_model.values.Value
@@ -187,7 +187,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		previousDeclaration = valueDeclarations.putIfAbsent(value.name, value)
 		if(previousDeclaration == null) {
 			if(value is Instance)
-				value.type = ObjectType(typeDefinition)
+				value.setType(typeDefinition)
 			onNewValue(value)
 			linter.addMessage(value.source, "Declaration of value '${value.name}'.", Message.Type.DEBUG)
 		} else {

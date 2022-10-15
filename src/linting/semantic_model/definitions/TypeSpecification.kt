@@ -1,8 +1,8 @@
 package linting.semantic_model.definitions
 
 import linting.Linter
-import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.Type
 import linting.semantic_model.values.Value
 import messages.Message
 import linting.semantic_model.scopes.Scope

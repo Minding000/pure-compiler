@@ -25,5 +25,8 @@ class BinaryOperator(override val source: BinaryOperator, val left: Value, val r
 				type = operator.returnType
 			}
 		}
+		staticValue = calculateStaticResult()
 	}
+
+	private fun calculateStaticResult(): Value? = null //TODO implement
 }

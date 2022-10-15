@@ -2,12 +2,13 @@ package linting.semantic_model.values
 
 import linting.Linter
 import linting.semantic_model.general.Unit
-import linting.semantic_model.literals.OptionalType
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.OptionalType
+import linting.semantic_model.types.Type
 import messages.Message
 import parsing.syntax_tree.general.Element
 
-abstract class Value(open val source: Element, var type: Type? = null): Unit() {
+abstract class Value(override val source: Element, var type: Type? = null): Unit(source) {
+	open var staticValue: Value? = null
 
 	open fun isAssignableTo(targetType: Type?): Boolean {
 		return type?.let { type -> targetType?.accepts(type) } ?: false

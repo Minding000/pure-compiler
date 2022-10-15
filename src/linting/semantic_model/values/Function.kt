@@ -2,7 +2,7 @@ package linting.semantic_model.values
 
 import linting.Linter
 import linting.semantic_model.definitions.FunctionImplementation
-import linting.semantic_model.literals.FunctionType
+import linting.semantic_model.types.FunctionType
 import messages.Message
 import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.general.Element
@@ -27,6 +27,7 @@ class Function(source: Element, private val implementations: MutableList<Functio
 		}
 
 	init {
+		staticValue = this
 		units.addAll(implementations)
 		units.add(functionType)
 	}

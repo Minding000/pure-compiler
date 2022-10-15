@@ -7,8 +7,8 @@ import parsing.syntax_tree.general.File as FileSyntaxTree
 import source_structure.File as SourceFile
 import java.util.*
 
-class File(val source: FileSyntaxTree, val file: SourceFile, val scope: FileScope): Unit() {
-	val referencedFiles = LinkedList<File>()
+class File(override val source: FileSyntaxTree, val file: SourceFile, val scope: FileScope): Unit(source) {
+	private val referencedFiles = LinkedList<File>()
 
 	fun resolveFileReferences(linter: Linter, program: Program) {
 		for(unit in units) {

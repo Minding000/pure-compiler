@@ -1,10 +1,10 @@
-package linting.semantic_model.literals
+package linting.semantic_model.types
 
 import linting.semantic_model.definitions.InitializerDefinition
 import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.values.VariableValueDeclaration
 
-class StaticType(val definition: TypeDefinition): Type() {
+class StaticType(val definition: TypeDefinition): Type(definition.source) {
 
 	init {
 		definition.scope.subscribe(this)

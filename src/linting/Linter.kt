@@ -1,6 +1,6 @@
 package linting
 
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.Type
 import parsing.syntax_tree.general.Program as ProgramSyntaxTree
 import linting.semantic_model.general.Program as SemanticProgramModel
 import messages.Message

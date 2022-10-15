@@ -1,6 +1,6 @@
 package linting
 
-import linting.semantic_model.literals.FunctionType
+import linting.semantic_model.types.FunctionType
 import linting.semantic_model.values.VariableValue
 import linting.semantic_model.values.VariableValueDeclaration
 import org.junit.jupiter.api.Assertions.*
@@ -19,9 +19,9 @@ class TypeParameters {
 			}
 			class TrashCan {
 				containing T
-				
+
 				init
-			
+
 				to put(trash: T) {}
 			}
 			val recyclingBin = <Paper consuming>TrashCan()
@@ -47,9 +47,9 @@ class TypeParameters {
 			}
 			class StorageRoom {
 				containing Item
-				
+
 				init
-			
+
 				to store(item: Item) {}
 				to get(): Item {}
 			}
@@ -76,9 +76,9 @@ class TypeParameters {
 			}
 			class StorageRoom {
 				containing Item
-				
+
 				init
-			
+
 				to store(item: Item) {}
 				to get(): Item {}
 			}
@@ -111,9 +111,9 @@ class TypeParameters {
 			}
 			class StorageRoom {
 				containing Item
-				
+
 				init
-			
+
 				to store(item: Item) {}
 				to get(): Item {}
 			}

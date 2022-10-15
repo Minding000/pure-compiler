@@ -8,8 +8,8 @@ import messages.Message
 import parsing.syntax_tree.control_flow.SwitchStatement
 import java.util.LinkedList
 
-class SwitchStatement(val source: SwitchStatement, val subject: Value, val cases: List<Case>, val elseBranch: Unit?):
-	Unit() {
+class SwitchStatement(override val source: SwitchStatement, val subject: Value, val cases: List<Case>,
+					  val elseBranch: Unit?): Unit(source) {
 
 	init {
 		units.add(subject)

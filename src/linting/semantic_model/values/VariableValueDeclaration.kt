@@ -1,17 +1,17 @@
 package linting.semantic_model.values
 
 import linting.Linter
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.Type
 import linting.semantic_model.general.Unit
-import linting.semantic_model.literals.ObjectType
+import linting.semantic_model.types.ObjectType
 import linting.semantic_model.scopes.Scope
 import messages.Message
 import parsing.syntax_tree.general.Element
 import parsing.syntax_tree.literals.Identifier
 
-open class VariableValueDeclaration(open val source: Element, val name: String, var type: Type? = null,
+open class VariableValueDeclaration(override val source: Element, val name: String, var type: Type? = null,
 									val value: Value? = null, val isConstant: Boolean = true,
-									val isMutable: Boolean = false): Unit() {
+									val isMutable: Boolean = false): Unit(source) {
 
 	init {
 		type?.let { type ->

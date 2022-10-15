@@ -1,11 +1,11 @@
 package linting
 
-import linting.semantic_model.access.MemberAccess
+import linting.semantic_model.operations.MemberAccess
 import linting.semantic_model.control_flow.Try
 import linting.semantic_model.definitions.Class
 import linting.semantic_model.definitions.TypeDefinition
-import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.OptionalType
+import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.OptionalType
 import linting.semantic_model.operations.Cast
 import linting.semantic_model.operations.NullCheck
 import messages.Message
@@ -190,5 +190,33 @@ internal class Expressions {
 		val tryType = lintResult.find<Try>()?.type
 		assertIs<OptionalType>(tryType)
 		assertEquals(typeDefinition, (tryType.baseType as? ObjectType)?.definition)
+	}
+
+	@Test
+	fun `detects null checks that always return yes`() {
+		val sourceCode =
+			"""
+				class Cable {
+					init
+				}
+				val cable = Cable()
+				if(cable?) {}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Null check always returns 'yes'.")
+	}
+
+	@Test
+	fun `detects null checks that always return no`() {
+		val sourceCode =
+			"""
+				class Cable {
+					init
+				}
+				val noCable: Cable? = null
+				if(noCable?) {}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Null check always returns 'no'.")
 	}
 }

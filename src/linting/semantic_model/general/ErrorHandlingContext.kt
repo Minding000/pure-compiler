@@ -2,7 +2,8 @@ package linting.semantic_model.general
 
 import parsing.syntax_tree.general.StatementSection
 
-class ErrorHandlingContext(val source: StatementSection, val mainBlock: StatementBlock, val handleBlocks: List<HandleBlock>, val alwaysBlock: StatementBlock?): Unit() {
+class ErrorHandlingContext(override val source: StatementSection, val mainBlock: StatementBlock,
+						   val handleBlocks: List<HandleBlock>, val alwaysBlock: StatementBlock?): Unit(source) {
 
 	init {
 		units.add(mainBlock)

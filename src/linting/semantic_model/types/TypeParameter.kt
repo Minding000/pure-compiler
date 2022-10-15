@@ -1,9 +1,9 @@
-package linting.semantic_model.literals
+package linting.semantic_model.types
 
 import linting.Linter
 import parsing.syntax_tree.definitions.TypeParameter as TypeParameterSyntaxTree
 
-class TypeParameter(val source: TypeParameterSyntaxTree, val mode: Mode, val baseType: Type): Type() {
+class TypeParameter(override val source: TypeParameterSyntaxTree, val mode: Mode, val baseType: Type): Type(source) {
 
 	init {
 		units.add(baseType)

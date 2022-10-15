@@ -1,9 +1,9 @@
-package linting.semantic_model.literals
+package linting.semantic_model.types
 
 import linting.Linter
 import parsing.syntax_tree.general.Element
 
-class OptionalType(val source: Element, val baseType: Type): Type() {
+class OptionalType(override val source: Element, val baseType: Type): Type(source) {
 
 	init {
 		units.add(baseType)

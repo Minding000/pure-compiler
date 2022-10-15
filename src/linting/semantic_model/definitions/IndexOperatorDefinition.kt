@@ -1,12 +1,12 @@
 package linting.semantic_model.definitions
 
 import linting.semantic_model.general.Unit
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.values.Value
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
-class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: BlockScope,
+class IndexOperatorDefinition(override val source: OperatorDefinitionSyntaxTree, scope: BlockScope,
 							  val indices: List<Parameter>, parameters: List<Parameter>, body: Unit?,
 							  returnType: Type?):
 	OperatorDefinition(source, "[]", scope, parameters, body, returnType) {

@@ -1,4 +1,4 @@
-package linting.semantic_model.literals
+package linting.semantic_model.types
 
 import linting.Linter
 import linting.semantic_model.definitions.InitializerDefinition
@@ -10,8 +10,9 @@ import linting.semantic_model.values.VariableValueDeclaration
 import messages.Message
 import linting.semantic_model.scopes.InterfaceScope
 import org.bytedeco.llvm.LLVM.LLVMTypeRef
+import parsing.syntax_tree.general.Element
 
-abstract class Type: Unit() {
+abstract class Type(source: Element): Unit(source) {
 	val scope = InterfaceScope(this)
 	var llvmType: LLVMTypeRef? = null
 

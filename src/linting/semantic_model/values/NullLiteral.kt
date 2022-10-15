@@ -1,12 +1,12 @@
 package linting.semantic_model.values
 
 import linting.Linter
-import linting.semantic_model.literals.ObjectType
+import linting.semantic_model.types.ObjectType
 import linting.semantic_model.scopes.Scope
-import parsing.syntax_tree.literals.NullLiteral as NullLiteralSyntaxTree
+import parsing.syntax_tree.general.Element
 
 @Suppress("EqualsOrHashCode") // The hash code function is the same as the parent hash code function
-class NullLiteral(override val source: NullLiteralSyntaxTree): LiteralValue(source) {
+class NullLiteral(override val source: Element): LiteralValue(source) {
 
 	init {
 		val nullType = ObjectType(source, Linter.LiteralType.NULL.className)

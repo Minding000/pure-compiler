@@ -54,9 +54,45 @@ internal class TypeDefinitions {
 			"""
 				TypeDefinition [ enum Identifier { DeliveryStatus } ] { TypeBody {
 					InstanceList {
-						Instance { Identifier { Pending } }
-						Instance { Identifier { Cancelled } }
-						Instance { Identifier { Delivered } }
+						Instance [ Identifier { Pending } ] {
+						}
+						Instance [ Identifier { Cancelled } ] {
+						}
+						Instance [ Identifier { Delivered } ] {
+						}
+					}
+				} }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses instances with initializer parameters`() {
+		val sourceCode =
+			"""
+				enum Color {
+					instances Red(255, 0, 0), Green(0, 255, 0), Blue(0, 0, 255)
+				}
+            """.trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ enum Identifier { Color } ] { TypeBody {
+					InstanceList {
+						Instance [ Identifier { Red } ] {
+							NumberLiteral { 255 }
+							NumberLiteral { 0 }
+							NumberLiteral { 0 }
+						}
+						Instance [ Identifier { Green } ] {
+							NumberLiteral { 0 }
+							NumberLiteral { 255 }
+							NumberLiteral { 0 }
+						}
+						Instance [ Identifier { Blue } ] {
+							NumberLiteral { 0 }
+							NumberLiteral { 0 }
+							NumberLiteral { 255 }
+						}
 					}
 				} }
             """.trimIndent()

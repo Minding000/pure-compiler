@@ -7,6 +7,7 @@ import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.control_flow.ReturnStatement
 
 class ReturnStatement(override val source: ReturnStatement, val value: Value?): Value(source) {
+	override val isInterruptingExecution = true
 
 	init {
 		if(value != null)

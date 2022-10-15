@@ -1,15 +1,14 @@
 package linting.semantic_model.definitions
 
-import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.TypeScope
 import linting.semantic_model.values.VariableValueDeclaration
 import parsing.tokenizer.WordAtom
 import parsing.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?,
-			 val isNative: Boolean, val isMutable: Boolean):
-	TypeDefinition(source, name, scope, superType) {
+			 val isNative: Boolean, val isMutable: Boolean): TypeDefinition(source, name, scope, superType) {
 	val value = VariableValueDeclaration(source, name, ObjectType(this))
 
 	companion object {

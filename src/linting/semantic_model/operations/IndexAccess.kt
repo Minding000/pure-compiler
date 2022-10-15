@@ -1,4 +1,4 @@
-package linting.semantic_model.access
+package linting.semantic_model.operations
 
 import linting.Linter
 import linting.semantic_model.scopes.Scope

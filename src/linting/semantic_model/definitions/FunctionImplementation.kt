@@ -3,15 +3,15 @@ package linting.semantic_model.definitions
 import linting.Linter
 import linting.semantic_model.general.ErrorHandlingContext
 import linting.semantic_model.general.Unit
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.general.Element
 
-class FunctionImplementation(val source: Element, val scope: BlockScope, val genericParameters: List<TypeDefinition>,
-							 val parameters: List<Parameter>, body: ErrorHandlingContext?, val returnType: Type?,
-							 val isNative: Boolean = false, val isOverriding: Boolean = false,
-							 val isMutating: Boolean = false): Unit() {
+class FunctionImplementation(override val source: Element, val scope: BlockScope,
+							 val genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,
+							 body: ErrorHandlingContext?, val returnType: Type?, val isNative: Boolean = false,
+							 val isOverriding: Boolean = false, val isMutating: Boolean = false): Unit(source) {
 	val signature = FunctionSignature(source, genericParameters, parameters.map { parameter -> parameter.type },
 		returnType)
 	var superFunctionImplementation: FunctionImplementation? = null

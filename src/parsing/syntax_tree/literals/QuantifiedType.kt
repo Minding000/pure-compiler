@@ -1,9 +1,9 @@
 package parsing.syntax_tree.literals
 
 import linting.Linter
-import linting.semantic_model.literals.OptionalType
-import linting.semantic_model.literals.Type
-import linting.semantic_model.literals.VariableAmountType
+import linting.semantic_model.types.OptionalType
+import linting.semantic_model.types.Type
+import linting.semantic_model.types.VariableAmountType
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.TypeElement
 

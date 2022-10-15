@@ -2,15 +2,15 @@ package linting.semantic_model.definitions
 
 import linting.Linter
 import linting.semantic_model.general.Unit
-import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
 import parsing.syntax_tree.general.Element
 import java.util.*
 
-class FunctionSignature(val source: Element, val genericParameters: List<TypeDefinition>,
-						val parameterTypes: List<Type?>, returnType: Type?): Unit() {
+class FunctionSignature(override val source: Element, val genericParameters: List<TypeDefinition>,
+						val parameterTypes: List<Type?>, returnType: Type?): Unit(source) {
 	val returnType = returnType ?: ObjectType(source, Linter.LiteralType.NOTHING.className)
 	var superFunctionSignature: FunctionSignature? = null
 

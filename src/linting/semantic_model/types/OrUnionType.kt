@@ -1,4 +1,4 @@
-package linting.semantic_model.literals
+package linting.semantic_model.types
 
 import linting.semantic_model.definitions.OperatorDefinition
 import linting.semantic_model.definitions.TypeDefinition
@@ -6,7 +6,7 @@ import linting.semantic_model.values.VariableValueDeclaration
 import parsing.syntax_tree.literals.UnionType
 import java.util.*
 
-class OrUnionType(val source: UnionType, val types: List<Type>): Type() {
+class OrUnionType(override val source: UnionType, val types: List<Type>): Type(source) {
 
 	init {
 		units.addAll(types)

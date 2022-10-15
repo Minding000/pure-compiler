@@ -1,6 +1,6 @@
 package linting
 
-import linting.semantic_model.access.IndexAccess
+import linting.semantic_model.operations.IndexAccess
 import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil

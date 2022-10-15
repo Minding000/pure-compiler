@@ -1,7 +1,7 @@
 package linting.semantic_model.definitions
 
 import linting.semantic_model.general.Unit
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.Type
 import linting.semantic_model.values.VariableValueDeclaration
 import parsing.syntax_tree.definitions.ComputedProperty
 

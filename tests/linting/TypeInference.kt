@@ -1,9 +1,9 @@
 package linting
 
-import linting.semantic_model.access.InstanceAccess
+import linting.semantic_model.operations.InstanceAccess
 import linting.semantic_model.definitions.TypeDefinition
-import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.Type
 import linting.semantic_model.values.VariableValueDeclaration
 import org.junit.jupiter.api.Test
 import util.TestUtil

@@ -2,7 +2,7 @@ package parsing.syntax_tree.definitions
 
 import linting.Linter
 import linting.semantic_model.definitions.FunctionSignature
-import linting.semantic_model.literals.FunctionType
+import linting.semantic_model.types.FunctionType
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.TypeElement
 import source_structure.Position

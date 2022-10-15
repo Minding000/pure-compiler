@@ -6,8 +6,8 @@ import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.definitions.DeinitializerDefinition
 
-class DeinitializerDefinition(val source: DeinitializerDefinition, val scope: BlockScope, val body: Unit?,
-							  val isNative: Boolean): Unit() {
+class DeinitializerDefinition(override val source: DeinitializerDefinition, val scope: BlockScope, val body: Unit?,
+							  val isNative: Boolean): Unit(source) {
 
 	init {
 		if(body != null)

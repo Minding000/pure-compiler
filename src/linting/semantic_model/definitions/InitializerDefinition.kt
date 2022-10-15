@@ -2,8 +2,8 @@ package linting.semantic_model.definitions
 
 import linting.Linter
 import linting.semantic_model.general.Unit
-import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.scopes.Scope
@@ -11,8 +11,8 @@ import linting.semantic_model.values.Value
 import java.util.*
 import parsing.syntax_tree.definitions.InitializerDefinition as InitializerDefinitionSyntaxTree
 
-class InitializerDefinition(val source: InitializerDefinitionSyntaxTree, val scope: BlockScope, val parameters: List<Parameter>,
-							val body: Unit?, val isNative: Boolean): Unit() {
+class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree, val scope: BlockScope,
+							val parameters: List<Parameter>, val body: Unit?, val isNative: Boolean): Unit(source) {
 	val variation: String
 		get() = parameters.joinToString { parameter -> parameter.type.toString() }
 

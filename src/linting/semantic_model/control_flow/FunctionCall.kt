@@ -2,11 +2,11 @@ package linting.semantic_model.control_flow
 
 import errors.user.SignatureResolutionAmbiguityError
 import linting.Linter
-import linting.semantic_model.access.MemberAccess
+import linting.semantic_model.operations.MemberAccess
 import linting.semantic_model.definitions.TypeSpecification
-import linting.semantic_model.literals.FunctionType
-import linting.semantic_model.literals.ObjectType
-import linting.semantic_model.literals.StaticType
+import linting.semantic_model.types.FunctionType
+import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.StaticType
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValue
 import messages.Message
@@ -16,6 +16,7 @@ import parsing.syntax_tree.control_flow.FunctionCall
 class FunctionCall(override val source: FunctionCall, val function: Value, val parameters: List<Value>): Value(source) {
 
 	init {
+		staticValue = this
 		units.add(function)
 		units.addAll(parameters)
 	}
@@ -34,7 +35,7 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val p
 			try {
 				val signature = functionType.resolveSignature(parameters)
 				if(signature == null)
-					linter.addMessage(source, "The provided values don't match any signature of function '${function.source.getValue()}'.",
+					linter.addMessage(source,"The provided values don't match any signature of function '${function.source.getValue()}'.",
 						Message.Type.ERROR)
 				else
 					type = signature.returnType

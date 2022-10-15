@@ -1,4 +1,4 @@
-package linting.semantic_model.literals
+package linting.semantic_model.types
 
 import linting.Linter
 import linting.semantic_model.definitions.OperatorDefinition
@@ -10,7 +10,8 @@ import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.general.Element
 import java.util.LinkedList
 
-class ObjectType(val source: Element, val name: String, val genericParameters: List<Type> = listOf()): Type() {
+class ObjectType(override val source: Element, val name: String, val genericParameters: List<Type> = listOf()):
+	Type(source) {
 	var definition: TypeDefinition? = null
 		set(value) {
 			value?.scope?.subscribe(this)

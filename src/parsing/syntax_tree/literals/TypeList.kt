@@ -1,7 +1,7 @@
 package parsing.syntax_tree.literals
 
 import linting.Linter
-import linting.semantic_model.literals.Type
+import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.MetaElement
 import parsing.syntax_tree.general.TypeElement

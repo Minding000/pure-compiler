@@ -1,7 +1,7 @@
-package linting.semantic_model.access
+package linting.semantic_model.operations
 
 import linting.Linter
-import linting.semantic_model.literals.OptionalType
+import linting.semantic_model.types.OptionalType
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValue
@@ -38,6 +38,8 @@ class MemberAccess(override val source: MemberAccess, val target: Value, val mem
 					OptionalType(source, memberType)
 				else
 					memberType
+				if(!isOptional)
+					staticValue = member.staticValue
 			}
 		}
 	}
