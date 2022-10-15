@@ -11,17 +11,17 @@ import linting.semantic_model.values.Value
 import java.util.LinkedList
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
-open class OperatorDefinition(override val source: OperatorDefinitionSyntaxTree, name: String, val scope: BlockScope,
-							  val parameters: List<Parameter>, val body: Unit?, val returnType: Type?):
-	VariableValueDeclaration(source, name, returnType) {
+open class OperatorDefinition(override val source: OperatorDefinitionSyntaxTree, name: String,
+							  val scope: BlockScope, val parameters: List<Parameter>, val body: Unit?,
+							  returnType: Type?):
+	VariableValueDeclaration(source, name, returnType ?: ObjectType(source, Linter.LiteralType.NOTHING.className)) {
+	val returnType = type!!
 	val variation = parameters.joinToString { parameter -> parameter.type.toString() }
 
 	init {
 		units.addAll(parameters)
 		if(body != null)
 			units.add(body)
-		if(returnType != null)
-			units.add(returnType)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): OperatorDefinition {
@@ -29,7 +29,7 @@ open class OperatorDefinition(override val source: OperatorDefinitionSyntaxTree,
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
 		return OperatorDefinition(source, name, scope, specificParameters, body,
-				returnType?.withTypeSubstitutions(typeSubstitution))
+				returnType.withTypeSubstitutions(typeSubstitution))
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -59,6 +59,17 @@ open class OperatorDefinition(override val source: OperatorDefinitionSyntaxTree,
 			}
 		}
 		return !areSignaturesEqual
+	}
+
+	override fun linkTypes(linter: Linter, scope: Scope) {
+		if(Linter.LiteralType.NOTHING.matches(returnType)) {
+			for(unit in units)
+				if(unit != returnType)
+					unit.linkTypes(linter, this.scope)
+			linter.link(Linter.LiteralType.NOTHING, returnType)
+		} else {
+			super.linkTypes(linter, this.scope)
+		}
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

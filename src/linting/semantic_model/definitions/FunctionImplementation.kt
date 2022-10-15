@@ -10,7 +10,7 @@ import parsing.syntax_tree.general.Element
 
 class FunctionImplementation(override val source: Element, val scope: BlockScope,
 							 val genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,
-							 body: ErrorHandlingContext?, val returnType: Type?, val isNative: Boolean = false,
+							 body: ErrorHandlingContext?, returnType: Type?, val isNative: Boolean = false,
 							 val isOverriding: Boolean = false, val isMutating: Boolean = false): Unit(source) {
 	val signature = FunctionSignature(source, genericParameters, parameters.map { parameter -> parameter.type },
 		returnType)
@@ -25,8 +25,6 @@ class FunctionImplementation(override val source: Element, val scope: BlockScope
 		units.addAll(parameters)
 		if(body != null)
 			units.add(body)
-		if(returnType != null)
-			units.add(returnType)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

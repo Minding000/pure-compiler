@@ -6,9 +6,8 @@ import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.values.Value
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
-class IndexOperatorDefinition(override val source: OperatorDefinitionSyntaxTree, scope: BlockScope,
-							  val indices: List<Parameter>, parameters: List<Parameter>, body: Unit?,
-							  returnType: Type?):
+class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: BlockScope, val indices: List<Parameter>,
+							  parameters: List<Parameter>, body: Unit?, returnType: Type?):
 	OperatorDefinition(source, "[]", scope, parameters, body, returnType) {
 
 	init {
