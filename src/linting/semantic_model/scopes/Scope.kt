@@ -7,9 +7,10 @@ import linting.semantic_model.types.Type
 import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValueDeclaration
+import java.util.*
 
 abstract class Scope {
-	private val subscribedTypes = mutableListOf<Type>()
+	private val subscribedTypes = LinkedList<Type>()
 
 	open fun subscribe(type: Type) {
 		subscribedTypes.add(type)
