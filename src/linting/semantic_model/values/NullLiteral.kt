@@ -3,9 +3,10 @@ package linting.semantic_model.values
 import linting.Linter
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.scopes.Scope
-import parsing.syntax_tree.literals.NullLiteral
+import parsing.syntax_tree.literals.NullLiteral as NullLiteralSyntaxTree
 
-class NullLiteral(override val source: NullLiteral): LiteralValue(source) {
+@Suppress("EqualsOrHashCode") // The hash code function is the same as the parent hash code function
+class NullLiteral(override val source: NullLiteralSyntaxTree): LiteralValue(source) {
 
 	init {
 		val nullType = ObjectType(source, Linter.LiteralType.NULL.className)
@@ -17,7 +18,11 @@ class NullLiteral(override val source: NullLiteral): LiteralValue(source) {
 		linter.link(Linter.LiteralType.NULL, type)
 	}
 
-//	override fun compile(context: BuildContext): LLVMValueRef {
+	override fun equals(other: Any?): Boolean {
+		return other is NullLiteral
+	}
+
+	//	override fun compile(context: BuildContext): LLVMValueRef {
 //		return LLVM.LLVMConstNull(resolveType())
 //	}
 }

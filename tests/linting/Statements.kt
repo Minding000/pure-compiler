@@ -64,7 +64,6 @@ class Statements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"Instance declarations can be merged")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Instance declarations can be merged")
 	}
 }

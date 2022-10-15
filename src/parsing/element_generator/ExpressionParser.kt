@@ -385,8 +385,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   .<Identifier>
 	 */
 	private fun parseInstanceAccess(): InstanceAccess {
-		consume(WordAtom.DOT)
+		val start = consume(WordAtom.DOT).start
 		val identifier = literalParser.parseIdentifier()
-		return InstanceAccess(identifier)
+		return InstanceAccess(start, identifier)
 	}
 }

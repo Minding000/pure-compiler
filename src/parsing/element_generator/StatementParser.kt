@@ -223,7 +223,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 */
 	private fun parseSwitchStatement(isExpression: Boolean = false): SwitchStatement {
 		val start = consume(WordAtom.SWITCH).start
-		val condition = parseExpression()
+		val subject = parseExpression()
 		consume(WordAtom.BRACES_OPEN)
 		consumeLineBreaks()
 		val cases = LinkedList<Case>()
@@ -242,7 +242,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		}
 		consumeLineBreaks()
 		val end = consume(WordAtom.BRACES_CLOSE).end
-		return SwitchStatement(condition, cases, elseResult, start, end)
+		return SwitchStatement(subject, cases, elseResult, start, end)
 	}
 
 	/**

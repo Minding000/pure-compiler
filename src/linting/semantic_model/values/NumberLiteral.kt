@@ -3,9 +3,9 @@ package linting.semantic_model.values
 import linting.Linter
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.scopes.Scope
-import parsing.syntax_tree.literals.NumberLiteral
+import parsing.syntax_tree.literals.NumberLiteral as NumberLiteralSyntaxLiteral
 
-class NumberLiteral(override val source: NumberLiteral, val value: String): LiteralValue(source) {
+class NumberLiteral(override val source: NumberLiteralSyntaxLiteral, val value: String): LiteralValue(source) {
 
 	init {
 		//TODO allow for floating point numbers
@@ -16,6 +16,18 @@ class NumberLiteral(override val source: NumberLiteral, val value: String): Lite
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		linter.link(Linter.LiteralType.NUMBER, type)
+	}
+
+	override fun hashCode(): Int {
+		var result = super.hashCode()
+		result = 31 * result + value.hashCode()
+		return result
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if(other !is NumberLiteral)
+			return false
+		return value == other.value
 	}
 
 //	override fun compile(context: BuildContext): LLVMValueRef {

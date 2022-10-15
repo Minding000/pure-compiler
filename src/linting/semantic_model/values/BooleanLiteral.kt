@@ -3,9 +3,9 @@ package linting.semantic_model.values
 import linting.Linter
 import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.scopes.Scope
-import parsing.syntax_tree.literals.BooleanLiteral
+import parsing.syntax_tree.literals.BooleanLiteral as BooleanLiteralSyntaxTree
 
-class BooleanLiteral(override val source: BooleanLiteral, val value: Boolean): LiteralValue(source) {
+class BooleanLiteral(override val source: BooleanLiteralSyntaxTree, val value: Boolean): LiteralValue(source) {
 
 	init {
 		val type = ObjectType(source, Linter.LiteralType.BOOLEAN.className)
@@ -15,5 +15,17 @@ class BooleanLiteral(override val source: BooleanLiteral, val value: Boolean): L
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		linter.link(Linter.LiteralType.BOOLEAN, type)
+	}
+
+	override fun hashCode(): Int {
+		var result = super.hashCode()
+		result = 31 * result + value.hashCode()
+		return result
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if(other !is BooleanLiteral)
+			return false
+		return value == other.value
 	}
 }

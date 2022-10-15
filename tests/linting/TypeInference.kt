@@ -1,6 +1,8 @@
 package linting
 
 import linting.semantic_model.access.InstanceAccess
+import linting.semantic_model.definitions.TypeDefinition
+import linting.semantic_model.literals.ObjectType
 import linting.semantic_model.literals.Type
 import linting.semantic_model.values.VariableValueDeclaration
 import org.junit.jupiter.api.Test
@@ -137,9 +139,9 @@ class TypeInference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
+		val typeDefinition = lintResult.find<TypeDefinition> { typeDefinition -> typeDefinition.name == "TransportLayerProtocol" }
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertNotNull(type)
-		assertEquals(type, instanceAccess?.type)
+		assertNotNull(typeDefinition)
+		assertEquals(typeDefinition, (instanceAccess?.type as? ObjectType)?.definition)
 	}
 }

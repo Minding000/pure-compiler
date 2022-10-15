@@ -15,4 +15,18 @@ class VariableValue(override val source: Identifier): Value(source) {
 			linter.addMessage(source, "Value '$name' hasn't been declared yet.", Message.Type.ERROR)
 		type = definition?.type
 	}
+
+	override fun hashCode(): Int {
+		var result = super.hashCode()
+		result = 31 * result + (definition?.hashCode() ?: 0)
+		return result
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if(other !is VariableValue)
+			return false
+		if(definition == null)
+			return false
+		return definition == other.definition
+	}
 }
