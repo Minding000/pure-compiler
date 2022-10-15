@@ -65,12 +65,18 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 			}
 			else -> throw CompilerError("Encountered unknown type type.")
 		}
+		var instanceList: InstanceList? = null
 		for(member in body.members) {
 			if(member is InstanceList) {
 				if(!(typeDefinition is Enum || typeDefinition is Class)) {
 					linter.addMessage(member, "Instance declarations are only allowed in enums and classes.",
 						Message.Type.WARNING)
 					continue
+				}
+				if(instanceList == null) {
+					instanceList = member
+				} else {
+					linter.addMessage(member, "Instance declarations can be merged.", Message.Type.WARNING)
 				}
 			}
 			member.concretize(linter, typeScope, typeDefinition.units)
