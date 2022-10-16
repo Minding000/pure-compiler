@@ -10,7 +10,7 @@ internal class Generics {
 		val sourceCode = """
 			class ShoppingList {
 				containing Entry
-			
+
 				to add(entry: Entry) {
 					echo "Adding entry..."
 				}
@@ -40,8 +40,7 @@ internal class Generics {
 	fun `parses generic function definitions`() {
 		val sourceCode = """
 			object Math {
-				to greatest<N: Number>(a: N, b: N): N {
-				}
+				to greatest<N: Number>(a: N, b: N): N {}
 			}
 			""".trimIndent()
 		val expected =
@@ -62,11 +61,36 @@ internal class Generics {
 	}
 
 	@Test
+	fun `parses generic operator definitions`() {
+		val sourceCode = """
+			object Server {
+				operator <P: Protocol>[protocol: P]: <P>Service {}
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ object Identifier { Server } ] { TypeBody {
+					OperatorSection {
+						OperatorDefinition [ GenericsList {
+							GenericsListElement [ ObjectType { Identifier { Protocol } } ] { Identifier { P } }
+						} IndexOperator {
+							Parameter { Identifier { protocol }: ObjectType { Identifier { P } } }
+						}: ObjectType { TypeList {
+							ObjectType { Identifier { P } }
+						} Identifier { Service } } ] { StatementSection { StatementBlock {
+						} } }
+					}
+				} }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
 	fun `parses specific initializer calls`() {
 		val sourceCode = """
 			class ShoppingList {
 				containing Entry
-				
+
 				to add(entry: Entry) {
 					echo "Adding entry..."
 				}
@@ -130,8 +154,7 @@ internal class Generics {
 	fun `parses producing types`() {
 		val sourceCode = """
 			class Fridge {
-				to add(foodList: <Food producing>List) {
-				}
+				to add(foodList: <Food producing>List) {}
 			}
 			""".trimIndent()
 		val expected =
@@ -154,8 +177,7 @@ internal class Generics {
 	fun `parses consuming types`() {
 		val sourceCode = """
 			class SodaMachine {
-				to refill(glass: <Soda consuming>LiquidContainer) {
-				}
+				to refill(glass: <Soda consuming>LiquidContainer) {}
 			}
 			""".trimIndent()
 		val expected =

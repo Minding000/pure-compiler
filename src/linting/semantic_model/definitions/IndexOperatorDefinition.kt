@@ -3,15 +3,32 @@ package linting.semantic_model.definitions
 import linting.semantic_model.general.Unit
 import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.BlockScope
+import linting.semantic_model.types.ObjectType
 import linting.semantic_model.values.Value
+import java.util.*
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
-class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: BlockScope, val indices: List<Parameter>,
+class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: BlockScope,
+							  genericParameters: List<TypeDefinition>, val indices: List<Parameter>,
 							  parameters: List<Parameter>, body: Unit?, returnType: Type?):
-	OperatorDefinition(source, "[]", scope, parameters, body, returnType) {
+	OperatorDefinition(source, "[]", scope, genericParameters, parameters, body, returnType) {
 
 	init {
 		units.addAll(indices)
+	}
+
+	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): IndexOperatorDefinition {
+		val specificGenericParameters = LinkedList<TypeDefinition>()
+		for(genericParameter in genericParameters)
+			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
+		val specificIndices = LinkedList<Parameter>()
+		for(index in indices)
+			specificIndices.add(index.withTypeSubstitutions(typeSubstitution))
+		val specificParameters = LinkedList<Parameter>()
+		for(parameter in parameters)
+			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
+		return IndexOperatorDefinition(source, scope, specificGenericParameters, specificIndices, specificParameters,
+			body, returnType.withTypeSubstitutions(typeSubstitution))
 	}
 
 	fun accepts(indexValues: List<Value>, parameterValues: List<Value>): Boolean {

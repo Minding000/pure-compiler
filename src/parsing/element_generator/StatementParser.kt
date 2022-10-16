@@ -618,7 +618,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * FunctionDeclaration:
-	 *   <Identifier><TypeList><ParameterList>[: <Type>] [<StatementSection>]
+	 *   <Identifier><GenericsList><ParameterList>[: <Type>] [<StatementSection>]
 	 */
 	private fun parseFunctionDefinition(): FunctionDefinition {
 		val identifier = parseIdentifier()
@@ -636,9 +636,10 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * OperatorDefinition:
-	 *   operator <Operator>[<ParameterList>][: <Type>] [<StatementSection>]
+	 *   operator <GenericsList><Operator>[<ParameterList>][: <Type>] [<StatementSection>]
 	 */
 	private fun parseOperatorDefinition(): OperatorDefinition {
+		val genericsList = parseGenericsList()
 		val operator = parseOperator()
 		val parameterList = if(currentWord?.type == WordAtom.PARENTHESES_OPEN)
 			parseParameterList()
@@ -650,7 +651,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		val body = if(currentWord?.type == WordAtom.BRACES_OPEN)
 			parseStatementSection()
 		else null
-		return OperatorDefinition(operator, parameterList, body, returnType)
+		return OperatorDefinition(operator, genericsList, parameterList, body, returnType)
 	}
 
 	/**

@@ -1,10 +1,13 @@
 package linting
 
+import linting.semantic_model.control_flow.FunctionCall
 import linting.semantic_model.operations.InstanceAccess
 import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.StaticType
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.VariableValueDeclaration
+import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -139,9 +142,103 @@ class TypeInference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
-		val typeDefinition = lintResult.find<TypeDefinition> { typeDefinition -> typeDefinition.name == "TransportLayerProtocol" }
+		val typeDefinition = lintResult.find<TypeDefinition> { typeDefinition ->
+			typeDefinition.name == "TransportLayerProtocol" }
 		val instanceAccess = lintResult.find<InstanceAccess>()
 		assertNotNull(typeDefinition)
 		assertEquals(typeDefinition, (instanceAccess?.type as? ObjectType)?.definition)
+	}
+
+	@Test
+	fun `emits errors when generic type can't be inferred`() {
+		val sourceCode =
+			"""
+				class Box {
+					containing Item
+					init
+				}
+				val letterBox = Box()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Missing generic parameter")
+	}
+
+	@Test
+	fun `infers generic type in constructor call`() {
+		val sourceCode =
+			"""
+				class Letter {
+					init
+				}
+				class Box {
+					containing Item
+					val firstItem: Item
+					init(firstItem)
+				}
+				val letterBox = Box(Letter())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function.type as? StaticType)?.definition?.name == "Letter" }?.type
+		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+			variableValueDeclaration.name == "letterBox" }
+		val returnType = variableValueDeclaration?.type as? ObjectType
+		assertNotNull(returnType)
+		assertEquals(genericParameter, returnType.genericParameters.firstOrNull())
+	}
+
+	@Test
+	fun `infers generic type in function call`() {
+		val sourceCode =
+			"""
+				trait Letter {}
+				class PostCard: Letter {
+					init
+				}
+				object PostOffice {
+					to stamp<L: Letter>(letter: L): L {
+						return letter
+					}
+				}
+				val stampedPostCard = PostOffice.stamp(PostCard())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function.type as? StaticType)?.definition?.name == "PostCard" }?.type
+		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+			variableValueDeclaration.name == "stampedPostCard" }
+		val returnType = variableValueDeclaration?.type as? ObjectType
+		assertNotNull(returnType)
+		assertEquals(genericParameter, returnType)
+	}
+
+	@Test
+	fun `infers generic type in operator call`() {
+		val sourceCode =
+			"""
+				trait IpAddress {}
+				class Ipv4Address: IpAddress {
+					init
+				}
+				class Ipv6Address: IpAddress {
+					init
+				}
+				class Client {
+					containing A: IpAddress
+					init
+				}
+				object Server {
+					operator <A: IpAddress>[ipAddress: A]: <A>Client {}
+				}
+				val client = Server[Ipv4Address()]
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function.type as? StaticType)?.definition?.name == "Ipv4Address" }?.type
+		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+			variableValueDeclaration.name == "client" }
+		val returnType = variableValueDeclaration?.type as? ObjectType
+		assertNotNull(returnType)
+		assertEquals(genericParameter, returnType.genericParameters.firstOrNull())
 	}
 }
