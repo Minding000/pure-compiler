@@ -9,11 +9,13 @@ import java.util.*
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
 class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: BlockScope,
-							  genericParameters: List<TypeDefinition>, val indices: List<Parameter>,
-							  parameters: List<Parameter>, body: Unit?, returnType: Type?):
-	OperatorDefinition(source, "[]", scope, genericParameters, parameters, body, returnType) {
+							  val genericParameters: List<TypeDefinition>, val indices: List<Parameter>,
+							  parameters: List<Parameter>, body: Unit?, returnType: Type?, isNative: Boolean,
+							  isOverriding: Boolean):
+	OperatorDefinition(source, "[]", scope, parameters, body, returnType, isNative, isOverriding) {
 
 	init {
+		units.addAll(genericParameters)
 		units.addAll(indices)
 	}
 
@@ -28,7 +30,7 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
 		return IndexOperatorDefinition(source, scope, specificGenericParameters, specificIndices, specificParameters,
-			body, returnType.withTypeSubstitutions(typeSubstitution))
+			body, returnType.withTypeSubstitutions(typeSubstitution), isNative, isOverriding)
 	}
 
 	fun accepts(indexValues: List<Value>, parameterValues: List<Value>): Boolean {

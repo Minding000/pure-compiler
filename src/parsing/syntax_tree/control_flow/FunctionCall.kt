@@ -9,8 +9,9 @@ import util.concretizeValues
 import util.indent
 import util.toLines
 
-class FunctionCall(private val functionReference: ValueElement, private val parameters: List<ValueElement>,
-				   end: Position): ValueElement(functionReference.start, end) {
+class FunctionCall(private val functionReference: ValueElement, private val genericParameters: List<ValueElement>?,
+				   private val parameters: List<ValueElement>, end: Position):
+	ValueElement(functionReference.start, end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): FunctionCall {
 		return FunctionCall(this, functionReference.concretize(linter, scope),
@@ -18,6 +19,15 @@ class FunctionCall(private val functionReference: ValueElement, private val para
 	}
 
 	override fun toString(): String {
-		return "FunctionCall [ $functionReference ] {${parameters.toLines().indent()}\n}"
+		var stringRepresentation = "FunctionCall [ "
+		stringRepresentation += functionReference
+		stringRepresentation += " ] {"
+		if(genericParameters != null) {
+			stringRepresentation += genericParameters.toLines().indent()
+			stringRepresentation += ";"
+		}
+		stringRepresentation += parameters.toLines().indent()
+		stringRepresentation += "\n}"
+		return stringRepresentation
 	}
 }

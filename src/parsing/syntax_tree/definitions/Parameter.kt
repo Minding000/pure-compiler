@@ -1,8 +1,11 @@
 package parsing.syntax_tree.definitions
 
 import linting.Linter
+import linting.semantic_model.definitions.GenericTypeDefinition
 import linting.semantic_model.definitions.Parameter
+import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.scopes.MutableScope
+import linting.semantic_model.scopes.TypeScope
 import parsing.syntax_tree.general.Element
 import parsing.syntax_tree.literals.Identifier
 import parsing.syntax_tree.general.TypeElement
@@ -25,6 +28,15 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
             scope.declareValue(linter, parameter)
         return parameter
     }
+
+	fun concretizeAsGenericParameter(linter: Linter, scope: MutableScope): TypeDefinition {
+		val superType = type?.concretize(linter, scope)
+		val typeScope = TypeScope(scope, superType?.scope)
+		val genericTypeDefinition = GenericTypeDefinition(this, identifier.getValue(), typeScope, superType)
+		typeScope.typeDefinition = genericTypeDefinition
+		scope.declareType(linter, genericTypeDefinition)
+		return genericTypeDefinition
+	}
 
     override fun toString(): String {
         return "Parameter${if(modifierList == null) "" else " [ $modifierList ]"} { $identifier${if(type == null) "" else ": $type"} }"

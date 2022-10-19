@@ -13,9 +13,8 @@ import parsing.syntax_tree.general.TypeElement
 import parsing.tokenizer.WordAtom
 import java.lang.StringBuilder
 
-class FunctionDefinition(private val identifier: Identifier, private val genericsList: GenericsList?,
-						 private val parameterList: ParameterList, private val body: StatementSection?,
-						 private var returnType: TypeElement?):
+class FunctionDefinition(private val identifier: Identifier, private val parameterList: ParameterList,
+						 private val body: StatementSection?, private var returnType: TypeElement?):
 	Element(identifier.start, body?.end ?: returnType?.end ?: parameterList.end) {
 	lateinit var parent: FunctionSection
 
@@ -33,7 +32,7 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val isMutating = parent.containsModifier(WordAtom.MUTATING)
 		val functionScope = BlockScope(scope)
-		val genericParameters = genericsList?.concretizeGenerics(linter, scope) ?: listOf()
+		val genericParameters = parameterList.concretizeGenerics(linter, functionScope) ?: listOf()
 		val parameters = parameterList.concretizeParameters(linter, functionScope)
 		val returnType = returnType?.concretize(linter, scope)
 		val implementation = FunctionImplementation(this, functionScope, genericParameters, parameters,
@@ -43,18 +42,16 @@ class FunctionDefinition(private val identifier: Identifier, private val generic
 	}
 
 	override fun toString(): String {
-		val string = StringBuilder()
-		string.append("Function [ ").append(identifier)
-		if(genericsList != null)
-			string.append(" ")
-				.append(genericsList)
-		string.append(" ")
+		return StringBuilder()
+			.append("Function [ ")
+			.append(identifier)
+			.append(" ")
 			.append(parameterList)
 			.append(": ")
 			.append(returnType ?: "void")
 			.append(" ] { ")
 			.append(body ?: "")
 			.append(" }")
-		return string.toString()
+			.toString()
 	}
 }

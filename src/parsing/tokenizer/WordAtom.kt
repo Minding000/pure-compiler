@@ -3,7 +3,6 @@ package parsing.tokenizer
 import java.util.regex.Pattern
 
 enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultiline: Boolean = false): WordDescriptor {
-	FOREIGN_LANGUAGE("$"),
 	// Whitespace
 	LINE_BREAK("\\n"),
 	WHITESPACE("\\s", true),
@@ -104,9 +103,11 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	OPERATOR("operator\\b"),
 	REFERENCING("referencing\\b"),
 	// Identifier
-	IDENTIFIER("\\w+");
+	IDENTIFIER("\\w+"),
+	// Synthetic words (invalid regular expression to avoid match)
+	FOREIGN_LANGUAGE("$$");
 
-	val pattern = Pattern.compile("^(${pattern})")
+	val pattern: Pattern = Pattern.compile("^(${pattern})")
 
 	override fun includes(atom: WordAtom?): Boolean {
 		return this == atom

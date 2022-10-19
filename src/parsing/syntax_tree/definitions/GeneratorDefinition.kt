@@ -2,28 +2,24 @@ package parsing.syntax_tree.definitions
 
 import linting.Linter
 import linting.semantic_model.definitions.GeneratorDefinition
-import linting.semantic_model.general.Unit
+import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.Element
 import parsing.syntax_tree.general.StatementSection
-import source_structure.Position
-import parsing.syntax_tree.literals.Identifier
 import parsing.syntax_tree.general.TypeElement
-import java.lang.StringBuilder
-import java.util.*
+import parsing.syntax_tree.literals.Identifier
+import source_structure.Position
 
 class GeneratorDefinition(start: Position, private val identifier: Identifier, private val parameterList: ParameterList,
 						  private var keyReturnType: TypeElement?, private var valueReturnType: TypeElement, private val body: StatementSection):
 	Element(start, body.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): GeneratorDefinition {
-		val parameters = LinkedList<Unit>()
-		for(parameter in parameterList.parameters) {
-			//TODO continue...
-		}
-		val generatorDefinition = GeneratorDefinition(this, identifier.getValue(), parameters,
-			keyReturnType?.concretize(linter, scope), valueReturnType.concretize(linter, scope),
-			body.concretize(linter, scope))
+		val generatorScope = BlockScope(scope)
+		val parameters = parameterList.concretizeParameters(linter, generatorScope)
+		val generatorDefinition = GeneratorDefinition(this, generatorScope, identifier.getValue(), parameters,
+			keyReturnType?.concretize(linter, generatorScope), valueReturnType.concretize(linter, generatorScope),
+			body.concretize(linter, generatorScope))
 		scope.declareValue(linter, generatorDefinition)
 		return generatorDefinition
 	}

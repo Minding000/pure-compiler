@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertNotNull
 
-internal class ReferenceResolution {
+internal class ValueResolution {
 
 	@Test
 	fun `emits error for undeclared variables`() {
@@ -62,6 +62,19 @@ internal class ReferenceResolution {
 	}
 
 	@Test
+	fun `emits error for undeclared initializers`() {
+		val sourceCode =
+			"""
+				class Item {
+					init() {}
+				}
+				Item(Item())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Initializer 'Item(Item)' hasn't been declared yet")
+	}
+
+	@Test
 	fun `resolves initializer calls`() {
 		val sourceCode =
 			"""
@@ -76,19 +89,6 @@ internal class ReferenceResolution {
 		val lintResult = TestUtil.lint(sourceCode, false)
 		val initializerCall = lintResult.find<FunctionCall>()
 		assertNotNull(initializerCall?.type)
-	}
-
-	@Test
-	fun `emits error for undeclared initializers`() {
-		val sourceCode =
-			"""
-				class Item {
-					init() {}
-				}
-				Item(Item())
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Initializer 'Item(Item)' hasn't been declared yet")
 	}
 
 	@Test
@@ -327,5 +327,56 @@ internal class ReferenceResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, false)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Call to function 'List.exists(Int)' is ambiguous")
+	}
+
+	@Test
+	fun `resolves initializer calls with a variable number of parameters`() {
+		val sourceCode =
+			"""
+				native class Int {
+					init
+				}
+				class IntegerList {
+					init(...integers: ...Int) {}
+				}
+				IntegerList()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val initializerCall = lintResult.find<FunctionCall>()
+		assertNotNull(initializerCall?.type)
+	}
+
+	@Test
+	fun `resolves function calls with a variable number of parameters`() {
+		val sourceCode =
+			"""
+				native class Int {
+					init
+				}
+				object IntegerList {
+					to add(...integers: ...Int) {}
+				}
+				IntegerList.add(Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val initializerCall = lintResult.find<FunctionCall>()
+		assertNotNull(initializerCall?.type)
+	}
+
+	@Test
+	fun `resolves operator calls with a variable number of parameters`() {
+		val sourceCode =
+			"""
+				native class Int {
+					init
+				}
+				object IntegerList {
+					operator +=(...integers: ...Int) {}
+				}
+				IntegerList += Int(), Int()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		val initializerCall = lintResult.find<FunctionCall>()
+		assertNotNull(initializerCall?.type)
 	}
 }

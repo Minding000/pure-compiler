@@ -50,7 +50,7 @@ class ElementGenerator(project: Project): Generator() {
 		currentWord = nextWord
 		if(parseForeignLanguageLiteralNext) {
 			parseForeignLanguageLiteralNext = false
-			val foreignLanguage = wordGenerator.getRemainingLine()
+			val foreignLanguage = wordGenerator.getRemainingLine(WordAtom.FOREIGN_LANGUAGE)
 			if(foreignLanguage != null) {
 				nextWord = foreignLanguage
 				return consumedWord

@@ -1,7 +1,7 @@
 package parsing
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class Generics {
 
@@ -20,7 +20,7 @@ internal class Generics {
 			"""
 				TypeDefinition [ class Identifier { ShoppingList } ] { TypeBody {
 					GenericsDeclaration {
-						GenericsListElement { Identifier { Entry } }
+						Parameter { Identifier { Entry } }
 					}
 					FunctionSection [ to ] {
 						Function [ Identifier { add } ParameterList {
@@ -40,16 +40,15 @@ internal class Generics {
 	fun `parses generic function definitions`() {
 		val sourceCode = """
 			object Math {
-				to greatest<N: Number>(a: N, b: N): N {}
+				to getGreatest(N: Number; a: N, b: N): N {}
 			}
 			""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ object Identifier { Math } ] { TypeBody {
 					FunctionSection [ to ] {
-						Function [ Identifier { greatest } GenericsList {
-							GenericsListElement [ ObjectType { Identifier { Number } } ] { Identifier { N } }
-						} ParameterList {
+						Function [ Identifier { getGreatest } ParameterList {
+							Parameter { Identifier { N }: ObjectType { Identifier { Number } } };
 							Parameter { Identifier { a }: ObjectType { Identifier { N } } }
 							Parameter { Identifier { b }: ObjectType { Identifier { N } } }
 						}: ObjectType { Identifier { N } } ] { StatementSection { StatementBlock {
@@ -64,18 +63,17 @@ internal class Generics {
 	fun `parses generic operator definitions`() {
 		val sourceCode = """
 			object Server {
-				operator <P: Protocol>[protocol: P]: <P>Service {}
+				operator [P: Protocol; protocol: P]: <P>Service {}
 			}
 			""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ object Identifier { Server } ] { TypeBody {
 					OperatorSection {
-						OperatorDefinition [ GenericsList {
-							GenericsListElement [ ObjectType { Identifier { Protocol } } ] { Identifier { P } }
-						} IndexOperator {
+						OperatorDefinition [ IndexOperator { ParameterList {
+							Parameter { Identifier { P }: ObjectType { Identifier { Protocol } } };
 							Parameter { Identifier { protocol }: ObjectType { Identifier { P } } }
-						}: ObjectType { TypeList {
+						} }: ObjectType { TypeList {
 							ObjectType { Identifier { P } }
 						} Identifier { Service } } ] { StatementSection { StatementBlock {
 						} } }
@@ -104,7 +102,7 @@ internal class Generics {
 			"""
 				TypeDefinition [ class Identifier { ShoppingList } ] { TypeBody {
 					GenericsDeclaration {
-						GenericsListElement { Identifier { Entry } }
+						Parameter { Identifier { Entry } }
 					}
 					FunctionSection [ to ] {
 						Function [ Identifier { add } ParameterList {
@@ -134,15 +132,14 @@ internal class Generics {
 	@Test
 	fun `parses specific function calls`() {
 		val sourceCode = """
-			Math.greatest$<Int>(1, 2)
+			Math.getGreatest(Int; 1, 2)
 			""".trimIndent()
 		val expected =
 			"""
-				FunctionCall [ TypeSpecification [ TypeList {
-					ObjectType { Identifier { Int } }
-				} ] { MemberAccess {
-					Identifier { Math }.Identifier { greatest }
-				} } ] {
+				FunctionCall [ MemberAccess {
+					Identifier { Math }.Identifier { getGreatest }
+				} ] {
+					Identifier { Int };
 					NumberLiteral { 1 }
 					NumberLiteral { 2 }
 				}

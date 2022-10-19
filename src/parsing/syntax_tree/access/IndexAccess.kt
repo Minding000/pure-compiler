@@ -9,13 +9,23 @@ import util.concretizeValues
 import util.indent
 import util.toLines
 
-class IndexAccess(private val target: ValueElement, private val indices: List<ValueElement>, end: Position): ValueElement(target.start, end) {
+class IndexAccess(private val target: ValueElement, private val genericParameters: List<ValueElement>?,
+				  private val indices: List<ValueElement>, end: Position): ValueElement(target.start, end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticIndexAccessModel {
 		return SemanticIndexAccessModel(this, target.concretize(linter, scope), indices.concretizeValues(linter, scope))
 	}
 
 	override fun toString(): String {
-		return "Index [ $target ] {${indices.toLines().indent()}\n}"
+		var stringRepresentation = "Index [ "
+		stringRepresentation += target
+		stringRepresentation += " ] {"
+		if(genericParameters != null) {
+			stringRepresentation += genericParameters.toLines().indent()
+			stringRepresentation += ";"
+		}
+		stringRepresentation += indices.toLines().indent()
+		stringRepresentation += "\n}"
+		return stringRepresentation
 	}
 }

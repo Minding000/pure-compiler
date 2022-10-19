@@ -1,6 +1,7 @@
 package parsing.syntax_tree.definitions
 
 import linting.Linter
+import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.definitions.Parameter as SemanticParameterModel
 import parsing.syntax_tree.general.MetaElement
@@ -9,7 +10,19 @@ import util.indent
 import util.toLines
 import java.util.*
 
-class ParameterList(start: Position, end: Position, val parameters: List<Parameter>): MetaElement(start, end) {
+class ParameterList(start: Position, end: Position, private val genericParameters: List<Parameter>?,
+					private val parameters: List<Parameter>): MetaElement(start, end) {
+	val containsGenericParameterList: Boolean
+		get() = genericParameters != null
+
+	fun concretizeGenerics(linter: Linter, scope: MutableScope): List<TypeDefinition>? {
+		if(genericParameters == null)
+			return null
+		val generics = LinkedList<TypeDefinition>()
+		for(genericParameter in genericParameters)
+			generics.add(genericParameter.concretizeAsGenericParameter(linter, scope))
+		return generics
+	}
 
 	fun concretizeParameters(linter: Linter, scope: MutableScope): List<SemanticParameterModel> {
 		val parameters = LinkedList<SemanticParameterModel>()
@@ -19,6 +32,13 @@ class ParameterList(start: Position, end: Position, val parameters: List<Paramet
 	}
 
 	override fun toString(): String {
-		return "ParameterList {${parameters.toLines().indent()}\n}"
+		var stringRepresentation = "ParameterList {"
+		if(genericParameters != null) {
+			stringRepresentation += genericParameters.toLines().indent()
+			stringRepresentation += ";"
+		}
+		stringRepresentation += parameters.toLines().indent()
+		stringRepresentation += "\n}"
+		return stringRepresentation
 	}
 }

@@ -146,4 +146,28 @@ internal class Declarations {
 		val variable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "error" }
 		assertNotNull(variable?.type)
 	}
+
+	@Test
+	fun `emits warning for generic non-index operator`() {
+		val sourceCode = """
+			class Vector {
+				operator +(ReturnType; other: Self): ReturnType
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"Operators (except for the index operator) can not be generic.")
+	}
+
+	@Test
+	fun `emits warning for generic parameters in parentheses in index operator`() {
+		val sourceCode = """
+			class Vector {
+				operator [key: IndexType](IndexType; value: Int)
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, false)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"Generic parameters for the index operator are received in the index parameter list instead.")
+	}
 }

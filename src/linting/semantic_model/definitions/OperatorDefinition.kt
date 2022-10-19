@@ -12,28 +12,24 @@ import java.util.LinkedList
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
 open class OperatorDefinition(override val source: OperatorDefinitionSyntaxTree, name: String,
-							  val scope: BlockScope, val genericParameters: List<TypeDefinition>,
-							  val parameters: List<Parameter>, val body: Unit?, returnType: Type?):
+							  val scope: BlockScope, val parameters: List<Parameter>, val body: Unit?,
+							  returnType: Type?, val isNative: Boolean, val isOverriding: Boolean):
 	VariableValueDeclaration(source, name, returnType ?: ObjectType(source, Linter.LiteralType.NOTHING.className)) {
 	val returnType = type!!
 	val variation = parameters.joinToString { parameter -> parameter.type.toString() }
 
 	init {
-		units.addAll(genericParameters)
 		units.addAll(parameters)
 		if(body != null)
 			units.add(body)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): OperatorDefinition {
-		val specificGenericParameters = LinkedList<TypeDefinition>()
-		for(genericParameter in genericParameters)
-			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
-		return OperatorDefinition(source, name, scope, specificGenericParameters, specificParameters, body,
-				returnType.withTypeSubstitutions(typeSubstitution))
+		return OperatorDefinition(source, name, scope, specificParameters, body,
+				returnType.withTypeSubstitutions(typeSubstitution), isNative, isOverriding)
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {

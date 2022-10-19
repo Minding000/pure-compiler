@@ -34,7 +34,7 @@ internal class Members {
 		val sourceCode = """
 			class Rectangle {
 				containing Unit: Number
-				
+
 				var: Unit = 0 {
 					left
 					right
@@ -55,7 +55,7 @@ internal class Members {
 			"""
 				TypeDefinition [ class Identifier { Rectangle } ] { TypeBody {
 					GenericsDeclaration {
-						GenericsListElement [ ObjectType { Identifier { Number } } ] { Identifier { Unit } }
+						Parameter { Identifier { Unit }: ObjectType { Identifier { Number } } }
 					}
 					VariableSection [ var: ObjectType { Identifier { Unit } } = NumberLiteral { 0 } ] {
 						VariableDeclaration { Identifier { left } }

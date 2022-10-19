@@ -511,49 +511,17 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * GenericsDeclaration:
-	 *   containing <GenericProperty>[,<GenericProperty>]...
+	 *   containing <Parameter>[,<Parameter>]...
 	 */
 	private fun parseGenericsDeclaration(): GenericsDeclaration {
 		val start = consume(WordAtom.CONTAINING).start
-		val types = LinkedList<GenericsListElement>()
-		types.add(parseGenericsListElement())
+		val types = LinkedList<Parameter>()
+		types.add(parseParameter())
 		while(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
-			types.add(parseGenericsListElement())
+			types.add(parseParameter())
 		}
 		return GenericsDeclaration(start, types)
-	}
-
-	/**
-	 * GenericsList:
-	 *   [<<GenericsListElement>[, <GenericsListElement>]...>]
-	 */
-	private fun parseGenericsList(): GenericsList? {
-		if(WordType.GENERICS_START.includes(currentWord?.type)) {
-			val elements = LinkedList<GenericsListElement>()
-			val start = consume(WordType.GENERICS_START).start
-			elements.add(parseGenericsListElement())
-			while(currentWord?.type == WordAtom.COMMA) {
-				consume(WordAtom.COMMA)
-				elements.add(parseGenericsListElement())
-			}
-			val end = consume(WordType.GENERICS_END).end
-			return GenericsList(start, elements, end)
-		}
-		return null
-	}
-
-	/**
-	 * GenericsListElement:
-	 *   <Identifier>: <Type>
-	 */
-	private fun parseGenericsListElement(): GenericsListElement {
-		val identifier = parseIdentifier()
-		val type = if(currentWord?.type == WordAtom.COLON) {
-			consume(WordAtom.COLON)
-			typeParser.parseType()
-		} else null
-		return GenericsListElement(identifier, type)
 	}
 
 	/**
@@ -618,11 +586,10 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * FunctionDeclaration:
-	 *   <Identifier><GenericsList><ParameterList>[: <Type>] [<StatementSection>]
+	 *   <Identifier><ParameterList>[: <Type>] [<StatementSection>]
 	 */
 	private fun parseFunctionDefinition(): FunctionDefinition {
 		val identifier = parseIdentifier()
-		val genericsList = parseGenericsList()
 		val parameterList = parseParameterList()
 		val returnType = if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
@@ -631,15 +598,14 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		val body = if(currentWord?.type == WordAtom.BRACES_OPEN)
 			parseStatementSection()
 		else null
-		return FunctionDefinition(identifier, genericsList, parameterList, body, returnType)
+		return FunctionDefinition(identifier, parameterList, body, returnType)
 	}
 
 	/**
 	 * OperatorDefinition:
-	 *   operator <GenericsList><Operator>[<ParameterList>][: <Type>] [<StatementSection>]
+	 *   operator <Operator>[<ParameterList>][: <Type>] [<StatementSection>]
 	 */
 	private fun parseOperatorDefinition(): OperatorDefinition {
-		val genericsList = parseGenericsList()
 		val operator = parseOperator()
 		val parameterList = if(currentWord?.type == WordAtom.PARENTHESES_OPEN)
 			parseParameterList()
@@ -651,7 +617,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		val body = if(currentWord?.type == WordAtom.BRACES_OPEN)
 			parseStatementSection()
 		else null
-		return OperatorDefinition(operator, genericsList, parameterList, body, returnType)
+		return OperatorDefinition(operator, parameterList, body, returnType)
 	}
 
 	/**
@@ -661,42 +627,52 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 */
 	private fun parseOperator(): Operator {
 		if(currentWord?.type == WordAtom.BRACKETS_OPEN) {
-			val start = consume(WordAtom.BRACKETS_OPEN).start
-			val parameters = LinkedList<Parameter>()
-			if(currentWord?.type != WordAtom.BRACKETS_CLOSE)
-				parameters.add(parseParameter())
-			while(currentWord?.type == WordAtom.COMMA) {
-				consume(WordAtom.COMMA)
-				parameters.add(parseParameter())
-			}
-			val end = consume(WordAtom.BRACKETS_CLOSE).end
-			return IndexOperator(start, end, parameters)
+			val parameterList = parseParameterList(WordAtom.BRACKETS_OPEN, WordAtom.BRACKETS_CLOSE)
+			return IndexOperator(parameterList)
 		}
 		return Operator(consume(WordType.OPERATOR))
 	}
 
 	/**
 	 * ParameterList:
-	 *   ([<Parameter>[, <Parameter>]])
+	 *   <startWord>[[<Parameter>[, <Parameter>]...];][<Parameter>[, <Parameter>]...]<endWord>
 	 */
-	private fun parseParameterList(): ParameterList {
-		val start = consume(WordAtom.PARENTHESES_OPEN).start
-		val parameters = LinkedList<Parameter>()
-		if(currentWord?.type != WordAtom.PARENTHESES_CLOSE)
-			parameters.add(parseParameter())
-		while(currentWord?.type == WordAtom.COMMA) {
-			consume(WordAtom.COMMA)
-			parameters.add(parseParameter())
+	fun parseParameterList(startWord: WordAtom = WordAtom.PARENTHESES_OPEN,
+						   endWord: WordAtom = WordAtom.PARENTHESES_CLOSE, startPosition: Position? = null):
+		ParameterList {
+		val start = startPosition ?: consume(startWord).start
+		var genericParameters: List<Parameter>? = null
+		var parameters = LinkedList<Parameter>()
+		if(currentWord?.type != endWord) {
+			if(currentWord?.type != WordAtom.SEMICOLON) {
+				parameters.add(parseParameter())
+				while(currentWord?.type == WordAtom.COMMA) {
+					consume(WordAtom.COMMA)
+					parameters.add(parseParameter())
+				}
+			}
+			if(currentWord?.type == WordAtom.SEMICOLON) {
+				consume(WordAtom.SEMICOLON)
+				genericParameters = parameters
+				parameters = LinkedList()
+				if(currentWord?.type != endWord) {
+					parameters.add(parseParameter())
+					while(currentWord?.type == WordAtom.COMMA) {
+						consume(WordAtom.COMMA)
+						parameters.add(parseParameter())
+					}
+				}
+			}
 		}
-		val end = consume(WordAtom.PARENTHESES_CLOSE).end
-		return ParameterList(start, end, parameters)
+		val end = consume(endWord).end
+		return ParameterList(start, end, genericParameters, parameters)
 	}
 
 	/**
 	 * Parameter:
 	 *   <ModifierList> <Identifier>[: <Type>]
 	 */
-	fun parseParameter(): Parameter {
+	private fun parseParameter(): Parameter {
 		val modifierList = parseModifierList()
 		val identifier = parseIdentifier()
 		val type = if(currentWord?.type == WordAtom.COLON) {

@@ -75,7 +75,7 @@ internal class FunctionDefinitions {
 		val sourceCode = """
 			class Animal {
 				var canSwim: Bool
-				
+
 				init(canSwim)
 			}""".trimIndent()
 		val expected =
@@ -97,7 +97,7 @@ internal class FunctionDefinitions {
 		val sourceCode = """
 			class Animal {
 				var canSwim: Bool
-				
+
 				init(name: String, canSwim) {
 					echo "Creating", name
 				}
@@ -127,7 +127,7 @@ internal class FunctionDefinitions {
 		val sourceCode = """
 			class Animal {
 				var name: String
-				
+
 				deinit {
 					echo "Animal '${'$'}name' has been deallocated."
 				}
@@ -156,13 +156,13 @@ internal class FunctionDefinitions {
 					x
 					y
 				}
-				
+
 				operator {
 					+=(right: Vector) {
 						x += right.x
 						y += right.y
 					}
-					
+
 					==(right: Vector) {
 						return right.x == x & right.y == y
 					}
@@ -215,12 +215,12 @@ internal class FunctionDefinitions {
 	fun `parses index operator definitions`() {
 		val sourceCode = """
 			class BookSelf {
-				
+
 				operator {
 					[index: Int](value: Book) {
 						echo "Adding book", index, value
 					}
-					
+
 					[index: Int]: Book {
 						echo "Book requested", index
 					}
@@ -230,9 +230,9 @@ internal class FunctionDefinitions {
 			"""
 				TypeDefinition [ class Identifier { BookSelf } ] { TypeBody {
 					OperatorSection {
-						OperatorDefinition [ IndexOperator {
+						OperatorDefinition [ IndexOperator { ParameterList {
 							Parameter { Identifier { index }: ObjectType { Identifier { Int } } }
-						} ParameterList {
+						} } ParameterList {
 							Parameter { Identifier { value }: ObjectType { Identifier { Book } } }
 						}: void ] { StatementSection { StatementBlock {
 							Print {
@@ -241,9 +241,9 @@ internal class FunctionDefinitions {
 								Identifier { value }
 							}
 						} } }
-						OperatorDefinition [ IndexOperator {
+						OperatorDefinition [ IndexOperator { ParameterList {
 							Parameter { Identifier { index }: ObjectType { Identifier { Int } } }
-						}: ObjectType { Identifier { Book } } ] { StatementSection { StatementBlock {
+						} }: ObjectType { Identifier { Book } } ] { StatementSection { StatementBlock {
 							Print {
 								StringLiteral { "Book requested" }
 								Identifier { index }
