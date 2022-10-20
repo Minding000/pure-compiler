@@ -23,7 +23,7 @@ class Statements {
 						cli.printLine("MacOS")
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Duplicated case '.WINDOWS'")
 	}
 
@@ -35,7 +35,7 @@ class Statements {
 					instances CURRENT
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING,
 			"Instance declarations are only allowed in enums and classes")
 	}
@@ -48,7 +48,7 @@ class Statements {
 					instances CURRENT
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING,
 			"Instance declarations are only allowed in enums and classes")
 	}
@@ -63,7 +63,7 @@ class Statements {
 					instances FUTURE
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Instance declarations can be merged")
 	}
 }

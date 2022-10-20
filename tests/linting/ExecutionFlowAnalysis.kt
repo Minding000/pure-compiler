@@ -18,7 +18,7 @@ class ExecutionFlowAnalysis {
 					next
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable.")
 	}
 
@@ -33,7 +33,7 @@ class ExecutionFlowAnalysis {
 					next
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable.")
 	}
 
@@ -47,7 +47,7 @@ class ExecutionFlowAnalysis {
 					next
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Statement is unreachable.")
 	}
 
@@ -64,7 +64,7 @@ class ExecutionFlowAnalysis {
 					next
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable.")
 	}
 
@@ -82,7 +82,7 @@ class ExecutionFlowAnalysis {
 					next
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable.")
 	}
 
@@ -100,7 +100,7 @@ class ExecutionFlowAnalysis {
 					next
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "result" }
 		assertIs<ObjectType>(variableValue?.staticValue?.type)
 	}

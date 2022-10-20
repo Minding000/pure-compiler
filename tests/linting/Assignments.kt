@@ -28,7 +28,7 @@ internal class Assignments {
 				val b = 4
 				b = a
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "'b' cannot be reassigned, because it is constant.")
 	}
 
@@ -42,7 +42,7 @@ internal class Assignments {
 				object ChessBoard {}
 				val firstField = ChessBoard[Position()]
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '[Position]()' hasn't been declared yet.")
 	}
 
@@ -61,7 +61,7 @@ internal class Assignments {
 				}
 				ChessBoard[Position()] = Field()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '[Position](Field)' hasn't been declared yet.")
 	}
 
@@ -78,7 +78,7 @@ internal class Assignments {
 				}
 				ChessBoard[Position()]
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val indexAccess = lintResult.find<IndexAccess>()
 		assertNotNull(indexAccess?.type)
 	}
@@ -93,7 +93,7 @@ internal class Assignments {
 				val complexTypeValue: (Event) =>|
 				typeAliasValue = complexTypeValue
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type '(Event) =>|' is not assignable to type 'EventHandler'")
 	}
 
@@ -107,7 +107,7 @@ internal class Assignments {
 				var complexTypeValue: (Event) =>|
 				complexTypeValue = typeAliasValue
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type 'EventHandler' is not assignable to type '(Event) =>|'")
 	}
 
@@ -121,7 +121,7 @@ internal class Assignments {
 				val car: Car? = Car()
 				car = null
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type 'Null' is not assignable to type 'Car?'")
 	}
 }

@@ -39,7 +39,7 @@ object TestUtil {
         return ParseResult(elementGenerator, program)
     }
 
-    fun lint(sourceCode: String, includeRequiredModules: Boolean): LintResult {
+    fun lint(sourceCode: String, includeRequiredModules: Boolean = false): LintResult {
         val parseResult = parse(sourceCode, includeRequiredModules)
         val linter = Linter()
         val program = linter.lint(parseResult.program)

@@ -49,7 +49,7 @@ internal class TypeResolution {
 			"""
 				var eagle: Eagle
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Eagle' hasn't been declared yet")
 	}
 
@@ -60,7 +60,7 @@ internal class TypeResolution {
 				class Bird {}
 				var bird: Bird
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<VariableValueDeclaration> { declaration -> declaration.name == "bird" }
 		assertNotNull((declaration?.type as? ObjectType)?.definition)
 	}
@@ -72,7 +72,7 @@ internal class TypeResolution {
 				object BirdFeeder {}
 				var birdFeeder: BirdFeeder
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<VariableValueDeclaration> { declaration -> declaration.name == "birdFeeder" }
 		assertEquals("BirdFeeder", (declaration?.type as? ObjectType)?.definition?.name)
 	}
@@ -84,7 +84,7 @@ internal class TypeResolution {
 				enum BirdType {}
 				var birdType: BirdType
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<VariableValueDeclaration> { declaration -> declaration.name == "birdType" }
 		assertEquals("BirdType", (declaration?.type as? ObjectType)?.definition?.name)
 	}
@@ -96,7 +96,7 @@ internal class TypeResolution {
 				trait Feedable {}
 				var feedable: Feedable
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<VariableValueDeclaration> { declaration -> declaration.name == "feedable" }
 		assertEquals("Feedable", (declaration?.type as? ObjectType)?.definition?.name)
 	}
@@ -108,7 +108,7 @@ internal class TypeResolution {
 				alias EventHandler = =>|
 				var eventHandler: EventHandler
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<VariableValueDeclaration> { declaration -> declaration.name == "eventHandler" }
 		assertEquals("EventHandler", (declaration?.type as? ObjectType)?.definition?.name)
 	}
@@ -123,7 +123,7 @@ internal class TypeResolution {
 					to add(element: Element) {}
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<VariableValueDeclaration> { declaration -> declaration.name == "element" }
 		assertEquals("Element", (declaration?.type as? ObjectType)?.definition?.name)
 	}
@@ -142,7 +142,7 @@ internal class TypeResolution {
 				val list = <Country>List()
 				list.add(Germany)
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val memberAccess = lintResult.find<MemberAccess> { memberAccess -> memberAccess.member.name == "add" }
 		assertEquals("(Country) =>|", memberAccess?.type.toString())
 	}

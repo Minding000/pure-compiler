@@ -28,7 +28,7 @@ class TypeParameters {
 			val trash = Paper()
 			recyclingBin.put(trash)
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val baseTypeVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "trash" }
 		val specificType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "recyclingBin" }?.type
 		val functionType = specificType?.scope?.resolveValue("put")?.type as? FunctionType
@@ -57,7 +57,7 @@ class TypeParameters {
 			val softDrink = SoftDrink()
 			softDrinkSupply.store(softDrink)
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val baseTypeVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrink" }
 		val specificType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrinkSupply" }?.type
 		val functionType = specificType?.scope?.resolveValue("store")?.type as? FunctionType
@@ -120,7 +120,7 @@ class TypeParameters {
 			val softDrinkSupply = <SoftDrink producing>StorageRoom()
 			val softDrink: SoftDrink = softDrinkSupply.get()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val baseType = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "softDrink" }?.type
 		val specificType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrinkSupply" }?.type

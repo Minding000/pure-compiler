@@ -24,7 +24,7 @@ class TypeInference {
 				}
 				val ball = Basketball()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "ball" }
 		val type = variableValueDeclaration?.value?.type
@@ -41,7 +41,7 @@ class TypeInference {
 				}
 				val protocol: TransportLayerProtocol = .TCP
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
 		val instanceAccess = lintResult.find<InstanceAccess>()
 		assertNotNull(type)
@@ -58,7 +58,7 @@ class TypeInference {
 				var protocol: TransportLayerProtocol? = null
 				protocol = .TCP
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
 		val instanceAccess = lintResult.find<InstanceAccess>()
 		assertNotNull(type)
@@ -79,7 +79,7 @@ class TypeInference {
 				}
 				val stream = Stream(.TCP)
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
 		val instanceAccess = lintResult.find<InstanceAccess>()
 		assertNotNull(type)
@@ -99,7 +99,7 @@ class TypeInference {
 				}
 				val openUdpPort = NetworkInterface.getOpenPort(.UDP)
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
 		val instanceAccess = lintResult.find<InstanceAccess>()
 		assertNotNull(type)
@@ -119,7 +119,7 @@ class TypeInference {
 				}
 				val udpPorts = NetworkInterface[.UDP]
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
 		val instanceAccess = lintResult.find<InstanceAccess>()
 		assertNotNull(type)
@@ -141,7 +141,7 @@ class TypeInference {
 						cli.printLine("UDP")
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val typeDefinition = lintResult.find<TypeDefinition> { typeDefinition ->
 			typeDefinition.name == "TransportLayerProtocol" }
 		val instanceAccess = lintResult.find<InstanceAccess>()
@@ -159,7 +159,7 @@ class TypeInference {
 				}
 				val letterBox = Box()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Missing generic parameter")
 	}
 
@@ -177,7 +177,7 @@ class TypeInference {
 				}
 				val letterBox = Box(Letter())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function.type as? StaticType)?.definition?.name == "Letter" }?.type
 		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
@@ -202,7 +202,7 @@ class TypeInference {
 				}
 				val stampedPostCard = PostOffice.stamp(PostCard())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function.type as? StaticType)?.definition?.name == "PostCard" }?.type
 		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
@@ -232,7 +232,7 @@ class TypeInference {
 				}
 				val client = Server[Ipv4Address()]
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function.type as? StaticType)?.definition?.name == "Ipv4Address" }?.type
 		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->

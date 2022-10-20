@@ -16,7 +16,7 @@ internal class ValueResolution {
 			"""
 				numberOfDogs
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Value 'numberOfDogs' hasn't been declared yet")
 	}
 
@@ -27,7 +27,7 @@ internal class ValueResolution {
 				val numberOfCats = 2
 				numberOfCats
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "numberOfCats" }
 		assertNotNull(variableValue?.definition)
 	}
@@ -41,7 +41,7 @@ internal class ValueResolution {
 				}
 				House.livingAreaInSquareMeters
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "livingAreaInSquareMeters" }
 		assertNotNull(variableValue?.definition)
 	}
@@ -56,7 +56,7 @@ internal class ValueResolution {
 					}
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "speed" }
 		assertNotNull(variableValue?.definition)
 	}
@@ -70,7 +70,7 @@ internal class ValueResolution {
 				}
 				Item(Item())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Initializer 'Item(Item)' hasn't been declared yet")
 	}
 
@@ -86,7 +86,7 @@ internal class ValueResolution {
 				}
 				Window(Int(), Int())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall>()
 		assertNotNull(initializerCall?.type)
 	}
@@ -100,7 +100,7 @@ internal class ValueResolution {
 				}
 				Door.open()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "Door" }
 		val functionType = variableValue?.type?.scope?.resolveValue("open")?.type as? FunctionType
 		assertNotNull(functionType)
@@ -119,7 +119,7 @@ internal class ValueResolution {
 				}
 				GlassDoor.isOpen
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
 		val member = variableValue?.type?.scope?.resolveValue("isOpen")
 		assertNotNull(member)
@@ -139,7 +139,7 @@ internal class ValueResolution {
 				}
 				GlassDoor.open()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
 		val functionType = variableValue?.type?.scope?.resolveValue("open")?.type as? FunctionType
 		assertNotNull(functionType)
@@ -160,7 +160,7 @@ internal class ValueResolution {
 				}
 				GlassDoor.open()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
 		val functionType = variableValue?.type?.scope?.resolveValue("open")?.type as? FunctionType
 		assertNotNull(functionType)
@@ -182,7 +182,7 @@ internal class ValueResolution {
 					to check() {}
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Missing 'overriding' keyword")
 	}
 
@@ -198,7 +198,7 @@ internal class ValueResolution {
 					overriding to check() {}
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Missing 'overriding' keyword")
 	}
 
@@ -210,7 +210,7 @@ internal class ValueResolution {
 					overriding to clean() {}
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING,
 			"'overriding' keyword is used, but the function doesn't have a super function")
 	}
@@ -222,7 +222,7 @@ internal class ValueResolution {
 				val a = 5
 				!a
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '!()' hasn't been declared yet")
 	}
 
@@ -237,7 +237,7 @@ internal class ValueResolution {
 				val fraction = Fraction()
 				-fraction
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "fraction" }
 		val operator = variableValue?.type?.scope?.resolveOperator("-")
 		assertNotNull(operator)
@@ -256,7 +256,7 @@ internal class ValueResolution {
 				}
 				var c = a - b
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '-(Matrix)' hasn't been declared yet")
 	}
 
@@ -274,7 +274,7 @@ internal class ValueResolution {
 				}
 				var c = a + b
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "a" }
 		val operator = variableValue?.type?.scope?.resolveOperator("+", variableValue)
 		assertNotNull(operator)
@@ -289,7 +289,7 @@ internal class ValueResolution {
 				}
 				Bird.age()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "'Bird.age' is not callable")
 	}
 
@@ -303,7 +303,7 @@ internal class ValueResolution {
 				}
 				Light.shine(Bright)
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "The provided values don't match any signature of function 'Light.shine'")
 	}
 
@@ -325,7 +325,7 @@ internal class ValueResolution {
 				val numbers = <Int>List()
 				numbers.exists(Int())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Call to function 'List.exists(Int)' is ambiguous")
 	}
 
@@ -341,7 +341,7 @@ internal class ValueResolution {
 				}
 				IntegerList()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall>()
 		assertNotNull(initializerCall?.type)
 	}
@@ -358,7 +358,7 @@ internal class ValueResolution {
 				}
 				IntegerList.add(Int())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall>()
 		assertNotNull(initializerCall?.type)
 	}
@@ -375,7 +375,7 @@ internal class ValueResolution {
 				}
 				IntegerList += Int(), Int()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall>()
 		assertNotNull(initializerCall?.type)
 	}

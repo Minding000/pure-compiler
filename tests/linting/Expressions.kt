@@ -39,7 +39,7 @@ internal class Expressions {
 				val sun: Star? = Star()
 				sun?.brightness
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val memberAccess = lintResult.find<MemberAccess>()
 		assertIs<OptionalType>(memberAccess?.type)
 	}
@@ -55,7 +55,7 @@ internal class Expressions {
 				val sun: Star? = Star()
 				sun.shine()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR,
 			"Cannot access member of optional type 'Star?' without null check.")
 	}
@@ -71,7 +71,7 @@ internal class Expressions {
 				val sun = Star()
 				sun?.shine()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING,
 			"Optional member access on guaranteed type 'Star' is unnecessary.")
 	}
@@ -88,7 +88,7 @@ internal class Expressions {
 				val roomWithSeats: Bus|Cinema = Bus()
 				roomWithSeats as! Vehicle
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val vehicleClass = lintResult.find<TypeDefinition> { typeDefinition -> typeDefinition.name == "Vehicle" }
 		val cast = lintResult.find<Cast>()
 		assertEquals(vehicleClass, (cast?.type as? ObjectType)?.definition)
@@ -107,7 +107,7 @@ internal class Expressions {
 				roomWithSeats is Vehicle
 				roomWithSeats is! Vehicle
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val positiveCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.CAST_CONDITION }
 		val negativeCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.NEGATED_CAST_CONDITION }
 		assertTrue(Linter.LiteralType.BOOLEAN.matches(positiveCast?.type))
@@ -126,7 +126,7 @@ internal class Expressions {
 				val roomWithSeats: Bus|Cinema = Bus()
 				roomWithSeats as? Vehicle
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val vehicleClass = lintResult.find<TypeDefinition> { typeDefinition -> typeDefinition.name == "Vehicle" }
 		val cast = lintResult.find<Cast>()
 		val castResultType = cast?.type as? OptionalType
@@ -142,7 +142,7 @@ internal class Expressions {
 				object Apple {}
 				Apple as Orange
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Cannot safely cast 'Apple' to 'Orange'.")
 	}
 
@@ -154,7 +154,7 @@ internal class Expressions {
 				object Apple: Fruit {}
 				Apple as? Fruit
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Cast from 'Apple' to 'Fruit' is safe.")
 	}
 
@@ -168,7 +168,7 @@ internal class Expressions {
 				}
 				try! Printer.print()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val typeDefinition = lintResult.find<Class> { `class` -> `class`.name == "PrintResult" }
 		val tryType = lintResult.find<Try>()?.type
 		assertIs<ObjectType>(tryType)
@@ -185,7 +185,7 @@ internal class Expressions {
 				}
 				try? Printer.print()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val typeDefinition = lintResult.find<Class> { `class` -> `class`.name == "PrintResult" }
 		val tryType = lintResult.find<Try>()?.type
 		assertIs<OptionalType>(tryType)
@@ -202,7 +202,7 @@ internal class Expressions {
 				val cable = Cable()
 				if(cable?) {}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Null check always returns 'yes'.")
 	}
 
@@ -216,7 +216,7 @@ internal class Expressions {
 				val noCable: Cable? = null
 				if(noCable?) {}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Null check always returns 'no'.")
 	}
 }

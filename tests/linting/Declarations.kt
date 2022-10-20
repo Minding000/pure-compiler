@@ -16,7 +16,7 @@ internal class Declarations {
 				object Banana {}
 				var toast: Toast = Banana
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Banana' is not assignable to type 'Toast'")
 	}
 
@@ -26,7 +26,7 @@ internal class Declarations {
 			"""
 				var toast
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type or value is required")
 	}
 
@@ -40,7 +40,7 @@ internal class Declarations {
 					const defaultHandler: Handler
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "'defaultHandler' shadows a variable.")
 	}
 
@@ -52,7 +52,7 @@ internal class Declarations {
 				var car: Car
 				val car: Car
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of value 'car'")
 	}
 
@@ -63,7 +63,7 @@ internal class Declarations {
 				class Animal {}
 				enum Animal {}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of type 'Animal'")
 	}
 
@@ -76,7 +76,7 @@ internal class Declarations {
 					init
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of initializer 'Human()'")
 	}
 
@@ -91,7 +91,7 @@ internal class Declarations {
 					to sit() {}
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of function 'sit()'")
 	}
 
@@ -106,7 +106,7 @@ internal class Declarations {
 					operator[time: Time]() {}
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of operator '[Time]()'")
 	}
 
@@ -116,7 +116,7 @@ internal class Declarations {
 			"""
 				overriding class House {}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
 	}
 
@@ -126,7 +126,7 @@ internal class Declarations {
 			"""
 				native native class Memory {}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Duplicate 'native' modifier")
 	}
 
@@ -142,7 +142,7 @@ internal class Declarations {
 					}
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		val variable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "error" }
 		assertNotNull(variable?.type)
 	}
@@ -154,7 +154,7 @@ internal class Declarations {
 				operator +(ReturnType; other: Self): ReturnType
 			}
 			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING,
 			"Operators (except for the index operator) can not be generic.")
 	}
@@ -166,7 +166,7 @@ internal class Declarations {
 				operator [key: IndexType](IndexType; value: Int)
 			}
 			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, false)
+		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING,
 			"Generic parameters for the index operator are received in the index parameter list instead.")
 	}
