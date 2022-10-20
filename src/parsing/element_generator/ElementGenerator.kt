@@ -9,20 +9,16 @@ import parsing.tokenizer.*
 import java.util.*
 
 class ElementGenerator(project: Project): Generator() {
-	private val wordGenerator: WordGenerator
+	val wordGenerator = WordGenerator(project)
 	override var currentWord: Word? = null
 	override var nextWord: Word? = null
 	override var parseForeignLanguageLiteralNext = false
-	val logLevel = Message.Type.DEBUG
+	private val logLevel = Message.Type.DEBUG
 	val messages = LinkedList<Message>()
 	val statementParser = StatementParser(this)
 	val expressionParser = ExpressionParser(this)
 	val typeParser = TypeParser(this)
 	val literalParser = LiteralParser(this)
-
-	init {
-		wordGenerator = WordGenerator(project)
-	}
 
 	fun addMessage(description: String, type: Message.Type = Message.Type.INFO) {
 		messages.add(Message(description, type))

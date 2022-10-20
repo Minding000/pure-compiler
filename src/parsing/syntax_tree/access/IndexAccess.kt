@@ -3,17 +3,19 @@ package parsing.syntax_tree.access
 import linting.Linter
 import linting.semantic_model.operations.IndexAccess as SemanticIndexAccessModel
 import linting.semantic_model.scopes.MutableScope
+import parsing.syntax_tree.general.TypeElement
 import parsing.syntax_tree.general.ValueElement
 import source_structure.Position
 import util.concretizeValues
 import util.indent
 import util.toLines
 
-class IndexAccess(private val target: ValueElement, private val genericParameters: List<ValueElement>?,
+class IndexAccess(private val target: ValueElement, private val genericParameters: List<TypeElement>?,
 				  private val indices: List<ValueElement>, end: Position): ValueElement(target.start, end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticIndexAccessModel {
-		return SemanticIndexAccessModel(this, target.concretize(linter, scope), indices.concretizeValues(linter, scope))
+		return SemanticIndexAccessModel(this, target.concretize(linter, scope),
+			indices.concretizeValues(linter, scope))
 	}
 
 	override fun toString(): String {

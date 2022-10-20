@@ -3,13 +3,14 @@ package parsing.syntax_tree.control_flow
 import linting.Linter
 import linting.semantic_model.control_flow.FunctionCall
 import linting.semantic_model.scopes.MutableScope
+import parsing.syntax_tree.general.TypeElement
 import source_structure.Position
 import parsing.syntax_tree.general.ValueElement
 import util.concretizeValues
 import util.indent
 import util.toLines
 
-class FunctionCall(private val functionReference: ValueElement, private val genericParameters: List<ValueElement>?,
+class FunctionCall(private val functionReference: ValueElement, private val genericParameters: List<TypeElement>?,
 				   private val parameters: List<ValueElement>, end: Position):
 	ValueElement(functionReference.start, end) {
 

@@ -139,7 +139,7 @@ internal class Generics {
 				FunctionCall [ MemberAccess {
 					Identifier { Math }.Identifier { getGreatest }
 				} ] {
-					Identifier { Int };
+					ObjectType { Identifier { Int } };
 					NumberLiteral { 1 }
 					NumberLiteral { 2 }
 				}
@@ -155,8 +155,8 @@ internal class Generics {
 		val expected =
 			"""
 				Index [ Identifier { shoppingList } ] {
-					Identifier { Int }
-					Identifier { ShoppingItem };
+					ObjectType { Identifier { Int } }
+					ObjectType { Identifier { ShoppingItem } };
 					NumberLiteral { 1 }
 				}
             """.trimIndent()

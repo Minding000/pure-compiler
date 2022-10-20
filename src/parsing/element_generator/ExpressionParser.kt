@@ -10,6 +10,7 @@ import parsing.syntax_tree.control_flow.Try
 import parsing.syntax_tree.definitions.LambdaFunctionDefinition
 import parsing.syntax_tree.definitions.TypeSpecification
 import parsing.syntax_tree.general.ForeignLanguageExpression
+import parsing.syntax_tree.general.TypeElement
 import parsing.syntax_tree.general.ValueElement
 import parsing.syntax_tree.literals.ForeignLanguageLiteral
 import parsing.syntax_tree.literals.Identifier
@@ -23,8 +24,10 @@ import parsing.tokenizer.WordDescriptor
 import parsing.tokenizer.WordType
 import source_structure.Position
 import java.util.*
+import java.util.regex.Pattern
 
 class ExpressionParser(private val elementGenerator: ElementGenerator): Generator() {
+	private val genericParameterListCheck: Pattern = Pattern.compile("[;()\\[\\]]")
 	override var currentWord: Word?
 		get() = elementGenerator.currentWord
 		set(value) { elementGenerator.currentWord = value }
@@ -205,7 +208,6 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Accessor><MemberAccess>
 	 *   <Accessor><FunctionCall>
 	 *   <Accessor><Index>
-	 *   <Accessor>$<TypeList>
 	 */
 	private fun parseAccessor(): ValueElement {
 		var expression = parsePrimary()
@@ -216,22 +218,10 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 				parseFunctionCall(expression)
 			else if(currentWord?.type == WordAtom.BRACKETS_OPEN)
 				parseIndex(expression)
-			else if(currentWord?.type == WordAtom.TYPE_SPECIFICATION)
-				parseTypeSpecification(expression)
 			else
 				throw CompilerError("Failed to parse accessor: '${currentWord?.type}'")
 		}
 		return expression
-	}
-
-	/**
-	 * TypeSpecification:
-	 *   <Accessor>$<TypeList>
-	 */
-	private fun parseTypeSpecification(expression: ValueElement): ValueElement {
-		consume(WordAtom.TYPE_SPECIFICATION)
-		val typeList = typeParser.parseTypeList()
-		return TypeSpecification(expression.start, typeList.end, expression, typeList)
 	}
 
 	/**
@@ -253,32 +243,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Accessor>[[[<Type>[, <Type>]...];][<Expression>[, <Expression>]...]]
 	 */
 	private fun parseIndex(expression: ValueElement): ValueElement {
-		consume(WordAtom.BRACKETS_OPEN)
-		var genericParameters: List<ValueElement>? = null
-		var indices = LinkedList<ValueElement>()
-		if(currentWord?.type != WordAtom.BRACKETS_CLOSE) {
-			if(currentWord?.type != WordAtom.SEMICOLON) {
-				indices.add(parseExpression())
-				while(currentWord?.type == WordAtom.COMMA) {
-					consume(WordAtom.COMMA)
-					indices.add(parseExpression())
-				}
-			}
-			if(currentWord?.type == WordAtom.SEMICOLON) {
-				consume(WordAtom.SEMICOLON)
-				genericParameters = indices
-				indices = LinkedList()
-				if(currentWord?.type != WordAtom.BRACKETS_CLOSE) {
-					indices.add(parseExpression())
-					while(currentWord?.type == WordAtom.COMMA) {
-						consume(WordAtom.COMMA)
-						indices.add(parseExpression())
-					}
-				}
-			}
-		}
-		val end = consume(WordAtom.BRACKETS_CLOSE).end
-		return IndexAccess(expression, genericParameters, indices, end)
+		return parseCall(expression, WordAtom.BRACKETS_OPEN, WordAtom.BRACKETS_CLOSE)
 	}
 
 	/**
@@ -286,32 +251,40 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Accessor>([[<Type>[, <Type>]...];][<Expression>[, <Expression>]...])
 	 */
 	private fun parseFunctionCall(expression: ValueElement): ValueElement {
-		consume(WordAtom.PARENTHESES_OPEN)
-		var genericParameters: List<ValueElement>? = null
-		var parameters = LinkedList<ValueElement>()
-		if(currentWord?.type != WordAtom.PARENTHESES_CLOSE) {
-			if(currentWord?.type != WordAtom.SEMICOLON) {
-				parameters.add(parseExpression())
-				while(currentWord?.type == WordAtom.COMMA) {
-					consume(WordAtom.COMMA)
-					parameters.add(parseExpression())
-				}
+		return parseCall(expression, WordAtom.PARENTHESES_OPEN, WordAtom.PARENTHESES_CLOSE)
+	}
+
+	/**
+	 * This is a helper for:
+	 * <FunctionCall>
+	 * <Index>
+	 */
+	private fun parseCall(expression: ValueElement, startWord: WordAtom, endWord: WordAtom): ValueElement {
+		val parameterStart = consume(startWord).end
+		var genericParameters: List<TypeElement>? = null
+		val char = elementGenerator.wordGenerator.scanForCharacters(parameterStart, genericParameterListCheck)
+		if(char == ';') {
+			genericParameters = LinkedList()
+			genericParameters.add(typeParser.parseType())
+			while(currentWord?.type == WordAtom.COMMA) {
+				consume(WordAtom.COMMA)
+				genericParameters.add(typeParser.parseType())
 			}
-			if(currentWord?.type == WordAtom.SEMICOLON) {
-				consume(WordAtom.SEMICOLON)
-				genericParameters = parameters
-				parameters = LinkedList()
-				if(currentWord?.type != WordAtom.PARENTHESES_CLOSE) {
-					parameters.add(parseExpression())
-					while(currentWord?.type == WordAtom.COMMA) {
-						consume(WordAtom.COMMA)
-						parameters.add(parseExpression())
-					}
-				}
+			consume(WordAtom.SEMICOLON)
+		}
+		val parameters = LinkedList<ValueElement>()
+		if(currentWord?.type != endWord) {
+			parameters.add(parseExpression())
+			while(currentWord?.type == WordAtom.COMMA) {
+				consume(WordAtom.COMMA)
+				parameters.add(parseExpression())
 			}
 		}
-		val end = consume(WordAtom.PARENTHESES_CLOSE).end
-		return FunctionCall(expression, genericParameters, parameters, end)
+		val end = consume(endWord).end
+		return if(startWord == WordAtom.PARENTHESES_OPEN)
+			FunctionCall(expression, genericParameters, parameters, end)
+		else
+			IndexAccess(expression, genericParameters, parameters, end)
 	}
 
 	/**

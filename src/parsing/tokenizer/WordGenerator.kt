@@ -6,6 +6,7 @@ import util.stringify
 import java.util.regex.Pattern
 
 class WordGenerator(private val project: Project) {
+	private val matcher = Pattern.compile("").matcher("")
 	private var moduleIndex = -1
 	private var fileIndex = -1
 	private var lineIndex = -1
@@ -40,6 +41,7 @@ class WordGenerator(private val project: Project) {
 			return
 		}
 		file = files[fileIndex]
+		matcher.reset(file.content)
 		lineIndex = -1
 		nextLine()
 		position = 0
@@ -78,35 +80,44 @@ class WordGenerator(private val project: Project) {
 		characterIndex = line.getLength()
 	}
 
+	fun scanForCharacters(start: Position, pattern: Pattern): Char? {
+		matcher.region(start.index, file.content.length).usePattern(pattern)
+		if(!matcher.find())
+			return null
+		return file.content[matcher.start()]
+	}
+
 	fun getNextWord(): Word? {
 		if(file.content.length == position)
 			return null
-		val input = file.content.substring(position)
-		val matcher = Pattern
-			.compile("")
-			.matcher(input)
+		matcher.region(position, file.content.length)
 		for(wordType in WordAtom.values()) {
 			matcher.usePattern(wordType.pattern)
-			if(matcher.find()) {
-				val rawWord = input.substring(0, matcher.end())
-				val wordStartIndex = position
-				position += rawWord.length
-				val wordStartColumn = characterIndex
-				characterIndex += rawWord.length
-				val word = if (wordType.ignore) getNextWord() else Word(Position(wordStartIndex, line, wordStartColumn), Position(position, line, characterIndex), wordType)
-				// Increment line and character indices
-				if(wordType == WordAtom.LINE_BREAK) {
-					nextLine()
-				} else if(wordType.isMultiline) {
-					val containedLineBreaks = rawWord.count { c -> c == '\n' }
-					if(containedLineBreaks > 0) {
-						nextLine(containedLineBreaks)
-						characterIndex = rawWord.length - (rawWord.lastIndexOf('\n') + 1)
-					}
+			if(!matcher.lookingAt())
+				continue
+			val rawWord = file.content.substring(matcher.start(), matcher.end())
+			val wordStartIndex = position
+			position += rawWord.length
+			val wordStartColumn = characterIndex
+			characterIndex += rawWord.length
+			val word = if(wordType.ignore)
+				getNextWord()
+			else
+				Word(Position(wordStartIndex, line, wordStartColumn),
+					Position(position, line, characterIndex), wordType)
+			// Increment line and character indices
+			if(wordType == WordAtom.LINE_BREAK) {
+				nextLine()
+			} else if(wordType.isMultiline) {
+				val containedLineBreaks = rawWord.count { c -> c == '\n' }
+				if(containedLineBreaks > 0) {
+					nextLine(containedLineBreaks)
+					characterIndex = rawWord.length - (rawWord.lastIndexOf('\n') + 1)
 				}
-				return word
 			}
+			return word
 		}
-		throw SyntaxError("Unknown word in ${file.name}:${line.number}:$characterIndex: '${input.first().stringify()}'")
+		throw SyntaxError("Unknown word in ${file.name}:${line.number}:$characterIndex: " +
+			"'${file.content[position].stringify()}'")
 	}
 }

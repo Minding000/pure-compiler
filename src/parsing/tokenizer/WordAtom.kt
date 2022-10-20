@@ -107,7 +107,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	// Synthetic words (invalid regular expression to avoid match)
 	FOREIGN_LANGUAGE("$$");
 
-	val pattern: Pattern = Pattern.compile("^(${pattern})")
+	val pattern: Pattern = Pattern.compile(pattern)
 
 	override fun includes(atom: WordAtom?): Boolean {
 		return this == atom
