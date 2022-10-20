@@ -148,6 +148,22 @@ internal class Generics {
 	}
 
 	@Test
+	fun `parses specific index operator calls`() {
+		val sourceCode = """
+			shoppingList[Int, ShoppingItem; 1]
+			""".trimIndent()
+		val expected =
+			"""
+				Index [ Identifier { shoppingList } ] {
+					Identifier { Int }
+					Identifier { ShoppingItem };
+					NumberLiteral { 1 }
+				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
 	fun `parses producing types`() {
 		val sourceCode = """
 			class Fridge {

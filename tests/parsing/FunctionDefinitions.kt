@@ -93,6 +93,21 @@ internal class FunctionDefinitions {
 	}
 
 	@Test
+	fun `parses initializer definitions without parameter list`() {
+		val sourceCode = """
+			class Chair {
+				init
+			}""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ class Identifier { Chair } ] { TypeBody {
+					Initializer [  ] {  }
+				} }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
 	fun `parses initializer definitions with body`() {
 		val sourceCode = """
 			class Animal {
