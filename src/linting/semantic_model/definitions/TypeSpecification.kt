@@ -26,7 +26,7 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val ba
 							"generic types (${placeholders.size}).", Message.Type.ERROR)
 				return
 			}
-			val substitution = HashMap<ObjectType, Type>()
+			val typeSubstitutions = HashMap<ObjectType, Type>()
 			var areParametersCompatible = true
 			for(parameterIndex in placeholders.indices) {
 				val placeholder = placeholders[parameterIndex]
@@ -36,10 +36,10 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val ba
 					linter.addMessage(source, "The type parameter " +
 							"'$parameter' is not assignable to '$placeholder'.", Message.Type.ERROR)
 				}
-				substitution[placeholder] = parameter
+				typeSubstitutions[placeholder] = parameter
 			}
 			if(areParametersCompatible)
-				type = baseType.withTypeSubstitutions(substitution)
+				type = baseType.withTypeSubstitutions(typeSubstitutions)
 		}
 	}
 }

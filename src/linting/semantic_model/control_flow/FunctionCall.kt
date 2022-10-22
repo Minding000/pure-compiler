@@ -26,29 +26,40 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val t
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
-		val functionType = function.type
-		if(functionType is StaticType) {
-			val initializer = functionType.scope.resolveInitializer(valueParameters)
-			if(initializer == null)
-				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
+		when(val targetType = function.type) {
+			is StaticType -> resolveInitializerCall(linter, scope, targetType)
+			is FunctionType -> resolveFunctionCall(linter, scope, targetType)
+			else -> linter.addMessage(source, "'${function.source.getValue()}' is not callable.",
+				Message.Type.ERROR)
+		}
+	}
+
+	private fun resolveInitializerCall(linter: Linter, scope: Scope, targetType: StaticType) {
+		//TODO implement type parameter support on initializers
+		// -> write test for it
+		if(typeParameters.isNotEmpty())
+			linter.addMessage(source, "Type parameters in initializers are currently not supported.",
+				Message.Type.WARNING)
+		val initializer = targetType.scope.resolveInitializer(typeParameters, valueParameters)
+		if(initializer == null)
+			linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
+				Message.Type.ERROR)
+		else
+			type = ObjectType(listOf(), targetType.definition)
+	}
+
+	private fun resolveFunctionCall(linter: Linter, scope: Scope, functionType: FunctionType) {
+		try {
+			val signature = functionType.resolveSignature(typeParameters, valueParameters)
+			if(signature == null)
+				linter.addMessage(source,"The provided values don't match any signature of function '${function.source.getValue()}'.",
 					Message.Type.ERROR)
 			else
-				type = ObjectType(listOf(), functionType.definition)
-		} else if(functionType is FunctionType) {
-			try {
-				val signature = functionType.resolveSignature(typeParameters, valueParameters)
-				if(signature == null)
-					linter.addMessage(source,"The provided values don't match any signature of function '${function.source.getValue()}'.",
-						Message.Type.ERROR)
-				else
-					type = signature.returnType
-			} catch(error: SignatureResolutionAmbiguityError) {
-				linter.addMessage(source, "Call to function '${getSignature()}' is ambiguous. " +
-						"Matching signatures:" + error.signatures.joinToString("\n - ", "\n - "),
-					Message.Type.ERROR)
-			}
-		} else {
-			linter.addMessage(source, "'${function.source.getValue()}' is not callable.", Message.Type.ERROR)
+				type = signature.returnType
+		} catch(error: SignatureResolutionAmbiguityError) {
+			linter.addMessage(source, "Call to function '${getSignature()}' is ambiguous. " +
+				"Matching signatures:" + error.signatures.joinToString("\n - ", "\n - "),
+				Message.Type.ERROR)
 		}
 	}
 

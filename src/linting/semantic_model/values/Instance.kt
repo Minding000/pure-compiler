@@ -8,13 +8,13 @@ import linting.semantic_model.types.StaticType
 import messages.Message
 import parsing.syntax_tree.definitions.Instance as InstanceSyntaxTree
 
-open class Instance(override val source: InstanceSyntaxTree, value: VariableValue, val parameters: List<Value>):
+open class Instance(override val source: InstanceSyntaxTree, value: VariableValue, val valueParameters: List<Value>):
 	VariableValueDeclaration(source, value.name, null, value) {
 	lateinit var typeDefinition: TypeDefinition
 
 	init {
 		value.staticValue = value
-		units.addAll(parameters)
+		units.addAll(valueParameters)
 	}
 
 	fun setType(typeDefinition: TypeDefinition) {
@@ -25,7 +25,7 @@ open class Instance(override val source: InstanceSyntaxTree, value: VariableValu
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
 		val staticType = StaticType(typeDefinition) //TODO use TypeScope instead of creating StaticType?
-		val initializer = staticType.scope.resolveInitializer(parameters)
+		val initializer = staticType.scope.resolveInitializer(valueParameters)
 		if(initializer == null)
 			linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
 				Message.Type.ERROR)
@@ -34,7 +34,7 @@ open class Instance(override val source: InstanceSyntaxTree, value: VariableValu
 	private fun getSignature(): String {
 		var signature = typeDefinition.name
 		signature += "("
-		signature += parameters.joinToString { parameter -> parameter.type.toString() }
+		signature += valueParameters.joinToString { parameter -> parameter.type.toString() }
 		signature += ")"
 		return signature
 	}

@@ -73,8 +73,11 @@ class InterfaceScope(private val type: Type): Scope() {
 		return types[name]
 	}
 
-	fun resolveInitializer(suppliedValues: List<Value>): InitializerDefinition? {
-		val validSignatures = getMatchingInitializers(suppliedValues)
+	fun resolveInitializer(suppliedValues: List<Value>): InitializerDefinition? =
+		resolveInitializer(listOf(), suppliedValues)
+
+	fun resolveInitializer(suppliedTypes: List<Type>, suppliedValues: List<Value>): InitializerDefinition? {
+		val validSignatures = getMatchingInitializers(suppliedTypes, suppliedValues)
 		if(validSignatures.isEmpty())
 			return null
 		specificityPrecedenceLoop@for(signature in validSignatures) {
@@ -91,7 +94,7 @@ class InterfaceScope(private val type: Type): Scope() {
 		throw SignatureResolutionAmbiguityError(validSignatures)
 	}
 
-	private fun getMatchingInitializers(suppliedValues: List<Value>): List<InitializerDefinition> {
+	private fun getMatchingInitializers(suppliedTypes: List<Type>, suppliedValues: List<Value>): List<InitializerDefinition> {
 		val validSignatures = LinkedList<InitializerDefinition>()
 		for(signature in initializers) {
 			if(signature.accepts(suppliedValues))
