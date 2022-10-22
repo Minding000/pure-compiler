@@ -2,24 +2,28 @@ package linting.semantic_model.definitions
 
 import linting.Linter
 import linting.semantic_model.general.Unit
+import linting.semantic_model.scopes.Scope
 import linting.semantic_model.types.ObjectType
 import linting.semantic_model.types.Type
-import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
 import parsing.syntax_tree.general.Element
+import util.getCommonType
 import java.util.*
 
 class FunctionSignature(override val source: Element, val genericParameters: List<TypeDefinition>,
-						val parameterTypes: List<Type?>, returnType: Type?): Unit(source) {
+						val parameterTypes: List<Type?>, returnType: Type?,
+						isPartOfImplementation: Boolean = false): Unit(source) {
 	val returnType = returnType ?: ObjectType(source, Linter.LiteralType.NOTHING.className)
 	var superFunctionSignature: FunctionSignature? = null
 
-	init { //TODO these are already part of the unit tree (added by FunctionImplementation) and will therefore receive events twice
-		units.addAll(genericParameters)
-		for(type in parameterTypes)
-			if(type != null)
-				units.add(type)
-		units.add(this.returnType)
+	init {
+		if(!isPartOfImplementation) {
+			units.addAll(genericParameters)
+			for(type in parameterTypes)
+				if(type != null)
+					units.add(type)
+			units.add(this.returnType)
+		}
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): FunctionSignature {
@@ -51,6 +55,35 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 			if(!suppliedValues[parameterIndex].isAssignableTo(parameterTypes[parameterIndex]))
 				return false
 		return true
+	}
+
+	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<ObjectType, Type>? {
+		if(genericParameters.size < suppliedTypes.size)
+			return null
+		if(parameterTypes.size != suppliedValues.size)
+			return null
+		val typeSubstitutions = HashMap<ObjectType, Type>()
+		for(parameterIndex in genericParameters.indices) {
+			val genericParameter = genericParameters[parameterIndex]
+			val requiredType = genericParameter.superType
+			val suppliedType = suppliedTypes.getOrNull(parameterIndex)
+				?: inferTypeParameter(genericParameter, suppliedValues)
+				?: return null
+			if(requiredType?.accepts(suppliedType) == false)
+				return null
+			typeSubstitutions[ObjectType(genericParameter)] = suppliedType
+		}
+		return typeSubstitutions
+	}
+
+	private fun inferTypeParameter(typeParameter: TypeDefinition, suppliedValues: List<Value>): Type? {
+		val inferredTypes = HashSet<Type>()
+		for(parameterIndex in parameterTypes.indices) {
+			val valueParameterType = parameterTypes[parameterIndex]
+			val suppliedType = suppliedValues[parameterIndex].type ?: continue
+			valueParameterType?.inferType(typeParameter, suppliedType, inferredTypes)
+		}
+		return inferredTypes.getCommonType(source)
 	}
 
 	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean {

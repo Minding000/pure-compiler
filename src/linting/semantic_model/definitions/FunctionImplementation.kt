@@ -13,7 +13,7 @@ class FunctionImplementation(override val source: Element, val scope: BlockScope
 							 body: ErrorHandlingContext?, returnType: Type?, val isNative: Boolean = false,
 							 val isOverriding: Boolean = false, val isMutating: Boolean = false): Unit(source) {
 	val signature = FunctionSignature(source, genericParameters, parameters.map { parameter -> parameter.type },
-		returnType)
+		returnType, true)
 	var superFunctionImplementation: FunctionImplementation? = null
 		set(value) {
 			field = value
@@ -21,10 +21,17 @@ class FunctionImplementation(override val source: Element, val scope: BlockScope
 		}
 
 	init {
+		units.add(signature)
 		units.addAll(genericParameters)
 		units.addAll(parameters)
 		if(body != null)
 			units.add(body)
+		if(returnType != null)
+			units.add(returnType)
+	}
+
+	override fun linkTypes(linter: Linter, scope: Scope) {
+		super.linkTypes(linter, this.scope)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

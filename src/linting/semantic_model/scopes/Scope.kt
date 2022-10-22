@@ -48,12 +48,13 @@ abstract class Scope {
 
 	open fun resolveOperator(name: String, suppliedValues: List<Value>): OperatorDefinition? = null
 
-	fun resolveIndexOperator(suppliedIndexValues: List<Value>): IndexOperatorDefinition?
-		= resolveIndexOperator(suppliedIndexValues, listOf())
+	fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>): IndexOperatorDefinition?
+		= resolveIndexOperator(suppliedTypes, suppliedIndexValues, listOf())
 
-	fun resolveIndexOperator(suppliedIndexValues: List<Value>, suppliedParameterValue: Value): IndexOperatorDefinition?
-		= resolveIndexOperator(suppliedIndexValues, listOf(suppliedParameterValue))
+	fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
+							 suppliedParameterValue: Value): IndexOperatorDefinition?
+		= resolveIndexOperator(suppliedTypes, suppliedIndexValues, listOf(suppliedParameterValue))
 
-	open fun resolveIndexOperator(suppliedIndexValues: List<Value>, suppliedParameterValues: List<Value>):
-			IndexOperatorDefinition? = null
+	open fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
+								  suppliedParameterValues: List<Value>): IndexOperatorDefinition? = null
 }

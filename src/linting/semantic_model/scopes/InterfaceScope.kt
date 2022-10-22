@@ -113,7 +113,7 @@ class InterfaceScope(private val type: Type): Scope() {
 					continue@specificityPrecedenceLoop
 			}
 			for(parameterIndex in suppliedValues.indices)
-				suppliedValues[parameterIndex].setInferredType(signature.parameters[parameterIndex].type)
+				suppliedValues[parameterIndex].setInferredType(signature.valueParameters[parameterIndex].type)
 			return signature
 		}
 		throw SignatureResolutionAmbiguityError(validSignatures)
@@ -130,9 +130,9 @@ class InterfaceScope(private val type: Type): Scope() {
 		return validSignatures
 	}
 
-	override fun resolveIndexOperator(suppliedIndexValues: List<Value>, suppliedParameterValues: List<Value>):
-			IndexOperatorDefinition? {
-		val validSignatures = getMatchingIndexOperators(suppliedIndexValues, suppliedParameterValues)
+	override fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
+									  suppliedParameterValues: List<Value>): IndexOperatorDefinition? {
+		val validSignatures = getMatchingIndexOperators(suppliedTypes, suppliedIndexValues, suppliedParameterValues)
 		if(validSignatures.isEmpty())
 			return null
 		specificityPrecedenceLoop@for(signature in validSignatures) {
@@ -143,21 +143,31 @@ class InterfaceScope(private val type: Type): Scope() {
 					continue@specificityPrecedenceLoop
 			}
 			for(indexIndex in suppliedIndexValues.indices)
-				suppliedIndexValues[indexIndex].setInferredType(signature.indices[indexIndex].type)
+				suppliedIndexValues[indexIndex].setInferredType(signature.indexParameters[indexIndex].type)
 			for(parameterIndex in suppliedParameterValues.indices)
-				suppliedParameterValues[parameterIndex].setInferredType(signature.parameters[parameterIndex].type)
+				suppliedParameterValues[parameterIndex].setInferredType(signature.valueParameters[parameterIndex].type)
 			return signature
 		}
 		throw SignatureResolutionAmbiguityError(validSignatures)
 	}
 
-	private fun getMatchingIndexOperators(suppliedIndexValues: List<Value>, suppliedParameterValues: List<Value>):
-		List<IndexOperatorDefinition> {
+	private fun getMatchingIndexOperators(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
+										  suppliedParameterValues: List<Value>): List<IndexOperatorDefinition> {
 		val validSignatures = LinkedList<IndexOperatorDefinition>()
 		for(signature in operators) {
-			if(signature is IndexOperatorDefinition && signature.accepts(suppliedIndexValues, suppliedParameterValues))
-				validSignatures.add(signature)
-		} //TODO check: should this be as complex as FunctionType.getMatchingSignatures()?
+			if(signature !is IndexOperatorDefinition)
+				continue
+			val typeSubstitutions = signature.getTypeSubstitutions(suppliedTypes, suppliedIndexValues,
+				suppliedParameterValues) ?: continue
+			val specificSignature = if(typeSubstitutions.isEmpty())
+				signature
+			else
+				signature.withTypeSubstitutions(typeSubstitutions)
+			if(specificSignature.accepts(suppliedIndexValues, suppliedParameterValues))
+				validSignatures.add(specificSignature)
+		}
+		//TODO check: should this be as complex as FunctionType.getMatchingSignatures()?
+		// -> write tests to find out
 		return validSignatures
 	}
 

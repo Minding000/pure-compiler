@@ -11,21 +11,24 @@ import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValue
 import messages.Message
 import linting.semantic_model.scopes.Scope
+import linting.semantic_model.types.Type
 import parsing.syntax_tree.control_flow.FunctionCall
 
-class FunctionCall(override val source: FunctionCall, val function: Value, val parameters: List<Value>): Value(source) {
+class FunctionCall(override val source: FunctionCall, val function: Value, val typeParameters: List<Type>,
+				   val valueParameters: List<Value>): Value(source) {
 
 	init {
 		staticValue = this
 		units.add(function)
-		units.addAll(parameters)
+		units.addAll(typeParameters)
+		units.addAll(valueParameters)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
 		val functionType = function.type
 		if(functionType is StaticType) {
-			val initializer = functionType.scope.resolveInitializer(parameters)
+			val initializer = functionType.scope.resolveInitializer(valueParameters)
 			if(initializer == null)
 				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
 					Message.Type.ERROR)
@@ -33,7 +36,7 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val p
 				type = ObjectType(listOf(), functionType.definition)
 		} else if(functionType is FunctionType) {
 			try {
-				val signature = functionType.resolveSignature(parameters)
+				val signature = functionType.resolveSignature(typeParameters, valueParameters)
 				if(signature == null)
 					linter.addMessage(source,"The provided values don't match any signature of function '${function.source.getValue()}'.",
 						Message.Type.ERROR)
@@ -70,7 +73,7 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val p
 			else -> "<anonymous function>"
 		}
 		signature += "("
-		signature += parameters.joinToString { parameter -> parameter.type.toString() }
+		signature += valueParameters.joinToString { parameter -> parameter.type.toString() }
 		signature += ")"
 		return signature
 	}

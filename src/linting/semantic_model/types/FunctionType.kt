@@ -28,8 +28,10 @@ class FunctionType(override val source: Element) : Type(source) {
 		signatures.remove(signature)
 	}
 
-	fun resolveSignature(suppliedValues: List<Value>): FunctionSignature? {
-		val validSignatures = getMatchingSignatures(suppliedValues)
+	fun resolveSignature(suppliedValues: List<Value>): FunctionSignature? = resolveSignature(listOf(), suppliedValues)
+
+	fun resolveSignature(suppliedTypes: List<Type> = listOf(), suppliedValues: List<Value> = listOf()): FunctionSignature? {
+		val validSignatures = getMatchingSignatures(suppliedTypes, suppliedValues)
 		if(validSignatures.isEmpty())
 			return null
 		specificityPrecedenceLoop@ for(signature in validSignatures) {
@@ -46,14 +48,19 @@ class FunctionType(override val source: Element) : Type(source) {
 		throw SignatureResolutionAmbiguityError(validSignatures)
 	}
 
-	private fun getMatchingSignatures(suppliedValues: List<Value>): List<FunctionSignature> {
+	private fun getMatchingSignatures(suppliedTypes: List<Type>, suppliedValues: List<Value>): List<FunctionSignature> {
 		val validSignatures = LinkedList<FunctionSignature>()
 		for(signature in signatures) {
-			if(signature.accepts(suppliedValues))
-				validSignatures.add(signature)
+			val typeSubstitutions = signature.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
+			val specificSignature = if(typeSubstitutions.isEmpty())
+				signature
+			else
+				signature.withTypeSubstitutions(typeSubstitutions)
+			if(specificSignature.accepts(suppliedValues))
+				validSignatures.add(specificSignature)
 		}
 		superFunctionType?.let { superFunctionType ->
-			val validSuperSignatures = superFunctionType.getMatchingSignatures(suppliedValues)
+			val validSuperSignatures = superFunctionType.getMatchingSignatures(suppliedTypes, suppliedValues)
 			validSuperSignatures@for(validSuperSignature in validSuperSignatures) {
 				for(validSignature in validSignatures)
 					if(validSignature.superFunctionSignature == validSuperSignature)

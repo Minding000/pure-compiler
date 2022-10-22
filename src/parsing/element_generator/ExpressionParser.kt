@@ -27,7 +27,7 @@ import java.util.*
 import java.util.regex.Pattern
 
 class ExpressionParser(private val elementGenerator: ElementGenerator): Generator() {
-	private val genericParameterListCheck: Pattern = Pattern.compile("[;()\\[\\]]")
+	private val typeParameterListCheck: Pattern = Pattern.compile("[;()\\[\\]]")
 	override var currentWord: Word?
 		get() = elementGenerator.currentWord
 		set(value) { elementGenerator.currentWord = value }
@@ -260,31 +260,32 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 * <Index>
 	 */
 	private fun parseCall(expression: ValueElement, startWord: WordAtom, endWord: WordAtom): ValueElement {
-		val parameterStart = consume(startWord).end
-		var genericParameters: List<TypeElement>? = null
-		val char = elementGenerator.wordGenerator.scanForCharacters(parameterStart, genericParameterListCheck)
-		if(char == ';') {
-			genericParameters = LinkedList()
-			genericParameters.add(typeParser.parseType())
+		val parameterListStart = consume(startWord).end
+		var typeParameters: List<TypeElement>? = null
+		val nextSpecialCharacter = elementGenerator.wordGenerator.scanForCharacters(parameterListStart,
+			typeParameterListCheck)
+		if(nextSpecialCharacter == ';') {
+			typeParameters = LinkedList()
+			typeParameters.add(typeParser.parseType())
 			while(currentWord?.type == WordAtom.COMMA) {
 				consume(WordAtom.COMMA)
-				genericParameters.add(typeParser.parseType())
+				typeParameters.add(typeParser.parseType())
 			}
 			consume(WordAtom.SEMICOLON)
 		}
-		val parameters = LinkedList<ValueElement>()
+		val valueParameters = LinkedList<ValueElement>()
 		if(currentWord?.type != endWord) {
-			parameters.add(parseExpression())
+			valueParameters.add(parseExpression())
 			while(currentWord?.type == WordAtom.COMMA) {
 				consume(WordAtom.COMMA)
-				parameters.add(parseExpression())
+				valueParameters.add(parseExpression())
 			}
 		}
 		val end = consume(endWord).end
 		return if(startWord == WordAtom.PARENTHESES_OPEN)
-			FunctionCall(expression, genericParameters, parameters, end)
+			FunctionCall(expression, typeParameters, valueParameters, end)
 		else
-			IndexAccess(expression, genericParameters, parameters, end)
+			IndexAccess(expression, typeParameters, valueParameters, end)
 	}
 
 	/**

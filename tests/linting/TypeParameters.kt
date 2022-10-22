@@ -95,7 +95,7 @@ class TypeParameters {
 			variableValueDeclaration.type.toString() == "Any" }?.type
 		assertNotNull(functionType)
 		assertNotNull(anyType)
-		val signature = functionType.resolveSignature(listOf())
+		val signature = functionType.resolveSignature()
 		assertNotNull(signature)
 		assertNotNull(baseType)
 		assertFalse(signature.returnType.isAssignableTo(baseType))
@@ -126,7 +126,7 @@ class TypeParameters {
 		val specificType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrinkSupply" }?.type
 		val functionType = specificType?.scope?.resolveValue("get")?.type as? FunctionType
 		assertNotNull(functionType)
-		val signature = functionType.resolveSignature(listOf())
+		val signature = functionType.resolveSignature()
 		assertNotNull(signature)
 		assertNotNull(baseType)
 		assertTrue(signature.returnType.isAssignableTo(baseType))

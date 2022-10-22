@@ -28,8 +28,8 @@ class Function(source: Element, private val implementations: MutableList<Functio
 
 	init {
 		staticValue = this
-		units.addAll(implementations)
 		units.add(functionType)
+		units.addAll(implementations)
 	}
 
 	constructor(source: Element, implementation: FunctionImplementation, name: String = "<anonymous function>"):

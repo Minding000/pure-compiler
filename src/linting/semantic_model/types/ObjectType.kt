@@ -10,7 +10,7 @@ import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.general.Element
 import java.util.LinkedList
 
-class ObjectType(override val source: Element, val name: String, val genericParameters: List<Type> = listOf()):
+class ObjectType(override val source: Element, val name: String, val typeParameters: List<Type> = listOf()):
 	Type(source) {
 	var definition: TypeDefinition? = null
 		set(value) {
@@ -28,19 +28,26 @@ class ObjectType(override val source: Element, val name: String, val genericPara
 	}
 
 	init {
-		units.addAll(genericParameters)
+		units.addAll(typeParameters)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Type {
 		val substituteType = typeSubstitution[this]
 		if(substituteType != null)
 			return substituteType
+		if(typeParameters.isEmpty())
+			return this
 		val specificGenericParameters = LinkedList<Type>()
-		for(genericParameter in genericParameters)
+		for(genericParameter in typeParameters)
 			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
 		val specificType = ObjectType(source, name, specificGenericParameters)
 		specificType.definition = definition
 		return specificType
+	}
+
+	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableSet<Type>) {
+		if(definition == genericType)
+			inferredTypes.add(sourceType)
 	}
 
 	override fun onNewType(type: TypeDefinition) {
@@ -56,6 +63,7 @@ class ObjectType(override val source: Element, val name: String, val genericPara
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
+		super.linkTypes(linter, scope)
 		if(definition == null) {
 			definition = scope.resolveType(name)
 			if(definition == null)
@@ -91,19 +99,19 @@ class ObjectType(override val source: Element, val name: String, val genericPara
 	}
 
 	override fun getKeyType(linter: Linter): Type? {
-		if(genericParameters.size != 2) {
+		if(typeParameters.size != 2) {
 			linter.addMessage("Type '$this' doesn't have a key type.", Message.Type.ERROR)
 			return null
 		}
-		return genericParameters.first()
+		return typeParameters.first()
 	}
 
-	override fun getValueType(linter: Linter): Type? {
-		if(!(genericParameters.size == 1 || genericParameters.size == 2)) {
+	override fun getValueType(linter: Linter): Type? { //TODO write test for this
+		if(!(typeParameters.size == 1 || typeParameters.size == 2)) {
 			linter.addMessage("Type '$this' doesn't have a value type.", Message.Type.ERROR)
 			return null
 		}
-		return genericParameters.last()
+		return typeParameters.last()
 	}
 
 	override fun equals(other: Any?): Boolean {
@@ -117,23 +125,23 @@ class ObjectType(override val source: Element, val name: String, val genericPara
 			return false
 		if(definition != otherType.definition)
 			return false
-		if(genericParameters.size != otherType.genericParameters.size)
+		if(typeParameters.size != otherType.typeParameters.size)
 			return false
-		for(i in genericParameters.indices)
-			if(genericParameters[i] == otherType.genericParameters[i])
+		for(genericParameterIndex in typeParameters.indices)
+			if(typeParameters[genericParameterIndex] == otherType.typeParameters[genericParameterIndex])
 				return false
 		return true
 	}
 
 	override fun hashCode(): Int {
-		var result = genericParameters.hashCode()
+		var result = typeParameters.hashCode()
 		result = 31 * result + (definition?.hashCode() ?: 0)
 		return result
 	}
 
 	override fun toString(): String {
-		if(genericParameters.isEmpty())
+		if(typeParameters.isEmpty())
 			return name
-		return genericParameters.joinToString(", ", "<", ">$name")
+		return typeParameters.joinToString(", ", "<", ">$name")
 	}
 }

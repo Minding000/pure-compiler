@@ -6,28 +6,29 @@ import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.TypeElement
 import source_structure.Position
 import parsing.syntax_tree.general.ValueElement
+import util.concretizeTypes
 import util.concretizeValues
 import util.indent
 import util.toLines
 
-class FunctionCall(private val functionReference: ValueElement, private val genericParameters: List<TypeElement>?,
-				   private val parameters: List<ValueElement>, end: Position):
+class FunctionCall(private val functionReference: ValueElement, private val typeParameters: List<TypeElement>?,
+				   private val valueParameters: List<ValueElement>, end: Position):
 	ValueElement(functionReference.start, end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): FunctionCall {
 		return FunctionCall(this, functionReference.concretize(linter, scope),
-			parameters.concretizeValues(linter, scope))
+			typeParameters.concretizeTypes(linter, scope), valueParameters.concretizeValues(linter, scope))
 	}
 
 	override fun toString(): String {
 		var stringRepresentation = "FunctionCall [ "
 		stringRepresentation += functionReference
 		stringRepresentation += " ] {"
-		if(genericParameters != null) {
-			stringRepresentation += genericParameters.toLines().indent()
+		if(typeParameters != null) {
+			stringRepresentation += typeParameters.toLines().indent()
 			stringRepresentation += ";"
 		}
-		stringRepresentation += parameters.toLines().indent()
+		stringRepresentation += valueParameters.toLines().indent()
 		stringRepresentation += "\n}"
 		return stringRepresentation
 	}

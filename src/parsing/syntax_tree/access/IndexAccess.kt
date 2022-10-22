@@ -6,24 +6,22 @@ import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.TypeElement
 import parsing.syntax_tree.general.ValueElement
 import source_structure.Position
-import util.concretizeValues
-import util.indent
-import util.toLines
+import util.*
 
-class IndexAccess(private val target: ValueElement, private val genericParameters: List<TypeElement>?,
+class IndexAccess(private val target: ValueElement, private val typeParameters: List<TypeElement>?,
 				  private val indices: List<ValueElement>, end: Position): ValueElement(target.start, end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticIndexAccessModel {
 		return SemanticIndexAccessModel(this, target.concretize(linter, scope),
-			indices.concretizeValues(linter, scope))
+			typeParameters.concretizeTypes(linter, scope), indices.concretizeValues(linter, scope))
 	}
 
 	override fun toString(): String {
 		var stringRepresentation = "Index [ "
 		stringRepresentation += target
 		stringRepresentation += " ] {"
-		if(genericParameters != null) {
-			stringRepresentation += genericParameters.toLines().indent()
+		if(typeParameters != null) {
+			stringRepresentation += typeParameters.toLines().indent()
 			stringRepresentation += ";"
 		}
 		stringRepresentation += indices.toLines().indent()

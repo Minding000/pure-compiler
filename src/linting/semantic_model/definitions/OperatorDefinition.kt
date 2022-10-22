@@ -12,42 +12,42 @@ import java.util.LinkedList
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
 open class OperatorDefinition(override val source: OperatorDefinitionSyntaxTree, name: String,
-							  val scope: BlockScope, val parameters: List<Parameter>, val body: Unit?,
+							  val scope: BlockScope, val valueParameters: List<Parameter>, val body: Unit?,
 							  returnType: Type?, val isNative: Boolean, val isOverriding: Boolean):
 	VariableValueDeclaration(source, name, returnType ?: ObjectType(source, Linter.LiteralType.NOTHING.className)) {
 	val returnType = type!!
-	val variation = parameters.joinToString { parameter -> parameter.type.toString() }
+	val variation = valueParameters.joinToString { parameter -> parameter.type.toString() }
 
 	init {
-		units.addAll(parameters)
+		units.addAll(valueParameters)
 		if(body != null)
 			units.add(body)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): OperatorDefinition {
 		val specificParameters = LinkedList<Parameter>()
-		for(parameter in parameters)
+		for(parameter in valueParameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
 		return OperatorDefinition(source, name, scope, specificParameters, body,
 				returnType.withTypeSubstitutions(typeSubstitution), isNative, isOverriding)
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
-		if(parameters.size != suppliedValues.size)
+		if(valueParameters.size != suppliedValues.size)
 			return false
-		for(parameterIndex in parameters.indices)
-			if(!suppliedValues[parameterIndex].isAssignableTo(parameters[parameterIndex].type))
+		for(parameterIndex in valueParameters.indices)
+			if(!suppliedValues[parameterIndex].isAssignableTo(valueParameters[parameterIndex].type))
 				return false
 		return true
 	}
 
 	fun isMoreSpecificThan(otherSignature: OperatorDefinition): Boolean {
-		if(otherSignature.parameters.size != parameters.size)
+		if(otherSignature.valueParameters.size != valueParameters.size)
 			return false
 		var areSignaturesEqual = true
-		for(parameterIndex in parameters.indices) {
-			val parameterType = parameters[parameterIndex].type ?: return false
-			val otherParameterType = otherSignature.parameters[parameterIndex].type
+		for(parameterIndex in valueParameters.indices) {
+			val parameterType = valueParameters[parameterIndex].type ?: return false
+			val otherParameterType = otherSignature.valueParameters[parameterIndex].type
 			if(otherParameterType == null) {
 				areSignaturesEqual = false
 				continue

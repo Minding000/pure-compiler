@@ -44,16 +44,19 @@ class Assignment(override val source: Assignment, private val targets: List<Valu
 			when(target) {
 				is VariableValue -> {
 					if(target.definition?.isConstant == true)
-						linter.addMessage(target.source, "'${target.name}' cannot be reassigned, because it is constant.",
+						linter.addMessage(target.source,
+							"'${target.name}' cannot be reassigned, because it is constant.",
 							Message.Type.ERROR)
 				}
 				is MemberAccess -> {
 					if(target.member.definition?.isConstant == true)
-						linter.addMessage(target.source, "'${target.member.name}' cannot be reassigned, because it is constant.",
+						linter.addMessage(target.source,
+							"'${target.member.name}' cannot be reassigned, because it is constant.",
 							Message.Type.ERROR)
 				}
 				is IndexAccess -> {
-					target.target.type?.scope?.resolveIndexOperator(target.indices, sourceExpression)
+					target.target.type?.scope?.resolveIndexOperator(target.typeParameters, target.indices,
+						sourceExpression)
 				}
 				else -> {
 					linter.addMessage(target.source, "Expression is not assignable.", Message.Type.ERROR)

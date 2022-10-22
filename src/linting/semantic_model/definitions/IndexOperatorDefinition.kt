@@ -1,22 +1,24 @@
 package linting.semantic_model.definitions
 
+import linting.Linter
 import linting.semantic_model.general.Unit
 import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.types.ObjectType
 import linting.semantic_model.values.Value
+import util.getCommonType
 import java.util.*
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
 class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: BlockScope,
-							  val genericParameters: List<TypeDefinition>, val indices: List<Parameter>,
+							  val genericParameters: List<TypeDefinition>, val indexParameters: List<Parameter>,
 							  parameters: List<Parameter>, body: Unit?, returnType: Type?, isNative: Boolean,
 							  isOverriding: Boolean):
 	OperatorDefinition(source, "[]", scope, parameters, body, returnType, isNative, isOverriding) {
 
 	init {
 		units.addAll(genericParameters)
-		units.addAll(indices)
+		units.addAll(indexParameters)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): IndexOperatorDefinition {
@@ -24,58 +26,96 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 		for(genericParameter in genericParameters)
 			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
 		val specificIndices = LinkedList<Parameter>()
-		for(index in indices)
+		for(index in indexParameters)
 			specificIndices.add(index.withTypeSubstitutions(typeSubstitution))
 		val specificParameters = LinkedList<Parameter>()
-		for(parameter in parameters)
+		for(parameter in valueParameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
 		return IndexOperatorDefinition(source, scope, specificGenericParameters, specificIndices, specificParameters,
 			body, returnType.withTypeSubstitutions(typeSubstitution), isNative, isOverriding)
 	}
 
-	fun accepts(indexValues: List<Value>, parameterValues: List<Value>): Boolean {
-		if(indices.size != indexValues.size)
+	fun accepts(suppliedIndexValues: List<Value>, suppliedParameterValues: List<Value>): Boolean {
+		if(indexParameters.size != suppliedIndexValues.size)
 			return false
-		if(parameters.size != parameterValues.size)
+		if(valueParameters.size != suppliedParameterValues.size)
 			return false
-		for(indexIndex in indices.indices)
-			if(!indexValues[indexIndex].isAssignableTo(indices[indexIndex].type))
+		for(indexIndex in indexParameters.indices)
+			if(!suppliedIndexValues[indexIndex].isAssignableTo(indexParameters[indexIndex].type))
 				return false
-		for(parameterIndex in parameters.indices)
-			if(!parameterValues[parameterIndex].isAssignableTo(parameters[parameterIndex].type))
+		for(parameterIndex in valueParameters.indices)
+			if(!suppliedParameterValues[parameterIndex].isAssignableTo(valueParameters[parameterIndex].type))
 				return false
 		return true
 	}
 
+	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
+							 suppliedParameterValues: List<Value>): Map<ObjectType, Type>? {
+		if(genericParameters.size < suppliedTypes.size)
+			return null
+		if(indexParameters.size != suppliedIndexValues.size)
+			return null
+		if(valueParameters.size != suppliedParameterValues.size)
+			return null
+		val typeSubstitutions = HashMap<ObjectType, Type>()
+		for(parameterIndex in genericParameters.indices) {
+			val genericParameter = genericParameters[parameterIndex]
+			val requiredType = genericParameter.superType
+			val suppliedType = suppliedTypes.getOrNull(parameterIndex)
+				?: inferTypeParameter(genericParameter, suppliedIndexValues, suppliedParameterValues)
+				?: return null
+			if(requiredType?.accepts(suppliedType) == false)
+				return null
+			typeSubstitutions[ObjectType(genericParameter)] = suppliedType
+		}
+		return typeSubstitutions
+	}
+
+	private fun inferTypeParameter(typeParameter: TypeDefinition, suppliedIndexValues: List<Value>,
+								   suppliedParameterValues: List<Value>): Type? {
+		val inferredTypes = HashSet<Type>()
+		for(indexParameterIndex in indexParameters.indices) {
+			val indexParameterType = indexParameters[indexParameterIndex].type
+			val suppliedType = suppliedIndexValues[indexParameterIndex].type ?: continue
+			indexParameterType?.inferType(typeParameter, suppliedType, inferredTypes)
+		}
+		for(valueParameterIndex in valueParameters.indices) {
+			val valueParameterType = valueParameters[valueParameterIndex].type
+			val suppliedType = suppliedParameterValues[valueParameterIndex].type ?: continue
+			valueParameterType?.inferType(typeParameter, suppliedType, inferredTypes)
+		}
+		return inferredTypes.getCommonType(source)
+	}
+
 	fun isMoreSpecificThan(otherSignature: IndexOperatorDefinition): Boolean {
-		if(otherSignature.indices.size != indices.size)
+		if(otherSignature.indexParameters.size != indexParameters.size)
 			return false
-		if(otherSignature.parameters.size != parameters.size)
+		if(otherSignature.valueParameters.size != valueParameters.size)
 			return false
 		var areSignaturesEqual = true
-		for(indexIndex in indices.indices) {
-			val indexType = indices[indexIndex].type ?: return false
-			val otherIndexType = otherSignature.indices[indexIndex].type
-			if(otherIndexType == null) {
+		for(indexParameterIndex in indexParameters.indices) {
+			val indexParameterType = indexParameters[indexParameterIndex].type ?: return false
+			val otherIndexParameterType = otherSignature.indexParameters[indexParameterIndex].type
+			if(otherIndexParameterType == null) {
 				areSignaturesEqual = false
 				continue
 			}
-			if(otherIndexType != indexType) {
+			if(otherIndexParameterType != indexParameterType) {
 				areSignaturesEqual = false
-				if(!otherIndexType.accepts(indexType))
+				if(!otherIndexParameterType.accepts(indexParameterType))
 					return false
 			}
 		}
-		for(parameterIndex in parameters.indices) {
-			val parameterType = parameters[parameterIndex].type ?: return false
-			val otherParameterType = otherSignature.parameters[parameterIndex].type
-			if(otherParameterType == null) {
+		for(valueParameterIndex in valueParameters.indices) {
+			val valueParameterType = valueParameters[valueParameterIndex].type ?: return false
+			val otherValueParameterType = otherSignature.valueParameters[valueParameterIndex].type
+			if(otherValueParameterType == null) {
 				areSignaturesEqual = false
 				continue
 			}
-			if(otherParameterType != parameterType) {
+			if(otherValueParameterType != valueParameterType) {
 				areSignaturesEqual = false
-				if(!otherParameterType.accepts(parameterType))
+				if(!otherValueParameterType.accepts(valueParameterType))
 					return false
 			}
 		}
@@ -83,6 +123,7 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 	}
 
 	override fun toString(): String {
-		return "[${indices.joinToString { index -> index.type.toString() }}]($variation)"
+		val indexVariation = indexParameters.joinToString { index -> index.type.toString() }
+		return "[$indexVariation]($variation)${if(Linter.LiteralType.NOTHING.matches(returnType)) "" else ": $returnType"}"
 	}
 }

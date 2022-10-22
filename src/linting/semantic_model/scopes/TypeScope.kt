@@ -147,17 +147,17 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			if(declaredOperator is IndexOperatorDefinition) {
 				if(operator !is IndexOperatorDefinition)
 					continue
-				if(declaredOperator.indices.size != operator.indices.size)
+				if(declaredOperator.indexParameters.size != operator.indexParameters.size)
 					continue
-				for(i in operator.indices.indices) {
-					if(declaredOperator.indices[i].type != operator.indices[i].type)
+				for(i in operator.indexParameters.indices) {
+					if(declaredOperator.indexParameters[i].type != operator.indexParameters[i].type)
 						continue@operatorIteration
 				}
 			}
-			if(declaredOperator.parameters.size != operator.parameters.size)
+			if(declaredOperator.valueParameters.size != operator.valueParameters.size)
 				continue
-			for(i in operator.parameters.indices) {
-				if(declaredOperator.parameters[i].type != operator.parameters[i].type)
+			for(i in operator.valueParameters.indices) {
+				if(declaredOperator.valueParameters[i].type != operator.valueParameters[i].type)
 					continue@operatorIteration
 			}
 			previousDeclaration = declaredOperator
@@ -210,15 +210,16 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			?: parentScope.resolveType(name)
 	}
 
+	//TODO this function is outdated (see InterfaceScope)
 	override fun resolveOperator(name: String, suppliedValues: List<Value>):
-			OperatorDefinition? { //TODO this function is outdated (see InterfaceScope)
+			OperatorDefinition? {
 		operatorIteration@for(operator in operators) {
 			if(operator.name != name)
 				continue
-			if(operator.parameters.size != suppliedValues.size)
+			if(operator.valueParameters.size != suppliedValues.size)
 				continue
 			for(i in suppliedValues.indices) {
-				if(!suppliedValues[i].isAssignableTo(operator.parameters[i].type))
+				if(!suppliedValues[i].isAssignableTo(operator.valueParameters[i].type))
 					continue@operatorIteration
 			}
 			return operator
@@ -227,26 +228,27 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			?: parentScope.resolveOperator(name, suppliedValues)
 	}
 
-	override fun resolveIndexOperator(suppliedIndexValues: List<Value>, suppliedParameterValues: List<Value>):
-			IndexOperatorDefinition? { //TODO this function is outdated (see InterfaceScope)
+	//TODO this function is outdated (see InterfaceScope)
+	override fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
+									  suppliedParameterValues: List<Value>): IndexOperatorDefinition? {
 		operatorIteration@for(operator in operators) {
 			if(operator !is IndexOperatorDefinition)
 				continue
-			if(operator.indices.size != suppliedIndexValues.size)
+			if(operator.indexParameters.size != suppliedIndexValues.size)
 				continue
-			if(operator.parameters.size != suppliedParameterValues.size)
+			if(operator.valueParameters.size != suppliedParameterValues.size)
 				continue
 			for(i in suppliedIndexValues.indices) {
-				if(!suppliedIndexValues[i].isAssignableTo(operator.indices[i].type))
+				if(!suppliedIndexValues[i].isAssignableTo(operator.indexParameters[i].type))
 					continue@operatorIteration
 			}
 			for(i in suppliedParameterValues.indices) {
-				if(!suppliedParameterValues[i].isAssignableTo(operator.parameters[i].type))
+				if(!suppliedParameterValues[i].isAssignableTo(operator.valueParameters[i].type))
 					continue@operatorIteration
 			}
 			return operator
 		}
-		return superScope?.resolveIndexOperator(suppliedIndexValues, suppliedParameterValues)
-			?: parentScope.resolveIndexOperator(suppliedIndexValues, suppliedParameterValues)
+		return superScope?.resolveIndexOperator(suppliedTypes, suppliedIndexValues, suppliedParameterValues)
+			?: parentScope.resolveIndexOperator(suppliedTypes, suppliedIndexValues, suppliedParameterValues)
 	}
 }

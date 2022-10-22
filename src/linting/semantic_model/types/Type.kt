@@ -18,17 +18,15 @@ abstract class Type(source: Element): Unit(source) {
 
 	abstract fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Type
 
-	open fun onNewType(type: TypeDefinition) {
-	}
+	open fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableSet<Type>) {}
 
-	open fun onNewValue(value: VariableValueDeclaration) {
-	}
+	open fun onNewType(type: TypeDefinition) {}
 
-	open fun onNewInitializer(initializer: InitializerDefinition) {
-	}
+	open fun onNewValue(value: VariableValueDeclaration) {}
 
-	open fun onNewOperator(operator: OperatorDefinition) {
-	}
+	open fun onNewInitializer(initializer: InitializerDefinition) {}
+
+	open fun onNewOperator(operator: OperatorDefinition) {}
 
 	abstract fun accepts(unresolvedSourceType: Type): Boolean
 	abstract fun isAssignableTo(unresolvedTargetType: Type): Boolean

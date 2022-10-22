@@ -104,7 +104,7 @@ internal class ValueResolution {
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "Door" }
 		val functionType = variableValue?.type?.scope?.resolveValue("open")?.type as? FunctionType
 		assertNotNull(functionType)
-		val signature = functionType.resolveSignature(listOf())
+		val signature = functionType.resolveSignature()
 		assertNotNull(signature)
 	}
 
@@ -143,7 +143,7 @@ internal class ValueResolution {
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
 		val functionType = variableValue?.type?.scope?.resolveValue("open")?.type as? FunctionType
 		assertNotNull(functionType)
-		val signature = functionType.resolveSignature(listOf())
+		val signature = functionType.resolveSignature()
 		assertNotNull(signature)
 	}
 
@@ -164,7 +164,7 @@ internal class ValueResolution {
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
 		val functionType = variableValue?.type?.scope?.resolveValue("open")?.type as? FunctionType
 		assertNotNull(functionType)
-		val signature = functionType.resolveSignature(listOf())
+		val signature = functionType.resolveSignature()
 		assertNotNull(signature)
 	}
 

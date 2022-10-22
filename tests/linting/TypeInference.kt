@@ -4,6 +4,7 @@ import linting.semantic_model.control_flow.FunctionCall
 import linting.semantic_model.operations.InstanceAccess
 import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.OptionalType
 import linting.semantic_model.types.StaticType
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.VariableValueDeclaration
@@ -184,7 +185,7 @@ class TypeInference {
 			variableValueDeclaration.name == "letterBox" }
 		val returnType = variableValueDeclaration?.type as? ObjectType
 		assertNotNull(returnType)
-		assertEquals(genericParameter, returnType.genericParameters.firstOrNull())
+		assertEquals(genericParameter, returnType.typeParameters.firstOrNull())
 	}
 
 	@Test
@@ -196,7 +197,7 @@ class TypeInference {
 					init
 				}
 				object PostOffice {
-					to stamp<L: Letter>(letter: L): L {
+					to stamp(L: Letter; letter: L): L {
 						return letter
 					}
 				}
@@ -210,6 +211,31 @@ class TypeInference {
 		val returnType = variableValueDeclaration?.type as? ObjectType
 		assertNotNull(returnType)
 		assertEquals(genericParameter, returnType)
+	}
+
+	@Test
+	fun `infers generic type in function call with optional type usage`() {
+		val sourceCode =
+			"""
+				trait Letter {}
+				class PostCard: Letter {
+					init
+				}
+				object PostOffice {
+					to stamp(L: Letter; letter: L?): L? {
+						return letter
+					}
+				}
+				val stampedPostCard = PostOffice.stamp(PostCard())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function.type as? StaticType)?.definition?.name == "PostCard" }?.type
+		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+			variableValueDeclaration.name == "stampedPostCard" }
+		val returnType = variableValueDeclaration?.type as? OptionalType
+		assertNotNull(returnType)
+		assertEquals(genericParameter, returnType.baseType)
 	}
 
 	@Test
@@ -228,7 +254,7 @@ class TypeInference {
 					init
 				}
 				object Server {
-					operator <A: IpAddress>[ipAddress: A]: <A>Client {}
+					operator [A: IpAddress; ipAddress: A]: <A>Client {}
 				}
 				val client = Server[Ipv4Address()]
             """.trimIndent()
@@ -239,6 +265,6 @@ class TypeInference {
 			variableValueDeclaration.name == "client" }
 		val returnType = variableValueDeclaration?.type as? ObjectType
 		assertNotNull(returnType)
-		assertEquals(genericParameter, returnType.genericParameters.firstOrNull())
+		assertEquals(genericParameter, returnType.typeParameters.firstOrNull())
 	}
 }
