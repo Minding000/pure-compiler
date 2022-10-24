@@ -27,28 +27,24 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val t
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
 		when(val targetType = function.type) {
-			is StaticType -> resolveInitializerCall(linter, scope, targetType)
-			is FunctionType -> resolveFunctionCall(linter, scope, targetType)
+			is StaticType -> resolveInitializerCall(linter, targetType)
+			is FunctionType -> resolveFunctionCall(linter, targetType)
 			else -> linter.addMessage(source, "'${function.source.getValue()}' is not callable.",
 				Message.Type.ERROR)
 		}
 	}
 
-	private fun resolveInitializerCall(linter: Linter, scope: Scope, targetType: StaticType) {
-		//TODO implement type parameter support on initializers
-		// -> write test for it
-		if(typeParameters.isNotEmpty())
-			linter.addMessage(source, "Type parameters in initializers are currently not supported.",
-				Message.Type.WARNING)
+	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {
+		val persistentTypeParameters = (function as? TypeSpecification)?.genericParameters ?: listOf()
 		val initializer = targetType.scope.resolveInitializer(typeParameters, valueParameters)
 		if(initializer == null)
 			linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
 				Message.Type.ERROR)
 		else
-			type = ObjectType(listOf(), targetType.definition)
+			type = ObjectType(persistentTypeParameters, targetType.definition)
 	}
 
-	private fun resolveFunctionCall(linter: Linter, scope: Scope, functionType: FunctionType) {
+	private fun resolveFunctionCall(linter: Linter, functionType: FunctionType) {
 		try {
 			val signature = functionType.resolveSignature(typeParameters, valueParameters)
 			if(signature == null)

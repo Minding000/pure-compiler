@@ -24,8 +24,9 @@ class InitializerDefinition(start: Position, private val parameterList: Paramete
 		parent?.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 		val initializerScope = BlockScope(scope)
+		val genericParameters = parameterList?.concretizeGenerics(linter, initializerScope) ?: listOf()
 		val parameters = parameterList?.concretizeParameters(linter, initializerScope) ?: listOf()
-		return InitializerDefinition(this, initializerScope, parameters,
+		return InitializerDefinition(this, initializerScope, genericParameters, parameters,
 			body?.concretize(linter, initializerScope), isNative)
 	}
 

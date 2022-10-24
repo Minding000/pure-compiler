@@ -8,25 +8,31 @@ import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
+import util.getCommonType
 import java.util.*
 import parsing.syntax_tree.definitions.InitializerDefinition as InitializerDefinitionSyntaxTree
 
 class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree, val scope: BlockScope,
-							val parameters: List<Parameter>, val body: Unit?, val isNative: Boolean): Unit(source) {
+							val genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,
+							val body: Unit?, val isNative: Boolean): Unit(source) {
 	val variation: String
 		get() = parameters.joinToString { parameter -> parameter.type.toString() }
 
 	init {
+		units.addAll(genericParameters)
 		units.addAll(parameters)
 		if(body != null)
 			units.add(body)
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): InitializerDefinition {
+		val specificGenericParameters = LinkedList<TypeDefinition>()
+		for(genericParameter in genericParameters)
+			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
-		return InitializerDefinition(source, scope, specificParameters, body, isNative)
+		return InitializerDefinition(source, scope, specificGenericParameters, specificParameters, body, isNative)
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -37,6 +43,35 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 				return false
 		}
 		return true
+	}
+
+	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<ObjectType, Type>? {
+		if(genericParameters.size < suppliedTypes.size)
+			return null
+		if(parameters.size != suppliedValues.size)
+			return null
+		val typeSubstitutions = HashMap<ObjectType, Type>()
+		for(parameterIndex in genericParameters.indices) {
+			val genericParameter = genericParameters[parameterIndex]
+			val requiredType = genericParameter.superType
+			val suppliedType = suppliedTypes.getOrNull(parameterIndex)
+				?: inferTypeParameter(genericParameter, suppliedValues)
+				?: return null
+			if(requiredType?.accepts(suppliedType) == false)
+				return null
+			typeSubstitutions[ObjectType(genericParameter)] = suppliedType
+		}
+		return typeSubstitutions
+	}
+
+	private fun inferTypeParameter(typeParameter: TypeDefinition, suppliedValues: List<Value>): Type? {
+		val inferredTypes = HashSet<Type>()
+		for(parameterIndex in parameters.indices) {
+			val valueParameterType = parameters[parameterIndex].type
+			val suppliedType = suppliedValues[parameterIndex].type ?: continue
+			valueParameterType?.inferType(typeParameter, suppliedType, inferredTypes)
+		}
+		return inferredTypes.getCommonType(source)
 	}
 
 	fun isMoreSpecificThan(otherInitializerDefinition: InitializerDefinition): Boolean {
@@ -60,6 +95,10 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 				return false
 		}
 		return true
+	}
+
+	override fun linkTypes(linter: Linter, scope: Scope) {
+		super.linkTypes(linter, this.scope)
 	}
 
 	override fun linkPropertyParameters(linter: Linter, scope: MutableScope) {

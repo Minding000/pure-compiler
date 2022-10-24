@@ -9,7 +9,7 @@ import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.definitions.TypeSpecification as TypeSpecificationSyntaxTree
 
 class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val baseValue: Value,
-						private val genericParameters: List<Type>): Value(source) {
+						val genericParameters: List<Type>): Value(source) {
 
 	init {
 		units.add(baseValue)

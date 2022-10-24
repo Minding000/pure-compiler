@@ -165,7 +165,7 @@ class TypeInference {
 	}
 
 	@Test
-	fun `infers generic type in constructor call`() {
+	fun `infers generic type before constructor call`() {
 		val sourceCode =
 			"""
 				class Letter {
@@ -186,6 +186,46 @@ class TypeInference {
 		val returnType = variableValueDeclaration?.type as? ObjectType
 		assertNotNull(returnType)
 		assertEquals(genericParameter, returnType.typeParameters.firstOrNull())
+	}
+
+	@Test
+	fun `infers generic type in constructor call`() {
+		val sourceCode =
+			"""
+				class List {
+					containing Item
+					init
+					to add(item: Item) {}
+				}
+				class Message {
+					var actions: <Message>Actions
+				}
+				class NewsletterMessage: Message {}
+				class Actions {
+					containing M: Message // type def #1 (correct)
+					init
+				}
+				class Account {
+					val incomingMessages = <Message>List()
+					init
+				}
+				class MailFolder {
+					val messages: <Message>List
+					init(MessageType: Message; account: Account, availableActions: <MessageType>Actions) {  // type def #2 needs to apply two substitutions
+						loop over account.incomingMessages as incomingMessage {
+							if(incomingMessage is MessageType) {
+								incomingMessage.actions = availableActions
+								messages.add(incomingMessage)
+							}
+						}
+					}
+				}
+				val spamFolder = MailFolder(Account(), <NewsletterMessage>Actions())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerResult = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function.type as? StaticType)?.definition?.name == "MailFolder" }?.type as? ObjectType
+		assertNotNull(initializerResult)
 	}
 
 	@Test

@@ -14,16 +14,16 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 	Type(source) {
 	var definition: TypeDefinition? = null
 		set(value) {
-			value?.scope?.subscribe(this)
-			field = value
+			field = value//?.withTypeParameters(typeParameters)
+			field?.scope?.subscribe(this)
 		}
 
 	constructor(definition: TypeDefinition): this(definition.source, definition.name) {
 		this.definition = definition
 	}
 
-	constructor(genericParameters: List<Type>, definition: TypeDefinition):
-			this(definition.source, definition.name, genericParameters) {
+	constructor(typeParameters: List<Type>, definition: TypeDefinition):
+			this(definition.source, definition.name, typeParameters) {
 		this.definition = definition
 	}
 
@@ -37,17 +37,24 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 			return substituteType
 		if(typeParameters.isEmpty())
 			return this
-		val specificGenericParameters = LinkedList<Type>()
-		for(genericParameter in typeParameters)
-			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
-		val specificType = ObjectType(source, name, specificGenericParameters)
-		specificType.definition = definition
+		val specificTypeParameters = LinkedList<Type>()
+		for(typeParameter in typeParameters)
+			specificTypeParameters.add(typeParameter.withTypeSubstitutions(typeSubstitution))
+		val specificType = ObjectType(source, name, specificTypeParameters)
+		specificType.definition = definition?.withTypeSubstitutions(typeSubstitution)
 		return specificType
 	}
 
 	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableSet<Type>) {
-		if(definition == genericType)
-			inferredTypes.add(sourceType)
+		if(sourceType is ObjectType) {
+			for(typeParameterIndex in typeParameters.indices) {
+				val requiredTypeParameter = typeParameters[typeParameterIndex]
+				val sourceTypeParameter = sourceType.typeParameters.getOrNull(typeParameterIndex) ?: break
+				requiredTypeParameter.inferType(genericType, sourceTypeParameter, inferredTypes)
+			}
+			if(definition == genericType)
+				inferredTypes.add(sourceType)
+		}
 	}
 
 	override fun onNewType(type: TypeDefinition) {

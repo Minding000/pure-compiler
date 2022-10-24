@@ -24,7 +24,10 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	fun createInstanceConstant(definition: TypeDefinition) {
+		//TODO also include generic types in the following ObjectType
 		instanceConstant = VariableValueDeclaration(definition.source, SELF_REFERENCE, ObjectType(definition))
+		//TODO ObjectType should have generic parameters here
+		// instance constant should be added as unit
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>, superScope: InterfaceScope?): TypeScope {
@@ -250,5 +253,13 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		}
 		return superScope?.resolveIndexOperator(suppliedTypes, suppliedIndexValues, suppliedParameterValues)
 			?: parentScope.resolveIndexOperator(suppliedTypes, suppliedIndexValues, suppliedParameterValues)
+	}
+
+	fun getGenericTypes(): LinkedList<ObjectType> {
+		val genericTypes = LinkedList<ObjectType>()
+		for((_, typeDefinition) in typeDefinitions)
+			if(typeDefinition is GenericTypeDefinition)
+				genericTypes.add(ObjectType(typeDefinition))
+		return genericTypes
 	}
 }

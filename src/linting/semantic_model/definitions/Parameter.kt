@@ -11,11 +11,6 @@ class Parameter(override val source: ParameterSyntaxTree, name: String, type: Ty
 				val hasDynamicSize: Boolean):
 	VariableValueDeclaration(source, name, type, null, true, isMutable) {
 
-	init {
-		if(type != null)
-			units.add(type)
-	}
-
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Parameter {
 		return Parameter(source, name, type?.withTypeSubstitutions(typeSubstitution), isMutable, hasDynamicSize)
 	}

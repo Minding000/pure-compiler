@@ -97,8 +97,13 @@ class InterfaceScope(private val type: Type): Scope() {
 	private fun getMatchingInitializers(suppliedTypes: List<Type>, suppliedValues: List<Value>): List<InitializerDefinition> {
 		val validSignatures = LinkedList<InitializerDefinition>()
 		for(signature in initializers) {
-			if(signature.accepts(suppliedValues))
-				validSignatures.add(signature)
+			val typeSubstitutions = signature.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
+			val specificSignature = if(typeSubstitutions.isEmpty())
+				signature
+			else
+				signature.withTypeSubstitutions(typeSubstitutions)
+			if(specificSignature.accepts(suppliedValues))
+				validSignatures.add(specificSignature)
 		}
 		return validSignatures
 	}

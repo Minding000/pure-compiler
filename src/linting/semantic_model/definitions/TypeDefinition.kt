@@ -19,6 +19,33 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 
 	abstract fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): TypeDefinition
 
+	fun withTypeParameters(typeParameters: List<Type>): TypeDefinition? {
+		val placeholders = scope.getGenericTypes()
+		if(typeParameters.size != placeholders.size) {
+//			linter.addMessage(source, "Number of provided type parameters " +
+//				"(${genericParameters.size}) doesn't match number of declared " +
+//				"generic types (${placeholders.size}).", Message.Type.ERROR)
+			return null
+		}
+		if(typeParameters.isEmpty())
+			return this
+		val typeSubstitutions = HashMap<ObjectType, Type>()
+		var areParametersCompatible = true
+		for(parameterIndex in placeholders.indices) {
+			val placeholder = placeholders[parameterIndex]
+			val typeParameter = typeParameters[parameterIndex]
+			if(!placeholder.acceptsSubstituteType(typeParameter)) {
+				areParametersCompatible = false
+//				linter.addMessage(source, "The type parameter " +
+//					"'$parameter' is not assignable to '$placeholder'.", Message.Type.ERROR)
+			}
+			typeSubstitutions[placeholder] = typeParameter
+		}
+		if(areParametersCompatible)
+			return withTypeSubstitutions(typeSubstitutions)
+		return null
+	}
+
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		super.linkTypes(linter, this.scope)
 		this.scope.inheritSignatures()
