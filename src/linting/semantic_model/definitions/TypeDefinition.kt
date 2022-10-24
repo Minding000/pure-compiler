@@ -11,6 +11,7 @@ import parsing.syntax_tree.general.Element
 
 abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope,
 							  val superType: Type?): Unit(source) {
+	var baseDefinition: TypeDefinition? = null
 
 	init {
 		if(superType != null)
@@ -20,6 +21,9 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 	abstract fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): TypeDefinition
 
 	fun withTypeParameters(typeParameters: List<Type>): TypeDefinition? {
+		baseDefinition?.let { baseDefinition ->
+			return baseDefinition.withTypeParameters(typeParameters)
+		}
 		val placeholders = scope.getGenericTypes()
 		if(typeParameters.size != placeholders.size) {
 //			linter.addMessage(source, "Number of provided type parameters " +
@@ -41,8 +45,11 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 			}
 			typeSubstitutions[placeholder] = typeParameter
 		}
-		if(areParametersCompatible)
-			return withTypeSubstitutions(typeSubstitutions)
+		if(areParametersCompatible) {
+			val specificTypeDefinition = withTypeSubstitutions(typeSubstitutions)
+			specificTypeDefinition.baseDefinition = this
+			return specificTypeDefinition
+		}
 		return null
 	}
 
@@ -58,6 +65,16 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, this.scope)
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if(other !is TypeDefinition)
+			return false
+		return source == other.source
+	}
+
+	override fun hashCode(): Int {
+		return source.hashCode()
 	}
 
 	override fun toString(): String {

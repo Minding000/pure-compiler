@@ -14,7 +14,7 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 	Type(source) {
 	var definition: TypeDefinition? = null
 		set(value) {
-			field = value//?.withTypeParameters(typeParameters)
+			field = value?.withTypeParameters(typeParameters)
 			field?.scope?.subscribe(this)
 		}
 
@@ -41,7 +41,7 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		for(typeParameter in typeParameters)
 			specificTypeParameters.add(typeParameter.withTypeSubstitutions(typeSubstitution))
 		val specificType = ObjectType(source, name, specificTypeParameters)
-		specificType.definition = definition?.withTypeSubstitutions(typeSubstitution)
+		specificType.definition = definition
 		return specificType
 	}
 
