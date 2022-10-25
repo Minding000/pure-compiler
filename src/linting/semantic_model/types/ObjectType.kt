@@ -78,6 +78,28 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		}
 	}
 
+	override fun validate(linter: Linter) {
+		super.validate(linter)
+		(definition?.baseDefinition ?: definition)?.let { definition ->
+			val placeholders = definition.scope.getGenericTypes()
+			if(typeParameters.size != placeholders.size) {
+				linter.addMessage(source, "Number of provided type parameters " +
+					"(${typeParameters.size}) doesn't match number of declared " +
+					"generic types (${placeholders.size}).", Message.Type.ERROR)
+			}
+			if(typeParameters.isEmpty())
+				return
+			for(parameterIndex in placeholders.indices) {
+				val placeholder = placeholders[parameterIndex]
+				val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
+				if(!placeholder.acceptsSubstituteType(typeParameter)) {
+					linter.addMessage(source, "The type parameter " +
+						"'$typeParameter' is not assignable to '$placeholder'.", Message.Type.ERROR)
+				}
+			}
+		}
+	}
+
 	fun acceptsSubstituteType(substituteType: Type): Boolean {
 		return definition?.superType?.accepts(substituteType) ?: true
 	}

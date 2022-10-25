@@ -202,7 +202,7 @@ class TypeInference {
 				}
 				class NewsletterMessage: Message {}
 				class Actions {
-					containing M: Message // type def #1 (correct)
+					containing M: Message
 					init
 				}
 				class Account {
@@ -211,7 +211,7 @@ class TypeInference {
 				}
 				class MailFolder {
 					val messages: <Message>List
-					init(MessageType: Message; account: Account, availableActions: <MessageType>Actions) {  // type def #2 needs to apply two substitutions
+					init(MessageType: Message; account: Account, availableActions: <MessageType>Actions) {
 						loop over account.incomingMessages as incomingMessage {
 							if(incomingMessage is MessageType) {
 								incomingMessage.actions = availableActions
