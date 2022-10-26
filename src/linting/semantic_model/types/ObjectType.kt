@@ -37,7 +37,7 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		for(typeParameter in typeParameters)
 			specificTypeParameters.add(typeParameter.withTypeSubstitutions(typeSubstitution))
 		val specificType = ObjectType(source, name, specificTypeParameters)
-		specificType.definition = definition//?.withTypeParameters(specificTypeParameters)
+		specificType.definition = definition?.withTypeParameters(specificTypeParameters)
 		return specificType
 	}
 
@@ -160,7 +160,7 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		if(typeParameters.size != otherType.typeParameters.size)
 			return false
 		for(genericParameterIndex in typeParameters.indices)
-			if(typeParameters[genericParameterIndex] == otherType.typeParameters[genericParameterIndex])
+			if(typeParameters[genericParameterIndex] != otherType.typeParameters[genericParameterIndex])
 				return false
 		return true
 	}
