@@ -13,10 +13,6 @@ import java.util.LinkedList
 class ObjectType(override val source: Element, val name: String, val typeParameters: List<Type> = listOf()):
 	Type(source) {
 	var definition: TypeDefinition? = null
-		set(value) {
-			field = value?.withTypeParameters(typeParameters)
-			field?.scope?.subscribe(this)
-		}
 
 	constructor(definition: TypeDefinition): this(definition.source, definition.name) {
 		this.definition = definition
@@ -41,7 +37,7 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		for(typeParameter in typeParameters)
 			specificTypeParameters.add(typeParameter.withTypeSubstitutions(typeSubstitution))
 		val specificType = ObjectType(source, name, specificTypeParameters)
-		specificType.definition = definition
+		specificType.definition = definition//?.withTypeParameters(specificTypeParameters)
 		return specificType
 	}
 
@@ -76,6 +72,13 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 			if(definition == null)
 				linter.addMessage(source, "Type '$name' hasn't been declared yet.", Message.Type.ERROR)
 		}
+	}
+
+	override fun resolveGenerics(linter: Linter) {
+		super.resolveGenerics(linter)
+		if(typeParameters.isNotEmpty())
+			definition = definition?.withTypeParameters(typeParameters)
+		definition?.scope?.subscribe(this)
 	}
 
 	override fun validate(linter: Linter) {

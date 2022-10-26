@@ -14,6 +14,10 @@ class StaticType(val definition: TypeDefinition): Type(definition.source) {
 		return StaticType(definition.withTypeSubstitutions(typeSubstitution))
 	}
 
+	fun withTypeParameters(typeParameters: List<Type>): StaticType {
+		return StaticType(definition.withTypeParameters(typeParameters))
+	}
+
 	override fun onNewType(type: TypeDefinition) {
 		this.scope.addType(type)
 	}

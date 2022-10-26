@@ -35,7 +35,7 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val t
 	}
 
 	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {
-		val persistentTypeParameters = (function as? TypeSpecification)?.genericParameters ?: listOf()
+		val persistentTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
 		val initializer = targetType.scope.resolveInitializer(typeParameters, valueParameters)
 		if(initializer == null)
 			linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",

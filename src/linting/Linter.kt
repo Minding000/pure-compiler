@@ -31,10 +31,13 @@ class Linter {
 		messages.add(Message("----- Linter stage: Type linking -----", Message.Type.DEBUG))
 		phase = Phase.TYPE_LINKING
 		semanticProgramModel.linkTypes(this)
-		messages.add(Message("----- Linter stage: Property parameter linking -----", Message.Type.DEBUG))
+		messages.add(Message("----- Linter stage: Resolve generics -----", Message.Type.DEBUG))
 		phase = Phase.PROPERTY_PARAMETER_LINKING
 		semanticProgramModel.linkPropertyParameters(this)
 		messages.add(Message("----- Linter stage: Value linking -----", Message.Type.DEBUG))
+		phase = Phase.RESOLVE_GENERICS
+		semanticProgramModel.resolveGenerics(this)
+		messages.add(Message("----- Linter stage: Property parameter linking -----", Message.Type.DEBUG))
 		phase = Phase.VALUE_LINKING
 		semanticProgramModel.linkValues(this)
 		messages.add(Message("----- Linter stage: Validation -----", Message.Type.DEBUG))
@@ -89,6 +92,7 @@ class Linter {
 		LITERAL_SCOPE_RESOLUTION,
 		FILE_REFERENCE_RESOLUTION,
 		TYPE_LINKING,
+		RESOLVE_GENERICS,
 		PROPERTY_PARAMETER_LINKING,
 		VALUE_LINKING,
 		VALIDATION,

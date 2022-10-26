@@ -9,8 +9,7 @@ import parsing.tokenizer.WordAtom
 import parsing.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?,
-			val isNative: Boolean, val isMutable: Boolean):
-	TypeDefinition(source, name, scope, superType) {
+			val isNative: Boolean, val isMutable: Boolean): TypeDefinition(source, name, scope, superType) {
 	private var specificDefinitions = HashMap<Map<ObjectType, Type>, Class>()
 	val value = VariableValueDeclaration(source, name, StaticType(this))
 

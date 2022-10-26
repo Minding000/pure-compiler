@@ -20,12 +20,10 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 
 	abstract fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): TypeDefinition
 
-	fun withTypeParameters(typeParameters: List<Type>): TypeDefinition? {
+	fun withTypeParameters(typeParameters: List<Type>): TypeDefinition {
 		baseDefinition?.let { baseDefinition ->
 			return baseDefinition.withTypeParameters(typeParameters)
 		}
-		if(typeParameters.isEmpty())
-			return this
 		val placeholders = scope.getGenericTypes()
 		val typeSubstitutions = HashMap<ObjectType, Type>()
 		for(parameterIndex in placeholders.indices) {
@@ -35,6 +33,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 		}
 		val specificTypeDefinition = withTypeSubstitutions(typeSubstitutions)
 		specificTypeDefinition.baseDefinition = this
+		units.add(specificTypeDefinition) //TODO What if the TypeDefinition is in the middle of a phase already ATM?
 		return specificTypeDefinition
 	}
 

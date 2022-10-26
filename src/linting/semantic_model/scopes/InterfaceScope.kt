@@ -1,8 +1,10 @@
 package linting.semantic_model.scopes
 
 import errors.user.SignatureResolutionAmbiguityError
-import linting.semantic_model.definitions.*
-import linting.semantic_model.types.ObjectType
+import linting.semantic_model.definitions.IndexOperatorDefinition
+import linting.semantic_model.definitions.InitializerDefinition
+import linting.semantic_model.definitions.OperatorDefinition
+import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.Instance
 import linting.semantic_model.values.Value
@@ -101,7 +103,7 @@ class InterfaceScope(private val type: Type): Scope() {
 			val specificSignature = if(typeSubstitutions.isEmpty())
 				signature
 			else
-				signature.withTypeSubstitutions(typeSubstitutions)
+				signature.withTypeSubstitutions(typeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
 			if(specificSignature.accepts(suppliedValues))
 				validSignatures.add(specificSignature)
 		}
@@ -177,14 +179,6 @@ class InterfaceScope(private val type: Type): Scope() {
 		//TODO check: should this be as complex as FunctionType.getMatchingSignatures()?
 		// -> write tests to find out
 		return validSignatures
-	}
-
-	fun getGenericTypes(): LinkedList<ObjectType> {
-		val genericTypes = LinkedList<ObjectType>()
-		for((_, typeDefinition) in types)
-			if(typeDefinition is GenericTypeDefinition)
-				genericTypes.add(ObjectType(typeDefinition))
-		return genericTypes
 	}
 
 	override fun toString(): String {

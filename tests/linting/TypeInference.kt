@@ -194,6 +194,7 @@ class TypeInference {
 			"""
 				class List {
 					containing Item
+					//val backup: <Item>List? = null // <--- This causes a ConcurrentModificationException
 					init
 					to add(item: Item) {}
 				}

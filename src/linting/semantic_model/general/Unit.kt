@@ -15,6 +15,11 @@ abstract class Unit(open val source: Element) {
 			unit.linkTypes(linter, scope)
 	}
 
+	open fun resolveGenerics(linter: Linter) {
+		for(unit in units)
+			unit.resolveGenerics(linter)
+	}
+
 	open fun linkPropertyParameters(linter: Linter, scope: MutableScope) {
 		for(unit in units)
 			unit.linkPropertyParameters(linter, scope)

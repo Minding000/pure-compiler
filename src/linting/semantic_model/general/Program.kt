@@ -32,6 +32,14 @@ class Program(val source: Program) {
 	}
 
 	/**
+	 * Copies definitions with type substitutions.
+	 */
+	fun resolveGenerics(linter: Linter) {
+		for(file in files)
+			file.resolveGenerics(linter)
+	}
+
+	/**
 	 * Links properties in initializer parameters.
 	 */
 	fun linkPropertyParameters(linter: Linter) {
