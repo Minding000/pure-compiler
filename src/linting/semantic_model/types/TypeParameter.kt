@@ -31,7 +31,11 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, val mode: Mode
 
 	enum class Mode {
 		PRODUCING, // effective input type: None
-		CONSUMING  // effective output type: Any
+		CONSUMING;  // effective output type: Any
+
+		override fun toString(): String {
+			return super.toString().lowercase()
+		}
 	}
 
 	override fun equals(other: Any?): Boolean {
@@ -51,6 +55,6 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, val mode: Mode
 	}
 
 	override fun toString(): String {
-		return "$mode $baseType"
+		return "$baseType $mode"
 	}
 }
