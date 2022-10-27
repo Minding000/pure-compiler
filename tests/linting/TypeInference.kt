@@ -2,11 +2,9 @@ package linting
 
 import linting.semantic_model.control_flow.FunctionCall
 import linting.semantic_model.operations.InstanceAccess
-import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.types.ObjectType
 import linting.semantic_model.types.OptionalType
 import linting.semantic_model.types.StaticType
-import linting.semantic_model.types.Type
 import linting.semantic_model.values.VariableValueDeclaration
 import messages.Message
 import org.junit.jupiter.api.Test
@@ -43,9 +41,9 @@ class TypeInference {
 				val protocol: TransportLayerProtocol = .TCP
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
-		val instanceAccess = lintResult.find<InstanceAccess>()
+		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
+		val instanceAccess = lintResult.find<InstanceAccess>()
 		assertEquals(type, instanceAccess?.type)
 	}
 
@@ -55,14 +53,15 @@ class TypeInference {
 			"""
 				enum TransportLayerProtocol {
 					instances TCP, UDP
+					init
 				}
 				var protocol: TransportLayerProtocol? = null
 				protocol = .TCP
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
-		val instanceAccess = lintResult.find<InstanceAccess>()
+		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
+		val instanceAccess = lintResult.find<InstanceAccess>()
 		assertEquals(type, instanceAccess?.type)
 	}
 
@@ -72,6 +71,7 @@ class TypeInference {
 			"""
 				enum TransportLayerProtocol {
 					instances TCP, UDP
+					init
 				}
 				class Stream {
 					val protocol: TransportLayerProtocol
@@ -81,9 +81,9 @@ class TypeInference {
 				val stream = Stream(.TCP)
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
-		val instanceAccess = lintResult.find<InstanceAccess>()
+		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
+		val instanceAccess = lintResult.find<InstanceAccess>()
 		assertEquals(type, instanceAccess?.type)
 	}
 
@@ -93,6 +93,7 @@ class TypeInference {
 			"""
 				enum TransportLayerProtocol {
 					instances TCP, UDP
+					init
 				}
 				class Port {}
 				object NetworkInterface {
@@ -101,9 +102,9 @@ class TypeInference {
 				val openUdpPort = NetworkInterface.getOpenPort(.UDP)
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
-		val instanceAccess = lintResult.find<InstanceAccess>()
+		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
+		val instanceAccess = lintResult.find<InstanceAccess>()
 		assertEquals(type, instanceAccess?.type)
 	}
 
@@ -113,6 +114,7 @@ class TypeInference {
 			"""
 				enum TransportLayerProtocol {
 					instances TCP, UDP
+					init
 				}
 				class Ports {}
 				object NetworkInterface {
@@ -121,9 +123,9 @@ class TypeInference {
 				val udpPorts = NetworkInterface[.UDP]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val type = lintResult.find<Type> { type -> type.toString() == "TransportLayerProtocol" }
-		val instanceAccess = lintResult.find<InstanceAccess>()
+		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
+		val instanceAccess = lintResult.find<InstanceAccess>()
 		assertEquals(type, instanceAccess?.type)
 	}
 
@@ -133,6 +135,7 @@ class TypeInference {
 			"""
 				enum TransportLayerProtocol {
 					instances TCP, UDP
+					init
 				}
 				val protocol = TransportLayerProtocol.TCP
 				switch protocol {
@@ -143,11 +146,10 @@ class TypeInference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val typeDefinition = lintResult.find<TypeDefinition> { typeDefinition ->
-			typeDefinition.name == "TransportLayerProtocol" }
+		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
+		assertNotNull(type)
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertNotNull(typeDefinition)
-		assertEquals(typeDefinition, (instanceAccess?.type as? ObjectType)?.definition)
+		assertEquals(type, instanceAccess?.type)
 	}
 
 	@Test
@@ -161,7 +163,8 @@ class TypeInference {
 				val letterBox = Box()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Missing generic parameter")
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Number of provided type parameters (0) doesn't match number of declared generic types (1)")
 	}
 
 	@Test

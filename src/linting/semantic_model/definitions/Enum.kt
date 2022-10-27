@@ -13,7 +13,8 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 	val value = VariableValueDeclaration(source, name, StaticType(this))
 
 	init {
-		scope.createInstanceConstant(this)
+		units.add(value)
+		units.add(scope.createInstanceConstant(this))
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Enum {

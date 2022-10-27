@@ -10,7 +10,7 @@ class Trait(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 	private val specificDefinitions = HashMap<Map<ObjectType, Type>, Trait>()
 
 	init {
-		scope.createInstanceConstant(this)
+		units.add(scope.createInstanceConstant(this))
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Trait {

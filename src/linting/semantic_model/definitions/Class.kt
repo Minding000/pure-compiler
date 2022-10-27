@@ -19,7 +19,7 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 
 	init {
 		units.add(value)
-		scope.createInstanceConstant(this)
+		units.add(scope.createInstanceConstant(this))
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Class {

@@ -19,7 +19,9 @@ open class Instance(override val source: InstanceSyntaxTree, value: VariableValu
 
 	fun setType(typeDefinition: TypeDefinition) {
 		this.typeDefinition = typeDefinition
-		type = ObjectType(typeDefinition)
+		val type = ObjectType(typeDefinition)
+		units.add(type)
+		this.type = type
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

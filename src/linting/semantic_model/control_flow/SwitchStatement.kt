@@ -25,8 +25,8 @@ class SwitchStatement(override val source: SwitchStatement, val subject: Value, 
 				case.condition.setInferredType(subject.type)
 			} else {
 				case.condition.type?.let { conditionType ->
-					linter.addMessage(case.condition.source,
-						"Condition type '$conditionType' is not comparable to type subject type '${subject.type}'.", Message.Type.ERROR)
+					linter.addMessage(case.condition.source, "Condition type '$conditionType' " +
+						"is not comparable to subject type '${subject.type}'.", Message.Type.ERROR)
 				}
 			}
 		}
