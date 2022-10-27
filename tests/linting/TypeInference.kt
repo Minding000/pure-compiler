@@ -153,6 +153,23 @@ class TypeInference {
 	}
 
 	@Test
+	fun `allows for recursive use of generic types`() {
+		val sourceCode =
+			"""
+				class Receipt {}
+				class List {
+					containing Item
+					var backup: <Item>List? = null
+				}
+				val receipts = <Receipt>List()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerResult = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function.type as? StaticType)?.definition?.name == "List" }?.type as? ObjectType
+		assertNotNull(initializerResult)
+	}
+
+	@Test
 	fun `emits errors when generic type can't be inferred`() {
 		val sourceCode =
 			"""
@@ -197,7 +214,6 @@ class TypeInference {
 			"""
 				class List {
 					containing Item
-					//val backup: <Item>List? = null // <--- This causes a ConcurrentModificationException
 					init
 					to add(item: Item) {}
 				}
