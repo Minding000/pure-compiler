@@ -326,7 +326,7 @@ internal class ValueResolution {
 				numbers.exists(Int())
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Call to function 'List.exists(Int)' is ambiguous")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Call to function '<Int>List.exists(Int)' is ambiguous")
 	}
 
 	@Test
