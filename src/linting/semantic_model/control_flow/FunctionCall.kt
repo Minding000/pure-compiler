@@ -2,16 +2,16 @@ package linting.semantic_model.control_flow
 
 import errors.user.SignatureResolutionAmbiguityError
 import linting.Linter
-import linting.semantic_model.operations.MemberAccess
 import linting.semantic_model.definitions.TypeSpecification
+import linting.semantic_model.operations.MemberAccess
+import linting.semantic_model.scopes.Scope
 import linting.semantic_model.types.FunctionType
 import linting.semantic_model.types.ObjectType
 import linting.semantic_model.types.StaticType
+import linting.semantic_model.types.Type
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValue
 import messages.Message
-import linting.semantic_model.scopes.Scope
-import linting.semantic_model.types.Type
 import parsing.syntax_tree.control_flow.FunctionCall
 
 class FunctionCall(override val source: FunctionCall, val function: Value, val typeParameters: List<Type>,
@@ -35,13 +35,19 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val t
 	}
 
 	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {
-		val persistentTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
 		val initializer = targetType.scope.resolveInitializer(typeParameters, valueParameters)
-		if(initializer == null)
+		if(initializer == null) {
 			linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
 				Message.Type.ERROR)
-		else
-			type = ObjectType(persistentTypeParameters, targetType.definition)
+		} else {
+			// Alternative (doesn't work because generic type definitions are not copied):
+			//val type = ObjectType(targetType.definition.scope.getGenericTypes(), targetType.definition)
+			val persistentTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
+			val type = ObjectType(persistentTypeParameters, targetType.definition)
+			type.resolveGenerics(linter)
+			units.add(type)
+			this.type = type
+		}
 	}
 
 	private fun resolveFunctionCall(linter: Linter, functionType: FunctionType) {

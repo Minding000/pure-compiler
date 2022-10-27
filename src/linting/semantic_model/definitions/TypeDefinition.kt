@@ -18,6 +18,8 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 			units.add(superType)
 	}
 
+	open fun register(linter: Linter, parentScope: MutableScope) {}
+
 	abstract fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): TypeDefinition
 
 	fun withTypeParameters(typeParameters: List<Type>): TypeDefinition {
@@ -33,7 +35,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 		}
 		val specificTypeDefinition = withTypeSubstitutions(typeSubstitutions)
 		specificTypeDefinition.baseDefinition = this
-		units.add(specificTypeDefinition) //TODO What if the TypeDefinition is in the middle of a phase already ATM?
+		units.add(specificTypeDefinition)
 		return specificTypeDefinition
 	}
 

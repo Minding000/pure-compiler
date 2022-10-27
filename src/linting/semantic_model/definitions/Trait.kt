@@ -1,8 +1,10 @@
 package linting.semantic_model.definitions
 
+import linting.Linter
+import linting.semantic_model.scopes.MutableScope
+import linting.semantic_model.scopes.TypeScope
 import linting.semantic_model.types.ObjectType
 import linting.semantic_model.types.Type
-import linting.semantic_model.scopes.TypeScope
 import parsing.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Trait(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?):
@@ -10,7 +12,11 @@ class Trait(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 	private val specificDefinitions = HashMap<Map<ObjectType, Type>, Trait>()
 
 	init {
-		units.add(scope.createInstanceConstant(this))
+		scope.typeDefinition = this
+	}
+
+	override fun register(linter: Linter, parentScope: MutableScope) {
+		parentScope.declareType(linter, this)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Trait {

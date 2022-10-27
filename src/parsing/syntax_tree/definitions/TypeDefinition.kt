@@ -2,10 +2,8 @@ package parsing.syntax_tree.definitions
 
 import errors.internal.CompilerError
 import linting.Linter
-import linting.semantic_model.definitions.Class
+import linting.semantic_model.definitions.*
 import linting.semantic_model.definitions.Enum
-import linting.semantic_model.definitions.Object
-import linting.semantic_model.definitions.Trait
 import linting.semantic_model.general.Unit
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.scopes.TypeScope
@@ -32,36 +30,21 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 				parent?.validate(linter, Class.ALLOWED_MODIFIER_TYPES)
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
-				val `class` = Class(this, name, typeScope, superType, isNative, isMutable)
-				typeScope.typeDefinition = `class`
-				scope.declareType(linter, `class`)
-				scope.declareValue(linter, `class`.value)
-				`class`
+				Class(this, name, typeScope, superType, isNative, isMutable)
 			}
 			WordAtom.OBJECT -> {
 				parent?.validate(linter, Object.ALLOWED_MODIFIER_TYPES)
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
-				val `object` = Object(this, name, typeScope, superType, isNative, isMutable)
-				typeScope.typeDefinition = `object`
-				scope.declareType(linter, `object`)
-				scope.declareValue(linter, `object`.value)
-				`object`
+				Object(this, name, typeScope, superType, isNative, isMutable)
 			}
 			WordAtom.ENUM -> {
 				parent?.validate(linter)
-				val enum = Enum(this, name, typeScope, superType)
-				typeScope.typeDefinition = enum
-				scope.declareType(linter, enum)
-				scope.declareValue(linter, enum.value)
-				enum
+				Enum(this, name, typeScope, superType)
 			}
 			WordAtom.TRAIT -> {
 				parent?.validate(linter)
-				val trait = Trait(this, name, typeScope, superType)
-				typeScope.typeDefinition = trait
-				scope.declareType(linter, trait)
-				trait
+				Trait(this, name, typeScope, superType)
 			}
 			else -> throw CompilerError("Encountered unknown type type.")
 		}
@@ -78,9 +61,16 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 				} else {
 					linter.addMessage(member, "Instance declarations can be merged.", Message.Type.WARNING)
 				}
+			} else if(member is GenericsDeclaration) {
+				if(typeDefinition is Object) {
+					linter.addMessage(member, "Generic type declarations are not allowed in objects.",
+						Message.Type.WARNING)
+					continue
+				}
 			}
 			member.concretize(linter, typeScope, typeDefinition.units)
 		}
+		typeDefinition.register(linter, scope)
 		return typeDefinition
 	}
 

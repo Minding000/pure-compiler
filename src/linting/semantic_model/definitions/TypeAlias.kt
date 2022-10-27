@@ -9,6 +9,10 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val refe
 	TypeDefinition(source, name, scope, null) {
 	private val specificDefinitions = HashMap<Map<ObjectType, Type>, TypeAlias>()
 
+	init {
+		scope.typeDefinition = this
+	}
+
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): TypeAlias {
 		var definition = specificDefinitions[typeSubstitution]
 		if(definition == null) {

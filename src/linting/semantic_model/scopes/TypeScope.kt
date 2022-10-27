@@ -13,22 +13,10 @@ import java.util.*
 
 class TypeScope(private val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
 	lateinit var typeDefinition: TypeDefinition
-	var instanceConstant: VariableValueDeclaration? = null
 	private val typeDefinitions = HashMap<String, TypeDefinition>()
 	private val valueDeclarations = HashMap<String, VariableValueDeclaration>()
 	private val initializers = LinkedList<InitializerDefinition>()
 	private val operators = LinkedList<OperatorDefinition>()
-
-	companion object {
-		const val SELF_REFERENCE = "this"
-	}
-
-	fun createInstanceConstant(definition: TypeDefinition): VariableValueDeclaration {
-		//TODO Also include type parameters in the following ObjectType
-		val instanceConstant = VariableValueDeclaration(definition.source, SELF_REFERENCE, ObjectType(definition))
-		this.instanceConstant = instanceConstant
-		return instanceConstant
-	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>, superScope: InterfaceScope?): TypeScope {
 		val specificTypeScope = TypeScope(parentScope, superScope)
@@ -200,8 +188,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	override fun resolveValue(name: String): VariableValueDeclaration? {
-		if(name == SELF_REFERENCE)
-			return instanceConstant
 		return valueDeclarations[name]
 			?: superScope?.resolveValue(name)
 			?: parentScope.resolveValue(name)

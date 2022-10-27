@@ -9,6 +9,10 @@ class GenericTypeDefinition(override val source: Parameter, name: String, scope:
 	TypeDefinition(source, name, scope, superType) {
 	private val specificDefinitions = HashMap<Map<ObjectType, Type>, GenericTypeDefinition>()
 
+	init {
+		scope.typeDefinition = this
+	}
+
 	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): GenericTypeDefinition {
 		var definition = specificDefinitions[typeSubstitution]
 		if(definition == null) {
