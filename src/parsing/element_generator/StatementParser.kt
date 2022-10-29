@@ -106,11 +106,11 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		if(currentWord?.type == WordAtom.GENERATE)
 			return parseGeneratorDefinition()
 
-		val statement = expressionParser.parseExpression()
-		if(isExpressionAssignable(statement)) {
+		val expression = expressionParser.parseExpression()
+		if(isExpressionAssignable(expression)) {
 			if(currentWord?.type == WordAtom.ASSIGNMENT) {
 				val targets = LinkedList<ValueElement>()
-				var lastExpression = statement
+				var lastExpression = expression
 				do {
 					consume(WordAtom.ASSIGNMENT)
 					targets.add(lastExpression)
@@ -121,14 +121,14 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			if(WordType.BINARY_MODIFICATION.includes(currentWord?.type)) {
 				val operator = consume(WordType.BINARY_MODIFICATION)
 				val value = expressionParser.parseExpression()
-				return BinaryModification(statement, value, operator.getValue())
+				return BinaryModification(expression, value, operator.getValue())
 			}
 			if(WordType.UNARY_MODIFICATION.includes(currentWord?.type)) {
 				val operator = consume(WordType.UNARY_MODIFICATION)
-				return UnaryModification(statement, operator)
+				return UnaryModification(expression, operator)
 			}
 		}
-		return statement
+		return expression
 	}
 
 	/**

@@ -37,17 +37,23 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val t
 	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {
 		val genericDefinitionTypes = (targetType.definition.baseDefinition ?: targetType.definition).scope.getGenericTypeDefinitions()
 		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
-		val match = targetType.scope.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters, valueParameters) //TODO catch SignatureResolutionAmbiguityError and write test
-		if(match == null) {
-			linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
-				Message.Type.ERROR)
-			return
+		try {
+			val match = targetType.scope.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters, valueParameters)
+			if(match == null) {
+				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
+					Message.Type.ERROR)
+				return
+			}
+			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value },
+				targetType.definition)
+			type.resolveGenerics(linter)
+			units.add(type)
+			this.type = type
+		} catch(error: SignatureResolutionAmbiguityError) {
+			linter.addMessage(source, "Call to initializer '${getSignature()}' is ambiguous. " +
+				"Matching signatures:" + error.signatures.joinToString("\n - ", "\n - "),
+				Message.Type.ERROR) //TODO write test for this
 		}
-		val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value },
-			targetType.definition)
-		type.resolveGenerics(linter)
-		units.add(type)
-		this.type = type
 	}
 
 	private fun resolveFunctionCall(linter: Linter, functionType: FunctionType) {

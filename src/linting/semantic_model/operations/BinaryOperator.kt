@@ -1,5 +1,6 @@
 package linting.semantic_model.operations
 
+import errors.user.SignatureResolutionAmbiguityError
 import linting.Linter
 import linting.semantic_model.values.Value
 import messages.Message
@@ -17,12 +18,18 @@ class BinaryOperator(override val source: BinaryOperator, val left: Value, val r
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
 		left.type?.let { leftType ->
-			val operatorDefinition = leftType.scope.resolveOperator(operatorName, right)
-			if(operatorDefinition == null) {
-				linter.addMessage(source, "Operator '$operatorName(${right.type})' hasn't been declared yet.",
+			try {
+				val operatorDefinition = leftType.scope.resolveOperator(operatorName, right)
+				if(operatorDefinition == null) {
+					linter.addMessage(source, "Operator '$leftType $operatorName ${right.type}' hasn't been declared yet.",
 						Message.Type.ERROR)
-			} else {
+					return@let
+				}
 				type = operatorDefinition.returnType
+			} catch(error: SignatureResolutionAmbiguityError) {
+				linter.addMessage(source, "Call to operator '$leftType $operatorName ${right.type}' is ambiguous. " +
+					"Matching signatures:" + error.signatures.joinToString("\n - ", "\n - "),
+					Message.Type.ERROR) //TODO write test for this
 			}
 		}
 		staticValue = calculateStaticResult()

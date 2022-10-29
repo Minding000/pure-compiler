@@ -90,18 +90,12 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		if(previousDeclaration != null) {
 			linter.addMessage(type.source, "'${type.name}' shadows a type.", Message.Type.WARNING)
 		}
-		previousDeclaration = superScope?.resolveType(type.name)
-		if(previousDeclaration != null) {
-			linter.addMessage(type.source, "Redeclaration of type '${type.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
-			return
-		}
-		previousDeclaration = typeDefinitions.putIfAbsent(type.name, type)
+		previousDeclaration = superScope?.resolveType(type.name) ?: typeDefinitions.putIfAbsent(type.name, type)
 		if(previousDeclaration == null) {
 			onNewType(type)
-			linter.addMessage(type.source, "Declaration of type '${type.name}'.", Message.Type.DEBUG)
+			linter.addMessage(type.source, "Declaration of type '${typeDefinition.name}.${type.name}'.", Message.Type.DEBUG)
 		} else {
-			linter.addMessage(type.source, "Redeclaration of type '${type.name}'," +
+			linter.addMessage(type.source, "Redeclaration of type '${typeDefinition.name}.${type.name}'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
 		}
 	}
@@ -111,20 +105,14 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		if(previousDeclaration != null) {
 			linter.addMessage(value.source, "'${value.name}' shadows a variable.", Message.Type.WARNING)
 		}
-		previousDeclaration = superScope?.resolveValue(value.name)
-		if(previousDeclaration != null) {
-			linter.addMessage(value.source, "Redeclaration of value '${value.name}'," +
-				" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
-			return
-		}
-		previousDeclaration = valueDeclarations.putIfAbsent(value.name, value)
+		previousDeclaration = superScope?.resolveValue(value.name) ?: valueDeclarations.putIfAbsent(value.name, value)
 		if(previousDeclaration == null) {
 			if(value is Instance)
 				value.setType(typeDefinition)
 			onNewValue(value)
-			linter.addMessage(value.source, "Declaration of value '${value.name}'.", Message.Type.DEBUG)
+			linter.addMessage(value.source, "Declaration of member '${typeDefinition.name}.${value.name}'.", Message.Type.DEBUG)
 		} else {
-			linter.addMessage(value.source, "Redeclaration of value '${value.name}'," +
+			linter.addMessage(value.source, "Redeclaration of member '${typeDefinition.name}.${value.name}'," +
 				" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
 		}
 	}
@@ -142,14 +130,14 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				existingDeclaration.addImplementation(newImplementation)
 			}
 			else -> {
-				linter.addMessage(newImplementation.source, "Redeclaration of member '$name', " +
+				linter.addMessage(newImplementation.source, "Redeclaration of member '${typeDefinition.name}.$name', " +
 							"previously declared in ${existingDeclaration.source.getStartString()}.",
 					Message.Type.ERROR)
 				return
 			}
 		}
-		linter.addMessage(newImplementation.source, "Declaration of function signature " +
-				"'$name${newImplementation.signature.toString(false)}'.",
+		linter.addMessage(newImplementation.source, "Declaration of function " +
+				"'${typeDefinition.name}.$name${newImplementation.signature.toString(false)}'.",
 			Message.Type.DEBUG)
 	}
 
@@ -163,15 +151,15 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 					continue
 				if(declaredOperator.indexParameters.size != operator.indexParameters.size)
 					continue
-				for(i in operator.indexParameters.indices) {
-					if(declaredOperator.indexParameters[i].type != operator.indexParameters[i].type)
+				for(indexParameterIndex in operator.indexParameters.indices) {
+					if(declaredOperator.indexParameters[indexParameterIndex].type != operator.indexParameters[indexParameterIndex].type)
 						continue@operatorIteration
 				}
 			}
 			if(declaredOperator.valueParameters.size != operator.valueParameters.size)
 				continue
-			for(i in operator.valueParameters.indices) {
-				if(declaredOperator.valueParameters[i].type != operator.valueParameters[i].type)
+			for(valueParameterIndex in operator.valueParameters.indices) {
+				if(declaredOperator.valueParameters[valueParameterIndex].type != operator.valueParameters[valueParameterIndex].type)
 					continue@operatorIteration
 			}
 			previousDeclaration = declaredOperator
@@ -180,9 +168,9 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		if(previousDeclaration == null) {
 			operators.add(operator)
 			onNewOperator(operator)
-			linter.addMessage(operator.source, "Declaration of operator '$operator'.", Message.Type.DEBUG) //TODO also print type on which the member has been declared (same for other messages in this file)
+			linter.addMessage(operator.source, "Declaration of operator '${typeDefinition.name}$operator'.", Message.Type.DEBUG)
 		} else {
-			linter.addMessage(operator.source, "Redeclaration of operator '$operator'," +
+			linter.addMessage(operator.source, "Redeclaration of operator '${typeDefinition.name}$operator'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
 		}
 	}

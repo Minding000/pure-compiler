@@ -1,5 +1,6 @@
 package linting.semantic_model.values
 
+import errors.user.SignatureResolutionAmbiguityError
 import linting.Linter
 import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.scopes.Scope
@@ -27,10 +28,16 @@ open class Instance(override val source: InstanceSyntaxTree, value: VariableValu
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
 		val staticType = StaticType(typeDefinition) //TODO use TypeScope instead of creating StaticType?
-		val initializer = staticType.scope.resolveInitializer(valueParameters)
-		if(initializer == null)
-			linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
-				Message.Type.ERROR)
+		try {
+			val initializer = staticType.scope.resolveInitializer(valueParameters)
+			if(initializer == null)
+				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
+					Message.Type.ERROR)
+		} catch(error: SignatureResolutionAmbiguityError) {
+			linter.addMessage(source, "Call to initializer '${getSignature()}' is ambiguous. " +
+				"Matching signatures:" + error.signatures.joinToString("\n - ", "\n - "),
+				Message.Type.ERROR) //TODO write test for this
+		}
 	}
 
 	private fun getSignature(): String {

@@ -79,7 +79,7 @@ class Function(source: Element, private val implementations: MutableList<Functio
 				linter.addMessage(otherImplementation.source, "Redeclaration of function " +
 						"'$name${otherImplementation.signature.toString(false)}', " +
 						"previously declared in ${implementation.source.getStartString()}.",
-					Message.Type.ERROR)
+					Message.Type.ERROR) //TODO include parent type name if applicable
 			}
 		}
 		for(implementation in redeclarations)

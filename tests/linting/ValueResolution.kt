@@ -223,7 +223,7 @@ internal class ValueResolution {
 				!a
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '!()' hasn't been declared yet")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '!Int' hasn't been declared yet")
 	}
 
 	@Test
@@ -257,7 +257,7 @@ internal class ValueResolution {
 				var c = a - b
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '-(Matrix)' hasn't been declared yet")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator 'Matrix - Matrix' hasn't been declared yet")
 	}
 
 	@Test
