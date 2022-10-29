@@ -27,7 +27,8 @@ open class Instance(override val source: InstanceSyntaxTree, value: VariableValu
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
-		val staticType = StaticType(typeDefinition) //TODO use TypeScope instead of creating StaticType?
+		val staticType = StaticType(typeDefinition)
+		units.add(staticType)
 		try {
 			val initializer = staticType.scope.resolveInitializer(valueParameters)
 			if(initializer == null)

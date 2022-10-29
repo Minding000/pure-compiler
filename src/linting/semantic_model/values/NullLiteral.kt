@@ -5,7 +5,6 @@ import linting.semantic_model.types.ObjectType
 import linting.semantic_model.scopes.Scope
 import parsing.syntax_tree.general.Element
 
-@Suppress("EqualsOrHashCode") // The hash code function is the same as the parent hash code function
 class NullLiteral(override val source: Element): LiteralValue(source) {
 
 	init {
@@ -16,6 +15,10 @@ class NullLiteral(override val source: Element): LiteralValue(source) {
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		linter.link(Linter.LiteralType.NULL, type)
+	}
+
+	override fun hashCode(): Int {
+		return NullLiteral::class.hashCode()
 	}
 
 	override fun equals(other: Any?): Boolean {

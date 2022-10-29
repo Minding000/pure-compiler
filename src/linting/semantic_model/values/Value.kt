@@ -31,7 +31,7 @@ abstract class Value(override val source: Element, var type: Type? = null): Unit
 	}
 
 	override fun hashCode(): Int {
-		return type?.hashCode() ?: 0
+		return type.hashCode()
 	}
 
 	override fun equals(other: Any?): Boolean {
