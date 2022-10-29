@@ -241,11 +241,19 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			?: parentScope.resolveIndexOperator(suppliedTypes, suppliedIndexValues, suppliedParameterValues)
 	}
 
-	fun getGenericTypes(): LinkedList<ObjectType> { //TODO consider returning a list of GenericTypeDefinitions instead
+	fun getGenericTypes(): LinkedList<ObjectType> {
 		val genericTypes = LinkedList<ObjectType>()
 		for((_, typeDefinition) in typeDefinitions)
 			if(typeDefinition is GenericTypeDefinition)
 				genericTypes.add(ObjectType(typeDefinition))
+		return genericTypes
+	}
+
+	fun getGenericTypeDefinitions(): LinkedList<GenericTypeDefinition> {
+		val genericTypes = LinkedList<GenericTypeDefinition>()
+		for((_, typeDefinition) in typeDefinitions)
+			if(typeDefinition is GenericTypeDefinition)
+				genericTypes.add(typeDefinition)
 		return genericTypes
 	}
 }

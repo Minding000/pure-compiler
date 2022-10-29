@@ -5,6 +5,7 @@ import linting.semantic_model.definitions.IndexOperatorDefinition
 import linting.semantic_model.definitions.InitializerDefinition
 import linting.semantic_model.definitions.OperatorDefinition
 import linting.semantic_model.definitions.TypeDefinition
+import linting.semantic_model.types.ObjectType
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.Instance
 import linting.semantic_model.values.Value
@@ -75,40 +76,48 @@ class InterfaceScope(private val type: Type): Scope() {
 		return types[name]
 	}
 
-	fun resolveInitializer(suppliedValues: List<Value>): InitializerDefinition? =
-		resolveInitializer(listOf(), suppliedValues)
+	fun resolveInitializer(suppliedValues: List<Value>): MatchResult? =
+		resolveInitializer(listOf(), listOf(), listOf(), suppliedValues)
 
-	fun resolveInitializer(suppliedTypes: List<Type>, suppliedValues: List<Value>): InitializerDefinition? {
-		val validSignatures = getMatchingInitializers(suppliedTypes, suppliedValues)
-		if(validSignatures.isEmpty())
+	fun resolveInitializer(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
+						   suppliedTypes: List<Type>, suppliedValues: List<Value>): MatchResult? {
+		val matches = getMatchingInitializers(genericDefinitionTypes, suppliedDefinitionTypes, suppliedTypes,
+			suppliedValues)
+		if(matches.isEmpty())
 			return null
-		specificityPrecedenceLoop@for(signature in validSignatures) {
-			for(otherSignature in validSignatures) {
-				if(otherSignature == signature)
+		specificityPrecedenceLoop@for(match in matches) {
+			for(otherMatch in matches) {
+				if(otherMatch == match)
 					continue
-				if(!signature.isMoreSpecificThan(otherSignature))
+				if(!match.signature.isMoreSpecificThan(otherMatch.signature))
 					continue@specificityPrecedenceLoop
 			}
 			for(parameterIndex in suppliedValues.indices)
-				suppliedValues[parameterIndex].setInferredType(signature.parameters[parameterIndex].type)
-			return signature
+				suppliedValues[parameterIndex].setInferredType(match.signature.parameters[parameterIndex].type)
+			return match
 		}
-		throw SignatureResolutionAmbiguityError(validSignatures)
+		throw SignatureResolutionAmbiguityError(matches.map { match -> match.signature })
 	}
 
-	private fun getMatchingInitializers(suppliedTypes: List<Type>, suppliedValues: List<Value>): List<InitializerDefinition> {
-		val validSignatures = LinkedList<InitializerDefinition>()
+	private fun getMatchingInitializers(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
+										suppliedTypes: List<Type>, suppliedValues: List<Value>): List<MatchResult> {
+		val validSignatures = LinkedList<MatchResult>()
 		for(signature in initializers) {
-			val typeSubstitutions = signature.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
-			val specificSignature = if(typeSubstitutions.isEmpty())
-				signature
-			else
-				signature.withTypeSubstitutions(typeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
+			var specificSignature = signature
+			val definitionTypeSubstitutions = signature.getDefinitionTypeSubstitutions(genericDefinitionTypes,
+				suppliedDefinitionTypes, suppliedValues) ?: continue
+			if(definitionTypeSubstitutions.isNotEmpty())
+				specificSignature = specificSignature.withTypeSubstitutions(definitionTypeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
+			val typeSubstitutions = specificSignature.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
+			if(typeSubstitutions.isNotEmpty())
+				specificSignature = specificSignature.withTypeSubstitutions(typeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
 			if(specificSignature.accepts(suppliedValues))
-				validSignatures.add(specificSignature)
+				validSignatures.add(MatchResult(specificSignature, definitionTypeSubstitutions))
 		}
 		return validSignatures
 	}
+
+	class MatchResult(val signature: InitializerDefinition, val definitionTypeSubstitutions: Map<ObjectType, Type>)
 
 	override fun resolveOperator(name: String, suppliedValues: List<Value>):
 			OperatorDefinition? {

@@ -35,15 +35,15 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val t
 	}
 
 	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {
-		val initializer = targetType.scope.resolveInitializer(typeParameters, valueParameters)
-		if(initializer == null) {
+		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
+		val genericDefinitionTypes = (targetType.definition.baseDefinition ?: targetType.definition).scope.getGenericTypeDefinitions()
+		val match = targetType.scope.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters, valueParameters)
+		if(match == null) {
 			linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
 				Message.Type.ERROR)
 		} else {
-			// Alternative (doesn't work because generic type definitions are not copied):
-			//val type = ObjectType(targetType.definition.scope.getGenericTypes(), targetType.definition)
-			val persistentTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
-			val type = ObjectType(persistentTypeParameters, targetType.definition)
+			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value },
+				targetType.definition) //TODO this mapping assumes that the Map retains the pair order
 			type.resolveGenerics(linter)
 			units.add(type)
 			this.type = type

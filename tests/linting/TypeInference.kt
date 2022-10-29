@@ -170,6 +170,34 @@ class TypeInference {
 	}
 
 	@Test
+	fun `allows for recursive use of generic function`() {
+		val sourceCode =
+			"""
+				class Plant {
+					init
+				}
+				class Package {
+					containing Item
+					val item: Item
+					init(item)
+				}
+				object PackageOpener {
+
+					to unwrap(Item; package: <Item>Package): Item {
+						if(package.item is Package)
+							return unwrap(package.item)
+						return package.item
+					}
+				}
+				val plant = PackageOpener.unwrap(Package(Plant()))
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+			variableValueDeclaration.name == "plant" }
+		assertNotNull(variableValueDeclaration?.type)
+	}
+
+	@Test
 	fun `emits errors when generic type can't be inferred`() {
 		val sourceCode =
 			"""

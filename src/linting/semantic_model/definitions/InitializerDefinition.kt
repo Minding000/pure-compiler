@@ -45,12 +45,32 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 		return true
 	}
 
+	fun getDefinitionTypeSubstitutions(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
+									   suppliedValues: List<Value>): Map<ObjectType, Type>? {
+		if(genericDefinitionTypes.size < suppliedDefinitionTypes.size)
+			return null
+		if(parameters.size != suppliedValues.size)
+			return null
+		val typeSubstitutions = HashMap<ObjectType, Type>() //TODO replace ObjectType in type substitutions with Interface spanning Type and TypeDefinition
+		for(parameterIndex in genericDefinitionTypes.indices) {
+			val genericParameter = genericDefinitionTypes[parameterIndex]
+			val requiredType = genericParameter.superType
+			val suppliedType = suppliedDefinitionTypes.getOrNull(parameterIndex)
+				?: inferTypeParameter(genericParameter, suppliedValues)
+				?: return null
+			if(requiredType?.accepts(suppliedType) == false)
+				return null
+			typeSubstitutions[ObjectType(genericParameter)] = suppliedType
+		}
+		return typeSubstitutions
+	}
+
 	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<ObjectType, Type>? {
 		if(genericParameters.size < suppliedTypes.size)
 			return null
 		if(parameters.size != suppliedValues.size)
 			return null
-		val typeSubstitutions = HashMap<ObjectType, Type>()
+		val typeSubstitutions = HashMap<ObjectType, Type>() //TODO replace ObjectType in type substitutions with Interface spanning Type and TypeDefinition
 		for(parameterIndex in genericParameters.indices) {
 			val genericParameter = genericParameters[parameterIndex]
 			val requiredType = genericParameter.superType
