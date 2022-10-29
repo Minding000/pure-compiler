@@ -10,6 +10,7 @@ import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
 import util.getCommonType
 import java.util.*
+import kotlin.collections.LinkedHashMap
 import parsing.syntax_tree.definitions.InitializerDefinition as InitializerDefinitionSyntaxTree
 
 class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree, val scope: BlockScope,
@@ -51,7 +52,7 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 			return null
 		if(parameters.size != suppliedValues.size)
 			return null
-		val typeSubstitutions = HashMap<ObjectType, Type>() //TODO replace ObjectType in type substitutions with Interface spanning Type and TypeDefinition
+		val typeSubstitutions = LinkedHashMap<ObjectType, Type>() //TODO replace ObjectType in type substitutions with Interface spanning Type and TypeDefinition
 		for(parameterIndex in genericDefinitionTypes.indices) {
 			val genericParameter = genericDefinitionTypes[parameterIndex]
 			val requiredType = genericParameter.superType

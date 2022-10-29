@@ -145,7 +145,9 @@ class InterfaceScope(private val type: Type): Scope() {
 				continue
 			if(signature.accepts(suppliedValues))
 				validSignatures.add(signature)
-		} //TODO check: should this be as complex as FunctionType.getMatchingSignatures()?
+		}
+		//TODO check: should this be as complex as FunctionType.getMatchingSignatures()?
+		// -> write tests to find out
 		return validSignatures
 	}
 

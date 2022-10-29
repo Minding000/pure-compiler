@@ -43,7 +43,7 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val t
 				Message.Type.ERROR)
 		} else {
 			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value },
-				targetType.definition) //TODO this mapping assumes that the Map retains the pair order
+				targetType.definition)
 			type.resolveGenerics(linter)
 			units.add(type)
 			this.type = type

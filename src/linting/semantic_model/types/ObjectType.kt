@@ -103,7 +103,7 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		}
 	}
 
-	fun acceptsSubstituteType(substituteType: Type): Boolean {
+	private fun acceptsSubstituteType(substituteType: Type): Boolean {
 		return definition?.superType?.accepts(substituteType) ?: true
 	}
 
