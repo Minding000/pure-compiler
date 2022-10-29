@@ -21,9 +21,7 @@ class OverGenerator(override val source: OverGenerator, val collection: Value,
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		collection.linkValues(linter, scope)
-		if(keyDeclaration != null)
-			keyDeclaration.type = collection.type?.getKeyType(linter)
-		if(valueDeclaration != null)
-			valueDeclaration.type = collection.type?.getValueType(linter)
+		keyDeclaration?.type = collection.type?.getKeyType(linter)
+		valueDeclaration?.type = collection.type?.getValueType(linter)
 	}
 }

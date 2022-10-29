@@ -12,30 +12,29 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, val scope:
 
 	fun resolveFileReferences(linter: Linter, program: Program) {
 		for(unit in units) {
-			if(unit is FileReference) {
-				var noFilesFound = true
-				for(file in program.files) {
-					if(file == this)
-						continue
-					if(file.matches(unit.parts)) {
-						referencedFiles.add(file)
-						noFilesFound = false
-						linter.addMessage("'${file.file.name}' referenced in '${this.file.name}' ${unit.parts}.", Message.Type.DEBUG)
-					}
+			val fileReference = unit as? FileReference ?: continue
+			var noFilesFound = true
+			for(file in program.files) {
+				if(file == this)
+					continue
+				if(file.matches(fileReference.parts)) {
+					referencedFiles.add(file)
+					noFilesFound = false
+					linter.addMessage("'${file.file.name}' referenced in '${this.file.name}' by ${fileReference.parts}.", Message.Type.DEBUG)
 				}
-				if(noFilesFound)
-					linter.addMessage("Failed to resolve file '${unit.identifier}'.", Message.Type.ERROR)
 			}
+			if(noFilesFound)
+				linter.addMessage("Failed to resolve file '${fileReference.identifier}'.", Message.Type.ERROR)
 		}
 	}
 
 	fun matches(parts: List<String>): Boolean {
 		if(parts.size > file.pathParts.size + 1)
 			return false
-		for(p in parts.indices) {
-			if(p == file.pathParts.size)
-				return parts[p] == file.name
-			if(parts[p] != file.pathParts[p])
+		for(partIndex in parts.indices) {
+			if(partIndex == file.pathParts.size)
+				return parts[partIndex] == file.name
+			if(parts[partIndex] != file.pathParts[partIndex])
 				return false
 		}
 		return true

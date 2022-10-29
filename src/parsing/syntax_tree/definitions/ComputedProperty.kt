@@ -5,18 +5,17 @@ import linting.Linter
 import linting.semantic_model.definitions.ComputedProperty
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.definitions.sections.VariableSectionElement
-import parsing.syntax_tree.general.Element
-import parsing.syntax_tree.literals.Identifier
 import parsing.syntax_tree.general.TypeElement
+import parsing.syntax_tree.general.ValueElement
+import parsing.syntax_tree.literals.Identifier
 import util.indent
-import java.lang.StringBuilder
 
-class ComputedProperty(private val identifier: Identifier, private val type: TypeElement?, private val getExpression: Element?,
-					   private val setExpression: Element?):
+class ComputedProperty(private val identifier: Identifier, private val type: TypeElement?,
+					   private val getExpression: ValueElement?, private val setExpression: ValueElement?):
 	VariableSectionElement(identifier.start, setExpression?.end ?: getExpression?.end ?: identifier.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): ComputedProperty {
-		val type = type ?: parent.type ?: throw CompilerError("Computed property is missing type. [should be linker error instead]")
+		val type = type ?: parent.type ?: throw CompilerError("Computed property is missing type. [should be linker error instead]") //TODO see error message
 		val computedProperty = ComputedProperty(this, identifier.getValue(), type.concretize(linter, scope),
 			getExpression?.concretize(linter, scope), setExpression?.concretize(linter, scope))
 		scope.declareValue(linter, computedProperty)

@@ -32,7 +32,7 @@ class Program(val source: Program) {
 	}
 
 	/**
-	 * Copies definitions with type substitutions.
+	 * Resolves generic types by copying their definitions with type substitutions.
 	 */
 	fun resolveGenerics(linter: Linter) {
 		for(file in files)

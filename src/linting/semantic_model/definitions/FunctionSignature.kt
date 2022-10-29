@@ -131,9 +131,21 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 	}
 
 	fun toString(useLambdaStyle: Boolean): String {
-		return if(useLambdaStyle)
-			"(${parameterTypes.joinToString()}) =>${if(Linter.LiteralType.NOTHING.matches(returnType)) "|" else " $returnType"}"
-		else
-			"(${parameterTypes.joinToString()})${if(Linter.LiteralType.NOTHING.matches(returnType)) "" else ": $returnType"}"
+		var stringRepresentation = "("
+		if(genericParameters.isNotEmpty()) {
+			stringRepresentation += genericParameters.joinToString()
+			stringRepresentation += ";"
+			if(parameterTypes.isNotEmpty())
+				stringRepresentation += " "
+		}
+		stringRepresentation += "${parameterTypes.joinToString()})"
+		if(useLambdaStyle) {
+			stringRepresentation += " =>"
+			stringRepresentation += if(Linter.LiteralType.NOTHING.matches(returnType)) "|" else " $returnType"
+		} else {
+			if(!Linter.LiteralType.NOTHING.matches(returnType))
+				stringRepresentation += ": $returnType"
+		}
+		return stringRepresentation
 	}
 }

@@ -43,7 +43,7 @@ internal class Assignments {
 				val firstField = ChessBoard[Position()]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '[Position]()' hasn't been declared yet.")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator 'ChessBoard[Position]()' hasn't been declared yet.")
 	}
 
 	@Test
@@ -62,7 +62,7 @@ internal class Assignments {
 				ChessBoard[Position()] = Field()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '[Position](Field)' hasn't been declared yet.")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator 'ChessBoard[Position](Field)' hasn't been declared yet.")
 	}
 
 	@Test

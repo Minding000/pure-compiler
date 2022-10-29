@@ -10,6 +10,7 @@ import java.util.LinkedList
 
 class SwitchStatement(override val source: SwitchStatement, val subject: Value, val cases: List<Case>,
 					  val elseBranch: Unit?): Unit(source) {
+	override var isInterruptingExecution = false //TODO adjust this value based on branches
 
 	init {
 		units.add(subject)

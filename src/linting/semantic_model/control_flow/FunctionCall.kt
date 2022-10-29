@@ -35,29 +35,30 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val t
 	}
 
 	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {
-		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
 		val genericDefinitionTypes = (targetType.definition.baseDefinition ?: targetType.definition).scope.getGenericTypeDefinitions()
-		val match = targetType.scope.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters, valueParameters)
+		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
+		val match = targetType.scope.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters, valueParameters) //TODO catch SignatureResolutionAmbiguityError and write test
 		if(match == null) {
 			linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
 				Message.Type.ERROR)
-		} else {
-			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value },
-				targetType.definition)
-			type.resolveGenerics(linter)
-			units.add(type)
-			this.type = type
+			return
 		}
+		val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value },
+			targetType.definition)
+		type.resolveGenerics(linter)
+		units.add(type)
+		this.type = type
 	}
 
 	private fun resolveFunctionCall(linter: Linter, functionType: FunctionType) {
 		try {
 			val signature = functionType.resolveSignature(typeParameters, valueParameters)
-			if(signature == null)
+			if(signature == null) {
 				linter.addMessage(source,"The provided values don't match any signature of function '${function.source.getValue()}'.",
 					Message.Type.ERROR)
-			else
-				type = signature.returnType
+				return
+			}
+			type = signature.returnType
 		} catch(error: SignatureResolutionAmbiguityError) {
 			linter.addMessage(source, "Call to function '${getSignature()}' is ambiguous. " +
 				"Matching signatures:" + error.signatures.joinToString("\n - ", "\n - "),
@@ -67,12 +68,12 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val t
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		if(function is MemberAccess) {
-			//TODO continue
-			// - check if mutability matches
-			// - should mutability be part of the type system? (probably yes)
-			//if(function.target.isMutable)
-		}
+//		if(function is MemberAccess) {
+//			//TODO continue
+//			// - check if mutability matches
+//			// - should mutability be part of the type system? (probably yes)
+//			if(function.target.isMutable)
+//		}
 	}
 
 	private fun getSignature(): String {

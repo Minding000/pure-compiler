@@ -71,7 +71,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				}
 				redeclarations.add(otherInitializer)
 				linter.addMessage(otherInitializer.source, "Redeclaration of" +
-						" initializer '${typeDefinition.name}(${otherInitializer.variation})'," +
+						" initializer '${otherInitializer.toString(typeDefinition)}'," +
 						" previously declared in ${initializer.source.getStartString()}.", Message.Type.ERROR)
 			}
 		}
@@ -81,7 +81,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
 		initializers.add(initializer)
 		onNewInitializer(initializer)
-		linter.addMessage(initializer.source, "Declaration of initializer '${typeDefinition.name}(${initializer.variation})'.",
+		linter.addMessage(initializer.source, "Declaration of initializer '${initializer.toString(typeDefinition)}'.",
 			Message.Type.DEBUG)
 	}
 
@@ -143,7 +143,8 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			}
 			else -> {
 				linter.addMessage(newImplementation.source, "Redeclaration of member '$name', " +
-							"previously declared in ${existingDeclaration.source.getStartString()}.", Message.Type.ERROR)
+							"previously declared in ${existingDeclaration.source.getStartString()}.",
+					Message.Type.ERROR)
 				return
 			}
 		}
@@ -179,7 +180,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		if(previousDeclaration == null) {
 			operators.add(operator)
 			onNewOperator(operator)
-			linter.addMessage(operator.source, "Declaration of operator '$operator'.", Message.Type.DEBUG)
+			linter.addMessage(operator.source, "Declaration of operator '$operator'.", Message.Type.DEBUG) //TODO also print type on which the member has been declared (same for other messages in this file)
 		} else {
 			linter.addMessage(operator.source, "Redeclaration of operator '$operator'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)

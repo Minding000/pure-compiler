@@ -19,14 +19,15 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, val target: Value,
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
-		val targetScope = target.type?.scope
-		val definition = targetScope?.resolveIndexOperator(typeParameters, indices, listOfNotNull(sourceExpression))
-		if(definition == null) {
-			val name = "[${indices.joinToString { index -> index.type.toString() }}]"
-			linter.addMessage(source,
-				"Operator '$name(${sourceExpression?.type ?: ""})' hasn't been declared yet.",
-				Message.Type.ERROR)
-		} else {
+		target.type?.let { targetType ->
+			val definition = targetType.scope.resolveIndexOperator(typeParameters, indices, sourceExpression)
+			if(definition == null) {
+				val name = "${target.type}[${indices.joinToString { index -> index.type.toString() }}]"
+				linter.addMessage(source,
+					"Operator '$name(${sourceExpression?.type ?: ""})' hasn't been declared yet.",
+					Message.Type.ERROR)
+				return@let
+			}
 			type = definition.returnType
 		}
 	}

@@ -8,14 +8,13 @@ import linting.semantic_model.scopes.Scope
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.Value
 import util.getCommonType
+import util.stringify
 import java.util.*
 import parsing.syntax_tree.definitions.InitializerDefinition as InitializerDefinitionSyntaxTree
 
 class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree, val scope: BlockScope,
 							val genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,
 							val body: Unit?, val isNative: Boolean): Unit(source) {
-	val variation: String
-		get() = parameters.joinToString { parameter -> parameter.type.toString() }
 
 	init {
 		units.addAll(genericParameters)
@@ -127,5 +126,23 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, this.scope)
+	}
+
+	fun toString(typeDefinition: TypeDefinition): String {
+		var stringRepresentation = ""
+		val genericTypeDefinitions = typeDefinition.scope.getGenericTypeDefinitions()
+		if(genericTypeDefinitions.isNotEmpty())
+			stringRepresentation += "<${genericTypeDefinitions.joinToString()}>"
+		stringRepresentation += typeDefinition.name
+		stringRepresentation += "("
+		if(genericParameters.isNotEmpty()) {
+			stringRepresentation += genericParameters.joinToString()
+			stringRepresentation += ";"
+			if(parameters.isNotEmpty())
+				stringRepresentation += " "
+		}
+		stringRepresentation += parameters.stringify()
+		stringRepresentation += ")"
+		return stringRepresentation
 	}
 }

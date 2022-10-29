@@ -6,6 +6,7 @@ import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.Value
 import util.getCommonType
+import util.stringify
 import java.util.*
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
@@ -122,7 +123,17 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 	}
 
 	override fun toString(): String {
-		val indexVariation = indexParameters.joinToString { index -> index.type.toString() }
-		return "[$indexVariation]($variation)${if(Linter.LiteralType.NOTHING.matches(returnType)) "" else ": $returnType"}"
+		var stringRepresentation = "["
+		if(genericParameters.isNotEmpty()) {
+			stringRepresentation += genericParameters.joinToString()
+			stringRepresentation += ";"
+			if(indexParameters.isNotEmpty())
+				stringRepresentation += " "
+		}
+		stringRepresentation += "${indexParameters.stringify()}]"
+		stringRepresentation += "(${valueParameters.stringify()})"
+		if(!Linter.LiteralType.NOTHING.matches(returnType))
+			stringRepresentation += ": $returnType"
+		return stringRepresentation
 	}
 }

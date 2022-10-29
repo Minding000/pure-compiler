@@ -30,9 +30,8 @@ class IfStatement(override val source: IfStatement, val condition: Value, val tr
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		if(isConditionAlwaysTrue)
-			isInterruptingExecution = trueBranch.isInterruptingExecution
-		if(isConditionAlwaysFalse && falseBranch != null)
-			isInterruptingExecution = falseBranch.isInterruptingExecution
+		isInterruptingExecution = (isConditionAlwaysTrue && trueBranch.isInterruptingExecution) ||
+			(isConditionAlwaysFalse && falseBranch?.isInterruptingExecution == true) ||
+			(trueBranch.isInterruptingExecution && falseBranch?.isInterruptingExecution == true)
 	}
 }

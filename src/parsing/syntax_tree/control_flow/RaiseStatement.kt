@@ -4,9 +4,10 @@ import linting.Linter
 import linting.semantic_model.control_flow.RaiseStatement
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.Element
+import parsing.syntax_tree.general.ValueElement
 import source_structure.Position
 
-class RaiseStatement(private val value: Element, start: Position): Element(start, value.end) {
+class RaiseStatement(private val value: ValueElement, start: Position): Element(start, value.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): RaiseStatement {
 		return RaiseStatement(this, value.concretize(linter, scope))

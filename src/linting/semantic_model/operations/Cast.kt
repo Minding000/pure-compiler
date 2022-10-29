@@ -14,6 +14,7 @@ import parsing.syntax_tree.operations.Cast
 
 class Cast(override val source: Cast, val value: Value, val variable: VariableValue?, val referenceType: Type,
 		   val operator: Operator): Value(source) {
+	override var isInterruptingExecution = false
 	private val isCastAlwaysSuccessful: Boolean
 		get() = (value.staticValue?.type ?: value.type)?.isAssignableTo(referenceType) ?: false
 	private val isCastNeverSuccessful: Boolean
@@ -49,8 +50,11 @@ class Cast(override val source: Cast, val value: Value, val variable: VariableVa
 				staticValue = BooleanLiteral(source, operator == Operator.CAST_CONDITION)
 			else if(isCastNeverSuccessful)
 				staticValue = BooleanLiteral(source, operator == Operator.NEGATED_CAST_CONDITION)
-		} else if(operator == Operator.SAFE_CAST || operator == Operator.THROWING_CAST) {
+		} else if(operator == Operator.SAFE_CAST) {
 			staticValue = value.staticValue
+		} else if(operator == Operator.THROWING_CAST) {
+			staticValue = value.staticValue
+			isInterruptingExecution = isCastNeverSuccessful //TODO propagate 'isInterruptingExecution' property from expressions to statements in the 'Unit' class
 		} else if(operator == Operator.OPTIONAL_CAST) {
 			if(isCastAlwaysSuccessful)
 				staticValue = value.staticValue

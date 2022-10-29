@@ -4,7 +4,7 @@ import linting.semantic_model.general.Unit
 import linting.semantic_model.values.Value
 import parsing.syntax_tree.control_flow.YieldStatement
 
-class YieldStatement(override val source: YieldStatement, val key: Unit?, val value: Unit): Value(source) {
+class YieldStatement(override val source: YieldStatement, val key: Unit?, val value: Value): Value(source) {
 
 	init {
 		if(key != null)

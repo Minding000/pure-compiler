@@ -8,20 +8,26 @@ import linting.semantic_model.values.VariableValueDeclaration
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
+import util.stringify
 import java.util.LinkedList
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
-open class OperatorDefinition(override val source: OperatorDefinitionSyntaxTree, name: String,
+open class OperatorDefinition(final override val source: OperatorDefinitionSyntaxTree, name: String,
 							  val scope: BlockScope, val valueParameters: List<Parameter>, val body: Unit?,
 							  returnType: Type?, val isNative: Boolean, val isOverriding: Boolean):
-	VariableValueDeclaration(source, name, returnType ?: ObjectType(source, Linter.LiteralType.NOTHING.className)) {
-	val returnType = type!!
-	val variation = valueParameters.joinToString { parameter -> parameter.type.toString() }
+	VariableValueDeclaration(source, name, returnType) {
+	val returnType: Type
 
 	init {
 		units.addAll(valueParameters)
 		if(body != null)
 			units.add(body)
+		var type = returnType
+		if(type == null) {
+			type = ObjectType(source, Linter.LiteralType.NOTHING.className)
+			units.add(type)
+		}
+		this.returnType = type
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): OperatorDefinition {
@@ -77,6 +83,6 @@ open class OperatorDefinition(override val source: OperatorDefinitionSyntaxTree,
 	}
 
 	override fun toString(): String {
-		return "$name($variation)"
+		return "$name(${valueParameters.stringify()})"
 	}
 }
