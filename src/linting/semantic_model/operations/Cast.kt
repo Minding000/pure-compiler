@@ -74,7 +74,6 @@ class Cast(override val source: Cast, val value: Value, val variable: VariableVa
 		}
 	}
 
-	@Suppress("unused") // Call to Operator.values() uses all enum values.
 	enum class Operator(val stringRepresentation: String, val isConditional: Boolean = false,
 						val returnsBoolean: Boolean = false) {
 		SAFE_CAST("as"),

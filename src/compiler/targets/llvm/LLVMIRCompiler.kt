@@ -11,9 +11,9 @@ import org.bytedeco.llvm.global.LLVM.*
  * @see: https://github.com/bytedeco/javacpp-presets/tree/master/llvm
  */
 object LLVMIRCompiler {
-	val LLVM_NO = 0
-	val LLVM_YES = 1
-	val LLVM_OK = 0
+	const val LLVM_NO = 0
+	const val LLVM_YES = 1
+	const val LLVM_OK = 0
 
 	fun compile(program: Program) {
 		initialize()
