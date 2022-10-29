@@ -9,8 +9,8 @@ class VariableAmountType(override val source: Element, val baseType: Type): Type
 		units.add(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): VariableAmountType {
-		return VariableAmountType(source, baseType.withTypeSubstitutions(typeSubstitution))
+	override fun withTypeSubstitutions(typeSubstitutions: Map<ObjectType, Type>): VariableAmountType {
+		return VariableAmountType(source, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

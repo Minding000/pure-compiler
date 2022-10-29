@@ -71,10 +71,10 @@ class FunctionType(override val source: Element) : Type(source) {
 		return validSignatures
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Type {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<ObjectType, Type>): Type {
 		val specificFunctionType = FunctionType(source)
 		for(signature in signatures)
-			specificFunctionType.signatures.add(signature.withTypeSubstitutions(typeSubstitution))
+			specificFunctionType.signatures.add(signature.withTypeSubstitutions(typeSubstitutions))
 		return specificFunctionType
 	}
 

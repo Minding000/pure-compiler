@@ -10,8 +10,8 @@ class OptionalType(override val source: Element, val baseType: Type): Type(sourc
 		units.add(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): OptionalType {
-		return OptionalType(source, baseType.withTypeSubstitutions(typeSubstitution))
+	override fun withTypeSubstitutions(typeSubstitutions: Map<ObjectType, Type>): OptionalType {
+		return OptionalType(source, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableSet<Type>) {

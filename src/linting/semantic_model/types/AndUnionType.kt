@@ -14,10 +14,10 @@ class AndUnionType(override val source: Element, val types: List<Type>): Type(so
 			type.scope.subscribe(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): AndUnionType {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<ObjectType, Type>): AndUnionType {
 		val specificTypes = LinkedList<Type>()
 		for(type in types)
-			specificTypes.add(typeSubstitution[type] ?: type)
+			specificTypes.add(typeSubstitutions[type] ?: type)
 		return AndUnionType(source, specificTypes)
 	}
 

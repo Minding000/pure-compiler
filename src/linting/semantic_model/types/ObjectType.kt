@@ -27,15 +27,15 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		units.addAll(typeParameters)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Type {
-		val substituteType = typeSubstitution[this]
+	override fun withTypeSubstitutions(typeSubstitutions: Map<ObjectType, Type>): Type {
+		val substituteType = typeSubstitutions[this]
 		if(substituteType != null)
 			return substituteType
 		if(typeParameters.isEmpty())
 			return this
 		val specificTypeParameters = LinkedList<Type>()
 		for(typeParameter in typeParameters)
-			specificTypeParameters.add(typeParameter.withTypeSubstitutions(typeSubstitution))
+			specificTypeParameters.add(typeParameter.withTypeSubstitutions(typeSubstitutions))
 		val specificType = ObjectType(source, name, specificTypeParameters)
 		specificType.definition = definition?.withTypeParameters(specificTypeParameters)
 		return specificType

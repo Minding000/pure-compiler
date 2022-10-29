@@ -10,8 +10,8 @@ class StaticType(val definition: TypeDefinition): Type(definition.source) {
 		definition.scope.subscribe(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): StaticType {
-		return StaticType(definition.withTypeSubstitutions(typeSubstitution))
+	override fun withTypeSubstitutions(typeSubstitutions: Map<ObjectType, Type>): StaticType {
+		return StaticType(definition.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	fun withTypeParameters(typeParameters: List<Type>): StaticType {

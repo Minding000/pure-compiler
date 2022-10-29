@@ -9,8 +9,8 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, val mode: Mode
 		units.add(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): TypeParameter {
-		return TypeParameter(source, mode, baseType.withTypeSubstitutions(typeSubstitution))
+	override fun withTypeSubstitutions(typeSubstitutions: Map<ObjectType, Type>): TypeParameter {
+		return TypeParameter(source, mode, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
