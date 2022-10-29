@@ -5,7 +5,6 @@ import linting.semantic_model.definitions.IndexOperatorDefinition
 import linting.semantic_model.definitions.InitializerDefinition
 import linting.semantic_model.definitions.OperatorDefinition
 import linting.semantic_model.definitions.TypeDefinition
-import linting.semantic_model.types.ObjectType
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.Instance
 import linting.semantic_model.values.Value
@@ -117,7 +116,7 @@ class InterfaceScope(private val type: Type): Scope() {
 		return validSignatures
 	}
 
-	class MatchResult(val signature: InitializerDefinition, val definitionTypeSubstitutions: Map<ObjectType, Type>)
+	class MatchResult(val signature: InitializerDefinition, val definitionTypeSubstitutions: Map<TypeDefinition, Type>)
 
 	override fun resolveOperator(name: String, suppliedValues: List<Value>):
 			OperatorDefinition? {

@@ -2,9 +2,8 @@ package linting.semantic_model.definitions
 
 import linting.Linter
 import linting.semantic_model.general.Unit
-import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.BlockScope
-import linting.semantic_model.types.ObjectType
+import linting.semantic_model.types.Type
 import linting.semantic_model.values.Value
 import util.getCommonType
 import java.util.*
@@ -21,7 +20,7 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 		units.addAll(indexParameters)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): IndexOperatorDefinition {
+	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): IndexOperatorDefinition {
 		val specificGenericParameters = LinkedList<TypeDefinition>()
 		for(genericParameter in genericParameters)
 			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
@@ -50,14 +49,14 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 	}
 
 	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
-							 suppliedParameterValues: List<Value>): Map<ObjectType, Type>? {
+							 suppliedParameterValues: List<Value>): Map<TypeDefinition, Type>? {
 		if(genericParameters.size < suppliedTypes.size)
 			return null
 		if(indexParameters.size != suppliedIndexValues.size)
 			return null
 		if(valueParameters.size != suppliedParameterValues.size)
 			return null
-		val typeSubstitutions = HashMap<ObjectType, Type>()
+		val typeSubstitutions = HashMap<TypeDefinition, Type>()
 		for(parameterIndex in genericParameters.indices) {
 			val genericParameter = genericParameters[parameterIndex]
 			val requiredType = genericParameter.superType
@@ -66,7 +65,7 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 				?: return null
 			if(requiredType?.accepts(suppliedType) == false)
 				return null
-			typeSubstitutions[ObjectType(genericParameter)] = suppliedType
+			typeSubstitutions[genericParameter] = suppliedType
 		}
 		return typeSubstitutions
 	}

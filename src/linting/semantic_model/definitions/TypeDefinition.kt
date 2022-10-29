@@ -2,11 +2,10 @@ package linting.semantic_model.definitions
 
 import linting.Linter
 import linting.semantic_model.general.Unit
-import linting.semantic_model.types.ObjectType
-import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.scopes.TypeScope
+import linting.semantic_model.types.Type
 import parsing.syntax_tree.general.Element
 
 abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope,
@@ -20,14 +19,14 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 
 	open fun register(linter: Linter, parentScope: MutableScope) {}
 
-	abstract fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): TypeDefinition
+	abstract fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): TypeDefinition
 
 	fun withTypeParameters(typeParameters: List<Type>): TypeDefinition {
 		baseDefinition?.let { baseDefinition ->
 			return baseDefinition.withTypeParameters(typeParameters)
 		}
-		val placeholders = scope.getGenericTypes()
-		val typeSubstitutions = HashMap<ObjectType, Type>()
+		val placeholders = scope.getGenericTypeDefinitions()
+		val typeSubstitutions = HashMap<TypeDefinition, Type>()
 		for(parameterIndex in placeholders.indices) {
 			val placeholder = placeholders[parameterIndex]
 			val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break

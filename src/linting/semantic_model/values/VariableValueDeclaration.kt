@@ -1,10 +1,10 @@
 package linting.semantic_model.values
 
 import linting.Linter
-import linting.semantic_model.types.Type
+import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.general.Unit
-import linting.semantic_model.types.ObjectType
 import linting.semantic_model.scopes.Scope
+import linting.semantic_model.types.Type
 import messages.Message
 import parsing.syntax_tree.general.Element
 import parsing.syntax_tree.literals.Identifier
@@ -23,7 +23,7 @@ open class VariableValueDeclaration(override val source: Element, val name: Stri
 
 	constructor(source: Identifier): this(source, source.getValue(), null, null, true, true)
 
-	open fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): VariableValueDeclaration {
+	open fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): VariableValueDeclaration {
 		return VariableValueDeclaration(source, name, type?.withTypeSubstitutions(typeSubstitution), value, isConstant,
 			isMutable)
 	}

@@ -2,15 +2,13 @@ package linting.semantic_model.definitions
 
 import linting.Linter
 import linting.semantic_model.general.Unit
-import linting.semantic_model.types.ObjectType
-import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.scopes.Scope
+import linting.semantic_model.types.Type
 import linting.semantic_model.values.Value
 import util.getCommonType
 import java.util.*
-import kotlin.collections.LinkedHashMap
 import parsing.syntax_tree.definitions.InitializerDefinition as InitializerDefinitionSyntaxTree
 
 class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree, val scope: BlockScope,
@@ -26,7 +24,7 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 			units.add(body)
 	}
 
-	fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): InitializerDefinition {
+	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {
 		val specificGenericParameters = LinkedList<TypeDefinition>()
 		for(genericParameter in genericParameters)
 			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
@@ -47,12 +45,12 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 	}
 
 	fun getDefinitionTypeSubstitutions(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
-									   suppliedValues: List<Value>): Map<ObjectType, Type>? {
+									   suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
 		if(genericDefinitionTypes.size < suppliedDefinitionTypes.size)
 			return null
 		if(parameters.size != suppliedValues.size)
 			return null
-		val typeSubstitutions = LinkedHashMap<ObjectType, Type>() //TODO replace ObjectType in type substitutions with Interface spanning Type and TypeDefinition
+		val typeSubstitutions = LinkedHashMap<TypeDefinition, Type>()
 		for(parameterIndex in genericDefinitionTypes.indices) {
 			val genericParameter = genericDefinitionTypes[parameterIndex]
 			val requiredType = genericParameter.superType
@@ -61,17 +59,17 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 				?: return null
 			if(requiredType?.accepts(suppliedType) == false)
 				return null
-			typeSubstitutions[ObjectType(genericParameter)] = suppliedType
+			typeSubstitutions[genericParameter] = suppliedType
 		}
 		return typeSubstitutions
 	}
 
-	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<ObjectType, Type>? {
+	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
 		if(genericParameters.size < suppliedTypes.size)
 			return null
 		if(parameters.size != suppliedValues.size)
 			return null
-		val typeSubstitutions = HashMap<ObjectType, Type>() //TODO replace ObjectType in type substitutions with Interface spanning Type and TypeDefinition
+		val typeSubstitutions = HashMap<TypeDefinition, Type>()
 		for(parameterIndex in genericParameters.indices) {
 			val genericParameter = genericParameters[parameterIndex]
 			val requiredType = genericParameter.superType
@@ -80,7 +78,7 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 				?: return null
 			if(requiredType?.accepts(suppliedType) == false)
 				return null
-			typeSubstitutions[ObjectType(genericParameter)] = suppliedType
+			typeSubstitutions[genericParameter] = suppliedType
 		}
 		return typeSubstitutions
 	}

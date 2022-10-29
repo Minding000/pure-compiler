@@ -16,7 +16,7 @@ abstract class Type(source: Element): Unit(source) {
 	val scope = InterfaceScope(this)
 	var llvmType: LLVMTypeRef? = null
 
-	abstract fun withTypeSubstitutions(typeSubstitutions: Map<ObjectType, Type>): Type
+	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type
 
 	open fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableSet<Type>) {}
 

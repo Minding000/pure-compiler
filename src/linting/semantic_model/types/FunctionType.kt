@@ -2,6 +2,7 @@ package linting.semantic_model.types
 
 import errors.user.SignatureResolutionAmbiguityError
 import linting.semantic_model.definitions.FunctionSignature
+import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.values.Value
 import parsing.syntax_tree.general.Element
 import java.util.*
@@ -71,7 +72,7 @@ class FunctionType(override val source: Element) : Type(source) {
 		return validSignatures
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<ObjectType, Type>): Type {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type {
 		val specificFunctionType = FunctionType(source)
 		for(signature in signatures)
 			specificFunctionType.signatures.add(signature.withTypeSubstitutions(typeSubstitutions))

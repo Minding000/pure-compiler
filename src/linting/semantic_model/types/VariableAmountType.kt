@@ -1,6 +1,7 @@
 package linting.semantic_model.types
 
 import linting.Linter
+import linting.semantic_model.definitions.TypeDefinition
 import parsing.syntax_tree.general.Element
 
 class VariableAmountType(override val source: Element, val baseType: Type): Type(source) {
@@ -9,7 +10,7 @@ class VariableAmountType(override val source: Element, val baseType: Type): Type
 		units.add(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<ObjectType, Type>): VariableAmountType {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): VariableAmountType {
 		return VariableAmountType(source, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 

@@ -2,7 +2,6 @@ package linting.semantic_model.definitions
 
 import linting.Linter
 import linting.semantic_model.scopes.MutableScope
-import linting.semantic_model.types.ObjectType
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.VariableValueDeclaration
 import parsing.syntax_tree.definitions.Parameter as ParameterSyntaxTree
@@ -11,7 +10,7 @@ class Parameter(override val source: ParameterSyntaxTree, name: String, type: Ty
 				val hasDynamicSize: Boolean):
 	VariableValueDeclaration(source, name, type, null, true, isMutable) {
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Parameter {
+	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): Parameter {
 		return Parameter(source, name, type?.withTypeSubstitutions(typeSubstitution), isMutable, hasDynamicSize)
 	}
 

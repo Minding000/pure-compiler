@@ -27,8 +27,8 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		units.addAll(typeParameters)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<ObjectType, Type>): Type {
-		val substituteType = typeSubstitutions[this]
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type {
+		val substituteType = typeSubstitutions[definition]
 		if(substituteType != null)
 			return substituteType
 		if(typeParameters.isEmpty())
@@ -42,15 +42,15 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 	}
 
 	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableSet<Type>) {
-		if(sourceType is ObjectType) {
-			for(typeParameterIndex in typeParameters.indices) {
-				val requiredTypeParameter = typeParameters[typeParameterIndex]
-				val sourceTypeParameter = sourceType.typeParameters.getOrNull(typeParameterIndex) ?: break
-				requiredTypeParameter.inferType(genericType, sourceTypeParameter, inferredTypes)
-			}
-			if(definition == genericType)
-				inferredTypes.add(sourceType)
+		if(sourceType !is ObjectType)
+			return
+		for(typeParameterIndex in typeParameters.indices) {
+			val requiredTypeParameter = typeParameters[typeParameterIndex]
+			val sourceTypeParameter = sourceType.typeParameters.getOrNull(typeParameterIndex) ?: break
+			requiredTypeParameter.inferType(genericType, sourceTypeParameter, inferredTypes)
 		}
+		if(definition == genericType)
+			inferredTypes.add(sourceType)
 	}
 
 	override fun onNewType(type: TypeDefinition) {

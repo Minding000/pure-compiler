@@ -26,7 +26,7 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 		}
 	}
 
-	fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): FunctionSignature {
+	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {
 		val specificGenericParameters = LinkedList<TypeDefinition>()
 		for(genericParameter in genericParameters)
 			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
@@ -57,12 +57,12 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 		return true
 	}
 
-	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<ObjectType, Type>? {
+	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
 		if(genericParameters.size < suppliedTypes.size)
 			return null
 		if(parameterTypes.size != suppliedValues.size)
 			return null
-		val typeSubstitutions = HashMap<ObjectType, Type>()
+		val typeSubstitutions = HashMap<TypeDefinition, Type>()
 		for(parameterIndex in genericParameters.indices) {
 			val genericParameter = genericParameters[parameterIndex]
 			val requiredType = genericParameter.superType
@@ -71,7 +71,7 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 				?: return null
 			if(requiredType?.accepts(suppliedType) == false)
 				return null
-			typeSubstitutions[ObjectType(genericParameter)] = suppliedType
+			typeSubstitutions[genericParameter] = suppliedType
 		}
 		return typeSubstitutions
 	}

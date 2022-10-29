@@ -27,7 +27,7 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 		units.add(valueDeclaration)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Object {
+	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): Object {
 		return this
 	}
 }

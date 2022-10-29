@@ -2,16 +2,15 @@ package linting.semantic_model.definitions
 
 import linting.Linter
 import linting.semantic_model.scopes.MutableScope
-import linting.semantic_model.types.ObjectType
+import linting.semantic_model.scopes.TypeScope
 import linting.semantic_model.types.StaticType
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.VariableValueDeclaration
-import linting.semantic_model.scopes.TypeScope
 import parsing.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?):
 	TypeDefinition(source, name, scope, superType) {
-	private val specificDefinitions = HashMap<Map<ObjectType, Type>, Enum>()
+	private val specificDefinitions = HashMap<Map<TypeDefinition, Type>, Enum>()
 
 	init {
 		scope.typeDefinition = this
@@ -24,7 +23,7 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 		units.add(valueDeclaration)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): Enum {
+	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): Enum {
 		var definition = specificDefinitions[typeSubstitution]
 		if(definition == null) {
 			val superType = superType?.withTypeSubstitutions(typeSubstitution)

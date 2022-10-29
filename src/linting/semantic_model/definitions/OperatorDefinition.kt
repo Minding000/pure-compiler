@@ -24,7 +24,7 @@ open class OperatorDefinition(override val source: OperatorDefinitionSyntaxTree,
 			units.add(body)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): OperatorDefinition {
+	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): OperatorDefinition {
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in valueParameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))

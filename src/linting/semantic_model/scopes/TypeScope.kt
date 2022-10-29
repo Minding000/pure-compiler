@@ -17,7 +17,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	private val initializers = LinkedList<InitializerDefinition>()
 	private val operators = LinkedList<OperatorDefinition>()
 
-	fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>, superScope: InterfaceScope?): TypeScope {
+	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>, superScope: InterfaceScope?): TypeScope {
 		val specificTypeScope = TypeScope(parentScope, superScope)
 		for((name, typeDefinition) in typeDefinitions) {
 			if(typeDefinition is GenericTypeDefinition)

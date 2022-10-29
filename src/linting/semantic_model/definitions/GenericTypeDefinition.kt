@@ -1,19 +1,18 @@
 package linting.semantic_model.definitions
 
-import linting.semantic_model.types.ObjectType
-import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.TypeScope
+import linting.semantic_model.types.Type
 import parsing.syntax_tree.definitions.Parameter
 
 class GenericTypeDefinition(override val source: Parameter, name: String, scope: TypeScope, superType: Type?):
 	TypeDefinition(source, name, scope, superType) {
-	private val specificDefinitions = HashMap<Map<ObjectType, Type>, GenericTypeDefinition>()
+	private val specificDefinitions = HashMap<Map<TypeDefinition, Type>, GenericTypeDefinition>()
 
 	init {
 		scope.typeDefinition = this
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<ObjectType, Type>): GenericTypeDefinition {
+	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): GenericTypeDefinition {
 		var definition = specificDefinitions[typeSubstitution]
 		if(definition == null) {
 			val superType = superType?.withTypeSubstitutions(typeSubstitution)
