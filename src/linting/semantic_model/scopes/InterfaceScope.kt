@@ -98,8 +98,9 @@ class InterfaceScope(private val type: Type): Scope() {
 		throw SignatureResolutionAmbiguityError(matches.map { match -> match.signature })
 	}
 
-	private fun getMatchingInitializers(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
-										suppliedTypes: List<Type>, suppliedValues: List<Value>): List<MatchResult> {
+	private fun getMatchingInitializers(genericDefinitionTypes: List<TypeDefinition>,
+										suppliedDefinitionTypes: List<Type>, suppliedTypes: List<Type>,
+										suppliedValues: List<Value>): List<MatchResult> {
 		val validSignatures = LinkedList<MatchResult>()
 		for(signature in initializers) {
 			var specificSignature = signature

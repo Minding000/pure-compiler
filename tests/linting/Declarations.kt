@@ -41,7 +41,7 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "'defaultHandler' shadows a variable.")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "'defaultHandler' shadows a member")
 	}
 
 	@Test

@@ -9,12 +9,12 @@ import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.values.VariableValueDeclaration
 import messages.Message
 import linting.semantic_model.scopes.InterfaceScope
-import org.bytedeco.llvm.LLVM.LLVMTypeRef
+//import org.bytedeco.llvm.LLVM.LLVMTypeRef
 import parsing.syntax_tree.general.Element
 
 abstract class Type(source: Element): Unit(source) {
 	val scope = InterfaceScope(this)
-	var llvmType: LLVMTypeRef? = null
+	//var llvmType: LLVMTypeRef? = null
 
 	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type
 

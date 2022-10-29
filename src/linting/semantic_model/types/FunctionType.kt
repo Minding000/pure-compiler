@@ -7,11 +7,11 @@ import linting.semantic_model.values.Value
 import parsing.syntax_tree.general.Element
 import java.util.*
 
-class FunctionType(override val source: Element) : Type(source) {
+class FunctionType(override val source: Element): Type(source) {
 	private val signatures = LinkedList<FunctionSignature>()
 	var superFunctionType: FunctionType? = null
 
-	constructor(source: Element, signature: FunctionSignature) : this(source) {
+	constructor(source: Element, signature: FunctionSignature): this(source) {
 		addSignature(signature)
 	}
 

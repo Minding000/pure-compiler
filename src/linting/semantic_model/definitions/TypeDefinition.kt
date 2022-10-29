@@ -56,6 +56,10 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 		super.linkValues(linter, this.scope)
 	}
 
+	fun acceptsSubstituteType(substituteType: Type): Boolean {
+		return superType?.accepts(substituteType) ?: true
+	}
+
 	override fun equals(other: Any?): Boolean {
 		if(other !is TypeDefinition)
 			return false

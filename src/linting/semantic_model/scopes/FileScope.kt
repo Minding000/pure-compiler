@@ -27,14 +27,13 @@ class FileScope: MutableScope() {
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {
 		val previousDeclaration = referencedTypes[type.name] ?: types.putIfAbsent(type.name, type)
-		if(previousDeclaration == null) {
-			onNewType(type)
-			linter.addMessage(type.source, "Declaration of type '${type.name}'.",
-				Message.Type.DEBUG)
-		} else {
+		if(previousDeclaration != null) {
 			linter.addMessage(type.source, "Redeclaration of type '${type.name}'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
+			return
 		}
+		onNewType(type)
+		linter.addMessage(type.source, "Declaration of type '${type.name}'.", Message.Type.DEBUG)
 	}
 
 	override fun resolveType(name: String): TypeDefinition? {
@@ -43,14 +42,14 @@ class FileScope: MutableScope() {
 
 	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
 		val previousDeclaration = referencedValues[value.name] ?: values.putIfAbsent(value.name, value)
-		if(previousDeclaration == null) {
-			onNewValue(value)
-			linter.addMessage(value.source, "Declaration of value '${value.name}'.",
-				Message.Type.DEBUG)
-		} else {
+		if(previousDeclaration != null) {
 			linter.addMessage(value.source, "Redeclaration of value '${value.name}'," +
 					" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
+			return
 		}
+		onNewValue(value)
+		linter.addMessage(value.source, "Declaration of value '${value.name}'.",
+			Message.Type.DEBUG)
 	}
 
 	override fun resolveValue(name: String): VariableValueDeclaration? {

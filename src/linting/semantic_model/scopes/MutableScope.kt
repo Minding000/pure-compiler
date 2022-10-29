@@ -16,19 +16,19 @@ abstract class MutableScope: Scope() {
 
 	open fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
 		linter.addMessage(initializer.source,
-			"Initializer declarations aren't allowed in ${javaClass.simpleName}.",
+			"Initializer declarations aren't allowed in '${javaClass.simpleName}'.",
 			Message.Type.ERROR)
 	}
 
 	open fun declareFunction(linter: Linter, name: String, newImplementation: FunctionImplementation) {
 		linter.addMessage(newImplementation.source,
-			"Function declarations aren't allowed in ${javaClass.simpleName}.",
+			"Function declarations aren't allowed in '${javaClass.simpleName}'.",
 			Message.Type.ERROR)
 	}
 
 	open fun declareOperator(linter: Linter, operator: OperatorDefinition) {
 		linter.addMessage(operator.source,
-			"Operator declarations aren't allowed in ${javaClass.simpleName}.",
+			"Operator declarations aren't allowed in '${javaClass.simpleName}'.",
 			Message.Type.ERROR)
 	}
 }

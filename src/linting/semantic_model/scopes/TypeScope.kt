@@ -2,7 +2,6 @@ package linting.semantic_model.scopes
 
 import linting.Linter
 import linting.semantic_model.definitions.*
-import linting.semantic_model.types.ObjectType
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.Function
 import linting.semantic_model.values.Instance
@@ -87,34 +86,34 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {
 		var previousDeclaration = parentScope.resolveType(type.name)
-		if(previousDeclaration != null) {
-			linter.addMessage(type.source, "'${type.name}' shadows a type.", Message.Type.WARNING)
-		}
+		if(previousDeclaration != null)
+			linter.addMessage(type.source, "'${type.name}' shadows a type," +
+				" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.WARNING)
 		previousDeclaration = superScope?.resolveType(type.name) ?: typeDefinitions.putIfAbsent(type.name, type)
-		if(previousDeclaration == null) {
-			onNewType(type)
-			linter.addMessage(type.source, "Declaration of type '${typeDefinition.name}.${type.name}'.", Message.Type.DEBUG)
-		} else {
+		if(previousDeclaration != null) {
 			linter.addMessage(type.source, "Redeclaration of type '${typeDefinition.name}.${type.name}'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
+			return
 		}
+		onNewType(type)
+		linter.addMessage(type.source, "Declaration of type '${typeDefinition.name}.${type.name}'.", Message.Type.DEBUG)
 	}
 
 	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
 		var previousDeclaration = parentScope.resolveValue(value.name)
-		if(previousDeclaration != null) {
-			linter.addMessage(value.source, "'${value.name}' shadows a variable.", Message.Type.WARNING)
-		}
+		if(previousDeclaration != null)
+			linter.addMessage(value.source, "'${value.name}' shadows a member," +
+				" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.WARNING)
 		previousDeclaration = superScope?.resolveValue(value.name) ?: valueDeclarations.putIfAbsent(value.name, value)
-		if(previousDeclaration == null) {
-			if(value is Instance)
-				value.setType(typeDefinition)
-			onNewValue(value)
-			linter.addMessage(value.source, "Declaration of member '${typeDefinition.name}.${value.name}'.", Message.Type.DEBUG)
-		} else {
+		if(previousDeclaration != null) {
 			linter.addMessage(value.source, "Redeclaration of member '${typeDefinition.name}.${value.name}'," +
 				" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
+			return
 		}
+		if(value is Instance)
+			value.setType(typeDefinition)
+		onNewValue(value)
+		linter.addMessage(value.source, "Declaration of member '${typeDefinition.name}.${value.name}'.", Message.Type.DEBUG)
 	}
 
 	override fun declareFunction(linter: Linter, name: String, newImplementation: FunctionImplementation) {
@@ -165,14 +164,14 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			previousDeclaration = declaredOperator
 			break
 		}
-		if(previousDeclaration == null) {
-			operators.add(operator)
-			onNewOperator(operator)
-			linter.addMessage(operator.source, "Declaration of operator '${typeDefinition.name}$operator'.", Message.Type.DEBUG)
-		} else {
+		if(previousDeclaration != null) {
 			linter.addMessage(operator.source, "Redeclaration of operator '${typeDefinition.name}$operator'," +
 						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
+			return
 		}
+		operators.add(operator)
+		onNewOperator(operator)
+		linter.addMessage(operator.source, "Declaration of operator '${typeDefinition.name}$operator'.", Message.Type.DEBUG)
 	}
 
 	override fun resolveValue(name: String): VariableValueDeclaration? {
@@ -185,14 +184,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		return typeDefinitions[name]
 			?: superScope?.resolveType(name)
 			?: parentScope.resolveType(name)
-	}
-
-	fun getGenericTypes(): LinkedList<ObjectType> {
-		val genericTypes = LinkedList<ObjectType>()
-		for((_, typeDefinition) in typeDefinitions)
-			if(typeDefinition is GenericTypeDefinition)
-				genericTypes.add(ObjectType(typeDefinition))
-		return genericTypes
 	}
 
 	fun getGenericTypeDefinitions(): LinkedList<GenericTypeDefinition> {

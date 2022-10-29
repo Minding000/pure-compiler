@@ -84,27 +84,23 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 	override fun validate(linter: Linter) {
 		super.validate(linter)
 		(definition?.baseDefinition ?: definition)?.let { definition ->
-			val placeholders = definition.scope.getGenericTypes()
-			if(typeParameters.size != placeholders.size) {
+			val genericTypes = definition.scope.getGenericTypeDefinitions()
+			if(typeParameters.size != genericTypes.size) {
 				linter.addMessage(source, "Number of provided type parameters " +
 					"(${typeParameters.size}) doesn't match number of declared " +
-					"generic types (${placeholders.size}).", Message.Type.ERROR)
+					"generic types (${genericTypes.size}).", Message.Type.ERROR)
 			}
 			if(typeParameters.isEmpty())
 				return
-			for(parameterIndex in placeholders.indices) {
-				val placeholder = placeholders[parameterIndex]
+			for(parameterIndex in genericTypes.indices) {
+				val genericType = genericTypes[parameterIndex]
 				val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
-				if(!placeholder.acceptsSubstituteType(typeParameter)) {
+				if(!genericType.acceptsSubstituteType(typeParameter)) {
 					linter.addMessage(source, "The type parameter " +
-						"'$typeParameter' is not assignable to '$placeholder'.", Message.Type.ERROR)
+						"'$typeParameter' is not assignable to '$genericType'.", Message.Type.ERROR)
 				}
 			}
 		}
-	}
-
-	private fun acceptsSubstituteType(substituteType: Type): Boolean {
-		return definition?.superType?.accepts(substituteType) ?: true
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
@@ -130,7 +126,7 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		return definition?.superType?.isAssignableTo(targetType) ?: false
 	}
 
-	override fun getKeyType(linter: Linter): Type? {
+	override fun getKeyType(linter: Linter): Type? { //TODO write test for this
 		if(typeParameters.size != 2) {
 			linter.addMessage("Type '$this' doesn't have a key type.", Message.Type.ERROR)
 			return null

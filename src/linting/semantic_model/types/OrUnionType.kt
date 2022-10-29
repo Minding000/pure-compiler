@@ -74,6 +74,6 @@ class OrUnionType(override val source: UnionType, val types: List<Type>): Type(s
 	}
 
 	override fun toString(): String {
-		return types.joinToString(" | ")
+		return types.joinToString(" | ") //TODO use parentheses when the output would be ambiguous
 	}
 }
