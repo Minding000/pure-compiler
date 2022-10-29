@@ -6,7 +6,6 @@ import linting.semantic_model.types.ObjectType
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.Function
 import linting.semantic_model.values.Instance
-import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValueDeclaration
 import messages.Message
 import java.util.*
@@ -197,48 +196,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		return typeDefinitions[name]
 			?: superScope?.resolveType(name)
 			?: parentScope.resolveType(name)
-	}
-
-	//TODO this function is outdated (see InterfaceScope)
-	override fun resolveOperator(name: String, suppliedValues: List<Value>):
-			OperatorDefinition? {
-		operatorIteration@for(operator in operators) {
-			if(operator.name != name)
-				continue
-			if(operator.valueParameters.size != suppliedValues.size)
-				continue
-			for(i in suppliedValues.indices) {
-				if(!suppliedValues[i].isAssignableTo(operator.valueParameters[i].type))
-					continue@operatorIteration
-			}
-			return operator
-		}
-		return superScope?.resolveOperator(name, suppliedValues)
-			?: parentScope.resolveOperator(name, suppliedValues)
-	}
-
-	//TODO this function is outdated (see InterfaceScope)
-	override fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
-									  suppliedParameterValues: List<Value>): IndexOperatorDefinition? {
-		operatorIteration@for(operator in operators) {
-			if(operator !is IndexOperatorDefinition)
-				continue
-			if(operator.indexParameters.size != suppliedIndexValues.size)
-				continue
-			if(operator.valueParameters.size != suppliedParameterValues.size)
-				continue
-			for(i in suppliedIndexValues.indices) {
-				if(!suppliedIndexValues[i].isAssignableTo(operator.indexParameters[i].type))
-					continue@operatorIteration
-			}
-			for(i in suppliedParameterValues.indices) {
-				if(!suppliedParameterValues[i].isAssignableTo(operator.valueParameters[i].type))
-					continue@operatorIteration
-			}
-			return operator
-		}
-		return superScope?.resolveIndexOperator(suppliedTypes, suppliedIndexValues, suppliedParameterValues)
-			?: parentScope.resolveIndexOperator(suppliedTypes, suppliedIndexValues, suppliedParameterValues)
 	}
 
 	fun getGenericTypes(): LinkedList<ObjectType> {
