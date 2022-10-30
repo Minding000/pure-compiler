@@ -13,13 +13,13 @@ class LintResult(private val linter: Linter, val program: Program) {
 	}
 
 	fun assertNoMessagesOfType(type: Message.Type) {
-		for(message in linter.messages)
+		for(message in linter.logger.messages())
 			if(message.type == type)
 				throw AssertionError("Unexpected linter message '${message.description}' of type '${message.type}' has been emitted.")
 	}
 
 	fun assertMessageEmitted(expectedType: Message.Type, expectedMessage: String) {
-		for(message in linter.messages) {
+		for(message in linter.logger.messages()) {
 			if(message.description.contains(expectedMessage)) {
 				if(message.type != expectedType)
 					throw AssertionError("Linter message '$expectedMessage' has type '${message.type}' instead of expected type '$expectedType'.")
@@ -30,7 +30,7 @@ class LintResult(private val linter: Linter, val program: Program) {
 	}
 
 	fun assertMessageNotEmitted(expectedType: Message.Type, expectedMessage: String) {
-		for(message in linter.messages) {
+		for(message in linter.logger.messages()) {
 			if(message.description.contains(expectedMessage)) {
 				if(message.type != expectedType)
 					throw AssertionError("Linter message '$expectedMessage' has type '${message.type}' instead of expected type '$expectedType'.")

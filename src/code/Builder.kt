@@ -32,7 +32,7 @@ object Builder {
 			println("----- Linter messages: -----")
 			val linter = Linter()
 			val lintedProgram = linter.lint(program)
-			linter.printMessages()
+			linter.logger.printReport()
 			println("----- JIT example: -----")
 			LLVMIRCompiler.runExampleProgram()
 			println("----- JIT output: -----")

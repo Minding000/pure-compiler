@@ -3,6 +3,7 @@ package parsing.element_generator
 import errors.user.UnexpectedWordError
 import errors.user.UserError
 import messages.Message
+import messages.MessageLogger
 import parsing.syntax_tree.general.*
 import source_structure.Project
 import parsing.tokenizer.*
@@ -13,30 +14,14 @@ class ElementGenerator(project: Project): Generator() {
 	override var currentWord: Word? = null
 	override var nextWord: Word? = null
 	override var parseForeignLanguageLiteralNext = false
-	private val logLevel = Message.Type.DEBUG
-	val messages = LinkedList<Message>()
+	val logger = MessageLogger("parser", Message.Type.INFO)
 	val statementParser = StatementParser(this)
 	val expressionParser = ExpressionParser(this)
 	val typeParser = TypeParser(this)
 	val literalParser = LiteralParser(this)
 
 	fun addMessage(description: String, type: Message.Type = Message.Type.INFO) {
-		messages.add(Message(description, type))
-	}
-
-	fun printMessages() {
-		val counts = Array(4) { 0 }
-		for(message in messages) {
-			counts[message.type.ordinal]++
-			if(message.type >= logLevel)
-				println("${message.type.name}: ${message.description}")
-		}
-		println("Total: "
-				+ "${counts[Message.Type.ERROR.ordinal]} errors, "
-				+ "${counts[Message.Type.WARNING.ordinal]} warnings, "
-				+ "${counts[Message.Type.INFO.ordinal]} infos, "
-				+ "${counts[Message.Type.DEBUG.ordinal]} debug messages"
-				+ " (Log level: ${logLevel.name})")
+		logger.add(Message(description, type))
 	}
 
 	override fun consume(type: WordDescriptor): Word {
@@ -57,6 +42,7 @@ class ElementGenerator(project: Project): Generator() {
 	}
 
 	fun parseProgram(): Program {
+		logger.addPhase("Parsing program")
 		val files = LinkedList<File>()
 		while(!wordGenerator.done) {
 			currentWord = wordGenerator.getNextWord()

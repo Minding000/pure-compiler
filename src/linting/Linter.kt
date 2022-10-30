@@ -1,81 +1,64 @@
 package linting
 
-import linting.semantic_model.types.Type
-import parsing.syntax_tree.general.Program as ProgramSyntaxTree
-import linting.semantic_model.general.Program as SemanticProgramModel
-import messages.Message
 import linting.semantic_model.scopes.Scope
+import linting.semantic_model.types.Type
+import messages.Message
+import messages.MessageLogger
 import parsing.syntax_tree.general.Element
-import java.util.*
-import kotlin.collections.HashMap
+import linting.semantic_model.general.Program as SemanticProgramModel
+import parsing.syntax_tree.general.Program as ProgramSyntaxTree
 
 class Linter {
-	private val logLevel = Message.Type.DEBUG
 	private val literalScopes = HashMap<LiteralType, Scope?>()
-	val messages = LinkedList<Message>()
-	var phase = Phase.PENDING
+	val logger = MessageLogger("linter", Message.Type.INFO)
+	var activePhase = Phase.PENDING
 
 	fun lint(programSyntaxTree: ProgramSyntaxTree): SemanticProgramModel {
-		messages.add(Message("----- Linter stage: Concretization -----", Message.Type.DEBUG))
-		phase = Phase.CONCRETIZATION
+		logger.addPhase("Concretization")
+		activePhase = Phase.CONCRETIZATION
 		val semanticProgramModel = programSyntaxTree.concretize(this)
-		messages.add(Message("----- Linter stage: File reference resolution -----", Message.Type.DEBUG))
-		phase = Phase.LITERAL_SCOPE_RESOLUTION
-		messages.add(Message("----- Linter stage: Literal scope resolution -----", Message.Type.DEBUG))
+		logger.addPhase("File reference resolution")
+		activePhase = Phase.FILE_REFERENCE_RESOLUTION
+		semanticProgramModel.resolveFileReferences(this)
+		logger.addPhase("Literal scope resolution")
+		activePhase = Phase.LITERAL_SCOPE_RESOLUTION
 		for(literalType in LiteralType.values()) {
 			literalScopes[literalType] = getLiteralScope(semanticProgramModel,
 				listOf("Pure", "lang", "dataTypes", literalType.className))
 		}
-		phase = Phase.FILE_REFERENCE_RESOLUTION
-		semanticProgramModel.resolveFileReferences(this)
-		messages.add(Message("----- Linter stage: Type linking -----", Message.Type.DEBUG))
-		phase = Phase.TYPE_LINKING
+		logger.addPhase("Type linking")
+		activePhase = Phase.TYPE_LINKING
 		semanticProgramModel.linkTypes(this)
-		messages.add(Message("----- Linter stage: Resolve generics -----", Message.Type.DEBUG))
-		phase = Phase.PROPERTY_PARAMETER_LINKING
+		logger.addPhase("Property parameter linking")
+		activePhase = Phase.PROPERTY_PARAMETER_LINKING
 		semanticProgramModel.linkPropertyParameters(this)
-		messages.add(Message("----- Linter stage: Value linking -----", Message.Type.DEBUG))
-		phase = Phase.RESOLVE_GENERICS
+		logger.addPhase("Resolve generics")
+		activePhase = Phase.RESOLVE_GENERICS
 		semanticProgramModel.resolveGenerics(this)
-		messages.add(Message("----- Linter stage: Property parameter linking -----", Message.Type.DEBUG))
-		phase = Phase.VALUE_LINKING
+		logger.addPhase("Value linking")
+		activePhase = Phase.VALUE_LINKING
 		semanticProgramModel.linkValues(this)
-		messages.add(Message("----- Linter stage: Validation -----", Message.Type.DEBUG))
-		phase = Phase.VALIDATION
+		logger.addPhase("Validation")
+		activePhase = Phase.VALIDATION
 		semanticProgramModel.validate(this)
-		messages.add(Message("----- Linter stage: Done -----", Message.Type.DEBUG))
-		phase = Phase.DONE
+		logger.addPhase("Done")
+		activePhase = Phase.DONE
 		return semanticProgramModel
 	}
 
 	private fun getLiteralScope(semanticProgramModel: SemanticProgramModel, pathParts: List<String>): Scope? {
 		val file = semanticProgramModel.getFile(pathParts)
 		if(file == null)
-			messages.add(Message("Failed to get literal scope '${pathParts.joinToString(".")}'.", Message.Type.ERROR))
+			logger.add(Message("Failed to get literal scope '${pathParts.joinToString(".")}'.", Message.Type.ERROR))
 		return file?.scope
 	}
 
 	fun addMessage(description: String, type: Message.Type = Message.Type.INFO) {
-		messages.add(Message(description, type))
+		logger.add(Message(description, type))
 	}
 
 	fun addMessage(element: Element, description: String, type: Message.Type = Message.Type.INFO) {
 		addMessage("${element.getStartString()}: $description", type)
-	}
-
-	fun printMessages() {
-		val counts = Array(4) { 0 }
-		for(message in messages) {
-			counts[message.type.ordinal]++
-			if(message.type >= logLevel)
-				println("${message.type.name}: ${message.description}")
-		}
-		println("Total: "
-				+ "${counts[Message.Type.ERROR.ordinal]} errors, "
-				+ "${counts[Message.Type.WARNING.ordinal]} warnings, "
-				+ "${counts[Message.Type.INFO.ordinal]} infos, "
-				+ "${counts[Message.Type.DEBUG.ordinal]} debug messages"
-				+ " (Log level: ${logLevel.name})")
 	}
 
 	fun link(literalType: LiteralType, type: Type?) {
@@ -83,7 +66,7 @@ class Linter {
 	}
 
 	fun hasCompleted(phase: Phase): Boolean {
-		return phase < this.phase
+		return phase < activePhase
 	}
 
 	enum class Phase {

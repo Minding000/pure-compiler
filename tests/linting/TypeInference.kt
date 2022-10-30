@@ -173,6 +173,7 @@ class TypeInference {
 	fun `allows for recursive use of generic function`() {
 		val sourceCode =
 			"""
+				referencing Pure
 				class Plant {
 					init
 				}
@@ -184,14 +185,14 @@ class TypeInference {
 				object PackageOpener {
 
 					to unwrap(Item; package: <Item>Package): Item {
-						if(package.item is Package)
+						if(package.item is <Any producing>Package)
 							return unwrap(package.item)
 						return package.item
 					}
 				}
 				val plant = PackageOpener.unwrap(Package(Plant()))
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "plant" }
 		assertNotNull(variableValueDeclaration?.type)

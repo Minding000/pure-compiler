@@ -35,7 +35,7 @@ object TestUtil {
             Builder.loadRequiredModules(project)
         val elementGenerator = ElementGenerator(project)
         val program = elementGenerator.parseProgram()
-        elementGenerator.printMessages()
+        elementGenerator.logger.printReport()
         return ParseResult(elementGenerator, program)
     }
 
@@ -43,7 +43,7 @@ object TestUtil {
         val parseResult = parse(sourceCode, includeRequiredModules)
         val linter = Linter()
         val program = linter.lint(parseResult.program)
-        linter.printMessages()
+        linter.logger.printReport()
         return LintResult(linter, program)
     }
 

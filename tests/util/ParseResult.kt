@@ -7,13 +7,13 @@ import parsing.syntax_tree.general.Program
 class ParseResult(private val elementGenerator: ElementGenerator, val program: Program) {
 
 	fun assertNoMessagesOfType(type: Message.Type) {
-		for(message in elementGenerator.messages)
+		for(message in elementGenerator.logger.messages())
 			if(message.type == type)
 				throw AssertionError("Unexpected linter message '${message.description}' of type '${message.type}' has been emitted.")
 	}
 
 	fun assertMessageEmitted(expectedType: Message.Type, expectedMessage: String) {
-		for(message in elementGenerator.messages) {
+		for(message in elementGenerator.logger.messages()) {
 			if(message.description.contains(expectedMessage)) {
 				if(message.type != expectedType)
 					throw AssertionError("Linter message '$expectedMessage' has type '${message.type}' instead of expected type '$expectedType'.")
@@ -24,7 +24,7 @@ class ParseResult(private val elementGenerator: ElementGenerator, val program: P
 	}
 
 	fun assertMessageNotEmitted(expectedType: Message.Type, expectedMessage: String) {
-		for(message in elementGenerator.messages) {
+		for(message in elementGenerator.logger.messages()) {
 			if(message.description.contains(expectedMessage)) {
 				if(message.type != expectedType)
 					throw AssertionError("Linter message '$expectedMessage' has type '${message.type}' instead of expected type '$expectedType'.")
