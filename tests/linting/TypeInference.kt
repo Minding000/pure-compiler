@@ -209,7 +209,7 @@ class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Number of provided type parameters (0) doesn't match number of declared generic types (1)")
+			"Initializer 'Box()' hasn't been declared yet")
 	}
 
 	@Test

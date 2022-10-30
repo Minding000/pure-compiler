@@ -88,7 +88,7 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 			if(typeParameters.size != genericTypes.size) {
 				linter.addMessage(source, "Number of provided type parameters " +
 					"(${typeParameters.size}) doesn't match number of declared " +
-					"generic types (${genericTypes.size}).", Message.Type.ERROR)
+					"generic types (${genericTypes.size}).", Message.Type.ERROR) //TODO write test for this
 			}
 			if(typeParameters.isEmpty())
 				return
