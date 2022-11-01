@@ -1,7 +1,7 @@
-package compiler.instructions
+package components.compiler.instructions
 
-import compiler.value_analysis.StaticValue
-import compiler.value_analysis.ValueSource
+import components.compiler.value_analysis.StaticValue
+import components.compiler.value_analysis.ValueSource
 
 class Mul(leftDynamicValue: ValueSource, rightDynamicValue: ValueSource, val isDivision: Boolean):
 	BinaryInstruction(leftDynamicValue, rightDynamicValue) {

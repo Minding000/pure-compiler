@@ -1,9 +1,9 @@
-package compiler
+package components.compiler
 
-import compiler.instructions.Copy
-import compiler.instructions.Instruction
-import compiler.instructions.Prt
-import compiler.value_analysis.*
+import components.compiler.instructions.Copy
+import components.compiler.instructions.Instruction
+import components.compiler.instructions.Prt
+import components.compiler.value_analysis.*
 import java.util.*
 import kotlin.collections.LinkedHashSet
 

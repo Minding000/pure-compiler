@@ -1,6 +1,6 @@
-package compiler.instructions
+package components.compiler.instructions
 
-import compiler.value_analysis.DynamicValue
+import components.compiler.value_analysis.DynamicValue
 import java.util.*
 
 /**

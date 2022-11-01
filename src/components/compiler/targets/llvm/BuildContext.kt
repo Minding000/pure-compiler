@@ -1,4 +1,4 @@
-package compiler.targets.llvm
+package components.compiler.targets.llvm
 
 import errors.internal.CompilerError
 import org.bytedeco.llvm.LLVM.*

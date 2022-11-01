@@ -1,4 +1,4 @@
-package compiler.value_analysis
+package components.compiler.value_analysis
 
 class StaticValue(val raw: Int): ValueSource {
 

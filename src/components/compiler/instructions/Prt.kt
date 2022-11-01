@@ -1,7 +1,7 @@
-package compiler.instructions
+package components.compiler.instructions
 
-import compiler.value_analysis.DynamicValue
-import compiler.value_analysis.ValueSource
+import components.compiler.value_analysis.DynamicValue
+import components.compiler.value_analysis.ValueSource
 import java.util.*
 
 class Prt(var valueSources: MutableList<ValueSource>): Instruction() {

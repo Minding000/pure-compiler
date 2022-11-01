@@ -1,4 +1,4 @@
-package compiler.targets.llvm
+package components.compiler.targets.llvm
 
 import components.semantic_analysis.semantic_model.general.Program
 import org.bytedeco.javacpp.*

@@ -1,7 +1,7 @@
-package compiler
+package components.compiler
 
 import components.syntax_parser.syntax_tree.general.Program
-import compiler.instructions.Instruction
+import components.compiler.instructions.Instruction
 import java.util.*
 
 class InstructionGenerator {

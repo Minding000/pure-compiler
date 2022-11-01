@@ -1,7 +1,7 @@
-package compiler.instructions
+package components.compiler.instructions
 
-import compiler.value_analysis.DynamicValue
-import compiler.value_analysis.ValueSource
+import components.compiler.value_analysis.DynamicValue
+import components.compiler.value_analysis.ValueSource
 import java.util.*
 
 class Copy(targetDynamicValue: DynamicValue, var valueSource: ValueSource): WriteInstruction(targetDynamicValue) {

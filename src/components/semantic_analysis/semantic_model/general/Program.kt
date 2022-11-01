@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.general
 
-import compiler.targets.llvm.BuildContext
+import components.compiler.targets.llvm.BuildContext
 import components.semantic_analysis.Linter
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 import java.util.*

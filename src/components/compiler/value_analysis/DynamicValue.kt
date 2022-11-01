@@ -1,7 +1,7 @@
-package compiler.value_analysis
+package components.compiler.value_analysis
 
 import errors.internal.CompilerError
-import compiler.instructions.Instruction
+import components.compiler.instructions.Instruction
 import java.util.*
 
 class DynamicValue: ValueSource {
