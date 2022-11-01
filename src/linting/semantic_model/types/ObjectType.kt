@@ -7,7 +7,7 @@ import linting.semantic_model.definitions.TypeDefinition
 import linting.semantic_model.values.VariableValueDeclaration
 import messages.Message
 import linting.semantic_model.scopes.Scope
-import parsing.syntax_tree.general.Element
+import components.parsing.syntax_tree.general.Element
 import java.util.LinkedList
 
 class ObjectType(override val source: Element, val name: String, val typeParameters: List<Type> = listOf()):

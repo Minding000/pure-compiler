@@ -10,7 +10,7 @@ import linting.semantic_model.values.Value
 import util.getCommonType
 import util.stringifyTypes
 import java.util.*
-import parsing.syntax_tree.definitions.InitializerDefinition as InitializerDefinitionSyntaxTree
+import components.parsing.syntax_tree.definitions.InitializerDefinition as InitializerDefinitionSyntaxTree
 
 class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree, val scope: BlockScope,
 							val genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,

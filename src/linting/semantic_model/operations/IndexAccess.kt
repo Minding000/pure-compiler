@@ -5,7 +5,7 @@ import linting.semantic_model.scopes.Scope
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.Value
 import messages.Message
-import parsing.syntax_tree.access.IndexAccess as IndexAccessSyntaxTree
+import components.parsing.syntax_tree.access.IndexAccess as IndexAccessSyntaxTree
 
 class IndexAccess(override val source: IndexAccessSyntaxTree, val target: Value, val typeParameters: List<Type>,
 				  val indices: List<Value>): Value(source) {

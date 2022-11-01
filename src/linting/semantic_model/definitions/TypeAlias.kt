@@ -2,7 +2,7 @@ package linting.semantic_model.definitions
 
 import linting.semantic_model.scopes.TypeScope
 import linting.semantic_model.types.Type
-import parsing.syntax_tree.definitions.TypeAlias as TypeAliasSyntaxTree
+import components.parsing.syntax_tree.definitions.TypeAlias as TypeAliasSyntaxTree
 
 class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val referenceType: Type, scope: TypeScope):
 	TypeDefinition(source, name, scope, null) {

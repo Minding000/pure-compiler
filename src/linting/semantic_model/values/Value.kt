@@ -5,7 +5,7 @@ import linting.semantic_model.general.Unit
 import linting.semantic_model.types.OptionalType
 import linting.semantic_model.types.Type
 import messages.Message
-import parsing.syntax_tree.general.Element
+import components.parsing.syntax_tree.general.Element
 
 abstract class Value(override val source: Element, var type: Type? = null): Unit(source) {
 	open var staticValue: Value? = null

@@ -10,7 +10,7 @@ import linting.semantic_model.values.VariableValueDeclaration
 import messages.Message
 import linting.semantic_model.scopes.InterfaceScope
 //import org.bytedeco.llvm.LLVM.LLVMTypeRef
-import parsing.syntax_tree.general.Element
+import components.parsing.syntax_tree.general.Element
 
 abstract class Type(source: Element): Unit(source) {
 	val scope = InterfaceScope(this)

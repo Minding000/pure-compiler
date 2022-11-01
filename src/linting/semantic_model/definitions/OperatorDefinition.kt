@@ -10,7 +10,7 @@ import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
 import util.stringifyTypes
 import java.util.LinkedList
-import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
+import components.parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
 open class OperatorDefinition(final override val source: OperatorDefinitionSyntaxTree, name: String,
 							  val scope: BlockScope, val valueParameters: List<Parameter>, val body: Unit?,

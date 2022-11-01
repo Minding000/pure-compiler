@@ -2,7 +2,7 @@ package linting.semantic_model.types
 
 import linting.Linter
 import linting.semantic_model.definitions.TypeDefinition
-import parsing.syntax_tree.general.Element
+import components.parsing.syntax_tree.general.Element
 
 class OptionalType(override val source: Element, val baseType: Type): Type(source) {
 

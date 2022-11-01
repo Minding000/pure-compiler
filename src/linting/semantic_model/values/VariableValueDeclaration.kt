@@ -6,8 +6,8 @@ import linting.semantic_model.general.Unit
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.types.Type
 import messages.Message
-import parsing.syntax_tree.general.Element
-import parsing.syntax_tree.literals.Identifier
+import components.parsing.syntax_tree.general.Element
+import components.parsing.syntax_tree.literals.Identifier
 
 open class VariableValueDeclaration(override val source: Element, val name: String, var type: Type? = null,
 									val value: Value? = null, val isConstant: Boolean = true,

@@ -8,7 +8,7 @@ import linting.semantic_model.values.Value
 import util.getCommonType
 import util.stringifyTypes
 import java.util.*
-import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
+import components.parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
 class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: BlockScope,
 							  val genericParameters: List<TypeDefinition>, val indexParameters: List<Parameter>,

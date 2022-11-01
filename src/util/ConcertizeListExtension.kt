@@ -5,9 +5,9 @@ import linting.semantic_model.general.Unit
 import linting.semantic_model.values.Value
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.types.Type
-import parsing.syntax_tree.general.Element
-import parsing.syntax_tree.general.TypeElement
-import parsing.syntax_tree.general.ValueElement
+import components.parsing.syntax_tree.general.Element
+import components.parsing.syntax_tree.general.TypeElement
+import components.parsing.syntax_tree.general.ValueElement
 import java.util.*
 
 fun List<Element>.concretize(linter: Linter, scope: MutableScope): List<Unit> {

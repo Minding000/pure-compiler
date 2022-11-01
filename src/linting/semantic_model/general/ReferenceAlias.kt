@@ -1,5 +1,6 @@
 package linting.semantic_model.general
 
-import parsing.syntax_tree.general.Alias
+import components.parsing.syntax_tree.general.ReferenceAlias
 
-class ReferenceAlias(override val source: Alias, val originalTypeName: String, val localTypeName: String): Unit(source)
+class ReferenceAlias(override val source: ReferenceAlias, val originalTypeName: String, val localTypeName: String):
+	Unit(source)

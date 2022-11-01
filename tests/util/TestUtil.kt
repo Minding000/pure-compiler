@@ -1,7 +1,7 @@
 package util
 
 import code.Builder
-import parsing.element_generator.ElementGenerator
+import components.parsing.element_generator.ElementGenerator
 import linting.Linter
 import source_structure.Module
 import source_structure.Project

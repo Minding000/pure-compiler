@@ -6,7 +6,7 @@ import linting.semantic_model.types.StaticType
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.Value
 import messages.Message
-import parsing.syntax_tree.definitions.TypeSpecification as TypeSpecificationSyntaxTree
+import components.parsing.syntax_tree.definitions.TypeSpecification as TypeSpecificationSyntaxTree
 
 class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val baseValue: Value,
 						val typeParameters: List<Type>): Value(source) {

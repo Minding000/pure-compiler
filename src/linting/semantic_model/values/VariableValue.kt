@@ -3,7 +3,7 @@ package linting.semantic_model.values
 import linting.Linter
 import linting.semantic_model.scopes.Scope
 import messages.Message
-import parsing.syntax_tree.literals.Identifier
+import components.parsing.syntax_tree.literals.Identifier
 
 class VariableValue(override val source: Identifier): Value(source) {
 	val name = source.getValue()

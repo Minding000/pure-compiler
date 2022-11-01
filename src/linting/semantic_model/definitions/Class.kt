@@ -7,7 +7,7 @@ import linting.semantic_model.types.StaticType
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.VariableValueDeclaration
 import components.tokenizer.WordAtom
-import parsing.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
+import components.parsing.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?,
 			val isNative: Boolean, val isMutable: Boolean): TypeDefinition(source, name, scope, superType) {

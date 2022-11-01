@@ -5,7 +5,7 @@ import linting.semantic_model.general.Unit
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
 import messages.Message
-import parsing.syntax_tree.control_flow.SwitchStatement
+import components.parsing.syntax_tree.control_flow.SwitchStatement
 import java.util.LinkedList
 
 class SwitchStatement(override val source: SwitchStatement, val subject: Value, val cases: List<Case>,

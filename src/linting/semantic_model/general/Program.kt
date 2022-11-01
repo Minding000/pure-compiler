@@ -2,7 +2,7 @@ package linting.semantic_model.general
 
 import compiler.targets.llvm.BuildContext
 import linting.Linter
-import parsing.syntax_tree.general.Program
+import components.parsing.syntax_tree.general.Program
 import java.util.*
 
 class Program(val source: Program) {

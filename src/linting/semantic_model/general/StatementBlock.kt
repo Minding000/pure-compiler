@@ -2,7 +2,7 @@ package linting.semantic_model.general
 
 import linting.Linter
 import messages.Message
-import parsing.syntax_tree.general.StatementBlock
+import components.parsing.syntax_tree.general.StatementBlock
 
 class StatementBlock(override val source: StatementBlock, val statements: List<Unit>): Unit(source) {
 	override var isInterruptingExecution = false

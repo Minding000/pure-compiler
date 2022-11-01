@@ -1,0 +1,20 @@
+package components.parsing.syntax_tree.control_flow
+
+import linting.Linter
+import linting.semantic_model.control_flow.WhileGenerator as SemanticWhileGeneratorModel
+import linting.semantic_model.scopes.MutableScope
+import components.parsing.syntax_tree.general.Element
+import source_structure.Position
+import util.indent
+
+class WhileGenerator(start: Position, private val condition: Element, private val isPostCondition: Boolean):
+	Element(start, condition.end) {
+
+	override fun concretize(linter: Linter, scope: MutableScope): SemanticWhileGeneratorModel {
+		return SemanticWhileGeneratorModel(this, condition.concretize(linter, scope), isPostCondition)
+	}
+
+	override fun toString(): String {
+		return "WhileGenerator [${if(isPostCondition) "post" else "pre"}] {${"\n$condition".indent()}\n}"
+	}
+}

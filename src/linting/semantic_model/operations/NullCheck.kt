@@ -7,7 +7,7 @@ import linting.semantic_model.types.OptionalType
 import linting.semantic_model.values.BooleanLiteral
 import linting.semantic_model.values.Value
 import messages.Message
-import parsing.syntax_tree.operations.NullCheck
+import components.parsing.syntax_tree.operations.NullCheck
 
 class NullCheck(override val source: NullCheck, val value: Value): Value(source) {
 

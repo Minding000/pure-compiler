@@ -4,7 +4,7 @@ import linting.Linter
 import linting.semantic_model.scopes.MutableScope
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.VariableValueDeclaration
-import parsing.syntax_tree.definitions.Parameter as ParameterSyntaxTree
+import components.parsing.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
 class Parameter(override val source: ParameterSyntaxTree, name: String, type: Type?, isMutable: Boolean,
 				val hasDynamicSize: Boolean):

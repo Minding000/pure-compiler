@@ -3,7 +3,7 @@ package linting.semantic_model.values
 import linting.Linter
 import linting.semantic_model.types.ObjectType
 import linting.semantic_model.scopes.Scope
-import parsing.syntax_tree.literals.NumberLiteral as NumberLiteralSyntaxLiteral
+import components.parsing.syntax_tree.literals.NumberLiteral as NumberLiteralSyntaxLiteral
 
 class NumberLiteral(override val source: NumberLiteralSyntaxLiteral, val value: String): LiteralValue(source) {
 

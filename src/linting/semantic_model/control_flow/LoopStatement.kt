@@ -4,7 +4,7 @@ import linting.Linter
 import linting.semantic_model.general.Unit
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.Scope
-import parsing.syntax_tree.control_flow.LoopStatement
+import components.parsing.syntax_tree.control_flow.LoopStatement
 
 class LoopStatement(override val source: LoopStatement, val scope: BlockScope, val generator: Unit?, val body: Unit):
 	Unit(source) {

@@ -3,7 +3,7 @@ package linting.semantic_model.values
 import linting.Linter
 import linting.semantic_model.types.ObjectType
 import linting.semantic_model.scopes.Scope
-import parsing.syntax_tree.literals.StringLiteral as StringLiteralSyntaxTree
+import components.parsing.syntax_tree.literals.StringLiteral as StringLiteralSyntaxTree
 
 class StringLiteral(override val source: StringLiteralSyntaxTree, val value: String): LiteralValue(source) {
 

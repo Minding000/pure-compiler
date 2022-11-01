@@ -6,7 +6,7 @@ import linting.semantic_model.scopes.Scope
 import linting.semantic_model.types.ObjectType
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.Value
-import parsing.syntax_tree.general.Element
+import components.parsing.syntax_tree.general.Element
 import util.getCommonType
 import java.util.*
 
