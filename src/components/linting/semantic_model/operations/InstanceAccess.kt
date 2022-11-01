@@ -5,7 +5,7 @@ import components.linting.semantic_model.types.OptionalType
 import components.linting.semantic_model.types.Type
 import components.linting.semantic_model.scopes.Scope
 import components.linting.semantic_model.values.Value
-import components.parsing.syntax_tree.access.InstanceAccess as InstanceAccessSyntaxTree
+import components.syntax_parser.syntax_tree.access.InstanceAccess as InstanceAccessSyntaxTree
 
 class InstanceAccess(override val source: InstanceAccessSyntaxTree, val name: String): Value(source) {
 

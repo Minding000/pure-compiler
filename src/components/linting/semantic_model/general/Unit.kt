@@ -3,7 +3,7 @@ package components.linting.semantic_model.general
 import components.linting.Linter
 import components.linting.semantic_model.scopes.MutableScope
 import components.linting.semantic_model.scopes.Scope
-import components.parsing.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
 abstract class Unit(open val source: Element) {

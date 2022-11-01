@@ -4,7 +4,7 @@ import components.linting.semantic_model.types.AndUnionType
 import components.linting.semantic_model.types.ObjectType
 import components.linting.semantic_model.types.OrUnionType
 import components.linting.semantic_model.types.Type
-import components.parsing.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
 fun Collection<Type>.getCommonType(source: Element): Type? {

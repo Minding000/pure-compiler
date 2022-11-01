@@ -4,7 +4,7 @@ import components.linting.Linter
 import components.linting.semantic_model.values.Value
 import messages.Message
 import components.linting.semantic_model.scopes.Scope
-import components.parsing.syntax_tree.control_flow.ReturnStatement as ReturnStatementSyntaxTree
+import components.syntax_parser.syntax_tree.control_flow.ReturnStatement as ReturnStatementSyntaxTree
 
 class ReturnStatement(override val source: ReturnStatementSyntaxTree, val value: Value?): Value(source) {
 	override val isInterruptingExecution = true

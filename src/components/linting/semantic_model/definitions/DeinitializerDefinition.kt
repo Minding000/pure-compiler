@@ -4,7 +4,7 @@ import components.linting.Linter
 import components.linting.semantic_model.general.Unit
 import components.linting.semantic_model.scopes.BlockScope
 import components.linting.semantic_model.scopes.Scope
-import components.parsing.syntax_tree.definitions.DeinitializerDefinition as DeinitializerDefinitionSyntaxTree
+import components.syntax_parser.syntax_tree.definitions.DeinitializerDefinition as DeinitializerDefinitionSyntaxTree
 
 class DeinitializerDefinition(override val source: DeinitializerDefinitionSyntaxTree, val scope: BlockScope,
 							  val body: Unit?, val isNative: Boolean): Unit(source) {

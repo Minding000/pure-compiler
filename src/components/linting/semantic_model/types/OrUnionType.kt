@@ -3,7 +3,7 @@ package components.linting.semantic_model.types
 import components.linting.semantic_model.definitions.OperatorDefinition
 import components.linting.semantic_model.definitions.TypeDefinition
 import components.linting.semantic_model.values.VariableValueDeclaration
-import components.parsing.syntax_tree.literals.UnionType as UnionTypeSyntaxTree
+import components.syntax_parser.syntax_tree.literals.UnionType as UnionTypeSyntaxTree
 import java.util.*
 
 class OrUnionType(override val source: UnionTypeSyntaxTree, val types: List<Type>): Type(source) {

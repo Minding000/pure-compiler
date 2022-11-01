@@ -1,6 +1,6 @@
 package compiler
 
-import components.parsing.syntax_tree.general.Program
+import components.syntax_parser.syntax_tree.general.Program
 import compiler.instructions.Instruction
 import java.util.*
 

@@ -4,7 +4,7 @@ import components.linting.Linter
 import components.linting.semantic_model.scopes.MutableScope
 import components.linting.semantic_model.scopes.TypeScope
 import components.linting.semantic_model.types.Type
-import components.parsing.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
+import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Trait(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?):
 	TypeDefinition(source, name, scope, superType) {

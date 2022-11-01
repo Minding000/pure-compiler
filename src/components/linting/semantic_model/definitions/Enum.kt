@@ -6,7 +6,7 @@ import components.linting.semantic_model.scopes.TypeScope
 import components.linting.semantic_model.types.StaticType
 import components.linting.semantic_model.types.Type
 import components.linting.semantic_model.values.VariableValueDeclaration
-import components.parsing.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
+import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?):
 	TypeDefinition(source, name, scope, superType) {

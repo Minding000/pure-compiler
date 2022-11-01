@@ -5,7 +5,7 @@ import components.linting.semantic_model.general.Unit
 import components.linting.semantic_model.scopes.Scope
 import components.linting.semantic_model.values.BooleanLiteral
 import components.linting.semantic_model.values.Value
-import components.parsing.syntax_tree.control_flow.IfStatement as IfStatementSyntaxTree
+import components.syntax_parser.syntax_tree.control_flow.IfStatement as IfStatementSyntaxTree
 
 class IfStatement(override val source: IfStatementSyntaxTree, val condition: Value, val trueBranch: Unit,
 				  val falseBranch: Unit?): Unit(source) {

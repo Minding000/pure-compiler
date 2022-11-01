@@ -5,7 +5,7 @@ import components.linting.semantic_model.definitions.FunctionImplementation
 import components.linting.semantic_model.types.FunctionType
 import messages.Message
 import components.linting.semantic_model.scopes.Scope
-import components.parsing.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.Element
 import java.util.LinkedList
 
 class Function(source: Element, private val implementations: MutableList<FunctionImplementation>,

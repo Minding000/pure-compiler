@@ -2,7 +2,7 @@ package components.linting.semantic_model.types
 
 import components.linting.Linter
 import components.linting.semantic_model.definitions.TypeDefinition
-import components.parsing.syntax_tree.definitions.TypeParameter as TypeParameterSyntaxTree
+import components.syntax_parser.syntax_tree.definitions.TypeParameter as TypeParameterSyntaxTree
 
 class TypeParameter(override val source: TypeParameterSyntaxTree, val mode: Mode, val baseType: Type): Type(source) {
 

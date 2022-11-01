@@ -12,7 +12,7 @@ import components.linting.semantic_model.types.Type
 import components.linting.semantic_model.values.Value
 import components.linting.semantic_model.values.VariableValue
 import messages.Message
-import components.parsing.syntax_tree.control_flow.FunctionCall as FunctionCallSyntaxTree
+import components.syntax_parser.syntax_tree.control_flow.FunctionCall as FunctionCallSyntaxTree
 import util.stringifyTypes
 
 class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Value, val typeParameters: List<Type>,

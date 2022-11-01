@@ -4,7 +4,7 @@ import errors.user.SignatureResolutionAmbiguityError
 import components.linting.semantic_model.definitions.FunctionSignature
 import components.linting.semantic_model.definitions.TypeDefinition
 import components.linting.semantic_model.values.Value
-import components.parsing.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
 class FunctionType(override val source: Element): Type(source) {

@@ -6,7 +6,7 @@ import components.linting.semantic_model.general.Unit
 import components.linting.semantic_model.scopes.Scope
 import components.linting.semantic_model.values.Value
 import messages.Message
-import components.parsing.syntax_tree.operations.UnaryModification as UnaryModificationSyntaxTree
+import components.syntax_parser.syntax_tree.operations.UnaryModification as UnaryModificationSyntaxTree
 
 class UnaryModification(override val source: UnaryModificationSyntaxTree, val target: Value, val operatorName: String):
 	Unit(source) {

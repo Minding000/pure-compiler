@@ -6,7 +6,7 @@ import components.linting.semantic_model.general.Unit
 import components.linting.semantic_model.types.Type
 import components.linting.semantic_model.scopes.BlockScope
 import components.linting.semantic_model.scopes.Scope
-import components.parsing.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.Element
 
 class FunctionImplementation(override val source: Element, val scope: BlockScope,
 							 val genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,

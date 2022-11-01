@@ -4,9 +4,9 @@ import components.linting.semantic_model.scopes.Scope
 import components.linting.semantic_model.types.Type
 import messages.Message
 import messages.MessageLogger
-import components.parsing.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.Element
 import components.linting.semantic_model.general.Program as SemanticProgramModel
-import components.parsing.syntax_tree.general.Program as ProgramSyntaxTree
+import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
 class Linter {
 	private val literalScopes = HashMap<LiteralType, Scope?>()

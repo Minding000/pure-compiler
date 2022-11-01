@@ -3,7 +3,7 @@ package components.linting.semantic_model.types
 import components.linting.semantic_model.definitions.OperatorDefinition
 import components.linting.semantic_model.definitions.TypeDefinition
 import components.linting.semantic_model.values.VariableValueDeclaration
-import components.parsing.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
 class AndUnionType(override val source: Element, val types: List<Type>): Type(source) {

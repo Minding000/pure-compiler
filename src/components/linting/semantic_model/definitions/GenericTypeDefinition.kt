@@ -2,7 +2,7 @@ package components.linting.semantic_model.definitions
 
 import components.linting.semantic_model.scopes.TypeScope
 import components.linting.semantic_model.types.Type
-import components.parsing.syntax_tree.definitions.Parameter as ParameterSyntaxTree
+import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
 class GenericTypeDefinition(override val source: ParameterSyntaxTree, name: String, scope: TypeScope, superType: Type?):
 	TypeDefinition(source, name, scope, superType) {

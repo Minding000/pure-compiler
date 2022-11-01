@@ -1,0 +1,18 @@
+package components.syntax_parser.syntax_tree.control_flow
+
+import components.linting.Linter
+import components.linting.semantic_model.control_flow.NextStatement as SemanticNextStatementModel
+import components.linting.semantic_model.scopes.MutableScope
+import components.syntax_parser.syntax_tree.general.Element
+import components.tokenizer.Word
+
+class NextStatement(word: Word): Element(word) {
+
+	override fun concretize(linter: Linter, scope: MutableScope): SemanticNextStatementModel {
+		return SemanticNextStatementModel(this)
+	}
+
+	override fun toString(): String {
+		return "Next {  }"
+	}
+}

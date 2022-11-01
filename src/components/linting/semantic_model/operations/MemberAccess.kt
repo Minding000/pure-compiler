@@ -6,7 +6,7 @@ import components.linting.semantic_model.scopes.Scope
 import components.linting.semantic_model.values.Value
 import components.linting.semantic_model.values.VariableValue
 import messages.Message
-import components.parsing.syntax_tree.access.MemberAccess as MemberAccessSyntaxTree
+import components.syntax_parser.syntax_tree.access.MemberAccess as MemberAccessSyntaxTree
 
 class MemberAccess(override val source: MemberAccessSyntaxTree, val target: Value, val member: VariableValue,
 				   private val isOptional: Boolean): Value(source) {

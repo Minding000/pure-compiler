@@ -6,7 +6,7 @@ import components.linting.semantic_model.scopes.MutableScope
 import components.linting.semantic_model.scopes.Scope
 import components.linting.semantic_model.scopes.TypeScope
 import components.linting.semantic_model.types.Type
-import components.parsing.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.Element
 
 abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope,
 							  val superType: Type?): Unit(source) {

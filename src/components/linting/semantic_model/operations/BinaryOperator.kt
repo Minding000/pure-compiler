@@ -5,7 +5,7 @@ import components.linting.Linter
 import components.linting.semantic_model.values.Value
 import messages.Message
 import components.linting.semantic_model.scopes.Scope
-import components.parsing.syntax_tree.operations.BinaryOperator as BinaryOperatorSyntaxTree
+import components.syntax_parser.syntax_tree.operations.BinaryOperator as BinaryOperatorSyntaxTree
 
 class BinaryOperator(override val source: BinaryOperatorSyntaxTree, val left: Value, val right: Value,
 					 val operatorName: String): Value(source) {

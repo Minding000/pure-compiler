@@ -10,7 +10,7 @@ import components.linting.semantic_model.values.NullLiteral
 import components.linting.semantic_model.values.Value
 import components.linting.semantic_model.values.VariableValue
 import messages.Message
-import components.parsing.syntax_tree.operations.Cast as CastSyntaxTree
+import components.syntax_parser.syntax_tree.operations.Cast as CastSyntaxTree
 
 class Cast(override val source: CastSyntaxTree, val value: Value, val variable: VariableValue?, val referenceType: Type,
 		   val operator: Operator): Value(source) {

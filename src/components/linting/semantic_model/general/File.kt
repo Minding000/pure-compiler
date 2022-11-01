@@ -3,7 +3,7 @@ package components.linting.semantic_model.general
 import components.linting.Linter
 import messages.Message
 import components.linting.semantic_model.scopes.FileScope
-import components.parsing.syntax_tree.general.File as FileSyntaxTree
+import components.syntax_parser.syntax_tree.general.File as FileSyntaxTree
 import source_structure.File as SourceFile
 import java.util.*
 

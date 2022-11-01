@@ -3,7 +3,7 @@ package code
 import compiler.targets.llvm.LLVMIRCompiler
 import errors.user.UserError
 import components.linting.Linter
-import components.parsing.element_generator.ElementGenerator
+import components.syntax_parser.element_generator.ElementGenerator
 import source_structure.Module
 import source_structure.Project
 import java.io.File

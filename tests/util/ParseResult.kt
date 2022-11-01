@@ -1,8 +1,8 @@
 package util
 
 import messages.Message
-import components.parsing.element_generator.ElementGenerator
-import components.parsing.syntax_tree.general.Program
+import components.syntax_parser.element_generator.ElementGenerator
+import components.syntax_parser.syntax_tree.general.Program
 
 class ParseResult(private val elementGenerator: ElementGenerator, val program: Program) {
 

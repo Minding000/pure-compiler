@@ -1,6 +1,6 @@
 package components.linting.semantic_model.general
 
-import components.parsing.syntax_tree.general.StatementSection
+import components.syntax_parser.syntax_tree.general.StatementSection
 
 class ErrorHandlingContext(override val source: StatementSection, val mainBlock: StatementBlock,
 						   val handleBlocks: List<HandleBlock>, val alwaysBlock: StatementBlock?): Unit(source) {

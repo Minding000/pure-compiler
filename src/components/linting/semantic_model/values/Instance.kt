@@ -7,7 +7,7 @@ import components.linting.semantic_model.scopes.Scope
 import components.linting.semantic_model.types.ObjectType
 import components.linting.semantic_model.types.StaticType
 import messages.Message
-import components.parsing.syntax_tree.definitions.Instance as InstanceSyntaxTree
+import components.syntax_parser.syntax_tree.definitions.Instance as InstanceSyntaxTree
 
 open class Instance(override val source: InstanceSyntaxTree, value: VariableValue, val valueParameters: List<Value>):
 	VariableValueDeclaration(source, value.name, null, value) {
