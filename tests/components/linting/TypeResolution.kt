@@ -1,4 +1,4 @@
-package linting
+package components.linting
 
 import components.linting.semantic_model.operations.MemberAccess
 import components.linting.semantic_model.types.ObjectType

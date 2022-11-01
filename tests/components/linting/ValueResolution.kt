@@ -1,4 +1,4 @@
-package linting
+package components.linting
 
 import components.linting.semantic_model.control_flow.FunctionCall
 import components.linting.semantic_model.types.FunctionType

@@ -1,4 +1,4 @@
-package linting
+package components.linting
 
 import messages.Message
 import org.junit.jupiter.api.Test
