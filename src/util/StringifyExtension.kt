@@ -1,6 +1,7 @@
 package util
 
 import linting.semantic_model.definitions.Parameter
+import linting.semantic_model.values.Value
 
 fun Char.stringify(): String {
 	if(isISOControl())
@@ -15,6 +16,12 @@ fun String.stringify(): String {
 	return result
 }
 
-fun List<Parameter>.stringify(): String {
+@JvmName("stringifyValueTypes")
+fun List<Value>.stringifyTypes(): String {
+	return joinToString { value -> value.type.toString() }
+}
+
+@JvmName("stringifyParameterTypes")
+fun List<Parameter>.stringifyTypes(): String {
 	return joinToString { parameter -> parameter.type.toString() }
 }

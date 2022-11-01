@@ -22,7 +22,7 @@ class MessageLogger(private val systemName: String, private val verbosity: Messa
 		val capitalizedSystemName = systemName.replaceFirstChar { char -> char.uppercase() }
 		val totalMessageTypeCounts = Array(Message.Type.values().size) { 0 }
 		for(phase in phases) {
-			if(phase.messages.isEmpty())
+			if(!phase.containsVisibleMessages())
 				continue
 			if(verbosity <= Message.Type.INFO) {
 				println()
@@ -47,13 +47,23 @@ class MessageLogger(private val systemName: String, private val verbosity: Messa
 		return MessageIterator()
 	}
 
-	private class Phase(val name: String) {
+	private inner class Phase(val name: String) {
 		val messages = LinkedList<Message>()
 		val messageTypeCounts = Array(Message.Type.values().size) { 0 }
 
 		fun add(message: Message) {
 			messages.add(message)
 			messageTypeCounts[message.type.ordinal]++
+		}
+
+		fun containsVisibleMessages(): Boolean {
+			for(messageType in Message.Type.values()) {
+				if(messageType >= verbosity) {
+					if(messageTypeCounts[messageType.ordinal] > 0)
+						return true
+				}
+			}
+			return false
 		}
 
 		fun getTypeCountString(): String {

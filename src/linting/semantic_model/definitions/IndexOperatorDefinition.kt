@@ -6,7 +6,7 @@ import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.Value
 import util.getCommonType
-import util.stringify
+import util.stringifyTypes
 import java.util.*
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
@@ -130,8 +130,8 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 			if(indexParameters.isNotEmpty())
 				stringRepresentation += " "
 		}
-		stringRepresentation += "${indexParameters.stringify()}]"
-		stringRepresentation += "(${valueParameters.stringify()})"
+		stringRepresentation += "${indexParameters.stringifyTypes()}]"
+		stringRepresentation += "(${valueParameters.stringifyTypes()})"
 		if(!Linter.LiteralType.NOTHING.matches(returnType))
 			stringRepresentation += ": $returnType"
 		return stringRepresentation

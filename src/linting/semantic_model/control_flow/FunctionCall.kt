@@ -13,6 +13,7 @@ import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValue
 import messages.Message
 import parsing.syntax_tree.control_flow.FunctionCall
+import util.stringifyTypes
 
 class FunctionCall(override val source: FunctionCall, val function: Value, val typeParameters: List<Type>,
 				   val valueParameters: List<Value>): Value(source) {
@@ -60,8 +61,17 @@ class FunctionCall(override val source: FunctionCall, val function: Value, val t
 		try {
 			val signature = functionType.resolveSignature(typeParameters, valueParameters)
 			if(signature == null) {
-				linter.addMessage(source,"The provided values don't match any signature of function '${function.source.getValue()}'.",
-					Message.Type.ERROR)
+				var parameterStringRepresentation = ""
+				if(typeParameters.isNotEmpty()) {
+					parameterStringRepresentation += typeParameters.joinToString()
+					parameterStringRepresentation += ";"
+					if(valueParameters.isNotEmpty())
+						parameterStringRepresentation += " "
+				}
+				parameterStringRepresentation += valueParameters.stringifyTypes()
+				linter.addMessage(source,
+					"The provided parameters ($parameterStringRepresentation) don't match any signature " +
+						"of function '${function.source.getValue()}'.", Message.Type.ERROR)
 				return
 			}
 			type = signature.returnType

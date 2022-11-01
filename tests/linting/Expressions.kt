@@ -8,6 +8,7 @@ import linting.semantic_model.types.ObjectType
 import linting.semantic_model.types.OptionalType
 import linting.semantic_model.operations.Cast
 import linting.semantic_model.operations.NullCheck
+import linting.semantic_model.values.VariableValue
 import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -104,14 +105,54 @@ internal class Expressions {
 				}
 				class Cinema {}
 				val roomWithSeats: Bus|Cinema = Bus()
-				roomWithSeats is Vehicle
-				roomWithSeats is! Vehicle
+				val isRoomVehicle = roomWithSeats is Vehicle
+				val isRoomNotVehicle = roomWithSeats is! Vehicle
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val positiveCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.CAST_CONDITION }
 		val negativeCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.NEGATED_CAST_CONDITION }
 		assertTrue(Linter.LiteralType.BOOLEAN.matches(positiveCast?.type))
 		assertTrue(Linter.LiteralType.BOOLEAN.matches(negativeCast?.type))
+	}
+
+	@Test
+	fun `declares variable in conditional casts without negation`() {
+		val sourceCode =
+			"""
+				class Vehicle {}
+				class Bus: Vehicle {
+					init
+				}
+				class Cinema {}
+				val roomWithSeats: Bus|Cinema = Bus()
+				if roomWithSeats is vehicle: Vehicle {
+					vehicle
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val castVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "vehicle" }
+		assertNotNull(castVariable?.type)
+	}
+
+	@Test
+	fun `declares variable in conditional casts with negation`() {
+		val sourceCode =
+			"""
+				class Vehicle {}
+				class Bus: Vehicle {
+					init
+				}
+				class Cinema {}
+				val roomWithSeats: Bus|Cinema = Bus()
+				loop {
+					if roomWithSeats is! vehicle: Vehicle
+						break
+					vehicle
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val castVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "vehicle" }
+		assertNotNull(castVariable?.type)
 	}
 
 	@Test

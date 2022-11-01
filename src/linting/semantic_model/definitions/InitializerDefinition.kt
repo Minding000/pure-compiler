@@ -8,7 +8,7 @@ import linting.semantic_model.scopes.Scope
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.Value
 import util.getCommonType
-import util.stringify
+import util.stringifyTypes
 import java.util.*
 import parsing.syntax_tree.definitions.InitializerDefinition as InitializerDefinitionSyntaxTree
 
@@ -141,7 +141,7 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 			if(parameters.isNotEmpty())
 				stringRepresentation += " "
 		}
-		stringRepresentation += parameters.stringify()
+		stringRepresentation += parameters.stringifyTypes()
 		stringRepresentation += ")"
 		return stringRepresentation
 	}

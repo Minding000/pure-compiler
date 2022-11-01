@@ -11,7 +11,7 @@ import parsing.syntax_tree.general.Program as ProgramSyntaxTree
 class Linter {
 	private val literalScopes = HashMap<LiteralType, Scope?>()
 	val logger = MessageLogger("linter", Message.Type.INFO)
-	var activePhase = Phase.PENDING
+	private var activePhase = Phase.PENDING //TODO consider removing this property if it is not needed
 
 	fun lint(programSyntaxTree: ProgramSyntaxTree): SemanticProgramModel {
 		logger.addPhase("Concretization")

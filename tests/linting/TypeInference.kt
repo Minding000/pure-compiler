@@ -183,10 +183,9 @@ class TypeInference {
 					init(item)
 				}
 				object PackageOpener {
-
 					to unwrap(Item; package: <Item>Package): Item {
-						if(package.item is <Any producing>Package)
-							return unwrap(package.item)
+						if(package.item is p: <Any producing>Package)
+							return unwrap(p)
 						return package.item
 					}
 				}

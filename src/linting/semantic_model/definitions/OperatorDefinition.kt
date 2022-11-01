@@ -8,7 +8,7 @@ import linting.semantic_model.values.VariableValueDeclaration
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
-import util.stringify
+import util.stringifyTypes
 import java.util.LinkedList
 import parsing.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
@@ -83,6 +83,6 @@ open class OperatorDefinition(final override val source: OperatorDefinitionSynta
 	}
 
 	override fun toString(): String {
-		return "$name(${valueParameters.stringify()})"
+		return "$name(${valueParameters.stringifyTypes()})"
 	}
 }
