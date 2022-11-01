@@ -4,7 +4,7 @@ import linting.Linter
 import linting.semantic_model.values.VariableValue
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.ValueElement
-import parsing.tokenizer.Word
+import components.tokenizer.Word
 
 open class Identifier(word: Word): ValueElement(word) {
 

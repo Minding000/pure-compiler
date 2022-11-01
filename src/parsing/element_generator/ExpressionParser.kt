@@ -18,10 +18,10 @@ import parsing.syntax_tree.operations.BinaryOperator
 import parsing.syntax_tree.operations.Cast
 import parsing.syntax_tree.operations.NullCheck
 import parsing.syntax_tree.operations.UnaryOperator
-import parsing.tokenizer.Word
-import parsing.tokenizer.WordAtom
-import parsing.tokenizer.WordDescriptor
-import parsing.tokenizer.WordType
+import components.tokenizer.Word
+import components.tokenizer.WordAtom
+import components.tokenizer.WordDescriptor
+import components.tokenizer.WordType
 import source_structure.Position
 import java.util.*
 import java.util.regex.Pattern
@@ -316,7 +316,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   (<ParameterList>)[: <Type>] => <Statement>
 	 */
 	private fun parseLambdaFunctionDefinition(start: Position): LambdaFunctionDefinition {
-		val parameterList = statementParser.parseParameterList(WordAtom.PARENTHESES_OPEN, WordAtom.PARENTHESES_CLOSE,
+		val parameterList = statementParser.parseParameterList(
+			WordAtom.PARENTHESES_OPEN, WordAtom.PARENTHESES_CLOSE,
 			start)
 		val returnType = if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)

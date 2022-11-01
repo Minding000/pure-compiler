@@ -1,7 +1,7 @@
 package parsing.syntax_tree.literals
 
 import parsing.syntax_tree.general.MetaElement
-import parsing.tokenizer.Word
+import components.tokenizer.Word
 
 class ForeignLanguageLiteral(word: Word): MetaElement(word) {
 

@@ -3,7 +3,7 @@ package parsing.syntax_tree.general
 import linting.Linter
 import linting.semantic_model.general.Unit
 import linting.semantic_model.scopes.MutableScope
-import parsing.tokenizer.Word
+import components.tokenizer.Word
 import source_structure.Position
 import source_structure.Section
 

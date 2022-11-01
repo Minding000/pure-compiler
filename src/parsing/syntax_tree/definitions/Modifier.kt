@@ -1,7 +1,7 @@
 package parsing.syntax_tree.definitions
 
 import parsing.syntax_tree.general.MetaElement
-import parsing.tokenizer.Word
+import components.tokenizer.Word
 
 class Modifier(word: Word): MetaElement(word) {
 	val type = word.type

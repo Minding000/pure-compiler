@@ -4,7 +4,7 @@ import linting.Linter
 import linting.semantic_model.control_flow.BreakStatement
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.Element
-import parsing.tokenizer.Word
+import components.tokenizer.Word
 
 class BreakStatement(word: Word): Element(word) {
 

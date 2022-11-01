@@ -3,7 +3,7 @@ package parsing.syntax_tree.definitions.sections
 import linting.Linter
 import parsing.syntax_tree.definitions.Modifier
 import parsing.syntax_tree.general.MetaElement
-import parsing.tokenizer.WordAtom
+import components.tokenizer.WordAtom
 import source_structure.Position
 import java.util.*
 

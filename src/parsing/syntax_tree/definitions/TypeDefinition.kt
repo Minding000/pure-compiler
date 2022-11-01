@@ -13,8 +13,8 @@ import parsing.syntax_tree.definitions.sections.ModifierSectionChild
 import parsing.syntax_tree.general.Element
 import parsing.syntax_tree.general.TypeElement
 import parsing.syntax_tree.literals.Identifier
-import parsing.tokenizer.Word
-import parsing.tokenizer.WordAtom
+import components.tokenizer.Word
+import components.tokenizer.WordAtom
 
 class TypeDefinition(private val type: Word, private val identifier: Identifier, private val superType: TypeElement?,
 					 private val body: TypeBody):

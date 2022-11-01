@@ -6,7 +6,7 @@ import linting.semantic_model.scopes.TypeScope
 import linting.semantic_model.types.ObjectType
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.VariableValueDeclaration
-import parsing.tokenizer.WordAtom
+import components.tokenizer.WordAtom
 import parsing.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?,

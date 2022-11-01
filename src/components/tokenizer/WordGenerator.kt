@@ -1,4 +1,4 @@
-package parsing.tokenizer
+package components.tokenizer
 
 import errors.user.SyntaxError
 import source_structure.*

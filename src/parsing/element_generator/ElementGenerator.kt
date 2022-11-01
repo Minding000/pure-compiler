@@ -1,12 +1,15 @@
 package parsing.element_generator
 
+import components.tokenizer.Word
+import components.tokenizer.WordAtom
+import components.tokenizer.WordDescriptor
+import components.tokenizer.WordGenerator
 import errors.user.UnexpectedWordError
 import errors.user.UserError
 import messages.Message
 import messages.MessageLogger
 import parsing.syntax_tree.general.*
 import source_structure.Project
-import parsing.tokenizer.*
 import java.util.*
 
 class ElementGenerator(project: Project): Generator() {

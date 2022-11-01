@@ -9,7 +9,7 @@ import linting.semantic_model.scopes.TypeScope
 import parsing.syntax_tree.general.Element
 import parsing.syntax_tree.literals.Identifier
 import parsing.syntax_tree.general.TypeElement
-import parsing.tokenizer.WordAtom
+import components.tokenizer.WordAtom
 
 class Parameter(private val modifierList: ModifierList?, private val identifier: Identifier, private val type: TypeElement?):
     Element(modifierList?.start ?: identifier.start, identifier.end) {

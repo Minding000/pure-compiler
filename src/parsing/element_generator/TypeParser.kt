@@ -1,9 +1,12 @@
 package parsing.element_generator
 
+import components.tokenizer.Word
+import components.tokenizer.WordAtom
+import components.tokenizer.WordDescriptor
+import components.tokenizer.WordType
 import parsing.syntax_tree.definitions.*
 import parsing.syntax_tree.general.TypeElement
 import parsing.syntax_tree.literals.*
-import parsing.tokenizer.*
 import java.util.*
 
 class TypeParser(private val elementGenerator: ElementGenerator): Generator() {

@@ -10,7 +10,7 @@ import parsing.syntax_tree.definitions.sections.OperatorSection
 import parsing.syntax_tree.general.Element
 import parsing.syntax_tree.general.StatementSection
 import parsing.syntax_tree.general.TypeElement
-import parsing.tokenizer.WordAtom
+import components.tokenizer.WordAtom
 
 class OperatorDefinition(private val operator: Operator, private val parameterList: ParameterList?,
 						 private val body: StatementSection?, private var returnType: TypeElement?):

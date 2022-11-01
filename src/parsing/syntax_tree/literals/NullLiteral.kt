@@ -4,7 +4,7 @@ import linting.Linter
 import linting.semantic_model.values.NullLiteral
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.ValueElement
-import parsing.tokenizer.Word
+import components.tokenizer.Word
 
 class NullLiteral(word: Word): ValueElement(word) {
 

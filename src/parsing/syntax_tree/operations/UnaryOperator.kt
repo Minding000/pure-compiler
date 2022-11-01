@@ -4,7 +4,7 @@ import linting.Linter
 import linting.semantic_model.operations.UnaryOperator
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.ValueElement
-import parsing.tokenizer.Word
+import components.tokenizer.Word
 
 class UnaryOperator(val target: ValueElement, operator: Word): ValueElement(operator.start, target.end) {
 	val operator = operator.getValue()

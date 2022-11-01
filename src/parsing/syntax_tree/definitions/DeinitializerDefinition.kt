@@ -8,7 +8,7 @@ import parsing.syntax_tree.definitions.sections.ModifierSection
 import parsing.syntax_tree.definitions.sections.ModifierSectionChild
 import parsing.syntax_tree.general.Element
 import parsing.syntax_tree.general.StatementSection
-import parsing.tokenizer.WordAtom
+import components.tokenizer.WordAtom
 import source_structure.Position
 
 class DeinitializerDefinition(start: Position, end: Position, private val body: StatementSection?):

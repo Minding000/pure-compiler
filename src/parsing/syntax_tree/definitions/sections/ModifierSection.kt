@@ -8,7 +8,7 @@ import parsing.syntax_tree.definitions.Modifier
 import parsing.syntax_tree.definitions.ModifierList
 import parsing.syntax_tree.definitions.ModifierSpecification
 import parsing.syntax_tree.general.Element
-import parsing.tokenizer.WordAtom
+import components.tokenizer.WordAtom
 import source_structure.Position
 import util.indent
 import util.toLines

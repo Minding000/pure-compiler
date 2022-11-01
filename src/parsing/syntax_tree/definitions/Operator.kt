@@ -1,7 +1,7 @@
 package parsing.syntax_tree.definitions
 
 import parsing.syntax_tree.general.MetaElement
-import parsing.tokenizer.Word
+import components.tokenizer.Word
 import source_structure.Position
 
 open class Operator(start: Position, end: Position): MetaElement(start, end) {

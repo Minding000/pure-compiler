@@ -1,7 +1,9 @@
 package parsing.element_generator
 
+import components.tokenizer.Word
+import components.tokenizer.WordAtom
+import components.tokenizer.WordDescriptor
 import parsing.syntax_tree.literals.*
-import parsing.tokenizer.*
 
 class LiteralParser(private val elementGenerator: ElementGenerator): Generator() {
 	override var currentWord: Word?

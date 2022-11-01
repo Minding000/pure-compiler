@@ -1,4 +1,4 @@
-package parsing.tokenizer
+package components.tokenizer
 
 import java.util.regex.Pattern
 

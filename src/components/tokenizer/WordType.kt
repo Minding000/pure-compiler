@@ -1,4 +1,4 @@
-package parsing.tokenizer
+package components.tokenizer
 
 enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 	OPERATOR(
@@ -20,87 +20,109 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.PLUS,
 		WordAtom.MINUS,
 		WordAtom.STAR,
-		WordAtom.SLASH),
+		WordAtom.SLASH
+	),
 	UNARY_OPERATOR(
 		WordAtom.NOT,
 		WordAtom.PLUS,
 		WordAtom.MINUS,
-		WordAtom.SPREAD_GROUP),
+		WordAtom.SPREAD_GROUP
+	),
 	UNARY_MODIFICATION(
 		WordAtom.INCREMENT,
-		WordAtom.DECREMENT),
+		WordAtom.DECREMENT
+	),
 	BINARY_MODIFICATION(
 		WordAtom.ADD,
 		WordAtom.SUBTRACT,
 		WordAtom.MULTIPLY,
-		WordAtom.DIVIDE),
+		WordAtom.DIVIDE
+	),
 	BINARY_BOOLEAN_OPERATOR(
 		WordAtom.AND,
-		WordAtom.OR),
+		WordAtom.OR
+	),
 	UNION_OPERATOR(
 		WordAtom.AND,
-		WordAtom.OR),
+		WordAtom.OR
+	),
 	ADDITION(
 		WordAtom.PLUS,
-		WordAtom.MINUS),
+		WordAtom.MINUS
+	),
 	MULTIPLICATION(
 		WordAtom.STAR,
-		WordAtom.SLASH),
+		WordAtom.SLASH
+	),
 	EQUALITY(
 		WordAtom.EQUALS,
-		WordAtom.NOT_EQUALS),
+		WordAtom.NOT_EQUALS
+	),
 	COMPARISON(
 		WordAtom.GREATER_OR_EQUALS_THAN,
 		WordAtom.LOWER_OR_EQUALS_THAN,
 		WordAtom.GREATER_THAN,
-		WordAtom.LOWER_THAN),
+		WordAtom.LOWER_THAN
+	),
 	CAST(
 		WordAtom.AS,
 		WordAtom.OPTIONAL_CAST,
 		WordAtom.FORCE_CAST,
 		WordAtom.IS,
-		WordAtom.IS_NOT),
+		WordAtom.IS_NOT
+	),
 	FUNCTION_DECLARATION(
 		WordAtom.TO,
-		WordAtom.IT),
+		WordAtom.IT
+	),
 	LAMBDA_FUNCTION(
 		WordAtom.ARROW,
-		WordAtom.ARROW_CAPPED),
+		WordAtom.ARROW_CAPPED
+	),
 	VARIABLE_DECLARATION(
 		WordAtom.CONST,
 		WordAtom.VAR,
-		WordAtom.VAL),
+		WordAtom.VAL
+	),
 	ACCESSOR(
 		WordAtom.DOT,
 		WordAtom.OPTIONAL_ACCESSOR,
 		WordAtom.PARENTHESES_OPEN,
 		WordAtom.BRACKETS_OPEN,
-		WordAtom.TYPE_SPECIFICATION),
+		WordAtom.TYPE_SPECIFICATION
+	),
 	MEMBER_ACCESSOR(
 		WordAtom.DOT,
-		WordAtom.OPTIONAL_ACCESSOR),
+		WordAtom.OPTIONAL_ACCESSOR
+	),
 	GENERICS_START(
-		WordAtom.LOWER_THAN),
+		WordAtom.LOWER_THAN
+	),
 	GENERICS_END(
-		WordAtom.GREATER_THAN),
+		WordAtom.GREATER_THAN
+	),
 	GENERICS_MODIFIER(
 		WordAtom.CONSUMING,
-		WordAtom.PRODUCING),
+		WordAtom.PRODUCING
+	),
 	TYPE_TYPE(
 		WordAtom.CLASS,
 		WordAtom.OBJECT,
 		WordAtom.TRAIT,
-		WordAtom.ENUM),
+		WordAtom.ENUM
+	),
 	MODIFIER(
 		WordAtom.NATIVE,
 		WordAtom.OVERRIDING,
 		WordAtom.IMMUTABLE,
 		WordAtom.MUTABLE,
 		WordAtom.MUTATING,
-		WordAtom.SPREAD_GROUP),
+		WordAtom.SPREAD_GROUP
+	),
 	TRY(
 		WordAtom.TRY_OPTIONAL,
-		WordAtom.TRY_UNCHECK);
+		WordAtom.TRY_UNCHECK
+	);
 
 	override fun includes(atom: WordAtom?): Boolean {
 		return atoms.contains(atom)

@@ -10,7 +10,7 @@ import parsing.syntax_tree.general.Element
 import parsing.syntax_tree.general.StatementSection
 import parsing.syntax_tree.literals.Identifier
 import parsing.syntax_tree.general.TypeElement
-import parsing.tokenizer.WordAtom
+import components.tokenizer.WordAtom
 import java.lang.StringBuilder
 
 class FunctionDefinition(private val identifier: Identifier, private val parameterList: ParameterList,

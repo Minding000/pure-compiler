@@ -1,9 +1,9 @@
 package parsing.element_generator
 
 import errors.user.UnexpectedEndOfFileError
-import parsing.tokenizer.Word
-import parsing.tokenizer.WordAtom
-import parsing.tokenizer.WordDescriptor
+import components.tokenizer.Word
+import components.tokenizer.WordAtom
+import components.tokenizer.WordDescriptor
 
 abstract class Generator {
 	internal abstract var currentWord: Word?

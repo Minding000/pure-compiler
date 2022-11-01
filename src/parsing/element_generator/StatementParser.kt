@@ -1,5 +1,9 @@
 package parsing.element_generator
 
+import components.tokenizer.Word
+import components.tokenizer.WordAtom
+import components.tokenizer.WordDescriptor
+import components.tokenizer.WordType
 import errors.user.UnexpectedWordError
 import parsing.syntax_tree.operations.*
 import parsing.syntax_tree.access.IndexAccess
@@ -9,7 +13,6 @@ import parsing.syntax_tree.definitions.*
 import parsing.syntax_tree.definitions.sections.*
 import parsing.syntax_tree.general.*
 import parsing.syntax_tree.literals.*
-import parsing.tokenizer.*
 import source_structure.Position
 import parsing.syntax_tree.general.StatementBlock
 import java.util.*

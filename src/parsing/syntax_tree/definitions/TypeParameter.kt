@@ -4,8 +4,8 @@ import linting.Linter
 import linting.semantic_model.types.TypeParameter
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.TypeElement
-import parsing.tokenizer.Word
-import parsing.tokenizer.WordAtom
+import components.tokenizer.Word
+import components.tokenizer.WordAtom
 
 class TypeParameter(val type: TypeElement, val modifier: Word): TypeElement(type.start, modifier.end) {
 

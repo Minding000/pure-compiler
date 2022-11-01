@@ -6,7 +6,7 @@ import linting.semantic_model.operations.UnaryModification
 import linting.semantic_model.scopes.MutableScope
 import parsing.syntax_tree.general.Element
 import parsing.syntax_tree.general.ValueElement
-import parsing.tokenizer.Word
+import components.tokenizer.Word
 
 class UnaryModification(val target: ValueElement, val operator: Word): Element(target.start, operator.end) {
 

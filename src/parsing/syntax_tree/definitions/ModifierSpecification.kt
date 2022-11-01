@@ -2,7 +2,7 @@ package parsing.syntax_tree.definitions
 
 import linting.Linter
 import messages.Message
-import parsing.tokenizer.WordAtom
+import components.tokenizer.WordAtom
 
 interface ModifierSpecification {
 

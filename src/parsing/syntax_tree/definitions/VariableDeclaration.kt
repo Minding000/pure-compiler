@@ -7,7 +7,7 @@ import parsing.syntax_tree.definitions.sections.VariableSectionElement
 import parsing.syntax_tree.literals.Identifier
 import parsing.syntax_tree.general.TypeElement
 import parsing.syntax_tree.general.ValueElement
-import parsing.tokenizer.WordAtom
+import components.tokenizer.WordAtom
 import java.lang.StringBuilder
 
 class VariableDeclaration(private val identifier: Identifier, private val type: TypeElement?,

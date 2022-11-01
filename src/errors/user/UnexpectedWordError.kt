@@ -1,7 +1,7 @@
 package errors.user
 
-import parsing.tokenizer.Word
-import parsing.tokenizer.WordDescriptor
+import components.tokenizer.Word
+import components.tokenizer.WordDescriptor
 import util.stringify
 
 /**

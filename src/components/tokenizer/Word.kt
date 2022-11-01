@@ -1,4 +1,4 @@
-package parsing.tokenizer
+package components.tokenizer
 
 import source_structure.Position
 import source_structure.Section
