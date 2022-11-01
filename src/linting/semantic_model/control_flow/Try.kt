@@ -4,9 +4,9 @@ import linting.Linter
 import linting.semantic_model.types.OptionalType
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
-import components.parsing.syntax_tree.control_flow.Try
+import components.parsing.syntax_tree.control_flow.Try as TrySyntaxTree
 
-class Try(override val source: Try, val expression: Value, val isOptional: Boolean): Value(source) {
+class Try(override val source: TrySyntaxTree, val expression: Value, val isOptional: Boolean): Value(source) {
 
 	init {
 		units.add(expression)

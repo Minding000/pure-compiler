@@ -7,9 +7,9 @@ import linting.semantic_model.types.OptionalType
 import linting.semantic_model.values.BooleanLiteral
 import linting.semantic_model.values.Value
 import messages.Message
-import components.parsing.syntax_tree.operations.NullCheck
+import components.parsing.syntax_tree.operations.NullCheck as NullCheckSyntaxTree
 
-class NullCheck(override val source: NullCheck, val value: Value): Value(source) {
+class NullCheck(override val source: NullCheckSyntaxTree, val value: Value): Value(source) {
 
 	init {
 		units.add(value)

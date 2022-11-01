@@ -36,10 +36,12 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 	}
 
 	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {
-		val genericDefinitionTypes = (targetType.definition.baseDefinition ?: targetType.definition).scope.getGenericTypeDefinitions()
+		val genericDefinitionTypes = (targetType.definition.baseDefinition ?: targetType.definition).scope
+			.getGenericTypeDefinitions()
 		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
 		try {
-			val match = targetType.scope.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters, valueParameters)
+			val match = targetType.scope.resolveInitializer(genericDefinitionTypes, definitionTypeParameters,
+				typeParameters, valueParameters)
 			if(match == null) {
 				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
 					Message.Type.ERROR)

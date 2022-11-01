@@ -5,9 +5,10 @@ import linting.Linter
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
 import messages.Message
-import components.parsing.syntax_tree.operations.UnaryOperator
+import components.parsing.syntax_tree.operations.UnaryOperator as UnaryOperatorSyntaxTree
 
-class UnaryOperator(override val source: UnaryOperator, val value: Value, val operatorName: String): Value(source) {
+class UnaryOperator(override val source: UnaryOperatorSyntaxTree, val value: Value, val operatorName: String):
+	Value(source) {
 
 	init {
 		units.add(value)

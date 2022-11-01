@@ -5,9 +5,9 @@ import linting.semantic_model.general.Unit
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValueDeclaration
 import linting.semantic_model.scopes.Scope
-import components.parsing.syntax_tree.control_flow.OverGenerator
+import components.parsing.syntax_tree.control_flow.OverGenerator as OverGeneratorSyntaxTree
 
-class OverGenerator(override val source: OverGenerator, val collection: Value,
+class OverGenerator(override val source: OverGeneratorSyntaxTree, val collection: Value,
 					val keyDeclaration: VariableValueDeclaration?, val valueDeclaration: VariableValueDeclaration?):
 	Unit(source) {
 

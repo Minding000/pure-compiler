@@ -5,9 +5,9 @@ import linting.semantic_model.types.Type
 import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.VariableValueDeclaration
-import components.parsing.syntax_tree.general.HandleBlock
+import components.parsing.syntax_tree.general.HandleBlock as HandleBlockSyntaxTree
 
-class HandleBlock(override val source: HandleBlock, val scope: BlockScope, val eventType: Type,
+class HandleBlock(override val source: HandleBlockSyntaxTree, val scope: BlockScope, val eventType: Type,
 				  val eventVariable: VariableValueDeclaration?, val block: StatementBlock): Unit(source) {
 
 	init {

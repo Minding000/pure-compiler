@@ -10,9 +10,9 @@ import linting.semantic_model.values.NullLiteral
 import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValue
 import messages.Message
-import components.parsing.syntax_tree.operations.Cast
+import components.parsing.syntax_tree.operations.Cast as CastSyntaxTree
 
-class Cast(override val source: Cast, val value: Value, val variable: VariableValue?, val referenceType: Type,
+class Cast(override val source: CastSyntaxTree, val value: Value, val variable: VariableValue?, val referenceType: Type,
 		   val operator: Operator): Value(source) {
 	override var isInterruptingExecution = false
 	private val isCastAlwaysSuccessful: Boolean

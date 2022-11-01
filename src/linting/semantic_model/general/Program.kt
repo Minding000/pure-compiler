@@ -2,10 +2,10 @@ package linting.semantic_model.general
 
 import compiler.targets.llvm.BuildContext
 import linting.Linter
-import components.parsing.syntax_tree.general.Program
+import components.parsing.syntax_tree.general.Program as ProgramSyntaxTree
 import java.util.*
 
-class Program(val source: Program) {
+class Program(val source: ProgramSyntaxTree) {
 	val files = LinkedList<File>()
 
 	fun getFile(pathParts: List<String>): File? {

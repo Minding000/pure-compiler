@@ -2,9 +2,9 @@ package linting.semantic_model.control_flow
 
 import linting.semantic_model.general.Unit
 import linting.semantic_model.values.Value
-import components.parsing.syntax_tree.control_flow.RaiseStatement
+import components.parsing.syntax_tree.control_flow.RaiseStatement as RaiseStatementSyntaxTree
 
-class RaiseStatement(override val source: RaiseStatement, val value: Value): Unit(source) {
+class RaiseStatement(override val source: RaiseStatementSyntaxTree, val value: Value): Unit(source) {
 	override val isInterruptingExecution = true
 
 	init {

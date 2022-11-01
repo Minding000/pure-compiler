@@ -5,13 +5,13 @@ import linting.semantic_model.general.Unit
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.BooleanLiteral
 import linting.semantic_model.values.Value
-import components.parsing.syntax_tree.control_flow.IfStatement
+import components.parsing.syntax_tree.control_flow.IfStatement as IfStatementSyntaxTree
 
-class IfStatement(override val source: IfStatement, val condition: Value, val trueBranch: Unit, val falseBranch: Unit?):
-	Unit(source) {
+class IfStatement(override val source: IfStatementSyntaxTree, val condition: Value, val trueBranch: Unit,
+				  val falseBranch: Unit?): Unit(source) {
 	override var isInterruptingExecution = false
-	var isConditionAlwaysTrue = false
-	var isConditionAlwaysFalse = false
+	private var isConditionAlwaysTrue = false
+	private var isConditionAlwaysFalse = false
 
 	init {
 		units.add(condition)

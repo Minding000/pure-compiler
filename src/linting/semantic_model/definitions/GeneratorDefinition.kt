@@ -6,9 +6,9 @@ import linting.semantic_model.scopes.BlockScope
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.types.Type
 import linting.semantic_model.values.VariableValueDeclaration
-import components.parsing.syntax_tree.definitions.GeneratorDefinition
+import components.parsing.syntax_tree.definitions.GeneratorDefinition as GeneratorDefinitionSyntaxTree
 
-class GeneratorDefinition(override val source: GeneratorDefinition, val scope: BlockScope, name: String,
+class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, val scope: BlockScope, name: String,
 						  val parameters: List<Parameter>, val keyReturnType: Type?, val valueReturnType: Type,
 						  val body: ErrorHandlingContext): VariableValueDeclaration(source, name) {
 

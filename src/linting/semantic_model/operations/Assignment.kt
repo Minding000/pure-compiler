@@ -6,9 +6,9 @@ import linting.semantic_model.values.Value
 import linting.semantic_model.values.VariableValue
 import messages.Message
 import linting.semantic_model.scopes.Scope
-import components.parsing.syntax_tree.operations.Assignment
+import components.parsing.syntax_tree.operations.Assignment as AssignmentSyntaxTree
 
-class Assignment(override val source: Assignment, private val targets: List<Value>,
+class Assignment(override val source: AssignmentSyntaxTree, private val targets: List<Value>,
 				 private val sourceExpression: Value): Unit(source) {
 
 	init {

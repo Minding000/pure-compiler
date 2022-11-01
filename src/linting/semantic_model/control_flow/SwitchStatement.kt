@@ -5,10 +5,10 @@ import linting.semantic_model.general.Unit
 import linting.semantic_model.scopes.Scope
 import linting.semantic_model.values.Value
 import messages.Message
-import components.parsing.syntax_tree.control_flow.SwitchStatement
+import components.parsing.syntax_tree.control_flow.SwitchStatement as SwitchStatementSyntaxTree
 import java.util.LinkedList
 
-class SwitchStatement(override val source: SwitchStatement, val subject: Value, val cases: List<Case>,
+class SwitchStatement(override val source: SwitchStatementSyntaxTree, val subject: Value, val cases: List<Case>,
 					  val elseBranch: Unit?): Unit(source) {
 	override var isInterruptingExecution = false //TODO adjust this value based on branches
 

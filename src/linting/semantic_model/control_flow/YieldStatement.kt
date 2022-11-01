@@ -2,9 +2,9 @@ package linting.semantic_model.control_flow
 
 import linting.semantic_model.general.Unit
 import linting.semantic_model.values.Value
-import components.parsing.syntax_tree.control_flow.YieldStatement
+import components.parsing.syntax_tree.control_flow.YieldStatement as YieldStatementSyntaxTree
 
-class YieldStatement(override val source: YieldStatement, val key: Unit?, val value: Value): Value(source) {
+class YieldStatement(override val source: YieldStatementSyntaxTree, val key: Unit?, val value: Value): Value(source) {
 
 	init {
 		if(key != null)
