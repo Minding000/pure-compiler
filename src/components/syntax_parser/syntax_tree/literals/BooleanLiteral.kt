@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.literals
 
-import components.linting.Linter
-import components.linting.semantic_model.values.BooleanLiteral as SemanticBooleanLiteralModel
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.values.BooleanLiteral as SemanticBooleanLiteralModel
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.ValueElement
 import components.tokenizer.Word
 

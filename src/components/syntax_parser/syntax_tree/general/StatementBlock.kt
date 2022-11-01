@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.linting.Linter
-import components.linting.semantic_model.general.StatementBlock as SemanticStatementBlockModel
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.general.StatementBlock as SemanticStatementBlockModel
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import source_structure.Position
 import util.concretize
 import util.indent

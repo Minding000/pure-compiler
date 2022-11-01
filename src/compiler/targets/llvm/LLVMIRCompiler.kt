@@ -1,6 +1,6 @@
 package compiler.targets.llvm
 
-import components.linting.semantic_model.general.Program
+import components.semantic_analysis.semantic_model.general.Program
 import org.bytedeco.javacpp.*
 import org.bytedeco.llvm.LLVM.LLVMExecutionEngineRef
 import org.bytedeco.llvm.LLVM.LLVMMCJITCompilerOptions

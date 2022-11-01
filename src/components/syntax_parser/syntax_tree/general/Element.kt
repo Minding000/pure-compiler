@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.linting.Linter
-import components.linting.semantic_model.general.Unit
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.tokenizer.Word
 import source_structure.Position
 import source_structure.Section

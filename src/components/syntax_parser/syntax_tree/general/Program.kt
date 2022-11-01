@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.linting.Linter
-import components.linting.semantic_model.general.Program as SemanticProgramModel
-import components.linting.semantic_model.scopes.FileScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.general.Program as SemanticProgramModel
+import components.semantic_analysis.semantic_model.scopes.FileScope
 import util.indent
 import util.toLines
 

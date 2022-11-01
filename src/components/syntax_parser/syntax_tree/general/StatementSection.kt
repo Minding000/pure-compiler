@@ -1,9 +1,9 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.linting.Linter
-import components.linting.semantic_model.general.HandleBlock as SemanticHandleBlockModel
-import components.linting.semantic_model.general.ErrorHandlingContext
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.general.HandleBlock as SemanticHandleBlockModel
+import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import java.util.*
 
 class StatementSection(private val mainBlock: StatementBlock, val handleBlocks: List<HandleBlock> = LinkedList(),

@@ -1,9 +1,9 @@
 package components.syntax_parser.syntax_tree.definitions.sections
 
 import errors.internal.CompilerError
-import components.linting.Linter
-import components.linting.semantic_model.general.Unit
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.Modifier
 import components.syntax_parser.syntax_tree.definitions.ModifierList
 import components.syntax_parser.syntax_tree.definitions.ModifierSpecification

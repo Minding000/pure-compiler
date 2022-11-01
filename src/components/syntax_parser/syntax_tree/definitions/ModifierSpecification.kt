@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.linting.Linter
+import components.semantic_analysis.Linter
 import messages.Message
 import components.tokenizer.WordAtom
 

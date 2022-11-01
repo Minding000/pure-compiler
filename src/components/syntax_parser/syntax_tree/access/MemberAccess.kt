@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.access
 
-import components.linting.Linter
-import components.linting.semantic_model.operations.MemberAccess as SemanticMemberAccessModel
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.operations.MemberAccess as SemanticMemberAccessModel
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.ValueElement
 import components.syntax_parser.syntax_tree.literals.Identifier
 import util.indent

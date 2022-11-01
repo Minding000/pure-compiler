@@ -1,10 +1,10 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.linting.Linter
-import components.linting.semantic_model.general.File as SemanticFileModel
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.general.File as SemanticFileModel
 import source_structure.File as SourceFile
-import components.linting.semantic_model.scopes.FileScope
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.semantic_model.scopes.FileScope
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import source_structure.Position
 import util.indent
 import util.toLines

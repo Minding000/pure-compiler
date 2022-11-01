@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.control_flow
 
-import components.linting.Linter
-import components.linting.semantic_model.control_flow.FunctionCall as SemanticFunctionCallModel
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.control_flow.FunctionCall as SemanticFunctionCallModel
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeElement
 import source_structure.Position
 import components.syntax_parser.syntax_tree.general.ValueElement

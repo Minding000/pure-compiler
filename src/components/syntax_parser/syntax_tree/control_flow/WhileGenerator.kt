@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.control_flow
 
-import components.linting.Linter
-import components.linting.semantic_model.control_flow.WhileGenerator as SemanticWhileGeneratorModel
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.control_flow.WhileGenerator as SemanticWhileGeneratorModel
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.Element
 import source_structure.Position
 import util.indent

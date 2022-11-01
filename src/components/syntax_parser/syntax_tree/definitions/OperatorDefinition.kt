@@ -1,10 +1,10 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.linting.Linter
-import components.linting.semantic_model.definitions.IndexOperatorDefinition as SemanticIndexOperatorDefinitionModel
-import components.linting.semantic_model.definitions.OperatorDefinition as SemanticOperatorDefinitionModel
-import components.linting.semantic_model.scopes.BlockScope
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.definitions.IndexOperatorDefinition as SemanticIndexOperatorDefinitionModel
+import components.semantic_analysis.semantic_model.definitions.OperatorDefinition as SemanticOperatorDefinitionModel
+import components.semantic_analysis.semantic_model.scopes.BlockScope
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import messages.Message
 import components.syntax_parser.syntax_tree.definitions.sections.OperatorSection
 import components.syntax_parser.syntax_tree.general.Element

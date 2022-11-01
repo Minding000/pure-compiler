@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.linting.Linter
-import components.linting.semantic_model.general.ReferenceAlias as SemanticReferenceAliasModel
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.general.ReferenceAlias as SemanticReferenceAliasModel
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.literals.Identifier
 
 class ReferenceAlias(private val originalName: Identifier, private val aliasName: Identifier):

@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.linting.Linter
-import components.linting.semantic_model.definitions.TypeSpecification as SemanticTypeSpecificationModel
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.definitions.TypeSpecification as SemanticTypeSpecificationModel
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.ValueElement
 import components.syntax_parser.syntax_tree.literals.TypeList
 import source_structure.Position

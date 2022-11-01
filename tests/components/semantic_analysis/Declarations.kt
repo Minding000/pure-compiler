@@ -1,0 +1,173 @@
+package components.semantic_analysis
+
+import components.semantic_analysis.semantic_model.values.VariableValue
+import util.TestUtil
+import messages.Message
+import org.junit.jupiter.api.Test
+import kotlin.test.assertNotNull
+
+internal class Declarations {
+
+	@Test
+	fun `emits error for incompatible source expression type`() {
+		val sourceCode =
+			"""
+				class Toast {}
+				object Banana {}
+				var toast: Toast = Banana
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Banana' is not assignable to type 'Toast'")
+	}
+
+	@Test
+	fun `emits error if no type is provided to variable declaration`() {
+		val sourceCode =
+			"""
+				var toast
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type or value is required")
+	}
+
+	@Test
+	fun `detects shadowed variables`() {
+		val sourceCode =
+			"""
+				class Handler {}
+				val defaultHandler: Handler
+				class Event {
+					const defaultHandler: Handler
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "'defaultHandler' shadows a member")
+	}
+
+	@Test
+	fun `detects redeclarations of variables`() {
+		val sourceCode =
+			"""
+				class Car {}
+				var car: Car
+				val car: Car
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of value 'car'")
+	}
+
+	@Test
+	fun `detects redeclarations of types`() {
+		val sourceCode =
+			"""
+				class Animal {}
+				enum Animal {}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of type 'Animal'")
+	}
+
+	@Test
+	fun `detects redeclarations of initializers signatures`() {
+		val sourceCode =
+			"""
+				class Human {
+					init
+					init
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of initializer 'Human()'")
+	}
+
+	@Test
+	fun `detects redeclarations of function signatures`() {
+		val sourceCode =
+			"""
+				native class Pressure {}
+				class Human {
+					to sit(): Pressure {}
+					to sit() {}
+					to sit() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of function 'sit()'")
+	}
+
+	@Test
+	fun `detects redeclarations of operator signatures`() {
+		val sourceCode =
+			"""
+				native class Time {}
+				alias T = Time
+				class Human {
+					operator[time: T]() {}
+					operator[time: Time]() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of operator 'Human[Time]()'")
+	}
+
+	@Test
+	fun `detects invalid modifiers`() {
+		val sourceCode =
+			"""
+				overriding class House {}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
+	}
+
+	@Test
+	fun `detects duplicate modifiers`() {
+		val sourceCode =
+			"""
+				native native class Memory {}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Duplicate 'native' modifier")
+	}
+
+	@Test
+	fun `handle block declares error variable`() {
+		val sourceCode =
+			"""
+				native class IOError {}
+				class Config {
+					to saveToDisk() {
+					} handle IOError error {
+						error
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "error" }
+		assertNotNull(variable?.type)
+	}
+
+	@Test
+	fun `emits warning for generic non-index operator`() {
+		val sourceCode = """
+			class Vector {
+				operator +(ReturnType; other: Self): ReturnType
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"Operators (except for the index operator) can not be generic.")
+	}
+
+	@Test
+	fun `emits warning for generic parameters in parentheses in index operator`() {
+		val sourceCode = """
+			class Vector {
+				operator [key: IndexType](IndexType; value: Int)
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"Generic parameters for the index operator are received in the index parameter list instead.")
+	}
+}

@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.linting.Linter
-import components.linting.semantic_model.types.TypeParameter as SemanticTypeParameterModel
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.types.TypeParameter as SemanticTypeParameterModel
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeElement
 import components.tokenizer.Word
 import components.tokenizer.WordAtom

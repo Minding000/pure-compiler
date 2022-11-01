@@ -1,9 +1,9 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.linting.Linter
-import components.linting.semantic_model.definitions.FunctionSignature
-import components.linting.semantic_model.types.FunctionType as SemanticFunctionTypeModel
-import components.linting.semantic_model.scopes.MutableScope
+import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.definitions.FunctionSignature
+import components.semantic_analysis.semantic_model.types.FunctionType as SemanticFunctionTypeModel
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeElement
 import source_structure.Position
 
