@@ -1,8 +1,9 @@
 package components.parsing.syntax_tree.control_flow
 
-import linting.Linter
-import linting.semantic_model.control_flow.SwitchStatement as SemanticSwitchStatementModel
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.control_flow.Case as SemanticCaseModel
+import components.linting.semantic_model.control_flow.SwitchStatement as SemanticSwitchStatementModel
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.general.Element
 import components.parsing.syntax_tree.general.ValueElement
 import source_structure.Position
@@ -14,7 +15,7 @@ class SwitchStatement(private val subject: ValueElement, private val cases: Link
 					  private val elseBranch: Element?, start: Position, end: Position): Element(start, end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticSwitchStatementModel {
-		val cases = LinkedList<linting.semantic_model.control_flow.Case>()
+		val cases = LinkedList<SemanticCaseModel>()
 		for(case in this.cases)
 			cases.add(case.concretize(linter, scope))
 		return SemanticSwitchStatementModel(this, subject.concretize(linter, scope), cases,

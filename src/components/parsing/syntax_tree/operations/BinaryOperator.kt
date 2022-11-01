@@ -1,8 +1,8 @@
 package components.parsing.syntax_tree.operations
 
-import linting.Linter
-import linting.semantic_model.scopes.MutableScope
-import linting.semantic_model.operations.BinaryOperator as SemanticBinaryOperatorModel
+import components.linting.Linter
+import components.linting.semantic_model.scopes.MutableScope
+import components.linting.semantic_model.operations.BinaryOperator as SemanticBinaryOperatorModel
 import components.parsing.syntax_tree.general.ValueElement
 import util.indent
 

@@ -1,8 +1,8 @@
 package components.parsing.syntax_tree.general
 
-import linting.Linter
-import linting.semantic_model.general.ForeignLanguageExpression as SemanticForeignLanguageExpressionModel
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.general.ForeignLanguageExpression as SemanticForeignLanguageExpressionModel
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.literals.ForeignLanguageLiteral
 import components.parsing.syntax_tree.literals.Identifier
 

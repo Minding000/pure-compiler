@@ -2,7 +2,7 @@ package util
 
 import code.Builder
 import components.parsing.element_generator.ElementGenerator
-import linting.Linter
+import components.linting.Linter
 import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream

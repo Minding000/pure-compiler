@@ -1,9 +1,9 @@
 package components.parsing.syntax_tree.control_flow
 
-import linting.Linter
-import linting.semantic_model.control_flow.LoopStatement as SemanticLoopStatementModel
-import linting.semantic_model.scopes.BlockScope
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.control_flow.LoopStatement as SemanticLoopStatementModel
+import components.linting.semantic_model.scopes.BlockScope
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.general.Element
 import components.parsing.syntax_tree.general.StatementSection
 import source_structure.Position

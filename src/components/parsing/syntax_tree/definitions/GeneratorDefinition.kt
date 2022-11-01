@@ -1,9 +1,9 @@
 package components.parsing.syntax_tree.definitions
 
-import linting.Linter
-import linting.semantic_model.definitions.GeneratorDefinition as SemanticGeneratorDefinitionModel
-import linting.semantic_model.scopes.BlockScope
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.definitions.GeneratorDefinition as SemanticGeneratorDefinitionModel
+import components.linting.semantic_model.scopes.BlockScope
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.general.Element
 import components.parsing.syntax_tree.general.StatementSection
 import components.parsing.syntax_tree.general.TypeElement

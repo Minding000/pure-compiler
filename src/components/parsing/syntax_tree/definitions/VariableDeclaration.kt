@@ -1,8 +1,8 @@
 package components.parsing.syntax_tree.definitions
 
-import linting.Linter
-import linting.semantic_model.values.VariableValueDeclaration as SemanticVariableValueDeclarationModel
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.values.VariableValueDeclaration as SemanticVariableValueDeclarationModel
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.definitions.sections.VariableSectionElement
 import components.parsing.syntax_tree.literals.Identifier
 import components.parsing.syntax_tree.general.TypeElement

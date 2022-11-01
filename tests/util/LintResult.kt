@@ -1,8 +1,8 @@
 package util
 
-import linting.Linter
-import linting.semantic_model.general.Program
-import linting.semantic_model.general.Unit
+import components.linting.Linter
+import components.linting.semantic_model.general.Program
+import components.linting.semantic_model.general.Unit
 import messages.Message
 
 class LintResult(private val linter: Linter, val program: Program) {

@@ -1,11 +1,11 @@
 package components.parsing.syntax_tree.literals
 
 import errors.internal.CompilerError
-import linting.Linter
-import linting.semantic_model.types.AndUnionType as SemanticAndUnionTypeModel
-import linting.semantic_model.types.OrUnionType as SemanticOrUnionTypeModel
-import linting.semantic_model.types.Type as SemanticTypeModel
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.types.AndUnionType as SemanticAndUnionTypeModel
+import components.linting.semantic_model.types.OrUnionType as SemanticOrUnionTypeModel
+import components.linting.semantic_model.types.Type as SemanticTypeModel
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.general.TypeElement
 import java.util.*
 
@@ -13,7 +13,7 @@ class UnionType(private val left: TypeElement, private val right: TypeElement, p
 	TypeElement(left.start, right.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticTypeModel {
-		val types = LinkedList<linting.semantic_model.types.Type>()
+		val types = LinkedList<SemanticTypeModel>()
 		addTypes(linter, scope, types, this)
 		return if(mode == Mode.AND)
 			SemanticAndUnionTypeModel(this, types)

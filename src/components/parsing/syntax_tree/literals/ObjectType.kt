@@ -1,8 +1,8 @@
 package components.parsing.syntax_tree.literals
 
-import linting.Linter
-import linting.semantic_model.types.ObjectType as SemanticObjectTypeModel
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.types.ObjectType as SemanticObjectTypeModel
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.general.TypeElement
 
 class ObjectType(private val typeList: TypeList?, private val identifier: Identifier):

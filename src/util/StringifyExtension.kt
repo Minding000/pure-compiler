@@ -1,7 +1,7 @@
 package util
 
-import linting.semantic_model.definitions.Parameter
-import linting.semantic_model.values.Value
+import components.linting.semantic_model.definitions.Parameter
+import components.linting.semantic_model.values.Value
 
 fun Char.stringify(): String {
 	if(isISOControl())

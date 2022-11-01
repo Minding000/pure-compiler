@@ -1,11 +1,11 @@
 package components.parsing.syntax_tree.definitions
 
-import linting.Linter
-import linting.semantic_model.definitions.GenericTypeDefinition
-import linting.semantic_model.definitions.Parameter as SemanticParameterModel
-import linting.semantic_model.definitions.TypeDefinition
-import linting.semantic_model.scopes.MutableScope
-import linting.semantic_model.scopes.TypeScope
+import components.linting.Linter
+import components.linting.semantic_model.definitions.GenericTypeDefinition
+import components.linting.semantic_model.definitions.Parameter as SemanticParameterModel
+import components.linting.semantic_model.definitions.TypeDefinition
+import components.linting.semantic_model.scopes.MutableScope
+import components.linting.semantic_model.scopes.TypeScope
 import components.parsing.syntax_tree.general.Element
 import components.parsing.syntax_tree.literals.Identifier
 import components.parsing.syntax_tree.general.TypeElement

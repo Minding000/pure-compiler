@@ -1,8 +1,8 @@
 package linting
 
-import linting.semantic_model.types.FunctionType
-import linting.semantic_model.values.VariableValue
-import linting.semantic_model.values.VariableValueDeclaration
+import components.linting.semantic_model.types.FunctionType
+import components.linting.semantic_model.values.VariableValue
+import components.linting.semantic_model.values.VariableValueDeclaration
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import util.TestUtil

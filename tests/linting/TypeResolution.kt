@@ -1,8 +1,8 @@
 package linting
 
-import linting.semantic_model.operations.MemberAccess
-import linting.semantic_model.types.ObjectType
-import linting.semantic_model.values.*
+import components.linting.semantic_model.operations.MemberAccess
+import components.linting.semantic_model.types.ObjectType
+import components.linting.semantic_model.values.*
 import util.TestUtil
 import messages.Message
 import org.junit.jupiter.api.Test

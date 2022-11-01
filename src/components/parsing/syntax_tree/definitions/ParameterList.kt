@@ -1,9 +1,9 @@
 package components.parsing.syntax_tree.definitions
 
-import linting.Linter
-import linting.semantic_model.definitions.TypeDefinition
-import linting.semantic_model.scopes.MutableScope
-import linting.semantic_model.definitions.Parameter as SemanticParameterModel
+import components.linting.Linter
+import components.linting.semantic_model.definitions.TypeDefinition
+import components.linting.semantic_model.scopes.MutableScope
+import components.linting.semantic_model.definitions.Parameter as SemanticParameterModel
 import components.parsing.syntax_tree.general.MetaElement
 import source_structure.Position
 import util.indent

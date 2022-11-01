@@ -1,8 +1,8 @@
 package components.parsing.syntax_tree.operations
 
-import linting.Linter
-import linting.semantic_model.operations.UnaryOperator as SemanticUnaryOperatorModel
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.operations.UnaryOperator as SemanticUnaryOperatorModel
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.general.ValueElement
 import components.tokenizer.Word
 

@@ -1,9 +1,9 @@
 package components.parsing.syntax_tree.operations
 
 import errors.internal.CompilerError
-import linting.Linter
-import linting.semantic_model.scopes.MutableScope
-import linting.semantic_model.operations.Cast as SemanticCastModel
+import components.linting.Linter
+import components.linting.semantic_model.scopes.MutableScope
+import components.linting.semantic_model.operations.Cast as SemanticCastModel
 import components.parsing.syntax_tree.general.ValueElement
 import components.parsing.syntax_tree.literals.Identifier
 import components.parsing.syntax_tree.general.TypeElement

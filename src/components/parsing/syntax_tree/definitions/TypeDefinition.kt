@@ -1,11 +1,11 @@
 package components.parsing.syntax_tree.definitions
 
 import errors.internal.CompilerError
-import linting.Linter
-import linting.semantic_model.definitions.*
-import linting.semantic_model.definitions.Enum
-import linting.semantic_model.scopes.MutableScope
-import linting.semantic_model.scopes.TypeScope
+import components.linting.Linter
+import components.linting.semantic_model.definitions.*
+import components.linting.semantic_model.definitions.Enum
+import components.linting.semantic_model.scopes.MutableScope
+import components.linting.semantic_model.scopes.TypeScope
 import messages.Message
 import components.parsing.syntax_tree.definitions.sections.ModifierSection
 import components.parsing.syntax_tree.definitions.sections.ModifierSectionChild
@@ -14,7 +14,7 @@ import components.parsing.syntax_tree.general.TypeElement
 import components.parsing.syntax_tree.literals.Identifier
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
-import linting.semantic_model.definitions.TypeDefinition as SemanticTypeDefinitionModel
+import components.linting.semantic_model.definitions.TypeDefinition as SemanticTypeDefinitionModel
 
 class TypeDefinition(private val type: Word, private val identifier: Identifier, private val superType: TypeElement?,
 					 private val body: TypeBody):

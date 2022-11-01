@@ -1,14 +1,14 @@
 package linting
 
-import linting.semantic_model.operations.MemberAccess
-import linting.semantic_model.control_flow.Try
-import linting.semantic_model.definitions.Class
-import linting.semantic_model.definitions.TypeDefinition
-import linting.semantic_model.types.ObjectType
-import linting.semantic_model.types.OptionalType
-import linting.semantic_model.operations.Cast
-import linting.semantic_model.operations.NullCheck
-import linting.semantic_model.values.VariableValue
+import components.linting.semantic_model.operations.MemberAccess
+import components.linting.semantic_model.control_flow.Try
+import components.linting.semantic_model.definitions.Class
+import components.linting.semantic_model.definitions.TypeDefinition
+import components.linting.semantic_model.types.ObjectType
+import components.linting.semantic_model.types.OptionalType
+import components.linting.semantic_model.operations.Cast
+import components.linting.semantic_model.operations.NullCheck
+import components.linting.semantic_model.values.VariableValue
 import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -25,7 +25,7 @@ internal class Expressions {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val nullCheck = lintResult.find<NullCheck>()
-		assertTrue(Linter.LiteralType.BOOLEAN.matches(nullCheck?.type))
+		assertTrue(components.linting.Linter.LiteralType.BOOLEAN.matches(nullCheck?.type))
 	}
 
 	@Test
@@ -111,8 +111,8 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		val positiveCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.CAST_CONDITION }
 		val negativeCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.NEGATED_CAST_CONDITION }
-		assertTrue(Linter.LiteralType.BOOLEAN.matches(positiveCast?.type))
-		assertTrue(Linter.LiteralType.BOOLEAN.matches(negativeCast?.type))
+		assertTrue(components.linting.Linter.LiteralType.BOOLEAN.matches(positiveCast?.type))
+		assertTrue(components.linting.Linter.LiteralType.BOOLEAN.matches(negativeCast?.type))
 	}
 
 	@Test

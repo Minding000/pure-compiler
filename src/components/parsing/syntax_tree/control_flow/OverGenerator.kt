@@ -1,9 +1,9 @@
 package components.parsing.syntax_tree.control_flow
 
-import linting.Linter
-import linting.semantic_model.control_flow.OverGenerator as SemanticOverGeneratorModel
-import linting.semantic_model.values.VariableValueDeclaration
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.control_flow.OverGenerator as SemanticOverGeneratorModel
+import components.linting.semantic_model.values.VariableValueDeclaration
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.general.Element
 import components.parsing.syntax_tree.general.ValueElement
 import components.parsing.syntax_tree.literals.Identifier

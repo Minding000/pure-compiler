@@ -1,10 +1,10 @@
 package components.parsing.syntax_tree.general
 
-import linting.Linter
-import linting.semantic_model.general.HandleBlock as SemanticHandleBlockModel
-import linting.semantic_model.scopes.BlockScope
-import linting.semantic_model.scopes.MutableScope
-import linting.semantic_model.values.VariableValueDeclaration
+import components.linting.Linter
+import components.linting.semantic_model.general.HandleBlock as SemanticHandleBlockModel
+import components.linting.semantic_model.scopes.BlockScope
+import components.linting.semantic_model.scopes.MutableScope
+import components.linting.semantic_model.values.VariableValueDeclaration
 import components.parsing.syntax_tree.literals.Identifier
 import source_structure.Position
 

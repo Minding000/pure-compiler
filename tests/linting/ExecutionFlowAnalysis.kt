@@ -1,7 +1,7 @@
 package linting
 
-import linting.semantic_model.types.ObjectType
-import linting.semantic_model.values.VariableValue
+import components.linting.semantic_model.types.ObjectType
+import components.linting.semantic_model.values.VariableValue
 import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil

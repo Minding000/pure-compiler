@@ -1,8 +1,8 @@
 package components.parsing.syntax_tree.definitions
 
-import linting.Linter
-import linting.semantic_model.scopes.MutableScope
-import linting.semantic_model.types.Type
+import components.linting.Linter
+import components.linting.semantic_model.scopes.MutableScope
+import components.linting.semantic_model.types.Type
 import components.parsing.syntax_tree.general.MetaElement
 import components.parsing.syntax_tree.general.TypeElement
 import source_structure.Position

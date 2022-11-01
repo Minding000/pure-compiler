@@ -1,9 +1,9 @@
 package components.parsing.syntax_tree.definitions
 
 import errors.internal.CompilerError
-import linting.Linter
-import linting.semantic_model.definitions.ComputedProperty as SemanticComputedPropertyModel
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.definitions.ComputedProperty as SemanticComputedPropertyModel
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.definitions.sections.VariableSectionElement
 import components.parsing.syntax_tree.general.TypeElement
 import components.parsing.syntax_tree.general.ValueElement

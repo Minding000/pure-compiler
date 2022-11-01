@@ -1,10 +1,10 @@
 package components.parsing.syntax_tree.definitions
 
-import linting.Linter
-import linting.semantic_model.definitions.FunctionImplementation as SemanticFunctionImplementationModel
-import linting.semantic_model.scopes.MutableScope
-import linting.semantic_model.values.Function as SemanticFunctionModel
-import linting.semantic_model.scopes.BlockScope
+import components.linting.Linter
+import components.linting.semantic_model.definitions.FunctionImplementation as SemanticFunctionImplementationModel
+import components.linting.semantic_model.scopes.MutableScope
+import components.linting.semantic_model.values.Function as SemanticFunctionModel
+import components.linting.semantic_model.scopes.BlockScope
 import components.parsing.syntax_tree.general.StatementSection
 import components.parsing.syntax_tree.general.TypeElement
 import components.parsing.syntax_tree.general.ValueElement

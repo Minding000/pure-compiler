@@ -1,0 +1,13 @@
+package components.linting.semantic_model.values
+
+import components.linting.Linter
+import components.linting.semantic_model.scopes.Scope
+import components.parsing.syntax_tree.general.Element
+
+abstract class LiteralValue(source: Element): Value(source) {
+
+	override fun linkValues(linter: Linter, scope: Scope) {
+		super.linkValues(linter, scope)
+		staticValue = this
+	}
+}

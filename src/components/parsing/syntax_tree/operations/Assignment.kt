@@ -1,9 +1,9 @@
 package components.parsing.syntax_tree.operations
 
-import linting.Linter
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.general.Element
-import linting.semantic_model.operations.Assignment as SemanticAssignmentModel
+import components.linting.semantic_model.operations.Assignment as SemanticAssignmentModel
 import components.parsing.syntax_tree.general.ValueElement
 import util.concretizeValues
 import util.indent

@@ -1,8 +1,8 @@
 package linting
 
-import linting.semantic_model.control_flow.FunctionCall
-import linting.semantic_model.types.FunctionType
-import linting.semantic_model.values.VariableValue
+import components.linting.semantic_model.control_flow.FunctionCall
+import components.linting.semantic_model.types.FunctionType
+import components.linting.semantic_model.values.VariableValue
 import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil

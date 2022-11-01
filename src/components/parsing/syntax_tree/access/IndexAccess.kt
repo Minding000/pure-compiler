@@ -1,8 +1,8 @@
 package components.parsing.syntax_tree.access
 
-import linting.Linter
-import linting.semantic_model.operations.IndexAccess as SemanticIndexAccessModel
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.operations.IndexAccess as SemanticIndexAccessModel
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.general.TypeElement
 import components.parsing.syntax_tree.general.ValueElement
 import source_structure.Position

@@ -1,11 +1,11 @@
 package linting
 
-import linting.semantic_model.control_flow.FunctionCall
-import linting.semantic_model.operations.InstanceAccess
-import linting.semantic_model.types.ObjectType
-import linting.semantic_model.types.OptionalType
-import linting.semantic_model.types.StaticType
-import linting.semantic_model.values.VariableValueDeclaration
+import components.linting.semantic_model.control_flow.FunctionCall
+import components.linting.semantic_model.operations.InstanceAccess
+import components.linting.semantic_model.types.ObjectType
+import components.linting.semantic_model.types.OptionalType
+import components.linting.semantic_model.types.StaticType
+import components.linting.semantic_model.values.VariableValueDeclaration
 import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil

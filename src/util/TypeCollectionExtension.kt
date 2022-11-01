@@ -1,9 +1,9 @@
 package util
 
-import linting.semantic_model.types.AndUnionType
-import linting.semantic_model.types.ObjectType
-import linting.semantic_model.types.OrUnionType
-import linting.semantic_model.types.Type
+import components.linting.semantic_model.types.AndUnionType
+import components.linting.semantic_model.types.ObjectType
+import components.linting.semantic_model.types.OrUnionType
+import components.linting.semantic_model.types.Type
 import components.parsing.syntax_tree.general.Element
 import java.util.*
 

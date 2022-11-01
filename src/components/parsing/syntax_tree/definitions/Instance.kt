@@ -1,8 +1,8 @@
 package components.parsing.syntax_tree.definitions
 
-import linting.Linter
-import linting.semantic_model.scopes.MutableScope
-import linting.semantic_model.values.Instance as SemanticInstanceModel
+import components.linting.Linter
+import components.linting.semantic_model.scopes.MutableScope
+import components.linting.semantic_model.values.Instance as SemanticInstanceModel
 import components.parsing.syntax_tree.general.Element
 import components.parsing.syntax_tree.general.ValueElement
 import components.parsing.syntax_tree.literals.Identifier

@@ -1,8 +1,8 @@
 package components.parsing.syntax_tree.control_flow
 
-import linting.Linter
-import linting.semantic_model.control_flow.NextStatement as SemanticNextStatementModel
-import linting.semantic_model.scopes.MutableScope
+import components.linting.Linter
+import components.linting.semantic_model.control_flow.NextStatement as SemanticNextStatementModel
+import components.linting.semantic_model.scopes.MutableScope
 import components.parsing.syntax_tree.general.Element
 import components.tokenizer.Word
 

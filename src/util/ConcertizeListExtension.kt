@@ -1,10 +1,10 @@
 package util
 
-import linting.Linter
-import linting.semantic_model.general.Unit
-import linting.semantic_model.values.Value
-import linting.semantic_model.scopes.MutableScope
-import linting.semantic_model.types.Type
+import components.linting.Linter
+import components.linting.semantic_model.general.Unit
+import components.linting.semantic_model.values.Value
+import components.linting.semantic_model.scopes.MutableScope
+import components.linting.semantic_model.types.Type
 import components.parsing.syntax_tree.general.Element
 import components.parsing.syntax_tree.general.TypeElement
 import components.parsing.syntax_tree.general.ValueElement

@@ -1,0 +1,78 @@
+package components.linting.semantic_model.definitions
+
+import components.linting.Linter
+import components.linting.semantic_model.general.Unit
+import components.linting.semantic_model.scopes.MutableScope
+import components.linting.semantic_model.scopes.Scope
+import components.linting.semantic_model.scopes.TypeScope
+import components.linting.semantic_model.types.Type
+import components.parsing.syntax_tree.general.Element
+
+abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope,
+							  val superType: Type?): Unit(source) {
+	var baseDefinition: TypeDefinition? = null
+
+	init {
+		if(superType != null)
+			units.add(superType)
+	}
+
+	open fun register(linter: Linter, parentScope: MutableScope) {}
+
+	abstract fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): TypeDefinition
+
+	fun withTypeParameters(typeParameters: List<Type>): TypeDefinition {
+		baseDefinition?.let { baseDefinition ->
+			return baseDefinition.withTypeParameters(typeParameters)
+		}
+		val placeholders = scope.getGenericTypeDefinitions()
+		val typeSubstitutions = HashMap<TypeDefinition, Type>()
+		for(parameterIndex in placeholders.indices) {
+			val placeholder = placeholders[parameterIndex]
+			val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
+			typeSubstitutions[placeholder] = typeParameter
+		}
+		val specificTypeDefinition = withTypeSubstitutions(typeSubstitutions)
+		specificTypeDefinition.baseDefinition = this
+		units.add(specificTypeDefinition)
+		return specificTypeDefinition
+	}
+
+	override fun linkTypes(linter: Linter, scope: Scope) {
+		super.linkTypes(linter, this.scope)
+	}
+
+	override fun linkPropertyParameters(linter: Linter, scope: MutableScope) {
+		super.linkPropertyParameters(linter, this.scope)
+		this.scope.ensureUniqueInitializerSignatures(linter)
+	}
+
+	override fun resolveGenerics(linter: Linter) {
+		super.resolveGenerics(linter)
+		this.scope.inheritSignatures()
+	}
+
+	override fun linkValues(linter: Linter, scope: Scope) {
+		super.linkValues(linter, this.scope)
+	}
+
+	fun acceptsSubstituteType(substituteType: Type): Boolean {
+		return superType?.accepts(substituteType) ?: true
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if(other !is TypeDefinition)
+			return false
+		return source == other.source
+	}
+
+	override fun hashCode(): Int {
+		return source.hashCode()
+	}
+
+	override fun toString(): String {
+		if(superType == null)
+			return name
+		return "$name: $superType"
+	}
+}
