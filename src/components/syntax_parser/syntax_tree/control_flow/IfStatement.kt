@@ -8,15 +8,18 @@ import components.syntax_parser.syntax_tree.general.ValueElement
 import source_structure.Position
 import util.indent
 
-class IfStatement(private val condition: ValueElement, private val trueBranch: Element, private val falseBranch: Element?,
-				  start: Position, end: Position): Element(start, end) {
+class IfStatement(private val condition: ValueElement, private val positiveBranch: Element,
+				  private val negativeBranch: Element?, start: Position, end: Position): Element(start, end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticIfStatementModel {
 		return SemanticIfStatementModel(this, condition.concretize(linter, scope),
-			trueBranch.concretize(linter, scope), falseBranch?.concretize(linter, scope))
+			positiveBranch.concretize(linter, scope), negativeBranch?.concretize(linter, scope))
 	}
 
 	override fun toString(): String {
-		return "If [ $condition ] {${"\n$trueBranch".indent()}\n}${if(falseBranch == null) "" else " Else {${"\n$falseBranch".indent()}\n}"}"
+		var stringRepresentation = "If [ $condition ] {${"\n$positiveBranch".indent()}\n}"
+		if(negativeBranch != null)
+			stringRepresentation += " Else {${"\n$negativeBranch".indent()}\n}"
+		return stringRepresentation
 	}
 }

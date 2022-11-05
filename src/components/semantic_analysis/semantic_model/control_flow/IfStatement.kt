@@ -7,14 +7,14 @@ import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.control_flow.IfStatement as IfStatementSyntaxTree
 
-class IfStatement(override val source: IfStatementSyntaxTree, val condition: Value, val trueBranch: Unit,
-				  val falseBranch: Unit?): Unit(source) {
+class IfStatement(override val source: IfStatementSyntaxTree, val condition: Value, val positiveBranch: Unit,
+				  val negativeBranch: Unit?): Unit(source) {
 	override var isInterruptingExecution = false
 	private var isConditionAlwaysTrue = false
 	private var isConditionAlwaysFalse = false
 
 	init {
-		addUnits(condition, trueBranch, falseBranch)
+		addUnits(condition, positiveBranch, negativeBranch)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {
@@ -27,8 +27,8 @@ class IfStatement(override val source: IfStatementSyntaxTree, val condition: Val
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		isInterruptingExecution = (isConditionAlwaysTrue && trueBranch.isInterruptingExecution) ||
-			(isConditionAlwaysFalse && falseBranch?.isInterruptingExecution == true) ||
-			(trueBranch.isInterruptingExecution && falseBranch?.isInterruptingExecution == true)
+		isInterruptingExecution = (isConditionAlwaysTrue && positiveBranch.isInterruptingExecution) ||
+			(isConditionAlwaysFalse && negativeBranch?.isInterruptingExecution == true) ||
+			(positiveBranch.isInterruptingExecution && negativeBranch?.isInterruptingExecution == true)
 	}
 }

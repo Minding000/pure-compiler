@@ -170,26 +170,10 @@ internal class Expressions {
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
 		assertNotNull(variableValue)
 		assertNull(variableValue.definition)
-		//TODO on value resolution
-		// - check if value exists in BlockScope, then check if used after declaration
-		// - if used before declaration treat it as not found and move on to the parent scope
-		//TODO
-		// - do file references only add types or also values (e.g. objects, etc.)?
-		//TODO
-		// - go through cast variable usages and validate them
-
-
-		// Requirements
-		// - know if unit is after other unit
-		// - know if unit is part of other unit
-
-		// Solutions
-		// - indices (+fast -extra property -not dynamic)
-		// - iteration check (+easier to implement -slow -requires access to parent unit)
 	}
 
 	@Test
-	fun `cast variable is not available in else block`() {
+	fun `cast variable is not available in negative branch`() {
 		val sourceCode =
 			"""
 				class Car {}
@@ -200,9 +184,8 @@ internal class Expressions {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
-		assertNotNull(variableValue)
-		assertNull(variableValue.definition)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Cannot access cast variable in negative branch")
 	}
 
 	@Test
@@ -215,13 +198,12 @@ internal class Expressions {
 				car
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
-		assertNotNull(variableValue)
-		assertNull(variableValue.definition)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Cannot access cast variable after if statement")
 	}
 
 	@Test
-	fun `cast variable is available after if statement if else block interrupts execution`() {
+	fun `cast variable is available after if statement if negative branch interrupts execution`() {
 		val sourceCode =
 			"""
 				class Car {}
@@ -258,7 +240,7 @@ internal class Expressions {
 	}
 
 	@Test
-	fun `negated cast variable is not available in if block`() {
+	fun `negated cast variable is not available in positive branch`() {
 		val sourceCode =
 			"""
 				class Car {}
@@ -268,9 +250,8 @@ internal class Expressions {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
-		assertNotNull(variableValue)
-		assertNull(variableValue.definition)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Cannot access negated cast variable in positive branch")
 	}
 
 	@Test
@@ -283,13 +264,12 @@ internal class Expressions {
 				car
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
-		assertNotNull(variableValue)
-		assertNull(variableValue.definition)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Cannot access cast variable after if statement")
 	}
 
 	@Test
-	fun `negated cast variable is available after if statement if if block interrupts execution`() {
+	fun `negated cast variable is available after if statement if positive branch interrupts execution`() {
 		val sourceCode =
 			"""
 				class Car {}

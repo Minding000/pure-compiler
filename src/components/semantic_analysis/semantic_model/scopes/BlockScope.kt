@@ -52,7 +52,7 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 	override fun resolveValue(variable: VariableValue): VariableValueDeclaration? {
 		val definition = values[variable.name]
 		if(definition != null) {
-			if(definition.source.end < variable.source.start)
+			if(definition.isBefore(variable))
 				return definition
 		}
 		return parentScope.resolveValue(variable)

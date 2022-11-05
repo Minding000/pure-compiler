@@ -7,22 +7,20 @@ import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
 abstract class Unit(open val source: Element) {
+	var parent: Unit? = null
 	val units = LinkedList<Unit>()
 	open val isInterruptingExecution = false
 
 	fun addUnits(vararg newUnits: Unit?) {
 		for(newUnit in newUnits) {
-			if(newUnit != null)
+			if(newUnit != null) {
+				newUnit.parent = this
 				this.units.add(newUnit)
+			}
 		}
 	}
 
-	fun addUnits(vararg newUnits: Collection<Unit>) {
-		for(unitCollection in newUnits)
-			units.addAll(unitCollection)
-	}
-
-	fun addUnitsOptional(vararg newUnits: Collection<Unit?>) {
+	fun addUnits(vararg newUnits: Collection<Unit?>) {
 		for(unitCollection in newUnits) {
 			for(newUnit in unitCollection)
 				addUnits(newUnit)
@@ -31,6 +29,19 @@ abstract class Unit(open val source: Element) {
 
 	fun removeUnit(unit: Unit) {
 		units.remove(unit)
+		unit.parent = null
+	}
+
+	fun contains(other: Unit): Boolean {
+		return source.start < other.source.start && other.source.end < source.end
+	}
+
+	fun isBefore(other: Unit): Boolean {
+		return source.end < other.source.start
+	}
+
+	fun isAfter(other: Unit): Boolean {
+		return other.source.end < source.start
 	}
 
 	open fun linkTypes(linter: Linter, scope: Scope) {

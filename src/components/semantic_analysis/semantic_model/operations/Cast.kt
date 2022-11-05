@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.control_flow.IfStatement
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
@@ -70,6 +71,43 @@ class Cast(override val source: CastSyntaxTree, val value: Value, val variableDe
 				if(!operator.isConditional)
 					linter.addMessage(source, "Cannot safely cast '$valueType' to '$referenceType'.",
 						Message.Type.ERROR)
+			}
+		}
+		validateVariableDeclaration(linter)
+	}
+
+	private fun validateVariableDeclaration(linter: Linter) {
+		if(variableDeclaration == null)
+			return
+		if(!operator.returnsBoolean) {
+			linter.addMessage(source, "Only 'is' casts can declare a variable.", Message.Type.WARNING)
+			return
+		}
+		val ifStatement = parent as? IfStatement
+		if(ifStatement == null) {
+			linter.addMessage(source, "'is' casts can only declare a variable in an if statement condition.",
+				Message.Type.WARNING)
+			return
+		}
+		val isVariableAccessibleAfterIfStatement =
+			(operator == Operator.CAST_CONDITION && ifStatement.negativeBranch?.isInterruptingExecution == true)
+				|| (operator == Operator.NEGATED_CAST_CONDITION && ifStatement.positiveBranch.isInterruptingExecution)
+		for(usage in variableDeclaration.usages) {
+			if(ifStatement.positiveBranch.contains(usage)) {
+				if(operator == Operator.NEGATED_CAST_CONDITION) {
+					linter.addMessage(usage.source, "Cannot access negated cast variable in positive branch.",
+						Message.Type.ERROR)
+				}
+			} else if(ifStatement.negativeBranch?.contains(usage) == true) {
+				if(operator == Operator.CAST_CONDITION) {
+					linter.addMessage(usage.source, "Cannot access cast variable in negative branch.",
+						Message.Type.ERROR)
+				}
+			} else {
+				if(!isVariableAccessibleAfterIfStatement) {
+					linter.addMessage(usage.source, "Cannot access cast variable after if statement.",
+						Message.Type.ERROR)
+				}
 			}
 		}
 	}
