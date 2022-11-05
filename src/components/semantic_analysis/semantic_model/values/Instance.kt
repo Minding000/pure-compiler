@@ -15,20 +15,20 @@ open class Instance(override val source: InstanceSyntaxTree, value: VariableValu
 
 	init {
 		value.staticValue = value
-		units.addAll(valueParameters)
+		addUnits(valueParameters)
 	}
 
 	fun setType(typeDefinition: TypeDefinition) {
 		this.typeDefinition = typeDefinition
 		val type = ObjectType(typeDefinition)
-		units.add(type)
+		addUnits(type)
 		this.type = type
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
 		val staticType = StaticType(typeDefinition)
-		units.add(staticType)
+		addUnits(staticType)
 		try {
 			val initializer = staticType.scope.resolveInitializer(valueParameters)
 			if(initializer == null)

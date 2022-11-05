@@ -156,6 +156,157 @@ internal class Expressions {
 	}
 
 	@Test
+	fun `cast variable is not available before cast`() {
+		val sourceCode =
+			"""
+				class Car {}
+				{
+					val something: Car
+					car
+					if something is car: Car {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
+		assertNotNull(variableValue)
+		assertNull(variableValue.definition)
+		//TODO on value resolution
+		// - check if value exists in BlockScope, then check if used after declaration
+		// - if used before declaration treat it as not found and move on to the parent scope
+		//TODO
+		// - do file references only add types or also values (e.g. objects, etc.)?
+		//TODO
+		// - go through cast variable usages and validate them
+
+
+		// Requirements
+		// - know if unit is after other unit
+		// - know if unit is part of other unit
+
+		// Solutions
+		// - indices (+fast -extra property -not dynamic)
+		// - iteration check (+easier to implement -slow -requires access to parent unit)
+	}
+
+	@Test
+	fun `cast variable is not available in else block`() {
+		val sourceCode =
+			"""
+				class Car {}
+				val something: Car
+				if something is car: Car {
+				} else {
+					car
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
+		assertNotNull(variableValue)
+		assertNull(variableValue.definition)
+	}
+
+	@Test
+	fun `cast variable is not available after if statement`() {
+		val sourceCode =
+			"""
+				class Car {}
+				val something: Car
+				if something is car: Car {}
+				car
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
+		assertNotNull(variableValue)
+		assertNull(variableValue.definition)
+	}
+
+	@Test
+	fun `cast variable is available after if statement if else block interrupts execution`() {
+		val sourceCode =
+			"""
+				class Car {}
+				val something: Car
+				loop {
+					if something is car: Car {
+					} else {
+						break
+					}
+					car
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
+		assertNotNull(variableValue)
+		assertNotNull(variableValue.definition)
+	}
+
+	@Test
+	fun `negated cast variable is not available before cast`() {
+		val sourceCode =
+			"""
+				class Car {}
+				{
+					val something: Car
+					car
+					if something is! car: Car {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
+		assertNotNull(variableValue)
+		assertNull(variableValue.definition)
+	}
+
+	@Test
+	fun `negated cast variable is not available in if block`() {
+		val sourceCode =
+			"""
+				class Car {}
+				val something: Car
+				if something is! car: Car {
+					car
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
+		assertNotNull(variableValue)
+		assertNull(variableValue.definition)
+	}
+
+	@Test
+	fun `negated cast variable is not available after if statement`() {
+		val sourceCode =
+			"""
+				class Car {}
+				val something: Car
+				if something is! car: Car {}
+				car
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
+		assertNotNull(variableValue)
+		assertNull(variableValue.definition)
+	}
+
+	@Test
+	fun `negated cast variable is available after if statement if if block interrupts execution`() {
+		val sourceCode =
+			"""
+				class Car {}
+				val something: Car
+				loop {
+					if something is car: Car
+						break
+					car
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
+		assertNotNull(variableValue)
+		assertNotNull(variableValue.definition)
+	}
+
+	@Test
 	fun `returns optional new type after optional cast`() {
 		val sourceCode =
 			"""

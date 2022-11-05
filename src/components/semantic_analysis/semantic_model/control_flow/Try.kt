@@ -9,7 +9,7 @@ import components.syntax_parser.syntax_tree.control_flow.Try as TrySyntaxTree
 class Try(override val source: TrySyntaxTree, val expression: Value, val isOptional: Boolean): Value(source) {
 
 	init {
-		units.add(expression)
+		addUnits(expression)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

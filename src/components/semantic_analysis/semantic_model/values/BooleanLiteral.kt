@@ -9,7 +9,7 @@ class BooleanLiteral(override val source: Element, val value: Boolean): LiteralV
 
 	init {
 		val type = ObjectType(source, Linter.LiteralType.BOOLEAN.className)
-		units.add(type)
+		addUnits(type)
 		this.type = type
 	}
 

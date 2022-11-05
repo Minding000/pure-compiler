@@ -10,9 +10,6 @@ class ComputedProperty(override val source: ComputedPropertySyntaxTree, name: St
 	VariableValueDeclaration(source, name, type, null, setExpression == null) {
 
 	init {
-		if(getExpression != null)
-			units.add(getExpression)
-		if(setExpression != null)
-			units.add(setExpression)
+		addUnits(getExpression, setExpression)
 	}
 }

@@ -10,11 +10,12 @@ class VariableValue(override val source: Identifier): Value(source) {
 	var definition: VariableValueDeclaration? = null
 
 	override fun linkValues(linter: Linter, scope: Scope) {
-		val definition = scope.resolveValue(name)
+		val definition = scope.resolveValue(this)
 		if(definition == null) {
 			linter.addMessage(source, "Value '$name' hasn't been declared yet.", Message.Type.ERROR)
 			return
 		}
+		definition.usages.add(this)
 		this.definition = definition
 		type = definition.type
 		if(definition.isConstant)

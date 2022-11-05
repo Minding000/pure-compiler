@@ -12,8 +12,8 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val ba
 						val typeParameters: List<Type>): Value(source) {
 
 	init {
-		units.add(baseValue)
-		units.addAll(typeParameters)
+		addUnits(baseValue)
+		addUnits(typeParameters)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

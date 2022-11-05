@@ -281,7 +281,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 */
 	private fun parseYieldStatement(): YieldStatement {
 		val start = consume(WordAtom.YIELD).start
-		var key: Element? = null
+		var key: ValueElement? = null
 		var value = parseExpression()
 		if(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)

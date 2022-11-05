@@ -21,13 +21,8 @@ class FunctionImplementation(override val source: Element, val scope: BlockScope
 		}
 
 	init {
-		units.add(signature)
-		units.addAll(genericParameters)
-		units.addAll(parameters)
-		if(body != null)
-			units.add(body)
-		if(returnType != null)
-			units.add(returnType)
+		addUnits(signature, body, returnType)
+		addUnits(genericParameters, parameters)
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {

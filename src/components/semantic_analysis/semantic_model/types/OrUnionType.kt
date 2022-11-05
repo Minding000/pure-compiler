@@ -9,7 +9,7 @@ import java.util.*
 class OrUnionType(override val source: UnionTypeSyntaxTree, val types: List<Type>): Type(source) {
 
 	init {
-		units.addAll(types)
+		addUnits(types)
 		for(type in types)
 			type.scope.subscribe(this)
 	}

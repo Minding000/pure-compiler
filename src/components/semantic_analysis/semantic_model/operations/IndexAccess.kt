@@ -12,9 +12,8 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, val target: Value,
 	var sourceExpression: Value? = null
 
 	init {
-		units.add(target)
-		units.addAll(typeParameters)
-		units.addAll(indices)
+		addUnits(target)
+		addUnits(typeParameters, indices)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

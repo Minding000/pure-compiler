@@ -14,10 +14,7 @@ class IfStatement(override val source: IfStatementSyntaxTree, val condition: Val
 	private var isConditionAlwaysFalse = false
 
 	init {
-		units.add(condition)
-		units.add(trueBranch)
-		if(falseBranch != null)
-			units.add(falseBranch)
+		addUnits(condition, trueBranch, falseBranch)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

@@ -10,6 +10,29 @@ abstract class Unit(open val source: Element) {
 	val units = LinkedList<Unit>()
 	open val isInterruptingExecution = false
 
+	fun addUnits(vararg newUnits: Unit?) {
+		for(newUnit in newUnits) {
+			if(newUnit != null)
+				this.units.add(newUnit)
+		}
+	}
+
+	fun addUnits(vararg newUnits: Collection<Unit>) {
+		for(unitCollection in newUnits)
+			units.addAll(unitCollection)
+	}
+
+	fun addUnitsOptional(vararg newUnits: Collection<Unit?>) {
+		for(unitCollection in newUnits) {
+			for(newUnit in unitCollection)
+				addUnits(newUnit)
+		}
+	}
+
+	fun removeUnit(unit: Unit) {
+		units.remove(unit)
+	}
+
 	open fun linkTypes(linter: Linter, scope: Scope) {
 		for(unit in units)
 			unit.linkTypes(linter, scope)

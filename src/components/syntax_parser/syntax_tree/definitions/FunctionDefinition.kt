@@ -34,7 +34,7 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 		val functionScope = BlockScope(scope)
 		val genericParameters = parameterList.concretizeGenerics(linter, functionScope) ?: listOf()
 		val parameters = parameterList.concretizeParameters(linter, functionScope)
-		val returnType = returnType?.concretize(linter, scope)
+		val returnType = returnType?.concretize(linter, functionScope)
 		val implementation = SemanticFunctionImplementationModel(this, functionScope, genericParameters,
 			parameters, body?.concretize(linter, functionScope), returnType, isNative, isOverriding, isMutating)
 		scope.declareFunction(linter, identifier.getValue(), implementation)

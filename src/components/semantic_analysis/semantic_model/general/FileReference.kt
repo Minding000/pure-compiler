@@ -6,6 +6,6 @@ class FileReference(override val source: FileReferenceSyntaxTree, val identifier
 					val aliases: List<ReferenceAlias>): Unit(source) {
 
 	init {
-		units.addAll(aliases)
+		addUnits(aliases)
 	}
 }

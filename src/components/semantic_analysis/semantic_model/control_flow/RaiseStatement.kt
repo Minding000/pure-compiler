@@ -8,6 +8,6 @@ class RaiseStatement(override val source: RaiseStatementSyntaxTree, val value: V
 	override val isInterruptingExecution = true
 
 	init {
-		units.add(value)
+		addUnits(value)
 	}
 }

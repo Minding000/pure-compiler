@@ -11,7 +11,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, val value: Val
 	Value(source) {
 
 	init {
-		units.add(value)
+		addUnits(value)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

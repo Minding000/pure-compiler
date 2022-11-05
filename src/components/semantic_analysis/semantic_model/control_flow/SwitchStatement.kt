@@ -13,10 +13,8 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, val subjec
 	override var isInterruptingExecution = false //TODO adjust this value based on branches
 
 	init {
-		units.add(subject)
-		units.addAll(cases)
-		if(elseBranch != null)
-			units.add(elseBranch)
+		addUnits(subject, elseBranch)
+		addUnits(cases)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

@@ -10,7 +10,7 @@ class NumberLiteral(override val source: NumberLiteralSyntaxTree, val value: Str
 	init {
 		//TODO allow for floating point numbers
 		val numberType = ObjectType(source, Linter.LiteralType.NUMBER.className)
-		units.add(numberType)
+		addUnits(numberType)
 		type = numberType
 	}
 

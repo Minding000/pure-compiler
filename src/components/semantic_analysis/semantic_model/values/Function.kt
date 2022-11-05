@@ -28,21 +28,21 @@ class Function(source: Element, private val implementations: MutableList<Functio
 
 	init {
 		staticValue = this
-		units.add(functionType)
-		units.addAll(implementations)
+		addUnits(functionType)
+		addUnits(implementations)
 	}
 
 	constructor(source: Element, implementation: FunctionImplementation, name: String = "<anonymous function>"):
 			this(source, mutableListOf(implementation), FunctionType(source, implementation.signature), name)
 
 	fun addImplementation(implementation: FunctionImplementation) {
-		units.add(implementation)
+		addUnits(implementation)
 		implementations.add(implementation)
 		functionType.addSignature(implementation.signature)
 	}
 
 	fun removeImplementation(implementation: FunctionImplementation) {
-		units.remove(implementation)
+		removeUnit(implementation)
 		implementations.remove(implementation)
 		functionType.removeSignature(implementation.signature)
 	}

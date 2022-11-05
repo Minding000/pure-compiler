@@ -10,8 +10,7 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, val value:
 	override val isInterruptingExecution = true
 
 	init {
-		if(value != null)
-			units.add(value)
+		addUnits(value)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

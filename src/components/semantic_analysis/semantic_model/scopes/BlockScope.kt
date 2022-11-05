@@ -3,6 +3,7 @@ package components.semantic_analysis.semantic_model.scopes
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.types.Type
+import components.semantic_analysis.semantic_model.values.VariableValue
 import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
 import messages.Message
 
@@ -46,5 +47,14 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 
 	override fun resolveValue(name: String): VariableValueDeclaration? {
 		return values[name] ?: parentScope.resolveValue(name)
+	}
+
+	override fun resolveValue(variable: VariableValue): VariableValueDeclaration? {
+		val definition = values[variable.name]
+		if(definition != null) {
+			if(definition.source.end < variable.source.start)
+				return definition
+		}
+		return parentScope.resolveValue(variable)
 	}
 }

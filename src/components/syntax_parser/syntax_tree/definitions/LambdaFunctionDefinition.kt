@@ -17,9 +17,9 @@ class LambdaFunctionDefinition(start: Position, private val parameterList: Param
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticFunctionModel {
 		val functionScope = BlockScope(scope)
 		val parameters = parameterList?.concretizeParameters(linter, functionScope) ?: listOf()
-		val returnType = returnType?.concretize(linter, scope)
+		val returnType = returnType?.concretize(linter, functionScope)
 		val implementation = SemanticFunctionImplementationModel(this, functionScope, listOf(), parameters,
-			body.concretize(linter, scope), returnType)
+			body.concretize(linter, functionScope), returnType)
 		return SemanticFunctionModel(this, implementation)
 	}
 

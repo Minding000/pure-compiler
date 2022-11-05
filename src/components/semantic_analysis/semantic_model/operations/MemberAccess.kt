@@ -12,8 +12,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, val target: Valu
 				   private val isOptional: Boolean): Value(source) {
 
 	init {
-		units.add(target)
-		units.add(member)
+		addUnits(target, member)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

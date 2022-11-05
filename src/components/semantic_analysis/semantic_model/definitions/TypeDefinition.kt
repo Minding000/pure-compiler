@@ -13,8 +13,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 	var baseDefinition: TypeDefinition? = null
 
 	init {
-		if(superType != null)
-			units.add(superType)
+		addUnits(superType)
 	}
 
 	open fun register(linter: Linter, parentScope: MutableScope) {}
@@ -34,7 +33,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 		}
 		val specificTypeDefinition = withTypeSubstitutions(typeSubstitutions)
 		specificTypeDefinition.baseDefinition = this
-		units.add(specificTypeDefinition)
+		addUnits(specificTypeDefinition)
 		return specificTypeDefinition
 	}
 

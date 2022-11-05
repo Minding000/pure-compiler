@@ -12,16 +12,13 @@ import components.syntax_parser.syntax_tree.operations.NullCheck as NullCheckSyn
 class NullCheck(override val source: NullCheckSyntaxTree, val value: Value): Value(source) {
 
 	init {
-		units.add(value)
-		val booleanType = ObjectType(source, Linter.LiteralType.BOOLEAN.className)
-		units.add(booleanType)
-		type = booleanType
+		addUnits(value)
+		type = ObjectType(source, Linter.LiteralType.BOOLEAN.className)
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		for(unit in units)
-			if(unit != type)
-				unit.linkTypes(linter, scope)
+			unit.linkTypes(linter, scope)
 		linter.link(Linter.LiteralType.BOOLEAN, type)
 	}
 

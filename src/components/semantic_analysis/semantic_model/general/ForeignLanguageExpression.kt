@@ -8,6 +8,6 @@ class ForeignLanguageExpression(override val source: ForeignLanguageExpressionSy
 								val foreignParser: VariableValue, val content: String): Value(source) {
 
 	init {
-		units.add(foreignParser)
+		addUnits(foreignParser)
 	}
 }

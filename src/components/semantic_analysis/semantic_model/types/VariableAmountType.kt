@@ -7,7 +7,7 @@ import components.syntax_parser.syntax_tree.general.Element
 class VariableAmountType(override val source: Element, val baseType: Type): Type(source) {
 
 	init {
-		units.add(baseType)
+		addUnits(baseType)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): VariableAmountType {

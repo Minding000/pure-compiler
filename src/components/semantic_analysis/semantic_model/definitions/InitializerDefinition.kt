@@ -17,10 +17,8 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 							val body: Unit?, val isNative: Boolean): Unit(source) {
 
 	init {
-		units.addAll(genericParameters)
-		units.addAll(parameters)
-		if(body != null)
-			units.add(body)
+		addUnits(body)
+		addUnits(genericParameters, parameters)
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {

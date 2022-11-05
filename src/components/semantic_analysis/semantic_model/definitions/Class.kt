@@ -25,7 +25,7 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 		parentScope.declareType(linter, this)
 		val valueDeclaration = VariableValueDeclaration(source, name, StaticType(this))
 		parentScope.declareValue(linter, valueDeclaration)
-		units.add(valueDeclaration)
+		addUnits(valueDeclaration)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): Class {

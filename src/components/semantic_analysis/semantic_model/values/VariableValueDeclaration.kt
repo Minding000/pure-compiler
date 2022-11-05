@@ -8,17 +8,15 @@ import components.semantic_analysis.semantic_model.types.Type
 import messages.Message
 import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.literals.Identifier
+import java.util.*
 
 open class VariableValueDeclaration(override val source: Element, val name: String, var type: Type? = null,
 									val value: Value? = null, val isConstant: Boolean = true,
 									val isMutable: Boolean = false): Unit(source) {
+	val usages = LinkedList<VariableValue>()
 
 	init {
-		type?.let { type ->
-			units.add(type)
-		}
-		if(value != null)
-			units.add(value)
+		addUnits(type, value)
 	}
 
 	constructor(source: Identifier): this(source, source.getValue(), null, null, true, true)

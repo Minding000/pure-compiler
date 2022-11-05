@@ -29,6 +29,7 @@ abstract class Type(source: Element): Unit(source) {
 	open fun onNewOperator(operator: OperatorDefinition) {}
 
 	abstract fun accepts(unresolvedSourceType: Type): Boolean
+	
 	abstract fun isAssignableTo(unresolvedTargetType: Type): Boolean
 
 	open fun getKeyType(linter: Linter): Type? {

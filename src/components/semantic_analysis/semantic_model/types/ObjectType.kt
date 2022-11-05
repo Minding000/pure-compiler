@@ -24,7 +24,7 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 	}
 
 	init {
-		units.addAll(typeParameters)
+		addUnits(typeParameters)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type {

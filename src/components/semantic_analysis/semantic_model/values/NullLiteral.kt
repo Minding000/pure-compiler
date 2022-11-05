@@ -9,7 +9,7 @@ class NullLiteral(override val source: Element): LiteralValue(source) {
 
 	init {
 		val nullType = ObjectType(source, Linter.LiteralType.NULL.className)
-		units.add(nullType)
+		addUnits(nullType)
 		type = nullType
 	}
 

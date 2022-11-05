@@ -11,8 +11,8 @@ import components.syntax_parser.syntax_tree.literals.Identifier
 import source_structure.Position
 
 class GeneratorDefinition(start: Position, private val identifier: Identifier, private val parameterList: ParameterList,
-						  private var keyReturnType: TypeElement?, private var valueReturnType: TypeElement, private val body: StatementSection):
-	Element(start, body.end) {
+						  private var keyReturnType: TypeElement?, private var valueReturnType: TypeElement,
+						  private val body: StatementSection): Element(start, body.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticGeneratorDefinitionModel {
 		val generatorScope = BlockScope(scope)

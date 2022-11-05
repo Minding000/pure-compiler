@@ -20,12 +20,12 @@ class FunctionType(override val source: Element): Type(source) {
 	}
 
 	fun addSignature(signature: FunctionSignature) {
-		units.add(signature)
+		addUnits(signature)
 		signatures.add(signature)
 	}
 
 	fun removeSignature(signature: FunctionSignature) {
-		units.remove(signature)
+		removeUnit(signature)
 		signatures.remove(signature)
 	}
 

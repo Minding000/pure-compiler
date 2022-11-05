@@ -304,7 +304,7 @@ internal class ValueResolution {
 				Light.shine(Bright)
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "The provided values don't match any signature of function 'Light.shine'")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "The provided parameters (Bright) don't match any signature of function 'Light.shine'")
 	}
 
 	@Test

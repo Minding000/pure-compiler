@@ -19,13 +19,12 @@ open class OperatorDefinition(final override val source: OperatorDefinitionSynta
 	val returnType: Type
 
 	init {
-		units.addAll(valueParameters)
-		if(body != null)
-			units.add(body)
+		addUnits(body)
+		addUnits(valueParameters)
 		var type = returnType
 		if(type == null) {
 			type = ObjectType(source, Linter.LiteralType.NOTHING.className)
-			units.add(type)
+			addUnits(type)
 		}
 		this.returnType = type
 	}

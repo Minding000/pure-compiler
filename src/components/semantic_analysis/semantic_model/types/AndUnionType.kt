@@ -9,7 +9,7 @@ import java.util.*
 class AndUnionType(override val source: Element, val types: List<Type>): Type(source) {
 
 	init {
-		units.addAll(types)
+		addUnits(types)
 		for(type in types)
 			type.scope.subscribe(this)
 	}

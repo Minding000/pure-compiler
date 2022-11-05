@@ -12,8 +12,8 @@ class Assignment(override val source: AssignmentSyntaxTree, private val targets:
 				 private val sourceExpression: Value): Unit(source) {
 
 	init {
-		units.addAll(targets)
-		units.add(sourceExpression)
+		addUnits(sourceExpression)
+		addUnits(targets)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

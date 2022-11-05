@@ -1,10 +1,10 @@
 package components.syntax_parser.syntax_tree.general
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.general.HandleBlock as SemanticHandleBlockModel
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import java.util.*
+import components.semantic_analysis.semantic_model.general.HandleBlock as SemanticHandleBlockModel
 
 class StatementSection(private val mainBlock: StatementBlock, val handleBlocks: List<HandleBlock> = LinkedList(),
 					   private val alwaysBlock: StatementBlock? = null):
@@ -18,7 +18,13 @@ class StatementSection(private val mainBlock: StatementBlock, val handleBlocks: 
 			alwaysBlock?.concretize(linter, scope))
 	}
 
-	override fun toString(): String { //TODO clean this up
-		return "StatementSection { $mainBlock${if(handleBlocks.isEmpty()) "" else " ${handleBlocks.joinToString(" ")}"}${if(alwaysBlock == null) "" else " $alwaysBlock"} }"
+	override fun toString(): String {
+		var stringRepresentation = "StatementSection { $mainBlock"
+		if(handleBlocks.isNotEmpty())
+			stringRepresentation += " ${handleBlocks.joinToString(" ")}"
+		if(alwaysBlock != null)
+			stringRepresentation += " $alwaysBlock"
+		stringRepresentation += " }"
+		return stringRepresentation
 	}
 }

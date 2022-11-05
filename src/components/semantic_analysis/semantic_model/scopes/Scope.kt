@@ -6,6 +6,7 @@ import components.semantic_analysis.semantic_model.definitions.OperatorDefinitio
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.Value
+import components.semantic_analysis.semantic_model.values.VariableValue
 import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
 import java.util.*
 
@@ -37,6 +38,8 @@ abstract class Scope {
 	}
 
 	abstract fun resolveType(name: String): TypeDefinition?
+
+	open fun resolveValue(variable: VariableValue): VariableValueDeclaration? = resolveValue(variable.name)
 
 	abstract fun resolveValue(name: String): VariableValueDeclaration?
 

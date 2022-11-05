@@ -5,15 +5,12 @@ import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.semantic_analysis.semantic_model.values.BooleanLiteral
-import components.semantic_analysis.semantic_model.values.NullLiteral
-import components.semantic_analysis.semantic_model.values.Value
-import components.semantic_analysis.semantic_model.values.VariableValue
+import components.semantic_analysis.semantic_model.values.*
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.Cast as CastSyntaxTree
 
-class Cast(override val source: CastSyntaxTree, val value: Value, val variable: VariableValue?, val referenceType: Type,
-		   val operator: Operator): Value(source) {
+class Cast(override val source: CastSyntaxTree, val value: Value, val variableDeclaration: VariableValueDeclaration?,
+		   val referenceType: Type, val operator: Operator): Value(source) {
 	override var isInterruptingExecution = false
 	private val isCastAlwaysSuccessful: Boolean
 		get() = (value.staticValue?.type ?: value.type)?.isAssignableTo(referenceType) ?: false
@@ -21,18 +18,16 @@ class Cast(override val source: CastSyntaxTree, val value: Value, val variable: 
 		get() = value.staticValue is NullLiteral
 
 	init {
-		units.add(value)
-		if(variable != null)
-			units.add(variable)
+		addUnits(value, variableDeclaration)
 		type = if(operator.returnsBoolean) {
-			units.add(referenceType)
+			addUnits(referenceType)
 			ObjectType(source, Linter.LiteralType.BOOLEAN.className)
 		} else if(operator == Operator.OPTIONAL_CAST) {
 			val type = OptionalType(source, referenceType)
-			units.add(type)
+			addUnits(type)
 			type
 		} else {
-			units.add(referenceType)
+			addUnits(referenceType)
 			referenceType
 		}
 	}
@@ -41,6 +36,7 @@ class Cast(override val source: CastSyntaxTree, val value: Value, val variable: 
 		super.linkTypes(linter, scope)
 		if(operator.returnsBoolean)
 			linter.link(Linter.LiteralType.BOOLEAN, type)
+		variableDeclaration?.type = referenceType
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

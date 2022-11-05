@@ -6,9 +6,7 @@ class ErrorHandlingContext(override val source: StatementSection, val mainBlock:
 						   val handleBlocks: List<HandleBlock>, val alwaysBlock: StatementBlock?): Unit(source) {
 
 	init {
-		units.add(mainBlock)
-		units.addAll(handleBlocks)
-		if(alwaysBlock != null)
-			units.add(alwaysBlock)
+		addUnits(mainBlock, alwaysBlock)
+		addUnits(handleBlocks)
 	}
 }

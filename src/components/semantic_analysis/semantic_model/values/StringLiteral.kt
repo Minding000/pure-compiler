@@ -9,7 +9,7 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, val value: Str
 
 	init {
 		val stringType = ObjectType(source, Linter.LiteralType.STRING.className)
-		units.add(stringType)
+		addUnits(stringType)
 		type = stringType
 	}
 

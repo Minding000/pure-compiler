@@ -18,11 +18,9 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 
 	init {
 		if(!isPartOfImplementation) {
-			units.addAll(genericParameters)
-			for(type in parameterTypes)
-				if(type != null)
-					units.add(type)
-			units.add(this.returnType)
+			addUnits(this.returnType)
+			addUnits(genericParameters)
+			addUnitsOptional(parameterTypes)
 		}
 	}
 

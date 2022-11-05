@@ -120,7 +120,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		when(val existingDeclaration = valueDeclarations[name]?.value) {
 			null -> {
 				val newFunction = Function(newImplementation.source, newImplementation, name)
-				typeDefinition.units.add(newFunction)
+				typeDefinition.addUnits(newFunction)
 				val newValue = VariableValueDeclaration(newImplementation.source, name, newFunction.type, newFunction)
 				valueDeclarations[name] = newValue
 				onNewValue(newValue)

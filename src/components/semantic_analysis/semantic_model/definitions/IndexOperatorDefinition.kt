@@ -17,8 +17,7 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 	OperatorDefinition(source, "[]", scope, parameters, body, returnType, isNative, isOverriding) {
 
 	init {
-		units.addAll(genericParameters)
-		units.addAll(indexParameters)
+		addUnits(genericParameters, indexParameters)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): IndexOperatorDefinition {

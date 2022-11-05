@@ -11,8 +11,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, val left: Va
 					 val operatorName: String): Value(source) {
 
 	init {
-		units.add(left)
-		units.add(right)
+		addUnits(left, right)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

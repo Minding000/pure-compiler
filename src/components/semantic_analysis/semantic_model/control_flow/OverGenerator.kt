@@ -12,11 +12,7 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, val collection
 	Unit(source) {
 
 	init {
-		units.add(collection)
-		if(keyDeclaration != null)
-			units.add(keyDeclaration)
-		if(valueDeclaration != null)
-			units.add(valueDeclaration)
+		addUnits(collection, keyDeclaration, valueDeclaration)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

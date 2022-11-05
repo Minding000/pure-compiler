@@ -13,11 +13,8 @@ class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, va
 						  val body: ErrorHandlingContext): VariableValueDeclaration(source, name) {
 
 	init {
-		units.addAll(parameters)
-		if(keyReturnType != null)
-			units.add(keyReturnType)
-		units.add(valueReturnType)
-		units.add(body)
+		addUnits(keyReturnType, valueReturnType, body)
+		addUnits(parameters)
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {

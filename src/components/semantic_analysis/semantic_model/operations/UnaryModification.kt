@@ -12,7 +12,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, val ta
 	Unit(source) {
 
 	init {
-		units.add(target)
+		addUnits(target)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

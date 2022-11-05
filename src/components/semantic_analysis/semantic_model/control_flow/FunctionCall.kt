@@ -20,9 +20,8 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 
 	init {
 		staticValue = this
-		units.add(function)
-		units.addAll(typeParameters)
-		units.addAll(valueParameters)
+		addUnits(function)
+		addUnits(typeParameters, valueParameters)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {
@@ -50,7 +49,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value },
 				targetType.definition)
 			type.resolveGenerics(linter)
-			units.add(type)
+			addUnits(type)
 			this.type = type
 		} catch(error: SignatureResolutionAmbiguityError) {
 			linter.addMessage(source, "Call to initializer '${getSignature()}' is ambiguous. " +
