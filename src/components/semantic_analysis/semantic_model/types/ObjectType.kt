@@ -37,7 +37,9 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		for(typeParameter in typeParameters)
 			specificTypeParameters.add(typeParameter.withTypeSubstitutions(typeSubstitutions))
 		val specificType = ObjectType(source, name, specificTypeParameters)
-		specificType.definition = definition?.withTypeParameters(specificTypeParameters)
+		definition?.withTypeParameters(specificTypeParameters) { specificDefinition ->
+			specificType.definition = specificDefinition
+		}
 		return specificType
 	}
 
@@ -76,8 +78,11 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 
 	override fun resolveGenerics(linter: Linter) {
 		super.resolveGenerics(linter)
-		if(typeParameters.isNotEmpty())
-			definition = definition?.withTypeParameters(typeParameters)
+		if(typeParameters.isNotEmpty()) {
+			definition?.withTypeParameters(typeParameters) { specificDefinition ->
+				definition = specificDefinition
+			}
+		}
 		definition?.scope?.subscribe(this)
 	}
 

@@ -23,8 +23,11 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {
 		val specificGenericParameters = LinkedList<TypeDefinition>()
-		for(genericParameter in genericParameters)
-			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
+		for(genericParameter in genericParameters) {
+			genericParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
+				specificGenericParameters.add(specificDefinition)
+			}
+		}
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))

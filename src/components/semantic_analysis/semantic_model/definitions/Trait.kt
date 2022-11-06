@@ -8,7 +8,6 @@ import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDe
 
 class Trait(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?):
 	TypeDefinition(source, name, scope, superType) {
-	private val specificDefinitions = HashMap<Map<TypeDefinition, Type>, Trait>()
 
 	init {
 		scope.typeDefinition = this
@@ -18,13 +17,8 @@ class Trait(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 		parentScope.declareType(linter, this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): Trait {
-		var definition = specificDefinitions[typeSubstitution]
-		if(definition == null) {
-			val superType = superType?.withTypeSubstitutions(typeSubstitution)
-			definition = Trait(source, name, scope.withTypeSubstitutions(typeSubstitution, superType?.scope), superType)
-			specificDefinitions[typeSubstitution] = definition
-		}
-		return definition
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Trait {
+		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
+		return Trait(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.scope), superType)
 	}
 }

@@ -24,6 +24,8 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val ba
 				Message.Type.WARNING) //TODO write test for this
 			return
 		}
-		type = baseType.withTypeParameters(typeParameters)
+		baseType.withTypeParameters(typeParameters) { specificType ->
+			type = specificType
+		}
 	}
 }

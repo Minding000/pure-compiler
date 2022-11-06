@@ -21,7 +21,9 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		for((name, typeDefinition) in typeDefinitions) {
 			if(typeDefinition is GenericTypeDefinition)
 				continue
-			specificTypeScope.typeDefinitions[name] = typeDefinition.withTypeSubstitutions(typeSubstitution)
+			typeDefinition.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
+				specificTypeScope.typeDefinitions[name] = specificDefinition
+			}
 		}
 		for((name, valueDeclaration) in valueDeclarations)
 			specificTypeScope.valueDeclarations[name] = valueDeclaration.withTypeSubstitutions(typeSubstitution)

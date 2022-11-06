@@ -11,7 +11,6 @@ import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDe
 
 class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?,
 			val isNative: Boolean, val isMutable: Boolean): TypeDefinition(source, name, scope, superType) {
-	private var specificDefinitions = HashMap<Map<TypeDefinition, Type>, Class>()
 
 	companion object {
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE, WordAtom.IMMUTABLE)
@@ -28,14 +27,9 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 		addUnits(valueDeclaration)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): Class {
-		var definition = specificDefinitions[typeSubstitution]
-		if(definition == null) {
-			val superType = superType?.withTypeSubstitutions(typeSubstitution)
-			definition = Class(source, name, scope.withTypeSubstitutions(typeSubstitution, superType?.scope), superType,
-				isNative, isMutable)
-			specificDefinitions[typeSubstitution] = definition
-		}
-		return definition
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Class {
+		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
+		return Class(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.scope), superType,
+			isNative, isMutable)
 	}
 }

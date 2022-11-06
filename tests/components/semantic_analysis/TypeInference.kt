@@ -160,6 +160,7 @@ class TypeInference {
 				class List {
 					containing Item
 					var backup: <Item>List? = null
+					init
 				}
 				val receipts = <Receipt>List()
             """.trimIndent()

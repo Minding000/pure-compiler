@@ -25,8 +25,11 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {
 		val specificGenericParameters = LinkedList<TypeDefinition>()
-		for(genericParameter in genericParameters)
-			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
+		for(genericParameter in genericParameters) {
+			genericParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
+				specificGenericParameters.add(specificDefinition)
+			}
+		}
 		val specificParametersTypes = LinkedList<Type?>()
 		for(parameterType in parameterTypes)
 			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitution))

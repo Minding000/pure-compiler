@@ -22,8 +22,11 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 
 	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): IndexOperatorDefinition {
 		val specificGenericParameters = LinkedList<TypeDefinition>()
-		for(genericParameter in genericParameters)
-			specificGenericParameters.add(genericParameter.withTypeSubstitutions(typeSubstitution))
+		for(genericParameter in genericParameters) {
+			genericParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
+				specificGenericParameters.add(specificDefinition)
+			}
+		}
 		val specificIndices = LinkedList<Parameter>()
 		for(index in indexParameters)
 			specificIndices.add(index.withTypeSubstitutions(typeSubstitution))

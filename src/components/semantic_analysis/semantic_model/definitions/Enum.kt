@@ -10,7 +10,6 @@ import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDe
 
 class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?):
 	TypeDefinition(source, name, scope, superType) {
-	private val specificDefinitions = HashMap<Map<TypeDefinition, Type>, Enum>()
 
 	init {
 		scope.typeDefinition = this
@@ -23,13 +22,8 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 		addUnits(valueDeclaration)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): Enum {
-		var definition = specificDefinitions[typeSubstitution]
-		if(definition == null) {
-			val superType = superType?.withTypeSubstitutions(typeSubstitution)
-			definition = Enum(source, name, scope.withTypeSubstitutions(typeSubstitution, superType?.scope), superType)
-			specificDefinitions[typeSubstitution] = definition
-		}
-		return definition
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Enum {
+		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
+		return Enum(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.scope), superType)
 	}
 }

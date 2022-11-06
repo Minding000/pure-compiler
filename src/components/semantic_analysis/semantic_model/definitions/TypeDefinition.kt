@@ -7,10 +7,16 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
+import util.linkedListOf
+import java.util.*
+import kotlin.collections.HashMap
 
 abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope,
 							  val superType: Type?): Unit(source) {
 	var baseDefinition: TypeDefinition? = null
+	private val specificDefinitions = HashMap<Map<TypeDefinition, Type>, TypeDefinition>()
+	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>,
+		LinkedList<(TypeDefinition) -> kotlin.Unit>>()
 
 	init {
 		addUnits(superType)
@@ -18,11 +24,31 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 
 	open fun register(linter: Linter, parentScope: MutableScope) {}
 
-	abstract fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): TypeDefinition
+	protected abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeDefinition
 
-	fun withTypeParameters(typeParameters: List<Type>): TypeDefinition {
+	fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>, onCompletion: (TypeDefinition) -> kotlin.Unit) {
+		var definition = specificDefinitions[typeSubstitutions]
+		if(definition != null) {
+			onCompletion(definition)
+			return
+		}
+		var pendingTypeSubstitution = pendingTypeSubstitutions[typeSubstitutions]
+		if(pendingTypeSubstitution != null) {
+			pendingTypeSubstitution.add(onCompletion)
+			return
+		}
+		pendingTypeSubstitution = linkedListOf(onCompletion)
+		pendingTypeSubstitutions[typeSubstitutions] = pendingTypeSubstitution
+		definition = withTypeSubstitutions(typeSubstitutions)
+		specificDefinitions[typeSubstitutions] = definition
+		for(onTypeSubstitution in pendingTypeSubstitution)
+			onTypeSubstitution(definition)
+		pendingTypeSubstitutions.remove(typeSubstitutions)
+	}
+
+	fun withTypeParameters(typeParameters: List<Type>, onCompletion: (TypeDefinition) -> kotlin.Unit) {
 		baseDefinition?.let { baseDefinition ->
-			return baseDefinition.withTypeParameters(typeParameters)
+			return baseDefinition.withTypeParameters(typeParameters, onCompletion)
 		}
 		val placeholders = scope.getGenericTypeDefinitions()
 		val typeSubstitutions = HashMap<TypeDefinition, Type>()
@@ -31,10 +57,10 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 			val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
 			typeSubstitutions[placeholder] = typeParameter
 		}
-		val specificTypeDefinition = withTypeSubstitutions(typeSubstitutions)
-		specificTypeDefinition.baseDefinition = this
-		addUnits(specificTypeDefinition)
-		return specificTypeDefinition
+		withTypeSubstitutions(typeSubstitutions) { specificTypeDefinition ->
+			specificTypeDefinition.baseDefinition = this
+			onCompletion(specificTypeDefinition)
+		}
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
