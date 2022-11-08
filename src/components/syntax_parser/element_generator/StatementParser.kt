@@ -15,6 +15,8 @@ import components.syntax_parser.syntax_tree.general.*
 import components.syntax_parser.syntax_tree.literals.*
 import source_structure.Position
 import components.syntax_parser.syntax_tree.general.StatementBlock
+import errors.user.UserError
+import messages.Message
 import java.util.*
 
 class StatementParser(private val elementGenerator: ElementGenerator): Generator() {
@@ -53,6 +55,26 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		return literalParser.parseIdentifier()
 	}
 
+	fun parseStatements(endWord: WordAtom? = null): List<Element> {
+		val statements = LinkedList<Element>()
+		while(currentWord?.type != endWord) {
+			consumeLineBreaks()
+			if(currentWord?.type == endWord)
+				break
+			try {
+				statements.add(parseStatement())
+			} catch(error: UserError) {
+				elementGenerator.addMessage(error.message, Message.Type.ERROR)
+				currentWord?.let { invalidWord ->
+					elementGenerator.wordGenerator.skipLine(invalidWord)
+					currentWord = elementGenerator.wordGenerator.getNextWord()
+					nextWord = elementGenerator.wordGenerator.getNextWord()
+				}
+			}
+		}
+		return statements
+	}
+
 	/**
 	 * Statement:
 	 *   <StatementSection>
@@ -75,7 +97,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   <Expression> = <Expression>[ = <Expression>]...
 	 *   <Expression> <binary-modification> <Expression>
 	 */
-	fun parseStatement(): Element {
+	private fun parseStatement(): Element {
 		if(currentWord?.type == WordAtom.BRACES_OPEN)
 			return parseStatementSection()
 		if(currentWord?.type == WordAtom.REFERENCING)
@@ -206,15 +228,16 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		val start = consume(WordAtom.IF).start
 		val condition = parseExpression()
 		consumeLineBreaks()
-		val trueBranch = parseStatement()
+		val positiveBranch = parseStatement()
 		consumeLineBreaks()
-		var falseBranch: Element? = null
+		var negativeBranch: Element? = null
 		if(currentWord?.type == WordAtom.ELSE) {
 			consume(WordAtom.ELSE)
 			consumeLineBreaks()
-			falseBranch = parseStatement()
+			negativeBranch = parseStatement()
 		}
-		return IfStatement(condition, trueBranch, falseBranch, start, falseBranch?.end ?: trueBranch.end)
+		return IfStatement(condition, positiveBranch, negativeBranch, start,
+			negativeBranch?.end ?: positiveBranch.end)
 	}
 
 	/**
@@ -378,13 +401,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		var start = consume(WordAtom.BRACES_OPEN).start
 		if(previousStart != null)
 			start = previousStart
-		val statements = LinkedList<Element>()
-		while(currentWord?.type != WordAtom.BRACES_CLOSE) {
-			consumeLineBreaks()
-			if(currentWord?.type == WordAtom.BRACES_CLOSE)
-				break
-			statements.add(parseStatement())
-		}
+		val statements = parseStatements(WordAtom.BRACES_CLOSE)
 		val end = consume(WordAtom.BRACES_CLOSE).end
 		return StatementBlock(start, end, statements)
 	}

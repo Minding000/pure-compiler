@@ -21,7 +21,7 @@ internal class General {
 	}
 
 	@Test
-	fun `recovers after syntax error`() {
+	fun `recovers after syntax error in file`() {
 		val sourceCode = """
 			++
 			player.name
@@ -31,6 +31,25 @@ internal class General {
 				MemberAccess {
 					Identifier { player }.Identifier { name }
 				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `recovers after syntax error in statement block`() {
+		val sourceCode = """
+			{
+				++
+				player.name
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				StatementSection { StatementBlock {
+					MemberAccess {
+						Identifier { player }.Identifier { name }
+					}
+				} }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}

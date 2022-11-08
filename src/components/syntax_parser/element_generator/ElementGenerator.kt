@@ -1,12 +1,12 @@
 package components.syntax_parser.element_generator
 
-import components.syntax_parser.syntax_tree.general.*
+import components.syntax_parser.syntax_tree.general.File
+import components.syntax_parser.syntax_tree.general.Program
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
 import components.tokenizer.WordDescriptor
 import components.tokenizer.WordGenerator
 import errors.user.UnexpectedWordError
-import errors.user.UserError
 import messages.Message
 import messages.MessageLogger
 import source_structure.Project
@@ -65,22 +65,7 @@ class ElementGenerator(project: Project): Generator() {
 	 */
 	private fun parseFile(): File {
 		val file = wordGenerator.getFile()
-		val statements = LinkedList<Element>()
-		while(currentWord != null) {
-			consumeLineBreaks()
-			if(currentWord == null)
-				break
-			try {
-				statements.add(statementParser.parseStatement())
-			} catch(error: UserError) {
-				addMessage(error.message, Message.Type.ERROR)
-				currentWord?.let { invalidWord ->
-					wordGenerator.skipLine(invalidWord)
-					currentWord = wordGenerator.getNextWord()
-					nextWord = wordGenerator.getNextWord()
-				}
-			}
-		}
+		val statements = statementParser.parseStatements()
 		return File(file.getStart(), file.getEnd(), file, statements)
 	}
 }
