@@ -14,7 +14,7 @@ abstract class Value(override val source: Element, var type: Type? = null): Unit
 		return type?.let { type -> targetType?.accepts(type) } ?: false
 	}
 
-	fun setInferredType(inferredType: Type?) {
+	open fun setInferredType(inferredType: Type?) {
 		if(type == null) {
 			type = if(inferredType is OptionalType)
 				inferredType.baseType

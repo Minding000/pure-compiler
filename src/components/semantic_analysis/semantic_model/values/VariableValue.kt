@@ -2,12 +2,14 @@ package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import components.syntax_parser.syntax_tree.literals.Identifier
 
-class VariableValue(override val source: Identifier): Value(source) {
-	val name = source.getValue()
+open class VariableValue(override val source: Element, val name: String): Value(source) {
 	var definition: VariableValueDeclaration? = null
+
+	constructor(source: Identifier): this(source, source.getValue())
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		val definition = scope.resolveValue(this)

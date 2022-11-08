@@ -11,7 +11,7 @@ class StaticType(val definition: TypeDefinition): Type(definition.source) {
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): StaticType {
-		// StaticTypes don't have the recursion issues ObjectTypes have,
+		// Assumption: StaticTypes don't have the recursion issues ObjectTypes have,
 		//  since there can't be a StaticType inside a class definition
 		lateinit var specificType: StaticType
 		definition.withTypeSubstitutions(typeSubstitutions) { specificDefinition ->
