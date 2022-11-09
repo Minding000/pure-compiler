@@ -29,8 +29,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, val left: Va
 			} catch(error: SignatureResolutionAmbiguityError) {
 				linter.addMessage(source,
 					"Call to operator '$leftType $operatorName ${right.type}' is ambiguous. " +
-					"Matching signatures:" + error.signatures.joinToString("\n - ", "\n - "),
-					Message.Type.ERROR) //TODO write test for this
+					"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR) //TODO write test for this
 			}
 		}
 		staticValue = calculateStaticResult()

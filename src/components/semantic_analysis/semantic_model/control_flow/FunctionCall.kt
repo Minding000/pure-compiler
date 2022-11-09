@@ -53,8 +53,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 			this.type = type
 		} catch(error: SignatureResolutionAmbiguityError) {
 			linter.addMessage(source, "Call to initializer '${getSignature()}' is ambiguous. " +
-				"Matching signatures:" + error.signatures.joinToString("\n - ", "\n - "),
-				Message.Type.ERROR) //TODO write test for this
+				"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR) //TODO write test for this
 		}
 	}
 
@@ -78,8 +77,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 			type = signature.returnType
 		} catch(error: SignatureResolutionAmbiguityError) {
 			linter.addMessage(source, "Call to function '${getSignature()}' is ambiguous. " +
-				"Matching signatures:" + error.signatures.joinToString("\n - ", "\n - "),
-				Message.Type.ERROR)
+				"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR)
 		}
 	}
 

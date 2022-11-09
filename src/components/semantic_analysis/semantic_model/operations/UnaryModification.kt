@@ -26,8 +26,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, val ta
 				}
 			} catch(error: SignatureResolutionAmbiguityError) {
 				linter.addMessage(source, "Call to operator '$valueType$operatorName' is ambiguous. " +
-					"Matching signatures:" + error.signatures.joinToString("\n - ", "\n - "),
-					Message.Type.ERROR) //TODO write test for this
+					"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR) //TODO write test for this
 			}
 		}
 	}
