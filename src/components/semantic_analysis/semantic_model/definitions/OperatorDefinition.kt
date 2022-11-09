@@ -2,34 +2,31 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
-import components.semantic_analysis.semantic_model.types.ObjectType
-import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.types.ObjectType
+import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import util.stringifyTypes
-import java.util.LinkedList
+import java.util.*
 import components.syntax_parser.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
-open class OperatorDefinition(final override val source: OperatorDefinitionSyntaxTree, name: String,
+open class OperatorDefinition(final override val source: OperatorDefinitionSyntaxTree, val name: String,
 							  val scope: BlockScope, val valueParameters: List<Parameter>, val body: Unit?,
-							  returnType: Type?, val isNative: Boolean, val isOverriding: Boolean):
-	VariableValueDeclaration(source, name, returnType) {
+							  returnType: Type?, val isNative: Boolean, val isOverriding: Boolean): Unit(source) {
 	val returnType: Type
 
 	init {
 		addUnits(body)
 		addUnits(valueParameters)
 		var type = returnType
-		if(type == null) {
+		if(type == null)
 			type = ObjectType(source, Linter.LiteralType.NOTHING.className)
-			addUnits(type)
-		}
+		addUnits(type)
 		this.returnType = type
 	}
 
-	override fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): OperatorDefinition {
+	open fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): OperatorDefinition {
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in valueParameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
