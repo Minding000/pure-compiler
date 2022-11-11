@@ -33,7 +33,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, val target: Valu
 			}
 			member.linkValues(linter, targetType.scope)
 			member.type?.let { memberType ->
-				type = if(isOptional)
+				type = if(isOptional && memberType !is OptionalType)
 					OptionalType(source, memberType)
 				else
 					memberType

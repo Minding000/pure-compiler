@@ -6,6 +6,18 @@ import org.junit.jupiter.api.Test
 internal class Accessors {
 
 	@Test
+	fun `parses self reference`() {
+		val sourceCode = """
+			this
+			""".trimIndent()
+		val expected =
+			"""
+				This
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
 	fun `parses member accesses`() {
 		val sourceCode = """
 			player.inventory

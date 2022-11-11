@@ -37,6 +37,8 @@ abstract class Scope {
 			subscriber.onNewOperator(operator)
 	}
 
+	open fun getSurroundingDefinition(): TypeDefinition? = null
+
 	abstract fun resolveType(name: String): TypeDefinition?
 
 	open fun resolveValue(variable: VariableValue): VariableValueDeclaration? = resolveValue(variable.name)

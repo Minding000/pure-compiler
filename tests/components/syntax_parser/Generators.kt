@@ -25,7 +25,7 @@ internal class Generators {
 						Return { Yield { Identifier { index } NumberLiteral { 1 } } }
 					}
 					Return { Yield { Identifier { index } BinaryOperator {
-						Identifier { index } + FunctionCall [ Identifier { this } ] {
+						Identifier { index } + FunctionCall [ This ] {
 							BinaryOperator {
 								Identifier { index } - NumberLiteral { 1 }
 							}

@@ -12,6 +12,7 @@ import components.syntax_parser.syntax_tree.general.TypeElement
 import components.syntax_parser.syntax_tree.general.ValueElement
 import components.syntax_parser.syntax_tree.literals.ForeignLanguageLiteral
 import components.syntax_parser.syntax_tree.literals.Identifier
+import components.syntax_parser.syntax_tree.literals.SelfReference
 import components.syntax_parser.syntax_tree.operations.BinaryOperator
 import components.syntax_parser.syntax_tree.operations.Cast
 import components.syntax_parser.syntax_tree.operations.NullCheck
@@ -334,6 +335,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <BooleanLiteral>
 	 *   <NumberLiteral>
 	 *   <StringLiteral>
+	 *   <SelfReference>
 	 *   <Identifier>
 	 *   <TypeSpecification>
 	 *   <ForeignLanguageExpression>
@@ -345,6 +347,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 			WordAtom.BOOLEAN_LITERAL -> literalParser.parseBooleanLiteral()
 			WordAtom.NUMBER_LITERAL -> literalParser.parseNumberLiteral()
 			WordAtom.STRING_LITERAL -> literalParser.parseStringLiteral()
+			WordAtom.SELF_REFERENCE -> parseSelfReference()
 			WordAtom.IDENTIFIER -> {
 				when(nextWord?.type) {
 					WordAtom.FOREIGN_EXPRESSION -> parseForeignLanguageExpression()
@@ -363,6 +366,14 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 				}
 			}
 		}
+	}
+
+	/**
+	 * SelfReference:
+	 *   <self-reference>
+	 */
+	private fun parseSelfReference(): SelfReference {
+		return SelfReference(consume(WordAtom.SELF_REFERENCE))
 	}
 
 	/**

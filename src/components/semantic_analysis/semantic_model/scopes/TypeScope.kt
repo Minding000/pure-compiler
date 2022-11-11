@@ -47,6 +47,10 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			type.onNewOperator(operator)
 	}
 
+	override fun getSurroundingDefinition(): TypeDefinition {
+		return typeDefinition
+	}
+
 	fun inheritSignatures() {
 		for((_, valueDeclaration) in valueDeclarations) {
 			if(valueDeclaration.value !is Function)

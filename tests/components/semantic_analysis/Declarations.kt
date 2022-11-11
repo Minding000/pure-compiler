@@ -131,7 +131,7 @@ internal class Declarations {
 	}
 
 	@Test
-	fun `handle block declares error variable`() {
+	fun `handle block declares error variable`() { //TODO change syntax to 'error: IOError' for consistency
 		val sourceCode =
 			"""
 				native class IOError {}

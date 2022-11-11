@@ -30,6 +30,10 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 		linter.addMessage(type.source, "Declaration of type '${type.name}'.", Message.Type.DEBUG)
 	}
 
+	override fun getSurroundingDefinition(): TypeDefinition? {
+		return parentScope.getSurroundingDefinition()
+	}
+
 	override fun resolveType(name: String): TypeDefinition? {
 		return types[name] ?: parentScope.resolveType(name)
 	}

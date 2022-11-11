@@ -46,6 +46,25 @@ internal class Expressions {
 	}
 
 	@Test
+	fun `doesn't wrap optionally accessed optional members in an additional optional type`() {
+		val sourceCode =
+			"""
+				class Seat {}
+				class Car {
+					init
+					var driverSeat: Seat? = null
+				}
+				val carInDriveway: Car? = Car()
+				val seat = carInDriveway?.driverSeat
+				seat
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "seat" }?.type
+		assertIs<OptionalType>(variableType)
+		assertIs<ObjectType>(variableType.baseType)
+	}
+
+	@Test
 	fun `detects member access on optional type`() {
 		val sourceCode =
 			"""
