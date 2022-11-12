@@ -7,6 +7,7 @@ import util.TestUtil
 import messages.Message
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
 internal class TypeResolution {
@@ -15,32 +16,36 @@ internal class TypeResolution {
 	fun `loads string literal type`() {
 		val sourceCode = """ "" """
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val stringLiteral = lintResult.find<StringLiteral>()
-		assertNotNull((stringLiteral?.type as? ObjectType)?.definition)
+		val stringLiteralType = lintResult.find<StringLiteral>()?.type
+		assertIs<ObjectType>(stringLiteralType)
+		assertNotNull(stringLiteralType.definition)
 	}
 
 	@Test
 	fun `loads number literal type`() {
 		val sourceCode = "0"
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val numberLiteral = lintResult.find<NumberLiteral>()
-		assertNotNull((numberLiteral?.type as? ObjectType)?.definition)
+		val numberLiteralType = lintResult.find<NumberLiteral>()?.type
+		assertIs<ObjectType>(numberLiteralType)
+		assertNotNull(numberLiteralType.definition)
 	}
 
 	@Test
 	fun `loads boolean literal type`() {
 		val sourceCode = "yes"
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val booleanLiteral = lintResult.find<BooleanLiteral>()
-		assertNotNull((booleanLiteral?.type as? ObjectType)?.definition)
+		val booleanLiteralType = lintResult.find<BooleanLiteral>()?.type
+		assertIs<ObjectType>(booleanLiteralType)
+		assertNotNull(booleanLiteralType.definition)
 	}
 
 	@Test
 	fun `loads null literal type`() {
 		val sourceCode = "null"
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val nullLiteral = lintResult.find<NullLiteral>()
-		assertNotNull((nullLiteral?.type as? ObjectType)?.definition)
+		val nullLiteralType = lintResult.find<NullLiteral>()?.type
+		assertIs<ObjectType>(nullLiteralType)
+		assertNotNull(nullLiteralType.definition)
 	}
 
 	@Test

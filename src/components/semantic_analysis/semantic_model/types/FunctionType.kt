@@ -35,7 +35,7 @@ class FunctionType(override val source: Element): Type(source) {
 		val validSignatures = getMatchingSignatures(suppliedTypes, suppliedValues)
 		if(validSignatures.isEmpty())
 			return null
-		specificityPrecedenceLoop@ for(signature in validSignatures) {
+		specificityPrecedenceLoop@for(signature in validSignatures) {
 			for(otherSignature in validSignatures) {
 				if(otherSignature === signature)
 					continue

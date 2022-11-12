@@ -92,6 +92,12 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 			else -> "<anonymous function>"
 		}
 		signature += "("
+		if(typeParameters.isNotEmpty()) {
+			signature += typeParameters.joinToString()
+			signature += ";"
+			if(valueParameters.isNotEmpty())
+				signature += " "
+		}
 		signature += valueParameters.joinToString { parameter -> parameter.type.toString() }
 		signature += ")"
 		return signature
