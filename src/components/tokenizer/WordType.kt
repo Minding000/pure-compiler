@@ -107,7 +107,6 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 	TYPE_TYPE(
 		WordAtom.CLASS,
 		WordAtom.OBJECT,
-		WordAtom.TRAIT,
 		WordAtom.ENUM
 	),
 	MODIFIER(

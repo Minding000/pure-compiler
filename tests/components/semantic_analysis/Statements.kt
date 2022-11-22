@@ -41,19 +41,6 @@ class Statements {
 	}
 
 	@Test
-	fun `emits warning for instances on traits`() {
-		val sourceCode =
-			"""
-				trait Date {
-					instances CURRENT
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"Instance declarations are only allowed in enums and classes")
-	}
-
-	@Test
 	fun `emits warning for multiple instances declarations`() {
 		val sourceCode =
 			"""

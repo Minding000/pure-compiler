@@ -42,10 +42,6 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 				parent?.validate(linter)
 				Enum(this, name, typeScope, superType)
 			}
-			WordAtom.TRAIT -> {
-				parent?.validate(linter)
-				Trait(this, name, typeScope, superType)
-			}
 			else -> throw CompilerError("Encountered unknown type type.")
 		}
 		var instanceList: InstanceList? = null

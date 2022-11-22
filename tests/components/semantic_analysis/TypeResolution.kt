@@ -95,18 +95,6 @@ internal class TypeResolution {
 	}
 
 	@Test
-	fun `resolves trait types`() {
-		val sourceCode =
-			"""
-				trait Feedable {}
-				var feedable: Feedable
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val declaration = lintResult.find<VariableValueDeclaration> { declaration -> declaration.name == "feedable" }
-		assertEquals("Feedable", (declaration?.type as? ObjectType)?.definition?.name)
-	}
-
-	@Test
 	fun `resolves type alias types`() {
 		val sourceCode =
 			"""

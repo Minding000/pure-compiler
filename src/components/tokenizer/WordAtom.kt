@@ -80,7 +80,6 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	ALIAS("alias\\b"),
 	CLASS("class\\b"),
 	OBJECT("object\\b"),
-	TRAIT("trait\\b"), //TODO remove?
 	ENUM("enum\\b"),
 	ECHO("echo\\b"), //TODO remove
 	RETURN("return\\b"),
