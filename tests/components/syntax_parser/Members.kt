@@ -30,7 +30,7 @@ internal class Members {
 	}
 
 	@Test
-	fun `parses computed members`() {
+	fun `parses computed members`() { //TODO also test setters
 		val sourceCode = """
 			class Rectangle {
 				containing Unit: Number

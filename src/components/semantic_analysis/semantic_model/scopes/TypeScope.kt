@@ -66,13 +66,13 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			val initializer = initializers[initializerIndex]
 			if(redeclarations.contains(initializer))
 				continue
-			for(otherInitializerIndex in initializerIndex + 1 until  initializers.size) {
+			initializerIteration@for(otherInitializerIndex in initializerIndex + 1 until  initializers.size) {
 				val otherInitializer = initializers[otherInitializerIndex]
 				if(otherInitializer.parameters.size != initializer.parameters.size)
 					continue
 				for(parameterIndex in initializer.parameters.indices) {
 					if(otherInitializer.parameters[parameterIndex].type != initializer.parameters[parameterIndex].type)
-						continue
+						continue@initializerIteration
 				}
 				redeclarations.add(otherInitializer)
 				linter.addMessage(otherInitializer.source, "Redeclaration of" +
@@ -81,6 +81,38 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			}
 		}
 		initializers.removeAll(redeclarations)
+	}
+
+	fun ensureUniqueOperatorSignatures(linter: Linter) {
+		val redeclarations = LinkedList<OperatorDefinition>()
+		for(operatorIndex in 0 until operators.size - 1) {
+			val operator = operators[operatorIndex]
+			if(redeclarations.contains(operator))
+				continue
+			operatorIteration@for(otherOperatorIndex in operatorIndex + 1 until  operators.size) {
+				val otherOperator = operators[otherOperatorIndex]
+				if(otherOperator.name != operator.name)
+					continue
+				if(otherOperator is IndexOperatorDefinition && operator is IndexOperatorDefinition) {
+					if(otherOperator.indexParameters.size != operator.indexParameters.size)
+						continue
+					for(indexParameterIndex in operator.indexParameters.indices) {
+						if(otherOperator.indexParameters[indexParameterIndex].type != operator.indexParameters[indexParameterIndex].type)
+							continue@operatorIteration
+					}
+				}
+				if(otherOperator.valueParameters.size != operator.valueParameters.size)
+					continue
+				for(valueParameterIndex in operator.valueParameters.indices) {
+					if(otherOperator.valueParameters[valueParameterIndex].type != operator.valueParameters[valueParameterIndex].type)
+						continue@operatorIteration
+				}
+				redeclarations.add(otherOperator)
+				linter.addMessage(otherOperator.source, "Redeclaration of operator '${typeDefinition.name}$otherOperator'," +
+						" previously declared in ${operator.source.getStartString()}.", Message.Type.ERROR)
+			}
+		}
+		operators.removeAll(redeclarations) //TODO redeclarations are not removed from subscribed types (same for initializers)
 	}
 
 	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
@@ -147,34 +179,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	override fun declareOperator(linter: Linter, operator: OperatorDefinition) {
-		var previousDeclaration: OperatorDefinition? = null
-		operatorIteration@for(declaredOperator in operators) {
-			if(declaredOperator.name != operator.name)
-				continue
-			if(declaredOperator is IndexOperatorDefinition) {
-				if(operator !is IndexOperatorDefinition)
-					continue
-				if(declaredOperator.indexParameters.size != operator.indexParameters.size)
-					continue
-				for(indexParameterIndex in operator.indexParameters.indices) {
-					if(declaredOperator.indexParameters[indexParameterIndex].type != operator.indexParameters[indexParameterIndex].type)
-						continue@operatorIteration
-				}
-			}
-			if(declaredOperator.valueParameters.size != operator.valueParameters.size)
-				continue
-			for(valueParameterIndex in operator.valueParameters.indices) {
-				if(declaredOperator.valueParameters[valueParameterIndex].type != operator.valueParameters[valueParameterIndex].type)
-					continue@operatorIteration
-			}
-			previousDeclaration = declaredOperator
-			break
-		}
-		if(previousDeclaration != null) {
-			linter.addMessage(operator.source, "Redeclaration of operator '${typeDefinition.name}$operator'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
-			return
-		}
 		operators.add(operator)
 		onNewOperator(operator)
 		linter.addMessage(operator.source, "Declaration of operator '${typeDefinition.name}$operator'.", Message.Type.DEBUG)

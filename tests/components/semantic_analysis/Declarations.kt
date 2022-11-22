@@ -71,9 +71,12 @@ internal class Declarations {
 	fun `detects redeclarations of initializers signatures`() {
 		val sourceCode =
 			"""
+				class Trait {}
+				alias T = Trait
 				class Human {
 					init
-					init
+					init(t: T)
+					init(t: Trait)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -84,11 +87,12 @@ internal class Declarations {
 	fun `detects redeclarations of function signatures`() {
 		val sourceCode =
 			"""
-				native class Pressure {}
+				class Pressure {}
+				alias P = Pressure
 				class Human {
 					to sit(): Pressure {}
-					to sit() {}
-					to sit() {}
+					to sit(pressure: P) {}
+					to sit(pressure: Pressure) {}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -99,11 +103,12 @@ internal class Declarations {
 	fun `detects redeclarations of operator signatures`() {
 		val sourceCode =
 			"""
-				native class Time {}
+				class Time {}
 				alias T = Time
 				class Human {
-					operator[time: T]() {}
-					operator[time: Time]() {}
+					operator [start: T, end: T] {}
+					operator [time: T] {}
+					operator [time: Time]: Time {}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

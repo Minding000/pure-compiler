@@ -3,7 +3,7 @@ package components.syntax_parser.syntax_tree.literals
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.types.OptionalType as SemanticOptionalTypeModel
 import components.semantic_analysis.semantic_model.types.Type as SemanticTypeModel
-import components.semantic_analysis.semantic_model.types.VariableAmountType as SemanticVariableAmountTypeModel
+import components.semantic_analysis.semantic_model.types.PluralType as SemanticPluralTypeModel
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeElement
 
@@ -15,7 +15,7 @@ class QuantifiedType(private val baseType: TypeElement, private val hasDynamicQu
 		if(isOptional)
 			type = SemanticOptionalTypeModel(this, type)
 		if(hasDynamicQuantity)
-			type = SemanticVariableAmountTypeModel(this, type)
+			type = SemanticPluralTypeModel(this, type)
 		return type
 	}
 

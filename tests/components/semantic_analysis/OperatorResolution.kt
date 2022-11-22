@@ -269,7 +269,7 @@ internal class OperatorResolution {
 				numbers[Int()]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Call to function '<Int>List.exists(Int)' is ambiguous")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Index access '<Int>List[Int]' is ambiguous")
 	}
 
 	@Disabled

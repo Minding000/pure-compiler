@@ -10,7 +10,6 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	SINGLE_LINE_COMMENT("\\/\\/.*", true),
 	MULTI_LINE_COMMENT("\\/\\*[\\s\\S]*?\\*\\/", true, true),
 	// Operators
-	TYPE_SPECIFICATION("\\$"),
 	ARROW_CAPPED("=>\\|"),
 	ARROW("=>"),
 	INCREMENT("\\+\\+"),
@@ -81,9 +80,9 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	ALIAS("alias\\b"),
 	CLASS("class\\b"),
 	OBJECT("object\\b"),
-	TRAIT("trait\\b"),
+	TRAIT("trait\\b"), //TODO remove?
 	ENUM("enum\\b"),
-	ECHO("echo\\b"),
+	ECHO("echo\\b"), //TODO remove
 	RETURN("return\\b"),
 	YIELD("yield\\b"),
 	RAISE("raise\\b"),

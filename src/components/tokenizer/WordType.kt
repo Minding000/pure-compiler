@@ -88,8 +88,7 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.DOT,
 		WordAtom.OPTIONAL_ACCESSOR,
 		WordAtom.PARENTHESES_OPEN,
-		WordAtom.BRACKETS_OPEN,
-		WordAtom.TYPE_SPECIFICATION
+		WordAtom.BRACKETS_OPEN
 	),
 	MEMBER_ACCESSOR(
 		WordAtom.DOT,

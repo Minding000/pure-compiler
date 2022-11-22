@@ -7,7 +7,7 @@ import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
-class FunctionType(override val source: Element): Type(source) {
+class FunctionType(override val source: Element): Type(source) { //TODO include target instance type (optional) e.g. transform: String.() -> String
 	private val signatures = LinkedList<FunctionSignature>()
 	var superFunctionType: FunctionType? = null
 

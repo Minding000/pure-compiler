@@ -65,6 +65,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		super.linkTypes(linter, this.scope)
+		this.scope.ensureUniqueOperatorSignatures(linter)
 	}
 
 	override fun linkPropertyParameters(linter: Linter, scope: MutableScope) {

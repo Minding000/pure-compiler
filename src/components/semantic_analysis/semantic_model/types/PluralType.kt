@@ -4,26 +4,26 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.syntax_parser.syntax_tree.general.Element
 
-class VariableAmountType(override val source: Element, val baseType: Type): Type(source) {
+class PluralType(override val source: Element, val baseType: Type): Type(source) {
 
 	init {
 		addUnits(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): VariableAmountType {
-		return VariableAmountType(source, baseType.withTypeSubstitutions(typeSubstitutions))
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): PluralType {
+		return PluralType(source, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
 		val sourceType = resolveTypeAlias(unresolvedSourceType)
-		if(sourceType !is VariableAmountType)
+		if(sourceType !is PluralType)
 			return false
 		return baseType.accepts(sourceType.baseType)
 	}
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
 		val targetType = resolveTypeAlias(unresolvedTargetType)
-		if(targetType !is VariableAmountType)
+		if(targetType !is PluralType)
 			return false
 		return baseType.isAssignableTo(targetType.baseType)
 	}
@@ -37,7 +37,7 @@ class VariableAmountType(override val source: Element, val baseType: Type): Type
 	}
 
 	override fun equals(other: Any?): Boolean {
-		if(other !is VariableAmountType)
+		if(other !is PluralType)
 			return false
 		if(baseType != other.baseType)
 			return false
