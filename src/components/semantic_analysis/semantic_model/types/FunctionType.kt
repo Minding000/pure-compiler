@@ -95,6 +95,12 @@ class FunctionType(override val source: Element): Type(source) { //TODO include 
 	override fun equals(other: Any?): Boolean {
 		if(other !is FunctionType)
 			return false
+		if(other.signatures.size != signatures.size)
+			return false
+		for(signature in signatures) {
+			if(!other.signatures.contains(signature))
+				return false
+		}
 		return true
 	}
 

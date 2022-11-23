@@ -9,6 +9,7 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val refe
 
 	init {
 		scope.typeDefinition = this
+		addUnits(referenceType)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeAlias {

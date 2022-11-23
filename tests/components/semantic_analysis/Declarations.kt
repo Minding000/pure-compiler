@@ -80,7 +80,7 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of initializer 'Human()'")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of initializer 'Human(Trait)'")
 	}
 
 	@Test
@@ -96,7 +96,7 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of function 'sit()'")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of function 'sit(Pressure)'")
 	}
 
 	@Test
