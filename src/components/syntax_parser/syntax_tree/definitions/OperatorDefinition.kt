@@ -36,16 +36,16 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 			}
 		}
 		val parameters = parameterList?.concretizeParameters(linter, operatorScope) ?: listOf()
+		val body = body?.concretize(linter, operatorScope)
+		val returnType = returnType?.concretize(linter, operatorScope)
 		val operatorDefinition = if(operator is IndexOperator) {
 			val genericParameters = operator.concretizeGenerics(linter, operatorScope) ?: listOf()
 			val indices = operator.concretizeIndices(linter, operatorScope)
 			SemanticIndexOperatorDefinitionModel(this, operatorScope, genericParameters, indices, parameters,
-				body?.concretize(linter, operatorScope), returnType?.concretize(linter, operatorScope), isNative,
-				isOverriding)
+				body, returnType, isNative, isOverriding)
 		} else {
 			SemanticOperatorDefinitionModel(this, operator.getValue(), operatorScope, parameters,
-				body?.concretize(linter, operatorScope), returnType?.concretize(linter, operatorScope), isNative,
-				isOverriding)
+				body, returnType, isNative, isOverriding)
 		}
 		scope.declareOperator(linter, operatorDefinition)
 		return operatorDefinition

@@ -64,7 +64,7 @@ class FunctionType(override val source: Element): Type(source) { //TODO include 
 			val validSuperSignatures = superFunctionType.getMatchingSignatures(suppliedTypes, suppliedValues)
 			validSuperSignatures@for(validSuperSignature in validSuperSignatures) {
 				for(validSignature in validSignatures)
-					if(validSignature.superFunctionSignature == validSuperSignature)
+					if(validSignature.superFunctionSignature === validSuperSignature)
 						continue@validSuperSignatures
 				validSignatures.add(validSuperSignature)
 			}

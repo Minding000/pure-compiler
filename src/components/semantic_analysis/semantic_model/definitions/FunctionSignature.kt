@@ -106,16 +106,34 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 		return !areSignaturesEqual
 	}
 
+	fun fulfillsInheritanceRequirementOf(superSignature: FunctionSignature): Boolean {
+		if(returnType.isAssignableTo(superSignature.returnType))
+			return false
+		if(parameterTypes.size != superSignature.parameterTypes.size)
+			return false
+		for(parameterIndex in parameterTypes.indices)
+			if(superSignature.parameterTypes[parameterIndex]?.let {
+						superParameterType -> parameterTypes[parameterIndex]?.accepts(superParameterType) } == false)
+				return false
+		return true
+	}
+
+	fun hasSameParameterTypesAs(otherSignature: FunctionSignature): Boolean {
+		if(parameterTypes.size != otherSignature.parameterTypes.size)
+			return false
+		for(parameterIndex in parameterTypes.indices)
+			if(parameterTypes[parameterIndex] != otherSignature.parameterTypes[parameterIndex])
+				return false
+		return true
+	}
+
 	override fun equals(other: Any?): Boolean {
 		if(other !is FunctionSignature)
 			return false
 		if(returnType != other.returnType)
 			return false
-		if(parameterTypes.size != other.parameterTypes.size)
+		if(!this.hasSameParameterTypesAs(other))
 			return false
-		for(parameterIndex in parameterTypes.indices)
-			if(parameterTypes[parameterIndex] != other.parameterTypes[parameterIndex])
-				return false
 		return true
 	}
 

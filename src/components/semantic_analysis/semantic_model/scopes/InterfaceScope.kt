@@ -126,7 +126,7 @@ class InterfaceScope(private val type: Type): Scope() {
 			return null
 		specificityPrecedenceLoop@for(signature in validSignatures) {
 			for(otherSignature in validSignatures) {
-				if(otherSignature == signature)
+				if(otherSignature === signature)
 					continue
 				if(!signature.isMoreSpecificThan(otherSignature))
 					continue@specificityPrecedenceLoop
@@ -158,7 +158,7 @@ class InterfaceScope(private val type: Type): Scope() {
 			return null
 		specificityPrecedenceLoop@for(signature in validSignatures) {
 			for(otherSignature in validSignatures) {
-				if(otherSignature == signature)
+				if(otherSignature === signature)
 					continue
 				if(!signature.isMoreSpecificThan(otherSignature))
 					continue@specificityPrecedenceLoop

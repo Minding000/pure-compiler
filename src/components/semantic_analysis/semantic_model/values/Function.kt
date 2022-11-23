@@ -16,7 +16,7 @@ class Function(source: Element, private val implementations: MutableList<Functio
 			value?.let {
 				for(implementation in implementations) {
 					for(superImplementation in value.implementations) {
-						if(superImplementation.signature == implementation.signature) {
+						if(implementation.signature.fulfillsInheritanceRequirementOf(superImplementation.signature)) {
 							implementation.superFunctionImplementation = superImplementation
 							break
 						}
@@ -73,7 +73,7 @@ class Function(source: Element, private val implementations: MutableList<Functio
 				continue
 			for(otherImplementationIndex in initializerIndex + 1 until  implementations.size) {
 				val otherImplementation = implementations[otherImplementationIndex]
-				if(otherImplementation.signature != implementation.signature)
+				if(!otherImplementation.signature.hasSameParameterTypesAs(implementation.signature))
 					continue
 				redeclarations.add(otherImplementation)
 				linter.addMessage(otherImplementation.source, "Redeclaration of function " +
