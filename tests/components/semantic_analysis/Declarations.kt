@@ -12,8 +12,8 @@ internal class Declarations {
 	fun `emits error for incompatible source expression type`() {
 		val sourceCode =
 			"""
-				class Toast {}
-				object Banana {}
+				Toast class {}
+				Banana object {}
 				var toast: Toast = Banana
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -34,9 +34,9 @@ internal class Declarations {
 	fun `detects shadowed variables`() {
 		val sourceCode =
 			"""
-				class Handler {}
+				Handler class {}
 				val defaultHandler: Handler
-				class Event {
+				Event class {
 					const defaultHandler: Handler
 				}
             """.trimIndent()
@@ -48,7 +48,7 @@ internal class Declarations {
 	fun `detects redeclarations of variables`() {
 		val sourceCode =
 			"""
-				class Car {}
+				Car class {}
 				var car: Car
 				val car: Car
             """.trimIndent()
@@ -60,8 +60,8 @@ internal class Declarations {
 	fun `detects redeclarations of types`() {
 		val sourceCode =
 			"""
-				class Animal {}
-				enum Animal {}
+				Animal class {}
+				Animal enum {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of type 'Animal'")
@@ -71,9 +71,9 @@ internal class Declarations {
 	fun `detects redeclarations of initializers signatures`() {
 		val sourceCode =
 			"""
-				class Trait {}
+				Trait class {}
 				alias T = Trait
-				class Human {
+				Human class {
 					init
 					init(t: T)
 					init(t: Trait)
@@ -87,9 +87,9 @@ internal class Declarations {
 	fun `detects redeclarations of function signatures`() {
 		val sourceCode =
 			"""
-				class Pressure {}
+				Pressure class {}
 				alias P = Pressure
-				class Human {
+				Human class {
 					to sit(): Pressure {}
 					to sit(pressure: P) {}
 					to sit(pressure: Pressure) {}
@@ -103,23 +103,23 @@ internal class Declarations {
 	fun `detects redeclarations of operator signatures`() {
 		val sourceCode =
 			"""
-				class Time {}
+				Time class {}
 				alias T = Time
-				class Human {
+				Human class {
 					operator [start: T, end: T] {}
 					operator [time: T] {}
 					operator [time: Time]: Time {}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of operator 'Human[Time]()'")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of operator 'Human[Time](): Time'")
 	}
 
 	@Test
 	fun `detects invalid modifiers`() {
 		val sourceCode =
 			"""
-				overriding class House {}
+				overriding House class {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
@@ -129,7 +129,7 @@ internal class Declarations {
 	fun `detects duplicate modifiers`() {
 		val sourceCode =
 			"""
-				native native class Memory {}
+				native native Memory class {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Duplicate 'native' modifier")
@@ -139,8 +139,8 @@ internal class Declarations {
 	fun `handle block declares error variable`() { //TODO change syntax to 'error: IOError' for consistency
 		val sourceCode =
 			"""
-				native class IOError {}
-				class Config {
+				native IOError class {}
+				Config class {
 					to saveToDisk() {
 					} handle IOError error {
 						error
@@ -155,7 +155,7 @@ internal class Declarations {
 	@Test
 	fun `emits warning for generic non-index operator`() {
 		val sourceCode = """
-			class Vector {
+			Vector class {
 				operator +(ReturnType; other: Self): ReturnType
 			}
 			""".trimIndent()
@@ -167,7 +167,7 @@ internal class Declarations {
 	@Test
 	fun `emits warning for generic parameters in parentheses in index operator`() {
 		val sourceCode = """
-			class Vector {
+			Vector class {
 				operator [key: IndexType](IndexType; value: Int)
 			}
 			""".trimIndent()

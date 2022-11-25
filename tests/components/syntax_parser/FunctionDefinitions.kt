@@ -8,12 +8,12 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses function definitions`() {
 		val sourceCode = """
-			trait Animal {
+			Animal class {
 				it canEat(food: Food): Bool
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ trait Identifier { Animal } ] { TypeBody {
+				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
 					FunctionSection [ it ] {
 						Function [ Identifier { canEat } ParameterList {
 							Parameter { Identifier { food }: ObjectType { Identifier { Food } } }
@@ -27,12 +27,12 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses function definitions with complex return type`() {
 		val sourceCode = """
-			class Box {
+			Box class {
 				to getContent(): Box? {}
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Box } ] { TypeBody {
+				TypeDefinition [ Identifier { Box } class ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { getContent } ParameterList {
 						}: QuantifiedType { ObjectType { Identifier { Box } }? } ] { StatementSection { StatementBlock {
@@ -46,14 +46,14 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses function definitions with body`() {
 		val sourceCode = """
-			class Animal {
+			Animal class {
 				to getSound(loudness: Int) {
 					var energy = loudness * 2
 				}
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { getSound } ParameterList {
 							Parameter { Identifier { loudness }: ObjectType { Identifier { Int } } }
@@ -73,14 +73,14 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses initializer definitions`() {
 		val sourceCode = """
-			class Animal {
+			Animal class {
 				var canSwim: Bool
 
 				init(canSwim)
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
 					VariableSection [ var ] {
 						VariableDeclaration { Identifier { canSwim }: ObjectType { Identifier { Bool } } }
 					}
@@ -95,12 +95,12 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses initializer definitions without parameter list`() {
 		val sourceCode = """
-			class Chair {
+			Chair class {
 				init
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Chair } ] { TypeBody {
+				TypeDefinition [ Identifier { Chair } class ] { TypeBody {
 					Initializer [  ] {  }
 				} }
             """.trimIndent()
@@ -110,7 +110,7 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses initializer definitions with body`() {
 		val sourceCode = """
-			class Animal {
+			Animal class {
 				var canSwim: Bool
 
 				init(name: String, canSwim) {
@@ -119,7 +119,7 @@ internal class FunctionDefinitions {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
 					VariableSection [ var ] {
 						VariableDeclaration { Identifier { canSwim }: ObjectType { Identifier { Bool } } }
 					}
@@ -140,7 +140,7 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses deinitializer definitions`() {
 		val sourceCode = """
-			class Animal {
+			Animal class {
 				var name: String
 
 				deinit {
@@ -149,7 +149,7 @@ internal class FunctionDefinitions {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
 					VariableSection [ var ] {
 						VariableDeclaration { Identifier { name }: ObjectType { Identifier { String } } }
 					}
@@ -166,7 +166,7 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses operator definitions`() {
 		val sourceCode = """
-			class Vector {
+			Vector class {
 				var: Int {
 					x
 					y
@@ -185,7 +185,7 @@ internal class FunctionDefinitions {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Vector } ] { TypeBody {
+				TypeDefinition [ Identifier { Vector } class ] { TypeBody {
 					VariableSection [ var: ObjectType { Identifier { Int } } ] {
 						VariableDeclaration { Identifier { x } }
 						VariableDeclaration { Identifier { y } }
@@ -229,7 +229,7 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses index operator definitions`() {
 		val sourceCode = """
-			class BookSelf {
+			BookSelf class {
 
 				operator {
 					[index: Int](value: Book) {
@@ -243,7 +243,7 @@ internal class FunctionDefinitions {
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { BookSelf } ] { TypeBody {
+				TypeDefinition [ Identifier { BookSelf } class ] { TypeBody {
 					OperatorSection {
 						OperatorDefinition [ IndexOperator { ParameterList {
 							Parameter { Identifier { index }: ObjectType { Identifier { Int } } }
@@ -273,13 +273,13 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses dynamically sized parameters`() {
 		val sourceCode = """
-			class Animal {
+			Animal class {
 				to setSounds(...sounds: ...Sound) {
 				}
 			}""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { setSounds } ParameterList {
 							Parameter [ ModifierList { Modifier { ... } } ] { Identifier { sounds }: QuantifiedType { ...ObjectType { Identifier { Sound } } } }

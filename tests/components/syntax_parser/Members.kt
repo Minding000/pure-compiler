@@ -8,7 +8,7 @@ internal class Members {
 	@Test
 	fun `parses constant members`() {
 		val sourceCode = """
-			class Human {
+			Human class {
 				const: Int {
 					EYE_COUNT = 2
 					ARM_COUNT = 2
@@ -18,7 +18,7 @@ internal class Members {
 		""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Human } ] { TypeBody {
+				TypeDefinition [ Identifier { Human } class ] { TypeBody {
 					VariableSection [ const: ObjectType { Identifier { Int } } ] {
 						VariableDeclaration { Identifier { EYE_COUNT } = NumberLiteral { 2 } }
 						VariableDeclaration { Identifier { ARM_COUNT } = NumberLiteral { 2 } }
@@ -32,7 +32,7 @@ internal class Members {
 	@Test
 	fun `parses computed members`() { //TODO also test setters
 		val sourceCode = """
-			class Rectangle {
+			Rectangle class {
 				containing Unit: Number
 
 				var: Unit = 0 {
@@ -53,7 +53,7 @@ internal class Members {
 		""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Rectangle } ] { TypeBody {
+				TypeDefinition [ Identifier { Rectangle } class ] { TypeBody {
 					GenericsDeclaration {
 						Parameter { Identifier { Unit }: ObjectType { Identifier { Number } } }
 					}

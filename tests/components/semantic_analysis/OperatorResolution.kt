@@ -28,7 +28,7 @@ internal class OperatorResolution {
 	fun `resolves unary operator calls`() {
 		val sourceCode =
 			"""
-				class Fraction {
+				Fraction class {
 					init
 					operator -() {}
 				}
@@ -45,7 +45,7 @@ internal class OperatorResolution {
 	fun `emits error for undeclared binary operators`() {
 		val sourceCode =
 			"""
-				class Matrix {
+				Matrix class {
 					init
 				}
 				val {
@@ -62,7 +62,7 @@ internal class OperatorResolution {
 	fun `resolves binary operator calls`() {
 		val sourceCode =
 			"""
-				class Matrix {
+				Matrix class {
 					init
 					operator +(other: Matrix): Matrix {}
 				}
@@ -82,10 +82,10 @@ internal class OperatorResolution {
 	fun `emits error for call to nonexistent index operator`() {
 		val sourceCode =
 			"""
-				class Position {
+				Position class {
 					init
 				}
-				object ChessBoard {}
+				ChessBoard object {}
 				val firstField = ChessBoard[Position()]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -96,13 +96,13 @@ internal class OperatorResolution {
 	fun `emits error for assignment to readonly index operator`() {
 		val sourceCode =
 			"""
-				class Position {
+				Position class {
 					init
 				}
-				class Field {
+				Field class {
 					init
 				}
-				object ChessBoard {
+				ChessBoard object {
 					native operator[position: Position](): Field
 				}
 				ChessBoard[Position()] = Field()
@@ -115,11 +115,11 @@ internal class OperatorResolution {
 	fun `resolves index operators`() {
 		val sourceCode =
 			"""
-				class Position {
+				Position class {
 					init
 				}
-				class Field {}
-				object ChessBoard {
+				Field class {}
+				ChessBoard object {
 					native operator[position: Position](): Field
 				}
 				ChessBoard[Position()]
@@ -136,15 +136,15 @@ internal class OperatorResolution {
 	fun `resolves calls to super operator`() {
 		val sourceCode =
 			"""
-				class Int {
+				Int class {
 					init
 				}
-				class Hinge {}
-				class Door {
+				Hinge class {}
+				Door class {
 					operator [index: Int](): Hinge {}
 				}
-				class TransparentDoor: Door {}
-				object GlassDoor: TransparentDoor {
+				TransparentDoor class: Door {}
+				GlassDoor object: TransparentDoor {
 					operator [index: Int](hinge: Hinge) {}
 				}
 				GlassDoor[Int()]
@@ -161,15 +161,15 @@ internal class OperatorResolution {
 	fun `resolves calls to overriding operator`() {
 		val sourceCode =
 			"""
-				class Int {
+				Int class {
 					init
 				}
-				class Hinge {}
-				class Door {
+				Hinge class {}
+				Door class {
 					operator [index: Int](): Hinge {}
 				}
-				class TransparentDoor: Door {}
-				object GlassDoor: TransparentDoor {
+				TransparentDoor class: Door {}
+				GlassDoor object: TransparentDoor {
 					overriding operator [index: Int](): Hinge {}
 				}
 				GlassDoor[Int()]
@@ -186,14 +186,14 @@ internal class OperatorResolution {
 	fun `detects missing overriding keyword on operator`() {
 		val sourceCode =
 			"""
-				class Int {}
-				class ShoppingList {
+				Int class {}
+				ShoppingList class {
 					operator [index: Int](): Int {}
 				}
-				class FoodShoppingList: ShoppingList {
+				FoodShoppingList class: ShoppingList {
 					operator [index: Int](foodId: Int) {}
 				}
-				class VegetableShoppingList: FoodShoppingList {
+				VegetableShoppingList class: FoodShoppingList {
 					operator [index: Int](): Int {}
 				}
             """.trimIndent()
@@ -205,12 +205,12 @@ internal class OperatorResolution {
 	fun `allows for operators to be overridden`() {
 		val sourceCode =
 			"""
-				class Int {}
-				class ShoppingList {
+				Int class {}
+				ShoppingList class {
 					operator [index: Int](): Int {}
 				}
-				class FoodShoppingList: ShoppingList {}
-				class VegetableShoppingList: FoodShoppingList {
+				FoodShoppingList class: ShoppingList {}
+				VegetableShoppingList class: FoodShoppingList {
 					overriding operator [index: Int](): Int {}
 				}
             """.trimIndent()
@@ -224,7 +224,7 @@ internal class OperatorResolution {
 	fun `detects overriding keyword being used without super operator`() {
 		val sourceCode =
 			"""
-				class Room {
+				Room class {
 					overriding operator +() {}
 				}
             """.trimIndent()
@@ -237,9 +237,9 @@ internal class OperatorResolution {
 	fun `emits error for operator calls with wrong parameters`() {
 		val sourceCode =
 			"""
-				class Int {}
-				object Bright {}
-				object List {
+				Int class {}
+				Bright object {}
+				List object {
 					operator [key: Int]: Int
 				}
 				List[Bright]
@@ -253,11 +253,11 @@ internal class OperatorResolution {
 	fun `emits error for ambiguous operator calls`() {
 		val sourceCode =
 			"""
-				class Int {
+				Int class {
 					init
 				}
-				class Boolean {}
-				class List {
+				Boolean class {}
+				List class {
 					containing Element
 
 					init
@@ -277,10 +277,10 @@ internal class OperatorResolution {
 	fun `resolves operator calls with a variable number of parameters`() {
 		val sourceCode =
 			"""
-				native class Int {
+				native Int class {
 					init
 				}
-				object IntegerList {
+				IntegerList object {
 					operator +=(...integers: ...Int) {}
 				}
 				IntegerList += Int(), Int()

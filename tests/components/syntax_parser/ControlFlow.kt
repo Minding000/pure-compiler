@@ -57,7 +57,7 @@ internal class ControlFlow {
 	@Test
 	fun `parses initializer calls`() {
 		val sourceCode = """
-			class Human {
+			Human class {
 				to speak(words: String) {
 					echo words
 				}
@@ -66,7 +66,7 @@ internal class ControlFlow {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Human } ] { TypeBody {
+				TypeDefinition [ Identifier { Human } class ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { speak } ParameterList {
 							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
@@ -88,7 +88,7 @@ internal class ControlFlow {
 	@Test
 	fun `parses function calls`() {
 		val sourceCode = """
-			class Human {
+			Human class {
 				to speak(words: String) {
 					echo words
 				}
@@ -98,7 +98,7 @@ internal class ControlFlow {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Human } ] { TypeBody {
+				TypeDefinition [ Identifier { Human } class ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { speak } ParameterList {
 							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
@@ -125,7 +125,7 @@ internal class ControlFlow {
 	@Test
 	fun `parses return statements`() {
 		val sourceCode = """
-			class Human {
+			Human class {
 				to speak(words: String): String {
 					echo words
 					return "Done"
@@ -134,7 +134,7 @@ internal class ControlFlow {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Human } ] { TypeBody {
+				TypeDefinition [ Identifier { Human } class ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { speak } ParameterList {
 							Parameter { Identifier { words }: ObjectType { Identifier { String } } }

@@ -7,10 +7,10 @@ import util.TestUtil
 internal class Assignability {
 
 	@Test
-	fun `object types can be assigned to object types`() {
+	fun `types object can be assigned to types object`() {
 		val sourceCode =
 			"""
-				class Car {
+				Car class {
 					init
 				}
 				val car: Car = new Car()
@@ -20,10 +20,10 @@ internal class Assignability {
 	}
 
 	@Test
-	fun `object types can be assigned to optional types`() {
+	fun `types object can be assigned to optional types`() {
 		val sourceCode =
 			"""
-				class Car {
+				Car class {
 					init
 				}
 				val car: Car? = Car()
@@ -36,7 +36,7 @@ internal class Assignability {
 	fun `null can be assigned to optional types`() {
 		val sourceCode =
 			"""
-				class Car {
+				Car class {
 				}
 				val car: Car? = null
             """.trimIndent()
@@ -48,7 +48,7 @@ internal class Assignability {
 	fun `optional types can be assigned to optional types`() {
 		val sourceCode =
 			"""
-				class Car {
+				Car class {
 					init
 				}
 				val carInDriveway: Car? = Car()
@@ -62,7 +62,7 @@ internal class Assignability {
 	fun `complex types can be assigned to type aliases`() {
 		val sourceCode =
 			"""
-				class Event {}
+				Event class {}
 				alias EventHandler = (Event) =>|
 				val complexTypeValue: (Event) =>|
 				var typeAliasValue: EventHandler = complexTypeValue
@@ -75,7 +75,7 @@ internal class Assignability {
 	fun `type aliases can be assigned to complex types`() {
 		val sourceCode =
 			"""
-				class Event {}
+				Event class {}
 				alias EventHandler = (Event) =>|
 				val typeAliasValue: EventHandler
 				var complexTypeValue: (Event) =>| = typeAliasValue

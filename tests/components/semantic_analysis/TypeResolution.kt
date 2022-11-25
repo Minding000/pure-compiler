@@ -59,10 +59,10 @@ internal class TypeResolution {
 	}
 
 	@Test
-	fun `resolves class types`() {
+	fun `resolves types class`() {
 		val sourceCode =
 			"""
-				class Bird {}
+				Bird class {}
 				var bird: Bird
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -71,10 +71,10 @@ internal class TypeResolution {
 	}
 
 	@Test
-	fun `resolves object types`() {
+	fun `resolves types object`() {
 		val sourceCode =
 			"""
-				object BirdFeeder {}
+				BirdFeeder object {}
 				var birdFeeder: BirdFeeder
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -83,10 +83,10 @@ internal class TypeResolution {
 	}
 
 	@Test
-	fun `resolves enum types`() {
+	fun `resolves types enum`() {
 		val sourceCode =
 			"""
-				enum BirdType {}
+				BirdType enum {}
 				var birdType: BirdType
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -110,7 +110,7 @@ internal class TypeResolution {
 	fun `resolves generic types in definitions`() {
 		val sourceCode =
 			"""
-				class List {
+				List class {
 					containing Element
 					init
 					to add(element: Element) {}
@@ -125,13 +125,13 @@ internal class TypeResolution {
 	fun `resolves generic types in function parameters`() {
 		val sourceCode =
 			"""
-				class List {
+				List class {
 					containing Element
 					init
 					to add(element: Element) {}
 				}
-				class Country {}
-				object Germany: Country {}
+				Country class {}
+				Germany object: Country {}
 				val list = <Country>List()
 				list.add(Germany)
             """.trimIndent()

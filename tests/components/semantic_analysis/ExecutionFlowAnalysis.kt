@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertIs
 
-class ExecutionFlowAnalysis {
+internal class ExecutionFlowAnalysis {
 
 	@Test
 	fun `emits warning for unreachable statements`() {
@@ -55,7 +55,7 @@ class ExecutionFlowAnalysis {
 	fun `calculates result of trivial conditional casts`() {
 		val sourceCode =
 			"""
-				enum Color {
+				Color enum {
 					instances RED
 				}
 				loop {
@@ -72,7 +72,7 @@ class ExecutionFlowAnalysis {
 	fun `calculates result of trivial negated conditional casts`() {
 		val sourceCode =
 			"""
-				enum Color {
+				Color enum {
 					instances RED
 				}
 				val bird = null
@@ -90,7 +90,7 @@ class ExecutionFlowAnalysis {
 	fun `calculates result of trivial optional casts`() {
 		val sourceCode =
 			"""
-				enum Color {
+				Color enum {
 					instances RED
 					init
 				}

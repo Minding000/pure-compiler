@@ -12,13 +12,13 @@ import util.TestUtil
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class TypeInference {
+internal class TypeInference {
 
 	@Test
 	fun `infers variable type in declaration`() {
 		val sourceCode =
 			"""
-				class Basketball {
+				Basketball class {
 					init
 				}
 				val ball = Basketball()
@@ -35,7 +35,7 @@ class TypeInference {
 	fun `resolves instance accesses in variable declarations`() {
 		val sourceCode =
 			"""
-				enum TransportLayerProtocol {
+				TransportLayerProtocol enum {
 					instances TCP, UDP
 				}
 				val protocol: TransportLayerProtocol = .TCP
@@ -51,7 +51,7 @@ class TypeInference {
 	fun `resolves instance accesses in assignments`() {
 		val sourceCode =
 			"""
-				enum TransportLayerProtocol {
+				TransportLayerProtocol enum {
 					instances TCP, UDP
 					init
 				}
@@ -69,11 +69,11 @@ class TypeInference {
 	fun `resolves instance accesses in initializer calls`() {
 		val sourceCode =
 			"""
-				enum TransportLayerProtocol {
+				TransportLayerProtocol enum {
 					instances TCP, UDP
 					init
 				}
-				class Stream {
+				Stream class {
 					val protocol: TransportLayerProtocol
 
 					init(protocol)
@@ -91,12 +91,12 @@ class TypeInference {
 	fun `resolves instance accesses in function calls`() {
 		val sourceCode =
 			"""
-				enum TransportLayerProtocol {
+				TransportLayerProtocol enum {
 					instances TCP, UDP
 					init
 				}
-				class Port {}
-				object NetworkInterface {
+				Port class {}
+				NetworkInterface object {
 					to getOpenPort(protocol: TransportLayerProtocol): Port {}
 				}
 				val openUdpPort = NetworkInterface.getOpenPort(.UDP)
@@ -112,12 +112,12 @@ class TypeInference {
 	fun `resolves instance accesses in operator calls`() {
 		val sourceCode =
 			"""
-				enum TransportLayerProtocol {
+				TransportLayerProtocol enum {
 					instances TCP, UDP
 					init
 				}
-				class Ports {}
-				object NetworkInterface {
+				Ports class {}
+				NetworkInterface object {
 					operator [protocol: TransportLayerProtocol](): Ports {}
 				}
 				val udpPorts = NetworkInterface[.UDP]
@@ -133,7 +133,7 @@ class TypeInference {
 	fun `resolves instance accesses in switch cases`() {
 		val sourceCode =
 			"""
-				enum TransportLayerProtocol {
+				TransportLayerProtocol enum {
 					instances TCP, UDP
 					init
 				}
@@ -156,8 +156,8 @@ class TypeInference {
 	fun `allows for recursive use of generic types`() {
 		val sourceCode =
 			"""
-				class Receipt {}
-				class List {
+				Receipt class {}
+				List class {
 					containing Item
 					var backup: <Item>List? = null
 					init
@@ -175,15 +175,15 @@ class TypeInference {
 		val sourceCode =
 			"""
 				referencing Pure
-				class Plant {
+				Plant class {
 					init
 				}
-				class Package {
+				Package class {
 					containing Item
 					val item: Item
 					init(item)
 				}
-				object PackageOpener {
+				PackageOpener object {
 					to unwrap(Item; package: <Item>Package): Item {
 						if(package.item is p: <Any producing>Package)
 							return unwrap(p)
@@ -202,7 +202,7 @@ class TypeInference {
 	fun `emits errors when generic type can't be inferred`() {
 		val sourceCode =
 			"""
-				class Box {
+				Box class {
 					containing Item
 					init
 				}
@@ -217,10 +217,10 @@ class TypeInference {
 	fun `infers generic type before constructor call`() {
 		val sourceCode =
 			"""
-				class Letter {
+				Letter class {
 					init
 				}
-				class Box {
+				Box class {
 					containing Item
 					val firstItem: Item
 					init(firstItem)
@@ -241,24 +241,24 @@ class TypeInference {
 	fun `infers generic type in constructor call`() {
 		val sourceCode =
 			"""
-				class List {
+				List class {
 					containing Item
 					init
 					to add(item: Item) {}
 				}
-				class Message {
+				Message class {
 					var actions: <Message>Actions
 				}
-				class NewsletterMessage: Message {}
-				class Actions {
+				NewsletterMessage class: Message {}
+				Actions class {
 					containing M: Message
 					init
 				}
-				class Account {
+				Account class {
 					val incomingMessages = <Message>List()
 					init
 				}
-				class MailFolder {
+				MailFolder class {
 					val messages: <Message>List
 					init(MessageType: Message; account: Account, availableActions: <MessageType>Actions) {
 						loop over account.incomingMessages as incomingMessage {
@@ -282,10 +282,10 @@ class TypeInference {
 		val sourceCode =
 			"""
 				trait Letter {}
-				class PostCard: Letter {
+				PostCard class: Letter {
 					init
 				}
-				object PostOffice {
+				PostOffice object {
 					to stamp(L: Letter; letter: L): L {
 						return letter
 					}
@@ -307,10 +307,10 @@ class TypeInference {
 		val sourceCode =
 			"""
 				trait Letter {}
-				class PostCard: Letter {
+				PostCard class: Letter {
 					init
 				}
-				object PostOffice {
+				PostOffice object {
 					to stamp(L: Letter; letter: L?): L? {
 						return letter
 					}
@@ -332,17 +332,17 @@ class TypeInference {
 		val sourceCode =
 			"""
 				trait IpAddress {}
-				class Ipv4Address: IpAddress {
+				Ipv4Address class: IpAddress {
 					init
 				}
-				class Ipv6Address: IpAddress {
+				Ipv6Address class: IpAddress {
 					init
 				}
-				class Client {
+				Client class {
 					containing A: IpAddress
 					init
 				}
-				object Server {
+				Server object {
 					operator [A: IpAddress; ipAddress: A]: <A>Client {}
 				}
 				val client = Server[Ipv4Address()]

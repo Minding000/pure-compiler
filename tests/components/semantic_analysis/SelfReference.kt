@@ -13,7 +13,7 @@ internal class SelfReference {
 	fun `resolves self reference keyword in class`() {
 		val sourceCode =
 			"""
-				class Car {
+				Car class {
 					to getCar(): Car {
 						return this
 					}
@@ -29,7 +29,7 @@ internal class SelfReference {
 	fun `resolves self reference keyword in object`() {
 		val sourceCode =
 			"""
-				object FastestCar {
+				FastestCar object {
 					to getCar(): FastestCar {
 						return this
 					}
@@ -45,7 +45,7 @@ internal class SelfReference {
 	fun `resolves self reference keyword in enum`() {
 		val sourceCode =
 			"""
-				enum Car {
+				Car enum {
 					to getCar(): Car {
 						return this
 					}

@@ -8,16 +8,16 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertNotNull
 
-class TypeParameters {
+internal class TypeParameters {
 
 	@Test
 	fun `consuming type accepts base type`() {
 		val sourceCode =
 			"""
-			class Paper {
+			Paper class {
 				init
 			}
-			class TrashCan {
+			TrashCan class {
 				containing T
 
 				init
@@ -42,10 +42,10 @@ class TypeParameters {
 	fun `producing type doesn't accept base type`() {
 		val sourceCode =
 			"""
-			class SoftDrink {
+			SoftDrink class {
 				init
 			}
-			class StorageRoom {
+			StorageRoom class {
 				containing Item
 
 				init
@@ -71,10 +71,10 @@ class TypeParameters {
 	fun `consuming type is only assignable to 'Any' type`() {
 		val sourceCode =
 			"""
-			class SoftDrink {
+			SoftDrink class {
 				init
 			}
-			class StorageRoom {
+			StorageRoom class {
 				containing Item
 
 				init
@@ -106,10 +106,10 @@ class TypeParameters {
 	fun `producing type is assignable to base type`() {
 		val sourceCode =
 			"""
-			class SoftDrink {
+			SoftDrink class {
 				init
 			}
-			class StorageRoom {
+			StorageRoom class {
 				containing Item
 
 				init

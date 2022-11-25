@@ -12,7 +12,7 @@ internal class Mutability {
 	fun `prohibits mutation of immutable variable`() {
 		val sourceCode =
 			"""
-				class Bottle {
+				Bottle class {
 					var contentInLitres: Float
 					mutating to empty() {
 						contentInLitres = 0

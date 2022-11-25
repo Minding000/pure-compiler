@@ -13,7 +13,7 @@ internal class InitializerResolution {
 	fun `emits error for undeclared initializers`() {
 		val sourceCode =
 			"""
-				class Item {
+				Item class {
 					init() {}
 				}
 				Item(Item())
@@ -26,10 +26,10 @@ internal class InitializerResolution {
 	fun `resolves initializer calls`() {
 		val sourceCode =
 			"""
-				native class Int {
+				native Int class {
 					init
 				}
-				class Window {
+				Window class {
 					init(width: Int, height: Int) {}
 				}
 				Window(Int(), Int())
@@ -44,10 +44,10 @@ internal class InitializerResolution {
 	fun `resolves initializer calls with a variable number of parameters`() {
 		val sourceCode =
 			"""
-				native class Int {
+				native Int class {
 					init
 				}
-				class IntegerList {
+				IntegerList class {
 					init(...integers: ...Int) {}
 				}
 				IntegerList()

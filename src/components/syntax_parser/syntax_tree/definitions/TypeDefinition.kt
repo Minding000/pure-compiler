@@ -16,7 +16,7 @@ import components.tokenizer.Word
 import components.tokenizer.WordAtom
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition as SemanticTypeDefinitionModel
 
-class TypeDefinition(private val type: Word, private val identifier: Identifier, private val superType: TypeElement?,
+class TypeDefinition(private val identifier: Identifier, private val type: Word, private val superType: TypeElement?,
 					 private val body: TypeBody):
 	Element(type.start, body.end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
@@ -71,6 +71,6 @@ class TypeDefinition(private val type: Word, private val identifier: Identifier,
 	}
 
 	override fun toString(): String {
-		return "TypeDefinition [ ${type.getValue()} $identifier${if(superType == null) "" else " $superType"} ] { $body }"
+		return "TypeDefinition [ $identifier ${type.getValue()}${if(superType == null) "" else " $superType"} ] { $body }"
 	}
 }

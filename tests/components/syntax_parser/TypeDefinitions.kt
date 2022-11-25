@@ -7,10 +7,10 @@ internal class TypeDefinitions {
 
 	@Test
 	fun `parses class definitions`() {
-		val sourceCode = "class Animal {}"
+		val sourceCode = "Animal class {}"
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Animal } ] { TypeBody {
+				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
 				} }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -18,25 +18,10 @@ internal class TypeDefinitions {
 
 	@Test
 	fun `parses object definitions`() {
-		val sourceCode = "object Dog {}"
+		val sourceCode = "Dog object {}"
 		val expected =
 			"""
-				TypeDefinition [ object Identifier { Dog } ] { TypeBody {
-				} }
-            """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
-	}
-
-	@Test
-	fun `parses trait definitions`() {
-		val sourceCode =
-			"""
-				trait Printable {
-				}
-            """.trimIndent()
-		val expected =
-			"""
-				TypeDefinition [ trait Identifier { Printable } ] { TypeBody {
+				TypeDefinition [ Identifier { Dog } object ] { TypeBody {
 				} }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -46,13 +31,13 @@ internal class TypeDefinitions {
 	fun `parses enum definitions`() {
 		val sourceCode =
 			"""
-				enum DeliveryStatus {
+				DeliveryStatus enum {
 					instances Pending, Cancelled, Delivered
 				}
             """.trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ enum Identifier { DeliveryStatus } ] { TypeBody {
+				TypeDefinition [ Identifier { DeliveryStatus } enum ] { TypeBody {
 					InstanceList {
 						Instance [ Identifier { Pending } ] {
 						}
@@ -70,13 +55,13 @@ internal class TypeDefinitions {
 	fun `parses instances with initializer parameters`() {
 		val sourceCode =
 			"""
-				enum Color {
+				Color enum {
 					instances Red(255, 0, 0), Green(0, 255, 0), Blue(0, 0, 255)
 				}
             """.trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ enum Identifier { Color } ] { TypeBody {
+				TypeDefinition [ Identifier { Color } enum ] { TypeBody {
 					InstanceList {
 						Instance [ Identifier { Red } ] {
 							NumberLiteral { 255 }
@@ -116,10 +101,10 @@ internal class TypeDefinitions {
 
 	@Test
 	fun `parses type definitions with inheritance`() {
-		val sourceCode = "class Dog: Animal & Soulmate {}"
+		val sourceCode = "Dog class: Animal & Soulmate {}"
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Dog } UnionType { ObjectType { Identifier { Animal } } & ObjectType { Identifier { Soulmate } } } ] { TypeBody {
+				TypeDefinition [ Identifier { Dog } class UnionType { ObjectType { Identifier { Animal } } & ObjectType { Identifier { Soulmate } } } ] { TypeBody {
 				} }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -129,14 +114,14 @@ internal class TypeDefinitions {
 	fun `parses member types`() {
 		val sourceCode =
 			"""
-				class String {
-					class Index {}
+				String class {
+					Index class {}
 				}
             """.trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { String } ] { TypeBody {
-					TypeDefinition [ class Identifier { Index } ] { TypeBody {
+				TypeDefinition [ Identifier { String } class ] { TypeBody {
+					TypeDefinition [ Identifier { Index } class ] { TypeBody {
 					} }
 				} }
             """.trimIndent()
@@ -145,11 +130,11 @@ internal class TypeDefinitions {
 
 	@Test
 	fun `parses native modifiers`() {
-		val sourceCode = "native class Goldfish {}"
+		val sourceCode = "native Goldfish class {}"
 		val expected =
 			"""
 				ModifierSection [ ModifierList { Modifier { native } } ] {
-					TypeDefinition [ class Identifier { Goldfish } ] { TypeBody {
+					TypeDefinition [ Identifier { Goldfish } class ] { TypeBody {
 					} }
 				}
             """.trimIndent()

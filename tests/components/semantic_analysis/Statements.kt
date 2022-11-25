@@ -4,13 +4,13 @@ import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
-class Statements {
+internal class Statements {
 
 	@Test
 	fun `emits error for duplicate case in switch statement`() {
 		val sourceCode =
 			"""
-				enum OperatingSystem {
+				OperatingSystem enum {
 					instances WINDOWS, LINUX, MACOS
 				}
 				val operatingSystem = OperatingSystem.WINDOWS
@@ -31,7 +31,7 @@ class Statements {
 	fun `emits warning for instances on objects`() {
 		val sourceCode =
 			"""
-				object Date {
+				Date object {
 					instances CURRENT
 				}
             """.trimIndent()
@@ -44,7 +44,7 @@ class Statements {
 	fun `emits warning for multiple instances declarations`() {
 		val sourceCode =
 			"""
-				enum Date {
+				Date enum {
 					instances PAST
 					instances CURRENT
 					instances FUTURE
@@ -58,7 +58,7 @@ class Statements {
 	fun `emits warning for generic types in objects`() {
 		val sourceCode =
 			"""
-				object Earth {
+				Earth object {
 					containing Species
 				}
             """.trimIndent()

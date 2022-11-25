@@ -34,7 +34,7 @@ internal class ValueResolution {
 	fun `resolves instance members`() {
 		val sourceCode =
 			"""
-				object House {
+				House object {
 					val livingAreaInSquareMeters = 120
 				}
 				House.livingAreaInSquareMeters
@@ -48,7 +48,7 @@ internal class ValueResolution {
 	fun `resolves parameters`() {
 		val sourceCode =
 			"""
-				object House {
+				House object {
 					to openDoor(speed: Int) {
 						speed
 					}
@@ -63,10 +63,10 @@ internal class ValueResolution {
 	fun `resolves super members`() {
 		val sourceCode =
 			"""
-				class Door {
+				Door class {
 					val isOpen = yes
 				}
-				object GlassDoor: Door {
+				GlassDoor object: Door {
 				}
 				GlassDoor.isOpen
             """.trimIndent()
@@ -80,7 +80,7 @@ internal class ValueResolution {
 	fun `emits error for calls to uncallable value`() {
 		val sourceCode =
 			"""
-				object Bird {
+				Bird object {
 					var age = 0
 				}
 				Bird.age()

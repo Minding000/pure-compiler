@@ -63,7 +63,7 @@ internal class Exceptions {
 	@Test
 	fun `parses function handle blocks`() {
 		val sourceCode = """
-			class Human {
+			Human class {
 				to speak(words: String) {
 					echo words
 				} handle NoWordsException e {
@@ -73,7 +73,7 @@ internal class Exceptions {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Human } ] { TypeBody {
+				TypeDefinition [ Identifier { Human } class ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { speak } ParameterList {
 							Parameter { Identifier { words }: ObjectType { Identifier { String } } }

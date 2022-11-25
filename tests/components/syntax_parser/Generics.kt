@@ -8,7 +8,7 @@ internal class Generics {
 	@Test
 	fun `parses generics declarations`() {
 		val sourceCode = """
-			class ShoppingList {
+			ShoppingList class {
 				containing Entry
 
 				to add(entry: Entry) {
@@ -18,7 +18,7 @@ internal class Generics {
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { ShoppingList } ] { TypeBody {
+				TypeDefinition [ Identifier { ShoppingList } class ] { TypeBody {
 					GenericsDeclaration {
 						Parameter { Identifier { Entry } }
 					}
@@ -39,13 +39,13 @@ internal class Generics {
 	@Test
 	fun `parses generic function definitions`() {
 		val sourceCode = """
-			object Math {
+			Math object {
 				to getGreatest(N: Number; a: N, b: N): N {}
 			}
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ object Identifier { Math } ] { TypeBody {
+				TypeDefinition [ Identifier { Math } object ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { getGreatest } ParameterList {
 							Parameter { Identifier { N }: ObjectType { Identifier { Number } } };
@@ -62,13 +62,13 @@ internal class Generics {
 	@Test
 	fun `parses generic operator definitions`() {
 		val sourceCode = """
-			object Server {
+			Server object {
 				operator [P: Protocol; protocol: P]: <P>Service {}
 			}
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ object Identifier { Server } ] { TypeBody {
+				TypeDefinition [ Identifier { Server } object ] { TypeBody {
 					OperatorSection {
 						OperatorDefinition [ IndexOperator { ParameterList {
 							Parameter { Identifier { P }: ObjectType { Identifier { Protocol } } };
@@ -86,21 +86,21 @@ internal class Generics {
 	@Test
 	fun `parses specific initializer calls`() {
 		val sourceCode = """
-			class ShoppingList {
+			ShoppingList class {
 				containing Entry
 
 				to add(entry: Entry) {
 					echo "Adding entry..."
 				}
 			}
-			class Fruit {
+			Fruit class {
 				var name: String
 			}
 			var fruitList = <Fruit>ShoppingList()
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { ShoppingList } ] { TypeBody {
+				TypeDefinition [ Identifier { ShoppingList } class ] { TypeBody {
 					GenericsDeclaration {
 						Parameter { Identifier { Entry } }
 					}
@@ -114,7 +114,7 @@ internal class Generics {
 						} } }
 					}
 				} }
-				TypeDefinition [ class Identifier { Fruit } ] { TypeBody {
+				TypeDefinition [ Identifier { Fruit } class ] { TypeBody {
 					VariableSection [ var ] {
 						VariableDeclaration { Identifier { name }: ObjectType { Identifier { String } } }
 					}
@@ -166,13 +166,13 @@ internal class Generics {
 	@Test
 	fun `parses producing types`() {
 		val sourceCode = """
-			class Fridge {
+			Fridge class {
 				to add(foodList: <Food producing>List) {}
 			}
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { Fridge } ] { TypeBody {
+				TypeDefinition [ Identifier { Fridge } class ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { add } ParameterList {
 							Parameter { Identifier { foodList }: ObjectType { TypeList {
@@ -189,13 +189,13 @@ internal class Generics {
 	@Test
 	fun `parses consuming types`() {
 		val sourceCode = """
-			class SodaMachine {
+			SodaMachine class {
 				to refill(glass: <Soda consuming>LiquidContainer) {}
 			}
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ class Identifier { SodaMachine } ] { TypeBody {
+				TypeDefinition [ Identifier { SodaMachine } class ] { TypeBody {
 					FunctionSection [ to ] {
 						Function [ Identifier { refill } ParameterList {
 							Parameter { Identifier { glass }: ObjectType { TypeList {

@@ -16,7 +16,7 @@ internal class FunctionResolution {
 	fun `resolves function calls`() {
 		val sourceCode =
 			"""
-				object Door {
+				Door object {
 					to open() {}
 				}
 				Door.open()
@@ -33,12 +33,12 @@ internal class FunctionResolution {
 	fun `resolves calls to super function`() {
 		val sourceCode =
 			"""
-				native class Speed {}
-				class Door {
+				native Speed class {}
+				Door class {
 					to open() {}
 				}
-				class TransparentDoor: Door {}
-				object GlassDoor: TransparentDoor {
+				TransparentDoor class: Door {}
+				GlassDoor object: TransparentDoor {
 					to open(speed: Speed) {}
 				}
 				GlassDoor.open()
@@ -55,11 +55,11 @@ internal class FunctionResolution {
 	fun `resolves calls to overriding function`() {
 		val sourceCode =
 			"""
-				class Door {
+				Door class {
 					to open() {}
 				}
-				class TransparentDoor: Door {}
-				object GlassDoor: TransparentDoor {
+				TransparentDoor class: Door {}
+				GlassDoor object: TransparentDoor {
 					overriding to open() {}
 				}
 				GlassDoor.open()
@@ -76,13 +76,13 @@ internal class FunctionResolution {
 	fun `detects missing overriding keyword on function`() {
 		val sourceCode =
 			"""
-				class Food {
+				Food class {
 					to check() {}
 				}
-				class Vegetable: Food {
+				Vegetable class: Food {
 					to check(): Vegetable {}
 				}
-				class Potato: Vegetable {
+				Potato class: Vegetable {
 					to check() {}
 				}
             """.trimIndent()
@@ -94,11 +94,11 @@ internal class FunctionResolution {
 	fun `allows for functions to be overridden`() {
 		val sourceCode =
 			"""
-				class Food {
+				Food class {
 					to check() {}
 				}
-				class Vegetable: Food {}
-				class Potato: Vegetable {
+				Vegetable class: Food {}
+				Potato class: Vegetable {
 					overriding to check() {}
 				}
             """.trimIndent()
@@ -112,7 +112,7 @@ internal class FunctionResolution {
 	fun `detects overriding keyword being used without super function`() {
 		val sourceCode =
 			"""
-				class Room {
+				Room class {
 					overriding to clean() {}
 				}
             """.trimIndent()
@@ -125,8 +125,8 @@ internal class FunctionResolution {
 	fun `emits error for function calls with wrong parameters`() {
 		val sourceCode =
 			"""
-				object Bright {}
-				object Light {
+				Bright object {}
+				Light object {
 					to shine() {}
 				}
 				Light.shine(Bright)
@@ -140,10 +140,10 @@ internal class FunctionResolution {
 	fun `emits error for ambiguous function calls`() {
 		val sourceCode =
 			"""
-				class Int {
+				Int class {
 					init
 				}
-				class List {
+				List class {
 					containing Element
 
 					init
@@ -163,10 +163,10 @@ internal class FunctionResolution {
 	fun `resolves function calls with a variable number of parameters`() {
 		val sourceCode =
 			"""
-				native class Int {
+				native Int class {
 					init
 				}
-				object IntegerList {
+				IntegerList object {
 					to add(...integers: ...Int) {}
 				}
 				IntegerList.add(Int())

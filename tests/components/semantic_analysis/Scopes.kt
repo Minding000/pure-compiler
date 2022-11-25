@@ -23,7 +23,7 @@ import source_structure.Module
 import source_structure.Position
 import util.LintResult
 
-class Scopes {
+internal class Scopes {
 
 	private fun assertErrorEmitted(message: String, setup: (Linter, Position) -> Unit) {
 		val linter = Linter()

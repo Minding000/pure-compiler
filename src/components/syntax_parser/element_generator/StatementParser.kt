@@ -126,7 +126,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			return parseModifierSection()
 		if(WordType.VARIABLE_DECLARATION.includes(currentWord?.type))
 			return parseVariableSection()
-		if(WordType.TYPE_TYPE.includes(currentWord?.type))
+		if(WordType.TYPE_TYPE.includes(nextWord?.type))
 			return parseTypeDefinition()
 		if(currentWord?.type == WordAtom.GENERATE)
 			return parseGeneratorDefinition()
@@ -448,18 +448,18 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * TypeDefinition:
-	 *   <type-type> <Identifier>[: <Type>] <TypeBody>
+	 *   <Identifier> <type-type>[: <Type>] <TypeBody>
 	 */
 	private fun parseTypeDefinition(): TypeDefinition {
-		val type = consume(WordType.TYPE_TYPE)
 		val identifier = parseIdentifier()
+		val type = consume(WordType.TYPE_TYPE)
 		var superType: TypeElement? = null
 		if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
 			superType = typeParser.parseType(false)
 		}
 		val body = parseTypeBody()
-		return TypeDefinition(type, identifier, superType, body)
+		return TypeDefinition(identifier, type, superType, body)
 	}
 
 	/**
@@ -724,7 +724,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			return parseFunctionSection()
 		if(currentWord?.type == WordAtom.OPERATOR)
 			return parseOperatorSection()
-		if(WordType.TYPE_TYPE.includes(currentWord?.type))
+		if(WordType.TYPE_TYPE.includes(nextWord?.type))
 			return parseTypeDefinition()
 		if(currentWord?.type == WordAtom.ALIAS)
 			return parseTypeAlias()
