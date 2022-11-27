@@ -182,7 +182,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	fun parseTry(): ValueElement {
 		if(WordType.TRY.includes(currentWord?.type)) {
 			val operator = consume(WordType.TRY)
-			return Try(parseUnaryOperator(), operator.type == WordAtom.TRY_OPTIONAL, operator.start)
+			return Try(parseUnaryOperator(), operator.type == WordAtom.OPTIONAL_TRY, operator.start)
 		}
 		return parseUnaryOperator()
 	}
@@ -215,9 +215,9 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 		while(WordType.ACCESSOR.includes(currentWord?.type)) {
 			expression =  if(WordType.MEMBER_ACCESSOR.includes(currentWord?.type))
 				parseMemberAccess(expression)
-			else if(currentWord?.type == WordAtom.PARENTHESES_OPEN)
+			else if(currentWord?.type == WordAtom.OPENING_PARENTHESIS)
 				parseFunctionCall(expression)
-			else if(currentWord?.type == WordAtom.BRACKETS_OPEN)
+			else if(currentWord?.type == WordAtom.OPENING_BRACKET)
 				parseIndex(expression)
 			else
 				throw CompilerError("Failed to parse accessor: '${currentWord?.type}'")
@@ -244,7 +244,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Accessor>[[[<Type>[, <Type>]...];][<Expression>[, <Expression>]...]]
 	 */
 	private fun parseIndex(expression: ValueElement): ValueElement {
-		return parseCall(expression, WordAtom.BRACKETS_OPEN, WordAtom.BRACKETS_CLOSE)
+		return parseCall(expression, WordAtom.OPENING_BRACKET, WordAtom.CLOSING_BRACKET)
 	}
 
 	/**
@@ -252,7 +252,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <Accessor>([[<Type>[, <Type>]...];][<Expression>[, <Expression>]...])
 	 */
 	private fun parseFunctionCall(expression: ValueElement): ValueElement {
-		return parseCall(expression, WordAtom.PARENTHESES_OPEN, WordAtom.PARENTHESES_CLOSE)
+		return parseCall(expression, WordAtom.OPENING_PARENTHESIS, WordAtom.CLOSING_PARENTHESIS)
 	}
 
 	/**
@@ -283,7 +283,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 			}
 		}
 		val end = consume(endWord).end
-		return if(startWord == WordAtom.PARENTHESES_OPEN)
+		return if(startWord == WordAtom.OPENING_PARENTHESIS)
 			FunctionCall(expression, typeParameters, valueParameters, end)
 		else
 			IndexAccess(expression, typeParameters, valueParameters, end)
@@ -296,9 +296,9 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <LambdaFunction>
 	 */
 	private fun parsePrimary(): ValueElement {
-		if(currentWord?.type == WordAtom.PARENTHESES_OPEN) {
-			val start = consume(WordAtom.PARENTHESES_OPEN).start
-			val isEmptyParameterListPresent = currentWord?.type == WordAtom.PARENTHESES_CLOSE
+		if(currentWord?.type == WordAtom.OPENING_PARENTHESIS) {
+			val start = consume(WordAtom.OPENING_PARENTHESIS).start
+			val isEmptyParameterListPresent = currentWord?.type == WordAtom.CLOSING_PARENTHESIS
 					&& nextWord?.type == WordAtom.ARROW
 			val isParameterModifierPresent = WordType.MODIFIER.includes(currentWord?.type)
 			val isParameterPresent = currentWord?.type == WordAtom.IDENTIFIER
@@ -306,7 +306,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 			if(isEmptyParameterListPresent || isParameterModifierPresent || isParameterPresent)
 				return parseLambdaFunctionDefinition(start)
 			val expression = parseExpression()
-			consume(WordAtom.PARENTHESES_CLOSE)
+			consume(WordAtom.CLOSING_PARENTHESIS)
 			return expression
 		}
 		return parseAtom()
@@ -318,7 +318,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 */
 	private fun parseLambdaFunctionDefinition(start: Position): LambdaFunctionDefinition {
 		val parameterList = statementParser.parseParameterList(
-			WordAtom.PARENTHESES_OPEN, WordAtom.PARENTHESES_CLOSE,
+			WordAtom.OPENING_PARENTHESIS, WordAtom.CLOSING_PARENTHESIS,
 			start)
 		val returnType = if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)

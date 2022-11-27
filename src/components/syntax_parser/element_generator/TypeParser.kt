@@ -37,8 +37,8 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 */
 	fun parseType(optionalAllowed: Boolean = true): TypeElement {
 		var hasDynamicQuantity = false
-		if(currentWord?.type == WordAtom.SPREAD_GROUP) {
-			consume(WordAtom.SPREAD_GROUP)
+		if(currentWord?.type == WordAtom.SPREAD) {
+			consume(WordAtom.SPREAD)
 			hasDynamicQuantity = true
 		}
 		val baseType = parseUnionType()
@@ -73,7 +73,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 *   <FunctionType>
 	 */
 	private fun parseTypeAtom(): TypeElement {
-		if(currentWord?.type == WordAtom.PARENTHESES_OPEN || WordType.LAMBDA_FUNCTION.includes(currentWord?.type))
+		if(currentWord?.type == WordAtom.OPENING_PARENTHESIS || WordType.LAMBDA_FUNCTION.includes(currentWord?.type))
 			return parseFunctionType()
 		return parseObjectType()
 	}
@@ -101,7 +101,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 		val lambdaType = consume(WordType.LAMBDA_FUNCTION)
 		val start = parameterList?.start ?: lambdaType.start
 		var returnType: TypeElement? = null
-		val end = if(lambdaType.type == WordAtom.ARROW_CAPPED) {
+		val end = if(lambdaType.type == WordAtom.CAPPED_ARROW) {
 			lambdaType.end
 		} else {
 			returnType = parseType()
@@ -115,14 +115,14 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 *   ([<TypeParameter>][, <TypeParameter>]...)
 	 */
 	private fun parseLambdaParameterList(): ParameterTypeList {
-		val start = consume(WordAtom.PARENTHESES_OPEN).start
+		val start = consume(WordAtom.OPENING_PARENTHESIS).start
 		val types = LinkedList<TypeElement>()
 		types.add(parseType())
 		while(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
 			types.add(parseType())
 		}
-		val end = consume(WordAtom.PARENTHESES_CLOSE).end
+		val end = consume(WordAtom.CLOSING_PARENTHESIS).end
 		return ParameterTypeList(start, types, end)
 	}
 

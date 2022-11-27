@@ -26,7 +26,7 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.NOT,
 		WordAtom.PLUS,
 		WordAtom.MINUS,
-		WordAtom.SPREAD_GROUP
+		WordAtom.SPREAD
 	),
 	UNARY_MODIFICATION(
 		WordAtom.INCREMENT,
@@ -67,7 +67,7 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 	CAST(
 		WordAtom.AS,
 		WordAtom.OPTIONAL_CAST,
-		WordAtom.FORCE_CAST,
+		WordAtom.UNCHECKED_CAST,
 		WordAtom.IS,
 		WordAtom.IS_NOT
 	),
@@ -77,7 +77,7 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 	),
 	LAMBDA_FUNCTION(
 		WordAtom.ARROW,
-		WordAtom.ARROW_CAPPED
+		WordAtom.CAPPED_ARROW
 	),
 	VARIABLE_DECLARATION(
 		WordAtom.CONST,
@@ -87,8 +87,8 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 	ACCESSOR(
 		WordAtom.DOT,
 		WordAtom.OPTIONAL_ACCESSOR,
-		WordAtom.PARENTHESES_OPEN,
-		WordAtom.BRACKETS_OPEN
+		WordAtom.OPENING_PARENTHESIS,
+		WordAtom.OPENING_BRACKET
 	),
 	MEMBER_ACCESSOR(
 		WordAtom.DOT,
@@ -115,11 +115,11 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.IMMUTABLE,
 		WordAtom.MUTABLE,
 		WordAtom.MUTATING,
-		WordAtom.SPREAD_GROUP
+		WordAtom.SPREAD
 	),
 	TRY(
-		WordAtom.TRY_OPTIONAL,
-		WordAtom.TRY_UNCHECK
+		WordAtom.OPTIONAL_TRY,
+		WordAtom.UNCHECKED_TRY
 	);
 
 	override fun includes(atom: WordAtom?): Boolean {

@@ -98,7 +98,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   <Expression> <binary-modification> <Expression>
 	 */
 	private fun parseStatement(): Element {
-		if(currentWord?.type == WordAtom.BRACES_OPEN)
+		if(currentWord?.type == WordAtom.OPENING_BRACE)
 			return parseStatementSection()
 		if(currentWord?.type == WordAtom.REFERENCING)
 			return parseFileReference()
@@ -120,7 +120,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			return parseBreakStatement()
 		if(currentWord?.type == WordAtom.NEXT)
 			return parseNextStatement()
-		if(currentWord?.type == WordAtom.ALIAS)
+		if(currentWord?.type == WordAtom.TYPE_ALIAS)
 			return parseTypeAlias()
 		if(WordType.MODIFIER.includes(currentWord?.type))
 			return parseModifierSection()
@@ -128,7 +128,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			return parseVariableSection()
 		if(WordType.TYPE_TYPE.includes(nextWord?.type))
 			return parseTypeDefinition()
-		if(currentWord?.type == WordAtom.GENERATE)
+		if(currentWord?.type == WordAtom.GENERATOR)
 			return parseGeneratorDefinition()
 
 		val expression = expressionParser.parseExpression()
@@ -177,9 +177,9 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   [{[<Alias>\n]...}]
 	 */
 	private fun parseAliasBlock(): AliasBlock? {
-		if(currentWord?.type != WordAtom.BRACES_OPEN)
+		if(currentWord?.type != WordAtom.OPENING_BRACE)
 			return null
-		val start = consume(WordAtom.BRACES_OPEN).start
+		val start = consume(WordAtom.OPENING_BRACE).start
 		val referenceAliases = LinkedList<ReferenceAlias>()
 		while(currentWord?.type == WordAtom.LINE_BREAK) {
 			while(currentWord?.type == WordAtom.LINE_BREAK)
@@ -187,7 +187,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			if(currentWord?.type == WordAtom.IDENTIFIER)
 				referenceAliases.add(parseAlias())
 		}
-		val end = consume(WordAtom.BRACES_CLOSE).end
+		val end = consume(WordAtom.CLOSING_BRACE).end
 		return AliasBlock(start, end, referenceAliases)
 	}
 
@@ -250,11 +250,11 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	private fun parseSwitchStatement(isExpression: Boolean = false): SwitchStatement {
 		val start = consume(WordAtom.SWITCH).start
 		val subject = parseExpression()
-		consume(WordAtom.BRACES_OPEN)
+		consume(WordAtom.OPENING_BRACE)
 		consumeLineBreaks()
 		val cases = LinkedList<Case>()
 		var elseResult: Element? = null
-		while(currentWord?.type !== WordAtom.BRACES_CLOSE) {
+		while(currentWord?.type !== WordAtom.CLOSING_BRACE) {
 			consumeLineBreaks()
 			if(currentWord?.type == WordAtom.ELSE) {
 				consume(WordAtom.ELSE)
@@ -267,7 +267,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			consumeLineBreaks()
 		}
 		consumeLineBreaks()
-		val end = consume(WordAtom.BRACES_CLOSE).end
+		val end = consume(WordAtom.CLOSING_BRACE).end
 		return SwitchStatement(subject, cases, elseResult, start, end)
 	}
 
@@ -380,7 +380,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   <Statement>
 	 */
 	fun parseStatementSection(): StatementSection {
-		if(currentWord?.type != WordAtom.BRACES_OPEN) {
+		if(currentWord?.type != WordAtom.OPENING_BRACE) {
 			consumeLineBreaks()
 			val statement = parseStatement()
 			return StatementSection(StatementBlock(statement))
@@ -398,11 +398,11 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   { [<Statement>\n]... }
 	 */
 	private fun parseStatementBlock(previousStart: Position? = null): StatementBlock {
-		var start = consume(WordAtom.BRACES_OPEN).start
+		var start = consume(WordAtom.OPENING_BRACE).start
 		if(previousStart != null)
 			start = previousStart
-		val statements = parseStatements(WordAtom.BRACES_CLOSE)
-		val end = consume(WordAtom.BRACES_CLOSE).end
+		val statements = parseStatements(WordAtom.CLOSING_BRACE)
+		val end = consume(WordAtom.CLOSING_BRACE).end
 		return StatementBlock(start, end, statements)
 	}
 
@@ -489,7 +489,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   alias <Identifier> = <Type>
 	 */
 	private fun parseTypeAlias(modifierList: ModifierList? = null): TypeAlias {
-		var start = consume(WordAtom.ALIAS).start
+		var start = consume(WordAtom.TYPE_ALIAS).start
 		if(modifierList != null)
 			start = modifierList.start
 		val identifier = parseIdentifier()
@@ -503,15 +503,15 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   { [<MemberDeclaration>\n]... }
 	 */
 	private fun parseTypeBody(): TypeBody {
-		val start = consume(WordAtom.BRACES_OPEN).start
+		val start = consume(WordAtom.OPENING_BRACE).start
 		val members = LinkedList<Element>()
-		while(currentWord?.type != WordAtom.BRACES_CLOSE) {
+		while(currentWord?.type != WordAtom.CLOSING_BRACE) {
 			consumeLineBreaks()
-			if(currentWord?.type == WordAtom.BRACES_CLOSE)
+			if(currentWord?.type == WordAtom.CLOSING_BRACE)
 				break
 			members.add(parseMemberDeclaration())
 		}
-		val end = consume(WordAtom.BRACES_CLOSE).end
+		val end = consume(WordAtom.CLOSING_BRACE).end
 		return TypeBody(start, end, members)
 	}
 
@@ -567,16 +567,16 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		val identifier = parseIdentifier()
 		val parameters = LinkedList<ValueElement>()
 		var end = identifier.end
-		if(currentWord?.type == WordAtom.PARENTHESES_OPEN) {
-			consume(WordAtom.PARENTHESES_OPEN)
-			if(currentWord?.type != WordAtom.PARENTHESES_CLOSE) {
+		if(currentWord?.type == WordAtom.OPENING_PARENTHESIS) {
+			consume(WordAtom.OPENING_PARENTHESIS)
+			if(currentWord?.type != WordAtom.CLOSING_PARENTHESIS) {
 				parameters.add(parseExpression())
 				while(currentWord?.type == WordAtom.COMMA) {
 					consume(WordAtom.COMMA)
 					parameters.add(parseExpression())
 				}
 			}
-			end = consume(WordAtom.PARENTHESES_CLOSE).end
+			end = consume(WordAtom.CLOSING_PARENTHESIS).end
 		}
 		return Instance(identifier, parameters, end)
 	}
@@ -586,9 +586,9 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   init[<ParameterList>] [<StatementSection>]
 	 */
 	private fun parseInitializerDefinition(): Element {
-		val declarationWord = consume(WordAtom.INIT)
-		val parameterList = if(currentWord?.type == WordAtom.PARENTHESES_OPEN) parseParameterList() else null
-		val body = if(currentWord?.type == WordAtom.BRACES_OPEN) parseStatementSection() else null
+		val declarationWord = consume(WordAtom.INITIALIZER)
+		val parameterList = if(currentWord?.type == WordAtom.OPENING_PARENTHESIS) parseParameterList() else null
+		val body = if(currentWord?.type == WordAtom.OPENING_BRACE) parseStatementSection() else null
 		val end = body?.end ?: parameterList?.end ?: declarationWord.end
 		return InitializerDefinition(declarationWord.start, parameterList, body, end)
 	}
@@ -598,8 +598,8 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   deinit [<StatementSection>]
 	 */
 	private fun parseDeinitializerDefinition(): Element {
-		val keyword = consume(WordAtom.DEINIT)
-		val body = if(currentWord?.type == WordAtom.BRACES_OPEN) parseStatementSection() else null
+		val keyword = consume(WordAtom.DEINITIALIZER)
+		val body = if(currentWord?.type == WordAtom.OPENING_BRACE) parseStatementSection() else null
 		val end = body?.end ?: keyword.end
 		return DeinitializerDefinition(keyword.start, end, body)
 	}
@@ -615,7 +615,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			consume(WordAtom.COLON)
 			typeParser.parseType()
 		} else null
-		val body = if(currentWord?.type == WordAtom.BRACES_OPEN)
+		val body = if(currentWord?.type == WordAtom.OPENING_BRACE)
 			parseStatementSection()
 		else null
 		return FunctionDefinition(identifier, parameterList, body, returnType)
@@ -627,14 +627,14 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 */
 	private fun parseOperatorDefinition(): OperatorDefinition {
 		val operator = parseOperator()
-		val parameterList = if(currentWord?.type == WordAtom.PARENTHESES_OPEN)
+		val parameterList = if(currentWord?.type == WordAtom.OPENING_PARENTHESIS)
 			parseParameterList()
 		else null
 		val returnType = if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
 			typeParser.parseType()
 		} else null
-		val body = if(currentWord?.type == WordAtom.BRACES_OPEN)
+		val body = if(currentWord?.type == WordAtom.OPENING_BRACE)
 			parseStatementSection()
 		else null
 		return OperatorDefinition(operator, parameterList, body, returnType)
@@ -646,8 +646,8 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   [<TypedIdentifier[, <TypedIdentifier>]>]
 	 */
 	private fun parseOperator(): Operator {
-		if(currentWord?.type == WordAtom.BRACKETS_OPEN) {
-			val parameterList = parseParameterList(WordAtom.BRACKETS_OPEN, WordAtom.BRACKETS_CLOSE)
+		if(currentWord?.type == WordAtom.OPENING_BRACKET) {
+			val parameterList = parseParameterList(WordAtom.OPENING_BRACKET, WordAtom.CLOSING_BRACKET)
 			return IndexOperator(parameterList)
 		}
 		return Operator(consume(WordType.OPERATOR))
@@ -657,8 +657,8 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 * ParameterList:
 	 *   <startWord>[[<Parameter>[, <Parameter>]...];][<Parameter>[, <Parameter>]...]<endWord>
 	 */
-	fun parseParameterList(startWord: WordAtom = WordAtom.PARENTHESES_OPEN,
-						   endWord: WordAtom = WordAtom.PARENTHESES_CLOSE, startPosition: Position? = null):
+	fun parseParameterList(startWord: WordAtom = WordAtom.OPENING_PARENTHESIS,
+						   endWord: WordAtom = WordAtom.CLOSING_PARENTHESIS, startPosition: Position? = null):
 		ParameterList {
 		val start = startPosition ?: consume(startWord).start
 		var genericParameters: List<Parameter>? = null
@@ -716,9 +716,9 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	private fun parseDeclarationSection(): Element {
 		if(WordType.VARIABLE_DECLARATION.includes(currentWord?.type))
 			return parseVariableSection()
-		if(currentWord?.type == WordAtom.INIT)
+		if(currentWord?.type == WordAtom.INITIALIZER)
 			return parseInitializerDefinition()
-		if(currentWord?.type == WordAtom.DEINIT)
+		if(currentWord?.type == WordAtom.DEINITIALIZER)
 			return parseDeinitializerDefinition()
 		if(WordType.FUNCTION_DECLARATION.includes(currentWord?.type))
 			return parseFunctionSection()
@@ -726,7 +726,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			return parseOperatorSection()
 		if(WordType.TYPE_TYPE.includes(nextWord?.type))
 			return parseTypeDefinition()
-		if(currentWord?.type == WordAtom.ALIAS)
+		if(currentWord?.type == WordAtom.TYPE_ALIAS)
 			return parseTypeAlias()
 		if(WordType.MODIFIER.includes(currentWord?.type))
 			return parseModifierSection()
@@ -745,15 +745,15 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		val modifierList = parseModifierList()
 				?: throw UnexpectedWordError(getCurrentWord(WordType.MODIFIER), WordType.MODIFIER)
 		val sections = LinkedList<Element>()
-		val end = if(currentWord?.type == WordAtom.BRACES_OPEN) {
-			consume(WordAtom.BRACES_OPEN)
-			while(currentWord?.type != WordAtom.BRACES_CLOSE) {
+		val end = if(currentWord?.type == WordAtom.OPENING_BRACE) {
+			consume(WordAtom.OPENING_BRACE)
+			while(currentWord?.type != WordAtom.CLOSING_BRACE) {
 				consumeLineBreaks()
-				if(currentWord?.type == WordAtom.BRACES_CLOSE)
+				if(currentWord?.type == WordAtom.CLOSING_BRACE)
 					break
 				sections.add(parseDeclarationSection())
 			}
-			consume(WordAtom.BRACES_CLOSE).end
+			consume(WordAtom.CLOSING_BRACE).end
 		} else {
 			sections.add(parseDeclarationSection())
 			sections.last().end
@@ -779,15 +779,15 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			parseExpression()
 		} else null
 		val variables = LinkedList<VariableSectionElement>()
-		val end = if(currentWord?.type == WordAtom.BRACES_OPEN) {
-			consume(WordAtom.BRACES_OPEN)
-			while(currentWord?.type != WordAtom.BRACES_CLOSE) {
+		val end = if(currentWord?.type == WordAtom.OPENING_BRACE) {
+			consume(WordAtom.OPENING_BRACE)
+			while(currentWord?.type != WordAtom.CLOSING_BRACE) {
 				consumeLineBreaks()
-				if(currentWord?.type == WordAtom.BRACES_CLOSE)
+				if(currentWord?.type == WordAtom.CLOSING_BRACE)
 					break
 				variables.add(parseVariableSectionPart())
 			}
-			consume(WordAtom.BRACES_CLOSE).end
+			consume(WordAtom.CLOSING_BRACE).end
 		} else {
 			variables.add(parseVariableSectionPart())
 			variables.last().end
@@ -836,15 +836,15 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	private fun parseFunctionSection(): FunctionSection {
 		val type = consume(WordType.FUNCTION_DECLARATION)
 		val functions = LinkedList<FunctionDefinition>()
-		val end = if(currentWord?.type == WordAtom.BRACES_OPEN) {
-			consume(WordAtom.BRACES_OPEN)
-			while(currentWord?.type != WordAtom.BRACES_CLOSE) {
+		val end = if(currentWord?.type == WordAtom.OPENING_BRACE) {
+			consume(WordAtom.OPENING_BRACE)
+			while(currentWord?.type != WordAtom.CLOSING_BRACE) {
 				consumeLineBreaks()
-				if(currentWord?.type == WordAtom.BRACES_CLOSE)
+				if(currentWord?.type == WordAtom.CLOSING_BRACE)
 					break
 				functions.add(parseFunctionDefinition())
 			}
-			consume(WordAtom.BRACES_CLOSE).end
+			consume(WordAtom.CLOSING_BRACE).end
 		} else {
 			functions.add(parseFunctionDefinition())
 			functions.last().end
@@ -862,15 +862,15 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	private fun parseOperatorSection(): OperatorSection {
 		val type = consume(WordAtom.OPERATOR)
 		val operators = LinkedList<OperatorDefinition>()
-		val end = if(currentWord?.type == WordAtom.BRACES_OPEN) {
-			consume(WordAtom.BRACES_OPEN)
-			while(currentWord?.type != WordAtom.BRACES_CLOSE) {
+		val end = if(currentWord?.type == WordAtom.OPENING_BRACE) {
+			consume(WordAtom.OPENING_BRACE)
+			while(currentWord?.type != WordAtom.CLOSING_BRACE) {
 				consumeLineBreaks()
-				if(currentWord?.type == WordAtom.BRACES_CLOSE)
+				if(currentWord?.type == WordAtom.CLOSING_BRACE)
 					break
 				operators.add(parseOperatorDefinition())
 			}
-			consume(WordAtom.BRACES_CLOSE).end
+			consume(WordAtom.CLOSING_BRACE).end
 		} else {
 			operators.add(parseOperatorDefinition())
 			operators.last().end
@@ -883,7 +883,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   generate <Identifier><ParameterList>: <Type>[, <Type>] <StatementSection>
 	 */
 	private fun parseGeneratorDefinition(): Element {
-		val start = consume(WordAtom.GENERATE).start
+		val start = consume(WordAtom.GENERATOR).start
 		val identifier = parseIdentifier()
 		val parameterList = parseParameterList()
 		consume(WordAtom.COLON)

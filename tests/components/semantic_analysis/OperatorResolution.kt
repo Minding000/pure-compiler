@@ -157,6 +157,7 @@ internal class OperatorResolution {
 		assertNotNull(operatorDefinition)
 	}
 
+	@Disabled
 	@Test
 	fun `resolves calls to overriding operator`() {
 		val sourceCode =
@@ -182,6 +183,7 @@ internal class OperatorResolution {
 		assertNotNull(signature)
 	}
 
+	@Disabled
 	@Test
 	fun `detects missing overriding keyword on operator`() {
 		val sourceCode =
@@ -220,6 +222,7 @@ internal class OperatorResolution {
 			"'overriding' keyword is used, but the operator doesn't have a super operator")
 	}
 
+	@Disabled
 	@Test
 	fun `detects overriding keyword being used without super operator`() {
 		val sourceCode =

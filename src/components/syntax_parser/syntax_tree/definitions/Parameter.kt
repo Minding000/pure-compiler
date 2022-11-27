@@ -15,13 +15,13 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
     Element(modifierList?.start ?: identifier.start, identifier.end) {
 
     companion object {
-        val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.MUTABLE, WordAtom.SPREAD_GROUP)
+        val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.MUTABLE, WordAtom.SPREAD)
     }
 
     override fun concretize(linter: Linter, scope: MutableScope): SemanticParameterModel {
         modifierList?.validate(linter, ALLOWED_MODIFIER_TYPES)
         val isMutable = modifierList?.containsModifier(WordAtom.MUTABLE) ?: false
-        val hasDynamicSize = modifierList?.containsModifier(WordAtom.SPREAD_GROUP) ?: false
+        val hasDynamicSize = modifierList?.containsModifier(WordAtom.SPREAD) ?: false
         val parameter = SemanticParameterModel(this, identifier.getValue(), type?.concretize(linter, scope), isMutable,
                 hasDynamicSize)
         if(type != null)

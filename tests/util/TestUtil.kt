@@ -3,6 +3,8 @@ package util
 import code.Builder
 import components.syntax_parser.element_generator.ElementGenerator
 import components.semantic_analysis.Linter
+import components.tokenizer.WordAtom
+import components.tokenizer.WordGenerator
 import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream
@@ -10,6 +12,8 @@ import java.io.PrintStream
 import java.lang.StringBuilder
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 object TestUtil {
     private val defaultErrorStream = System.err
@@ -26,13 +30,18 @@ object TestUtil {
         assertEquals("", actualErrorStream, "Expected error stream to be empty")
     }
 
+	private fun createTestProject(sourceCode: String, includeRequiredModules: Boolean = false): Project {
+		val project = Project("Test")
+		val testModule = Module("Test")
+		testModule.addFile(LinkedList(), "Test", sourceCode)
+		project.addModule(testModule)
+		if(includeRequiredModules)
+			Builder.loadRequiredModules(project)
+		return project
+	}
+
     fun parse(sourceCode: String, includeRequiredModules: Boolean = false): ParseResult {
-        val project = Project("Test")
-        val testModule = Module("Test")
-        testModule.addFile(LinkedList(), "Test", sourceCode)
-        project.addModule(testModule)
-        if(includeRequiredModules)
-            Builder.loadRequiredModules(project)
+		val project = createTestProject(sourceCode, includeRequiredModules)
         val elementGenerator = ElementGenerator(project)
         val program = elementGenerator.parseProgram()
         elementGenerator.logger.printReport()
@@ -46,6 +55,22 @@ object TestUtil {
         linter.logger.printReport()
         return LintResult(linter, program)
     }
+
+	fun assertTokenIsIgnored(sourceCode: String) {
+		val project = createTestProject(sourceCode)
+		val wordGenerator = WordGenerator(project)
+		val word = wordGenerator.getNextWord()
+		assertNull(word?.getValue(), "Token is not ignored")
+	}
+
+	fun assertTokenType(sourceCode: String, type: WordAtom) {
+		val project = createTestProject(sourceCode)
+		val wordGenerator = WordGenerator(project)
+		val word = wordGenerator.getNextWord()
+		assertNotNull(word, "No token found")
+		assertEquals(sourceCode, word.getValue(), "The generated token doesn't match the entire input")
+		assertEquals(type, word.type, "The generated token doesn't match the expected type")
+	}
 
     fun assertSameSyntaxTree(expectedFileSyntaxTree: String, sourceCode: String) {
         val actualSyntaxTree = parse(sourceCode).program.toString()

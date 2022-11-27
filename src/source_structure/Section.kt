@@ -5,6 +5,8 @@ import java.lang.StringBuilder
 open class Section(val start: Position, val end: Position): IdentifierSource {
 	private val file: File
 		get() = start.line.file
+	val length: Int
+		get() = end.index - start.index
 
 	final override fun getValue(): String {
 		return file.content.substring(start.index, end.index)
