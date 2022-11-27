@@ -129,6 +129,19 @@ internal class TypeDefinitions {
 	}
 
 	@Test
+	fun `parses abstract modifiers`() {
+		val sourceCode = "abstract Goldfish class {}"
+		val expected =
+			"""
+				ModifierSection [ ModifierList { Modifier { abstract } } ] {
+					TypeDefinition [ Identifier { Goldfish } class ] { TypeBody {
+					} }
+				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
 	fun `parses native modifiers`() {
 		val sourceCode = "native Goldfish class {}"
 		val expected =
