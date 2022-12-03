@@ -192,6 +192,18 @@ class InterfaceScope(private val type: Type): Scope() {
 		return validSignatures
 	}
 
+	class AbstractMember(val parentDefinition: TypeDefinition, val definition: VariableValueDeclaration)
+
+	fun getAbstractMembers(): List<AbstractMember> {
+		val abstractMembers = LinkedList<AbstractMember>()
+		for((_, declaration) in values) {
+			//TODO continue abstract modifier implementation here
+			//if(declaration.isAbstract)
+			//	abstractMembers.add(AbstractMember(declaration))
+		}
+		return abstractMembers
+	}
+
 	override fun toString(): String {
 		return "InterfaceScope of $type"
 	}

@@ -26,7 +26,7 @@ internal class InitializerResolution {
 	fun `resolves initializer calls`() {
 		val sourceCode =
 			"""
-				native Int class {
+				Int class {
 					init
 				}
 				Window class {
@@ -44,7 +44,7 @@ internal class InitializerResolution {
 	fun `resolves initializer calls with a variable number of parameters`() {
 		val sourceCode =
 			"""
-				native Int class {
+				Int class {
 					init
 				}
 				IntegerList class {

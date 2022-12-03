@@ -280,7 +280,7 @@ internal class OperatorResolution {
 	fun `resolves operator calls with a variable number of parameters`() {
 		val sourceCode =
 			"""
-				native Int class {
+				Int class {
 					init
 				}
 				IntegerList object {

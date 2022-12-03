@@ -82,6 +82,12 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 		super.linkValues(linter, this.scope)
 	}
 
+	override fun validate(linter: Linter) {
+		super.validate(linter)
+		if((this as? Class)?.isAbstract != true)
+			scope.ensureAbstractSuperMembersImplemented(linter)
+	}
+
 	fun acceptsSubstituteType(substituteType: Type): Boolean {
 		return superType?.accepts(substituteType) ?: true
 	}

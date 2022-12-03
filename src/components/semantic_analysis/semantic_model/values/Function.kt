@@ -10,6 +10,10 @@ import java.util.LinkedList
 
 class Function(source: Element, private val implementations: MutableList<FunctionImplementation>,
 			   val functionType: FunctionType, val name: String): Value(source, functionType) {
+	val isAbstract: Boolean
+		get() {
+			return implementations.any { implementation -> implementation.isAbstract }
+		}
 	var superFunction: Function? = null
 		set(value) {
 			field = value

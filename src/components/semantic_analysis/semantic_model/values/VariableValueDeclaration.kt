@@ -11,19 +11,19 @@ import components.syntax_parser.syntax_tree.literals.Identifier
 import java.util.*
 
 open class VariableValueDeclaration(override val source: Element, val name: String, var type: Type? = null,
-									val value: Value? = null, val isConstant: Boolean = true,
-									val isMutable: Boolean = false): Unit(source) {
+									val value: Value? = null, val isAbstract: Boolean = false,
+									val isConstant: Boolean = true, val isMutable: Boolean = false): Unit(source) {
 	val usages = LinkedList<VariableValue>()
 
 	init {
 		addUnits(type, value)
 	}
 
-	constructor(source: Identifier): this(source, source.getValue(), null, null, true, true)
+	constructor(source: Identifier): this(source, source.getValue(), null, null, false, true, true)
 
 	open fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): VariableValueDeclaration {
-		return VariableValueDeclaration(source, name, type?.withTypeSubstitutions(typeSubstitution), value, isConstant,
-			isMutable)
+		return VariableValueDeclaration(source, name, type?.withTypeSubstitutions(typeSubstitution), value, isAbstract,
+			isConstant, isMutable)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {

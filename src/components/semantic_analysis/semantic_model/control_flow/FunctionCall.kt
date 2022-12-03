@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.control_flow
 
 import errors.user.SignatureResolutionAmbiguityError
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.definitions.Class
 import components.semantic_analysis.semantic_model.definitions.TypeSpecification
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -35,6 +36,11 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 	}
 
 	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {
+		(targetType.definition as? Class)?.let { `class` ->
+			if(`class`.isAbstract)
+				linter.addMessage(source, "Abstract class '${`class`.name}' cannot be instantiated.",
+					Message.Type.ERROR)
+		}
 		val genericDefinitionTypes = (targetType.definition.baseDefinition ?: targetType.definition).scope
 			.getGenericTypeDefinitions()
 		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()

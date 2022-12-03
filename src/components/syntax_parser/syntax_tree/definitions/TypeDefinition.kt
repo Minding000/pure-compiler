@@ -28,9 +28,10 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		val typeDefinition = when(type.type) {
 			WordAtom.CLASS -> {
 				parent?.validate(linter, Class.ALLOWED_MODIFIER_TYPES)
+				val isAbstract = parent?.containsModifier(WordAtom.ABSTRACT) ?: false
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
-				Class(this, name, typeScope, superType, isNative, isMutable)
+				Class(this, name, typeScope, superType, isAbstract, isNative, isMutable)
 			}
 			WordAtom.OBJECT -> {
 				parent?.validate(linter, Object.ALLOWED_MODIFIER_TYPES)

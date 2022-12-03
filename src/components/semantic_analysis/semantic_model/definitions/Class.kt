@@ -10,10 +10,11 @@ import components.tokenizer.WordAtom
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?,
-			val isNative: Boolean, val isMutable: Boolean): TypeDefinition(source, name, scope, superType) {
+			val isAbstract: Boolean, val isNative: Boolean, val isMutable: Boolean):
+	TypeDefinition(source, name, scope, superType) {
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE, WordAtom.IMMUTABLE)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.IMMUTABLE, WordAtom.NATIVE)
 	}
 
 	init {
@@ -30,6 +31,12 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Class {
 		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
 		return Class(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.scope), superType,
-			isNative, isMutable)
+			isAbstract, isNative, isMutable)
+	}
+
+	override fun validate(linter: Linter) {
+		super.validate(linter)
+		if(!isAbstract)
+			scope.ensureNoAbstractMembers(linter)
 	}
 }

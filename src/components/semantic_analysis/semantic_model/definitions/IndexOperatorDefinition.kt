@@ -12,9 +12,9 @@ import components.syntax_parser.syntax_tree.definitions.OperatorDefinition as Op
 
 class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: BlockScope,
 							  val genericParameters: List<TypeDefinition>, val indexParameters: List<Parameter>,
-							  parameters: List<Parameter>, body: Unit?, returnType: Type?, isNative: Boolean,
-							  isOverriding: Boolean):
-	OperatorDefinition(source, "[]", scope, parameters, body, returnType, isNative, isOverriding) {
+							  parameters: List<Parameter>, body: Unit?, returnType: Type?, isAbstract: Boolean,
+							  isNative: Boolean, isOverriding: Boolean):
+	OperatorDefinition(source, "[]", scope, parameters, body, returnType, isAbstract, isNative, isOverriding) {
 
 	init {
 		addUnits(genericParameters, indexParameters)
@@ -34,7 +34,7 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 		for(parameter in valueParameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
 		return IndexOperatorDefinition(source, scope, specificGenericParameters, specificIndices, specificParameters,
-			body, returnType.withTypeSubstitutions(typeSubstitution), isNative, isOverriding)
+			body, returnType.withTypeSubstitutions(typeSubstitution), isAbstract, isNative, isOverriding)
 	}
 
 	fun accepts(suppliedIndexValues: List<Value>, suppliedParameterValues: List<Value>): Boolean {

@@ -33,7 +33,7 @@ internal class FunctionResolution {
 	fun `resolves calls to super function`() {
 		val sourceCode =
 			"""
-				native Speed class {}
+				Speed class {}
 				Door class {
 					to open() {}
 				}
@@ -163,7 +163,7 @@ internal class FunctionResolution {
 	fun `resolves function calls with a variable number of parameters`() {
 		val sourceCode =
 			"""
-				native Int class {
+				Int class {
 					init
 				}
 				IntegerList object {

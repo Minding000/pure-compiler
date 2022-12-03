@@ -13,7 +13,8 @@ import components.syntax_parser.syntax_tree.definitions.OperatorDefinition as Op
 
 open class OperatorDefinition(final override val source: OperatorDefinitionSyntaxTree, val name: String,
 							  val scope: BlockScope, val valueParameters: List<Parameter>, val body: Unit?,
-							  returnType: Type?, val isNative: Boolean, val isOverriding: Boolean): Unit(source) {
+							  returnType: Type?, val isAbstract: Boolean, val isNative: Boolean,
+							  val isOverriding: Boolean): Unit(source) {
 	val returnType: Type
 
 	init {
@@ -31,7 +32,7 @@ open class OperatorDefinition(final override val source: OperatorDefinitionSynta
 		for(parameter in valueParameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
 		return OperatorDefinition(source, name, scope, specificParameters, body,
-				returnType.withTypeSubstitutions(typeSubstitution), isNative, isOverriding)
+				returnType.withTypeSubstitutions(typeSubstitution), isAbstract, isNative, isOverriding)
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {

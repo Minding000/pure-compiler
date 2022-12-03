@@ -18,11 +18,12 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 	lateinit var parent: OperatorSection
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE, WordAtom.OVERRIDING)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.NATIVE, WordAtom.OVERRIDING)
 	}
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticOperatorDefinitionModel {
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
+		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val operatorScope = BlockScope(scope)
@@ -42,10 +43,10 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 			val genericParameters = operator.concretizeGenerics(linter, operatorScope) ?: listOf()
 			val indices = operator.concretizeIndices(linter, operatorScope)
 			SemanticIndexOperatorDefinitionModel(this, operatorScope, genericParameters, indices, parameters,
-				body, returnType, isNative, isOverriding)
+				body, returnType, isAbstract, isNative, isOverriding)
 		} else {
 			SemanticOperatorDefinitionModel(this, operator.getValue(), operatorScope, parameters,
-				body, returnType, isNative, isOverriding)
+				body, returnType, isAbstract, isNative, isOverriding)
 		}
 		scope.declareOperator(linter, operatorDefinition)
 		return operatorDefinition

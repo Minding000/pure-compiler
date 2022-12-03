@@ -66,7 +66,7 @@ internal class Scopes {
 			val syntaxTree = OperatorDefinitionSyntaxTree(Operator(position, position), null, null,
 				null)
 			val operatorDefinition = OperatorDefinition(syntaxTree, "", BlockScope(FileScope()), listOf(),
-				null, null, false, false)
+				null, null, false, false, false)
 			val blockScope = BlockScope(FileScope())
 			blockScope.declareOperator(linter, operatorDefinition)
 		}

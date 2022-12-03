@@ -8,6 +8,7 @@ import components.semantic_analysis.semantic_model.values.Instance
 import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
 import messages.Message
 import java.util.*
+import kotlin.collections.HashMap
 
 class TypeScope(private val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
 	lateinit var typeDefinition: TypeDefinition
@@ -115,11 +116,40 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		operators.removeAll(redeclarations) //TODO redeclarations are not removed from subscribed types (same for initializers)
 	}
 
+	fun ensureNoAbstractMembers(linter: Linter) {
+		for((name, valueDeclaration) in valueDeclarations) {
+			if(valueDeclaration.isAbstract) {
+				linter.addMessage(valueDeclaration.source,
+					"Abstract member '$name' is not allowed in non-abstract class '${typeDefinition.name}'.",
+					Message.Type.ERROR)
+			}
+		}
+	}
+
+	fun ensureAbstractSuperMembersImplemented(linter: Linter) {
+		val missingOverrides = HashMap<TypeDefinition, LinkedList<VariableValueDeclaration>>()
+		val abstractSuperMembers = superScope?.getAbstractMembers() ?: return
+		for(abstractSuperMember in abstractSuperMembers) {
+			if(valueDeclarations[abstractSuperMember.definition.name] == null) {
+				//TODO continue abstract modifier implementation here
+				//val missingOverridesFromType = missingOverrides.getOrPut(abstractSuperMember.definition) { LinkedList() }
+				//missingOverridesFromType.add(abstractSuperMember.definition)
+			}
+		}
+		var message = "Non-abstract class '${typeDefinition.name}' does not implement to following inherited members:\n"
+		for((name, definition) in missingOverrides) {
+			message += "  - $name\n"
+			for(value in definition)
+				message += "    - ${value.name}\n"
+		}
+		linter.addMessage(typeDefinition.source, message, Message.Type.ERROR)
+	}
+
 	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
 		initializers.add(initializer)
 		onNewInitializer(initializer)
-		linter.addMessage(initializer.source, "Declaration of initializer '${initializer.toString(typeDefinition)}'.",
-			Message.Type.DEBUG)
+		linter.addMessage(initializer.source,
+			"Declaration of initializer '${initializer.toString(typeDefinition)}'.", Message.Type.DEBUG)
 	}
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {
@@ -159,7 +189,8 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			null -> {
 				val newFunction = Function(newImplementation.source, newImplementation, name)
 				typeDefinition.addUnits(newFunction)
-				val newValue = VariableValueDeclaration(newImplementation.source, name, newFunction.type, newFunction)
+				val newValue = VariableValueDeclaration(newImplementation.source, name, newFunction.type, newFunction,
+					newFunction.isAbstract)
 				valueDeclarations[name] = newValue
 				onNewValue(newValue)
 			}

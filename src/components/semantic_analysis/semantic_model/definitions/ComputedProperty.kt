@@ -7,7 +7,7 @@ import components.syntax_parser.syntax_tree.definitions.ComputedProperty as Comp
 
 class ComputedProperty(override val source: ComputedPropertySyntaxTree, name: String, type: Type,
 					   val getExpression: Value?, val setExpression: Value?):
-	VariableValueDeclaration(source, name, type, null, setExpression == null) {
+	VariableValueDeclaration(source, name, type, null, false, setExpression == null) {
 
 	init {
 		addUnits(getExpression, setExpression)

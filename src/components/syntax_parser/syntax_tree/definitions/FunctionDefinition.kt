@@ -19,7 +19,7 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 	lateinit var parent: FunctionSection
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE, WordAtom.OVERRIDING, WordAtom.MUTATING)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.MUTATING, WordAtom.NATIVE, WordAtom.OVERRIDING)
 	}
 
 	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
@@ -28,15 +28,17 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticFunctionImplementationModel {
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
+		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
+		val isMutating = parent.containsModifier(WordAtom.MUTATING)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
-		val isMutating = parent.containsModifier(WordAtom.MUTATING)
 		val functionScope = BlockScope(scope)
 		val genericParameters = parameterList.concretizeGenerics(linter, functionScope) ?: listOf()
 		val parameters = parameterList.concretizeParameters(linter, functionScope)
 		val returnType = returnType?.concretize(linter, functionScope)
 		val implementation = SemanticFunctionImplementationModel(this, functionScope, genericParameters,
-			parameters, body?.concretize(linter, functionScope), returnType, isNative, isOverriding, isMutating)
+			parameters, body?.concretize(linter, functionScope), returnType, isAbstract, isMutating, isNative,
+			isOverriding)
 		scope.declareFunction(linter, identifier.getValue(), implementation)
 		return implementation
 	}
