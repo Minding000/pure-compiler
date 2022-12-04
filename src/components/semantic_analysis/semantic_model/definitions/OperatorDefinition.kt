@@ -65,13 +65,12 @@ open class OperatorDefinition(final override val source: OperatorDefinitionSynta
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		if(Linter.LiteralType.NOTHING.matches(returnType)) {
-			for(unit in units)
-				if(unit != returnType)
-					unit.linkTypes(linter, this.scope)
-			linter.link(Linter.LiteralType.NOTHING, returnType)
-		} else {
-			super.linkTypes(linter, this.scope)
+		for(unit in units) {
+			if(Linter.LiteralType.NOTHING.matches(unit)) {
+				linter.link(Linter.LiteralType.NOTHING, unit)
+				continue
+			}
+			unit.linkTypes(linter, this.scope)
 		}
 	}
 

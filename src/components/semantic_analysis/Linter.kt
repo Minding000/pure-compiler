@@ -1,7 +1,7 @@
 package components.semantic_analysis
 
+import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.semantic_analysis.semantic_model.types.Type
 import messages.Message
 import messages.MessageLogger
 import components.syntax_parser.syntax_tree.general.Element
@@ -61,8 +61,8 @@ class Linter {
 		addMessage("${element.getStartString()}: $description", type)
 	}
 
-	fun link(literalType: LiteralType, type: Type?) {
-		literalScopes[literalType]?.let { literalScope -> type?.linkTypes(this, literalScope) }
+	fun link(literalType: LiteralType, unit: Unit?) {
+		literalScopes[literalType]?.let { literalScope -> unit?.linkTypes(this, literalScope) }
 	}
 
 	fun hasCompleted(phase: Phase): Boolean {
@@ -90,8 +90,8 @@ class Linter {
 		NOTHING("Nothing"),
 		ANY("Any");
 
-		fun matches(type: Type?): Boolean {
-			return type.toString() == className
+		fun matches(unit: Unit?): Boolean {
+			return unit.toString() == className
 		}
 	}
 }

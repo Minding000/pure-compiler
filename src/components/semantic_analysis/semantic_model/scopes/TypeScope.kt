@@ -136,6 +136,8 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				//missingOverridesFromType.add(abstractSuperMember.definition)
 			}
 		}
+		if(missingOverrides.isEmpty())
+			return
 		var message = "Non-abstract class '${typeDefinition.name}' does not implement to following inherited members:\n"
 		for((name, definition) in missingOverrides) {
 			message += "  - $name\n"

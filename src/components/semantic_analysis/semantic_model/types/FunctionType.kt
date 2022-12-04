@@ -89,7 +89,14 @@ class FunctionType(override val source: Element): Type(source) { //TODO include 
 			return false
 		if(targetType !is FunctionType)
 			return targetType.accepts(this)
-		return equals(targetType)
+		signatureAssignabilityCheck@for(requiredSignature in targetType.signatures) {
+			for(availableSignature in signatures) {
+				if(requiredSignature.accepts(availableSignature))
+					continue@signatureAssignabilityCheck
+			}
+			return false
+		}
+		return true
 	}
 
 	override fun equals(other: Any?): Boolean {
@@ -109,6 +116,6 @@ class FunctionType(override val source: Element): Type(source) { //TODO include 
 	}
 
 	override fun toString(): String {
-		return signatures.joinToString("\n")
+		return signatures.joinToString(" & ")
 	}
 }

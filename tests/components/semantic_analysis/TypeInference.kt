@@ -281,7 +281,7 @@ internal class TypeInference {
 	fun `infers generic type in function call`() {
 		val sourceCode =
 			"""
-				trait Letter {}
+				Letter class {}
 				PostCard class: Letter {
 					init
 				}
@@ -306,7 +306,7 @@ internal class TypeInference {
 	fun `infers generic type in function call with optional type usage`() {
 		val sourceCode =
 			"""
-				trait Letter {}
+				Letter class {}
 				PostCard class: Letter {
 					init
 				}
@@ -331,7 +331,7 @@ internal class TypeInference {
 	fun `infers generic type in operator call`() {
 		val sourceCode =
 			"""
-				trait IpAddress {}
+				IpAddress class {}
 				Ipv4Address class: IpAddress {
 					init
 				}

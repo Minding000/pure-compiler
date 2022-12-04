@@ -38,13 +38,12 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		if(Linter.LiteralType.NOTHING.matches(returnType)) {
-			for(unit in units)
-				if(unit != returnType)
-					unit.linkTypes(linter, scope)
-			linter.link(Linter.LiteralType.NOTHING, returnType)
-		} else {
-			super.linkTypes(linter, scope)
+		for(unit in units) {
+			if(Linter.LiteralType.NOTHING.matches(unit)) {
+				linter.link(Linter.LiteralType.NOTHING, unit)
+				continue
+			}
+			unit.linkTypes(linter, scope)
 		}
 	}
 
@@ -127,6 +126,19 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 		return true
 	}
 
+	fun accepts(other: FunctionSignature): Boolean {
+		if(other.parameterTypes.size != parameterTypes.size)
+			return false
+		for(parameterIndex in parameterTypes.indices) {
+			if(parameterTypes[parameterIndex]?.let { parameterType ->
+					other.parameterTypes[parameterIndex]?.accepts(parameterType) } == false)
+				return false
+		}
+		if(!returnType.accepts(other.returnType))
+			return false
+		return true
+	}
+
 	override fun equals(other: Any?): Boolean {
 		if(other !is FunctionSignature)
 			return false
@@ -149,16 +161,21 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 	}
 
 	fun toString(useLambdaStyle: Boolean): String {
-		var stringRepresentation = "("
-		if(genericParameters.isNotEmpty()) {
-			stringRepresentation += genericParameters.joinToString()
-			stringRepresentation += ";"
-			if(parameterTypes.isNotEmpty())
-				stringRepresentation += " "
+		var stringRepresentation = ""
+		if(genericParameters.isNotEmpty() || parameterTypes.isNotEmpty()) {
+			stringRepresentation += "("
+			if(genericParameters.isNotEmpty()) {
+				stringRepresentation += genericParameters.joinToString()
+				stringRepresentation += ";"
+				if(parameterTypes.isNotEmpty())
+					stringRepresentation += " "
+			}
+			stringRepresentation += "${parameterTypes.joinToString()})"
 		}
-		stringRepresentation += "${parameterTypes.joinToString()})"
 		if(useLambdaStyle) {
-			stringRepresentation += " =>"
+			if(stringRepresentation.isNotEmpty())
+				stringRepresentation += " "
+			stringRepresentation += "=>"
 			stringRepresentation += if(Linter.LiteralType.NOTHING.matches(returnType)) "|" else " $returnType"
 		} else {
 			if(!Linter.LiteralType.NOTHING.matches(returnType))

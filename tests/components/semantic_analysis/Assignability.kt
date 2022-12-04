@@ -13,10 +13,10 @@ internal class Assignability {
 				Car class {
 					init
 				}
-				val car: Car = new Car()
+				val car: Car = Car()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type 'Car' is not assignable to type 'Car'")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
 	}
 
 	@Test
@@ -29,7 +29,7 @@ internal class Assignability {
 				val car: Car? = Car()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type 'Car' is not assignable to type 'Car?'")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
 	}
 
 	@Test
@@ -41,7 +41,7 @@ internal class Assignability {
 				val car: Car? = null
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type 'Null' is not assignable to type 'Car?'")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
 	}
 
 	@Test
@@ -55,7 +55,7 @@ internal class Assignability {
 				val car: Car? = carInDriveway
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type 'Car?' is not assignable to type 'Car?'")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
 	}
 
 	@Test
@@ -68,7 +68,7 @@ internal class Assignability {
 				var typeAliasValue: EventHandler = complexTypeValue
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type '(Event) =>|' is not assignable to type 'EventHandler'")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
 	}
 
 	@Test
@@ -81,6 +81,6 @@ internal class Assignability {
 				var complexTypeValue: (Event) =>| = typeAliasValue
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type 'EventHandler' is not assignable to type '(Event) =>|'")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
 	}
 }
