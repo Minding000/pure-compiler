@@ -7,19 +7,19 @@ import components.semantic_analysis.semantic_model.definitions.OperatorDefinitio
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Instance
+import components.semantic_analysis.semantic_model.values.MemberDeclaration
 import components.semantic_analysis.semantic_model.values.Value
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
 import java.util.*
 
 class InterfaceScope(private val type: Type): Scope() {
 	private val types = HashMap<String, TypeDefinition>()
-	private val values = HashMap<String, VariableValueDeclaration>()
+	private val values = HashMap<String, MemberDeclaration>()
 	private val initializers = LinkedList<InitializerDefinition>()
 	private val operators = LinkedList<OperatorDefinition>()
 
 	fun hasType(type: TypeDefinition): Boolean = types.containsValue(type)
 
-	fun hasValue(value: VariableValueDeclaration): Boolean = values.containsValue(value)
+	fun hasValue(value: MemberDeclaration): Boolean = values.containsValue(value)
 
 	fun hasInstance(name: String): Boolean {
 		for((_, value) in values) {
@@ -50,7 +50,7 @@ class InterfaceScope(private val type: Type): Scope() {
 		}
 	}
 
-	fun addValue(value: VariableValueDeclaration) {
+	fun addValue(value: MemberDeclaration) {
 		if(!values.containsKey(value.name)) {
 			values[value.name] = value
 			onNewValue(value)
@@ -67,7 +67,7 @@ class InterfaceScope(private val type: Type): Scope() {
 		onNewOperator(operator)
 	}
 
-	override fun resolveValue(name: String): VariableValueDeclaration? {
+	override fun resolveValue(name: String): MemberDeclaration? {
 		return values[name]
 	}
 
@@ -192,14 +192,13 @@ class InterfaceScope(private val type: Type): Scope() {
 		return validSignatures
 	}
 
-	class AbstractMember(val parentDefinition: TypeDefinition, val definition: VariableValueDeclaration)
+	class AbstractMember(/*val parentDefinition: TypeDefinition, */val definition: MemberDeclaration)
 
 	fun getAbstractMembers(): List<AbstractMember> {
 		val abstractMembers = LinkedList<AbstractMember>()
 		for((_, declaration) in values) {
-			//TODO continue abstract modifier implementation here
-			//if(declaration.isAbstract)
-			//	abstractMembers.add(AbstractMember(declaration))
+			if(declaration.isAbstract)
+				abstractMembers.add(AbstractMember(declaration))
 		}
 		return abstractMembers
 	}

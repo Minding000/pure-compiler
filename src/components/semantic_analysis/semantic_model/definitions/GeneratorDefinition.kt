@@ -5,13 +5,13 @@ import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import java.util.*
 import components.syntax_parser.syntax_tree.definitions.GeneratorDefinition as GeneratorDefinitionSyntaxTree
 
 class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, val scope: BlockScope, name: String,
 						  val parameters: List<Parameter>, val keyReturnType: Type?, val valueReturnType: Type,
-						  val body: ErrorHandlingContext): VariableValueDeclaration(source, name) {
+						  val body: ErrorHandlingContext): ValueDeclaration(source, name) {
 
 	init {
 		addUnits(keyReturnType, valueReturnType, body)

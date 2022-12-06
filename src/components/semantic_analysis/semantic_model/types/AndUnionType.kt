@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
+import components.semantic_analysis.semantic_model.values.MemberDeclaration
 import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
@@ -25,7 +25,7 @@ class AndUnionType(override val source: Element, val types: List<Type>): Type(so
 		this.scope.addType(type)
 	}
 
-	override fun onNewValue(value: VariableValueDeclaration) {
+	override fun onNewValue(value: MemberDeclaration) {
 		this.scope.addValue(value)
 	}
 

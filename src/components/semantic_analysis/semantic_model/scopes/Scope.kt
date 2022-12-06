@@ -5,9 +5,10 @@ import components.semantic_analysis.semantic_model.definitions.InitializerDefini
 import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.values.MemberDeclaration
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import java.util.*
 
 abstract class Scope {
@@ -22,7 +23,7 @@ abstract class Scope {
 			subscriber.onNewType(type)
 	}
 
-	protected fun onNewValue(value: VariableValueDeclaration) {
+	protected fun onNewValue(value: MemberDeclaration) {
 		for(subscriber in subscribedTypes)
 			subscriber.onNewValue(value)
 	}
@@ -41,9 +42,9 @@ abstract class Scope {
 
 	abstract fun resolveType(name: String): TypeDefinition?
 
-	open fun resolveValue(variable: VariableValue): VariableValueDeclaration? = resolveValue(variable.name)
+	open fun resolveValue(variable: VariableValue): ValueDeclaration? = resolveValue(variable.name)
 
-	abstract fun resolveValue(name: String): VariableValueDeclaration?
+	abstract fun resolveValue(name: String): ValueDeclaration?
 
 	fun resolveOperator(name: String): OperatorDefinition?
 		= resolveOperator(name, listOf())

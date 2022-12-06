@@ -66,7 +66,7 @@ internal class TypeResolution {
 				var bird: Bird
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val declaration = lintResult.find<VariableValueDeclaration> { declaration -> declaration.name == "bird" }
+		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "bird" }
 		assertNotNull((declaration?.type as? ObjectType)?.definition)
 	}
 
@@ -78,7 +78,7 @@ internal class TypeResolution {
 				var birdFeeder: BirdFeeder
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val declaration = lintResult.find<VariableValueDeclaration> { declaration -> declaration.name == "birdFeeder" }
+		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "birdFeeder" }
 		assertEquals("BirdFeeder", (declaration?.type as? ObjectType)?.definition?.name)
 	}
 
@@ -90,7 +90,7 @@ internal class TypeResolution {
 				var birdType: BirdType
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val declaration = lintResult.find<VariableValueDeclaration> { declaration -> declaration.name == "birdType" }
+		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "birdType" }
 		assertEquals("BirdType", (declaration?.type as? ObjectType)?.definition?.name)
 	}
 
@@ -102,7 +102,7 @@ internal class TypeResolution {
 				var eventHandler: EventHandler
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val declaration = lintResult.find<VariableValueDeclaration> { declaration -> declaration.name == "eventHandler" }
+		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "eventHandler" }
 		assertEquals("EventHandler", (declaration?.type as? ObjectType)?.definition?.name)
 	}
 
@@ -117,7 +117,7 @@ internal class TypeResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val declaration = lintResult.find<VariableValueDeclaration> { declaration -> declaration.name == "element" }
+		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "element" }
 		assertEquals("Element", (declaration?.type as? ObjectType)?.definition?.name)
 	}
 

@@ -7,7 +7,7 @@ import messages.Message
 import components.syntax_parser.syntax_tree.literals.Identifier
 
 open class VariableValue(override val source: Element, val name: String): Value(source) {
-	var definition: VariableValueDeclaration? = null
+	var definition: ValueDeclaration? = null
 
 	constructor(source: Identifier): this(source, source.getValue())
 

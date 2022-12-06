@@ -10,7 +10,7 @@ import components.semantic_analysis.semantic_model.values.*
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.Cast as CastSyntaxTree
 
-class Cast(override val source: CastSyntaxTree, val value: Value, val variableDeclaration: VariableValueDeclaration?,
+class Cast(override val source: CastSyntaxTree, val value: Value, val variableDeclaration: ValueDeclaration?,
 		   val referenceType: Type, val operator: Operator): Value(source) {
 	override var isInterruptingExecution = false
 	private val isCastAlwaysSuccessful: Boolean

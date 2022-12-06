@@ -2,7 +2,7 @@ package components.semantic_analysis
 
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.values.VariableValue
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -87,11 +87,11 @@ internal class TypeParameters {
 			val item: Any = softDrinkDestination.get()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val baseType = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+		val baseType = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "softDrink" }?.type
 		val specificType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrinkDestination" }?.type
 		val functionType = specificType?.scope?.resolveValue("get")?.type as? FunctionType
-		val anyType = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+		val anyType = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.type.toString() == "Any" }?.type
 		assertNotNull(functionType)
 		assertNotNull(anyType)
@@ -121,7 +121,7 @@ internal class TypeParameters {
 			val softDrink: SoftDrink = softDrinkSupply.get()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val baseType = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+		val baseType = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "softDrink" }?.type
 		val specificType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrinkSupply" }?.type
 		val functionType = specificType?.scope?.resolveValue("get")?.type as? FunctionType

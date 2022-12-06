@@ -8,7 +8,6 @@ import components.semantic_analysis.semantic_model.values.Function
 import errors.internal.CompilerError
 import messages.Message
 import java.util.*
-import kotlin.collections.HashMap
 
 class TypeScope(private val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
 	lateinit var typeDefinition: TypeDefinition
@@ -126,7 +125,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	fun ensureAbstractSuperMembersImplemented(linter: Linter) {
-		val missingOverrides = HashMap<TypeDefinition, LinkedList<VariableValueDeclaration>>()
+		val missingOverrides = HashMap<TypeDefinition, LinkedList<ValueDeclaration>>()
 		//TODO differentiate between declarations and members: functions are members and signatures are declarations
 		// - make extra fields in TypeScope: properties and signatures?
 		//TODO get abstract declarations
@@ -175,7 +174,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		linter.addMessage(type.source, "Declaration of type '${typeDefinition.name}.${type.name}'.", Message.Type.DEBUG)
 	}
 
-	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
+	override fun declareValue(linter: Linter, value: ValueDeclaration) {
 		if(value !is MemberDeclaration)
 			throw CompilerError("Tried to declare non-member of type '${value.javaClass.simpleName}' in type scope.")
 		var previousDeclaration = parentScope.resolveValue(value.name)
@@ -225,7 +224,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		linter.addMessage(operator.source, "Declaration of operator '${typeDefinition.name}$operator'.", Message.Type.DEBUG)
 	}
 
-	override fun resolveValue(name: String): VariableValueDeclaration? {
+	override fun resolveValue(name: String): ValueDeclaration? {
 		return memberDeclarations[name]
 			?: superScope?.resolveValue(name)
 			?: parentScope.resolveValue(name)

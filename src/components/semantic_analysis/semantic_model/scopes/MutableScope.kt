@@ -5,14 +5,14 @@ import components.semantic_analysis.semantic_model.definitions.FunctionImplement
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import messages.Message
 
 abstract class MutableScope: Scope() {
 
 	abstract fun declareType(linter: Linter, type: TypeDefinition)
 
-	abstract fun declareValue(linter: Linter, value: VariableValueDeclaration)
+	abstract fun declareValue(linter: Linter, value: ValueDeclaration)
 
 	open fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
 		linter.addMessage(initializer.source,

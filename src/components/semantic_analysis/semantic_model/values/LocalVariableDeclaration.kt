@@ -7,7 +7,7 @@ import components.syntax_parser.syntax_tree.literals.Identifier
 
 class LocalVariableDeclaration(source: Element, name: String, type: Type? = null, value: Value? = null,
 							   isConstant: Boolean = true, isMutable: Boolean = false):
-	VariableValueDeclaration(source, name, type, value, isConstant, isMutable) {
+	ValueDeclaration(source, name, type, value, isConstant, isMutable) {
 
 	constructor(source: Identifier, type: Type? = null): this(source, source.getValue(), type)
 

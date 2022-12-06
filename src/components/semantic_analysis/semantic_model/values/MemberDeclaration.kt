@@ -7,7 +7,7 @@ import components.syntax_parser.syntax_tree.general.Element
 abstract class MemberDeclaration(source: Element, name: String, type: Type? = null, value: Value? = null,
 								 val isAbstract: Boolean = false, isConstant: Boolean = true,
 								 isMutable: Boolean = false):
-	VariableValueDeclaration(source, name, type, value, isConstant, isMutable) {
+	ValueDeclaration(source, name, type, value, isConstant, isMutable) {
 	//val parentDefinition: TypeDefinition
 	//val signature: String
 

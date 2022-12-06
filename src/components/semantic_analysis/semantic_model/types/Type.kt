@@ -1,16 +1,16 @@
 package components.semantic_analysis.semantic_model.types
 
+//import org.bytedeco.llvm.LLVM.LLVMTypeRef
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeAlias
-import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
-import messages.Message
+import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
-//import org.bytedeco.llvm.LLVM.LLVMTypeRef
+import components.semantic_analysis.semantic_model.values.MemberDeclaration
 import components.syntax_parser.syntax_tree.general.Element
+import messages.Message
 
 abstract class Type(source: Element): Unit(source) {
 	val scope = InterfaceScope(this)
@@ -22,14 +22,14 @@ abstract class Type(source: Element): Unit(source) {
 
 	open fun onNewType(type: TypeDefinition) {}
 
-	open fun onNewValue(value: VariableValueDeclaration) {}
+	open fun onNewValue(value: MemberDeclaration) {}
 
 	open fun onNewInitializer(initializer: InitializerDefinition) {}
 
 	open fun onNewOperator(operator: OperatorDefinition) {}
 
 	abstract fun accepts(unresolvedSourceType: Type): Boolean
-	
+
 	abstract fun isAssignableTo(unresolvedTargetType: Type): Boolean
 
 	open fun getKeyType(linter: Linter): Type? {

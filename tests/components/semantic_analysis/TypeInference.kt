@@ -5,7 +5,7 @@ import components.semantic_analysis.semantic_model.operations.InstanceAccess
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.StaticType
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -24,11 +24,11 @@ internal class TypeInference {
 				val ball = Basketball()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "ball" }
-		val type = variableValueDeclaration?.value?.type
+		val type = valueDeclaration?.value?.type
 		assertNotNull(type)
-		assertEquals(type, variableValueDeclaration.type)
+		assertEquals(type, valueDeclaration.type)
 	}
 
 	@Test
@@ -193,9 +193,9 @@ internal class TypeInference {
 				val plant = PackageOpener.unwrap(Package(Plant()))
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "plant" }
-		assertNotNull(variableValueDeclaration?.type)
+		assertNotNull(valueDeclaration?.type)
 	}
 
 	@Test
@@ -230,9 +230,9 @@ internal class TypeInference {
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function.type as? StaticType)?.definition?.name == "Letter" }?.type
-		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "letterBox" }
-		val returnType = variableValueDeclaration?.type as? ObjectType
+		val returnType = valueDeclaration?.type as? ObjectType
 		assertNotNull(returnType)
 		assertEquals(genericParameter, returnType.typeParameters.firstOrNull())
 	}
@@ -295,9 +295,9 @@ internal class TypeInference {
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function.type as? StaticType)?.definition?.name == "PostCard" }?.type
-		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "stampedPostCard" }
-		val returnType = variableValueDeclaration?.type as? ObjectType
+		val returnType = valueDeclaration?.type as? ObjectType
 		assertNotNull(returnType)
 		assertEquals(genericParameter, returnType)
 	}
@@ -320,9 +320,9 @@ internal class TypeInference {
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function.type as? StaticType)?.definition?.name == "PostCard" }?.type
-		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "stampedPostCard" }
-		val returnType = variableValueDeclaration?.type as? OptionalType
+		val returnType = valueDeclaration?.type as? OptionalType
 		assertNotNull(returnType)
 		assertEquals(genericParameter, returnType.baseType)
 	}
@@ -350,9 +350,9 @@ internal class TypeInference {
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function.type as? StaticType)?.definition?.name == "Ipv4Address" }?.type
-		val variableValueDeclaration = lintResult.find<VariableValueDeclaration> { variableValueDeclaration ->
+		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "client" }
-		val returnType = variableValueDeclaration?.type as? ObjectType
+		val returnType = valueDeclaration?.type as? ObjectType
 		assertNotNull(returnType)
 		assertEquals(genericParameter, returnType.typeParameters.firstOrNull())
 	}

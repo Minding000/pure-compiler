@@ -4,11 +4,11 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeAlias
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
-import messages.Message
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.values.MemberDeclaration
 import components.syntax_parser.syntax_tree.general.Element
-import java.util.LinkedList
+import messages.Message
+import java.util.*
 
 class ObjectType(override val source: Element, val name: String, val typeParameters: List<Type> = listOf()):
 	Type(source) {
@@ -59,7 +59,7 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		this.scope.addType(type)
 	}
 
-	override fun onNewValue(value: VariableValueDeclaration) {
+	override fun onNewValue(value: MemberDeclaration) {
 		this.scope.addValue(value)
 	}
 

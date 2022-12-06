@@ -9,9 +9,9 @@ import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import java.util.*
 
-abstract class VariableValueDeclaration(override val source: Element, val name: String, var type: Type? = null,
-										value: Value? = null, val isConstant: Boolean = true,
-										val isMutable: Boolean = false): Unit(source) {
+abstract class ValueDeclaration(override val source: Element, val name: String, var type: Type? = null,
+								value: Value? = null, val isConstant: Boolean = true,
+								val isMutable: Boolean = false): Unit(source) {
 	open val value = value
 	val usages = LinkedList<VariableValue>()
 
@@ -19,7 +19,7 @@ abstract class VariableValueDeclaration(override val source: Element, val name: 
 		addUnits(type, value)
 	}
 
-	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): VariableValueDeclaration
+	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ValueDeclaration
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)

@@ -2,27 +2,18 @@ package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import messages.Message
 
 class FileScope: MutableScope() {
 	private val referencedTypes = HashMap<String, TypeDefinition>()
 	val types = HashMap<String, TypeDefinition>()
-	private val referencedValues = HashMap<String, VariableValueDeclaration>()
-	val values = HashMap<String, VariableValueDeclaration>()
+	private val referencedValues = HashMap<String, ValueDeclaration>()
+	val values = HashMap<String, ValueDeclaration>()
 
 	fun reference(scope: FileScope) {
 		referencedTypes.putAll(scope.types)
 		referencedValues.putAll(scope.values)
-	}
-
-	override fun subscribe(type: Type) {
-		super.subscribe(type)
-		for((_, typeDefinition) in types)
-			type.onNewType(typeDefinition)
-		for((_, value) in values)
-			type.onNewValue(value)
 	}
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {
@@ -40,19 +31,18 @@ class FileScope: MutableScope() {
 		return types[name] ?: referencedTypes[name]
 	}
 
-	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
+	override fun declareValue(linter: Linter, value: ValueDeclaration) {
 		val previousDeclaration = referencedValues[value.name] ?: values.putIfAbsent(value.name, value)
 		if(previousDeclaration != null) {
 			linter.addMessage(value.source, "Redeclaration of value '${value.name}'," +
 					" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
 			return
 		}
-		onNewValue(value)
 		linter.addMessage(value.source, "Declaration of value '${value.name}'.",
 			Message.Type.DEBUG)
 	}
 
-	override fun resolveValue(name: String): VariableValueDeclaration? {
+	override fun resolveValue(name: String): ValueDeclaration? {
 		return values[name] ?: referencedValues[name]
 	}
 }
