@@ -123,9 +123,9 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		if(currentWord?.type == WordAtom.TYPE_ALIAS)
 			return parseTypeAlias()
 		if(WordType.MODIFIER.includes(currentWord?.type))
-			return parseModifierSection()
+			return parseModifierSection(DeclarationContext.STATEMENT)
 		if(WordType.VARIABLE_DECLARATION.includes(currentWord?.type))
-			return parseVariableSection()
+			return parseVariableSection(DeclarationContext.STATEMENT)
 		if(WordType.TYPE_TYPE.includes(nextWord?.type))
 			return parseTypeDefinition()
 		if(currentWord?.type == WordAtom.GENERATOR)
@@ -526,7 +526,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			return parseGenericsDeclaration()
 		if(currentWord?.type == WordAtom.INSTANCES)
 			return parseInstanceList()
-		return parseDeclarationSection()
+		return parseDeclarationSection(DeclarationContext.CLASS)
 	}
 
 	/**
@@ -713,23 +713,25 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   <TypeAlias>
 	 *   <ModifierSection>
 	 */
-	private fun parseDeclarationSection(): Element {
+	private fun parseDeclarationSection(context: DeclarationContext): Element {
 		if(WordType.VARIABLE_DECLARATION.includes(currentWord?.type))
-			return parseVariableSection()
-		if(currentWord?.type == WordAtom.INITIALIZER)
-			return parseInitializerDefinition()
-		if(currentWord?.type == WordAtom.DEINITIALIZER)
-			return parseDeinitializerDefinition()
-		if(WordType.FUNCTION_DECLARATION.includes(currentWord?.type))
-			return parseFunctionSection()
-		if(currentWord?.type == WordAtom.OPERATOR)
-			return parseOperatorSection()
+			return parseVariableSection(context)
+		if(context == DeclarationContext.CLASS) {
+			if(currentWord?.type == WordAtom.INITIALIZER)
+				return parseInitializerDefinition()
+			if(currentWord?.type == WordAtom.DEINITIALIZER)
+				return parseDeinitializerDefinition()
+			if(WordType.FUNCTION_DECLARATION.includes(currentWord?.type))
+				return parseFunctionSection()
+			if(currentWord?.type == WordAtom.OPERATOR)
+				return parseOperatorSection()
+		}
 		if(WordType.TYPE_TYPE.includes(nextWord?.type))
 			return parseTypeDefinition()
 		if(currentWord?.type == WordAtom.TYPE_ALIAS)
 			return parseTypeAlias()
 		if(WordType.MODIFIER.includes(currentWord?.type))
-			return parseModifierSection()
+			return parseModifierSection(context)
 		val expectation = "declaration"
 		throw UnexpectedWordError(elementGenerator.getCurrentWord(expectation), expectation)
 	}
@@ -741,7 +743,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   	<DeclarationSection>...
 	 *   }
 	 */
-	private fun parseModifierSection(): ModifierSection {
+	private fun parseModifierSection(context: DeclarationContext): ModifierSection {
 		val modifierList = parseModifierList()
 				?: throw UnexpectedWordError(getCurrentWord(WordType.MODIFIER), WordType.MODIFIER)
 		val sections = LinkedList<Element>()
@@ -751,11 +753,11 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 				consumeLineBreaks()
 				if(currentWord?.type == WordAtom.CLOSING_BRACE)
 					break
-				sections.add(parseDeclarationSection())
+				sections.add(parseDeclarationSection(context))
 			}
 			consume(WordAtom.CLOSING_BRACE).end
 		} else {
-			sections.add(parseDeclarationSection())
+			sections.add(parseDeclarationSection(context))
 			sections.last().end
 		}
 		return ModifierSection(modifierList, sections, end)
@@ -768,7 +770,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   	<VariableSectionPart>...
 	 *   }
 	 */
-	private fun parseVariableSection(): VariableSection {
+	private fun parseVariableSection(context: DeclarationContext): VariableSection {
 		val declarationType = consume(WordType.VARIABLE_DECLARATION)
 		val type = if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
@@ -785,11 +787,11 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 				consumeLineBreaks()
 				if(currentWord?.type == WordAtom.CLOSING_BRACE)
 					break
-				variables.add(parseVariableSectionPart())
+				variables.add(parseVariableSectionPart(context))
 			}
 			consume(WordAtom.CLOSING_BRACE).end
 		} else {
-			variables.add(parseVariableSectionPart())
+			variables.add(parseVariableSectionPart(context))
 			variables.last().end
 		}
 		return VariableSection(declarationType, type, value, variables, end)
@@ -797,10 +799,41 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * VariableSectionPart:
+	 *   <LocalVariableDeclaration>
+	 *   <PropertyDeclaration>
+	 */
+	private fun parseVariableSectionPart(context: DeclarationContext): VariableSectionElement {
+		return if(context == DeclarationContext.CLASS)
+			parseProperty()
+		else
+			parseLocalVariableDeclaration()
+	}
+
+	/**
+	 * LocalVariableDeclaration:
+	 *   <Identifier>[: <Type>] [= <Expression>]
+	 */
+	private fun parseLocalVariableDeclaration(): LocalVariableDeclaration {
+		val identifier = parseIdentifier()
+		val type = if(currentWord?.type == WordAtom.COLON) {
+			consume(WordAtom.COLON)
+			typeParser.parseType()
+		} else null
+		consumeLineBreaks()
+		var value: ValueElement? = null
+		if(currentWord?.type == WordAtom.ASSIGNMENT) {
+			consume(WordAtom.ASSIGNMENT)
+			value = parseExpression()
+		}
+		return LocalVariableDeclaration(identifier, type, value)
+	}
+
+	/**
+	 * PropertyDeclaration:
 	 *   <Identifier>[: <Type>] [get <Expression>] [set <Expression>]
 	 *   <Identifier>[: <Type>] [= <Expression>]
 	 */
-	private fun parseVariableSectionPart(): VariableSectionElement {
+	private fun parseProperty(): VariableSectionElement {
 		val identifier = parseIdentifier()
 		val type = if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
@@ -817,13 +850,13 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			parseExpression()
 		} else null
 		if(getExpression != null || setExpression != null)
-			return ComputedProperty(identifier, type, getExpression, setExpression)
+			return ComputedPropertyDeclaration(identifier, type, getExpression, setExpression)
 		var value: ValueElement? = null
 		if(currentWord?.type == WordAtom.ASSIGNMENT) {
 			consume(WordAtom.ASSIGNMENT)
 			value = parseExpression()
 		}
-		return VariableDeclaration(identifier, type, value)
+		return PropertyDeclaration(identifier, type, value)
 	}
 
 	/**

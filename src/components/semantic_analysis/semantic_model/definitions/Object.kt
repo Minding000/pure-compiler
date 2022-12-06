@@ -5,7 +5,8 @@ import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
+import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
+import components.semantic_analysis.semantic_model.values.PropertyDeclaration
 import components.tokenizer.WordAtom
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
@@ -22,7 +23,11 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 
 	override fun register(linter: Linter, parentScope: MutableScope) {
 		parentScope.declareType(linter, this)
-		val valueDeclaration = VariableValueDeclaration(source, name, ObjectType(this))
+		val type = ObjectType(this)
+		val valueDeclaration = if(parentScope is TypeScope)
+			PropertyDeclaration(source, name, type)
+		else
+			LocalVariableDeclaration(source, name, type)
 		parentScope.declareValue(linter, valueDeclaration)
 		addUnits(valueDeclaration)
 	}

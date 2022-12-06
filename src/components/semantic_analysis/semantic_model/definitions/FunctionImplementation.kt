@@ -9,7 +9,7 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
 
 class FunctionImplementation(override val source: Element, val scope: BlockScope,
-							 val genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,
+							 genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,
 							 body: ErrorHandlingContext?, returnType: Type?, val isAbstract: Boolean = false,
 							 val isMutating: Boolean = false, val isNative: Boolean = false,
 							 val isOverriding: Boolean = false): Unit(source) {

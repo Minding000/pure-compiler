@@ -11,7 +11,7 @@ internal class VariableDeclarations {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { car }: ObjectType { Identifier { Int } } }
+					LocalVariableDeclaration { Identifier { car }: ObjectType { Identifier { Int } } }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -28,8 +28,8 @@ internal class VariableDeclarations {
 		val expected =
 			"""
 				VariableSection [ var: ObjectType { Identifier { Float } } = NumberLiteral { 0 } ] {
-					VariableDeclaration { Identifier { x } }
-					VariableDeclaration { Identifier { y } }
+					LocalVariableDeclaration { Identifier { x } }
+					LocalVariableDeclaration { Identifier { y } }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -41,7 +41,7 @@ internal class VariableDeclarations {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { car } = NumberLiteral { 5 } }
+					LocalVariableDeclaration { Identifier { car } = NumberLiteral { 5 } }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -57,7 +57,7 @@ internal class VariableDeclarations {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { car }: ObjectType { Identifier { Int } } }
+					LocalVariableDeclaration { Identifier { car }: ObjectType { Identifier { Int } } }
 				}
 				Assignment {
 					Identifier { car }
@@ -77,7 +77,7 @@ internal class VariableDeclarations {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { car }: QuantifiedType { ObjectType { Identifier { Int } }? } = NullLiteral }
+					LocalVariableDeclaration { Identifier { car }: QuantifiedType { ObjectType { Identifier { Int } }? } = NullLiteral }
 				}
 				Assignment {
 					Identifier { car }
@@ -96,7 +96,7 @@ internal class VariableDeclarations {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { car }: UnionType { ObjectType { Identifier { Int } } | ObjectType { Identifier { Float } } } }
+					LocalVariableDeclaration { Identifier { car }: UnionType { ObjectType { Identifier { Int } } | ObjectType { Identifier { Float } } } }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -111,7 +111,7 @@ internal class VariableDeclarations {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { refuge }: UnionType { ObjectType { Identifier { Park } } & ObjectType { Identifier { NatureReserve } } } }
+					LocalVariableDeclaration { Identifier { refuge }: UnionType { ObjectType { Identifier { Park } } & ObjectType { Identifier { NatureReserve } } } }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)

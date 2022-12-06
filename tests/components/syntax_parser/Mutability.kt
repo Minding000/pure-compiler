@@ -13,7 +13,7 @@ internal class Mutability {
 		val expected =
 			"""
 				VariableSection [ val ] {
-					VariableDeclaration { Identifier { text } = StringLiteral { "Irreplaceable!" } }
+					LocalVariableDeclaration { Identifier { text } = StringLiteral { "Irreplaceable!" } }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -28,7 +28,7 @@ internal class Mutability {
 			"""
 				ModifierSection [ ModifierList { Modifier { immutable } } ] {
 					VariableSection [ var ] {
-						VariableDeclaration { Identifier { id } = NumberLiteral { 5 } }
+						LocalVariableDeclaration { Identifier { id } = NumberLiteral { 5 } }
 					}
 				}
             """.trimIndent()
@@ -61,7 +61,7 @@ internal class Mutability {
 			"""
 				TypeDefinition [ Identifier { Display } class ] { TypeBody {
 					VariableSection [ const ] {
-						VariableDeclaration { Identifier { PERIPHERAL_TYPE } = StringLiteral { "graphics" } }
+						PropertyDeclaration { Identifier { PERIPHERAL_TYPE } = StringLiteral { "graphics" } }
 					}
 				} }
             """.trimIndent()
@@ -79,7 +79,7 @@ internal class Mutability {
 			"""
 				TypeDefinition [ Identifier { Display } class ] { TypeBody {
 					VariableSection [ val ] {
-						VariableDeclaration { Identifier { resolution }: ObjectType { Identifier { Resolution } } }
+						PropertyDeclaration { Identifier { resolution }: ObjectType { Identifier { Resolution } } }
 					}
 				} }
             """.trimIndent()
@@ -98,7 +98,7 @@ internal class Mutability {
 				TypeDefinition [ Identifier { Item } class ] { TypeBody {
 					ModifierSection [ ModifierList { Modifier { immutable } } ] {
 						VariableSection [ var ] {
-							VariableDeclaration { Identifier { id } = NumberLiteral { 71 } }
+							PropertyDeclaration { Identifier { id } = NumberLiteral { 71 } }
 						}
 					}
 				} }
@@ -120,7 +120,7 @@ internal class Mutability {
 			"""
 				TypeDefinition [ Identifier { Human } class ] { TypeBody {
 					VariableSection [ var ] {
-						VariableDeclaration { Identifier { oxygenLevel } = NumberLiteral { 1 } }
+						PropertyDeclaration { Identifier { oxygenLevel } = NumberLiteral { 1 } }
 					}
 					ModifierSection [ ModifierList { Modifier { mutating } } ] {
 						FunctionSection [ to ] {

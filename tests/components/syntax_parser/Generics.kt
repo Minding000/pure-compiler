@@ -116,11 +116,11 @@ internal class Generics {
 				} }
 				TypeDefinition [ Identifier { Fruit } class ] { TypeBody {
 					VariableSection [ var ] {
-						VariableDeclaration { Identifier { name }: ObjectType { Identifier { String } } }
+						PropertyDeclaration { Identifier { name }: ObjectType { Identifier { String } } }
 					}
 				} }
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { fruitList } = FunctionCall [ TypeSpecification [ TypeList {
+					LocalVariableDeclaration { Identifier { fruitList } = FunctionCall [ TypeSpecification [ TypeList {
 						ObjectType { Identifier { Fruit } }
 					} ] { Identifier { ShoppingList } } ] {
 					} }

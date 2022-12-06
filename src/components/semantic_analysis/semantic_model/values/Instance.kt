@@ -1,21 +1,26 @@
 package components.semantic_analysis.semantic_model.values
 
-import errors.user.SignatureResolutionAmbiguityError
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.StaticType
+import components.semantic_analysis.semantic_model.types.Type
+import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
 import components.syntax_parser.syntax_tree.definitions.Instance as InstanceSyntaxTree
 
-open class Instance(override val source: InstanceSyntaxTree, value: VariableValue, val valueParameters: List<Value>):
-	VariableValueDeclaration(source, value.name, null, value) {
+class Instance(override val source: InstanceSyntaxTree, override val value: VariableValue,
+			   val valueParameters: List<Value>): MemberDeclaration(source, value.name, null, value) {
 	lateinit var typeDefinition: TypeDefinition
 
 	init {
 		value.staticValue = value
 		addUnits(valueParameters)
+	}
+
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Instance {
+		return Instance(source, value, valueParameters)
 	}
 
 	fun setType(typeDefinition: TypeDefinition) {

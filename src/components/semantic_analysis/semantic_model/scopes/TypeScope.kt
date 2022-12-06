@@ -3,9 +3,9 @@ package components.semantic_analysis.semantic_model.scopes
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.types.Type
+import components.semantic_analysis.semantic_model.values.*
 import components.semantic_analysis.semantic_model.values.Function
-import components.semantic_analysis.semantic_model.values.Instance
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
+import errors.internal.CompilerError
 import messages.Message
 import java.util.*
 import kotlin.collections.HashMap
@@ -13,7 +13,7 @@ import kotlin.collections.HashMap
 class TypeScope(private val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
 	lateinit var typeDefinition: TypeDefinition
 	private val typeDefinitions = HashMap<String, TypeDefinition>()
-	private val valueDeclarations = HashMap<String, VariableValueDeclaration>()
+	private val memberDeclarations = HashMap<String, MemberDeclaration>()
 	private val initializers = LinkedList<InitializerDefinition>()
 	private val operators = LinkedList<OperatorDefinition>()
 
@@ -26,8 +26,8 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				specificTypeScope.typeDefinitions[name] = specificDefinition
 			}
 		}
-		for((name, valueDeclaration) in valueDeclarations)
-			specificTypeScope.valueDeclarations[name] = valueDeclaration.withTypeSubstitutions(typeSubstitution)
+		for((name, memberDeclaration) in memberDeclarations)
+			specificTypeScope.memberDeclarations[name] = memberDeclaration.withTypeSubstitutions(typeSubstitution)
 		for(initializer in initializers)
 			specificTypeScope.initializers.add(initializer.withTypeSubstitutions(typeSubstitution))
 		for(operator in operators)
@@ -40,8 +40,8 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		superScope?.subscribe(type)
 		for((_, typeDefinition) in typeDefinitions)
 			type.onNewType(typeDefinition)
-		for((_, valueDeclaration) in valueDeclarations)
-			type.onNewValue(valueDeclaration)
+		for((_, memberDeclaration) in memberDeclarations)
+			type.onNewValue(memberDeclaration)
 		for(initializer in initializers)
 			type.onNewInitializer(initializer)
 		for(operator in operators)
@@ -53,11 +53,10 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	fun inheritSignatures() {
-		for((_, valueDeclaration) in valueDeclarations) {
-			if(valueDeclaration.value !is Function)
-				continue
-			val superValue = superScope?.resolveValue(valueDeclaration.name)
-			valueDeclaration.value.superFunction = superValue?.value as? Function
+		for((_, memberDeclaration) in memberDeclarations) {
+			val function = memberDeclaration.value as? Function ?: continue
+			val superValue = superScope?.resolveValue(memberDeclaration.name)
+			function.superFunction = superValue?.value as? Function
 		}
 	}
 
@@ -117,9 +116,9 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	fun ensureNoAbstractMembers(linter: Linter) {
-		for((name, valueDeclaration) in valueDeclarations) {
-			if(valueDeclaration.isAbstract) {
-				linter.addMessage(valueDeclaration.source,
+		for((name, memberDeclaration) in memberDeclarations) {
+			if(memberDeclaration.isAbstract) {
+				linter.addMessage(memberDeclaration.source,
 					"Abstract member '$name' is not allowed in non-abstract class '${typeDefinition.name}'.",
 					Message.Type.ERROR)
 			}
@@ -128,9 +127,16 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 
 	fun ensureAbstractSuperMembersImplemented(linter: Linter) {
 		val missingOverrides = HashMap<TypeDefinition, LinkedList<VariableValueDeclaration>>()
+		//TODO differentiate between declarations and members: functions are members and signatures are declarations
+		// - make extra fields in TypeScope: properties and signatures?
+		//TODO get abstract declarations
+		// - properties and signatures need to have a common interface
+		// - needs to have a unique signature value
+		// - needs to have a parent definition name
+		//TODO loop over local declarations to check if it was overridden, otherwise complain
 		val abstractSuperMembers = superScope?.getAbstractMembers() ?: return
 		for(abstractSuperMember in abstractSuperMembers) {
-			if(valueDeclarations[abstractSuperMember.definition.name] == null) {
+			if(memberDeclarations[abstractSuperMember.definition.name] == null) {
 				//TODO continue abstract modifier implementation here
 				//val missingOverridesFromType = missingOverrides.getOrPut(abstractSuperMember.definition) { LinkedList() }
 				//missingOverridesFromType.add(abstractSuperMember.definition)
@@ -170,11 +176,13 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	override fun declareValue(linter: Linter, value: VariableValueDeclaration) {
+		if(value !is MemberDeclaration)
+			throw CompilerError("Tried to declare non-member of type '${value.javaClass.simpleName}' in type scope.")
 		var previousDeclaration = parentScope.resolveValue(value.name)
 		if(previousDeclaration != null)
 			linter.addMessage(value.source, "'${value.name}' shadows a member," +
 				" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.WARNING)
-		previousDeclaration = superScope?.resolveValue(value.name) ?: valueDeclarations.putIfAbsent(value.name, value)
+		previousDeclaration = superScope?.resolveValue(value.name) ?: memberDeclarations.putIfAbsent(value.name, value)
 		if(previousDeclaration != null) {
 			linter.addMessage(value.source, "Redeclaration of member '${typeDefinition.name}.${value.name}'," +
 				" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
@@ -187,13 +195,13 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	override fun declareFunction(linter: Linter, name: String, newImplementation: FunctionImplementation) {
-		when(val existingDeclaration = valueDeclarations[name]?.value) {
+		when(val existingDeclaration = memberDeclarations[name]?.value) {
 			null -> {
 				val newFunction = Function(newImplementation.source, newImplementation, name)
 				typeDefinition.addUnits(newFunction)
-				val newValue = VariableValueDeclaration(newImplementation.source, name, newFunction.type, newFunction,
+				val newValue = PropertyDeclaration(newImplementation.source, name, newFunction.type, newFunction,
 					newFunction.isAbstract)
-				valueDeclarations[name] = newValue
+				memberDeclarations[name] = newValue
 				onNewValue(newValue)
 			}
 			is Function -> {
@@ -218,7 +226,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	override fun resolveValue(name: String): VariableValueDeclaration? {
-		return valueDeclarations[name]
+		return memberDeclarations[name]
 			?: superScope?.resolveValue(name)
 			?: parentScope.resolveValue(name)
 	}

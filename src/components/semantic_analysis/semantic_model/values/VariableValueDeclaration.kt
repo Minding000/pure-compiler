@@ -5,29 +5,25 @@ import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.Type
-import messages.Message
 import components.syntax_parser.syntax_tree.general.Element
-import components.syntax_parser.syntax_tree.literals.Identifier
+import messages.Message
 import java.util.*
 
-open class VariableValueDeclaration(override val source: Element, val name: String, var type: Type? = null,
-									val value: Value? = null, val isAbstract: Boolean = false,
-									val isConstant: Boolean = true, val isMutable: Boolean = false): Unit(source) {
+abstract class VariableValueDeclaration(override val source: Element, val name: String, var type: Type? = null,
+										value: Value? = null, val isConstant: Boolean = true,
+										val isMutable: Boolean = false): Unit(source) {
+	open val value = value
 	val usages = LinkedList<VariableValue>()
 
 	init {
 		addUnits(type, value)
 	}
 
-	constructor(source: Identifier): this(source, source.getValue(), null, null, false, true, true)
-
-	open fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): VariableValueDeclaration {
-		return VariableValueDeclaration(source, name, type?.withTypeSubstitutions(typeSubstitution), value, isAbstract,
-			isConstant, isMutable)
-	}
+	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): VariableValueDeclaration
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
+		val value = value
 		if(value == null) {
 			if(type == null)
 				linter.addMessage(source, "Type or value is required.", Message.Type.ERROR)

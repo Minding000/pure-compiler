@@ -1,5 +1,6 @@
 package components.syntax_parser
 
+import messages.Message
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
@@ -20,9 +21,9 @@ internal class Members {
 			"""
 				TypeDefinition [ Identifier { Human } class ] { TypeBody {
 					VariableSection [ const: ObjectType { Identifier { Int } } ] {
-						VariableDeclaration { Identifier { EYE_COUNT } = NumberLiteral { 2 } }
-						VariableDeclaration { Identifier { ARM_COUNT } = NumberLiteral { 2 } }
-						VariableDeclaration { Identifier { LEG_COUNT } = NumberLiteral { 2 } }
+						PropertyDeclaration { Identifier { EYE_COUNT } = NumberLiteral { 2 } }
+						PropertyDeclaration { Identifier { ARM_COUNT } = NumberLiteral { 2 } }
+						PropertyDeclaration { Identifier { LEG_COUNT } = NumberLiteral { 2 } }
 					}
 				} }
             """.trimIndent()
@@ -58,25 +59,25 @@ internal class Members {
 						Parameter { Identifier { Unit }: ObjectType { Identifier { Number } } }
 					}
 					VariableSection [ var: ObjectType { Identifier { Unit } } = NumberLiteral { 0 } ] {
-						VariableDeclaration { Identifier { left } }
-						VariableDeclaration { Identifier { right } }
-						VariableDeclaration { Identifier { top } }
-						VariableDeclaration { Identifier { bottom } }
+						PropertyDeclaration { Identifier { left } }
+						PropertyDeclaration { Identifier { right } }
+						PropertyDeclaration { Identifier { top } }
+						PropertyDeclaration { Identifier { bottom } }
 					}
 					VariableSection [ val: ObjectType { Identifier { Unit } } ] {
-						ComputedProperty {
+						ComputedPropertyDeclaration {
 							Identifier { width }
 							gets BinaryOperator {
 								Identifier { right } - Identifier { left }
 							}
 						}
-						ComputedProperty {
+						ComputedPropertyDeclaration {
 							Identifier { height }
 							gets BinaryOperator {
 								Identifier { bottom } - Identifier { top }
 							}
 						}
-						ComputedProperty {
+						ComputedPropertyDeclaration {
 							Identifier { centerX }
 							gets BinaryOperator {
 								Identifier { left } + BinaryOperator {
@@ -84,7 +85,7 @@ internal class Members {
 								}
 							}
 						}
-						ComputedProperty {
+						ComputedPropertyDeclaration {
 							Identifier { centerY }
 							gets BinaryOperator {
 								Identifier { top } + BinaryOperator {
@@ -94,7 +95,7 @@ internal class Members {
 						}
 					}
 					VariableSection [ val ] {
-						ComputedProperty {
+						ComputedPropertyDeclaration {
 							Identifier { isSquare }: ObjectType { Identifier { Bool } }
 							gets BinaryOperator {
 								Identifier { width } == Identifier { height }
@@ -104,5 +105,41 @@ internal class Members {
 				} }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `initializers can not be declared outside of type definition`() {
+		val sourceCode = """
+			native init() {}
+			""".trimIndent()
+		val parseResult = TestUtil.parse(sourceCode)
+		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected INIT")
+	}
+
+	@Test
+	fun `functions can not be declared outside of type definition`() {
+		val sourceCode = """
+			native to fillCup() {}
+			""".trimIndent()
+		val parseResult = TestUtil.parse(sourceCode)
+		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected TO")
+	}
+
+	@Test
+	fun `operators can not be declared outside of type definition`() {
+		val sourceCode = """
+			native operator ++() {}
+			""".trimIndent()
+		val parseResult = TestUtil.parse(sourceCode)
+		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected OPERATOR")
+	}
+
+	@Test
+	fun `computed properties can not be declared outside of type definition`() {
+		val sourceCode = """
+			val x gets 3
+			""".trimIndent()
+		val parseResult = TestUtil.parse(sourceCode)
+		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected GETS")
 	}
 }

@@ -37,7 +37,7 @@ internal class ControlFlow {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { x }: ObjectType { Identifier { Int } } }
+					LocalVariableDeclaration { Identifier { x }: ObjectType { Identifier { Int } } }
 				}
 				If [ NumberLiteral { 5 } ] {
 					Assignment {
@@ -78,7 +78,7 @@ internal class ControlFlow {
 					}
 				} }
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { peter } = FunctionCall [ Identifier { Human } ] {
+					LocalVariableDeclaration { Identifier { peter } = FunctionCall [ Identifier { Human } ] {
 					} }
 				}
             """.trimIndent()
@@ -110,7 +110,7 @@ internal class ControlFlow {
 					}
 				} }
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { peter } = FunctionCall [ Identifier { Human } ] {
+					LocalVariableDeclaration { Identifier { peter } = FunctionCall [ Identifier { Human } ] {
 					} }
 				}
 				FunctionCall [ MemberAccess {

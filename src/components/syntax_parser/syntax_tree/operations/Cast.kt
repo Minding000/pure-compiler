@@ -3,7 +3,7 @@ package components.syntax_parser.syntax_tree.operations
 import errors.internal.CompilerError
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.values.VariableValueDeclaration
+import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
 import components.semantic_analysis.semantic_model.operations.Cast as SemanticCastModel
 import components.syntax_parser.syntax_tree.general.ValueElement
 import components.syntax_parser.syntax_tree.literals.Identifier
@@ -20,7 +20,7 @@ class Cast(val value: ValueElement, val operator: String, val identifier: Identi
 		val variableDeclaration = if(identifier == null) {
 			null
 		} else {
-			val variableDeclaration = VariableValueDeclaration(identifier)
+			val variableDeclaration = LocalVariableDeclaration(identifier)
 			scope.declareValue(linter, variableDeclaration)
 			variableDeclaration
 		}

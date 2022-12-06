@@ -56,8 +56,8 @@ internal class Generators {
 				Generator [ Identifier { fibonacciSeries } ParameterList {
 				}: ObjectType { Identifier { Int } }, ObjectType { Identifier { Int } } ] { StatementSection { StatementBlock {
 					VariableSection [ var = NumberLiteral { 1 } ] {
-						VariableDeclaration { Identifier { index } }
-						VariableDeclaration { Identifier { sum } }
+						LocalVariableDeclaration { Identifier { index } }
+						LocalVariableDeclaration { Identifier { sum } }
 					}
 					Loop { StatementSection { StatementBlock {
 						Yield { Identifier { index } Identifier { sum } }

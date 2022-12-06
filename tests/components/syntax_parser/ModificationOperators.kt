@@ -17,7 +17,7 @@ internal class ModificationOperators {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { x } = NumberLiteral { 0 } }
+					LocalVariableDeclaration { Identifier { x } = NumberLiteral { 0 } }
 				}
 				UnaryModification { Identifier { x }++ }
 				UnaryModification { Identifier { x }-- }
@@ -42,7 +42,7 @@ internal class ModificationOperators {
 		val expected =
 			"""
 				VariableSection [ var ] {
-					VariableDeclaration { Identifier { x } = NumberLiteral { 0 } }
+					LocalVariableDeclaration { Identifier { x } = NumberLiteral { 0 } }
 				}
 				BinaryModification {
 					Identifier { x } += NumberLiteral { 4 }

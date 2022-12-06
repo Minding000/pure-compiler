@@ -59,7 +59,7 @@ internal class FunctionDefinitions {
 							Parameter { Identifier { loudness }: ObjectType { Identifier { Int } } }
 						}: void ] { StatementSection { StatementBlock {
 							VariableSection [ var ] {
-								VariableDeclaration { Identifier { energy } = BinaryOperator {
+								LocalVariableDeclaration { Identifier { energy } = BinaryOperator {
 									Identifier { loudness } * NumberLiteral { 2 }
 								} }
 							}
@@ -82,7 +82,7 @@ internal class FunctionDefinitions {
 			"""
 				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
 					VariableSection [ var ] {
-						VariableDeclaration { Identifier { canSwim }: ObjectType { Identifier { Bool } } }
+						PropertyDeclaration { Identifier { canSwim }: ObjectType { Identifier { Bool } } }
 					}
 					Initializer [ ParameterList {
 						Parameter { Identifier { canSwim } }
@@ -121,7 +121,7 @@ internal class FunctionDefinitions {
 			"""
 				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
 					VariableSection [ var ] {
-						VariableDeclaration { Identifier { canSwim }: ObjectType { Identifier { Bool } } }
+						PropertyDeclaration { Identifier { canSwim }: ObjectType { Identifier { Bool } } }
 					}
 					Initializer [ ParameterList {
 						Parameter { Identifier { name }: ObjectType { Identifier { String } } }
@@ -151,7 +151,7 @@ internal class FunctionDefinitions {
 			"""
 				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
 					VariableSection [ var ] {
-						VariableDeclaration { Identifier { name }: ObjectType { Identifier { String } } }
+						PropertyDeclaration { Identifier { name }: ObjectType { Identifier { String } } }
 					}
 					Deinitializer { StatementSection { StatementBlock {
 						Print {
@@ -187,8 +187,8 @@ internal class FunctionDefinitions {
 			"""
 				TypeDefinition [ Identifier { Vector } class ] { TypeBody {
 					VariableSection [ var: ObjectType { Identifier { Int } } ] {
-						VariableDeclaration { Identifier { x } }
-						VariableDeclaration { Identifier { y } }
+						PropertyDeclaration { Identifier { x } }
+						PropertyDeclaration { Identifier { y } }
 					}
 					OperatorSection {
 						OperatorDefinition [ Operator { += } ParameterList {
@@ -299,7 +299,7 @@ internal class FunctionDefinitions {
 		val expected =
 			"""
 				VariableSection [ val ] {
-					VariableDeclaration { Identifier { condition } = LambdaFunctionDefinition [ ParameterList {
+					LocalVariableDeclaration { Identifier { condition } = LambdaFunctionDefinition [ ParameterList {
 						Parameter { Identifier { a }: ObjectType { Identifier { Int } } }
 						Parameter { Identifier { b }: ObjectType { Identifier { Int } } }
 					} ] { StatementSection { StatementBlock {
