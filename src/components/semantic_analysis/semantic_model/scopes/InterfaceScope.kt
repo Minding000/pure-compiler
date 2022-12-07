@@ -192,13 +192,11 @@ class InterfaceScope(private val type: Type): Scope() {
 		return validSignatures
 	}
 
-	class AbstractMember(/*val parentDefinition: TypeDefinition, */val definition: MemberDeclaration)
-
-	fun getAbstractMembers(): List<AbstractMember> {
-		val abstractMembers = LinkedList<AbstractMember>()
+	fun getAbstractMembers(): List<MemberDeclaration> {
+		val abstractMembers = LinkedList<MemberDeclaration>()
 		for((_, declaration) in values) {
 			if(declaration.isAbstract)
-				abstractMembers.add(AbstractMember(declaration))
+				abstractMembers.add(declaration)
 		}
 		return abstractMembers
 	}

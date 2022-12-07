@@ -125,29 +125,28 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	fun ensureAbstractSuperMembersImplemented(linter: Linter) {
-		val missingOverrides = HashMap<TypeDefinition, LinkedList<ValueDeclaration>>()
 		//TODO differentiate between declarations and members: functions are members and signatures are declarations
 		// - make extra fields in TypeScope: properties and signatures?
-		//TODO get abstract declarations
-		// - properties and signatures need to have a common interface
-		// - needs to have a unique signature value
-		// - needs to have a parent definition name
-		//TODO loop over local declarations to check if it was overridden, otherwise complain
+		// - Make FunctionImplementations MemberDeclarations as well
+		// - How would a string representation of members represent functions properly?
+		//   - (String) =>| & (String, String) =>| should be able to override (String) =>| and (String, String) =>|
+		val missingOverrides = HashMap<TypeDefinition, LinkedList<ValueDeclaration>>()
 		val abstractSuperMembers = superScope?.getAbstractMembers() ?: return
 		for(abstractSuperMember in abstractSuperMembers) {
-			if(memberDeclarations[abstractSuperMember.definition.name] == null) {
-				//TODO continue abstract modifier implementation here
-				//val missingOverridesFromType = missingOverrides.getOrPut(abstractSuperMember.definition) { LinkedList() }
-				//missingOverridesFromType.add(abstractSuperMember.definition)
+			val overridingMember = memberDeclarations[abstractSuperMember.name]
+			if(!abstractSuperMember.canBeOverriddenBy(overridingMember)) {
+				val missingOverridesFromType = missingOverrides.getOrPut(abstractSuperMember.parentDefinition) {
+					LinkedList() }
+				missingOverridesFromType.add(abstractSuperMember)
 			}
 		}
 		if(missingOverrides.isEmpty())
 			return
-		var message = "Non-abstract class '${typeDefinition.name}' does not implement to following inherited members:\n"
-		for((name, definition) in missingOverrides) {
-			message += "  - $name\n"
-			for(value in definition)
-				message += "    - ${value.name}\n"
+		var message = "Non-abstract class '${typeDefinition.name}' does not implement the following inherited members:"
+		for((parentName, missingMembers) in missingOverrides) {
+			message += "\n- $parentName"
+			for(member in missingMembers)
+				message += "\n  - ${member.name}"
 		}
 		linter.addMessage(typeDefinition.source, message, Message.Type.ERROR)
 	}
@@ -177,6 +176,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	override fun declareValue(linter: Linter, value: ValueDeclaration) {
 		if(value !is MemberDeclaration)
 			throw CompilerError("Tried to declare non-member of type '${value.javaClass.simpleName}' in type scope.")
+		value.parentDefinition = typeDefinition
 		var previousDeclaration = parentScope.resolveValue(value.name)
 		if(previousDeclaration != null)
 			linter.addMessage(value.source, "'${value.name}' shadows a member," +
@@ -200,6 +200,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				typeDefinition.addUnits(newFunction)
 				val newValue = PropertyDeclaration(newImplementation.source, name, newFunction.type, newFunction,
 					newFunction.isAbstract)
+				newValue.parentDefinition = typeDefinition
 				memberDeclarations[name] = newValue
 				onNewValue(newValue)
 			}

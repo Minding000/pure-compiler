@@ -8,8 +8,15 @@ abstract class MemberDeclaration(source: Element, name: String, type: Type? = nu
 								 val isAbstract: Boolean = false, isConstant: Boolean = true,
 								 isMutable: Boolean = false):
 	ValueDeclaration(source, name, type, value, isConstant, isMutable) {
-	//val parentDefinition: TypeDefinition
-	//val signature: String
+	lateinit var parentDefinition: TypeDefinition
 
 	abstract override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): MemberDeclaration
+
+	fun canBeOverriddenBy(other: MemberDeclaration?): Boolean {
+		if(other == null)
+			return false
+		if(other.name !== name)
+			return false
+		return true
+	}
 }

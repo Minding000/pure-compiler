@@ -3,7 +3,6 @@ package components.semantic_analysis
 import components.semantic_analysis.semantic_model.values.VariableValue
 import util.TestUtil
 import messages.Message
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 
@@ -201,7 +200,6 @@ internal class Declarations {
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Abstract class 'List' cannot be instantiated")
 	}
 
-	@Disabled
 	@Test
 	fun `emits error for non-abstract subclasses that don't implement inherited abstract members`() {
 		val sourceCode = """
@@ -213,9 +211,9 @@ internal class Declarations {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR,
 			"""
-				Non-abstract class 'LinkedList' does not implement to following inherited members:
-				 - List
-				   - clear
+				Non-abstract class 'LinkedList' does not implement the following inherited members:
+				- List
+				  - clear
 			""".trimIndent())
 	}
 }
