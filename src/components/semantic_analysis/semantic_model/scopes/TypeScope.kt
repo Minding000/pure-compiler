@@ -27,8 +27,8 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				specificTypeScope.typeDefinitions[name] = specificDefinition
 			}
 		}
-		for((name, memberDeclaration) in interfaceMembers)
-			specificTypeScope.interfaceMembers[name] = memberDeclaration.withTypeSubstitutions(typeSubstitution)
+		for((name, interfaceMember) in interfaceMembers)
+			specificTypeScope.interfaceMembers[name] = interfaceMember.withTypeSubstitutions(typeSubstitution)
 		for(initializer in initializers)
 			specificTypeScope.initializers.add(initializer.withTypeSubstitutions(typeSubstitution))
 		for(operator in operators)
@@ -41,8 +41,8 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		superScope?.subscribe(type)
 		for((_, typeDefinition) in typeDefinitions)
 			type.onNewType(typeDefinition)
-		for((_, memberDeclaration) in interfaceMembers)
-			type.onNewValue(memberDeclaration)
+		for((_, interfaceMember) in interfaceMembers)
+			type.onNewValue(interfaceMember)
 		for(initializer in initializers)
 			type.onNewInitializer(initializer)
 		for(operator in operators)
@@ -138,11 +138,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	fun ensureAbstractSuperMembersImplemented(linter: Linter) {
-		//TODO differentiate between declarations and members: functions are members and signatures are declarations
-		// - make extra fields in TypeScope: properties and signatures?
-		// - Make FunctionImplementations MemberDeclarations as well
-		// - How would a string representation of members represent functions properly?
-		//   - (String) =>| & (String, String) =>| should be able to override (String) =>| and (String, String) =>|
 		val missingOverrides = LinkedHashMap<TypeDefinition, LinkedList<MemberDeclaration>>()
 		val abstractSuperMembers = superScope?.getAbstractMembers() ?: return
 		for(abstractSuperMember in abstractSuperMembers) {
@@ -208,7 +203,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	override fun declareFunction(linter: Linter, name: String, newImplementation: FunctionImplementation) {
-		when(val existingDeclaration = interfaceMembers[name]?.value) {
+		when(val existingInterfaceMember = interfaceMembers[name]?.value) {
 			null -> {
 				val newFunction = Function(newImplementation.source, newImplementation, name)
 				typeDefinition.addUnits(newFunction)
@@ -219,11 +214,11 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				onNewValue(newValue)
 			}
 			is Function -> {
-				existingDeclaration.addImplementation(newImplementation)
+				existingInterfaceMember.addImplementation(newImplementation)
 			}
 			else -> {
 				linter.addMessage(newImplementation.source, "Redeclaration of member '${typeDefinition.name}.$name', " +
-							"previously declared in ${existingDeclaration.source.getStartString()}.",
+							"previously declared in ${existingInterfaceMember.source.getStartString()}.",
 					Message.Type.ERROR)
 				return
 			}
