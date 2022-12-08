@@ -11,6 +11,7 @@ import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.values.MemberDeclaration
 import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
+import java.util.*
 
 abstract class Type(source: Element): Unit(source) {
 	val scope = InterfaceScope(this)
@@ -50,6 +51,8 @@ abstract class Type(source: Element): Unit(source) {
 		}
 		return sourceType
 	}
+
+	open fun getAbstractMembers(): List<MemberDeclaration> = LinkedList()
 
 //	abstract override fun compile(context: BuildContext): LLVMTypeRef
 }

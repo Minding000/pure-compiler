@@ -9,13 +9,14 @@ abstract class MemberDeclaration(source: Element, name: String, type: Type? = nu
 								 isMutable: Boolean = false):
 	ValueDeclaration(source, name, type, value, isConstant, isMutable) {
 	lateinit var parentDefinition: TypeDefinition
+	var signatureString = "$name${if(type == null) "" else ": $type"}"
 
 	abstract override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): MemberDeclaration
 
 	fun canBeOverriddenBy(other: MemberDeclaration?): Boolean {
 		if(other == null)
 			return false
-		if(other.name !== name)
+		if(other.signatureString != signatureString)
 			return false
 		return true
 	}

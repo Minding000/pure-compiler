@@ -192,14 +192,7 @@ class InterfaceScope(private val type: Type): Scope() {
 		return validSignatures
 	}
 
-	fun getAbstractMembers(): List<MemberDeclaration> {
-		val abstractMembers = LinkedList<MemberDeclaration>()
-		for((_, declaration) in values) {
-			if(declaration.isAbstract)
-				abstractMembers.add(declaration)
-		}
-		return abstractMembers
-	}
+	fun getAbstractMembers(): List<MemberDeclaration> = type.getAbstractMembers()
 
 	override fun toString(): String {
 		return "InterfaceScope of $type"

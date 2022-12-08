@@ -203,17 +203,26 @@ internal class Declarations {
 	@Test
 	fun `emits error for non-abstract subclasses that don't implement inherited abstract members`() {
 		val sourceCode = """
-			abstract List class {
-				abstract to clear()
+			Int class {}
+			abstract Collection class {
+				abstract val size: Int
 			}
-			LinkedList class: List {}
+			abstract List class: Collection {
+				abstract to clear()
+				abstract to clear(position: Int)
+			}
+			LinkedList class: List {
+				overriding to clear()
+			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR,
 			"""
 				Non-abstract class 'LinkedList' does not implement the following inherited members:
+				- Collection
+				  - size: Int
 				- List
-				  - clear
+				  - clear(Int)
 			""".trimIndent())
 	}
 }

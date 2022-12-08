@@ -8,8 +8,8 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
 import java.util.LinkedList
 
-class Function(source: Element, private val implementations: MutableList<FunctionImplementation>,
-			   val functionType: FunctionType, val name: String): Value(source, functionType) {
+class Function(source: Element, val functionType: FunctionType, val name: String): Value(source, functionType) {
+	private val implementations = LinkedList<FunctionImplementation>()
 	val isAbstract: Boolean
 		get() {
 			return implementations.any { implementation -> implementation.isAbstract }
@@ -37,12 +37,15 @@ class Function(source: Element, private val implementations: MutableList<Functio
 	}
 
 	constructor(source: Element, implementation: FunctionImplementation, name: String = "<anonymous function>"):
-			this(source, mutableListOf(implementation), FunctionType(source, implementation.signature), name)
+			this(source, FunctionType(source), name) {
+		addImplementation(implementation)
+	}
 
 	fun addImplementation(implementation: FunctionImplementation) {
 		addUnits(implementation)
 		implementations.add(implementation)
 		functionType.addSignature(implementation.signature)
+		implementation.setParent(this)
 	}
 
 	fun removeImplementation(implementation: FunctionImplementation) {

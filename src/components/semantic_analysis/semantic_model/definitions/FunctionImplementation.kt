@@ -2,18 +2,21 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
-import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.values.Function
+import components.semantic_analysis.semantic_model.values.MemberDeclaration
 import components.syntax_parser.syntax_tree.general.Element
 
 class FunctionImplementation(override val source: Element, val scope: BlockScope,
 							 genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,
-							 body: ErrorHandlingContext?, returnType: Type?, val isAbstract: Boolean = false,
+							 body: ErrorHandlingContext?, returnType: Type?, isAbstract: Boolean = false,
 							 val isMutating: Boolean = false, val isNative: Boolean = false,
-							 val isOverriding: Boolean = false): Unit(source) {
-	val signature = FunctionSignature(source, genericParameters, parameters.map { parameter -> parameter.type },
+							 val isOverriding: Boolean = false):
+	MemberDeclaration(source, "", null, null, isAbstract) {
+	lateinit var parentFunction: Function
+	val signature: FunctionSignature = FunctionSignature(source, genericParameters, parameters.map { parameter -> parameter.type },
 		returnType, true)
 	var superFunctionImplementation: FunctionImplementation? = null
 		set(value) {
@@ -24,6 +27,15 @@ class FunctionImplementation(override val source: Element, val scope: BlockScope
 	init {
 		addUnits(signature, body, returnType)
 		addUnits(genericParameters, parameters)
+	}
+
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): MemberDeclaration {
+		TODO("Not yet implemented")
+	}
+
+	fun setParent(function: Function) {
+		parentFunction = function
+		signatureString = "${function.name}${signature.toString(false)}"
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {

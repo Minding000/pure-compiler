@@ -147,6 +147,10 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		return typeParameters.last()
 	}
 
+	override fun getAbstractMembers(): List<MemberDeclaration> {
+		return definition?.scope?.getAbstractMembers() ?: LinkedList()
+	}
+
 	override fun equals(other: Any?): Boolean {
 		if(other !is Type)
 			return false

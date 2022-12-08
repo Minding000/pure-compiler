@@ -162,7 +162,7 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 
 	fun toString(useLambdaStyle: Boolean): String {
 		var stringRepresentation = ""
-		if(genericParameters.isNotEmpty() || parameterTypes.isNotEmpty()) {
+		if(!useLambdaStyle || genericParameters.isNotEmpty() || parameterTypes.isNotEmpty()) {
 			stringRepresentation += "("
 			if(genericParameters.isNotEmpty()) {
 				stringRepresentation += genericParameters.joinToString()

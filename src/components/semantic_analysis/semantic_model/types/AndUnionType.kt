@@ -49,6 +49,13 @@ class AndUnionType(override val source: Element, val types: List<Type>): Type(so
 		return false
 	}
 
+	override fun getAbstractMembers(): List<MemberDeclaration> {
+		val abstractMembers = LinkedList<MemberDeclaration>()
+		for(type in types)
+			abstractMembers.addAll(type.getAbstractMembers())
+		return abstractMembers
+	}
+
 	override fun equals(other: Any?): Boolean {
 		if(other !is AndUnionType)
 			return false
