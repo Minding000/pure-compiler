@@ -185,7 +185,7 @@ internal class Declarations {
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Abstract member 'clear' is not allowed in non-abstract class 'List'")
+			"Abstract member 'clear()' is not allowed in non-abstract class 'List'")
 	}
 
 	@Test

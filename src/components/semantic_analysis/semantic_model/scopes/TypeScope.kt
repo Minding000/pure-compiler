@@ -128,10 +128,10 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	fun ensureNoAbstractMembers(linter: Linter) {
-		for((name, memberDeclaration) in interfaceMembers) {
+		for((_, memberDeclaration) in memberDeclarations) {
 			if(memberDeclaration.isAbstract) {
 				linter.addMessage(memberDeclaration.source,
-					"Abstract member '$name' is not allowed in non-abstract class '${typeDefinition.name}'.",
+					"Abstract member '${memberDeclaration.signatureString}' is not allowed in non-abstract class '${typeDefinition.name}'.",
 					Message.Type.ERROR)
 			}
 		}
