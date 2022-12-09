@@ -1,7 +1,8 @@
-package components.semantic_analysis.semantic_model.values
+package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.types.Type
+import components.semantic_analysis.semantic_model.values.InterfaceMember
+import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
 
 class PropertyDeclaration(source: Element, name: String, type: Type? = null, value: Value? = null,

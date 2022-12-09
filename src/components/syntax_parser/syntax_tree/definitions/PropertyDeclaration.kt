@@ -1,7 +1,7 @@
 package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.values.PropertyDeclaration as SemanticPropertyDeclarationModel
+import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration as SemanticPropertyDeclarationModel
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.VariableSectionElement
 import components.syntax_parser.syntax_tree.literals.Identifier
@@ -20,9 +20,9 @@ class PropertyDeclaration(private val identifier: Identifier, private val type: 
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticPropertyDeclarationModel {
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
-		val isAbstract = !parent.containsModifier(WordAtom.IMMUTABLE)
+		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isMutable = !parent.containsModifier(WordAtom.IMMUTABLE)
-		val variableDeclaration = SemanticPropertyDeclarationModel(
+		val propertyDeclaration = SemanticPropertyDeclarationModel(
 			this,
 			identifier.getValue(),
 			(type ?: parent.type)?.concretize(linter, scope),
@@ -31,8 +31,8 @@ class PropertyDeclaration(private val identifier: Identifier, private val type: 
 			parent.isConstant,
 			isMutable
 		)
-		scope.declareValue(linter, variableDeclaration)
-		return variableDeclaration
+		scope.declareValue(linter, propertyDeclaration)
+		return propertyDeclaration
 	}
 
 	override fun toString(): String {

@@ -1,9 +1,9 @@
 package components.semantic_analysis
 
 import components.semantic_analysis.semantic_model.values.VariableValue
-import util.TestUtil
 import messages.Message
 import org.junit.jupiter.api.Test
+import util.TestUtil
 import kotlin.test.assertNotNull
 
 internal class Declarations {
@@ -174,55 +174,5 @@ internal class Declarations {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING,
 			"Generic parameters for the index operator are received in the index parameter list instead")
-	}
-
-	@Test
-	fun `emits error for abstract member in non-abstract class`() {
-		val sourceCode = """
-			List class {
-				abstract to clear()
-			}
-			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Abstract member 'clear()' is not allowed in non-abstract class 'List'")
-	}
-
-	@Test
-	fun `emits error for instantiation of abstract classes`() {
-		val sourceCode = """
-			abstract List class {
-				init
-			}
-			List()
-			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Abstract class 'List' cannot be instantiated")
-	}
-
-	@Test
-	fun `emits error for non-abstract subclasses that don't implement inherited abstract members`() {
-		val sourceCode = """
-			Int class {}
-			abstract Collection class {
-				abstract val size: Int
-			}
-			abstract List class: Collection {
-				abstract to clear()
-				abstract to clear(position: Int)
-			}
-			LinkedList class: List {
-				overriding to clear()
-			}
-			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"""
-				Non-abstract class 'LinkedList' does not implement the following inherited members:
-				- Collection
-				  - size: Int
-				- List
-				  - clear(Int)
-			""".trimIndent())
 	}
 }
