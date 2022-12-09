@@ -31,7 +31,7 @@ internal class Members {
 	}
 
 	@Test
-	fun `parses computed members`() { //TODO also test setters
+	fun `parses computed members`() {
 		val sourceCode = """
 			Rectangle class {
 				containing Unit: Number
@@ -43,10 +43,26 @@ internal class Members {
 					bottom
 				}
 				val: Unit {
-					width gets right - left
-					height gets bottom - top
-					centerX gets left + width / 2
-					centerY gets top + height / 2
+					width
+						gets right - left
+						sets right = left + width
+					height
+						gets bottom - top
+						sets bottom = top + height
+					centerX
+						gets left + width / 2
+						sets {
+							val halfWidth = width / 2
+							left = centerX - halfWidth
+							right = centerX + halfWidth
+						}
+					centerY
+						gets top + height / 2
+						sets {
+							val halfHeight = height / 2
+							top = centerY - halfHeight
+							bottom = centerY + halfHeight
+						}
 				}
 				val isSquare: Bool
 					gets width == height
@@ -70,11 +86,23 @@ internal class Members {
 							gets BinaryOperator {
 								Identifier { right } - Identifier { left }
 							}
+							sets Assignment {
+								Identifier { right }
+								= BinaryOperator {
+									Identifier { left } + Identifier { width }
+								}
+							}
 						}
 						ComputedPropertyDeclaration {
 							Identifier { height }
 							gets BinaryOperator {
 								Identifier { bottom } - Identifier { top }
+							}
+							sets Assignment {
+								Identifier { bottom }
+								= BinaryOperator {
+									Identifier { top } + Identifier { height }
+								}
 							}
 						}
 						ComputedPropertyDeclaration {
@@ -84,6 +112,25 @@ internal class Members {
 									Identifier { width } / NumberLiteral { 2 }
 								}
 							}
+							sets StatementSection { StatementBlock {
+								VariableSection [ val ] {
+									LocalVariableDeclaration { Identifier { halfWidth } = BinaryOperator {
+										Identifier { width } / NumberLiteral { 2 }
+									} }
+								}
+								Assignment {
+									Identifier { left }
+									= BinaryOperator {
+										Identifier { centerX } - Identifier { halfWidth }
+									}
+								}
+								Assignment {
+									Identifier { right }
+									= BinaryOperator {
+										Identifier { centerX } + Identifier { halfWidth }
+									}
+								}
+							} }
 						}
 						ComputedPropertyDeclaration {
 							Identifier { centerY }
@@ -92,6 +139,25 @@ internal class Members {
 									Identifier { height } / NumberLiteral { 2 }
 								}
 							}
+							sets StatementSection { StatementBlock {
+								VariableSection [ val ] {
+									LocalVariableDeclaration { Identifier { halfHeight } = BinaryOperator {
+										Identifier { height } / NumberLiteral { 2 }
+									} }
+								}
+								Assignment {
+									Identifier { top }
+									= BinaryOperator {
+										Identifier { centerY } - Identifier { halfHeight }
+									}
+								}
+								Assignment {
+									Identifier { bottom }
+									= BinaryOperator {
+										Identifier { centerY } + Identifier { halfHeight }
+									}
+								}
+							} }
 						}
 					}
 					VariableSection [ val ] {

@@ -830,7 +830,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * PropertyDeclaration:
-	 *   <Identifier>[: <Type>] [get <Expression>] [set <Expression>]
+	 *   <Identifier>[: <Type>] [get <Expression>] [set <Statement>]
 	 *   <Identifier>[: <Type>] [= <Expression>]
 	 */
 	private fun parseProperty(): VariableSectionElement {
@@ -845,12 +845,12 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			parseExpression()
 		} else null
 		consumeLineBreaks()
-		val setExpression = if(currentWord?.type == WordAtom.SETS) {
+		val setStatement = if(currentWord?.type == WordAtom.SETS) {
 			consume(WordAtom.SETS)
-			parseExpression()
+			parseStatement()
 		} else null
-		if(getExpression != null || setExpression != null)
-			return ComputedPropertyDeclaration(identifier, type, getExpression, setExpression)
+		if(getExpression != null || setStatement != null)
+			return ComputedPropertyDeclaration(identifier, type, getExpression, setStatement)
 		var value: ValueElement? = null
 		if(currentWord?.type == WordAtom.ASSIGNMENT) {
 			consume(WordAtom.ASSIGNMENT)
