@@ -4,7 +4,53 @@ import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
-internal class AbstractClasses {
+internal class AbstractModifier {
+
+	@Test
+	fun `is allowed on classes`() {
+		val sourceCode = "abstract Goldfish class {}"
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+	}
+
+	@Test
+	fun `is not allowed on objects`() {
+		val sourceCode = "abstract Earth object {}"
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+	}
+
+	@Test
+	fun `is not allowed on enums`() {
+		val sourceCode = "abstract Tire enum {}"
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+	}
+
+	@Test
+	fun `is allowed on properties`() {
+		val sourceCode =
+			"""
+				abstract Goldfish class {
+					abstract val brain: Brain
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+	}
+
+	@Test
+	fun `is not allowed on computed properties`() {
+		val sourceCode =
+			"""
+				abstract Goldfish class {
+					abstract val name: String
+						gets "Bernd"
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+	}
 
 	@Test
 	fun `emits error for abstract member in non-abstract class`() {

@@ -6,6 +6,7 @@ import components.syntax_parser.syntax_tree.definitions.sections.VariableSection
 import components.syntax_parser.syntax_tree.general.TypeElement
 import components.syntax_parser.syntax_tree.general.ValueElement
 import components.syntax_parser.syntax_tree.literals.Identifier
+import components.tokenizer.WordAtom
 import util.indent
 import components.semantic_analysis.semantic_model.definitions.ComputedPropertyDeclaration as SemanticComputedPropertyDeclarationModel
 
@@ -13,7 +14,12 @@ class ComputedPropertyDeclaration(private val identifier: Identifier, private va
 								  private val getExpression: ValueElement?, private val setExpression: ValueElement?):
 	VariableSectionElement(identifier.start, setExpression?.end ?: getExpression?.end ?: identifier.end) {
 
+	companion object {
+		val ALLOWED_MODIFIER_TYPES = listOf<WordAtom>()
+	}
+
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticComputedPropertyDeclarationModel {
+		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val type = type ?: parent.type
 		val computedProperty = SemanticComputedPropertyDeclarationModel(this, identifier.getValue(),
 			type?.concretize(linter, scope), getExpression?.concretize(linter, scope),
