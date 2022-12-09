@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.values.MemberDeclaration
+import components.semantic_analysis.semantic_model.values.InterfaceMember
 
 class StaticType(val definition: TypeDefinition): Type(definition.source) {
 
@@ -30,7 +30,7 @@ class StaticType(val definition: TypeDefinition): Type(definition.source) {
 		this.scope.addType(type)
 	}
 
-	override fun onNewValue(value: MemberDeclaration) {
+	override fun onNewValue(value: InterfaceMember) {
 		if(value.isConstant)
 			this.scope.addValue(value)
 	}

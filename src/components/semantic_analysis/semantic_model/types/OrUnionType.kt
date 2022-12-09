@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.values.MemberDeclaration
+import components.semantic_analysis.semantic_model.values.InterfaceMember
 import java.util.*
 import components.syntax_parser.syntax_tree.literals.UnionType as UnionTypeSyntaxTree
 
@@ -28,7 +28,7 @@ class OrUnionType(override val source: UnionTypeSyntaxTree, val types: List<Type
 		this.scope.addType(type)
 	}
 
-	override fun onNewValue(value: MemberDeclaration) {
+	override fun onNewValue(value: InterfaceMember) {
 		for(part in types)
 			if(!part.scope.hasValue(value))
 				return

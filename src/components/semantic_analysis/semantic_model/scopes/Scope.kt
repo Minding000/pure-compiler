@@ -5,7 +5,7 @@ import components.semantic_analysis.semantic_model.definitions.InitializerDefini
 import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.values.MemberDeclaration
+import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
@@ -23,7 +23,7 @@ abstract class Scope {
 			subscriber.onNewType(type)
 	}
 
-	protected fun onNewValue(value: MemberDeclaration) {
+	protected fun onNewValue(value: InterfaceMember) {
 		for(subscriber in subscribedTypes)
 			subscriber.onNewValue(value)
 	}

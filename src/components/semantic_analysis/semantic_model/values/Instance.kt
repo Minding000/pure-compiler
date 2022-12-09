@@ -11,7 +11,7 @@ import messages.Message
 import components.syntax_parser.syntax_tree.definitions.Instance as InstanceSyntaxTree
 
 class Instance(override val source: InstanceSyntaxTree, override val value: VariableValue,
-			   val valueParameters: List<Value>): MemberDeclaration(source, value.name, null, value) {
+			   val valueParameters: List<Value>): InterfaceMember(source, value.name, null, value) {
 	lateinit var typeDefinition: TypeDefinition
 
 	init {

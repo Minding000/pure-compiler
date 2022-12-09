@@ -1,25 +1,22 @@
 package components.semantic_analysis.semantic_model.scopes
 
+import components.semantic_analysis.semantic_model.definitions.*
 import errors.user.SignatureResolutionAmbiguityError
-import components.semantic_analysis.semantic_model.definitions.IndexOperatorDefinition
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Instance
-import components.semantic_analysis.semantic_model.values.MemberDeclaration
+import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.Value
 import java.util.*
 
 class InterfaceScope(private val type: Type): Scope() {
 	private val types = HashMap<String, TypeDefinition>()
-	private val values = HashMap<String, MemberDeclaration>()
+	private val values = HashMap<String, InterfaceMember>()
 	private val initializers = LinkedList<InitializerDefinition>()
 	private val operators = LinkedList<OperatorDefinition>()
 
 	fun hasType(type: TypeDefinition): Boolean = types.containsValue(type)
 
-	fun hasValue(value: MemberDeclaration): Boolean = values.containsValue(value)
+	fun hasValue(value: InterfaceMember): Boolean = values.containsValue(value)
 
 	fun hasInstance(name: String): Boolean {
 		for((_, value) in values) {
@@ -50,7 +47,7 @@ class InterfaceScope(private val type: Type): Scope() {
 		}
 	}
 
-	fun addValue(value: MemberDeclaration) {
+	fun addValue(value: InterfaceMember) {
 		if(!values.containsKey(value.name)) {
 			values[value.name] = value
 			onNewValue(value)
@@ -67,7 +64,7 @@ class InterfaceScope(private val type: Type): Scope() {
 		onNewOperator(operator)
 	}
 
-	override fun resolveValue(name: String): MemberDeclaration? {
+	override fun resolveValue(name: String): InterfaceMember? {
 		return values[name]
 	}
 

@@ -1,11 +1,12 @@
 package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
 import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeAlias
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.semantic_analysis.semantic_model.values.MemberDeclaration
+import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import java.util.*
@@ -59,7 +60,7 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		this.scope.addType(type)
 	}
 
-	override fun onNewValue(value: MemberDeclaration) {
+	override fun onNewValue(value: InterfaceMember) {
 		this.scope.addValue(value)
 	}
 

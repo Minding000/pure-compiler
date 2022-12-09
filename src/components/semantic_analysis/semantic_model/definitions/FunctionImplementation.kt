@@ -2,19 +2,20 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
+import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Function
-import components.semantic_analysis.semantic_model.values.MemberDeclaration
 import components.syntax_parser.syntax_tree.general.Element
 
 class FunctionImplementation(override val source: Element, val scope: BlockScope,
 							 genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,
-							 body: ErrorHandlingContext?, returnType: Type?, isAbstract: Boolean = false,
+							 body: ErrorHandlingContext?, returnType: Type?, override val isAbstract: Boolean = false,
 							 val isMutating: Boolean = false, val isNative: Boolean = false,
-							 val isOverriding: Boolean = false):
-	MemberDeclaration(source, "", null, null, isAbstract) {
+							 val isOverriding: Boolean = false): Unit(source), MemberDeclaration {
+	override lateinit var parentDefinition: TypeDefinition
+	override lateinit var signatureString: String
 	lateinit var parentFunction: Function
 	val signature: FunctionSignature = FunctionSignature(source, genericParameters, parameters.map { parameter -> parameter.type },
 		returnType, true)
@@ -27,10 +28,6 @@ class FunctionImplementation(override val source: Element, val scope: BlockScope
 	init {
 		addUnits(signature, body, returnType)
 		addUnits(genericParameters, parameters)
-	}
-
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): MemberDeclaration {
-		TODO("Not yet implemented")
 	}
 
 	fun setParent(function: Function) {

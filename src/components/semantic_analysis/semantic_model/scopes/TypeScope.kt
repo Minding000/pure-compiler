@@ -14,7 +14,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	lateinit var typeDefinition: TypeDefinition
 	private val typeDefinitions = HashMap<String, TypeDefinition>()
 	private val memberDeclarations = HashMap<String, MemberDeclaration>()
-	private val interfaceMembers = HashMap<String, MemberDeclaration>()
+	private val interfaceMembers = HashMap<String, InterfaceMember>()
 	private val initializers = LinkedList<InitializerDefinition>()
 	private val operators = LinkedList<OperatorDefinition>()
 
@@ -182,7 +182,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	override fun declareValue(linter: Linter, value: ValueDeclaration) {
-		if(value !is MemberDeclaration)
+		if(value !is InterfaceMember)
 			throw CompilerError("Tried to declare non-member of type '${value.javaClass.simpleName}' in type scope.")
 		value.parentDefinition = typeDefinition
 		var previousDeclaration = parentScope.resolveValue(value.name)
@@ -203,6 +203,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	override fun declareFunction(linter: Linter, name: String, newImplementation: FunctionImplementation) {
+		newImplementation.parentDefinition = typeDefinition
 		when(val existingInterfaceMember = interfaceMembers[name]?.value) {
 			null -> {
 				val newFunction = Function(newImplementation.source, newImplementation, name)
@@ -223,7 +224,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				return
 			}
 		}
-		newImplementation.parentDefinition = typeDefinition
 		memberDeclarations[newImplementation.signatureString] = newImplementation
 		linter.addMessage(newImplementation.source, "Declaration of function " +
 				"'${typeDefinition.name}.$name${newImplementation.signature.toString(false)}'.",

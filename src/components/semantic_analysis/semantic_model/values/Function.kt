@@ -61,7 +61,7 @@ class Function(source: Element, val functionType: FunctionType, val name: String
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		for(implementation in implementations) {
+		for(implementation in implementations) { //TODO consider moving this logic to FunctionSignature (this requires having a superSignature property)
 			if(functionType.superFunctionType?.hasSignature(implementation.signature) == true) {
 				if(!implementation.isOverriding)
 					linter.addMessage(implementation.source, "Missing 'overriding' keyword", Message.Type.WARNING)
