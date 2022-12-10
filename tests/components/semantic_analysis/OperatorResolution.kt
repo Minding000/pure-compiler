@@ -1,6 +1,7 @@
 package components.semantic_analysis
 
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
+import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.operations.IndexAccess
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.StaticType
@@ -37,7 +38,7 @@ internal class OperatorResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "fraction" }
-		val operator = variableValue?.type?.scope?.resolveOperator("-")
+		val operator = variableValue?.type?.scope?.resolveOperator(OperatorDefinition.Kind.MINUS)
 		assertNotNull(operator)
 	}
 
@@ -74,7 +75,7 @@ internal class OperatorResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "a" }
-		val operator = variableValue?.type?.scope?.resolveOperator("+", variableValue)
+		val operator = variableValue?.type?.scope?.resolveOperator(OperatorDefinition.Kind.PLUS, variableValue)
 		assertNotNull(operator)
 	}
 
@@ -128,9 +129,6 @@ internal class OperatorResolution {
 		val indexAccess = lintResult.find<IndexAccess>()
 		assertNotNull(indexAccess?.type)
 	}
-
-	//TODO add check for index operator to have return type exclusive or parameters
-	//TODO add check for binary operator to take one parameter
 
 	@Test
 	fun `resolves calls to super operator`() {

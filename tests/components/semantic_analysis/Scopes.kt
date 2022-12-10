@@ -65,8 +65,9 @@ internal class Scopes {
 		assertErrorEmitted("Operator declarations aren't allowed in 'BlockScope'.") { linter, position ->
 			val syntaxTree = OperatorDefinitionSyntaxTree(Operator(position, position), null, null,
 				null)
-			val operatorDefinition = OperatorDefinition(syntaxTree, "", BlockScope(FileScope()), listOf(),
-				null, null, false, false, false)
+			val operatorDefinition = OperatorDefinition(syntaxTree, OperatorDefinition.Kind.PLUS,
+				BlockScope(FileScope()), listOf(), null, null, false, false,
+				false)
 			val blockScope = BlockScope(FileScope())
 			blockScope.declareOperator(linter, operatorDefinition)
 		}

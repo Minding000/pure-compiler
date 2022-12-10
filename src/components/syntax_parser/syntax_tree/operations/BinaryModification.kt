@@ -1,10 +1,11 @@
 package components.syntax_parser.syntax_tree.operations
 
+import components.syntax_parser.syntax_tree.definitions.Operator
 import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.general.MetaElement
 import util.indent
 
-class BinaryModification(val target: Element, val modifier: Element, val operator: String):
+class BinaryModification(val target: Element, val modifier: Element, val operator: Operator):
 	MetaElement(target.start, modifier.end) {
 
 	override fun toString(): String {

@@ -2,13 +2,14 @@ package components.semantic_analysis.semantic_model.operations
 
 import errors.user.SignatureResolutionAmbiguityError
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.values.Value
 import messages.Message
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.operations.BinaryOperator as BinaryOperatorSyntaxTree
 
 class BinaryOperator(override val source: BinaryOperatorSyntaxTree, val left: Value, val right: Value,
-					 val operatorName: String): Value(source) {
+					 val kind: OperatorDefinition.Kind): Value(source) {
 
 	init {
 		addUnits(left, right)
@@ -18,17 +19,17 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, val left: Va
 		super.linkValues(linter, scope)
 		left.type?.let { leftType ->
 			try {
-				val operatorDefinition = leftType.scope.resolveOperator(operatorName, right)
+				val operatorDefinition = leftType.scope.resolveOperator(kind, right)
 				if(operatorDefinition == null) {
 					linter.addMessage(source,
-						"Operator '$leftType $operatorName ${right.type}' hasn't been declared yet.",
+						"Operator '$leftType $kind ${right.type}' hasn't been declared yet.",
 						Message.Type.ERROR)
 					return@let
 				}
 				type = operatorDefinition.returnType
 			} catch(error: SignatureResolutionAmbiguityError) {
 				linter.addMessage(source,
-					"Call to operator '$leftType $operatorName ${right.type}' is ambiguous. " +
+					"Call to operator '$leftType $kind ${right.type}' is ambiguous. " +
 					"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR) //TODO write test for this
 			}
 		}

@@ -5,6 +5,7 @@ import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
+import messages.Message
 import util.getCommonType
 import util.stringifyTypes
 import java.util.*
@@ -14,7 +15,8 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 							  val genericParameters: List<TypeDefinition>, val indexParameters: List<Parameter>,
 							  parameters: List<Parameter>, body: Unit?, returnType: Type?, isAbstract: Boolean,
 							  isNative: Boolean, isOverriding: Boolean):
-	OperatorDefinition(source, "[]", scope, parameters, body, returnType, isAbstract, isNative, isOverriding) {
+	OperatorDefinition(source, if(returnType == null) Kind.BRACKETS_SET else Kind.BRACKETS_GET, scope, parameters, body,
+		returnType, isAbstract, isNative, isOverriding) {
 
 	init {
 		addUnits(genericParameters, indexParameters)
@@ -122,6 +124,13 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 			}
 		}
 		return !areSignaturesEqual
+	}
+
+	override fun validate(linter: Linter) {
+		super.validate(linter)
+		if(valueParameters.size > 0 && !Linter.LiteralType.NOTHING.matches(returnType))
+			linter.addMessage(source, "Index operators can not accept and return a value at the same time.",
+				Message.Type.WARNING)
 	}
 
 	override fun toString(): String {

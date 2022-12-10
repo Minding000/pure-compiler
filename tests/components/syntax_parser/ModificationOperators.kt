@@ -12,18 +12,14 @@ internal class ModificationOperators {
 				var x = 0
 				x++
 				x--
-				echo x
             """.trimIndent()
 		val expected =
 			"""
 				VariableSection [ var ] {
 					LocalVariableDeclaration { Identifier { x } = NumberLiteral { 0 } }
 				}
-				UnaryModification { Identifier { x }++ }
-				UnaryModification { Identifier { x }-- }
-				Print {
-					Identifier { x }
-				}
+				UnaryModification { Identifier { x } Operator { ++ } }
+				UnaryModification { Identifier { x } Operator { -- } }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
@@ -37,7 +33,6 @@ internal class ModificationOperators {
 				x -= 3
 				x *= 4
 				x /= 2
-				echo x
             """.trimIndent()
 		val expected =
 			"""
@@ -45,19 +40,16 @@ internal class ModificationOperators {
 					LocalVariableDeclaration { Identifier { x } = NumberLiteral { 0 } }
 				}
 				BinaryModification {
-					Identifier { x } += NumberLiteral { 4 }
+					Identifier { x } Operator { += } NumberLiteral { 4 }
 				}
 				BinaryModification {
-					Identifier { x } -= NumberLiteral { 3 }
+					Identifier { x } Operator { -= } NumberLiteral { 3 }
 				}
 				BinaryModification {
-					Identifier { x } *= NumberLiteral { 4 }
+					Identifier { x } Operator { *= } NumberLiteral { 4 }
 				}
 				BinaryModification {
-					Identifier { x } /= NumberLiteral { 2 }
-				}
-				Print {
-					Identifier { x }
+					Identifier { x } Operator { /= } NumberLiteral { 2 }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)

@@ -11,7 +11,7 @@ internal class BinaryOperators {
 		val expected =
 			"""
 				BinaryOperator {
-					NumberLiteral { 345 } + NumberLiteral { 1 }
+					NumberLiteral { 345 } Operator { + } NumberLiteral { 1 }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -23,7 +23,7 @@ internal class BinaryOperators {
 		val expected =
 			"""
 				BinaryOperator {
-					NumberLiteral { 345 } - NumberLiteral { 3 }
+					NumberLiteral { 345 } Operator { - } NumberLiteral { 3 }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -35,7 +35,7 @@ internal class BinaryOperators {
 		val expected =
 			"""
 				BinaryOperator {
-					NumberLiteral { 345 } * NumberLiteral { 2 }
+					NumberLiteral { 345 } Operator { * } NumberLiteral { 2 }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -47,7 +47,7 @@ internal class BinaryOperators {
 		val expected =
 			"""
 				BinaryOperator {
-					NumberLiteral { 345 } / NumberLiteral { 5 }
+					NumberLiteral { 345 } Operator { / } NumberLiteral { 5 }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -59,7 +59,7 @@ internal class BinaryOperators {
 		val expected =
 			"""
 				BinaryOperator {
-					Identifier { repetitions } ?? NumberLiteral { 1 }
+					Identifier { repetitions } Operator { ?? } NumberLiteral { 1 }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -72,8 +72,8 @@ internal class BinaryOperators {
 			"""
 				BinaryOperator {
 					BinaryOperator {
-						BooleanLiteral { yes } & BooleanLiteral { no }
-					} | BooleanLiteral { yes }
+						BooleanLiteral { yes } Operator { & } BooleanLiteral { no }
+					} Operator { | } BooleanLiteral { yes }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -86,11 +86,11 @@ internal class BinaryOperators {
 			"""
 				BinaryOperator {
 					BinaryOperator {
-						NumberLiteral { 3 } + BinaryOperator {
-							NumberLiteral { 345 } * NumberLiteral { 2 }
+						NumberLiteral { 3 } Operator { + } BinaryOperator {
+							NumberLiteral { 345 } Operator { * } NumberLiteral { 2 }
 						}
-					} - BinaryOperator {
-						NumberLiteral { 2 } + NumberLiteral { 1 }
+					} Operator { - } BinaryOperator {
+						NumberLiteral { 2 } Operator { + } NumberLiteral { 1 }
 					}
 				}
             """.trimIndent()
@@ -106,11 +106,11 @@ internal class BinaryOperators {
 					BinaryOperator {
 						BinaryOperator {
 							BinaryOperator {
-								NumberLiteral { 9 } + NumberLiteral { 534 }
-							} > NumberLiteral { 234 }
-						} == BooleanLiteral { no }
-					} & BinaryOperator {
-						NumberLiteral { 2 } == NumberLiteral { 2 }
+								NumberLiteral { 9 } Operator { + } NumberLiteral { 534 }
+							} Operator { > } NumberLiteral { 234 }
+						} Operator { == } BooleanLiteral { no }
+					} Operator { & } BinaryOperator {
+						NumberLiteral { 2 } Operator { == } NumberLiteral { 2 }
 					}
 				}
             """.trimIndent()

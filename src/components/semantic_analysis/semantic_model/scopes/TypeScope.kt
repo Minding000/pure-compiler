@@ -103,7 +103,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				continue
 			operatorIteration@for(otherOperatorIndex in operatorIndex + 1 until  operators.size) {
 				val otherOperator = operators[otherOperatorIndex]
-				if(otherOperator.name != operator.name)
+				if(otherOperator.kind != operator.kind)
 					continue
 				if(otherOperator is IndexOperatorDefinition && operator is IndexOperatorDefinition) {
 					if(otherOperator.indexParameters.size != operator.indexParameters.size)

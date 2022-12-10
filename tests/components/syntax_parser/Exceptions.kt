@@ -22,17 +22,12 @@ internal class Exceptions {
 	fun `parses handle blocks`() {
 		val sourceCode = """
 			{
-				echo words
 			} handle NoWordsException e {
-
 			}
 			""".trimIndent()
 		val expected =
 			"""
 				StatementSection { StatementBlock {
-					Print {
-						Identifier { words }
-					}
 				} Handle [ ObjectType { Identifier { NoWordsException } } Identifier { e } ] { StatementBlock {
 				} } }
             """.trimIndent()
@@ -43,17 +38,12 @@ internal class Exceptions {
 	fun `parses handle blocks with multiple types`() {
 		val sourceCode = """
 			{
-				echo words
 			} handle NoWordsException | OverthinkException {
-
 			}
 			""".trimIndent()
 		val expected =
 			"""
 				StatementSection { StatementBlock {
-					Print {
-						Identifier { words }
-					}
 				} Handle [ UnionType { ObjectType { Identifier { NoWordsException } } | ObjectType { Identifier { OverthinkException } } } ] { StatementBlock {
 				} } }
             """.trimIndent()
@@ -65,9 +55,7 @@ internal class Exceptions {
 		val sourceCode = """
 			Human class {
 				to speak(words: String) {
-					echo words
 				} handle NoWordsException e {
-
 				}
 			}
 			""".trimIndent()
@@ -78,9 +66,6 @@ internal class Exceptions {
 						Function [ Identifier { speak } ParameterList {
 							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
 						}: void ] { StatementSection { StatementBlock {
-							Print {
-								Identifier { words }
-							}
 						} Handle [ ObjectType { Identifier { NoWordsException } } Identifier { e } ] { StatementBlock {
 						} } } }
 					}
@@ -120,21 +105,13 @@ internal class Exceptions {
 	fun `parses always blocks`() {
 		val sourceCode = """
 			{
-				echo words
 			} always {
-				echo "Stopped"
 			}
 			""".trimIndent()
 		val expected =
 			"""
 				StatementSection { StatementBlock {
-					Print {
-						Identifier { words }
-					}
 				} StatementBlock {
-					Print {
-						StringLiteral { "Stopped" }
-					}
 				} }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)

@@ -45,7 +45,7 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 			SemanticIndexOperatorDefinitionModel(this, operatorScope, genericParameters, indices, parameters,
 				body, returnType, isAbstract, isNative, isOverriding)
 		} else {
-			SemanticOperatorDefinitionModel(this, operator.getValue(), operatorScope, parameters,
+			SemanticOperatorDefinitionModel(this, operator.getKind(), operatorScope, parameters,
 				body, returnType, isAbstract, isNative, isOverriding)
 		}
 		scope.declareOperator(linter, operatorDefinition)

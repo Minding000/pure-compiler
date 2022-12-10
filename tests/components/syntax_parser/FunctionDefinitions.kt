@@ -60,7 +60,7 @@ internal class FunctionDefinitions {
 						}: void ] { StatementSection { StatementBlock {
 							VariableSection [ var ] {
 								LocalVariableDeclaration { Identifier { energy } = BinaryOperator {
-									Identifier { loudness } * NumberLiteral { 2 }
+									Identifier { loudness } Operator { * } NumberLiteral { 2 }
 								} }
 							}
 						} } }
@@ -112,10 +112,7 @@ internal class FunctionDefinitions {
 		val sourceCode = """
 			Animal class {
 				var canSwim: Bool
-
-				init(name: String, canSwim) {
-					echo "Creating", name
-				}
+				init(name: String, canSwim) {}
 			}""".trimIndent()
 		val expected =
 			"""
@@ -127,10 +124,6 @@ internal class FunctionDefinitions {
 						Parameter { Identifier { name }: ObjectType { Identifier { String } } }
 						Parameter { Identifier { canSwim } }
 					} ] { StatementSection { StatementBlock {
-						Print {
-							StringLiteral { "Creating" }
-							Identifier { name }
-						}
 					} } }
 				} }
             """.trimIndent()
@@ -141,22 +134,12 @@ internal class FunctionDefinitions {
 	fun `parses deinitializer definitions`() {
 		val sourceCode = """
 			Animal class {
-				var name: String
-
-				deinit {
-					echo "Animal '${'$'}name' has been deallocated."
-				}
+				deinit {}
 			}""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
-					VariableSection [ var ] {
-						PropertyDeclaration { Identifier { name }: ObjectType { Identifier { String } } }
-					}
 					Deinitializer { StatementSection { StatementBlock {
-						Print {
-							StringLiteral { "Animal '${'$'}name' has been deallocated." }
-						}
 					} } }
 				} }
             """.trimIndent()
@@ -195,12 +178,12 @@ internal class FunctionDefinitions {
 							Parameter { Identifier { right }: ObjectType { Identifier { Vector } } }
 						}: void ] { StatementSection { StatementBlock {
 							BinaryModification {
-								Identifier { x } += MemberAccess {
+								Identifier { x } Operator { += } MemberAccess {
 									Identifier { right }.Identifier { x }
 								}
 							}
 							BinaryModification {
-								Identifier { y } += MemberAccess {
+								Identifier { y } Operator { += } MemberAccess {
 									Identifier { right }.Identifier { y }
 								}
 							}
@@ -212,11 +195,11 @@ internal class FunctionDefinitions {
 								BinaryOperator {
 									MemberAccess {
 										Identifier { right }.Identifier { x }
-									} == Identifier { x }
-								} & BinaryOperator {
+									} Operator { == } Identifier { x }
+								} Operator { & } BinaryOperator {
 									MemberAccess {
 										Identifier { right }.Identifier { y }
-									} == Identifier { y }
+									} Operator { == } Identifier { y }
 								}
 							} }
 						} } }
@@ -232,13 +215,9 @@ internal class FunctionDefinitions {
 			BookSelf class {
 
 				operator {
-					[index: Int](value: Book) {
-						echo "Adding book", index, value
-					}
+					[index: Int](value: Book) {}
 
-					[index: Int]: Book {
-						echo "Book requested", index
-					}
+					[index: Int]: Book {}
 				}
 			}""".trimIndent()
 		val expected =
@@ -250,19 +229,10 @@ internal class FunctionDefinitions {
 						} } ParameterList {
 							Parameter { Identifier { value }: ObjectType { Identifier { Book } } }
 						}: void ] { StatementSection { StatementBlock {
-							Print {
-								StringLiteral { "Adding book" }
-								Identifier { index }
-								Identifier { value }
-							}
 						} } }
 						OperatorDefinition [ IndexOperator { ParameterList {
 							Parameter { Identifier { index }: ObjectType { Identifier { Int } } }
 						} }: ObjectType { Identifier { Book } } ] { StatementSection { StatementBlock {
-							Print {
-								StringLiteral { "Book requested" }
-								Identifier { index }
-							}
 						} } }
 					}
 				} }
@@ -304,7 +274,7 @@ internal class FunctionDefinitions {
 						Parameter { Identifier { b }: ObjectType { Identifier { Int } } }
 					} ] { StatementSection { StatementBlock {
 						Return { BinaryOperator {
-							Identifier { a } < Identifier { b }
+							Identifier { a } Operator { < } Identifier { b }
 						} }
 					} } } }
 				}

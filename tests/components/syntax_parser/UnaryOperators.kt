@@ -11,7 +11,7 @@ internal class UnaryOperators {
 		val sourceCode = "!yes"
 		val expected =
 			"""
-				UnaryOperator { !BooleanLiteral { yes } }
+				UnaryOperator { Operator { ! } BooleanLiteral { yes } }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
@@ -21,7 +21,7 @@ internal class UnaryOperators {
 		val sourceCode = "+2"
 		val expected =
 			"""
-				UnaryOperator { +NumberLiteral { 2 } }
+				UnaryOperator { Operator { + } NumberLiteral { 2 } }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
@@ -31,7 +31,7 @@ internal class UnaryOperators {
 		val sourceCode = "-6"
 		val expected =
 			"""
-				UnaryOperator { -NumberLiteral { 6 } }
+				UnaryOperator { Operator { - } NumberLiteral { 6 } }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
@@ -45,7 +45,7 @@ internal class UnaryOperators {
 		val expected =
 			"""
 				FunctionCall [ Identifier { sum } ] {
-					UnaryOperator { ...Identifier { numbers } }
+					UnaryOperator { Operator { ... } Identifier { numbers } }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)

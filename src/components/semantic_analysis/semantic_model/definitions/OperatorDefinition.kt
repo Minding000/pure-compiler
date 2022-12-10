@@ -7,11 +7,12 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
+import messages.Message
 import util.stringifyTypes
 import java.util.*
 import components.syntax_parser.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
 
-open class OperatorDefinition(final override val source: OperatorDefinitionSyntaxTree, val name: String,
+open class OperatorDefinition(final override val source: OperatorDefinitionSyntaxTree, val kind: Kind,
 							  val scope: BlockScope, val valueParameters: List<Parameter>, val body: Unit?,
 							  returnType: Type?, val isAbstract: Boolean, val isNative: Boolean,
 							  val isOverriding: Boolean): Unit(source) {
@@ -31,7 +32,7 @@ open class OperatorDefinition(final override val source: OperatorDefinitionSynta
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in valueParameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
-		return OperatorDefinition(source, name, scope, specificParameters, body,
+		return OperatorDefinition(source, kind, scope, specificParameters, body,
 				returnType.withTypeSubstitutions(typeSubstitution), isAbstract, isNative, isOverriding)
 	}
 
@@ -78,7 +79,47 @@ open class OperatorDefinition(final override val source: OperatorDefinitionSynta
 		super.linkValues(linter, this.scope)
 	}
 
+	override fun validate(linter: Linter) {
+		super.validate(linter)
+		//TODO add check for return value
+		//TODO move operator signature validation tests in separate test file
+		if(kind.isUnary && valueParameters.isNotEmpty())
+			linter.addMessage(source, "Unary operators can't accept parameters.",
+				Message.Type.WARNING)
+		if(kind.isBinary && valueParameters.size != 1)
+			linter.addMessage(source, "Binary operators need to accept exactly one parameter.",
+				Message.Type.WARNING)
+	}
+
 	override fun toString(): String {
-		return "$name(${valueParameters.stringifyTypes()})"
+		return "$kind(${valueParameters.stringifyTypes()})"
+	}
+
+	enum class Kind(val stringRepresentation: String, val isUnary: Boolean, val isBinary: Boolean,
+					returnsValue: Boolean) {
+		BRACKETS_GET("[]", true, false, true),
+		BRACKETS_SET("[]=", false, true, false),
+		EXCLAMATION_MARK("!", true, false, true),
+		TRIPLE_DOT("...", true, false, true),
+		DOUBLE_PLUS("++", true, false, false),
+		DOUBLE_MINUS("--", true, false, false),
+		DOUBLE_QUESTION_MARK("??", false, true, true),
+		AND("&", false, true, true),
+		PIPE("|", false, true, true),
+		PLUS("+", false, true, true),
+		MINUS("-", true, true, true),
+		STAR("*", false, true, true),
+		SLASH("/", false, false, true),
+		PLUS_EQUALS("+=", false, true, false),
+		MINUS_EQUALS("-=", false, true, false),
+		STAR_EQUALS("*=", false, true, false),
+		SLASH_EQUALS("/=", false, true, false),
+		SMALLER_THAN("<", false, true, true),
+		GREATER_THAN(">", false, true, true),
+		SMALLER_OR_EQUAL_TO("<=", false, true, true),
+		GREATER_OR_EQUAL_TO(">=", false, true, true),
+		EQUAL_TO("==", false, true, true),
+		NOT_EQUAL_TO("!=", false, true, true);
+		override fun toString(): String = stringRepresentation
 	}
 }

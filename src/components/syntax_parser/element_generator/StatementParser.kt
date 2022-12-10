@@ -79,7 +79,6 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 * Statement:
 	 *   <StatementSection>
 	 *   <FileReference>
-	 *   <Print>
 	 *   <IfStatement>
 	 *   <ReturnStatement>
 	 *   <YieldStatement>
@@ -102,8 +101,6 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			return parseStatementSection()
 		if(currentWord?.type == WordAtom.REFERENCING)
 			return parseFileReference()
-		if(currentWord?.type == WordAtom.ECHO)
-			return parsePrint()
 		if(currentWord?.type == WordAtom.IF)
 			return parseIfStatement()
 		if(currentWord?.type == WordAtom.SWITCH)
@@ -144,12 +141,12 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 				return Assignment(targets, lastExpression)
 			}
 			if(WordType.BINARY_MODIFICATION.includes(currentWord?.type)) {
-				val operator = consume(WordType.BINARY_MODIFICATION)
+				val operator = expressionParser.parseOperator(WordType.BINARY_MODIFICATION)
 				val value = expressionParser.parseExpression()
-				return BinaryModification(expression, value, operator.getValue())
+				return BinaryModification(expression, value, operator)
 			}
 			if(WordType.UNARY_MODIFICATION.includes(currentWord?.type)) {
-				val operator = consume(WordType.UNARY_MODIFICATION)
+				val operator = expressionParser.parseOperator(WordType.UNARY_MODIFICATION)
 				return UnaryModification(expression, operator)
 			}
 		}
@@ -200,21 +197,6 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		consume(WordAtom.AS)
 		val aliasName = parseIdentifier()
 		return ReferenceAlias(originalName, aliasName)
-	}
-
-	/**
-	 * Print:
-	 *   echo <Expression>[,<Expression>]...
-	 */
-	private fun parsePrint(): Print {
-		val start = consume(WordAtom.ECHO).start
-		val elements = LinkedList<Element>()
-		elements.add(parseExpression())
-		while(currentWord?.type == WordAtom.COMMA) {
-			consume(WordAtom.COMMA)
-			elements.add(parseExpression())
-		}
-		return Print(start, elements.last.end, elements)
 	}
 
 	/**
@@ -624,9 +606,15 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	/**
 	 * OperatorDefinition:
 	 *   operator <Operator>[<ParameterList>][: <Type>] [<StatementSection>]
+	 *   operator [<ParameterList>][<ParameterList>][: <Type>] [<StatementSection>]
 	 */
 	private fun parseOperatorDefinition(): OperatorDefinition {
-		val operator = parseOperator()
+		val operator = if(currentWord?.type == WordAtom.OPENING_BRACKET) {
+			val parameterList = parseParameterList(WordAtom.OPENING_BRACKET, WordAtom.CLOSING_BRACKET)
+			IndexOperator(parameterList)
+		} else {
+			expressionParser.parseOperator(WordType.OPERATOR)
+		}
 		val parameterList = if(currentWord?.type == WordAtom.OPENING_PARENTHESIS)
 			parseParameterList()
 		else null
@@ -638,19 +626,6 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			parseStatementSection()
 		else null
 		return OperatorDefinition(operator, parameterList, body, returnType)
-	}
-
-	/**
-	 * Operator:
-	 *   <operator>
-	 *   [<TypedIdentifier[, <TypedIdentifier>]>]
-	 */
-	private fun parseOperator(): Operator {
-		if(currentWord?.type == WordAtom.OPENING_BRACKET) {
-			val parameterList = parseParameterList(WordAtom.OPENING_BRACKET, WordAtom.CLOSING_BRACKET)
-			return IndexOperator(parameterList)
-		}
-		return Operator(consume(WordType.OPERATOR))
 	}
 
 	/**

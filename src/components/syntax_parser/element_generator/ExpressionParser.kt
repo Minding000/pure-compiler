@@ -6,6 +6,7 @@ import components.syntax_parser.syntax_tree.access.MemberAccess
 import components.syntax_parser.syntax_tree.control_flow.FunctionCall
 import components.syntax_parser.syntax_tree.control_flow.Try
 import components.syntax_parser.syntax_tree.definitions.LambdaFunctionDefinition
+import components.syntax_parser.syntax_tree.definitions.Operator
 import components.syntax_parser.syntax_tree.definitions.TypeSpecification
 import components.syntax_parser.syntax_tree.general.ForeignLanguageExpression
 import components.syntax_parser.syntax_tree.general.TypeElement
@@ -67,8 +68,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	private fun parseBinaryBooleanExpression(): ValueElement {
 		var expression: ValueElement = parseEquality()
 		while(WordType.BINARY_BOOLEAN_OPERATOR.includes(currentWord?.type)) {
-			val operator = consume(WordType.BINARY_BOOLEAN_OPERATOR)
-			expression = BinaryOperator(expression, parseEquality(), operator.getValue())
+			val operator = parseOperator(WordType.BINARY_BOOLEAN_OPERATOR)
+			expression = BinaryOperator(expression, parseEquality(), operator)
 		}
 		return expression
 	}
@@ -84,8 +85,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	private fun parseEquality(): ValueElement {
 		var expression: ValueElement = parseComparison()
 		while(WordType.EQUALITY.includes(currentWord?.type)) {
-			val operator = consume(WordType.EQUALITY)
-			expression = BinaryOperator(expression, parseComparison(), operator.getValue())
+			val operator = parseOperator(WordType.EQUALITY)
+			expression = BinaryOperator(expression, parseComparison(), operator)
 		}
 		return expression
 	}
@@ -99,8 +100,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	private fun parseComparison(): ValueElement {
 		var expression: ValueElement = parseAddition()
 		while(WordType.COMPARISON.includes(currentWord?.type)) {
-			val operator = consume(WordType.COMPARISON)
-			expression = BinaryOperator(expression, parseAddition(), operator.getValue())
+			val operator = parseOperator(WordType.COMPARISON)
+			expression = BinaryOperator(expression, parseAddition(), operator)
 		}
 		return expression
 	}
@@ -114,8 +115,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	private fun parseAddition(): ValueElement {
 		var expression: ValueElement = parseMultiplication()
 		while(WordType.ADDITION.includes(currentWord?.type)) {
-			val operator = consume(WordType.ADDITION)
-			expression = BinaryOperator(expression, parseMultiplication(), operator.getValue())
+			val operator = parseOperator(WordType.ADDITION)
+			expression = BinaryOperator(expression, parseMultiplication(), operator)
 		}
 		return expression
 	}
@@ -129,8 +130,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	private fun parseMultiplication(): ValueElement {
 		var expression: ValueElement = parseNullCoalescence()
 		while(WordType.MULTIPLICATION.includes(currentWord?.type)) {
-			val operator = consume(WordType.MULTIPLICATION)
-			expression = BinaryOperator(expression, parseNullCoalescence(), operator.getValue())
+			val operator = parseOperator(WordType.MULTIPLICATION)
+			expression = BinaryOperator(expression, parseNullCoalescence(), operator)
 		}
 		return expression
 	}
@@ -143,8 +144,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	private fun parseNullCoalescence(): ValueElement {
 		var expression: ValueElement = parseCast()
 		while(currentWord?.type == WordAtom.NULL_COALESCENCE) {
-			val operator = consume(WordAtom.NULL_COALESCENCE)
-			expression = BinaryOperator(expression, parseCast(), operator.getValue())
+			val operator = parseOperator(WordAtom.NULL_COALESCENCE)
+			expression = BinaryOperator(expression, parseCast(), operator)
 		}
 		return expression
 	}
@@ -197,7 +198,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 */
 	private fun parseUnaryOperator(): ValueElement {
 		if(WordType.UNARY_OPERATOR.includes(currentWord?.type)) {
-			val operator = consume(WordType.UNARY_OPERATOR)
+			val operator = parseOperator(WordType.UNARY_OPERATOR)
 			return UnaryOperator(parseAccessor(), operator)
 		}
 		return parseAccessor()
@@ -414,5 +415,13 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 		val start = consume(WordAtom.DOT).start
 		val identifier = literalParser.parseIdentifier()
 		return InstanceAccess(start, identifier)
+	}
+
+	/**
+	 * Operator:
+	 *   <operator>
+	 */
+	fun parseOperator(descriptor: WordDescriptor): Operator {
+		return Operator(consume(descriptor))
 	}
 }

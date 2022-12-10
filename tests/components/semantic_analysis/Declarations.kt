@@ -106,8 +106,8 @@ internal class Declarations {
 				Time class {}
 				alias T = Time
 				Human class {
-					operator [start: T, end: T] {}
-					operator [time: T] {}
+					operator [start: T, end: T](time: T) {}
+					operator [time: T]: T {}
 					operator [time: Time]: Time {}
 				}
             """.trimIndent()
@@ -150,6 +150,91 @@ internal class Declarations {
 		val lintResult = TestUtil.lint(sourceCode)
 		val variable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "error" }
 		assertNotNull(variable?.type)
+	}
+
+	@Test
+	fun `emits warning for index operators with parameter and return type`() {
+		val sourceCode = """
+			Vector class {
+				operator [key: IndexType](value: Int): Int
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"Index operators can not accept and return a value at the same time")
+	}
+
+	@Test
+	fun `doesn't emit warning for index operators with parameter or return type`() {
+		val sourceCode = """
+			Vector class {
+				operator [key: IndexType](): Int
+				operator [key: IndexType](value: Int)
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
+			"Index operators can not accept and return a value at the same time")
+	}
+
+	@Test
+	fun `emits warning for binary operators that don't take exactly one parameter`() {
+		val sourceCode = """
+			Vector class {
+				operator +(a: Self, b: Self): ReturnType
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"Binary operators need to accept exactly one parameter")
+	}
+
+	@Test
+	fun `doesn't emit warning for unary operators that don't take exactly one parameter`() {
+		val sourceCode = """
+			Vector class {
+				operator !(): ReturnType
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
+			"Binary operators need to accept exactly one parameter")
+	}
+
+	@Test
+	fun `emits warning for unary operators that take parameters`() {
+		val sourceCode = """
+			Vector class {
+				operator !(other: Self): ReturnType
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"Unary operators can't accept parameters")
+	}
+
+	@Test
+	fun `doesn't emit warning for binary operators that take parameters`() {
+		val sourceCode = """
+			Vector class {
+				operator +(a: Self, b: Self): ReturnType
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
+			"Unary operators can't accept parameters")
+	}
+
+	@Test
+	fun `doesn't emit warning for binary operators that take exactly one parameter`() {
+		val sourceCode = """
+			Vector class {
+				operator +(other: Self): ReturnType
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
+			"Binary operators need to accept exactly one parameter")
 	}
 
 	@Test

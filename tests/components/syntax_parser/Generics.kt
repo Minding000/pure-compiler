@@ -10,10 +10,7 @@ internal class Generics {
 		val sourceCode = """
 			ShoppingList class {
 				containing Entry
-
-				to add(entry: Entry) {
-					echo "Adding entry..."
-				}
+				to add(entry: Entry) {}
 			}
 			""".trimIndent()
 		val expected =
@@ -26,9 +23,6 @@ internal class Generics {
 						Function [ Identifier { add } ParameterList {
 							Parameter { Identifier { entry }: ObjectType { Identifier { Entry } } }
 						}: void ] { StatementSection { StatementBlock {
-							Print {
-								StringLiteral { "Adding entry..." }
-							}
 						} } }
 					}
 				} }
@@ -88,10 +82,7 @@ internal class Generics {
 		val sourceCode = """
 			ShoppingList class {
 				containing Entry
-
-				to add(entry: Entry) {
-					echo "Adding entry..."
-				}
+				to add(entry: Entry) {}
 			}
 			Fruit class {
 				var name: String
@@ -108,9 +99,6 @@ internal class Generics {
 						Function [ Identifier { add } ParameterList {
 							Parameter { Identifier { entry }: ObjectType { Identifier { Entry } } }
 						}: void ] { StatementSection { StatementBlock {
-							Print {
-								StringLiteral { "Adding entry..." }
-							}
 						} } }
 					}
 				} }

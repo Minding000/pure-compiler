@@ -15,8 +15,8 @@ internal class ControlFlow {
 			"""
 				If [ BinaryOperator {
 					BinaryOperator {
-						NumberLiteral { 2 } + NumberLiteral { 3 }
-					} == NumberLiteral { 5 }
+						NumberLiteral { 2 } Operator { + } NumberLiteral { 3 }
+					} Operator { == } NumberLiteral { 5 }
 				} ] {
 					StatementSection { StatementBlock {
 					} }
@@ -58,9 +58,7 @@ internal class ControlFlow {
 	fun `parses initializer calls`() {
 		val sourceCode = """
 			Human class {
-				to speak(words: String) {
-					echo words
-				}
+				to speak(words: String) {}
 			}
 			var peter = Human()
 			""".trimIndent()
@@ -71,9 +69,6 @@ internal class ControlFlow {
 						Function [ Identifier { speak } ParameterList {
 							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
 						}: void ] { StatementSection { StatementBlock {
-							Print {
-								Identifier { words }
-							}
 						} } }
 					}
 				} }
@@ -89,9 +84,7 @@ internal class ControlFlow {
 	fun `parses function calls`() {
 		val sourceCode = """
 			Human class {
-				to speak(words: String) {
-					echo words
-				}
+				to speak(words: String) {}
 			}
 			var peter = Human()
 			peter.speak("Keep up the good work!")
@@ -103,9 +96,6 @@ internal class ControlFlow {
 						Function [ Identifier { speak } ParameterList {
 							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
 						}: void ] { StatementSection { StatementBlock {
-							Print {
-								Identifier { words }
-							}
 						} } }
 					}
 				} }
@@ -127,7 +117,6 @@ internal class ControlFlow {
 		val sourceCode = """
 			Human class {
 				to speak(words: String): String {
-					echo words
 					return "Done"
 				}
 			}
@@ -139,9 +128,6 @@ internal class ControlFlow {
 						Function [ Identifier { speak } ParameterList {
 							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
 						}: ObjectType { Identifier { String } } ] { StatementSection { StatementBlock {
-							Print {
-								Identifier { words }
-							}
 							Return { StringLiteral { "Done" } }
 						} } }
 					}
@@ -155,9 +141,9 @@ internal class ControlFlow {
 		val sourceCode = """
 			switch x {
 				ExitCode.SUCCESS:
-					echo "Success"
+					"Success"
 				else:
-					echo "Failed"
+					"Failed"
 			}
 			""".trimIndent()
 		val expected =
@@ -166,14 +152,10 @@ internal class ControlFlow {
 					Case [ MemberAccess {
 						Identifier { ExitCode }.Identifier { SUCCESS }
 					} ] {
-						Print {
-							StringLiteral { "Success" }
-						}
+						StringLiteral { "Success" }
 					}
 				} Else {
-					Print {
-						StringLiteral { "Failed" }
-					}
+					StringLiteral { "Failed" }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -184,9 +166,9 @@ internal class ControlFlow {
 		val sourceCode = """
 			switch x {
 				ExitCode.SUCCESS:
-					echo "Success"
+					"Success"
 				ExitCode.FAILURE:
-					echo "Failure"
+					"Failure"
 			}
 			""".trimIndent()
 		val expected =
@@ -195,16 +177,12 @@ internal class ControlFlow {
 					Case [ MemberAccess {
 						Identifier { ExitCode }.Identifier { SUCCESS }
 					} ] {
-						Print {
-							StringLiteral { "Success" }
-						}
+						StringLiteral { "Success" }
 					}
 					Case [ MemberAccess {
 						Identifier { ExitCode }.Identifier { FAILURE }
 					} ] {
-						Print {
-							StringLiteral { "Failure" }
-						}
+						StringLiteral { "Failure" }
 					}
 				}
             """.trimIndent()

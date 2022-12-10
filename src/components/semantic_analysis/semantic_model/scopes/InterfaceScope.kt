@@ -116,9 +116,9 @@ class InterfaceScope(private val type: Type): Scope() {
 
 	class MatchResult(val signature: InitializerDefinition, val definitionTypeSubstitutions: Map<TypeDefinition, Type>)
 
-	override fun resolveOperator(name: String, suppliedValues: List<Value>):
+	override fun resolveOperator(kind: OperatorDefinition.Kind, suppliedValues: List<Value>):
 			OperatorDefinition? {
-		val validSignatures = getMatchingOperators(name, suppliedValues)
+		val validSignatures = getMatchingOperators(kind, suppliedValues)
 		if(validSignatures.isEmpty())
 			return null
 		specificityPrecedenceLoop@for(signature in validSignatures) {
@@ -135,10 +135,10 @@ class InterfaceScope(private val type: Type): Scope() {
 		throw SignatureResolutionAmbiguityError(validSignatures)
 	}
 
-	private fun getMatchingOperators(name: String, suppliedValues: List<Value>): List<OperatorDefinition> {
+	private fun getMatchingOperators(kind: OperatorDefinition.Kind, suppliedValues: List<Value>): List<OperatorDefinition> {
 		val validSignatures = LinkedList<OperatorDefinition>()
 		for(signature in operators) {
-			if(signature.name != name)
+			if(signature.kind != kind)
 				continue
 			if(signature.accepts(suppliedValues))
 				validSignatures.add(signature)

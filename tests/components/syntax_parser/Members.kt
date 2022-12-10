@@ -84,50 +84,50 @@ internal class Members {
 						ComputedPropertyDeclaration {
 							Identifier { width }
 							gets BinaryOperator {
-								Identifier { right } - Identifier { left }
+								Identifier { right } Operator { - } Identifier { left }
 							}
 							sets Assignment {
 								Identifier { right }
 								= BinaryOperator {
-									Identifier { left } + Identifier { width }
+									Identifier { left } Operator { + } Identifier { width }
 								}
 							}
 						}
 						ComputedPropertyDeclaration {
 							Identifier { height }
 							gets BinaryOperator {
-								Identifier { bottom } - Identifier { top }
+								Identifier { bottom } Operator { - } Identifier { top }
 							}
 							sets Assignment {
 								Identifier { bottom }
 								= BinaryOperator {
-									Identifier { top } + Identifier { height }
+									Identifier { top } Operator { + } Identifier { height }
 								}
 							}
 						}
 						ComputedPropertyDeclaration {
 							Identifier { centerX }
 							gets BinaryOperator {
-								Identifier { left } + BinaryOperator {
-									Identifier { width } / NumberLiteral { 2 }
+								Identifier { left } Operator { + } BinaryOperator {
+									Identifier { width } Operator { / } NumberLiteral { 2 }
 								}
 							}
 							sets StatementSection { StatementBlock {
 								VariableSection [ val ] {
 									LocalVariableDeclaration { Identifier { halfWidth } = BinaryOperator {
-										Identifier { width } / NumberLiteral { 2 }
+										Identifier { width } Operator { / } NumberLiteral { 2 }
 									} }
 								}
 								Assignment {
 									Identifier { left }
 									= BinaryOperator {
-										Identifier { centerX } - Identifier { halfWidth }
+										Identifier { centerX } Operator { - } Identifier { halfWidth }
 									}
 								}
 								Assignment {
 									Identifier { right }
 									= BinaryOperator {
-										Identifier { centerX } + Identifier { halfWidth }
+										Identifier { centerX } Operator { + } Identifier { halfWidth }
 									}
 								}
 							} }
@@ -135,26 +135,26 @@ internal class Members {
 						ComputedPropertyDeclaration {
 							Identifier { centerY }
 							gets BinaryOperator {
-								Identifier { top } + BinaryOperator {
-									Identifier { height } / NumberLiteral { 2 }
+								Identifier { top } Operator { + } BinaryOperator {
+									Identifier { height } Operator { / } NumberLiteral { 2 }
 								}
 							}
 							sets StatementSection { StatementBlock {
 								VariableSection [ val ] {
 									LocalVariableDeclaration { Identifier { halfHeight } = BinaryOperator {
-										Identifier { height } / NumberLiteral { 2 }
+										Identifier { height } Operator { / } NumberLiteral { 2 }
 									} }
 								}
 								Assignment {
 									Identifier { top }
 									= BinaryOperator {
-										Identifier { centerY } - Identifier { halfHeight }
+										Identifier { centerY } Operator { - } Identifier { halfHeight }
 									}
 								}
 								Assignment {
 									Identifier { bottom }
 									= BinaryOperator {
-										Identifier { centerY } + Identifier { halfHeight }
+										Identifier { centerY } Operator { + } Identifier { halfHeight }
 									}
 								}
 							} }
@@ -164,7 +164,7 @@ internal class Members {
 						ComputedPropertyDeclaration {
 							Identifier { isSquare }: ObjectType { Identifier { Bool } }
 							gets BinaryOperator {
-								Identifier { width } == Identifier { height }
+								Identifier { width } Operator { == } Identifier { height }
 							}
 						}
 					}

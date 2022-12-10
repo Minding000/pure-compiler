@@ -126,7 +126,7 @@ internal class Mutability {
 						FunctionSection [ to ] {
 							Function [ Identifier { breath } ParameterList {
 							}: void ] { StatementSection { StatementBlock {
-								UnaryModification { Identifier { oxygenLevel }++ }
+								UnaryModification { Identifier { oxygenLevel } Operator { ++ } }
 							} } }
 						}
 					}
@@ -154,7 +154,7 @@ internal class Mutability {
 							BinaryModification {
 								MemberAccess {
 									Identifier { phone }.Identifier { chargeInPercent }
-								} += NumberLiteral { 5 }
+								} Operator { += } NumberLiteral { 5 }
 							}
 						} } }
 					}

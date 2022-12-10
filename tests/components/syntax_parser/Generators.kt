@@ -20,14 +20,14 @@ internal class Generators {
 					Parameter { Identifier { index }: ObjectType { Identifier { Int } } }
 				}: ObjectType { Identifier { Int } }, ObjectType { Identifier { Int } } ] { StatementSection { StatementBlock {
 					If [ BinaryOperator {
-						Identifier { index } == NumberLiteral { 1 }
+						Identifier { index } Operator { == } NumberLiteral { 1 }
 					} ] {
 						Return { Yield { Identifier { index } NumberLiteral { 1 } } }
 					}
 					Return { Yield { Identifier { index } BinaryOperator {
-						Identifier { index } + FunctionCall [ This ] {
+						Identifier { index } Operator { + } FunctionCall [ This ] {
 							BinaryOperator {
-								Identifier { index } - NumberLiteral { 1 }
+								Identifier { index } Operator { - } NumberLiteral { 1 }
 							}
 						}
 					} } }
@@ -61,9 +61,9 @@ internal class Generators {
 					}
 					Loop { StatementSection { StatementBlock {
 						Yield { Identifier { index } Identifier { sum } }
-						UnaryModification { Identifier { index }++ }
+						UnaryModification { Identifier { index } Operator { ++ } }
 						BinaryModification {
-							Identifier { sum } += Identifier { index }
+							Identifier { sum } Operator { += } Identifier { index }
 						}
 					} } }
 				} } }
@@ -74,9 +74,7 @@ internal class Generators {
 	@Test
 	fun `parses loops over generators`() {
 		val sourceCode = """
-			loop over fibonacciSeries() as fibonacciNumber {
-				echo fibonacciNumber
-			}
+			loop over fibonacciSeries() as fibonacciNumber {}
 			""".trimIndent()
 		val expected =
 			"""
@@ -84,9 +82,6 @@ internal class Generators {
 					FunctionCall [ Identifier { fibonacciSeries } ] {
 					} as Identifier { fibonacciNumber }
 				} ] { StatementSection { StatementBlock {
-					Print {
-						Identifier { fibonacciNumber }
-					}
 				} } }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)

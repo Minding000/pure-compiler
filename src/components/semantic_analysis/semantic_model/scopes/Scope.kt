@@ -46,13 +46,13 @@ abstract class Scope {
 
 	abstract fun resolveValue(name: String): ValueDeclaration?
 
-	fun resolveOperator(name: String): OperatorDefinition?
-		= resolveOperator(name, listOf())
+	fun resolveOperator(kind: OperatorDefinition.Kind): OperatorDefinition?
+		= resolveOperator(kind, listOf())
 
-	fun resolveOperator(name: String, suppliedType: Value): OperatorDefinition?
-		= resolveOperator(name, listOf(suppliedType))
+	fun resolveOperator(kind: OperatorDefinition.Kind, suppliedType: Value): OperatorDefinition?
+		= resolveOperator(kind, listOf(suppliedType))
 
-	open fun resolveOperator(name: String, suppliedValues: List<Value>): OperatorDefinition? = null
+	open fun resolveOperator(kind: OperatorDefinition.Kind, suppliedValues: List<Value>): OperatorDefinition? = null
 
 	fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
 							 suppliedParameterValue: Value?): IndexOperatorDefinition?
