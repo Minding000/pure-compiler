@@ -83,11 +83,15 @@ open class OperatorDefinition(final override val source: OperatorDefinitionSynta
 		super.validate(linter)
 		if(kind.returnsValue && Linter.LiteralType.NOTHING.matches(returnType))
 			linter.addMessage(source, "The operator is expected to return a value.", Message.Type.WARNING)
-		if(kind.isUnary && valueParameters.isNotEmpty())
-			linter.addMessage(source, "Unary operators can't accept parameters.", Message.Type.WARNING)
-		if(kind.isBinary && valueParameters.size != 1)
-			linter.addMessage(source, "Binary operators need to accept exactly one parameter.",
-				Message.Type.WARNING)
+		if(kind.isUnary) {
+			if(valueParameters.size > 1 || !kind.isBinary && valueParameters.isNotEmpty())
+				linter.addMessage(source, "Unary operators can't accept parameters.", Message.Type.WARNING)
+		}
+		if(kind.isBinary) {
+			if(valueParameters.size > 1 || !kind.isUnary && valueParameters.isEmpty())
+				linter.addMessage(source, "Binary operators need to accept exactly one parameter.",
+					Message.Type.WARNING)
+		}
 	}
 
 	override fun toString(): String {

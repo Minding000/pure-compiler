@@ -35,7 +35,7 @@ internal class OperatorSignatureValidation {
 	fun `emits warning for binary operators that don't take exactly one parameter`() {
 		val sourceCode = """
 			Vector class {
-				operator +(a: Self, b: Self): ReturnType
+				operator -(a: Self, b: Self): ReturnType
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -47,7 +47,7 @@ internal class OperatorSignatureValidation {
 	fun `doesn't emit warning for binary operators that take exactly one parameter`() {
 		val sourceCode = """
 			Vector class {
-				operator +(other: Self): ReturnType
+				operator -(other: Self): ReturnType
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -59,7 +59,7 @@ internal class OperatorSignatureValidation {
 	fun `doesn't emit warning for unary operators that don't take exactly one parameter`() {
 		val sourceCode = """
 			Vector class {
-				operator !(): ReturnType
+				operator -(): ReturnType
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -95,7 +95,7 @@ internal class OperatorSignatureValidation {
 	fun `doesn't emit warning for binary operators that take parameters`() {
 		val sourceCode = """
 			Vector class {
-				operator +(a: Self, b: Self): ReturnType
+				operator -(a: Self): ReturnType
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
