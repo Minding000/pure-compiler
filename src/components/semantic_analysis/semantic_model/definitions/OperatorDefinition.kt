@@ -81,11 +81,10 @@ open class OperatorDefinition(final override val source: OperatorDefinitionSynta
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		//TODO add check for return value
-		//TODO move operator signature validation tests in separate test file
+		if(kind.returnsValue && Linter.LiteralType.NOTHING.matches(returnType))
+			linter.addMessage(source, "The operator is expected to return a value.", Message.Type.WARNING)
 		if(kind.isUnary && valueParameters.isNotEmpty())
-			linter.addMessage(source, "Unary operators can't accept parameters.",
-				Message.Type.WARNING)
+			linter.addMessage(source, "Unary operators can't accept parameters.", Message.Type.WARNING)
 		if(kind.isBinary && valueParameters.size != 1)
 			linter.addMessage(source, "Binary operators need to accept exactly one parameter.",
 				Message.Type.WARNING)
@@ -96,7 +95,7 @@ open class OperatorDefinition(final override val source: OperatorDefinitionSynta
 	}
 
 	enum class Kind(val stringRepresentation: String, val isUnary: Boolean, val isBinary: Boolean,
-					returnsValue: Boolean) {
+					val returnsValue: Boolean) {
 		BRACKETS_GET("[]", true, false, true),
 		BRACKETS_SET("[]=", false, true, false),
 		EXCLAMATION_MARK("!", true, false, true),
@@ -120,6 +119,7 @@ open class OperatorDefinition(final override val source: OperatorDefinitionSynta
 		GREATER_OR_EQUAL_TO(">=", false, true, true),
 		EQUAL_TO("==", false, true, true),
 		NOT_EQUAL_TO("!=", false, true, true);
+
 		override fun toString(): String = stringRepresentation
 	}
 }
