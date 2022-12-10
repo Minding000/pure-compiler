@@ -6,6 +6,7 @@ import components.semantic_analysis.semantic_model.definitions.Parameter as Sema
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
+import components.semantic_analysis.semantic_model.types.ObjectType
 import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.literals.Identifier
 import components.syntax_parser.syntax_tree.general.TypeElement
@@ -30,8 +31,8 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
     }
 
 	fun concretizeAsGenericParameter(linter: Linter, scope: MutableScope): TypeDefinition {
-		val superType = type?.concretize(linter, scope)
-		val typeScope = TypeScope(scope, superType?.scope)
+		val superType = type?.concretize(linter, scope) ?: ObjectType(this, Linter.LiteralType.ANY.className)
+		val typeScope = TypeScope(scope, superType.scope)
 		val genericTypeDefinition = GenericTypeDefinition(this, identifier.getValue(), typeScope, superType)
 		typeScope.typeDefinition = genericTypeDefinition
 		scope.declareType(linter, genericTypeDefinition)

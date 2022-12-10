@@ -6,6 +6,7 @@ import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.definitions.Enum
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
+import components.semantic_analysis.semantic_model.types.ObjectType
 import messages.Message
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSection
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSectionChild
@@ -23,24 +24,30 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticTypeDefinitionModel {
 		val name = identifier.getValue()
-		val superType = superType?.concretize(linter, scope)
-		val typeScope = TypeScope(scope, superType?.scope)
+		var superType = superType?.concretize(linter, scope)
 		val typeDefinition = when(type.type) {
 			WordAtom.CLASS -> {
 				parent?.validate(linter, Class.ALLOWED_MODIFIER_TYPES)
 				val isAbstract = parent?.containsModifier(WordAtom.ABSTRACT) ?: false
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
+				if(!Linter.LiteralType.isRootType(name))
+					superType = superType ?: ObjectType(this, Linter.LiteralType.ANY.className)
+				val typeScope = TypeScope(scope, superType?.scope)
 				Class(this, name, typeScope, superType, isAbstract, isNative, isMutable)
 			}
 			WordAtom.OBJECT -> {
 				parent?.validate(linter, Object.ALLOWED_MODIFIER_TYPES)
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
+				superType = superType ?: ObjectType(this, Linter.LiteralType.ANY.className)
+				val typeScope = TypeScope(scope, superType.scope)
 				Object(this, name, typeScope, superType, isNative, isMutable)
 			}
 			WordAtom.ENUM -> {
 				parent?.validate(linter)
+				superType = superType ?: ObjectType(this, Linter.LiteralType.ANY.className)
+				val typeScope = TypeScope(scope, superType.scope)
 				Enum(this, name, typeScope, superType)
 			}
 			else -> throw CompilerError("Encountered unknown type type.")
@@ -65,7 +72,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 					continue
 				}
 			}
-			member.concretize(linter, typeScope, typeDefinition.units)
+			member.concretize(linter, typeDefinition.scope, typeDefinition.units)
 		}
 		typeDefinition.register(linter, scope)
 		return typeDefinition

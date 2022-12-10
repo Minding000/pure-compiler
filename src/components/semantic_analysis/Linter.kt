@@ -2,9 +2,9 @@ package components.semantic_analysis
 
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import messages.MessageLogger
-import components.syntax_parser.syntax_tree.general.Element
 import components.semantic_analysis.semantic_model.general.Program as SemanticProgramModel
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
@@ -89,6 +89,16 @@ class Linter {
 		NULL("Null"),
 		NOTHING("Nothing"),
 		ANY("Any");
+
+		companion object {
+			fun isRootType(name: String): Boolean {
+				if(name == NOTHING.className)
+					return true
+				if(name == ANY.className)
+					return true
+				return false
+			}
+		}
 
 		fun matches(unit: Unit?): Boolean {
 			return unit.toString() == className

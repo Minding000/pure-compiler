@@ -9,7 +9,7 @@ import components.semantic_analysis.semantic_model.values.LocalVariableDeclarati
 import components.tokenizer.WordAtom
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
-class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?,
+class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type,
 			 val isNative: Boolean, val isMutable: Boolean): TypeDefinition(source, name, scope, superType) {
 
 	companion object {

@@ -64,7 +64,13 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		super.linkTypes(linter, this.scope)
+		for(unit in units) {
+			if(Linter.LiteralType.ANY.matches(unit)) {
+				linter.link(Linter.LiteralType.ANY, unit)
+				continue
+			}
+			unit.linkTypes(linter, this.scope)
+		}
 		this.scope.ensureUniqueOperatorSignatures(linter)
 	}
 
@@ -89,7 +95,9 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 	}
 
 	fun acceptsSubstituteType(substituteType: Type): Boolean {
-		return superType?.accepts(substituteType) ?: true
+		if(Linter.LiteralType.ANY.matches(superType))
+			return true
+		return superType?.accepts(substituteType) ?: false
 	}
 
 	override fun equals(other: Any?): Boolean {
@@ -103,7 +111,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 	}
 
 	override fun toString(): String {
-		if(superType == null)
+		if(Linter.LiteralType.ANY.matches(superType))
 			return name
 		return "$name: $superType"
 	}
