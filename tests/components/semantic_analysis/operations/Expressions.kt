@@ -1,5 +1,6 @@
-package components.semantic_analysis
+package components.semantic_analysis.operations
 
+import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.control_flow.Try
 import components.semantic_analysis.semantic_model.definitions.Class

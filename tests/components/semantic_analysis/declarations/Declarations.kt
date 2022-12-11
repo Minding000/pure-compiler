@@ -1,4 +1,4 @@
-package components.semantic_analysis
+package components.semantic_analysis.declarations
 
 import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message

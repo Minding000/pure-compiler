@@ -1,4 +1,4 @@
-package components.semantic_analysis
+package components.semantic_analysis.types
 
 import components.semantic_analysis.semantic_model.values.Function
 import messages.Message

@@ -1,4 +1,4 @@
-package components.semantic_analysis
+package components.semantic_analysis.modifiers
 
 import messages.Message
 import org.junit.jupiter.api.Test
@@ -50,6 +50,19 @@ internal class AbstractModifier {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+	}
+
+	@Test
+	fun `is allowed on functions`() {
+		val sourceCode =
+			"""
+				abstract Goldfish class {
+					abstract to swim()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
+			"Modifier 'abstract' is not allowed here")
 	}
 
 	@Test

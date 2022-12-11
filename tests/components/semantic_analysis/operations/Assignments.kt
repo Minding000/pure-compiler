@@ -1,4 +1,4 @@
-package components.semantic_analysis
+package components.semantic_analysis.operations
 
 import messages.Message
 import org.junit.jupiter.api.Test

@@ -1,4 +1,4 @@
-package components.semantic_analysis
+package components.semantic_analysis.resolution
 
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.SelfReference
