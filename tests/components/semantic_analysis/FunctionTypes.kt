@@ -158,4 +158,17 @@ internal class FunctionTypes {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
 	}
+
+	@Test
+	fun `can be assigned to an any object type`() {
+		val sourceCode =
+			"""
+				DataModel class {
+					to process() {}
+				}
+				val resultProcessor: Any = DataModel.process
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
+	}
 }

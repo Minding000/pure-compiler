@@ -1,18 +1,30 @@
 package components.semantic_analysis.semantic_model.types
 
+import components.semantic_analysis.Linter
 import errors.user.SignatureResolutionAmbiguityError
 import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
+import messages.Message
 import java.util.*
 
-class FunctionType(override val source: Element): Type(source) { //TODO include target instance type (optional) e.g. transform: String.() -> String
+//TODO include target instance type (optional) e.g. transform: String.() -> String
+class FunctionType(override val source: Element): ObjectType(source, Linter.LiteralType.FUNCTION.className) {
 	private val signatures = LinkedList<FunctionSignature>()
 	var superFunctionType: FunctionType? = null
 
 	constructor(source: Element, signature: FunctionSignature): this(source) {
 		addSignature(signature)
+	}
+
+	override fun linkTypes(linter: Linter, scope: Scope) {
+		for(unit in units)
+			unit.linkTypes(linter, scope)
+		definition = linter.literalScopes[Linter.LiteralType.FUNCTION]?.resolveType(name)
+		if(definition == null)
+			linter.addMessage(source, "Type '$name' hasn't been declared yet.", Message.Type.ERROR)
 	}
 
 	fun hasSignature(signature: FunctionSignature): Boolean {
@@ -85,10 +97,8 @@ class FunctionType(override val source: Element): Type(source) { //TODO include 
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
 		val targetType = resolveTypeAlias(unresolvedTargetType)
-		if(targetType is ObjectType)
-			return false
 		if(targetType !is FunctionType)
-			return targetType.accepts(this)
+			return Linter.LiteralType.ANY.matches(targetType)
 		signatureAssignabilityCheck@for(requiredSignature in targetType.signatures) {
 			for(availableSignature in signatures) {
 				if(requiredSignature.accepts(availableSignature))

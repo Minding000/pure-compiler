@@ -17,8 +17,8 @@ class FunctionImplementation(override val source: Element, val scope: BlockScope
 	override lateinit var parentDefinition: TypeDefinition
 	override lateinit var signatureString: String
 	lateinit var parentFunction: Function
-	val signature: FunctionSignature = FunctionSignature(source, genericParameters, parameters.map { parameter -> parameter.type },
-		returnType, true)
+	val signature: FunctionSignature = FunctionSignature(source, scope, genericParameters,
+		parameters.map { parameter -> parameter.type }, returnType, true)
 	var superFunctionImplementation: FunctionImplementation? = null
 		set(value) {
 			field = value
@@ -26,8 +26,8 @@ class FunctionImplementation(override val source: Element, val scope: BlockScope
 		}
 
 	init {
-		addUnits(signature, body, returnType)
-		addUnits(genericParameters, parameters)
+		addUnits(body)
+		addUnits(parameters)
 	}
 
 	fun setParent(function: Function) {

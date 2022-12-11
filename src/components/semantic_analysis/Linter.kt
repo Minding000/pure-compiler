@@ -9,7 +9,7 @@ import components.semantic_analysis.semantic_model.general.Program as SemanticPr
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
 class Linter {
-	private val literalScopes = HashMap<LiteralType, Scope?>()
+	internal val literalScopes = HashMap<LiteralType, Scope?>()
 	val logger = MessageLogger("linter", Message.Type.INFO)
 	private var activePhase = Phase.PENDING //TODO consider removing this property if it is not needed
 
@@ -87,6 +87,7 @@ class Linter {
 		NUMBER("Int"),
 		BOOLEAN("Bool"),
 		NULL("Null"),
+		FUNCTION("Function"),
 		NOTHING("Nothing"),
 		ANY("Any");
 

@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
@@ -10,17 +11,17 @@ import components.syntax_parser.syntax_tree.general.Element
 import util.getCommonType
 import java.util.*
 
-class FunctionSignature(override val source: Element, val genericParameters: List<TypeDefinition>,
-						val parameterTypes: List<Type?>, returnType: Type?,
+class FunctionSignature(override val source: Element, val scope: BlockScope,
+						val genericParameters: List<TypeDefinition>, val parameterTypes: List<Type?>, returnType: Type?,
 						isPartOfImplementation: Boolean = false): Unit(source) {
 	val returnType = returnType ?: ObjectType(source, Linter.LiteralType.NOTHING.className)
 	var superFunctionSignature: FunctionSignature? = null
 
 	init {
-		if(!isPartOfImplementation) {
-			addUnits(this.returnType)
-			addUnits(genericParameters, parameterTypes)
-		}
+		addUnits(genericParameters)
+		addUnits(this.returnType)
+		if(!isPartOfImplementation)
+			addUnits(parameterTypes)
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {
@@ -33,7 +34,7 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 		val specificParametersTypes = LinkedList<Type?>()
 		for(parameterType in parameterTypes)
 			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitution))
-		return FunctionSignature(source, specificGenericParameters, specificParametersTypes,
+		return FunctionSignature(source, scope, specificGenericParameters, specificParametersTypes,
 				returnType.withTypeSubstitutions(typeSubstitution))
 	}
 
@@ -43,7 +44,7 @@ class FunctionSignature(override val source: Element, val genericParameters: Lis
 				linter.link(Linter.LiteralType.NOTHING, unit)
 				continue
 			}
-			unit.linkTypes(linter, scope)
+			unit.linkTypes(linter, this.scope)
 		}
 	}
 

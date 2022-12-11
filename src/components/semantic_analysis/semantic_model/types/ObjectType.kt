@@ -11,7 +11,7 @@ import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import java.util.*
 
-class ObjectType(override val source: Element, val name: String, val typeParameters: List<Type> = listOf()):
+open class ObjectType(override val source: Element, val name: String, val typeParameters: List<Type> = listOf()):
 	Type(source) {
 	var definition: TypeDefinition? = null
 
@@ -113,7 +113,7 @@ class ObjectType(override val source: Element, val name: String, val typeParamet
 		(definition as? TypeAlias)?.let { typeAlias ->
 			return unresolvedSourceType.isAssignableTo(typeAlias.referenceType)
 		}
-		if(unresolvedSourceType is StaticType || unresolvedSourceType is FunctionType)
+		if(unresolvedSourceType is StaticType)
 			return false
 		return unresolvedSourceType.isAssignableTo(this)
 	}

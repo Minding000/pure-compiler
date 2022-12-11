@@ -111,7 +111,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 	}
 
 	override fun toString(): String {
-		if(Linter.LiteralType.ANY.matches(superType))
+		if(superType == null || Linter.LiteralType.ANY.matches(superType))
 			return name
 		return "$name: $superType"
 	}
