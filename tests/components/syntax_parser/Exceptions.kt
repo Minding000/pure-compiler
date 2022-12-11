@@ -1,5 +1,6 @@
 package components.syntax_parser
 
+import org.junit.jupiter.api.Disabled
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
@@ -22,13 +23,49 @@ internal class Exceptions {
 	fun `parses handle blocks`() {
 		val sourceCode = """
 			{
-			} handle NoWordsException e {
+			} handle error: NoWordsException {
 			}
 			""".trimIndent()
 		val expected =
 			"""
 				StatementSection { StatementBlock {
-				} Handle [ ObjectType { Identifier { NoWordsException } } Identifier { e } ] { StatementBlock {
+				} Handle [ ObjectType { Identifier { NoWordsException } } Identifier { error } ] { StatementBlock {
+				} } }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses handle blocks without variable`() {
+		val sourceCode = """
+			{
+			} handle NoWordsException {
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				StatementSection { StatementBlock {
+				} Handle [ ObjectType { Identifier { NoWordsException } } ] { StatementBlock {
+				} } }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Disabled
+	@Test
+	fun `parses destructors in handle blocks`() {
+		val sourceCode = """
+			{
+			} handle { path, cursorPosition }: NoWordsException {
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				StatementSection { StatementBlock {
+				} Handle [ ObjectType { Identifier { NoWordsException } } Destructor {
+					Identifier { path }
+					Identifier { cursorPosition }
+				} ] { StatementBlock {
 				} } }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -38,13 +75,13 @@ internal class Exceptions {
 	fun `parses handle blocks with multiple types`() {
 		val sourceCode = """
 			{
-			} handle NoWordsException | OverthinkException {
+			} handle error: NoWordsException | OverthinkException {
 			}
 			""".trimIndent()
 		val expected =
 			"""
 				StatementSection { StatementBlock {
-				} Handle [ UnionType { ObjectType { Identifier { NoWordsException } } | ObjectType { Identifier { OverthinkException } } } ] { StatementBlock {
+				} Handle [ UnionType { ObjectType { Identifier { NoWordsException } } | ObjectType { Identifier { OverthinkException } } } Identifier { error } ] { StatementBlock {
 				} } }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -55,7 +92,7 @@ internal class Exceptions {
 		val sourceCode = """
 			Human class {
 				to speak(words: String) {
-				} handle NoWordsException e {
+				} handle error: NoWordsException {
 				}
 			}
 			""".trimIndent()
@@ -66,9 +103,25 @@ internal class Exceptions {
 						Function [ Identifier { speak } ParameterList {
 							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
 						}: void ] { StatementSection { StatementBlock {
-						} Handle [ ObjectType { Identifier { NoWordsException } } Identifier { e } ] { StatementBlock {
+						} Handle [ ObjectType { Identifier { NoWordsException } } Identifier { error } ] { StatementBlock {
 						} } } }
 					}
+				} }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses always blocks`() {
+		val sourceCode = """
+			{
+			} always {
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				StatementSection { StatementBlock {
+				} StatementBlock {
 				} }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -98,22 +151,6 @@ internal class Exceptions {
 				} }
             """.trimIndent()
 
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
-	}
-
-	@Test
-	fun `parses always blocks`() {
-		val sourceCode = """
-			{
-			} always {
-			}
-			""".trimIndent()
-		val expected =
-			"""
-				StatementSection { StatementBlock {
-				} StatementBlock {
-				} }
-            """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 }

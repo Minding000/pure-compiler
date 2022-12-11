@@ -136,13 +136,13 @@ internal class Declarations {
 	}
 
 	@Test
-	fun `handle block declares error variable`() { //TODO change syntax to 'error: IOError' for consistency
+	fun `handle block declares error variable`() {
 		val sourceCode =
 			"""
 				IOError class {}
 				Config class {
 					to saveToDisk() {
-					} handle IOError error {
+					} handle error: IOError {
 						error
 					}
 				}

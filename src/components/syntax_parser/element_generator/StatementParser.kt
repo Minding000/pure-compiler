@@ -390,15 +390,16 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * HandleBlock:
-	 *   handle <Type> [<Identifier>] <StatementBlock>
+	 *   handle [<Identifier>:] <Type> <StatementBlock>
 	 */
 	private fun parseHandleBlock(): HandleBlock {
 		val start = consume(WordAtom.HANDLE).start
+		var identifier: Identifier? = null
+		if(nextWord?.type == WordAtom.COLON) {
+			identifier = parseIdentifier()
+			consume(WordAtom.COLON)
+		}
 		val type = typeParser.parseType(false)
-		val identifier = if(currentWord?.type == WordAtom.IDENTIFIER)
-			parseIdentifier()
-		else
-			null
 		val block = parseStatementBlock()
 		return HandleBlock(start, type, identifier, block)
 	}
