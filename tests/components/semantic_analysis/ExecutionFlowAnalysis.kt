@@ -3,7 +3,6 @@ package components.semantic_analysis
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertIs
@@ -52,7 +51,6 @@ internal class ExecutionFlowAnalysis {
 		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Statement is unreachable")
 	}
 
-	@Disabled
 	@Test
 	fun `considers switch branches that will be executed`() {
 		val sourceCode =
@@ -70,7 +68,6 @@ internal class ExecutionFlowAnalysis {
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable")
 	}
 
-	@Disabled
 	@Test
 	fun `ignores switch branches that wont be executed`() {
 		val sourceCode =

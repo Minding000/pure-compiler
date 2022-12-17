@@ -29,20 +29,36 @@ internal class Statements {
 	}
 
 	@Test
-	fun `emits warning for switch statements without cases`() {
+	fun `emits warning for redundant else branches in switches`() {
 		val sourceCode =
 			"""
-				OperatingSystem enum {
-					instances WINDOWS, LINUX, MACOS
-					init
-				}
-				val operatingSystem = OperatingSystem.WINDOWS
-				switch operatingSystem {
+				switch yes {
+					yes:
+						cli.printLine("yes")
+					no:
+						cli.printLine("no")
+					else:
+						cli.printLine("else")
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"The switch statement doesn't have any cases")
+			"The else branch is redundant, because the switch is already exhaustive without it")
+	}
+
+	@Test
+	fun `doesn't emit warning for non-redundant else branches in switches`() {
+		val sourceCode =
+			"""
+				switch yes {
+					yes:
+						cli.printLine("yes")
+					else:
+						cli.printLine("else")
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "else branch is redundant")
 	}
 
 	@Test
