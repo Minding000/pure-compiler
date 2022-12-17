@@ -1,5 +1,6 @@
 package components.syntax_parser
 
+import messages.Message
 import util.TestUtil
 import org.junit.jupiter.api.Test
 
@@ -8,9 +9,10 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses function definitions`() {
 		val sourceCode = """
-			Animal class {
-				it canEat(food: Food): Bool
-			}""".trimIndent()
+				Animal class {
+					it canEat(food: Food): Bool
+				}
+			""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
@@ -27,9 +29,10 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses function definitions with complex return type`() {
 		val sourceCode = """
-			Box class {
-				to getContent(): Box? {}
-			}""".trimIndent()
+				Box class {
+					to getContent(): Box? {}
+				}
+			""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ Identifier { Box } class ] { TypeBody {
@@ -46,11 +49,12 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses function definitions with body`() {
 		val sourceCode = """
-			Animal class {
-				to getSound(loudness: Int) {
-					var energy = loudness * 2
+				Animal class {
+					to getSound(loudness: Int) {
+						var energy = loudness * 2
+					}
 				}
-			}""".trimIndent()
+			""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
@@ -71,13 +75,14 @@ internal class FunctionDefinitions {
 	}
 
 	@Test
-	fun `parses initializer definitions`() {
+	fun `parses initializer definitions inside of type definitions`() {
 		val sourceCode = """
-			Animal class {
-				var canSwim: Bool
+				Animal class {
+					var canSwim: Bool
 
-				init(canSwim)
-			}""".trimIndent()
+					init(canSwim)
+				}
+			""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
@@ -93,11 +98,21 @@ internal class FunctionDefinitions {
 	}
 
 	@Test
+	fun `doesn't parse initializer definitions outside of type definitions`() {
+		val sourceCode = """
+				init
+			""".trimIndent()
+		val parseResult = TestUtil.parse(sourceCode)
+		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected INITIALIZER")
+	}
+
+	@Test
 	fun `parses initializer definitions without parameter list`() {
 		val sourceCode = """
-			Chair class {
-				init
-			}""".trimIndent()
+				Chair class {
+					init
+				}
+			""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ Identifier { Chair } class ] { TypeBody {
@@ -110,10 +125,11 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses initializer definitions with body`() {
 		val sourceCode = """
-			Animal class {
-				var canSwim: Bool
-				init(name: String, canSwim) {}
-			}""".trimIndent()
+				Animal class {
+					var canSwim: Bool
+					init(name: String, canSwim) {}
+				}
+			""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
@@ -133,9 +149,10 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses deinitializer definitions`() {
 		val sourceCode = """
-			Animal class {
-				deinit {}
-			}""".trimIndent()
+				Animal class {
+					deinit {}
+				}
+			""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
@@ -149,23 +166,24 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses operator definitions`() {
 		val sourceCode = """
-			Vector class {
-				var: Int {
-					x
-					y
-				}
-
-				operator {
-					+=(right: Vector) {
-						x += right.x
-						y += right.y
+				Vector class {
+					var: Int {
+						x
+						y
 					}
 
-					==(right: Vector) {
-						return right.x == x & right.y == y
+					operator {
+						+=(right: Vector) {
+							x += right.x
+							y += right.y
+						}
+
+						==(right: Vector) {
+							return right.x == x & right.y == y
+						}
 					}
 				}
-			}""".trimIndent()
+			""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ Identifier { Vector } class ] { TypeBody {
@@ -212,14 +230,15 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses index operator definitions`() {
 		val sourceCode = """
-			BookSelf class {
+				BookSelf class {
 
-				operator {
-					[index: Int](value: Book) {}
+					operator {
+						[index: Int](value: Book) {}
 
-					[index: Int]: Book {}
+						[index: Int]: Book {}
+					}
 				}
-			}""".trimIndent()
+			""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ Identifier { BookSelf } class ] { TypeBody {
@@ -243,10 +262,11 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses dynamically sized parameters`() {
 		val sourceCode = """
-			Animal class {
-				to setSounds(...sounds: ...Sound) {
+				Animal class {
+					to setSounds(...sounds: ...Sound) {
+					}
 				}
-			}""".trimIndent()
+			""".trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
@@ -264,7 +284,7 @@ internal class FunctionDefinitions {
 	@Test
 	fun `parses lambda function definitions`() {
 		val sourceCode = """
-			val condition = (a: Int, b: Int) => { return a < b }
+				val condition = (a: Int, b: Int) => { return a < b }
 			""".trimIndent()
 		val expected =
 			"""

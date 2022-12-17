@@ -34,4 +34,9 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Object {
 		return this
 	}
+
+	override fun validate(linter: Linter) {
+		super.validate(linter)
+		scope.ensureTrivialInitializers(linter)
+	}
 }

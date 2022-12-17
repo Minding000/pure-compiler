@@ -5,7 +5,7 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
 class GenericTypeDefinition(override val source: ParameterSyntaxTree, name: String, scope: TypeScope, superType: Type?):
-	TypeDefinition(source, name, scope, superType) {
+	TypeDefinition(source, name, scope, superType) { //TODO disallow generic types in objects
 
 	init {
 		scope.typeDefinition = this

@@ -68,22 +68,6 @@ internal class Declarations {
 	}
 
 	@Test
-	fun `detects redeclarations of initializers signatures`() {
-		val sourceCode =
-			"""
-				Trait class {}
-				alias T = Trait
-				Human class {
-					init
-					init(t: T)
-					init(t: Trait)
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of initializer 'Human(Trait)'")
-	}
-
-	@Test
 	fun `detects redeclarations of function signatures`() {
 		val sourceCode =
 			"""

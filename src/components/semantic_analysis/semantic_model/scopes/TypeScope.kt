@@ -72,6 +72,17 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		}
 	}
 
+	fun ensureTrivialInitializers(linter: Linter) {
+		for(initializer in initializers) {
+			if(initializer.genericParameters.isNotEmpty())
+				linter.addMessage(initializer.source, "Object initializers can not take type parameters.",
+					Message.Type.ERROR)
+			if(initializer.parameters.isNotEmpty())
+				linter.addMessage(initializer.source, "Object initializers can not take parameters.",
+					Message.Type.ERROR)
+		}
+	}
+
 	fun ensureUniqueInitializerSignatures(linter: Linter) {
 		val redeclarations = LinkedList<InitializerDefinition>()
 		for(initializerIndex in 0 until initializers.size - 1) {
