@@ -12,6 +12,7 @@ internal class Statements {
 			"""
 				OperatingSystem enum {
 					instances WINDOWS, LINUX, MACOS
+					init
 				}
 				val operatingSystem = OperatingSystem.WINDOWS
 				switch operatingSystem {
@@ -28,11 +29,29 @@ internal class Statements {
 	}
 
 	@Test
+	fun `emits warning for switch statements without cases`() {
+		val sourceCode =
+			"""
+				OperatingSystem enum {
+					instances WINDOWS, LINUX, MACOS
+					init
+				}
+				val operatingSystem = OperatingSystem.WINDOWS
+				switch operatingSystem {
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"The switch statement doesn't have any cases")
+	}
+
+	@Test
 	fun `emits warning for instances on objects`() {
 		val sourceCode =
 			"""
 				Date object {
 					instances CURRENT
+					init
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -48,6 +67,7 @@ internal class Statements {
 					instances PAST
 					instances CURRENT
 					instances FUTURE
+					init
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

@@ -3,6 +3,7 @@ package components.semantic_analysis
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertIs
@@ -23,12 +24,12 @@ internal class ExecutionFlowAnalysis {
 	}
 
 	@Test
-	fun `considers branches that will be executed`() {
+	fun `considers if branches that will be executed`() {
 		val sourceCode =
 			"""
 				loop {
 					val shouldBreak = yes
-					if(shouldBreak)
+					if shouldBreak
 						break
 					next
 				}
@@ -38,12 +39,48 @@ internal class ExecutionFlowAnalysis {
 	}
 
 	@Test
-	fun `ignores branches that wont be executed`() {
+	fun `ignores if branches that wont be executed`() {
 		val sourceCode =
 			"""
 				loop {
-					if(no)
+					if no
 						break
+					next
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Statement is unreachable")
+	}
+
+	@Disabled
+	@Test
+	fun `considers switch branches that will be executed`() {
+		val sourceCode =
+			"""
+				loop {
+					val shouldBreak = yes
+					switch shouldBreak {
+						yes:
+							break
+					}
+					next
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable")
+	}
+
+	@Disabled
+	@Test
+	fun `ignores switch branches that wont be executed`() {
+		val sourceCode =
+			"""
+				loop {
+					val shouldBreak = no
+					switch shouldBreak {
+						yes:
+							break
+					}
 					next
 				}
             """.trimIndent()
@@ -59,7 +96,7 @@ internal class ExecutionFlowAnalysis {
 					instances RED
 				}
 				loop {
-					if(Color.RED is Color)
+					if Color.RED is Color
 						return
 					next
 				}
@@ -77,7 +114,7 @@ internal class ExecutionFlowAnalysis {
 				}
 				val bird = null
 				loop {
-					if(bird is! Color)
+					if bird is! Color
 						return
 					next
 				}

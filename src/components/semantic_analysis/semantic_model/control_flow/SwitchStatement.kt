@@ -10,7 +10,8 @@ import java.util.LinkedList
 
 class SwitchStatement(override val source: SwitchStatementSyntaxTree, val subject: Value, val cases: List<Case>,
 					  val elseBranch: Unit?): Unit(source) {
-	override var isInterruptingExecution = false //TODO adjust this value based on branches
+	override var isInterruptingExecution = false
+	//TODO check if else branch is unnecessary, because the switch statement would be exhaustive without it
 
 	init {
 		addUnits(subject, elseBranch)
@@ -33,17 +34,41 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, val subjec
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		val casesWithUniqueConditions = LinkedList<Case>()
-		for(case in cases) {
-			val caseWithUniqueCondition = casesWithUniqueConditions.find {
-					caseWithUniqueCondition -> caseWithUniqueCondition.condition == case.condition }
-			if(caseWithUniqueCondition != null) {
-				linter.addMessage(case.condition.source, "Duplicated case '${case.condition.source.getValue()}'," +
-						" previously defined in ${caseWithUniqueCondition.condition.source.getStartString()}.",
-					Message.Type.ERROR)
-				continue
+		if(cases.isEmpty()) {
+			linter.addMessage(source, "The switch statement doesn't have any cases.", Message.Type.WARNING)
+		} else {
+			val casesWithUniqueConditions = LinkedList<Case>()
+			for(case in cases) {
+				val caseWithUniqueCondition = casesWithUniqueConditions.find {
+						caseWithUniqueCondition -> caseWithUniqueCondition.condition == case.condition }
+				if(caseWithUniqueCondition != null) {
+					linter.addMessage(case.condition.source,
+						"Duplicated case '${case.condition.source.getValue()}'," +
+							" previously defined in ${caseWithUniqueCondition.condition.source.getStartString()}.",
+						Message.Type.ERROR)
+					continue
+				}
+				casesWithUniqueConditions.add(case)
 			}
-			casesWithUniqueConditions.add(case)
 		}
+		//TODO implement pseudo code
+//		isInterruptingExecution = (getBranchForValue(subject.staticValue)?.isInterruptingExecution ?: false)
+//			|| (isExhaustive() && allBranchesInterruptExecution)
+	}
+
+	private fun isExhaustive(): Boolean {
+		if(elseBranch != null)
+			return true
+		//TODO implement pseudo code
+//		if(Linter.LiteralType.BOOLEAN.matches(subject.type))
+//			return casesContainValue(true) && casesContainValue(false)
+//		if(subject.type.definition is Enum) {
+//			for(instance in enum.instances) {
+//				if(!casesContainValue(instance))
+//					return false
+//			}
+//			return true
+//		}
+		return false
 	}
 }
