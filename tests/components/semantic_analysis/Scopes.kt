@@ -60,8 +60,8 @@ internal class Scopes {
 		assertErrorEmitted("Function declarations aren't allowed in 'BlockScope'.") { linter, position ->
 			val syntaxTree = FunctionDefinition(Identifier(Word(position, position, WordAtom.IDENTIFIER)),
 				ParameterList(position, position, null, listOf()), null, null)
-			val functionImplementation = FunctionImplementation(syntaxTree, BlockScope(FileScope()), listOf(),
-				listOf(), null, null)
+			val functionImplementation = FunctionImplementation(syntaxTree, getTestClass(position),
+				BlockScope(FileScope()), listOf(), listOf(), null, null)
 			val blockScope = BlockScope(FileScope())
 			blockScope.declareFunction(linter, "", functionImplementation)
 		}

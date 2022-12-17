@@ -23,9 +23,9 @@ class InitializerDefinition(start: Position, private val parameterList: Paramete
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticInitializerDefinitionModel {
 		parent?.validate(linter, ALLOWED_MODIFIER_TYPES)
-		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 		val surroundingTypeDefinition = scope.getSurroundingDefinition()
 			?: throw CompilerError("Initializer expected surrounding type definition.")
+		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 		val initializerScope = BlockScope(scope)
 		val genericParameters = parameterList?.concretizeGenerics(linter, initializerScope) ?: listOf()
 		val parameters = parameterList?.concretizeParameters(linter, initializerScope) ?: listOf()

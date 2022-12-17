@@ -154,7 +154,9 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		for(abstractSuperMember in abstractSuperMembers) {
 			val overridingMember = memberDeclarations[abstractSuperMember.signatureString]
 			if(!abstractSuperMember.canBeOverriddenBy(overridingMember)) {
-				val missingOverridesFromType = missingOverrides.getOrPut(abstractSuperMember.parentDefinition) {
+				val parentDefinition = abstractSuperMember.parentDefinition
+					?: throw CompilerError("Member is missing parent definition.")
+				val missingOverridesFromType = missingOverrides.getOrPut(parentDefinition) {
 					LinkedList() }
 				missingOverridesFromType.add(abstractSuperMember)
 			}
@@ -214,7 +216,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	override fun declareFunction(linter: Linter, name: String, newImplementation: FunctionImplementation) {
-		newImplementation.parentDefinition = typeDefinition
 		when(val existingInterfaceMember = interfaceMembers[name]?.value) {
 			null -> {
 				val newFunction = Function(newImplementation.source, newImplementation, name)

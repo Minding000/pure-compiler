@@ -9,12 +9,12 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Function
 import components.syntax_parser.syntax_tree.general.Element
 
-class FunctionImplementation(override val source: Element, val scope: BlockScope,
-							 genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,
-							 body: ErrorHandlingContext?, returnType: Type?, override val isAbstract: Boolean = false,
-							 val isMutating: Boolean = false, val isNative: Boolean = false,
-							 val isOverriding: Boolean = false): Unit(source), MemberDeclaration {
-	override lateinit var parentDefinition: TypeDefinition
+class FunctionImplementation(override val source: Element, override val parentDefinition: TypeDefinition?,
+							 val scope: BlockScope, genericParameters: List<TypeDefinition>,
+							 val parameters: List<Parameter>, body: ErrorHandlingContext?, returnType: Type?,
+							 override val isAbstract: Boolean = false, val isMutating: Boolean = false,
+							 val isNative: Boolean = false, val isOverriding: Boolean = false):
+	Unit(source), MemberDeclaration {
 	override lateinit var signatureString: String
 	lateinit var parentFunction: Function
 	val signature: FunctionSignature = FunctionSignature(source, scope, genericParameters,

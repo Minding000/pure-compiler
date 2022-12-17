@@ -4,7 +4,7 @@ import components.syntax_parser.syntax_tree.general.Element
 
 interface MemberDeclaration {
 	val source: Element
-	var parentDefinition: TypeDefinition
+	val parentDefinition: TypeDefinition?
 	var signatureString: String
 	val isAbstract: Boolean
 
