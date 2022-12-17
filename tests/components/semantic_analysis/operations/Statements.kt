@@ -53,17 +53,4 @@ internal class Statements {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Instance declarations can be merged")
 	}
-
-	@Test
-	fun `emits warning for generic types in objects`() {
-		val sourceCode =
-			"""
-				Earth object {
-					containing Species
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"Generic type declarations are not allowed in objects")
-	}
 }
