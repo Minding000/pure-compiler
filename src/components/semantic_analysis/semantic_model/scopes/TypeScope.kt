@@ -88,7 +88,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				}
 				redeclarations.add(otherInitializer)
 				linter.addMessage(otherInitializer.source, "Redeclaration of" +
-						" initializer '${otherInitializer.toString(typeDefinition)}'," +
+						" initializer '$otherInitializer'," +
 						" previously declared in ${initializer.source.getStartString()}.", Message.Type.ERROR)
 			}
 		}
@@ -163,7 +163,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		initializers.add(initializer)
 		onNewInitializer(initializer)
 		linter.addMessage(initializer.source,
-			"Declaration of initializer '${initializer.toString(typeDefinition)}'.", Message.Type.DEBUG)
+			"Declaration of initializer '$initializer'.", Message.Type.DEBUG)
 	}
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {

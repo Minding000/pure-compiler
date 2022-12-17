@@ -56,4 +56,24 @@ internal class InitializerResolution {
 		val initializerCall = lintResult.find<FunctionCall>()
 		assertNotNull(initializerCall?.type)
 	}
+
+	@Test
+	fun `emits error for ambiguous initializer calls`() {
+		val sourceCode =
+			"""
+				Int class {
+					init
+				}
+				List class {
+					containing Element
+
+					init(index: Int) {}
+					init(element: Element) {}
+				}
+				val numbers = <Int>List(Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Call to initializer '<Int>List(Int)' is ambiguous")
+	}
 }

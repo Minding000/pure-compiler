@@ -10,7 +10,7 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree): Value(so
 	var definition: TypeDefinition? = null
 
 	override fun linkValues(linter: Linter, scope: Scope) {
-		definition = scope.getSurroundingDefinition()
+		definition = scope.getSurroundingDefinition() //TODO add linter error if self reference is used outside of type definition
 		definition?.let { definition ->
 			type = ObjectType(definition)
 		}

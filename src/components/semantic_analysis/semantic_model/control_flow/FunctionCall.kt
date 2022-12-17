@@ -59,7 +59,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 			this.type = type
 		} catch(error: SignatureResolutionAmbiguityError) {
 			linter.addMessage(source, "Call to initializer '${getSignature()}' is ambiguous. " +
-				"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR) //TODO write test for this
+				"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR)
 		}
 	}
 
@@ -89,11 +89,10 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 
 	private fun getSignature(): String {
 		var signature = ""
-		var function = function
-		if(function is TypeSpecification)
-			function = function.baseValue
+		val function = function
 		signature += when(function) {
 			is VariableValue -> function.name
+			is TypeSpecification -> function
 			is MemberAccess -> "${function.target.type}.${function.member.name}"
 			else -> "<anonymous function>"
 		}

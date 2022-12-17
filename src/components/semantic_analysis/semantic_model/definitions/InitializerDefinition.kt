@@ -12,9 +12,12 @@ import util.stringifyTypes
 import java.util.*
 import components.syntax_parser.syntax_tree.definitions.InitializerDefinition as InitializerDefinitionSyntaxTree
 
-class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree, val scope: BlockScope,
-							val genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,
-							val body: Unit?, val isNative: Boolean): Unit(source) {
+class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree, override var parentDefinition: TypeDefinition,
+							val scope: BlockScope, val genericParameters: List<TypeDefinition>,
+							val parameters: List<Parameter>, val body: Unit?, val isNative: Boolean):
+	Unit(source), MemberDeclaration {
+	override var signatureString = toString()
+	override val isAbstract = false
 
 	init {
 		addUnits(body)
@@ -31,7 +34,8 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
-		return InitializerDefinition(source, scope, specificGenericParameters, specificParameters, body, isNative)
+		return InitializerDefinition(source, parentDefinition, scope, specificGenericParameters, specificParameters,
+			body, isNative)
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -129,12 +133,12 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 		super.linkValues(linter, this.scope)
 	}
 
-	fun toString(typeDefinition: TypeDefinition): String {
+	override fun toString(): String {
 		var stringRepresentation = ""
-		val genericTypeDefinitions = typeDefinition.scope.getGenericTypeDefinitions()
+		val genericTypeDefinitions = parentDefinition.scope.getGenericTypeDefinitions()
 		if(genericTypeDefinitions.isNotEmpty())
 			stringRepresentation += "<${genericTypeDefinitions.joinToString()}>"
-		stringRepresentation += typeDefinition.name
+		stringRepresentation += parentDefinition.name
 		stringRepresentation += "("
 		if(genericParameters.isNotEmpty()) {
 			stringRepresentation += genericParameters.joinToString()

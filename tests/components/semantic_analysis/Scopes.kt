@@ -1,14 +1,14 @@
 package components.semantic_analysis
 
+import components.semantic_analysis.semantic_model.definitions.Class
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.general.Program
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.FileScope
-import components.syntax_parser.syntax_tree.definitions.FunctionDefinition
-import components.syntax_parser.syntax_tree.definitions.Operator
-import components.syntax_parser.syntax_tree.definitions.ParameterList
+import components.semantic_analysis.semantic_model.scopes.TypeScope
+import components.syntax_parser.syntax_tree.definitions.*
 import components.syntax_parser.syntax_tree.literals.Identifier
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
@@ -35,12 +35,19 @@ internal class Scopes {
 		lintResult.assertMessageEmitted(Message.Type.ERROR, message)
 	}
 
+	private fun getTestClass(position: Position): Class {
+		val source = TypeDefinition(Identifier(Word(position, position, WordAtom.IDENTIFIER)),
+			Word(position, position, WordAtom.CLASS), null, TypeBody(position, position, listOf()))
+		val scope = TypeScope(FileScope(), null)
+		return Class(source, "", scope, null, false, false, false)
+	}
+
 	@Test
 	fun `prohibits initializer declarations in blocks`() {
 		assertErrorEmitted("Initializer declarations aren't allowed in 'BlockScope'.") { linter, position ->
 			val syntaxTree = InitializerDefinitionSyntaxTree(position, null, null, position)
 			val initializerDefinition = InitializerDefinition(
-				syntaxTree, BlockScope(FileScope()), listOf(), listOf(),
+				syntaxTree, getTestClass(position), BlockScope(FileScope()), listOf(), listOf(),
 				null, false
 			)
 			val blockScope = BlockScope(FileScope())
