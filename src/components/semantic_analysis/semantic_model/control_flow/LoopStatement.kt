@@ -17,4 +17,44 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, val scope: Blo
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, this.scope)
 	}
+
+	override fun validate(linter: Linter) {
+		super.validate(linter)
+		//TODO implement infinite loop check
+//		if(generator is WhileGenerator) {
+//			val condition = generator.condition.staticValue
+//			if(condition is BooleanLiteral && condition.value) {
+//				var mightGetInterrupted = false
+//				for(statement in body.mainBlock.statements) {
+//					//TODO this is not reliable as some statement might contain a interrupting statement, but not be interrupting for certain itself
+//					if(statement.isInterruptingExecution) {
+//						mightGetInterrupted = true
+//						break
+//					}
+//				}
+//				if(!mightGetInterrupted) {
+//					handleBlockCheck@for(handleBlock in body.handleBlocks) {
+//						for(statement in handleBlock.block.statements) {
+//							if(statement.isInterruptingExecution) {
+//								mightGetInterrupted = true
+//								break@handleBlockCheck
+//							}
+//						}
+//					}
+//				}
+//				if(!mightGetInterrupted) {
+//					if(body.alwaysBlock != null) {
+//						for(statement in body.alwaysBlock.statements) {
+//							if(statement.isInterruptingExecution) {
+//								mightGetInterrupted = true
+//								break
+//							}
+//						}
+//					}
+//				}
+//				if(!mightGetInterrupted)
+//					isInterruptingExecution = true
+//			}
+//		}
+	}
 }

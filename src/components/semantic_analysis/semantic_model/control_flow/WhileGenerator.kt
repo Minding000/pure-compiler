@@ -6,7 +6,6 @@ import components.syntax_parser.syntax_tree.control_flow.WhileGenerator as While
 
 class WhileGenerator(override val source: WhileGeneratorSyntaxTree, val condition: Value, val isPostCondition: Boolean):
 	Unit(source) {
-	override var isInterruptingExecution = false //TODO adjust this value based on condition and body
 
 	init {
 		addUnits(condition)
