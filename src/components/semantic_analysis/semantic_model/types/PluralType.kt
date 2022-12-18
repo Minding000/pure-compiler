@@ -29,7 +29,7 @@ class PluralType(override val source: Element, val baseType: Type): Type(source)
 	}
 
 	override fun getKeyType(linter: Linter): Type {
-		return ObjectType(source, Linter.LiteralType.NUMBER.className) //TODO add this type to units
+		return ObjectType(source, Linter.LiteralType.INTEGER.className) //TODO add this type to units
 	}
 
 	override fun getValueType(linter: Linter): Type {

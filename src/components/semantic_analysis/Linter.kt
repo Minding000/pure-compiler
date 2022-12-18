@@ -84,7 +84,8 @@ class Linter {
 
 	enum class LiteralType(val className: String) {
 		STRING("String"),
-		NUMBER("Int"),
+		INTEGER("Int"),
+		FLOAT("Float"),
 		BOOLEAN("Bool"),
 		NULL("Null"),
 		FUNCTION("Function"),
