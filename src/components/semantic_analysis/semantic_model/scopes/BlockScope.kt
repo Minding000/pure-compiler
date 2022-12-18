@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.control_flow.LoopStatement
+import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
@@ -26,6 +27,10 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 
 	override fun getSurroundingDefinition(): TypeDefinition? {
 		return parentScope.getSurroundingDefinition()
+	}
+
+	override fun getSurroundingFunction(): FunctionImplementation? {
+		return (unit as? FunctionImplementation) ?: parentScope.getSurroundingFunction()
 	}
 
 	override fun getSurroundingLoop(): LoopStatement? {

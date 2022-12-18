@@ -26,6 +26,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		}
 
 	init {
+		scope.unit = this
 		addUnits(body)
 		addUnits(parameters)
 	}

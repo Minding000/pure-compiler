@@ -267,16 +267,19 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * ReturnStatement:
+	 *   return
 	 *   return <Expression>
 	 *   return <YieldStatement>
 	 */
 	private fun parseReturnStatement(): Element {
 		val word = consume(WordAtom.RETURN)
 		var value: ValueElement? = null
-		if(currentWord?.type == WordAtom.YIELD)
-			value = parseYieldStatement()
-		else if(currentWord?.type != WordAtom.LINE_BREAK)
-			value = parseExpression()
+		if(currentWord != null) {
+			if(currentWord?.type == WordAtom.YIELD)
+				value = parseYieldStatement()
+			else if(currentWord?.type != WordAtom.LINE_BREAK)
+				value = parseExpression()
+		}
 		return ReturnStatement(word.start, value, value?.end ?: word.end)
 	}
 

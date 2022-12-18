@@ -1,11 +1,8 @@
 package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.semantic_model.control_flow.LoopStatement
-import components.semantic_analysis.semantic_model.definitions.IndexOperatorDefinition
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
+import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
@@ -40,6 +37,8 @@ abstract class Scope {
 	}
 
 	open fun getSurroundingDefinition(): TypeDefinition? = null
+
+	open fun getSurroundingFunction(): FunctionImplementation? = null
 
 	open fun getSurroundingLoop(): LoopStatement? = null
 

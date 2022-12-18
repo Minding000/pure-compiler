@@ -113,7 +113,31 @@ internal class ControlFlow {
 	}
 
 	@Test
-	fun `parses return statements`() {
+	fun `parses return statements without value`() {
+		val sourceCode = """
+			Human class {
+				to speak(words: String) {
+					return
+				}
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ Identifier { Human } class ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { speak } ParameterList {
+							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
+						}: void ] { StatementSection { StatementBlock {
+							Return {  }
+						} } }
+					}
+				} }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses return statements with value`() {
 		val sourceCode = """
 			Human class {
 				to speak(words: String): String {
