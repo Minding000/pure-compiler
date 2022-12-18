@@ -10,7 +10,7 @@ import java.math.BigDecimal
 class NumberLiteral(word: Word): ValueElement(word) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticNumberLiteralModel {
-		val value = BigDecimal(getValue())
+		val value = BigDecimal(getValue().replace("_", ""))
 		return SemanticNumberLiteralModel(this, value)
 	}
 

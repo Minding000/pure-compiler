@@ -20,7 +20,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<UnaryOperator>()?.staticValue
 		assertIs<BooleanLiteral>(staticResult)
-		assertEquals(staticResult.value, false)
+		assertEquals(false, staticResult.value)
 	}
 
 	@Test
@@ -32,7 +32,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<UnaryOperator>()?.staticValue
 		assertIs<NumberLiteral>(staticResult)
-		assertEquals(staticResult.value.toInt(), -768)
+		assertEquals(-768, staticResult.value.toInt())
 	}
 
 	@Test
@@ -44,7 +44,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<NumberLiteral>(staticResult)
-		assertEquals(staticResult.value.toInt(), 22)
+		assertEquals(22, staticResult.value.toInt())
 	}
 
 	@Test
@@ -56,7 +56,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<BooleanLiteral>(staticResult)
-		assertEquals(staticResult.value, false)
+		assertEquals(false, staticResult.value)
 	}
 
 	@Test
@@ -68,7 +68,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<BooleanLiteral>(staticResult)
-		assertEquals(staticResult.value, true)
+		assertEquals(true, staticResult.value)
 	}
 
 	@Test
@@ -80,7 +80,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<NumberLiteral>(staticResult)
-		assertEquals(staticResult.value.toInt(), 2)
+		assertEquals(2, staticResult.value.toInt())
 	}
 
 	@Test
@@ -92,7 +92,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<NumberLiteral>(staticResult)
-		assertEquals(staticResult.value.toInt(), 255)
+		assertEquals(255, staticResult.value.toInt())
 	}
 
 	@Test
@@ -104,7 +104,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<NumberLiteral>(staticResult)
-		assertEquals(staticResult.value.toInt(), 32)
+		assertEquals(32, staticResult.value.toInt())
 	}
 
 	@Test
@@ -116,7 +116,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<NumberLiteral>(staticResult)
-		assertEquals(staticResult.value.toInt(), 32)
+		assertEquals(32, staticResult.value.toInt())
 	}
 
 	@Test
@@ -128,7 +128,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<BooleanLiteral>(staticResult)
-		assertEquals(staticResult.value, false)
+		assertEquals(false, staticResult.value)
 	}
 
 	@Test
@@ -140,7 +140,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<BooleanLiteral>(staticResult)
-		assertEquals(staticResult.value, true)
+		assertEquals(true, staticResult.value)
 	}
 
 	@Test
@@ -152,7 +152,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<BooleanLiteral>(staticResult)
-		assertEquals(staticResult.value, true)
+		assertEquals(true, staticResult.value)
 	}
 
 	@Test
@@ -164,7 +164,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<BooleanLiteral>(staticResult)
-		assertEquals(staticResult.value, true)
+		assertEquals(true, staticResult.value)
 	}
 
 	@Test
@@ -176,7 +176,7 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<BooleanLiteral>(staticResult)
-		assertEquals(staticResult.value, true)
+		assertEquals(true, staticResult.value)
 	}
 
 	@Test
@@ -188,6 +188,6 @@ internal class StaticOperatorEvaluation {
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.staticValue
 		assertIs<BooleanLiteral>(staticResult)
-		assertEquals(staticResult.value, true)
+		assertEquals(true, staticResult.value)
 	}
 }

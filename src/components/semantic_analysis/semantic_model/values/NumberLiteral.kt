@@ -12,7 +12,7 @@ class NumberLiteral(override val source: Element, val value: BigDecimal): Litera
 	val literalType = if(isInteger) Linter.LiteralType.INTEGER else Linter.LiteralType.FLOAT
 
 	init {
-		//TODO check if all number formats allowed by the syntax are parsed properly here
+		//TODO adapt to the inferred type (integers can be floats)
 		val numberType = ObjectType(source, literalType.className)
 		addUnits(numberType)
 		type = numberType
