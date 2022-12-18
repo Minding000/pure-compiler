@@ -6,6 +6,10 @@ import components.semantic_analysis.semantic_model.definitions.OperatorDefinitio
 import components.semantic_analysis.semantic_model.values.Value
 import messages.Message
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.values.BooleanLiteral
+import components.semantic_analysis.semantic_model.values.NullLiteral
+import components.semantic_analysis.semantic_model.values.NumberLiteral
+import errors.internal.CompilerError
 import components.syntax_parser.syntax_tree.operations.BinaryOperator as BinaryOperatorSyntaxTree
 
 class BinaryOperator(override val source: BinaryOperatorSyntaxTree, val left: Value, val right: Value,
@@ -36,5 +40,76 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, val left: Va
 		staticValue = calculateStaticResult()
 	}
 
-	private fun calculateStaticResult(): Value? = null //TODO implement
+	private fun calculateStaticResult(): Value? {
+		return when(kind) {
+			OperatorDefinition.Kind.DOUBLE_QUESTION_MARK -> {
+				val leftValue = left.staticValue ?: return null
+				if(leftValue is NullLiteral)
+					right.staticValue
+				else
+					leftValue
+			}
+			OperatorDefinition.Kind.AND -> {
+				val leftValue = left.staticValue as? BooleanLiteral ?: return null
+				val rightValue = right.staticValue as? BooleanLiteral ?: return null
+				BooleanLiteral(source, leftValue.value && rightValue.value)
+			}
+			OperatorDefinition.Kind.PIPE -> {
+				val leftValue = left.staticValue as? BooleanLiteral ?: return null
+				val rightValue = right.staticValue as? BooleanLiteral ?: return null
+				BooleanLiteral(source, leftValue.value || rightValue.value)
+			}
+			OperatorDefinition.Kind.PLUS -> {
+				val leftValue = left.staticValue as? NumberLiteral ?: return null
+				val rightValue = right.staticValue as? NumberLiteral ?: return null
+				NumberLiteral(source, leftValue.value + rightValue.value)
+			}
+			OperatorDefinition.Kind.MINUS -> {
+				val leftValue = left.staticValue as? NumberLiteral ?: return null
+				val rightValue = right.staticValue as? NumberLiteral ?: return null
+				NumberLiteral(source, leftValue.value - rightValue.value)
+			}
+			OperatorDefinition.Kind.STAR -> {
+				val leftValue = left.staticValue as? NumberLiteral ?: return null
+				val rightValue = right.staticValue as? NumberLiteral ?: return null
+				NumberLiteral(source, leftValue.value * rightValue.value)
+			}
+			OperatorDefinition.Kind.SLASH -> {
+				val leftValue = left.staticValue as? NumberLiteral ?: return null
+				val rightValue = right.staticValue as? NumberLiteral ?: return null
+				NumberLiteral(source, leftValue.value / rightValue.value)
+			}
+			OperatorDefinition.Kind.SMALLER_THAN -> {
+				val leftValue = left.staticValue as? NumberLiteral ?: return null
+				val rightValue = right.staticValue as? NumberLiteral ?: return null
+				BooleanLiteral(source, leftValue.value < rightValue.value)
+			}
+			OperatorDefinition.Kind.GREATER_THAN -> {
+				val leftValue = left.staticValue as? NumberLiteral ?: return null
+				val rightValue = right.staticValue as? NumberLiteral ?: return null
+				BooleanLiteral(source, leftValue.value > rightValue.value)
+			}
+			OperatorDefinition.Kind.SMALLER_THAN_OR_EQUAL_TO -> {
+				val leftValue = left.staticValue as? NumberLiteral ?: return null
+				val rightValue = right.staticValue as? NumberLiteral ?: return null
+				BooleanLiteral(source, leftValue.value <= rightValue.value)
+			}
+			OperatorDefinition.Kind.GREATER_THAN_OR_EQUAL_TO -> {
+				val leftValue = left.staticValue as? NumberLiteral ?: return null
+				val rightValue = right.staticValue as? NumberLiteral ?: return null
+				BooleanLiteral(source, leftValue.value >= rightValue.value)
+			}
+			OperatorDefinition.Kind.EQUAL_TO -> {
+				val leftValue = left.staticValue ?: return null
+				val rightValue = right.staticValue ?: return null
+				BooleanLiteral(source, leftValue == rightValue)
+			}
+			OperatorDefinition.Kind.NOT_EQUAL_TO -> {
+				val leftValue = left.staticValue ?: return null
+				val rightValue = right.staticValue ?: return null
+				BooleanLiteral(source, leftValue != rightValue)
+			}
+			else -> throw CompilerError("Static evaluation is not implemented for operators of kind '$kind'.")
+		}
+	}
 }

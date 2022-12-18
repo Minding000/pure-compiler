@@ -4,7 +4,10 @@ import errors.user.SignatureResolutionAmbiguityError
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.values.BooleanLiteral
+import components.semantic_analysis.semantic_model.values.NumberLiteral
 import components.semantic_analysis.semantic_model.values.Value
+import errors.internal.CompilerError
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.UnaryOperator as UnaryOperatorSyntaxTree
 
@@ -34,5 +37,19 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, val value: Val
 		staticValue = calculateStaticResult()
 	}
 
-	private fun calculateStaticResult(): Value? = null //TODO implement
+	private fun calculateStaticResult(): Value? {
+		return when(kind) {
+			OperatorDefinition.Kind.BRACKETS_GET -> null
+			OperatorDefinition.Kind.EXCLAMATION_MARK -> {
+				val booleanValue = value.staticValue as? BooleanLiteral ?: return null
+				BooleanLiteral(source, !booleanValue.value)
+			}
+			OperatorDefinition.Kind.TRIPLE_DOT -> null
+			OperatorDefinition.Kind.MINUS -> {
+				val numberValue = value.staticValue as? NumberLiteral ?: return null
+				NumberLiteral(source, -numberValue.value)
+			}
+			else -> throw CompilerError("Static evaluation is not implemented for operators of kind '$kind'.")
+		}
+	}
 }

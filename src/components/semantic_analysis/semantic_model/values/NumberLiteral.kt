@@ -3,9 +3,10 @@ package components.semantic_analysis.semantic_model.values
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.syntax_parser.syntax_tree.literals.NumberLiteral as NumberLiteralSyntaxTree
+import components.syntax_parser.syntax_tree.general.Element
+import java.math.BigDecimal
 
-class NumberLiteral(override val source: NumberLiteralSyntaxTree, val value: String): LiteralValue(source) {
+class NumberLiteral(override val source: Element, val value: BigDecimal): LiteralValue(source) {
 
 	init {
 		//TODO allow for floating point numbers

@@ -5,11 +5,13 @@ import components.semantic_analysis.semantic_model.values.NumberLiteral as Seman
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.ValueElement
 import components.tokenizer.Word
+import java.math.BigDecimal
 
 class NumberLiteral(word: Word): ValueElement(word) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticNumberLiteralModel {
-		return SemanticNumberLiteralModel(this, getValue())
+		val value = BigDecimal(getValue())
+		return SemanticNumberLiteralModel(this, value)
 	}
 
 	override fun toString(): String {

@@ -119,8 +119,8 @@ open class OperatorDefinition(final override val source: OperatorDefinitionSynta
 		SLASH_EQUALS("/=", false, true, false),
 		SMALLER_THAN("<", false, true, true),
 		GREATER_THAN(">", false, true, true),
-		SMALLER_OR_EQUAL_TO("<=", false, true, true),
-		GREATER_OR_EQUAL_TO(">=", false, true, true),
+		SMALLER_THAN_OR_EQUAL_TO("<=", false, true, true),
+		GREATER_THAN_OR_EQUAL_TO(">=", false, true, true),
 		EQUAL_TO("==", false, true, true),
 		NOT_EQUAL_TO("!=", false, true, true);
 
