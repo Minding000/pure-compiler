@@ -1,12 +1,15 @@
 package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.control_flow.LoopStatement
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
 
 class BlockScope(val parentScope: MutableScope): MutableScope() {
+	var unit: Unit? = null
 	val types = HashMap<String, TypeDefinition>()
 	val values = HashMap<String, ValueDeclaration>()
 
@@ -23,6 +26,10 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 
 	override fun getSurroundingDefinition(): TypeDefinition? {
 		return parentScope.getSurroundingDefinition()
+	}
+
+	override fun getSurroundingLoop(): LoopStatement? {
+		return (unit as? LoopStatement) ?: parentScope.getSurroundingLoop()
 	}
 
 	override fun resolveType(name: String): TypeDefinition? {

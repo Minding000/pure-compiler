@@ -86,6 +86,63 @@ internal class ExecutionFlowAnalysis {
 	}
 
 	@Test
+	fun `considers infinite loops that wont be broken`() {
+		val sourceCode =
+			"""
+				loop {
+					loop {
+					}
+					next
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable")
+	}
+
+	@Test
+	fun `considers infinite while loops that wont be broken`() {
+		val sourceCode =
+			"""
+				loop {
+					loop while yes {
+					}
+					next
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable")
+	}
+
+	@Test
+	fun `ignores finite loops`() {
+		val sourceCode =
+			"""
+				loop {
+					loop while no {
+					}
+					next
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Statement is unreachable")
+	}
+
+	@Test
+	fun `ignores infinite loops that may be broken`() {
+		val sourceCode =
+			"""
+				loop {
+					loop {
+						break
+					}
+					next
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Statement is unreachable")
+	}
+
+	@Test
 	fun `calculates result of trivial conditional casts`() {
 		val sourceCode =
 			"""

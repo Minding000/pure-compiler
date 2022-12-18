@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.scopes
 
+import components.semantic_analysis.semantic_model.control_flow.LoopStatement
 import components.semantic_analysis.semantic_model.definitions.IndexOperatorDefinition
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
@@ -39,6 +40,8 @@ abstract class Scope {
 	}
 
 	open fun getSurroundingDefinition(): TypeDefinition? = null
+
+	open fun getSurroundingLoop(): LoopStatement? = null
 
 	abstract fun resolveType(name: String): TypeDefinition?
 

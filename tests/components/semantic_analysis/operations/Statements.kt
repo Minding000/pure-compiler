@@ -89,4 +89,52 @@ internal class Statements {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Instance declarations can be merged")
 	}
+
+	@Test
+	fun `detects break statements outside of loops`() {
+		val sourceCode =
+			"""
+				break
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Break statements are not allowed outside of loops")
+	}
+
+	@Test
+	fun `ignores break statements inside of loops`() {
+		val sourceCode =
+			"""
+				loop {
+					break
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
+			"Break statements are not allowed outside of loops")
+	}
+
+	@Test
+	fun `detects next statements outside of loops`() {
+		val sourceCode =
+			"""
+				next
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Next statements are not allowed outside of loops")
+	}
+
+	@Test
+	fun `ignores next statements inside of loops`() {
+		val sourceCode =
+			"""
+				loop {
+					next
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
+			"Next statements are not allowed outside of loops")
+	}
 }

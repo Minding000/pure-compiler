@@ -5,12 +5,16 @@ import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.syntax_parser.syntax_tree.control_flow.LoopStatement as LoopStatementSyntaxTree
 
 class LoopStatement(override val source: LoopStatementSyntaxTree, val scope: BlockScope, val generator: Unit?,
 					val body: ErrorHandlingContext): Unit(source) {
+	override var isInterruptingExecution = false
+	var mightGetBrokenOutOf = false
 
 	init {
+		scope.unit = this
 		addUnits(generator, body)
 	}
 
@@ -20,41 +24,15 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, val scope: Blo
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		//TODO implement infinite loop check
-//		if(generator is WhileGenerator) {
-//			val condition = generator.condition.staticValue
-//			if(condition is BooleanLiteral && condition.value) {
-//				var mightGetInterrupted = false
-//				for(statement in body.mainBlock.statements) {
-//					//TODO this is not reliable as some statement might contain a interrupting statement, but not be interrupting for certain itself
-//					if(statement.isInterruptingExecution) {
-//						mightGetInterrupted = true
-//						break
-//					}
-//				}
-//				if(!mightGetInterrupted) {
-//					handleBlockCheck@for(handleBlock in body.handleBlocks) {
-//						for(statement in handleBlock.block.statements) {
-//							if(statement.isInterruptingExecution) {
-//								mightGetInterrupted = true
-//								break@handleBlockCheck
-//							}
-//						}
-//					}
-//				}
-//				if(!mightGetInterrupted) {
-//					if(body.alwaysBlock != null) {
-//						for(statement in body.alwaysBlock.statements) {
-//							if(statement.isInterruptingExecution) {
-//								mightGetInterrupted = true
-//								break
-//							}
-//						}
-//					}
-//				}
-//				if(!mightGetInterrupted)
-//					isInterruptingExecution = true
-//			}
-//		}
+		var hasFiniteGenerator = true
+		if(generator == null) {
+			hasFiniteGenerator = false
+		} else if(generator is WhileGenerator) {
+			val condition = generator.condition.staticValue
+			if(condition is BooleanLiteral && condition.value)
+				hasFiniteGenerator = false
+		}
+		if(!(hasFiniteGenerator || mightGetBrokenOutOf))
+			isInterruptingExecution = true
 	}
 }
