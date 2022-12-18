@@ -84,9 +84,9 @@ class Function(source: Element, val functionType: FunctionType, val name: String
 					continue
 				redeclarations.add(otherImplementation)
 				linter.addMessage(otherImplementation.source, "Redeclaration of function " +
-						"'$name${otherImplementation.signature.toString(false)}', " +
+						"'$otherImplementation', " +
 						"previously declared in ${implementation.source.getStartString()}.",
-					Message.Type.ERROR) //TODO include parent type name if applicable
+					Message.Type.ERROR)
 			}
 		}
 		for(implementation in redeclarations)

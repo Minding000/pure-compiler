@@ -80,7 +80,8 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of function 'sit(Pressure)'")
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Redeclaration of function 'Human.sit(Pressure)'")
 	}
 
 	@Test

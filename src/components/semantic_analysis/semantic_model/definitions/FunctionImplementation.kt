@@ -44,6 +44,10 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		super.linkValues(linter, this.scope)
 	}
 
+	override fun toString(): String {
+		return "${if(parentDefinition == null) "" else "${parentDefinition.name}."}$signatureString"
+	}
+
 //	override fun compile(context: BuildContext): LLVMValueRef {
 //		val argumentTypes = PointerPointer<Pointer>(parameters.size.toLong())
 //		for(parameter in parameters)
