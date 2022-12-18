@@ -24,7 +24,7 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val ba
 		val baseType = baseValue.type
 		if(baseType !is StaticType) {
 			linter.addMessage(source, "Type specifications can only be used on initializers.",
-				Message.Type.WARNING) //TODO write test for this
+				Message.Type.ERROR)
 			return
 		}
 		baseType.withTypeParameters(typeParameters) { specificType ->

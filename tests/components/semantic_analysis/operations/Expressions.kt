@@ -335,7 +335,7 @@ internal class Expressions {
 				Apple as Orange
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Cannot safely cast 'Apple' to 'Orange'.")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Cannot safely cast 'Apple' to 'Orange'")
 	}
 
 	@Test
@@ -395,7 +395,7 @@ internal class Expressions {
 				if(cable?) {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Null check always returns 'yes'.")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Null check always returns 'yes'")
 	}
 
 	@Test
@@ -409,6 +409,36 @@ internal class Expressions {
 				if(noCable?) {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Null check always returns 'no'.")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Null check always returns 'no'")
+	}
+
+	@Test
+	fun `allows type specifications on initializers`() {
+		val sourceCode =
+			"""
+				class Metal {}
+				List class {
+					init
+				}
+				<Metal>List()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
+			"Type specifications can only be used on initializers")
+	}
+
+	@Test
+	fun `disallows type specifications on functions`() {
+		val sourceCode =
+			"""
+				class Metal {}
+				Cable object {
+					to transmit()
+				}
+				Cable.<Metal>transmit()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Type specifications can only be used on initializers")
 	}
 }
