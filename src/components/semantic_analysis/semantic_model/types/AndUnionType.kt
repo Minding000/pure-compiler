@@ -73,6 +73,6 @@ class AndUnionType(override val source: Element, val types: List<Type>): Type(so
 	}
 
 	override fun toString(): String {
-		return types.joinToString(" & ") //TODO use parentheses when the output would be ambiguous
+		return types.joinToString(" & ") { type -> if(type is OrUnionType) "($type)" else "$type" }
 	}
 }
