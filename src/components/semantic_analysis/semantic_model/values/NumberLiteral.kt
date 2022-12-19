@@ -3,16 +3,17 @@ package components.semantic_analysis.semantic_model.values
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.types.OptionalType
+import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
 import util.isRepresentedAsAnInteger
 import java.math.BigDecimal
 
 class NumberLiteral(override val source: Element, val value: BigDecimal): LiteralValue(source) {
-	val isInteger = value.isRepresentedAsAnInteger()
-	val literalType = if(isInteger) Linter.LiteralType.INTEGER else Linter.LiteralType.FLOAT
+	var isInteger = value.isRepresentedAsAnInteger()
+	var literalType = if(isInteger) Linter.LiteralType.INTEGER else Linter.LiteralType.FLOAT
 
 	init {
-		//TODO adapt to the inferred type (integers can be floats)
 		val numberType = ObjectType(source, literalType.className)
 		addUnits(numberType)
 		type = numberType
@@ -20,6 +21,22 @@ class NumberLiteral(override val source: Element, val value: BigDecimal): Litera
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		linter.link(literalType, type)
+	}
+
+	override fun isAssignableTo(targetType: Type?): Boolean {
+		return Linter.LiteralType.INTEGER.matches(targetType) || Linter.LiteralType.FLOAT.matches(targetType)
+	}
+
+	override fun setInferredType(inferredType: Type?) {
+		val inferredBaseType = if(inferredType is OptionalType)
+			inferredType.baseType
+		else
+			inferredType
+		if(Linter.LiteralType.FLOAT.matches(inferredBaseType)) {
+			type = inferredBaseType
+			isInteger = false
+			literalType = Linter.LiteralType.FLOAT
+		}
 	}
 
 	override fun hashCode(): Int {
