@@ -3,6 +3,7 @@ package components.semantic_analysis.types
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.values.VariableValue
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
+import messages.Message
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -30,7 +31,8 @@ internal class TypeParameters {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val baseTypeVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "trash" }
-		val specificType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "recyclingBin" }?.type
+		val specificType = lintResult.find<VariableValue> { variableValue ->
+			variableValue.name == "recyclingBin" }?.type
 		val functionType = specificType?.scope?.resolveValue("put")?.type as? FunctionType
 		assertNotNull(functionType)
 		assertNotNull(baseTypeVariable)
@@ -59,7 +61,8 @@ internal class TypeParameters {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val baseTypeVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrink" }
-		val specificType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrinkSupply" }?.type
+		val specificType = lintResult.find<VariableValue> { variableValue ->
+			variableValue.name == "softDrinkSupply" }?.type
 		val functionType = specificType?.scope?.resolveValue("store")?.type as? FunctionType
 		assertNotNull(functionType)
 		assertNotNull(baseTypeVariable)
@@ -89,7 +92,8 @@ internal class TypeParameters {
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val baseType = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "softDrink" }?.type
-		val specificType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrinkDestination" }?.type
+		val specificType = lintResult.find<VariableValue> { variableValue ->
+			variableValue.name == "softDrinkDestination" }?.type
 		val functionType = specificType?.scope?.resolveValue("get")?.type as? FunctionType
 		val anyType = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.type.toString() == "Any" }?.type
@@ -123,12 +127,47 @@ internal class TypeParameters {
 		val lintResult = TestUtil.lint(sourceCode)
 		val baseType = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "softDrink" }?.type
-		val specificType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrinkSupply" }?.type
+		val specificType = lintResult.find<VariableValue> { variableValue ->
+			variableValue.name == "softDrinkSupply" }?.type
 		val functionType = specificType?.scope?.resolveValue("get")?.type as? FunctionType
 		assertNotNull(functionType)
 		val signature = functionType.resolveSignature()
 		assertNotNull(signature)
 		assertNotNull(baseType)
 		assertTrue(signature.returnType.isAssignableTo(baseType))
+	}
+
+	@Test
+	fun `detects incorrect number of type parameters`() {
+		val sourceCode =
+			"""
+			SoftDrink class {
+			}
+			StorageRoom class {
+				containing Item
+			}
+			val room: <SoftDrink, SoftDrink>StorageRoom
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Number of provided type parameters (2) doesn't match number of declared generic types (1)")
+	}
+
+	@Test
+	fun `detects incompatible type parameters`() {
+		val sourceCode =
+			"""
+			SoftDrink class {
+			}
+			Dish class {
+			}
+			StorageRoom class {
+				containing Item: SoftDrink
+			}
+			val room: <Dish>StorageRoom
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"The type parameter 'Dish' is not assignable to 'Item: SoftDrink'")
 	}
 }
