@@ -23,8 +23,7 @@ internal class OptionalTypes {
 	fun `null can be assigned to optional types`() {
 		val sourceCode =
 			"""
-				Car class {
-				}
+				Car class
 				val car: Car? = null
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

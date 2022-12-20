@@ -28,6 +28,14 @@ abstract class Type(source: Element): Unit(source) {
 
 	open fun onNewOperator(operator: OperatorDefinition) {}
 
+	override fun validate(linter: Linter) {
+		super.validate(linter)
+		//TODO warn if type could be simplified
+		// suggestion
+		//  - Type could be simplified
+		//  -> Simplify to '...'
+	}
+
 	abstract fun accepts(unresolvedSourceType: Type): Boolean
 
 	abstract fun isAssignableTo(unresolvedTargetType: Type): Boolean

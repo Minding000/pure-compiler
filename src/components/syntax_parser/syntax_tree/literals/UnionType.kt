@@ -13,7 +13,6 @@ class UnionType(private val left: TypeElement, private val right: TypeElement, p
 	TypeElement(left.start, right.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticTypeModel {
-		//TODO warn if type could be simplified
 		val types = LinkedList<SemanticTypeModel>()
 		addTypes(linter, scope, types, this)
 		return if(mode == Mode.AND)

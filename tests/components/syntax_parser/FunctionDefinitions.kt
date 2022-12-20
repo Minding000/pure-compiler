@@ -1,8 +1,8 @@
 package components.syntax_parser
 
 import messages.Message
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class FunctionDefinitions {
 
@@ -263,8 +263,7 @@ internal class FunctionDefinitions {
 	fun `parses dynamically sized parameters`() {
 		val sourceCode = """
 				Animal class {
-					to setSounds(...sounds: ...Sound) {
-					}
+					to setSounds(...sounds: ...Sound)
 				}
 			""".trimIndent()
 		val expected =
@@ -273,8 +272,7 @@ internal class FunctionDefinitions {
 					FunctionSection [ to ] {
 						Function [ Identifier { setSounds } ParameterList {
 							Parameter [ ModifierList { Modifier { ... } } ] { Identifier { sounds }: QuantifiedType { ...ObjectType { Identifier { Sound } } } }
-						}: void ] { StatementSection { StatementBlock {
-						} } }
+						}: void ] {  }
 					}
 				} }
             """.trimIndent()

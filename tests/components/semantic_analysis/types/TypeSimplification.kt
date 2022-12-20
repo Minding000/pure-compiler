@@ -76,7 +76,7 @@ internal class TypeSimplification {
 				Horse class {
 					init
 				}
-				Cat class {}
+				Cat class
 				Randomizer object {
 					to chooseRandomElementOf(Element; first: Element, second: Element): Element
 				}
@@ -95,11 +95,11 @@ internal class TypeSimplification {
 				Human class {
 					init
 				}
-				Monkey class {}
+				Monkey class
 				Cat class {
 					init
 				}
-				Horse class {}
+				Horse class
 				Randomizer object {
 					to chooseRandomElementOf(Element; first: Element, second: Element): Element
 				}
@@ -116,8 +116,8 @@ internal class TypeSimplification {
 	fun `creates or union of independent complex types`() {
 		val sourceCode =
 			"""
-				Human class {}
-				Patient class {}
+				Human class
+				Patient class
 				Bob object: Human & Patient {}
 				Horse class {
 					init
@@ -138,11 +138,11 @@ internal class TypeSimplification {
 	fun `simplifies nested unions`() {
 		val sourceCode =
 			"""
-				Human class {}
-				Patient class {}
+				Human class
+				Patient class
 				Bob object: Human & Patient {}
 				val bob: Human & Patient = Bob
-				Horse class {}
+				Horse class
 				Ferdinant object: Horse & Patient {}
 				val ferdinant: Horse & Patient = Ferdinant
 				Randomizer object {

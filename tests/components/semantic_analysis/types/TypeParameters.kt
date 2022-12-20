@@ -1,8 +1,8 @@
 package components.semantic_analysis.types
 
 import components.semantic_analysis.semantic_model.types.FunctionType
-import components.semantic_analysis.semantic_model.values.VariableValue
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
+import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -141,8 +141,7 @@ internal class TypeParameters {
 	fun `detects incorrect number of type parameters`() {
 		val sourceCode =
 			"""
-			SoftDrink class {
-			}
+			SoftDrink class
 			StorageRoom class {
 				containing Item
 			}
@@ -157,10 +156,8 @@ internal class TypeParameters {
 	fun `detects incompatible type parameters`() {
 		val sourceCode =
 			"""
-			SoftDrink class {
-			}
-			Dish class {
-			}
+			SoftDrink class
+			Dish class
 			StorageRoom class {
 				containing Item: SoftDrink
 			}

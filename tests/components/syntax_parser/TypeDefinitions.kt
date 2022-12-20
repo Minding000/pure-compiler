@@ -1,12 +1,22 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class TypeDefinitions {
 
 	@Test
-	fun `parses class definitions`() {
+	fun `parses class definitions without body`() {
+		val sourceCode = "Animal class"
+		val expected =
+			"""
+				TypeDefinition [ Identifier { Animal } class ] {  }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses class definitions with body`() {
 		val sourceCode = "Animal class {}"
 		val expected =
 			"""
@@ -17,7 +27,17 @@ internal class TypeDefinitions {
 	}
 
 	@Test
-	fun `parses object definitions`() {
+	fun `parses object definitions without body`() {
+		val sourceCode = "Dog object"
+		val expected =
+			"""
+				TypeDefinition [ Identifier { Dog } object ] {  }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses object definitions with body`() {
 		val sourceCode = "Dog object {}"
 		val expected =
 			"""
@@ -115,14 +135,13 @@ internal class TypeDefinitions {
 		val sourceCode =
 			"""
 				String class {
-					Index class {}
+					Index class
 				}
             """.trimIndent()
 		val expected =
 			"""
 				TypeDefinition [ Identifier { String } class ] { TypeBody {
-					TypeDefinition [ Identifier { Index } class ] { TypeBody {
-					} }
+					TypeDefinition [ Identifier { Index } class ] {  }
 				} }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -130,12 +149,11 @@ internal class TypeDefinitions {
 
 	@Test
 	fun `parses abstract modifiers`() {
-		val sourceCode = "abstract Goldfish class {}"
+		val sourceCode = "abstract Goldfish class"
 		val expected =
 			"""
 				ModifierSection [ ModifierList { Modifier { abstract } } ] {
-					TypeDefinition [ Identifier { Goldfish } class ] { TypeBody {
-					} }
+					TypeDefinition [ Identifier { Goldfish } class ] {  }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -143,12 +161,11 @@ internal class TypeDefinitions {
 
 	@Test
 	fun `parses native modifiers`() {
-		val sourceCode = "native Goldfish class {}"
+		val sourceCode = "native Goldfish class"
 		val expected =
 			"""
 				ModifierSection [ ModifierList { Modifier { native } } ] {
-					TypeDefinition [ Identifier { Goldfish } class ] { TypeBody {
-					} }
+					TypeDefinition [ Identifier { Goldfish } class ] {  }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)

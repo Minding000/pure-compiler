@@ -54,7 +54,7 @@ internal class FunctionTypes {
 	fun `can not be assigned to a type input wise narrower function type`() {
 		val sourceCode =
 			"""
-				Paper class {}
+				Paper class
 				Letter class: Paper {}
 				Stamper class {
 					to stamp(L: Letter; letter: L): L
@@ -70,7 +70,7 @@ internal class FunctionTypes {
 	fun `can not be assigned to a value input wise narrower function type`() {
 		val sourceCode =
 			"""
-				Number class {}
+				Number class
 				Int class: Number {}
 				Tree class {
 					to grow(amount: Int)
@@ -86,7 +86,7 @@ internal class FunctionTypes {
 	fun `can not be assigned to a value output wise narrower function type`() {
 		val sourceCode =
 			"""
-				Number class {}
+				Number class
 				Int class: Number {}
 				CashMachine class {
 					to getBalance(): Number
@@ -103,7 +103,7 @@ internal class FunctionTypes {
 	fun `can be assigned to a type input wise broader function type`() {
 		val sourceCode =
 			"""
-				Paper class {}
+				Paper class
 				Letter class: Paper {}
 				Stamper class {
 					to stamp(P: Paper; paper: P): P
@@ -118,7 +118,7 @@ internal class FunctionTypes {
 	fun `can be assigned to a value input wise boarder function type`() {
 		val sourceCode =
 			"""
-				Number class {}
+				Number class
 				Int class: Number {}
 				Tree class {
 					to grow(amount: Number)
@@ -133,7 +133,7 @@ internal class FunctionTypes {
 	fun `can be assigned to a value output wise boarder function type`() {
 		val sourceCode =
 			"""
-				Number class {}
+				Number class
 				Int class: Number {}
 				CashMachine class {
 					to getBalance(): Int
@@ -148,8 +148,8 @@ internal class FunctionTypes {
 	fun `can be assigned to a function type with more signatures`() {
 		val sourceCode =
 			"""
-				Body class {}
-				Error class {}
+				Body class
+				Error class
 				DataModel class {
 					to process(result: Body | Error) {}
 				}

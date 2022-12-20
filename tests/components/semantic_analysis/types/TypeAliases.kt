@@ -10,7 +10,7 @@ internal class TypeAliases {
 	fun `complex types can be assigned to type aliases`() {
 		val sourceCode =
 			"""
-				Event class {}
+				Event class
 				alias EventHandler = (Event) =>|
 				val complexTypeValue: (Event) =>|
 				var typeAliasValue: EventHandler = complexTypeValue
@@ -23,7 +23,7 @@ internal class TypeAliases {
 	fun `type aliases can be assigned to complex types`() {
 		val sourceCode =
 			"""
-				Event class {}
+				Event class
 				alias EventHandler = (Event) =>|
 				val typeAliasValue: EventHandler
 				var complexTypeValue: (Event) =>| = typeAliasValue

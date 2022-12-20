@@ -8,14 +8,14 @@ internal class AbstractModifier {
 
 	@Test
 	fun `is allowed on classes`() {
-		val sourceCode = "abstract Goldfish class {}"
+		val sourceCode = "abstract Goldfish class"
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
 	}
 
 	@Test
 	fun `is not allowed on objects`() {
-		val sourceCode = "abstract Earth object {}"
+		val sourceCode = "abstract Earth object"
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
 	}
@@ -68,7 +68,7 @@ internal class AbstractModifier {
 	@Test
 	fun `emits error for abstract member in non-abstract class`() {
 		val sourceCode = """
-			Int class {}
+			Int class
 			List class {
 				abstract val id: Int
 				abstract to clear()
@@ -84,7 +84,7 @@ internal class AbstractModifier {
 	@Test
 	fun `doesn't emit error for abstract member in abstract class`() {
 		val sourceCode = """
-			Int class {}
+			Int class
 			abstract List class {
 				abstract val id: Int
 				abstract to clear()
@@ -124,7 +124,7 @@ internal class AbstractModifier {
 	@Test
 	fun `emits error for non-abstract subclasses that don't implement inherited abstract members`() {
 		val sourceCode = """
-			Int class {}
+			Int class
 			abstract Collection class {
 				abstract val size: Int
 			}

@@ -2,10 +2,10 @@ package components.semantic_analysis.resolution
 
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.types.ObjectType
-import components.semantic_analysis.semantic_model.values.*
-import util.TestUtil
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import messages.Message
 import org.junit.jupiter.api.Test
+import util.TestUtil
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -25,7 +25,7 @@ internal class TypeResolution {
 	fun `resolves types class`() {
 		val sourceCode =
 			"""
-				Bird class {}
+				Bird class
 				var bird: Bird
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -37,7 +37,7 @@ internal class TypeResolution {
 	fun `resolves types object`() {
 		val sourceCode =
 			"""
-				BirdFeeder object {}
+				BirdFeeder object
 				var birdFeeder: BirdFeeder
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -93,7 +93,7 @@ internal class TypeResolution {
 					init
 					to add(element: Element) {}
 				}
-				Country class {}
+				Country class
 				Germany object: Country {}
 				val list = <Country>List()
 				list.add(Germany)

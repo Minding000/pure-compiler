@@ -13,8 +13,7 @@ internal class OrUnionTypes {
 				Bus class {
 					init
 				}
-				Car class {
-				}
+				Car class
 				val preferredVehicle: Bus | Car = Bus()
 				val dailyCommuteVehicle: Bus | Car = preferredVehicle
             """.trimIndent()

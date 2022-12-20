@@ -33,7 +33,7 @@ internal class FunctionResolution {
 	fun `resolves calls to super function`() {
 		val sourceCode =
 			"""
-				Speed class {}
+				Speed class
 				Door class {
 					to open() {}
 				}
@@ -125,7 +125,7 @@ internal class FunctionResolution {
 	fun `emits error for function calls with wrong parameters`() {
 		val sourceCode =
 			"""
-				Bright object {}
+				Bright object
 				Light object {
 					to shine() {}
 				}

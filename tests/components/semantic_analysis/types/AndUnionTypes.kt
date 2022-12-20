@@ -13,7 +13,7 @@ internal class AndUnionTypes {
 				StreetVehicle class {
 					init
 				}
-				PublicTransport class {}
+				PublicTransport class
 				Bus object: StreetVehicle & PublicTransport {}
 				val preferredVehicle: StreetVehicle & PublicTransport = Bus
 				val dailyCommuteVehicle: StreetVehicle & PublicTransport = preferredVehicle

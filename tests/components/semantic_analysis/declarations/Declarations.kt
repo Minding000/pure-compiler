@@ -12,8 +12,8 @@ internal class Declarations {
 	fun `emits error for incompatible source expression type`() {
 		val sourceCode =
 			"""
-				Toast class {}
-				Banana object {}
+				Toast class
+				Banana object
 				var toast: Toast = Banana
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -34,7 +34,7 @@ internal class Declarations {
 	fun `detects shadowed variables`() {
 		val sourceCode =
 			"""
-				Handler class {}
+				Handler class
 				val defaultHandler: Handler
 				Event class {
 					const defaultHandler: Handler
@@ -48,7 +48,7 @@ internal class Declarations {
 	fun `detects redeclarations of variables`() {
 		val sourceCode =
 			"""
-				Car class {}
+				Car class
 				var car: Car
 				val car: Car
             """.trimIndent()
@@ -60,7 +60,7 @@ internal class Declarations {
 	fun `detects redeclarations of types`() {
 		val sourceCode =
 			"""
-				Animal class {}
+				Animal class
 				Animal enum {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -71,7 +71,7 @@ internal class Declarations {
 	fun `detects redeclarations of function signatures`() {
 		val sourceCode =
 			"""
-				Pressure class {}
+				Pressure class
 				alias P = Pressure
 				Human class {
 					to sit(): Pressure {}
@@ -88,7 +88,7 @@ internal class Declarations {
 	fun `detects redeclarations of operator signatures`() {
 		val sourceCode =
 			"""
-				Time class {}
+				Time class
 				alias T = Time
 				Human class {
 					operator [start: T, end: T](time: T) {}
@@ -104,7 +104,7 @@ internal class Declarations {
 	fun `detects invalid modifiers`() {
 		val sourceCode =
 			"""
-				overriding House class {}
+				overriding House class
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
@@ -114,7 +114,7 @@ internal class Declarations {
 	fun `detects duplicate modifiers`() {
 		val sourceCode =
 			"""
-				native native Memory class {}
+				native native Memory class
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Duplicate 'native' modifier")
@@ -124,7 +124,7 @@ internal class Declarations {
 	fun `handle block declares error variable`() {
 		val sourceCode =
 			"""
-				IOError class {}
+				IOError class
 				Config class {
 					to saveToDisk() {
 					} handle error: IOError {

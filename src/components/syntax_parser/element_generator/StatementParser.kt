@@ -1,22 +1,23 @@
 package components.syntax_parser.element_generator
 
-import components.tokenizer.Word
-import components.tokenizer.WordAtom
-import components.tokenizer.WordDescriptor
-import components.tokenizer.WordType
-import errors.user.UnexpectedWordError
-import components.syntax_parser.syntax_tree.operations.*
 import components.syntax_parser.syntax_tree.access.IndexAccess
 import components.syntax_parser.syntax_tree.access.MemberAccess
 import components.syntax_parser.syntax_tree.control_flow.*
 import components.syntax_parser.syntax_tree.definitions.*
 import components.syntax_parser.syntax_tree.definitions.sections.*
 import components.syntax_parser.syntax_tree.general.*
-import components.syntax_parser.syntax_tree.literals.*
-import source_structure.Position
-import components.syntax_parser.syntax_tree.general.StatementBlock
+import components.syntax_parser.syntax_tree.literals.Identifier
+import components.syntax_parser.syntax_tree.operations.Assignment
+import components.syntax_parser.syntax_tree.operations.BinaryModification
+import components.syntax_parser.syntax_tree.operations.UnaryModification
+import components.tokenizer.Word
+import components.tokenizer.WordAtom
+import components.tokenizer.WordDescriptor
+import components.tokenizer.WordType
+import errors.user.UnexpectedWordError
 import errors.user.UserError
 import messages.Message
+import source_structure.Position
 import java.util.*
 
 class StatementParser(private val elementGenerator: ElementGenerator): Generator() {
@@ -486,9 +487,11 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * TypeBody:
-	 *   { [<MemberDeclaration>\n]... }
+	 *   [{ [<MemberDeclaration>\n]... }]
 	 */
-	private fun parseTypeBody(): TypeBody {
+	private fun parseTypeBody(): TypeBody? {
+		if(currentWord?.type != WordAtom.OPENING_BRACE)
+			return null
 		val start = consume(WordAtom.OPENING_BRACE).start
 		val members = LinkedList<Element>()
 		while(currentWord?.type != WordAtom.CLOSING_BRACE) {

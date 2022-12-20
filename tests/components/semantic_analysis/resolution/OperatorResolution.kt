@@ -86,7 +86,7 @@ internal class OperatorResolution {
 				Position class {
 					init
 				}
-				ChessBoard object {}
+				ChessBoard object
 				val firstField = ChessBoard[Position()]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -119,7 +119,7 @@ internal class OperatorResolution {
 				Position class {
 					init
 				}
-				Field class {}
+				Field class
 				ChessBoard object {
 					native operator[position: Position](): Field
 				}
@@ -137,7 +137,7 @@ internal class OperatorResolution {
 				Int class {
 					init
 				}
-				Hinge class {}
+				Hinge class
 				Door class {
 					operator [index: Int](): Hinge {}
 				}
@@ -163,7 +163,7 @@ internal class OperatorResolution {
 				Int class {
 					init
 				}
-				Hinge class {}
+				Hinge class
 				Door class {
 					operator [index: Int](): Hinge {}
 				}
@@ -186,7 +186,7 @@ internal class OperatorResolution {
 	fun `detects missing overriding keyword on operator`() {
 		val sourceCode =
 			"""
-				Int class {}
+				Int class
 				ShoppingList class {
 					operator [index: Int](): Int {}
 				}
@@ -205,7 +205,7 @@ internal class OperatorResolution {
 	fun `allows for operators to be overridden`() {
 		val sourceCode =
 			"""
-				Int class {}
+				Int class
 				ShoppingList class {
 					operator [index: Int](): Int {}
 				}
@@ -238,8 +238,8 @@ internal class OperatorResolution {
 	fun `emits error for operator calls with wrong parameters`() {
 		val sourceCode =
 			"""
-				Int class {}
-				Bright object {}
+				Int class
+				Bright object
 				List object {
 					operator [key: Int]: Int
 				}
@@ -257,7 +257,7 @@ internal class OperatorResolution {
 				Int class {
 					init
 				}
-				Boolean class {}
+				Boolean class
 				List class {
 					containing Element
 

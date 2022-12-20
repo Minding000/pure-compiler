@@ -66,8 +66,7 @@ internal class ValueResolution {
 				Door class {
 					val isOpen = yes
 				}
-				GlassDoor object: Door {
-				}
+				GlassDoor object: Door
 				GlassDoor.isOpen
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

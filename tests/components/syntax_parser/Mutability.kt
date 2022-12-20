@@ -1,7 +1,7 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class Mutability {
 
@@ -38,13 +38,12 @@ internal class Mutability {
 	@Test
 	fun `parses immutable type definitions`() {
 		val sourceCode = """
-			immutable MainMonitor object {}
+			immutable MainMonitor object
 			""".trimIndent()
 		val expected =
 			"""
 				ModifierSection [ ModifierList { Modifier { immutable } } ] {
-					TypeDefinition [ Identifier { MainMonitor } object ] { TypeBody {
-					} }
+					TypeDefinition [ Identifier { MainMonitor } object ] {  }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)

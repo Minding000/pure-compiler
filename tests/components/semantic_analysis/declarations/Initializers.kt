@@ -71,7 +71,7 @@ internal class Initializers {
 	fun `detects redeclarations of initializers signatures`() {
 		val sourceCode =
 			"""
-				Trait class {}
+				Trait class
 				alias T = Trait
 				Human class {
 					init

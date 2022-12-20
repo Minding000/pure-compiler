@@ -1,14 +1,14 @@
 package components.semantic_analysis.operations
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.control_flow.Try
 import components.semantic_analysis.semantic_model.definitions.Class
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.operations.Cast
+import components.semantic_analysis.semantic_model.operations.MemberAccess
+import components.semantic_analysis.semantic_model.operations.NullCheck
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.OptionalType
-import components.semantic_analysis.semantic_model.operations.Cast
-import components.semantic_analysis.semantic_model.operations.NullCheck
 import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
 import org.junit.jupiter.api.Test
@@ -33,7 +33,7 @@ internal class Expressions {
 	fun `returns optional type from optional member access`() {
 		val sourceCode =
 			"""
-				Brightness class {}
+				Brightness class
 				Star class {
 					var brightness: Brightness
 					init
@@ -50,7 +50,7 @@ internal class Expressions {
 	fun `doesn't wrap optionally accessed optional members in an additional optional type`() {
 		val sourceCode =
 			"""
-				Seat class {}
+				Seat class
 				Car class {
 					init
 					var driverSeat: Seat? = null
@@ -101,11 +101,11 @@ internal class Expressions {
 	fun `returns new type after force cast`() {
 		val sourceCode =
 			"""
-				Vehicle class {}
+				Vehicle class
 				Bus class: Vehicle {
 					init
 				}
-				Cinema class {}
+				Cinema class
 				val roomWithSeats: Bus|Cinema = Bus()
 				roomWithSeats as! Vehicle
             """.trimIndent()
@@ -119,11 +119,11 @@ internal class Expressions {
 	fun `returns boolean type for conditional casts`() {
 		val sourceCode =
 			"""
-				Vehicle class {}
+				Vehicle class
 				Bus class: Vehicle {
 					init
 				}
-				Cinema class {}
+				Cinema class
 				val roomWithSeats: Bus|Cinema = Bus()
 				val isRoomVehicle = roomWithSeats is Vehicle
 				val isRoomNotVehicle = roomWithSeats is! Vehicle
@@ -139,11 +139,11 @@ internal class Expressions {
 	fun `declares variable in conditional casts without negation`() {
 		val sourceCode =
 			"""
-				Vehicle class {}
+				Vehicle class
 				Bus class: Vehicle {
 					init
 				}
-				Cinema class {}
+				Cinema class
 				val roomWithSeats: Bus|Cinema = Bus()
 				if roomWithSeats is vehicle: Vehicle {
 					vehicle
@@ -158,11 +158,11 @@ internal class Expressions {
 	fun `declares variable in conditional casts with negation`() {
 		val sourceCode =
 			"""
-				Vehicle class {}
+				Vehicle class
 				Bus class: Vehicle {
 					init
 				}
-				Cinema class {}
+				Cinema class
 				val roomWithSeats: Bus|Cinema = Bus()
 				loop {
 					if roomWithSeats is! vehicle: Vehicle
@@ -179,7 +179,7 @@ internal class Expressions {
 	fun `cast variable is not available before cast`() {
 		val sourceCode =
 			"""
-				Car class {}
+				Car class
 				{
 					val something: Car
 					car
@@ -196,7 +196,7 @@ internal class Expressions {
 	fun `cast variable is not available in negative branch`() {
 		val sourceCode =
 			"""
-				Car class {}
+				Car class
 				val something: Car
 				if something is car: Car {
 				} else {
@@ -212,7 +212,7 @@ internal class Expressions {
 	fun `cast variable is not available after if statement`() {
 		val sourceCode =
 			"""
-				Car class {}
+				Car class
 				val something: Car
 				if something is car: Car {}
 				car
@@ -226,7 +226,7 @@ internal class Expressions {
 	fun `cast variable is available after if statement if negative branch interrupts execution`() {
 		val sourceCode =
 			"""
-				Car class {}
+				Car class
 				val something: Car
 				loop {
 					if something is car: Car {
@@ -246,7 +246,7 @@ internal class Expressions {
 	fun `negated cast variable is not available before cast`() {
 		val sourceCode =
 			"""
-				Car class {}
+				Car class
 				{
 					val something: Car
 					car
@@ -263,7 +263,7 @@ internal class Expressions {
 	fun `negated cast variable is not available in positive branch`() {
 		val sourceCode =
 			"""
-				Car class {}
+				Car class
 				val something: Car
 				if something is! car: Car {
 					car
@@ -278,7 +278,7 @@ internal class Expressions {
 	fun `negated cast variable is not available after if statement`() {
 		val sourceCode =
 			"""
-				Car class {}
+				Car class
 				val something: Car
 				if something is! car: Car {}
 				car
@@ -292,7 +292,7 @@ internal class Expressions {
 	fun `negated cast variable is available after if statement if positive branch interrupts execution`() {
 		val sourceCode =
 			"""
-				Car class {}
+				Car class
 				val something: Car
 				loop {
 					if something is car: Car
@@ -310,11 +310,11 @@ internal class Expressions {
 	fun `returns optional new type after optional cast`() {
 		val sourceCode =
 			"""
-				Vehicle class {}
+				Vehicle class
 				Bus class: Vehicle {
 					init
 				}
-				Cinema class {}
+				Cinema class
 				val roomWithSeats: Bus|Cinema = Bus()
 				roomWithSeats as? Vehicle
             """.trimIndent()
@@ -330,8 +330,8 @@ internal class Expressions {
 	fun `detects missing casts conditions`() {
 		val sourceCode =
 			"""
-				Orange class {}
-				Apple object {}
+				Orange class
+				Apple object
 				Apple as Orange
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -342,7 +342,7 @@ internal class Expressions {
 	fun `detects unnecessary cast conditions`() {
 		val sourceCode =
 			"""
-				Fruit class {}
+				Fruit class
 				Apple object: Fruit {}
 				Apple as? Fruit
             """.trimIndent()
@@ -354,7 +354,7 @@ internal class Expressions {
 	fun `returns source expression type from uncheck try`() {
 		val sourceCode =
 			"""
-				PrintResult class {}
+				PrintResult class
 				Printer object {
 					to print(): PrintResult {}
 				}
@@ -371,7 +371,7 @@ internal class Expressions {
 	fun `returns optional type from optional try`() {
 		val sourceCode =
 			"""
-				PrintResult class {}
+				PrintResult class
 				Printer object {
 					to print(): PrintResult {}
 				}

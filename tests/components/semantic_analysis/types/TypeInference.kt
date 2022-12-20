@@ -95,7 +95,7 @@ internal class TypeInference {
 					instances TCP, UDP
 					init
 				}
-				Port class {}
+				Port class
 				NetworkInterface object {
 					to getOpenPort(protocol: TransportLayerProtocol): Port {}
 				}
@@ -116,7 +116,7 @@ internal class TypeInference {
 					instances TCP, UDP
 					init
 				}
-				Ports class {}
+				Ports class
 				NetworkInterface object {
 					operator [protocol: TransportLayerProtocol](): Ports {}
 				}
@@ -156,7 +156,7 @@ internal class TypeInference {
 	fun `allows for recursive use of generic types`() {
 		val sourceCode =
 			"""
-				Receipt class {}
+				Receipt class
 				List class {
 					containing Item
 					var backup: <Item>List? = null
@@ -281,7 +281,7 @@ internal class TypeInference {
 	fun `infers generic type in function call`() {
 		val sourceCode =
 			"""
-				Letter class {}
+				Letter class
 				PostCard class: Letter {
 					init
 				}
@@ -306,7 +306,7 @@ internal class TypeInference {
 	fun `infers generic type in function call with optional type usage`() {
 		val sourceCode =
 			"""
-				Letter class {}
+				Letter class
 				PostCard class: Letter {
 					init
 				}
@@ -331,7 +331,7 @@ internal class TypeInference {
 	fun `infers generic type in operator call`() {
 		val sourceCode =
 			"""
-				IpAddress class {}
+				IpAddress class
 				Ipv4Address class: IpAddress {
 					init
 				}
