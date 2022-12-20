@@ -2,7 +2,10 @@ package components.semantic_analysis.semantic_model.types
 
 //import org.bytedeco.llvm.LLVM.LLVMTypeRef
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.*
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
+import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
+import components.semantic_analysis.semantic_model.definitions.TypeAlias
+import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
@@ -25,8 +28,6 @@ abstract class Type(source: Element): Unit(source) {
 	open fun onNewValue(value: InterfaceMember) {}
 
 	open fun onNewInitializer(initializer: InitializerDefinition) {}
-
-	open fun onNewOperator(operator: OperatorDefinition) {}
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)

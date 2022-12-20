@@ -1,16 +1,17 @@
 package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.IndexOperatorDefinition as SemanticIndexOperatorDefinitionModel
-import components.semantic_analysis.semantic_model.definitions.OperatorDefinition as SemanticOperatorDefinitionModel
+import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import messages.Message
 import components.syntax_parser.syntax_tree.definitions.sections.OperatorSection
 import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.general.StatementSection
 import components.syntax_parser.syntax_tree.general.TypeElement
 import components.tokenizer.WordAtom
+import errors.internal.CompilerError
+import messages.Message
+import components.semantic_analysis.semantic_model.values.Operator.Kind as OperatorKind
 
 class OperatorDefinition(private val operator: Operator, private val parameterList: ParameterList?,
 						 private val body: StatementSection?, private var returnType: TypeElement?):
@@ -18,12 +19,15 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 	lateinit var parent: OperatorSection
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.NATIVE, WordAtom.OVERRIDING)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.MUTATING, WordAtom.NATIVE, WordAtom.OVERRIDING)
 	}
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticOperatorDefinitionModel {
+	override fun concretize(linter: Linter, scope: MutableScope): FunctionImplementation {
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
+		val surroundingTypeDefinition = scope.getSurroundingDefinition()
+			?: throw CompilerError("Operator expected surrounding type definition.")
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
+		val isMutating = parent.containsModifier(WordAtom.MUTATING)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val operatorScope = BlockScope(scope)
@@ -36,20 +40,22 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 					"Operators (except for the index operator) can not be generic.", Message.Type.WARNING)
 			}
 		}
-		val parameters = parameterList?.concretizeParameters(linter, operatorScope) ?: listOf()
+		var parameters = parameterList?.concretizeParameters(linter, operatorScope) ?: listOf()
 		val body = body?.concretize(linter, operatorScope)
 		val returnType = returnType?.concretize(linter, operatorScope)
-		val operatorDefinition = if(operator is IndexOperator) {
-			val genericParameters = operator.concretizeGenerics(linter, operatorScope) ?: listOf()
-			val indices = operator.concretizeIndices(linter, operatorScope)
-			SemanticIndexOperatorDefinitionModel(this, operatorScope, genericParameters, indices, parameters,
-				body, returnType, isAbstract, isNative, isOverriding)
-		} else {
-			SemanticOperatorDefinitionModel(this, operator.getKind(), operatorScope, parameters,
-				body, returnType, isAbstract, isNative, isOverriding)
-		}
-		scope.declareOperator(linter, operatorDefinition)
-		return operatorDefinition
+		val kind = if(operator is IndexOperator) {
+			if(parameters.isEmpty())
+				OperatorKind.BRACKETS_GET
+			else
+				OperatorKind.BRACKETS_SET
+		} else operator.getKind()
+		val genericParameters = (operator as? IndexOperator)?.concretizeGenerics(linter, operatorScope) ?: listOf()
+		if(operator is IndexOperator)
+			parameters = operator.concretizeIndices(linter, operatorScope) + parameters
+		val implementation = FunctionImplementation(this, surroundingTypeDefinition, operatorScope,
+			genericParameters, parameters, body, returnType, isAbstract, isMutating, isNative, isOverriding)
+		scope.declareOperator(linter, kind, implementation)
+		return implementation
 	}
 
 	override fun toString(): String {

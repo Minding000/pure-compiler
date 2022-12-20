@@ -1,16 +1,15 @@
 package components.semantic_analysis.semantic_model.operations
 
-import errors.user.SignatureResolutionAmbiguityError
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.Value
+import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.UnaryModification as UnaryModificationSyntaxTree
 
-class UnaryModification(override val source: UnaryModificationSyntaxTree, val target: Value, val kind: OperatorDefinition.Kind):
-	Unit(source) {
+class UnaryModification(override val source: UnaryModificationSyntaxTree, val target: Value, val kind: Operator.Kind): Unit(source) {
 
 	init {
 		addUnits(target)

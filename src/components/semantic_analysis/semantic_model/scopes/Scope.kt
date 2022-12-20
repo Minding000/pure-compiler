@@ -1,12 +1,13 @@
 package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.semantic_model.control_flow.LoopStatement
-import components.semantic_analysis.semantic_model.definitions.*
+import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
+import components.semantic_analysis.semantic_model.definitions.FunctionSignature
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.InterfaceMember
-import components.semantic_analysis.semantic_model.values.Value
-import components.semantic_analysis.semantic_model.values.VariableValue
-import components.semantic_analysis.semantic_model.values.ValueDeclaration
+import components.semantic_analysis.semantic_model.values.*
 import java.util.*
 
 abstract class Scope {
@@ -31,11 +32,6 @@ abstract class Scope {
 			subscriber.onNewInitializer(initializer)
 	}
 
-	protected fun onNewOperator(operator: OperatorDefinition) {
-		for(subscriber in subscribedTypes)
-			subscriber.onNewOperator(operator)
-	}
-
 	open fun getSurroundingDefinition(): TypeDefinition? = null
 
 	open fun getSurroundingFunction(): FunctionImplementation? = null
@@ -48,18 +44,27 @@ abstract class Scope {
 
 	abstract fun resolveValue(name: String): ValueDeclaration?
 
-	fun resolveOperator(kind: OperatorDefinition.Kind): OperatorDefinition?
+	fun resolveOperator(kind: Operator.Kind): FunctionSignature?
 		= resolveOperator(kind, listOf())
 
-	fun resolveOperator(kind: OperatorDefinition.Kind, suppliedType: Value): OperatorDefinition?
+	fun resolveOperator(kind: Operator.Kind, suppliedType: Value): FunctionSignature?
 		= resolveOperator(kind, listOf(suppliedType))
 
-	open fun resolveOperator(kind: OperatorDefinition.Kind, suppliedValues: List<Value>): OperatorDefinition? = null
+	open fun resolveOperator(kind: Operator.Kind, suppliedValues: List<Value>): FunctionSignature? {
+		val operator = resolveValue(kind.stringRepresentation)?.type as? FunctionType
+		return operator?.resolveSignature(suppliedValues)
+	}
 
 	fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
-							 suppliedParameterValue: Value?): IndexOperatorDefinition?
+							 suppliedParameterValue: Value?): FunctionSignature?
 		= resolveIndexOperator(suppliedTypes, suppliedIndexValues, listOfNotNull(suppliedParameterValue))
 
 	open fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
-								  suppliedParameterValues: List<Value>): IndexOperatorDefinition? = null
+								  suppliedParameterValues: List<Value>): FunctionSignature? {
+		val kind = if(suppliedParameterValues.isEmpty())
+			Operator.Kind.BRACKETS_GET
+		else
+			Operator.Kind.BRACKETS_SET
+		return resolveOperator(kind, suppliedIndexValues)
+	}
 }

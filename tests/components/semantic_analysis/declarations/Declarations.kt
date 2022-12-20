@@ -97,7 +97,7 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of operator 'Human[Time](): Time'")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of operator 'Human[Time]: Time'")
 	}
 
 	@Test

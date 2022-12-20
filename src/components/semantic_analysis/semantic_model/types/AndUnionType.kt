@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
-import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
@@ -34,10 +33,6 @@ class AndUnionType(override val source: Element, val types: List<Type>): Type(so
 
 	override fun onNewValue(value: InterfaceMember) {
 		this.scope.addValue(value)
-	}
-
-	override fun onNewOperator(operator: OperatorDefinition) {
-		this.scope.addOperator(operator)
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

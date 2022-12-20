@@ -1,17 +1,17 @@
 package components.semantic_analysis.semantic_model.operations
 
-import errors.user.SignatureResolutionAmbiguityError
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.semantic_analysis.semantic_model.values.NumberLiteral
+import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.Value
 import errors.internal.CompilerError
+import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.UnaryOperator as UnaryOperatorSyntaxTree
 
-class UnaryOperator(override val source: UnaryOperatorSyntaxTree, val value: Value, val kind: OperatorDefinition.Kind):
+class UnaryOperator(override val source: UnaryOperatorSyntaxTree, val value: Value, val kind: Operator.Kind):
 	Value(source) {
 
 	init {
@@ -39,13 +39,13 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, val value: Val
 
 	private fun calculateStaticResult(): Value? {
 		return when(kind) {
-			OperatorDefinition.Kind.BRACKETS_GET -> null
-			OperatorDefinition.Kind.EXCLAMATION_MARK -> {
+			Operator.Kind.BRACKETS_GET -> null
+			Operator.Kind.EXCLAMATION_MARK -> {
 				val booleanValue = value.staticValue as? BooleanLiteral ?: return null
 				BooleanLiteral(source, !booleanValue.value)
 			}
-			OperatorDefinition.Kind.TRIPLE_DOT -> null
-			OperatorDefinition.Kind.MINUS -> {
+			Operator.Kind.TRIPLE_DOT -> null
+			Operator.Kind.MINUS -> {
 				val numberValue = value.staticValue as? NumberLiteral ?: return null
 				NumberLiteral(source, -numberValue.value)
 			}

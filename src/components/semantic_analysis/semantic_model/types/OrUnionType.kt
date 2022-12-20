@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.types
 
-import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
@@ -59,13 +58,6 @@ class OrUnionType(override val source: Element, val types: List<Type>): Type(sou
 			if(!part.scope.hasValue(value))
 				return
 		this.scope.addValue(value)
-	}
-
-	override fun onNewOperator(operator: OperatorDefinition) {
-		for(part in types)
-			if(!part.scope.hasOperator(operator))
-				return
-		this.scope.addOperator(operator)
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

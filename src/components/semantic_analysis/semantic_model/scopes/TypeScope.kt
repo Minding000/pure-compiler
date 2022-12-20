@@ -8,7 +8,6 @@ import components.semantic_analysis.semantic_model.values.Function
 import errors.internal.CompilerError
 import messages.Message
 import java.util.*
-import kotlin.collections.LinkedHashMap
 
 class TypeScope(private val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
 	lateinit var typeDefinition: TypeDefinition
@@ -16,7 +15,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	private val memberDeclarations = HashMap<String, MemberDeclaration>()
 	private val interfaceMembers = HashMap<String, InterfaceMember>()
 	private val initializers = LinkedList<InitializerDefinition>()
-	private val operators = LinkedList<OperatorDefinition>()
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>, superScope: InterfaceScope?): TypeScope {
 		val specificTypeScope = TypeScope(parentScope, superScope)
@@ -31,8 +29,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			specificTypeScope.interfaceMembers[name] = interfaceMember.withTypeSubstitutions(typeSubstitution)
 		for(initializer in initializers)
 			specificTypeScope.initializers.add(initializer.withTypeSubstitutions(typeSubstitution))
-		for(operator in operators)
-			specificTypeScope.operators.add(operator.withTypeSubstitutions(typeSubstitution))
 		return specificTypeScope
 	}
 
@@ -45,8 +41,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			type.onNewValue(interfaceMember)
 		for(initializer in initializers)
 			type.onNewInitializer(initializer)
-		for(operator in operators)
-			type.onNewOperator(operator)
 	}
 
 	override fun getSurroundingDefinition(): TypeDefinition {
@@ -104,38 +98,6 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			}
 		}
 		initializers.removeAll(redeclarations)
-	}
-
-	fun ensureUniqueOperatorSignatures(linter: Linter) {
-		val redeclarations = LinkedList<OperatorDefinition>()
-		for(operatorIndex in 0 until operators.size - 1) {
-			val operator = operators[operatorIndex]
-			if(redeclarations.contains(operator))
-				continue
-			operatorIteration@for(otherOperatorIndex in operatorIndex + 1 until  operators.size) {
-				val otherOperator = operators[otherOperatorIndex]
-				if(otherOperator.kind != operator.kind)
-					continue
-				if(otherOperator is IndexOperatorDefinition && operator is IndexOperatorDefinition) {
-					if(otherOperator.indexParameters.size != operator.indexParameters.size)
-						continue
-					for(indexParameterIndex in operator.indexParameters.indices) {
-						if(otherOperator.indexParameters[indexParameterIndex].type != operator.indexParameters[indexParameterIndex].type)
-							continue@operatorIteration
-					}
-				}
-				if(otherOperator.valueParameters.size != operator.valueParameters.size)
-					continue
-				for(valueParameterIndex in operator.valueParameters.indices) {
-					if(otherOperator.valueParameters[valueParameterIndex].type != operator.valueParameters[valueParameterIndex].type)
-						continue@operatorIteration
-				}
-				redeclarations.add(otherOperator)
-				linter.addMessage(otherOperator.source, "Redeclaration of operator '${typeDefinition.name}$otherOperator'," +
-						" previously declared in ${operator.source.getStartString()}.", Message.Type.ERROR)
-			}
-		}
-		operators.removeAll(redeclarations) //TODO redeclarations are not removed from subscribed types (same for initializers)
 	}
 
 	fun ensureNoAbstractMembers(linter: Linter) {
@@ -242,10 +204,33 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			Message.Type.DEBUG)
 	}
 
-	override fun declareOperator(linter: Linter, operator: OperatorDefinition) {
-		operators.add(operator)
-		onNewOperator(operator)
-		linter.addMessage(operator.source, "Declaration of operator '${typeDefinition.name}$operator'.", Message.Type.DEBUG)
+	override fun declareOperator(linter: Linter, kind: Operator.Kind, newImplementation: FunctionImplementation) {
+		val name = kind.stringRepresentation
+		when(val existingInterfaceMember = interfaceMembers[name]?.value) {
+			null -> {
+				val newFunction = Operator(newImplementation.source, newImplementation, kind)
+				typeDefinition.addUnits(newFunction)
+				val newValue = PropertyDeclaration(newImplementation.source, name, newFunction.type, newFunction,
+					newFunction.isAbstract)
+				newValue.parentDefinition = typeDefinition
+				interfaceMembers[name] = newValue
+				onNewValue(newValue)
+			}
+			is Function -> {
+				existingInterfaceMember.addImplementation(newImplementation)
+			}
+			else -> {
+				linter.addMessage(newImplementation.source, "Redeclaration of member '${typeDefinition.name}.$name', " +
+					"previously declared in ${existingInterfaceMember.source.getStartString()}.",
+					Message.Type.ERROR)
+				return
+			}
+		}
+		memberDeclarations[newImplementation.signatureString] = newImplementation
+		linter.addMessage(newImplementation.source, "Declaration of operator " +
+			"'${typeDefinition.name}.$name${newImplementation.signature.toString(false)}'.",
+			Message.Type.DEBUG)
+		//linter.addMessage(operator.source, "Declaration of operator '${typeDefinition.name}$operator'.", Message.Type.DEBUG)
 	}
 
 	override fun resolveValue(name: String): ValueDeclaration? {

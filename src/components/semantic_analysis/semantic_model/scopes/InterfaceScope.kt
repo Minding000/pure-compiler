@@ -1,18 +1,19 @@
 package components.semantic_analysis.semantic_model.scopes
 
-import components.semantic_analysis.semantic_model.definitions.*
-import errors.user.SignatureResolutionAmbiguityError
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
+import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
+import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Instance
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.Value
+import errors.user.SignatureResolutionAmbiguityError
 import java.util.*
 
 class InterfaceScope(private val type: Type): Scope() {
 	private val types = HashMap<String, TypeDefinition>()
 	private val values = HashMap<String, InterfaceMember>()
 	private val initializers = LinkedList<InitializerDefinition>()
-	private val operators = LinkedList<OperatorDefinition>()
 
 	fun hasType(type: TypeDefinition): Boolean = types.containsValue(type)
 
@@ -26,8 +27,6 @@ class InterfaceScope(private val type: Type): Scope() {
 		return false
 	}
 
-	fun hasOperator(operator: OperatorDefinition): Boolean = operators.contains(operator)
-
 	override fun subscribe(type: Type) {
 		super.subscribe(type)
 		for((_, typeDefinition) in types)
@@ -36,8 +35,6 @@ class InterfaceScope(private val type: Type): Scope() {
 			type.onNewValue(value)
 		for(initializer in initializers)
 			type.onNewInitializer(initializer)
-		for(operator in operators)
-			type.onNewOperator(operator)
 	}
 
 	fun addType(type: TypeDefinition) {
@@ -57,11 +54,6 @@ class InterfaceScope(private val type: Type): Scope() {
 	fun addInitializer(initializer: InitializerDefinition) {
 		initializers.add(initializer)
 		onNewInitializer(initializer)
-	}
-
-	fun addOperator(operator: OperatorDefinition) {
-		operators.add(operator)
-		onNewOperator(operator)
 	}
 
 	override fun resolveValue(name: String): InterfaceMember? {
@@ -115,79 +107,6 @@ class InterfaceScope(private val type: Type): Scope() {
 	}
 
 	class MatchResult(val signature: InitializerDefinition, val definitionTypeSubstitutions: Map<TypeDefinition, Type>)
-
-	override fun resolveOperator(kind: OperatorDefinition.Kind, suppliedValues: List<Value>):
-			OperatorDefinition? {
-		val validSignatures = getMatchingOperators(kind, suppliedValues)
-		if(validSignatures.isEmpty())
-			return null
-		specificityPrecedenceLoop@for(signature in validSignatures) {
-			for(otherSignature in validSignatures) {
-				if(otherSignature === signature)
-					continue
-				if(!signature.isMoreSpecificThan(otherSignature))
-					continue@specificityPrecedenceLoop
-			}
-			for(parameterIndex in suppliedValues.indices)
-				suppliedValues[parameterIndex].setInferredType(signature.valueParameters[parameterIndex].type)
-			return signature
-		}
-		throw SignatureResolutionAmbiguityError(validSignatures)
-	}
-
-	private fun getMatchingOperators(kind: OperatorDefinition.Kind, suppliedValues: List<Value>): List<OperatorDefinition> {
-		val validSignatures = LinkedList<OperatorDefinition>()
-		for(signature in operators) {
-			if(signature.kind != kind)
-				continue
-			if(signature.accepts(suppliedValues))
-				validSignatures.add(signature)
-		}
-		//TODO check: should this be as complex as FunctionType.getMatchingSignatures()?
-		// -> write tests to find out -> yes!
-		return validSignatures
-	}
-
-	override fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
-									  suppliedParameterValues: List<Value>): IndexOperatorDefinition? {
-		val validSignatures = getMatchingIndexOperators(suppliedTypes, suppliedIndexValues, suppliedParameterValues)
-		if(validSignatures.isEmpty())
-			return null
-		specificityPrecedenceLoop@for(signature in validSignatures) {
-			for(otherSignature in validSignatures) {
-				if(otherSignature === signature)
-					continue
-				if(!signature.isMoreSpecificThan(otherSignature))
-					continue@specificityPrecedenceLoop
-			}
-			for(indexIndex in suppliedIndexValues.indices)
-				suppliedIndexValues[indexIndex].setInferredType(signature.indexParameters[indexIndex].type)
-			for(parameterIndex in suppliedParameterValues.indices)
-				suppliedParameterValues[parameterIndex].setInferredType(signature.valueParameters[parameterIndex].type)
-			return signature
-		}
-		throw SignatureResolutionAmbiguityError(validSignatures)
-	}
-
-	private fun getMatchingIndexOperators(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
-										  suppliedParameterValues: List<Value>): List<IndexOperatorDefinition> {
-		val validSignatures = LinkedList<IndexOperatorDefinition>()
-		for(signature in operators) {
-			if(signature !is IndexOperatorDefinition)
-				continue
-			val typeSubstitutions = signature.getTypeSubstitutions(suppliedTypes, suppliedIndexValues,
-				suppliedParameterValues) ?: continue
-			val specificSignature = if(typeSubstitutions.isEmpty())
-				signature
-			else
-				signature.withTypeSubstitutions(typeSubstitutions)
-			if(specificSignature.accepts(suppliedIndexValues, suppliedParameterValues))
-				validSignatures.add(specificSignature)
-		}
-		//TODO check: should this be as complex as FunctionType.getMatchingSignatures()?
-		// -> write tests to find out -> yes!
-		return validSignatures
-	}
 
 	fun getAbstractMembers(): List<MemberDeclaration> = type.getAbstractMembers()
 

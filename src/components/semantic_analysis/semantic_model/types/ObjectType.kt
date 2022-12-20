@@ -2,7 +2,6 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
-import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeAlias
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -63,10 +62,6 @@ open class ObjectType(override val source: Element, val name: String, val typePa
 
 	override fun onNewValue(value: InterfaceMember) {
 		this.scope.addValue(value)
-	}
-
-	override fun onNewOperator(operator: OperatorDefinition) {
-		this.scope.addOperator(operator)
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {

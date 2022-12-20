@@ -1,10 +1,8 @@
 package components.semantic_analysis.resolution
 
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
-import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.operations.IndexAccess
-import components.semantic_analysis.semantic_model.types.FunctionType
-import components.semantic_analysis.semantic_model.types.StaticType
+import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
 import org.junit.jupiter.api.Disabled
@@ -38,7 +36,7 @@ internal class OperatorResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "fraction" }
-		val operator = variableValue?.type?.scope?.resolveOperator(OperatorDefinition.Kind.MINUS)
+		val operator = variableValue?.type?.scope?.resolveOperator(Operator.Kind.MINUS)
 		assertNotNull(operator)
 	}
 
@@ -65,7 +63,7 @@ internal class OperatorResolution {
 			"""
 				Matrix class {
 					init
-					operator +(other: Matrix): Matrix {}
+					operator +(other: Matrix): Matrix
 				}
 				val {
 					a = Matrix()
@@ -75,7 +73,7 @@ internal class OperatorResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "a" }
-		val operator = variableValue?.type?.scope?.resolveOperator(OperatorDefinition.Kind.PLUS, variableValue)
+		val operator = variableValue?.type?.scope?.resolveOperator(Operator.Kind.PLUS, variableValue)
 		assertNotNull(operator)
 	}
 
@@ -139,23 +137,19 @@ internal class OperatorResolution {
 				}
 				Hinge class
 				Door class {
-					operator [index: Int](): Hinge {}
+					operator [index: Int](): Hinge
 				}
-				TransparentDoor class: Door {}
+				TransparentDoor class: Door
 				GlassDoor object: TransparentDoor {
-					operator [index: Int](hinge: Hinge) {}
+					operator [index: Int](hinge: Hinge)
 				}
 				GlassDoor[Int()]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val initializerCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function.type is StaticType }
-		assertNotNull(initializerCall)
-		val operatorDefinition = variableValue?.type?.scope?.resolveIndexOperator(listOf(), listOf(initializerCall), listOf())
-		assertNotNull(operatorDefinition)
+		val indexAccess = lintResult.find<IndexAccess>()
+		assertNotNull(indexAccess?.type)
 	}
 
-	@Disabled
 	@Test
 	fun `resolves calls to overriding operator`() {
 		val sourceCode =
@@ -165,36 +159,32 @@ internal class OperatorResolution {
 				}
 				Hinge class
 				Door class {
-					operator [index: Int](): Hinge {}
+					operator [index: Int]: Hinge
 				}
-				TransparentDoor class: Door {}
+				TransparentDoor class: Door
 				GlassDoor object: TransparentDoor {
-					overriding operator [index: Int](): Hinge {}
+					overriding operator [index: Int]: Hinge
 				}
 				GlassDoor[Int()]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val functionType = variableValue?.type?.scope?.resolveValue("open")?.type as? FunctionType
-		assertNotNull(functionType)
-		val signature = functionType.resolveSignature()
-		assertNotNull(signature)
+		val indexAccess = lintResult.find<IndexAccess>()
+		assertNotNull(indexAccess?.type)
 	}
 
-	@Disabled
 	@Test
 	fun `detects missing overriding keyword on operator`() {
 		val sourceCode =
 			"""
 				Int class
 				ShoppingList class {
-					operator [index: Int](): Int {}
+					operator [index: Int](): Int
 				}
 				FoodShoppingList class: ShoppingList {
-					operator [index: Int](foodId: Int) {}
+					operator [index: Int](foodId: Int)
 				}
 				VegetableShoppingList class: FoodShoppingList {
-					operator [index: Int](): Int {}
+					operator [index: Int](): Int
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -207,11 +197,11 @@ internal class OperatorResolution {
 			"""
 				Int class
 				ShoppingList class {
-					operator [index: Int](): Int {}
+					operator [index: Int](): Int
 				}
-				FoodShoppingList class: ShoppingList {}
+				FoodShoppingList class: ShoppingList
 				VegetableShoppingList class: FoodShoppingList {
-					overriding operator [index: Int](): Int {}
+					overriding operator [index: Int](): Int
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -220,13 +210,12 @@ internal class OperatorResolution {
 			"'overriding' keyword is used, but the operator doesn't have a super operator")
 	}
 
-	@Disabled
 	@Test
 	fun `detects overriding keyword being used without super operator`() {
 		val sourceCode =
 			"""
 				Room class {
-					overriding operator +() {}
+					overriding operator +()
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -263,8 +252,8 @@ internal class OperatorResolution {
 
 					init
 
-					operator [index: Int]: Element {}
-					operator [element: Element]: Boolean {}
+					operator [index: Int]: Element
+					operator [element: Element]: Boolean
 				}
 				val numbers = <Int>List()
 				numbers[Int()]
@@ -282,7 +271,7 @@ internal class OperatorResolution {
 					init
 				}
 				IntegerList object {
-					operator +=(...integers: ...Int) {}
+					operator +=(...integers: ...Int)
 				}
 				IntegerList += Int(), Int()
             """.trimIndent()

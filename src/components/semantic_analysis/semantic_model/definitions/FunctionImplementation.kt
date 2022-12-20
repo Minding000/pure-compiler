@@ -3,10 +3,11 @@ package components.semantic_analysis.semantic_model.definitions
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.general.Unit
-import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Function
+import components.semantic_analysis.semantic_model.values.Operator
 import components.syntax_parser.syntax_tree.general.Element
 
 class FunctionImplementation(override val source: Element, override val parentDefinition: TypeDefinition?,
@@ -33,7 +34,11 @@ class FunctionImplementation(override val source: Element, override val parentDe
 
 	fun setParent(function: Function) {
 		parentFunction = function
-		signatureString = "${function.name}${signature.toString(false)}"
+		signatureString = if(function is Operator) {
+			signature.toString(false, function.kind)
+		} else {
+			"${function.name}${signature.toString(false)}"
+		}
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
@@ -45,7 +50,14 @@ class FunctionImplementation(override val source: Element, override val parentDe
 	}
 
 	override fun toString(): String {
-		return "${if(parentDefinition == null) "" else "${parentDefinition.name}."}$signatureString"
+		var stringRepresentation = ""
+		if(parentDefinition != null) {
+			stringRepresentation += parentDefinition.name
+			if(parentFunction !is Operator)
+				stringRepresentation += "."
+		}
+		stringRepresentation += signatureString
+		return stringRepresentation
 	}
 
 //	override fun compile(context: BuildContext): LLVMValueRef {

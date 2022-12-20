@@ -9,7 +9,6 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
 import util.linkedListOf
 import java.util.*
-import kotlin.collections.HashMap
 
 abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope,
 							  val superType: Type?): Unit(source) {
@@ -71,7 +70,6 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 			}
 			unit.linkTypes(linter, this.scope)
 		}
-		this.scope.ensureUniqueOperatorSignatures(linter)
 	}
 
 	override fun linkPropertyParameters(linter: Linter, scope: MutableScope) {

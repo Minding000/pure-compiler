@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
+import components.semantic_analysis.semantic_model.values.Operator
 import components.syntax_parser.syntax_tree.general.MetaElement
 import components.tokenizer.Word
 import errors.internal.CompilerError
@@ -10,9 +10,9 @@ open class Operator(start: Position, end: Position): MetaElement(start, end) {
 
 	constructor(word: Word): this(word.start, word.end)
 
-	fun getKind(): OperatorDefinition.Kind {
+	fun getKind(): Operator.Kind {
 		val name = getValue()
-		for(type in OperatorDefinition.Kind.values()) {
+		for(type in Operator.Kind.values()) {
 			if(type.stringRepresentation == name)
 				return type
 		}

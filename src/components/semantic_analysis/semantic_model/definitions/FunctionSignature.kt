@@ -7,6 +7,7 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.OrUnionType
 import components.semantic_analysis.semantic_model.types.Type
+import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
@@ -163,27 +164,44 @@ class FunctionSignature(override val source: Element, val scope: BlockScope,
 		return toString(true)
 	}
 
-	fun toString(useLambdaStyle: Boolean): String {
-		var stringRepresentation = ""
-		if(!useLambdaStyle || genericParameters.isNotEmpty() || parameterTypes.isNotEmpty()) {
-			stringRepresentation += "("
-			if(genericParameters.isNotEmpty()) {
-				stringRepresentation += genericParameters.joinToString()
-				stringRepresentation += ";"
-				if(parameterTypes.isNotEmpty())
-					stringRepresentation += " "
+	fun toString(useLambdaStyle: Boolean, kind: Operator.Kind? = null): String {
+		return when(kind) {
+			Operator.Kind.BRACKETS_GET -> {
+				var stringRepresentation = "["
+				if(genericParameters.isNotEmpty()) {
+					stringRepresentation += genericParameters.joinToString()
+					stringRepresentation += ";"
+					if(parameterTypes.isNotEmpty())
+						stringRepresentation += " "
+				}
+				stringRepresentation += "${parameterTypes.joinToString()}]"
+				if(!Linter.LiteralType.NOTHING.matches(returnType))
+					stringRepresentation += ": $returnType"
+				stringRepresentation
 			}
-			stringRepresentation += "${parameterTypes.joinToString()})"
+			else -> {
+				var stringRepresentation = ""
+				if(!useLambdaStyle || genericParameters.isNotEmpty() || parameterTypes.isNotEmpty()) {
+					stringRepresentation += "("
+					if(genericParameters.isNotEmpty()) {
+						stringRepresentation += genericParameters.joinToString()
+						stringRepresentation += ";"
+						if(parameterTypes.isNotEmpty())
+							stringRepresentation += " "
+					}
+					stringRepresentation += "${parameterTypes.joinToString()})"
+				}
+				if(useLambdaStyle) {
+					if(stringRepresentation.isNotEmpty())
+						stringRepresentation += " "
+					stringRepresentation += "=>"
+					stringRepresentation += if(Linter.LiteralType.NOTHING.matches(returnType)) "|" else " $returnType"
+				} else {
+					if(!Linter.LiteralType.NOTHING.matches(returnType))
+						stringRepresentation += ": $returnType"
+				}
+				stringRepresentation
+			}
 		}
-		if(useLambdaStyle) {
-			if(stringRepresentation.isNotEmpty())
-				stringRepresentation += " "
-			stringRepresentation += "=>"
-			stringRepresentation += if(Linter.LiteralType.NOTHING.matches(returnType)) "|" else " $returnType"
-		} else {
-			if(!Linter.LiteralType.NOTHING.matches(returnType))
-				stringRepresentation += ": $returnType"
-		}
-		return stringRepresentation
 	}
 }

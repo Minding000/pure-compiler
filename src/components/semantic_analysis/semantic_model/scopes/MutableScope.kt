@@ -3,8 +3,8 @@ package components.semantic_analysis.semantic_model.scopes
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import messages.Message
 
@@ -26,8 +26,8 @@ abstract class MutableScope: Scope() {
 			Message.Type.ERROR)
 	}
 
-	open fun declareOperator(linter: Linter, operator: OperatorDefinition) {
-		linter.addMessage(operator.source,
+	open fun declareOperator(linter: Linter, kind: Operator.Kind, newImplementation: FunctionImplementation) {
+		linter.addMessage(newImplementation.source,
 			"Operator declarations aren't allowed in '${javaClass.simpleName}'.",
 			Message.Type.ERROR)
 	}

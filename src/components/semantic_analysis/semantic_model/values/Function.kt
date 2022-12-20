@@ -2,14 +2,15 @@ package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
-import components.semantic_analysis.semantic_model.types.FunctionType
-import messages.Message
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.types.FunctionType
 import components.syntax_parser.syntax_tree.general.Element
-import java.util.LinkedList
+import messages.Message
+import java.util.*
 
-class Function(source: Element, val functionType: FunctionType, val name: String): Value(source, functionType) {
-	private val implementations = LinkedList<FunctionImplementation>()
+open class Function(source: Element, val functionType: FunctionType, val name: String): Value(source, functionType) {
+	open val memberType = "function"
+	protected val implementations = LinkedList<FunctionImplementation>()
 	val isAbstract: Boolean
 		get() {
 			return implementations.any { implementation -> implementation.isAbstract }
@@ -37,7 +38,7 @@ class Function(source: Element, val functionType: FunctionType, val name: String
 	}
 
 	constructor(source: Element, implementation: FunctionImplementation, name: String = "<anonymous function>"):
-			this(source, FunctionType(source), name) {
+		this(source, FunctionType(source), name) {
 		addImplementation(implementation)
 	}
 
@@ -61,13 +62,16 @@ class Function(source: Element, val functionType: FunctionType, val name: String
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		for(implementation in implementations) { //TODO consider moving this logic to FunctionSignature (this requires having a superSignature property)
+		//TODO consider moving this logic to FunctionSignature (this requires having a superSignature property)
+		for(implementation in implementations) {
 			if(functionType.superFunctionType?.hasSignature(implementation.signature) == true) {
 				if(!implementation.isOverriding)
 					linter.addMessage(implementation.source, "Missing 'overriding' keyword", Message.Type.WARNING)
 			} else {
 				if(implementation.isOverriding)
-					linter.addMessage(implementation.source, "'overriding' keyword is used, but the function doesn't have a super function", Message.Type.WARNING)
+					linter.addMessage(implementation.source,
+						"'overriding' keyword is used, but the $memberType doesn't have a super $memberType",
+						Message.Type.WARNING)
 			}
 		}
 	}
@@ -83,8 +87,8 @@ class Function(source: Element, val functionType: FunctionType, val name: String
 				if(!otherImplementation.signature.hasSameParameterTypesAs(implementation.signature))
 					continue
 				redeclarations.add(otherImplementation)
-				linter.addMessage(otherImplementation.source, "Redeclaration of function " +
-						"'$otherImplementation', " +
+				linter.addMessage(otherImplementation.source,
+					"Redeclaration of $memberType '$otherImplementation', " +
 						"previously declared in ${implementation.source.getStartString()}.",
 					Message.Type.ERROR)
 			}
