@@ -20,6 +20,8 @@ class StaticType(val definition: TypeDefinition): Type(definition.source) {
 		return specificType
 	}
 
+	override fun simplified(): Type = this
+
 	fun withTypeParameters(typeParameters: List<Type>, onCompletion: (StaticType) -> Unit) {
 		definition.withTypeParameters(typeParameters) { specificDefinition ->
 			onCompletion(StaticType(specificDefinition))

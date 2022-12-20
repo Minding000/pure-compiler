@@ -5,9 +5,9 @@ import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.types.OrUnionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
-import util.getCommonType
 import util.stringifyTypes
 import java.util.*
 import components.syntax_parser.syntax_tree.definitions.InitializerDefinition as InitializerDefinitionSyntaxTree
@@ -88,13 +88,15 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 	}
 
 	private fun inferTypeParameter(typeParameter: TypeDefinition, suppliedValues: List<Value>): Type? {
-		val inferredTypes = HashSet<Type>()
+		val inferredTypes = LinkedList<Type>()
 		for(parameterIndex in parameters.indices) {
 			val valueParameterType = parameters[parameterIndex].type
 			val suppliedType = suppliedValues[parameterIndex].type ?: continue
 			valueParameterType?.inferType(typeParameter, suppliedType, inferredTypes)
 		}
-		return inferredTypes.getCommonType(source)
+		if(inferredTypes.isEmpty())
+			return null
+		return OrUnionType(source, inferredTypes).simplified()
 	}
 
 	fun isMoreSpecificThan(otherInitializerDefinition: InitializerDefinition): Boolean {

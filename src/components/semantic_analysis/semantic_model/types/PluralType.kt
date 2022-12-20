@@ -14,6 +14,10 @@ class PluralType(override val source: Element, val baseType: Type): Type(source)
 		return PluralType(source, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
+	override fun simplified(): Type {
+		return PluralType(source, baseType.simplified())
+	}
+
 	override fun accepts(unresolvedSourceType: Type): Boolean {
 		val sourceType = resolveTypeAlias(unresolvedSourceType)
 		if(sourceType !is PluralType)

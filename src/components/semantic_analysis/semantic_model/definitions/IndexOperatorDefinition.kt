@@ -3,10 +3,10 @@ package components.semantic_analysis.semantic_model.definitions
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
+import components.semantic_analysis.semantic_model.types.OrUnionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import messages.Message
-import util.getCommonType
 import util.stringifyTypes
 import java.util.*
 import components.syntax_parser.syntax_tree.definitions.OperatorDefinition as OperatorDefinitionSyntaxTree
@@ -77,7 +77,7 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 
 	private fun inferTypeParameter(typeParameter: TypeDefinition, suppliedIndexValues: List<Value>,
 								   suppliedParameterValues: List<Value>): Type? {
-		val inferredTypes = HashSet<Type>()
+		val inferredTypes = LinkedList<Type>()
 		for(indexParameterIndex in indexParameters.indices) {
 			val indexParameterType = indexParameters[indexParameterIndex].type
 			val suppliedType = suppliedIndexValues[indexParameterIndex].type ?: continue
@@ -88,7 +88,9 @@ class IndexOperatorDefinition(source: OperatorDefinitionSyntaxTree, scope: Block
 			val suppliedType = suppliedParameterValues[valueParameterIndex].type ?: continue
 			valueParameterType?.inferType(typeParameter, suppliedType, inferredTypes)
 		}
-		return inferredTypes.getCommonType(source)
+		if(inferredTypes.isEmpty())
+			return null
+		return OrUnionType(source, inferredTypes).simplified()
 	}
 
 	fun isMoreSpecificThan(otherSignature: IndexOperatorDefinition): Boolean {

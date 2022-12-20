@@ -3,10 +3,10 @@ package components.semantic_analysis.semantic_model.types
 import components.semantic_analysis.semantic_model.definitions.OperatorDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.InterfaceMember
+import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
-import components.syntax_parser.syntax_tree.literals.UnionType as UnionTypeSyntaxTree
 
-class OrUnionType(override val source: UnionTypeSyntaxTree, val types: List<Type>): Type(source) {
+class OrUnionType(override val source: Element, val types: List<Type>): Type(source) {
 
 	init {
 		addUnits(types)
@@ -19,6 +19,32 @@ class OrUnionType(override val source: UnionTypeSyntaxTree, val types: List<Type
 		for(type in types)
 			specificTypes.add(type.withTypeSubstitutions(typeSubstitutions))
 		return OrUnionType(source, specificTypes)
+	}
+
+	override fun simplified(): Type {
+		val simplifiedFlattenedTypes = LinkedList<Type>()
+		for(type in types) {
+			val simplifiedType = type.simplified()
+			if(simplifiedType is OrUnionType) {
+				for(part in simplifiedType.types)
+					simplifiedFlattenedTypes.add(part)
+				continue
+			}
+			simplifiedFlattenedTypes.add(type)
+		}
+		val simplifiedUniqueTypes = HashSet<Type>()
+		uniqueTypeSearch@for(type in simplifiedFlattenedTypes) {
+			for(otherType in simplifiedFlattenedTypes) {
+				if(otherType == type)
+					continue
+				if(otherType.accepts(type))
+					continue@uniqueTypeSearch
+			}
+			simplifiedUniqueTypes.add(type)
+		}
+		if(simplifiedUniqueTypes.size == 1)
+			return simplifiedUniqueTypes.first()
+		return OrUnionType(source, simplifiedUniqueTypes.toList())
 	}
 
 	override fun onNewType(type: TypeDefinition) {
@@ -44,6 +70,8 @@ class OrUnionType(override val source: UnionTypeSyntaxTree, val types: List<Type
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
 		val sourceType = resolveTypeAlias(unresolvedSourceType)
+		if(sourceType is OrUnionType)
+			return sourceType.isAssignableTo(this)
 		for(type in types)
 			if(type.accepts(sourceType))
 				return true
@@ -74,6 +102,7 @@ class OrUnionType(override val source: UnionTypeSyntaxTree, val types: List<Type
 	}
 
 	override fun toString(): String {
-		return types.joinToString(" | ") { type -> if(type is AndUnionType) "($type)" else "$type" }
+		return types.sortedBy(Type::toString).joinToString(" | ") { type ->
+			if(type is AndUnionType || type is OrUnionType) "($type)" else "$type" }
 	}
 }

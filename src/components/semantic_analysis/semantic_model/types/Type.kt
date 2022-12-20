@@ -16,7 +16,9 @@ abstract class Type(source: Element): Unit(source) {
 
 	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type
 
-	open fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableSet<Type>) {}
+	abstract fun simplified(): Type
+
+	open fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableList<Type>) {}
 
 	open fun onNewType(type: TypeDefinition) {}
 

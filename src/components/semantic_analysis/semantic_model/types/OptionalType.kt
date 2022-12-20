@@ -14,7 +14,14 @@ class OptionalType(override val source: Element, val baseType: Type): Type(sourc
 		return OptionalType(source, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
-	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableSet<Type>) {
+	override fun simplified(): Type {
+		var baseType = baseType
+		while(baseType is OptionalType)
+			baseType = baseType.baseType
+		return OptionalType(source, baseType.simplified())
+	}
+
+	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableList<Type>) {
 		val sourceBaseType = if(sourceType is OptionalType)
 			sourceType.baseType
 		else

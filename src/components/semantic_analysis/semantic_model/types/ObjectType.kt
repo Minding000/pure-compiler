@@ -11,18 +11,14 @@ import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import java.util.*
 
-open class ObjectType(override val source: Element, val name: String, val typeParameters: List<Type> = listOf()):
-	Type(source) {
-	var definition: TypeDefinition? = null
+open class ObjectType(override val source: Element, val name: String, val typeParameters: List<Type> = listOf(),
+					  var definition: TypeDefinition? = null): Type(source) {
 
-	constructor(definition: TypeDefinition): this(definition.source, definition.name) {
-		this.definition = definition
-	}
+
+	constructor(definition: TypeDefinition): this(definition.source, definition.name, listOf(), definition)
 
 	constructor(typeParameters: List<Type>, definition: TypeDefinition):
-			this(definition.source, definition.name, typeParameters) {
-		this.definition = definition
-	}
+			this(definition.source, definition.name, typeParameters, definition)
 
 	init {
 		addUnits(typeParameters)
@@ -34,9 +30,10 @@ open class ObjectType(override val source: Element, val name: String, val typePa
 			return substituteType
 		if(typeParameters.isEmpty())
 			return this
-		val specificTypeParameters = LinkedList<Type>()
-		for(typeParameter in typeParameters)
-			specificTypeParameters.add(typeParameter.withTypeSubstitutions(typeSubstitutions))
+		val specificTypeParameters = typeParameters.map { typeParameter ->
+			typeParameter.withTypeSubstitutions(typeSubstitutions) }
+		//TODO this might be nicer if it was written with a return in the callback
+		// -> withTypeParameter needs to have inline modifier
 		val specificType = ObjectType(source, name, specificTypeParameters)
 		definition?.withTypeParameters(specificTypeParameters) { specificDefinition ->
 			specificType.definition = specificDefinition
@@ -44,13 +41,17 @@ open class ObjectType(override val source: Element, val name: String, val typePa
 		return specificType
 	}
 
-	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableSet<Type>) {
-		if(sourceType !is ObjectType)
-			return
-		for(typeParameterIndex in typeParameters.indices) {
-			val requiredTypeParameter = typeParameters[typeParameterIndex]
-			val sourceTypeParameter = sourceType.typeParameters.getOrNull(typeParameterIndex) ?: break
-			requiredTypeParameter.inferType(genericType, sourceTypeParameter, inferredTypes)
+	override fun simplified(): Type {
+		return ObjectType(source, name, typeParameters.map(Type::simplified), definition)
+	}
+
+	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableList<Type>) {
+		if(sourceType is ObjectType) {
+			for(typeParameterIndex in typeParameters.indices) {
+				val requiredTypeParameter = typeParameters[typeParameterIndex]
+				val sourceTypeParameter = sourceType.typeParameters.getOrNull(typeParameterIndex) ?: break
+				requiredTypeParameter.inferType(genericType, sourceTypeParameter, inferredTypes)
+			}
 		}
 		if(definition == genericType)
 			inferredTypes.add(sourceType)

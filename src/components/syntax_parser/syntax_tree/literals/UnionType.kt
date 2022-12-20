@@ -1,18 +1,19 @@
 package components.syntax_parser.syntax_tree.literals
 
-import errors.internal.CompilerError
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.syntax_parser.syntax_tree.general.TypeElement
+import errors.internal.CompilerError
+import java.util.*
 import components.semantic_analysis.semantic_model.types.AndUnionType as SemanticAndUnionTypeModel
 import components.semantic_analysis.semantic_model.types.OrUnionType as SemanticOrUnionTypeModel
 import components.semantic_analysis.semantic_model.types.Type as SemanticTypeModel
-import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.syntax_parser.syntax_tree.general.TypeElement
-import java.util.*
 
 class UnionType(private val left: TypeElement, private val right: TypeElement, private val mode: Mode):
 	TypeElement(left.start, right.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticTypeModel {
+		//TODO warn if type could be simplified
 		val types = LinkedList<SemanticTypeModel>()
 		addTypes(linter, scope, types, this)
 		return if(mode == Mode.AND)

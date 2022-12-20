@@ -22,6 +22,12 @@ class AndUnionType(override val source: Element, val types: List<Type>): Type(so
 		return AndUnionType(source, specificTypes)
 	}
 
+	override fun simplified(): Type {
+		if(types.size == 1)
+			return types.first().simplified()
+		return AndUnionType(source, types.map(Type::simplified))
+	}
+
 	override fun onNewType(type: TypeDefinition) {
 		this.scope.addType(type)
 	}
@@ -44,6 +50,8 @@ class AndUnionType(override val source: Element, val types: List<Type>): Type(so
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
 		val targetType = resolveTypeAlias(unresolvedTargetType)
+		if(targetType is AndUnionType)
+			targetType.accepts(this)
 		for(type in types)
 			if(type.isAssignableTo(targetType))
 				return true
@@ -73,6 +81,7 @@ class AndUnionType(override val source: Element, val types: List<Type>): Type(so
 	}
 
 	override fun toString(): String {
-		return types.joinToString(" & ") { type -> if(type is OrUnionType) "($type)" else "$type" }
+		return types.sortedBy(Type::toString).joinToString(" & ") { type ->
+			if(type is AndUnionType || type is OrUnionType) "($type)" else "$type" }
 	}
 }

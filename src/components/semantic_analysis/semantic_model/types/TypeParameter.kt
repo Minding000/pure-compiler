@@ -14,6 +14,10 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, val mode: Mode
 		return TypeParameter(source, mode, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
+	override fun simplified(): Type {
+		return TypeParameter(source, mode, baseType.simplified())
+	}
+
 	override fun accepts(unresolvedSourceType: Type): Boolean {
 		val sourceType = resolveTypeAlias(unresolvedSourceType)
 		// If assigning object to collection (different logic applies when assigning a collection)

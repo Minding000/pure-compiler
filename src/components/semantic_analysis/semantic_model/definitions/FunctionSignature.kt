@@ -5,10 +5,10 @@ import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
+import components.semantic_analysis.semantic_model.types.OrUnionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
-import util.getCommonType
 import java.util.*
 
 class FunctionSignature(override val source: Element, val scope: BlockScope,
@@ -77,13 +77,15 @@ class FunctionSignature(override val source: Element, val scope: BlockScope,
 	}
 
 	private fun inferTypeParameter(typeParameter: TypeDefinition, suppliedValues: List<Value>): Type? {
-		val inferredTypes = HashSet<Type>()
+		val inferredTypes = LinkedList<Type>()
 		for(parameterIndex in parameterTypes.indices) {
 			val valueParameterType = parameterTypes[parameterIndex]
 			val suppliedType = suppliedValues[parameterIndex].type ?: continue
 			valueParameterType?.inferType(typeParameter, suppliedType, inferredTypes)
 		}
-		return inferredTypes.getCommonType(source)
+		if(inferredTypes.isEmpty())
+			return null
+		return OrUnionType(source, inferredTypes).simplified()
 	}
 
 	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean {
