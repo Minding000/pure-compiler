@@ -21,7 +21,8 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, val left: Va
 			try {
 				val operatorDefinition = leftType.scope.resolveOperator(kind, right)
 				if(operatorDefinition == null) {
-					linter.addMessage(source, "Operator '$leftType $kind ${right.type}' hasn't been declared yet.", Message.Type.ERROR)
+					linter.addMessage(source, "Operator '$leftType $kind ${right.type}' hasn't been declared yet.",
+						Message.Type.ERROR)
 					return@let
 				}
 				type = operatorDefinition.returnType

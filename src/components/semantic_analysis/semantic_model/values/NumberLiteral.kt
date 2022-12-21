@@ -1,8 +1,8 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
@@ -24,7 +24,9 @@ class NumberLiteral(override val source: Element, val value: BigDecimal): Litera
 	}
 
 	override fun isAssignableTo(targetType: Type?): Boolean {
-		return Linter.LiteralType.INTEGER.matches(targetType) || Linter.LiteralType.FLOAT.matches(targetType)
+		if(targetType == null)
+			return false
+		return (type?.isAssignableTo(targetType) ?: false) || Linter.LiteralType.FLOAT.matches(targetType)
 	}
 
 	override fun setInferredType(inferredType: Type?) {
