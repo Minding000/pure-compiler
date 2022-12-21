@@ -5,13 +5,13 @@ import components.syntax_parser.syntax_tree.general.Element
 interface MemberDeclaration {
 	val source: Element
 	val parentDefinition: TypeDefinition?
-	var signatureString: String
+	var memberIdentifier: String
 	val isAbstract: Boolean
 
 	fun canBeOverriddenBy(other: MemberDeclaration?): Boolean {
 		if(other == null)
 			return false
-		if(other.signatureString != signatureString)
+		if(other.memberIdentifier != memberIdentifier)
 			return false
 		return true
 	}

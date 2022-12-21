@@ -83,7 +83,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			val initializer = initializers[initializerIndex]
 			if(redeclarations.contains(initializer))
 				continue
-			initializerIteration@for(otherInitializerIndex in initializerIndex + 1 until  initializers.size) {
+			initializerIteration@for(otherInitializerIndex in initializerIndex + 1 until initializers.size) {
 				val otherInitializer = initializers[otherInitializerIndex]
 				if(otherInitializer.parameters.size != initializer.parameters.size)
 					continue
@@ -104,7 +104,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		for((_, memberDeclaration) in memberDeclarations) {
 			if(memberDeclaration.isAbstract) {
 				linter.addMessage(memberDeclaration.source,
-					"Abstract member '${memberDeclaration.signatureString}' is not allowed in non-abstract class '${typeDefinition.name}'.",
+					"Abstract member '${memberDeclaration.memberIdentifier}' is not allowed in non-abstract class '${typeDefinition.name}'.",
 					Message.Type.ERROR)
 			}
 		}
@@ -114,7 +114,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		val missingOverrides = LinkedHashMap<TypeDefinition, LinkedList<MemberDeclaration>>()
 		val abstractSuperMembers = superScope?.getAbstractMembers() ?: return
 		for(abstractSuperMember in abstractSuperMembers) {
-			val overridingMember = memberDeclarations[abstractSuperMember.signatureString]
+			val overridingMember = memberDeclarations[abstractSuperMember.memberIdentifier]
 			if(!abstractSuperMember.canBeOverriddenBy(overridingMember)) {
 				val parentDefinition = abstractSuperMember.parentDefinition
 					?: throw CompilerError("Member is missing parent definition.")
@@ -129,7 +129,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		for((parent, missingMembers) in missingOverrides) {
 			message += "\n- ${parent.name}"
 			for(member in missingMembers)
-				message += "\n  - ${member.signatureString}"
+				message += "\n  - ${member.memberIdentifier}"
 		}
 		linter.addMessage(typeDefinition.source, message, Message.Type.ERROR)
 	}
@@ -172,7 +172,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		}
 		if(value is Instance)
 			value.setType(typeDefinition)
-		memberDeclarations[value.signatureString] = value
+		memberDeclarations[value.memberIdentifier] = value
 		onNewValue(value)
 		linter.addMessage(value.source, "Declaration of member '${typeDefinition.name}.${value.name}'.", Message.Type.DEBUG)
 	}
@@ -180,7 +180,8 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	override fun declareFunction(linter: Linter, name: String, newImplementation: FunctionImplementation) {
 		when(val existingInterfaceMember = interfaceMembers[name]?.value) {
 			null -> {
-				val newFunction = Function(newImplementation.source, newImplementation, name)
+				val newFunction = Function(newImplementation.source, name)
+				newFunction.addImplementation(newImplementation)
 				typeDefinition.addUnits(newFunction)
 				val newValue = PropertyDeclaration(newImplementation.source, name, newFunction.type, newFunction,
 					newFunction.isAbstract)
@@ -193,25 +194,23 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			}
 			else -> {
 				linter.addMessage(newImplementation.source, "Redeclaration of member '${typeDefinition.name}.$name', " +
-							"previously declared in ${existingInterfaceMember.source.getStartString()}.",
-					Message.Type.ERROR)
+							"previously declared in ${existingInterfaceMember.source.getStartString()}.", Message.Type.ERROR)
 				return
 			}
 		}
-		memberDeclarations[newImplementation.signatureString] = newImplementation
+		memberDeclarations[newImplementation.memberIdentifier] = newImplementation
 		linter.addMessage(newImplementation.source, "Declaration of function " +
-				"'${typeDefinition.name}.$name${newImplementation.signature.toString(false)}'.",
-			Message.Type.DEBUG)
+				"'${typeDefinition.name}.$name${newImplementation.signature.toString(false)}'.", Message.Type.DEBUG)
 	}
 
 	override fun declareOperator(linter: Linter, kind: Operator.Kind, newImplementation: FunctionImplementation) {
 		val name = kind.stringRepresentation
 		when(val existingInterfaceMember = interfaceMembers[name]?.value) {
 			null -> {
-				val newFunction = Operator(newImplementation.source, newImplementation, kind)
-				typeDefinition.addUnits(newFunction)
-				val newValue = PropertyDeclaration(newImplementation.source, name, newFunction.type, newFunction,
-					newFunction.isAbstract)
+				val newOperator = Operator(newImplementation.source, kind)
+				newOperator.addImplementation(newImplementation)
+				typeDefinition.addUnits(newOperator)
+				val newValue = PropertyDeclaration(newImplementation.source, name, newOperator.type, newOperator, newOperator.isAbstract)
 				newValue.parentDefinition = typeDefinition
 				interfaceMembers[name] = newValue
 				onNewValue(newValue)
@@ -221,16 +220,13 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 			}
 			else -> {
 				linter.addMessage(newImplementation.source, "Redeclaration of member '${typeDefinition.name}.$name', " +
-					"previously declared in ${existingInterfaceMember.source.getStartString()}.",
-					Message.Type.ERROR)
+					"previously declared in ${existingInterfaceMember.source.getStartString()}.", Message.Type.ERROR)
 				return
 			}
 		}
-		memberDeclarations[newImplementation.signatureString] = newImplementation
+		memberDeclarations[newImplementation.memberIdentifier] = newImplementation
 		linter.addMessage(newImplementation.source, "Declaration of operator " +
-			"'${typeDefinition.name}.$name${newImplementation.signature.toString(false)}'.",
-			Message.Type.DEBUG)
-		//linter.addMessage(operator.source, "Declaration of operator '${typeDefinition.name}$operator'.", Message.Type.DEBUG)
+			"'${typeDefinition.name}.$name${newImplementation.signature.toString(false)}'.", Message.Type.DEBUG)
 	}
 
 	override fun resolveValue(name: String): ValueDeclaration? {

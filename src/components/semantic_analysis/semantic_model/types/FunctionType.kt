@@ -1,12 +1,12 @@
 package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.Linter
-import errors.user.SignatureResolutionAmbiguityError
 import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
+import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
 import java.util.*
 
@@ -27,8 +27,12 @@ class FunctionType(override val source: Element): ObjectType(source, Linter.Lite
 			linter.addMessage(source, "Type '$name' hasn't been declared yet.", Message.Type.ERROR)
 	}
 
-	fun hasSignature(signature: FunctionSignature): Boolean {
-		return signatures.contains(signature) || superFunctionType?.hasSignature(signature) ?: false
+	fun hasSignatureOverriddenBy(subSignature: FunctionSignature): Boolean {
+		for(signature in signatures) {
+			if(subSignature.fulfillsInheritanceRequirementsOf(signature))
+				return true
+		}
+		return superFunctionType?.hasSignatureOverriddenBy(subSignature) ?: false
 	}
 
 	fun addSignature(signature: FunctionSignature) {

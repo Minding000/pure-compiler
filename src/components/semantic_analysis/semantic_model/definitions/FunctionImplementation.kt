@@ -14,9 +14,8 @@ class FunctionImplementation(override val source: Element, override val parentDe
 							 val scope: BlockScope, genericParameters: List<TypeDefinition>,
 							 val parameters: List<Parameter>, body: ErrorHandlingContext?, returnType: Type?,
 							 override val isAbstract: Boolean = false, val isMutating: Boolean = false,
-							 val isNative: Boolean = false, val isOverriding: Boolean = false):
-	Unit(source), MemberDeclaration {
-	override lateinit var signatureString: String
+							 val isNative: Boolean = false, val isOverriding: Boolean = false): Unit(source), MemberDeclaration {
+	override lateinit var memberIdentifier: String
 	lateinit var parentFunction: Function
 	val signature: FunctionSignature = FunctionSignature(source, scope, genericParameters,
 		parameters.map { parameter -> parameter.type }, returnType, true)
@@ -34,7 +33,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 
 	fun setParent(function: Function) {
 		parentFunction = function
-		signatureString = if(function is Operator) {
+		memberIdentifier = if(function is Operator) {
 			signature.toString(false, function.kind)
 		} else {
 			"${function.name}${signature.toString(false)}"
@@ -56,7 +55,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 			if(parentFunction !is Operator)
 				stringRepresentation += "."
 		}
-		stringRepresentation += signatureString
+		stringRepresentation += memberIdentifier
 		return stringRepresentation
 	}
 

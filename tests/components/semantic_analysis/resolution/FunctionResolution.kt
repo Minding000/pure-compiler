@@ -17,7 +17,7 @@ internal class FunctionResolution {
 		val sourceCode =
 			"""
 				Door object {
-					to open() {}
+					to open()
 				}
 				Door.open()
             """.trimIndent()
@@ -35,11 +35,11 @@ internal class FunctionResolution {
 			"""
 				Speed class
 				Door class {
-					to open() {}
+					to open()
 				}
-				TransparentDoor class: Door {}
+				TransparentDoor class: Door
 				GlassDoor object: TransparentDoor {
-					to open(speed: Speed) {}
+					to open(speed: Speed)
 				}
 				GlassDoor.open()
             """.trimIndent()
@@ -56,11 +56,11 @@ internal class FunctionResolution {
 		val sourceCode =
 			"""
 				Door class {
-					to open() {}
+					to open()
 				}
-				TransparentDoor class: Door {}
+				TransparentDoor class: Door
 				GlassDoor object: TransparentDoor {
-					overriding to open() {}
+					overriding to open()
 				}
 				GlassDoor.open()
             """.trimIndent()
@@ -76,14 +76,14 @@ internal class FunctionResolution {
 	fun `detects missing overriding keyword on function`() {
 		val sourceCode =
 			"""
+				Number class
+				Float class: Number
 				Food class {
-					to check() {}
+					to getNutritionScore(): Number
 				}
-				Vegetable class: Food {
-					to check(): Vegetable {}
-				}
+				Vegetable class: Food
 				Potato class: Vegetable {
-					to check() {}
+					to getNutritionScore(): Float
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -94,12 +94,14 @@ internal class FunctionResolution {
 	fun `allows for functions to be overridden`() {
 		val sourceCode =
 			"""
+				Number class
+				Float class: Number
 				Food class {
-					to check() {}
+					to getNutritionScore(): Number
 				}
-				Vegetable class: Food {}
+				Vegetable class: Food
 				Potato class: Vegetable {
-					overriding to check() {}
+					overriding to getNutritionScore(): Float
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -113,7 +115,7 @@ internal class FunctionResolution {
 		val sourceCode =
 			"""
 				Room class {
-					overriding to clean() {}
+					overriding to clean()
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -127,7 +129,7 @@ internal class FunctionResolution {
 			"""
 				Bright object
 				Light object {
-					to shine() {}
+					to shine()
 				}
 				Light.shine(Bright)
             """.trimIndent()
@@ -145,11 +147,9 @@ internal class FunctionResolution {
 				}
 				List class {
 					containing Element
-
 					init
-
-					it exists(index: Int) {}
-					it exists(element: Element) {}
+					it exists(index: Int)
+					it exists(element: Element)
 				}
 				val numbers = <Int>List()
 				numbers.exists(Int())
@@ -167,7 +167,7 @@ internal class FunctionResolution {
 					init
 				}
 				IntegerList object {
-					to add(...integers: ...Int) {}
+					to add(...integers: ...Int)
 				}
 				IntegerList.add(Int())
             """.trimIndent()

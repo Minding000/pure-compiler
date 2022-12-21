@@ -10,11 +10,11 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
+import errors.internal.CompilerError
 import java.util.*
 
-class FunctionSignature(override val source: Element, val scope: BlockScope,
-						val genericParameters: List<TypeDefinition>, val parameterTypes: List<Type?>, returnType: Type?,
-						isPartOfImplementation: Boolean = false): Unit(source) {
+class FunctionSignature(override val source: Element, val scope: BlockScope, val genericParameters: List<TypeDefinition>,
+						val parameterTypes: List<Type?>, returnType: Type?, isPartOfImplementation: Boolean = false): Unit(source) {
 	val returnType = returnType ?: ObjectType(source, Linter.LiteralType.NOTHING.className)
 	var superFunctionSignature: FunctionSignature? = null
 
@@ -36,7 +36,7 @@ class FunctionSignature(override val source: Element, val scope: BlockScope,
 		for(parameterType in parameterTypes)
 			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitution))
 		return FunctionSignature(source, scope, specificGenericParameters, specificParametersTypes,
-				returnType.withTypeSubstitutions(typeSubstitution))
+			returnType.withTypeSubstitutions(typeSubstitution))
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
@@ -109,8 +109,8 @@ class FunctionSignature(override val source: Element, val scope: BlockScope,
 		return !areSignaturesEqual
 	}
 
-	fun fulfillsInheritanceRequirementOf(superSignature: FunctionSignature): Boolean {
-		if(returnType.isAssignableTo(superSignature.returnType))
+	fun fulfillsInheritanceRequirementsOf(superSignature: FunctionSignature): Boolean {
+		if(!returnType.isAssignableTo(superSignature.returnType))
 			return false
 		if(parameterTypes.size != superSignature.parameterTypes.size)
 			return false
@@ -164,9 +164,9 @@ class FunctionSignature(override val source: Element, val scope: BlockScope,
 		return toString(true)
 	}
 
-	fun toString(useLambdaStyle: Boolean, kind: Operator.Kind? = null): String {
+	fun toString(useLambdaStyleForFunctions: Boolean, kind: Operator.Kind? = null): String {
 		return when(kind) {
-			Operator.Kind.BRACKETS_GET -> {
+			Operator.Kind.BRACKETS_GET, Operator.Kind.BRACKETS_SET -> {
 				var stringRepresentation = "["
 				if(genericParameters.isNotEmpty()) {
 					stringRepresentation += genericParameters.joinToString()
@@ -179,9 +179,9 @@ class FunctionSignature(override val source: Element, val scope: BlockScope,
 					stringRepresentation += ": $returnType"
 				stringRepresentation
 			}
-			else -> {
+			null -> {
 				var stringRepresentation = ""
-				if(!useLambdaStyle || genericParameters.isNotEmpty() || parameterTypes.isNotEmpty()) {
+				if(!useLambdaStyleForFunctions || genericParameters.isNotEmpty() || parameterTypes.isNotEmpty()) {
 					stringRepresentation += "("
 					if(genericParameters.isNotEmpty()) {
 						stringRepresentation += genericParameters.joinToString()
@@ -191,7 +191,7 @@ class FunctionSignature(override val source: Element, val scope: BlockScope,
 					}
 					stringRepresentation += "${parameterTypes.joinToString()})"
 				}
-				if(useLambdaStyle) {
+				if(useLambdaStyleForFunctions) {
 					if(stringRepresentation.isNotEmpty())
 						stringRepresentation += " "
 					stringRepresentation += "=>"
@@ -201,6 +201,21 @@ class FunctionSignature(override val source: Element, val scope: BlockScope,
 						stringRepresentation += ": $returnType"
 				}
 				stringRepresentation
+			}
+			else -> {
+				if(kind.isUnary && !(kind.isBinary && parameterTypes.size == 1)) {
+					var stringRepresentation = kind.stringRepresentation
+					if(kind.returnsValue)
+						stringRepresentation += ": $returnType"
+					stringRepresentation
+				} else if(kind.isBinary) {
+					var stringRepresentation = " ${kind.stringRepresentation} ${parameterTypes.firstOrNull()}"
+					if(kind.returnsValue)
+						stringRepresentation += ": $returnType"
+					stringRepresentation
+				} else {
+					throw CompilerError("Operator of kind '${kind.name}' is neither unary nor binary.")
+				}
 			}
 		}
 	}

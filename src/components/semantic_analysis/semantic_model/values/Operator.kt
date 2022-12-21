@@ -1,12 +1,10 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 
-class Operator(source: Element, implementation: FunctionImplementation, val kind: Kind):
-	Function(source, implementation, kind.stringRepresentation) {
+class Operator(source: Element, val kind: Kind): Function(source, kind.stringRepresentation) {
 	override val memberType = "operator"
 
 	override fun validate(linter: Linter) {
@@ -51,7 +49,7 @@ class Operator(source: Element, implementation: FunctionImplementation, val kind
 		PLUS("+", false, true, true),
 		MINUS("-", true, true, true),
 		STAR("*", false, true, true),
-		SLASH("/", false, false, true),
+		SLASH("/", false, true, true),
 		PLUS_EQUALS("+=", false, true, false),
 		MINUS_EQUALS("-=", false, true, false),
 		STAR_EQUALS("*=", false, true, false),

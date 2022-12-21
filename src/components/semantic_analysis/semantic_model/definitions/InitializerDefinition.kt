@@ -16,7 +16,7 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 							override val parentDefinition: TypeDefinition, val scope: BlockScope,
 							val genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,
 							val body: Unit?, val isNative: Boolean): Unit(source), MemberDeclaration {
-	override var signatureString = toString()
+	override var memberIdentifier = toString()
 	override val isAbstract = false
 
 	init {

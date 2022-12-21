@@ -10,7 +10,7 @@ abstract class InterfaceMember(source: Element, name: String, type: Type? = null
 							   isMutable: Boolean = false):
 	ValueDeclaration(source, name, type, value, isConstant, isMutable), MemberDeclaration {
 	override lateinit var parentDefinition: TypeDefinition
-	override var signatureString = "$name${if(type == null) "" else ": $type"}"
+	override var memberIdentifier = "$name${if(type == null) "" else ": $type"}"
 
 	abstract override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): InterfaceMember
 }

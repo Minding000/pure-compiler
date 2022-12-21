@@ -8,7 +8,8 @@ import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import java.util.*
 
-open class Function(source: Element, val functionType: FunctionType, val name: String): Value(source, functionType) {
+open class Function(source: Element, val name: String = "<anonymous function>", val functionType: FunctionType = FunctionType(source)):
+	Value(source, functionType) {
 	open val memberType = "function"
 	protected val implementations = LinkedList<FunctionImplementation>()
 	val isAbstract: Boolean
@@ -21,7 +22,7 @@ open class Function(source: Element, val functionType: FunctionType, val name: S
 			value?.let {
 				for(implementation in implementations) {
 					for(superImplementation in value.implementations) {
-						if(implementation.signature.fulfillsInheritanceRequirementOf(superImplementation.signature)) {
+						if(implementation.signature.fulfillsInheritanceRequirementsOf(superImplementation.signature)) {
 							implementation.superFunctionImplementation = superImplementation
 							break
 						}
@@ -35,11 +36,6 @@ open class Function(source: Element, val functionType: FunctionType, val name: S
 		staticValue = this
 		addUnits(functionType)
 		addUnits(implementations)
-	}
-
-	constructor(source: Element, implementation: FunctionImplementation, name: String = "<anonymous function>"):
-		this(source, FunctionType(source), name) {
-		addImplementation(implementation)
 	}
 
 	fun addImplementation(implementation: FunctionImplementation) {
@@ -64,7 +60,7 @@ open class Function(source: Element, val functionType: FunctionType, val name: S
 		super.validate(linter)
 		//TODO consider moving this logic to FunctionSignature (this requires having a superSignature property)
 		for(implementation in implementations) {
-			if(functionType.superFunctionType?.hasSignature(implementation.signature) == true) {
+			if(functionType.superFunctionType?.hasSignatureOverriddenBy(implementation.signature) == true) {
 				if(!implementation.isOverriding)
 					linter.addMessage(implementation.source, "Missing 'overriding' keyword", Message.Type.WARNING)
 			} else {
@@ -87,10 +83,8 @@ open class Function(source: Element, val functionType: FunctionType, val name: S
 				if(!otherImplementation.signature.hasSameParameterTypesAs(implementation.signature))
 					continue
 				redeclarations.add(otherImplementation)
-				linter.addMessage(otherImplementation.source,
-					"Redeclaration of $memberType '$otherImplementation', " +
-						"previously declared in ${implementation.source.getStartString()}.",
-					Message.Type.ERROR)
+				linter.addMessage(otherImplementation.source, "Redeclaration of $memberType '$otherImplementation', " +
+						"previously declared in ${implementation.source.getStartString()}.", Message.Type.ERROR)
 			}
 		}
 		for(implementation in redeclarations)
