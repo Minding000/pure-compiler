@@ -1,5 +1,3 @@
 package errors.internal
 
-import java.lang.Exception
-
-open class InternalError(message: String): Exception(message)
+open class InternalError(message: String, cause: Throwable? = null): Exception(message, cause)

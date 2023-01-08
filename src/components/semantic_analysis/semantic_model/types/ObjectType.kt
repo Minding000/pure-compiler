@@ -130,7 +130,7 @@ open class ObjectType(override val source: Element, val name: String, val typePa
 
 	override fun getKeyType(linter: Linter): Type? { //TODO write test for this
 		if(typeParameters.size != 2) {
-			linter.addMessage("Type '$this' doesn't have a key type.", Message.Type.ERROR)
+			linter.addMessage(source, "Type '$this' doesn't have a key type.", Message.Type.ERROR)
 			return null
 		}
 		return typeParameters.first()
@@ -138,7 +138,7 @@ open class ObjectType(override val source: Element, val name: String, val typePa
 
 	override fun getValueType(linter: Linter): Type? { //TODO write test for this
 		if(!(typeParameters.size == 1 || typeParameters.size == 2)) {
-			linter.addMessage("Type '$this' doesn't have a value type.", Message.Type.ERROR)
+			linter.addMessage(source, "Type '$this' doesn't have a value type.", Message.Type.ERROR)
 			return null
 		}
 		return typeParameters.last()

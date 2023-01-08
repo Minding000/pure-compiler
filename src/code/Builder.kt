@@ -1,9 +1,10 @@
 package code
 
 import components.compiler.targets.llvm.LLVMIRCompiler
-import errors.user.UserError
 import components.semantic_analysis.Linter
 import components.syntax_parser.element_generator.ElementGenerator
+import errors.internal.CompilerError
+import errors.user.UserError
 import source_structure.Module
 import source_structure.Project
 import java.io.File
@@ -67,28 +68,34 @@ object Builder {
 	}
 
 	private fun loadProject(path: String): Project {
-		val source = File(path)
-		val project = Project(source.nameWithoutExtension)
-		val mainModule = Module("Main")
-		if(source.isFile) {
-			project.targetPath = source.parent
-			addFile(mainModule, LinkedList(), source)
-		} else {
-			project.targetPath = path
-			addDirectory(mainModule, LinkedList(), source)
+		try {
+			val source = File(path)
+			val project = Project(source.nameWithoutExtension)
+			val mainModule = Module("Main")
+			if(source.isFile) {
+				project.targetPath = source.parent
+				addFile(mainModule, LinkedList(), source)
+			} else {
+				project.targetPath = path
+				addDirectory(mainModule, LinkedList(), source)
+			}
+			project.addModule(mainModule)
+			return project
+		} catch(cause: IOException) {
+			throw CompilerError("Failed to load project.", cause)
 		}
-		project.addModule(mainModule)
-		return project
 	}
 
 	fun loadRequiredModules(project: Project) {
 		val langModule = Module("Pure")
-		addDirectory(langModule, LinkedList(), File(LANG_MODULE_PATH))
+		val path = System.getenv("BASE_MODULE_PATH") ?: LANG_MODULE_PATH
+		addDirectory(langModule, LinkedList(), File(path))
 		project.addModule(langModule)
 	}
 
 	private fun addDirectory(module: Module, parts: List<String>, directory: File) {
-		val files = directory.listFiles() ?: throw IOException("Failed to list directory contents of '${directory.name}'.")
+		val files = directory.listFiles()
+			?: throw IOException("Failed to list directory contents of '${directory.name}' at '${directory.path}'.")
 		val childPathParts = LinkedList(parts)
 		childPathParts.add(directory.name)
 		for(file in files) {
