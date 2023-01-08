@@ -121,7 +121,7 @@ internal class Declarations {
 	}
 
 	@Test
-	fun `handle block declares error variable`() {
+	fun `allows handle blocks to declare error variable`() {
 		val sourceCode =
 			"""
 				IOError class

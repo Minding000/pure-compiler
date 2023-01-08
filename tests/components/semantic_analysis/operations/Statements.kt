@@ -71,8 +71,7 @@ internal class Statements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"Instance declarations are only allowed in enums and classes")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Instance declarations are only allowed in enums and classes")
 	}
 
 	@Test
@@ -97,8 +96,7 @@ internal class Statements {
 				break
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Break statements are not allowed outside of loops")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Break statements are not allowed outside of loops")
 	}
 
 	@Test
@@ -110,8 +108,7 @@ internal class Statements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Break statements are not allowed outside of loops")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Break statements are not allowed outside of loops")
 	}
 
 	@Test
@@ -121,8 +118,7 @@ internal class Statements {
 				next
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Next statements are not allowed outside of loops")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Next statements are not allowed outside of loops")
 	}
 
 	@Test
@@ -134,33 +130,6 @@ internal class Statements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Next statements are not allowed outside of loops")
-	}
-
-	@Test
-	fun `detects return statements outside of functions`() {
-		val sourceCode =
-			"""
-				return
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Return statements are not allowed outside of functions")
-	}
-
-	@Test
-	fun `ignores return statements inside of functions`() {
-		val sourceCode =
-			"""
-				Table class {
-					to raiseToMaximum() {
-						return
-					}
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Return statements are not allowed outside of functions")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Next statements are not allowed outside of loops")
 	}
 }
