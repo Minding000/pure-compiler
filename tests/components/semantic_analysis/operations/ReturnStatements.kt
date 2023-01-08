@@ -158,20 +158,46 @@ internal class ReturnStatements {
 	}
 
 	@Test
-	fun `detects functions that don't return`() {
+	fun `detects functions with never return type that complete`() {
+		val sourceCode =
+			"""
+				Desk class {
+					to raiseToMaximum(): Never {
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Function might complete despite of 'Never' return type")
+	}
+
+	@Test
+	fun `detects functions with never return type that return`() {
+		val sourceCode =
+			"""
+				Desk class {
+					to raiseToMaximum(): Never {
+						return
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Function might complete despite of 'Never' return type")
+	}
+
+	@Test
+	fun `ignores functions with never return type that don't complete`() {
 		val sourceCode =
 			"""
 				Error class {
 					init
 				}
-				Int class
 				Desk class {
-					to raiseToMaximum(): Int {
+					to raiseToMaximum(): Never {
 						raise Error()
 					}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Function never returns")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Function might complete despite of 'Never' return type")
 	}
 }

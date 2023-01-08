@@ -89,11 +89,14 @@ class Linter {
 		BOOLEAN("Bool"),
 		NULL("Null"),
 		FUNCTION("Function"),
+		NEVER("Never"),
 		NOTHING("Nothing"),
 		ANY("Any");
 
 		companion object {
 			fun isRootType(name: String): Boolean {
+				if(name == NEVER.className)
+					return true
 				if(name == NOTHING.className)
 					return true
 				if(name == ANY.className)

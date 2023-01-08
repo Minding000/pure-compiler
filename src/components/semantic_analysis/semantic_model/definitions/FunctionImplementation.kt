@@ -53,8 +53,6 @@ class FunctionImplementation(override val source: Element, override val parentDe
 	override fun validate(linter: Linter) {
 		super.validate(linter)
 		if(!Linter.LiteralType.NOTHING.matches(signature.returnType)) {
-			if(!mightReturnValue)
-				linter.addMessage(source, "Function never returns.", Message.Type.ERROR)
 			if(body != null) {
 				var someBlocksCompletesWithoutReturning = false
 				var mainBlockCompletesWithoutReturning = true
@@ -81,8 +79,14 @@ class FunctionImplementation(override val source: Element, override val parentDe
 						}
 					}
 				}
-				if(someBlocksCompletesWithoutReturning)
-					linter.addMessage(source, "Function might complete without returning a value.", Message.Type.ERROR)
+				if(Linter.LiteralType.NEVER.matches(signature.returnType)) {
+					if(someBlocksCompletesWithoutReturning || mightReturnValue)
+						linter.addMessage(source, "Function might complete despite of 'Never' return type.", Message.Type.ERROR)
+				} else {
+					if(someBlocksCompletesWithoutReturning)
+						linter.addMessage(source, "Function might complete without returning a value.", Message.Type.ERROR)
+
+				}
 			}
 		}
 	}
