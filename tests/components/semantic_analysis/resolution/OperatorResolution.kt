@@ -29,7 +29,7 @@ internal class OperatorResolution {
 			"""
 				Fraction class {
 					init
-					operator -() {}
+					operator -
 				}
 				val fraction = Fraction()
 				-fraction
@@ -74,6 +74,71 @@ internal class OperatorResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "a" }
 		val operator = variableValue?.type?.scope?.resolveOperator(Operator.Kind.PLUS, variableValue)
+		assertNotNull(operator)
+	}
+
+	@Test
+	fun `emits error for undeclared unary modification operators`() {
+		val sourceCode =
+			"""
+				val a = 5
+				a--
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator 'Int--' hasn't been declared yet")
+	}
+
+	@Test
+	fun `resolves unary modification operator calls`() {
+		val sourceCode =
+			"""
+				Fraction class {
+					init
+					operator --
+				}
+				val fraction = Fraction()
+				fraction--
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "fraction" }
+		val operator = variableValue?.type?.scope?.resolveOperator(Operator.Kind.DOUBLE_MINUS)
+		assertNotNull(operator)
+	}
+
+	@Test
+	fun `emits error for undeclared binary modification operators`() {
+		val sourceCode =
+			"""
+				Matrix class {
+					init
+				}
+				val {
+					a = Matrix()
+					b = Matrix()
+				}
+				a += b
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator 'Matrix += Matrix' hasn't been declared yet")
+	}
+
+	@Test
+	fun `resolves binary modification operator calls`() {
+		val sourceCode =
+			"""
+				Matrix class {
+					init
+					operator +=(other: Matrix): Matrix
+				}
+				val {
+					a = Matrix()
+					b = Matrix()
+				}
+				a += b
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "a" }
+		val operator = variableValue?.type?.scope?.resolveOperator(Operator.Kind.PLUS_EQUALS, variableValue)
 		assertNotNull(operator)
 	}
 

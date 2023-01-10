@@ -20,6 +20,8 @@ internal class Statements {
 	fun `detects loop tokens`() {
 		TestUtil.assertTokenType("loop", WordAtom.LOOP)
 		TestUtil.assertTokenType("over", WordAtom.OVER)
+		TestUtil.assertTokenType("using", WordAtom.USING)
+		TestUtil.assertTokenType("as", WordAtom.AS)
 		TestUtil.assertTokenType("while", WordAtom.WHILE)
 		TestUtil.assertTokenType("break", WordAtom.BREAK)
 		TestUtil.assertTokenType("next", WordAtom.NEXT)

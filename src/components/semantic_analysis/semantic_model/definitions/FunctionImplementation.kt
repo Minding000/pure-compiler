@@ -16,15 +16,18 @@ class FunctionImplementation(override val source: Element, override val parentDe
 							 val parameters: List<Parameter>, val body: ErrorHandlingContext?, returnType: Type?,
 							 override val isAbstract: Boolean = false, val isMutating: Boolean = false,
 							 val isNative: Boolean = false, val isOverriding: Boolean = false): Unit(source), MemberDeclaration {
-	override lateinit var memberIdentifier: String
 	lateinit var parentFunction: Function
+	override val memberIdentifier: String
+		get() {
+			val parentOperator = parentFunction as? Operator
+			return if(parentOperator == null) {
+				"${parentFunction.name}${signature.toString(false)}"
+			} else {
+				signature.toString(false, parentOperator.kind)
+			}
+		}
 	val signature: FunctionSignature = FunctionSignature(source, scope, genericParameters,
 		parameters.map { parameter -> parameter.type }, returnType, true)
-	var superFunctionImplementation: FunctionImplementation? = null
-		set(value) {
-			field = value
-			signature.superFunctionSignature = value?.signature
-		}
 	var mightReturnValue = false
 
 	init {
@@ -35,11 +38,6 @@ class FunctionImplementation(override val source: Element, override val parentDe
 
 	fun setParent(function: Function) {
 		parentFunction = function
-		memberIdentifier = if(function is Operator) {
-			signature.toString(false, function.kind)
-		} else {
-			"${function.name}${signature.toString(false)}"
-		}
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
@@ -52,7 +50,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		if(!Linter.LiteralType.NOTHING.matches(signature.returnType)) {
+		if(!Linter.SpecialType.NOTHING.matches(signature.returnType)) {
 			if(body != null) {
 				var someBlocksCompletesWithoutReturning = false
 				var mainBlockCompletesWithoutReturning = true
@@ -79,7 +77,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 						}
 					}
 				}
-				if(Linter.LiteralType.NEVER.matches(signature.returnType)) {
+				if(Linter.SpecialType.NEVER.matches(signature.returnType)) {
 					if(someBlocksCompletesWithoutReturning || mightReturnValue)
 						linter.addMessage(source, "Function might complete despite of 'Never' return type.", Message.Type.ERROR)
 				} else {

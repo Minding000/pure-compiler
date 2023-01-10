@@ -1,7 +1,7 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class Generators {
 
@@ -78,9 +78,9 @@ internal class Generators {
 			""".trimIndent()
 		val expected =
 			"""
-				Loop [ OverGenerator {
-					FunctionCall [ Identifier { fibonacciSeries } ] {
-					} as Identifier { fibonacciNumber }
+				Loop [ OverGenerator [ FunctionCall [ Identifier { fibonacciSeries } ] {
+				} ] {
+					Identifier { fibonacciNumber }
 				} ] { StatementSection { StatementBlock {
 				} } }
             """.trimIndent()

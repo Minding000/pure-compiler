@@ -57,7 +57,7 @@ internal class OperatorSignatureValidation {
 	fun `doesn't emit warning for unary operators that don't take exactly one parameter`() {
 		val sourceCode = """
 			Vector class {
-				operator -(): ReturnType
+				operator -: ReturnType
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -79,7 +79,7 @@ internal class OperatorSignatureValidation {
 	fun `doesn't emit warning for unary operators that don't take parameters`() {
 		val sourceCode = """
 			Vector class {
-				operator !(): ReturnType
+				operator !: ReturnType
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -101,7 +101,7 @@ internal class OperatorSignatureValidation {
 	fun `emits warning for returning operators that don't have a return type`() {
 		val sourceCode = """
 			Vector class {
-				operator !()
+				operator !
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -112,7 +112,7 @@ internal class OperatorSignatureValidation {
 	fun `doesn't emit warning for returning operators that have a return type`() {
 		val sourceCode = """
 			Vector class {
-				operator !(): ReturnType
+				operator !: ReturnType
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -124,7 +124,7 @@ internal class OperatorSignatureValidation {
 	fun `emits warning for non-returning operators that have a return type`() {
 		val sourceCode = """
 			Vector class {
-				operator ++(): Vector
+				operator ++: Vector
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -135,7 +135,7 @@ internal class OperatorSignatureValidation {
 	fun `doesn't emit warning for non-returning operators that don't have a return type`() {
 		val sourceCode = """
 			Vector class {
-				operator ++()
+				operator ++
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

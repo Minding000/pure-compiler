@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.types
 
+import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
@@ -58,6 +59,10 @@ class OrUnionType(override val source: Element, val types: List<Type>): Type(sou
 			if(!part.scope.hasValue(value))
 				return
 		this.scope.addValue(value)
+	}
+
+	override fun isInstanceOf(type: Linter.SpecialType): Boolean {
+		return types.all { part -> part.isInstanceOf(type) }
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

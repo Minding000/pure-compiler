@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.types
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.syntax_parser.syntax_tree.general.Element
 
@@ -30,14 +29,6 @@ class PluralType(override val source: Element, val baseType: Type): Type(source)
 		if(targetType !is PluralType)
 			return false
 		return baseType.isAssignableTo(targetType.baseType)
-	}
-
-	override fun getKeyType(linter: Linter): Type {
-		return ObjectType(source, Linter.LiteralType.INTEGER.className) //TODO add this type to units
-	}
-
-	override fun getValueType(linter: Linter): Type {
-		return baseType
 	}
 
 	override fun equals(other: Any?): Boolean {

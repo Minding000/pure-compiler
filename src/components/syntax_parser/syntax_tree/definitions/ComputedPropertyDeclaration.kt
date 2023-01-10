@@ -16,14 +16,15 @@ class ComputedPropertyDeclaration(private val identifier: Identifier, private va
 	VariableSectionElement(identifier.start, setStatement?.end ?: getExpression?.end ?: identifier.end) {
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf<WordAtom>()
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.OVERRIDING)
 	}
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticComputedPropertyDeclarationModel {
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
+		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val type = type ?: parent.type
 		val computedProperty = SemanticComputedPropertyDeclarationModel(this, identifier.getValue(),
-			type?.concretize(linter, scope), parent.isConstant, getExpression?.concretize(linter, scope),
+			type?.concretize(linter, scope), parent.isConstant, isOverriding, getExpression?.concretize(linter, scope),
 			setStatement?.concretize(linter, scope))
 		scope.declareValue(linter, computedProperty)
 		return computedProperty

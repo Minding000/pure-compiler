@@ -20,7 +20,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.LiteralType.INTEGER.matches(variableType))
+		assertTrue(Linter.SpecialType.INTEGER.matches(variableType))
 	}
 
 	@Test
@@ -31,7 +31,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.LiteralType.INTEGER.matches(variableType))
+		assertTrue(Linter.SpecialType.INTEGER.matches(variableType))
 	}
 
 	@Disabled
@@ -43,7 +43,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.LiteralType.INTEGER.matches(variableType))
+		assertTrue(Linter.SpecialType.INTEGER.matches(variableType))
 	}
 
 	@Test
@@ -54,7 +54,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.LiteralType.FLOAT.matches(variableType))
+		assertTrue(Linter.SpecialType.FLOAT.matches(variableType))
 	}
 
 	@Test
@@ -65,7 +65,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.LiteralType.FLOAT.matches(variableType))
+		assertTrue(Linter.SpecialType.FLOAT.matches(variableType))
 	}
 
 	@Disabled
@@ -77,7 +77,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.LiteralType.FLOAT.matches(variableType))
+		assertTrue(Linter.SpecialType.FLOAT.matches(variableType))
 	}
 
 	@Test
@@ -89,7 +89,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.LiteralType.FLOAT.matches(variableType))
+		assertTrue(Linter.SpecialType.FLOAT.matches(variableType))
 	}
 
 	@Test

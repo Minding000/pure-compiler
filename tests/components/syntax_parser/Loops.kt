@@ -1,7 +1,7 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class Loops {
 
@@ -91,36 +91,77 @@ internal class Loops {
 	}
 
 	@Test
-	fun `parses over-loops`() {
+	fun `parses over-loops without variable`() {
 		val sourceCode = """
-			loop over files as file {
-				x++
-			}
+			loop over files {}
 			""".trimIndent()
 		val expected =
 			"""
-				Loop [ OverGenerator {
-					Identifier { files } as Identifier { file }
+				Loop [ OverGenerator [ Identifier { files } ] {
 				} ] { StatementSection { StatementBlock {
-					UnaryModification { Identifier { x } Operator { ++ } }
 				} } }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test
-	fun `parses over-index-loops`() {
+	fun `parses over-loops with iterator variable`() {
 		val sourceCode = """
-			loop over files as index, file {
-				x++
+			loop over files using iterator {}
+			""".trimIndent()
+		val expected =
+			"""
+				Loop [ OverGenerator [ Identifier { files } using Identifier { iterator } ] {
+				} ] { StatementSection { StatementBlock {
+				} } }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses over-loops with value variable`() {
+		val sourceCode = """
+			loop over files as file {}
+			""".trimIndent()
+		val expected =
+			"""
+				Loop [ OverGenerator [ Identifier { files } ] {
+					Identifier { file }
+				} ] { StatementSection { StatementBlock {
+				} } }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses over-loops with key-or-index and value variable`() {
+		val sourceCode = """
+			loop over files as name, file {}
+			""".trimIndent()
+		val expected =
+			"""
+				Loop [ OverGenerator [ Identifier { files } ] {
+					Identifier { name }
+					Identifier { file }
+				} ] { StatementSection { StatementBlock {
+				} } }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses over-loops with index, key and value variable`() {
+		val sourceCode = """
+			loop over files as position, name, file {
 			}
 			""".trimIndent()
 		val expected =
 			"""
-				Loop [ OverGenerator {
-					Identifier { files } as Identifier { index }, Identifier { file }
+				Loop [ OverGenerator [ Identifier { files } ] {
+					Identifier { position }
+					Identifier { name }
+					Identifier { file }
 				} ] { StatementSection { StatementBlock {
-					UnaryModification { Identifier { x } Operator { ++ } }
 				} } }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)

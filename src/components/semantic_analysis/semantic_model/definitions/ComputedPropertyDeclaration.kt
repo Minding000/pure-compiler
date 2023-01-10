@@ -10,15 +10,15 @@ import messages.Message
 import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclaration as ComputedPropertySyntaxTree
 
 class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, name: String, type: Type?,
-								  isConstant: Boolean, val getExpression: Value?, val setStatement: Unit?):
-	InterfaceMember(source, name, type, null, false, isConstant) {
+								  isConstant: Boolean, isOverriding: Boolean, val getExpression: Value?, val setStatement: Unit?):
+	InterfaceMember(source, name, type, null, false, isConstant, false, isOverriding) {
 
 	init {
 		addUnits(getExpression, setStatement)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ComputedPropertyDeclaration {
-		return ComputedPropertyDeclaration(source, name, type?.withTypeSubstitutions(typeSubstitutions), isConstant,
+		return ComputedPropertyDeclaration(source, name, type?.withTypeSubstitutions(typeSubstitutions), isConstant, isOverriding,
 			getExpression, setStatement)
 	}
 

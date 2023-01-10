@@ -21,12 +21,11 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, val ta
 			try {
 				val operatorDefinition = valueType.scope.resolveOperator(kind)
 				if(operatorDefinition == null) {
-					linter.addMessage(source, "Operator '$valueType$kind' hasn't been declared yet.",
-						Message.Type.ERROR) //TODO write test for this
+					linter.addMessage(source, "Operator '$valueType$kind' hasn't been declared yet.", Message.Type.ERROR)
 				}
 			} catch(error: SignatureResolutionAmbiguityError) {
-				linter.addMessage(source, "Call to operator '$valueType$kind' is ambiguous. " +
-					"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR) //TODO write test for this
+				//TODO write test for this
+				error.log(linter, source, "operator", "$valueType$kind")
 			}
 		}
 	}

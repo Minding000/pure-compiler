@@ -31,8 +31,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, val target: Value,
 				}
 				type = definition.returnType
 			} catch(error: SignatureResolutionAmbiguityError) {
-				linter.addMessage(source, "Index access '${getSignature(targetType)}' is ambiguous. " +
-					"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR)
+				error.log(linter, source, "operator", getSignature(targetType))
 			}
 		}
 	}

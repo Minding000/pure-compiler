@@ -4,7 +4,7 @@
     <option name="METHOD_NAME" value="" />
     <option name="TEST_OBJECT" value="class" />
     <envs>
-      <env name="BASE_MODULE_PATH" value="$PROJECT_DIR$/../packages/lang" />
+      <env name="BASE_MODULE_PATH" value="$PROJECT_DIR$/../../../Projekte/Pure/packages/lang" />
     </envs>
     <method v="2">
       <option name="Make" enabled="true" />

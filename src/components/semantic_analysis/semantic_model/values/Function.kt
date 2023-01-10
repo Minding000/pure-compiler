@@ -16,21 +16,6 @@ open class Function(source: Element, val name: String = "<anonymous function>", 
 		get() {
 			return implementations.any { implementation -> implementation.isAbstract }
 		}
-	var superFunction: Function? = null
-		set(value) {
-			field = value
-			value?.let {
-				for(implementation in implementations) {
-					for(superImplementation in value.implementations) {
-						if(implementation.signature.fulfillsInheritanceRequirementsOf(superImplementation.signature)) {
-							implementation.superFunctionImplementation = superImplementation
-							break
-						}
-					}
-				}
-			}
-			functionType.superFunctionType = value?.functionType
-		}
 
 	init {
 		staticValue = this
@@ -62,11 +47,11 @@ open class Function(source: Element, val name: String = "<anonymous function>", 
 		for(implementation in implementations) {
 			if(functionType.superFunctionType?.hasSignatureOverriddenBy(implementation.signature) == true) {
 				if(!implementation.isOverriding)
-					linter.addMessage(implementation.source, "Missing 'overriding' keyword", Message.Type.WARNING)
+					linter.addMessage(implementation.source, "Missing 'overriding' keyword.", Message.Type.WARNING)
 			} else {
 				if(implementation.isOverriding)
 					linter.addMessage(implementation.source,
-						"'overriding' keyword is used, but the $memberType doesn't have a super $memberType",
+						"'overriding' keyword is used, but the $memberType doesn't have a super $memberType.",
 						Message.Type.WARNING)
 			}
 		}
@@ -78,7 +63,7 @@ open class Function(source: Element, val name: String = "<anonymous function>", 
 			val implementation = implementations[initializerIndex]
 			if(redeclarations.contains(implementation))
 				continue
-			for(otherImplementationIndex in initializerIndex + 1 until  implementations.size) {
+			for(otherImplementationIndex in initializerIndex + 1 until implementations.size) {
 				val otherImplementation = implementations[otherImplementationIndex]
 				if(!otherImplementation.signature.hasSameParameterTypesAs(implementation.signature))
 					continue

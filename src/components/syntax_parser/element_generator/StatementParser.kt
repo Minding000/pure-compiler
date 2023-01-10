@@ -313,9 +313,9 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	/**
 	 * LoopStatement:
 	 *   loop <StatementSection>
-	 *   loop while <Expression> <StatementSection>
-	 *   loop <StatementSection> while <Expression>
-	 *   loop over <Identifier> as <Identifier>[, <Identifier>] <StatementSection>
+	 *   loop <WhileGenerator> <StatementSection>
+	 *   loop <StatementSection> <WhileGenerator>
+	 *   loop <OverGenerator> <StatementSection>
 	 */
 	private fun parseLoopStatement(): LoopStatement {
 		val start = consume(WordAtom.LOOP).start
@@ -342,22 +342,29 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * OverGenerator:
-	 *   over <Try> as <Identifier>[, <Identifier>]
+	 *   over <Try>[ using <Identifier>][ as <Identifier>[, <Identifier>]...]
 	 */
 	private fun parseOverGenerator(): OverGenerator {
 		val start = consume(WordAtom.OVER).start
 		val collection = expressionParser.parseTry()
-		var keyDeclaration: Identifier? = null
-		var valueDeclaration: Identifier? = null
+		var iteratorVariable: Identifier? = null
+		if(currentWord?.type == WordAtom.USING) {
+			consume(WordAtom.USING)
+			iteratorVariable = parseIdentifier()
+		}
+		val variableDeclarations = LinkedList<Identifier>()
 		if(currentWord?.type == WordAtom.AS) {
 			consume(WordAtom.AS)
-			if(nextWord?.type == WordAtom.COMMA) {
-				keyDeclaration = parseIdentifier()
-				consume(WordAtom.COMMA)
+			while(true) {
+				variableDeclarations.add(parseIdentifier())
+				if(currentWord?.type == WordAtom.COMMA) {
+					consume(WordAtom.COMMA)
+					continue
+				}
+				break
 			}
-			valueDeclaration = parseIdentifier()
 		}
-		return OverGenerator(start, collection, keyDeclaration, valueDeclaration)
+		return OverGenerator(start, collection, iteratorVariable, variableDeclarations)
 	}
 
 	/**

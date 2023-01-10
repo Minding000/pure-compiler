@@ -1,9 +1,12 @@
 package components.semantic_analysis.resolution
 
+import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
 internal class ValueResolution {
@@ -60,7 +63,7 @@ internal class ValueResolution {
 	}
 
 	@Test
-	fun `resolves super members`() {
+	fun `resolves super properties`() {
 		val sourceCode =
 			"""
 				Door class {
@@ -73,6 +76,77 @@ internal class ValueResolution {
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
 		val member = variableValue?.type?.scope?.resolveValue("isOpen")
 		assertNotNull(member)
+	}
+
+	@Test
+	fun `resolves overriding properties`() {
+		val sourceCode =
+			"""
+				Door class {
+					val isOpen = yes
+				}
+				TransparentDoor class: Door
+				GlassDoor object: TransparentDoor {
+					overriding val isOpen = no
+				}
+				GlassDoor.isOpen
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
+		val member = variableValue?.type?.scope?.resolveValue("isOpen")
+		assertIs<PropertyDeclaration>(member)
+		assertEquals("no", member.value?.source?.getValue())
+	}
+
+	@Test
+	fun `detects missing overriding keyword on properties`() {
+		val sourceCode =
+			"""
+				Number class
+				Float class: Number
+				Food class {
+					val nutritionScore: Number
+				}
+				Vegetable class: Food
+				Potato class: Vegetable {
+					val nutritionScore: Float
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Missing 'overriding' keyword")
+	}
+
+	@Test
+	fun `allows for properties to be overridden`() {
+		val sourceCode =
+			"""
+				Number class
+				Float class: Number
+				Food class {
+					val nutritionScore: Number
+				}
+				Vegetable class: Food
+				Potato class: Vegetable {
+					overriding val nutritionScore: Float
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Missing 'overriding' keyword")
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
+			"'overriding' keyword is used, but the property doesn't have a super property")
+	}
+
+	@Test
+	fun `detects overriding keyword being used without super property`() {
+		val sourceCode =
+			"""
+				Room class {
+					overriding val isClean = yes
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"'overriding' keyword is used, but the property doesn't have a super property")
 	}
 
 	@Test

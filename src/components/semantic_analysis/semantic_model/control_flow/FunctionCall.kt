@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import errors.user.SignatureResolutionAmbiguityError
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.Class
 import components.semantic_analysis.semantic_model.definitions.TypeSpecification
@@ -12,9 +11,10 @@ import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
+import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
-import components.syntax_parser.syntax_tree.control_flow.FunctionCall as FunctionCallSyntaxTree
 import util.stringifyTypes
+import components.syntax_parser.syntax_tree.control_flow.FunctionCall as FunctionCallSyntaxTree
 
 class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Value, val typeParameters: List<Type>,
 				   val valueParameters: List<Value>): Value(source) {
@@ -58,8 +58,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 			addUnits(type)
 			this.type = type
 		} catch(error: SignatureResolutionAmbiguityError) {
-			linter.addMessage(source, "Call to initializer '${getSignature()}' is ambiguous. " +
-				"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR)
+			error.log(linter, source, "initializer", getSignature())
 		}
 	}
 
@@ -82,8 +81,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 			}
 			type = signature.returnType
 		} catch(error: SignatureResolutionAmbiguityError) {
-			linter.addMessage(source, "Call to function '${getSignature()}' is ambiguous. " +
-				"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR)
+			error.log(linter, source, "function", getSignature())
 		}
 	}
 

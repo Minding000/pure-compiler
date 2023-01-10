@@ -11,11 +11,11 @@ class Operator(source: Element, val kind: Kind): Function(source, kind.stringRep
 		super.validate(linter)
 		for(implementation in implementations) {
 			if(kind == Kind.BRACKETS_SET) {
-				if(!Linter.LiteralType.NOTHING.matches(implementation.signature.returnType))
+				if(!Linter.SpecialType.NOTHING.matches(implementation.signature.returnType))
 					linter.addMessage(source, "Index operators can not accept and return a value at the same time.",
 						Message.Type.WARNING)
 			} else if(kind != Kind.BRACKETS_GET) {
-				if(Linter.LiteralType.NOTHING.matches(implementation.signature.returnType)) {
+				if(Linter.SpecialType.NOTHING.matches(implementation.signature.returnType)) {
 					if(kind.returnsValue)
 						linter.addMessage(source, "This operator is expected to return a value.", Message.Type.WARNING)
 				} else {

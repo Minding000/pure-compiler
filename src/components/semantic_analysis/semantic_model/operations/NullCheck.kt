@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.operations
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.semantic_analysis.semantic_model.types.ObjectType
+import components.semantic_analysis.semantic_model.types.LiteralType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.semantic_analysis.semantic_model.values.Value
@@ -13,19 +13,13 @@ class NullCheck(override val source: NullCheckSyntaxTree, val value: Value): Val
 
 	init {
 		addUnits(value)
-		type = ObjectType(source, Linter.LiteralType.BOOLEAN.className)
-	}
-
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		for(unit in units)
-			unit.linkTypes(linter, scope)
-		linter.link(Linter.LiteralType.BOOLEAN, type)
+		type = LiteralType(source, Linter.SpecialType.BOOLEAN)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
 		value.staticValue?.type?.let { staticType ->
-			staticValue = if(Linter.LiteralType.NULL.matches(staticType)) {
+			staticValue = if(Linter.SpecialType.NULL.matches(staticType)) {
 				linter.addMessage(source, "Null check always returns 'no'.", Message.Type.WARNING)
 				BooleanLiteral(source, false)
 			} else if(staticType !is OptionalType) {

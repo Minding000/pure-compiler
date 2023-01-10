@@ -31,7 +31,7 @@ class OptionalType(override val source: Element, val baseType: Type): Type(sourc
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
 		var sourceType = resolveTypeAlias(unresolvedSourceType)
-		if(Linter.LiteralType.NULL.matches(sourceType))
+		if(Linter.SpecialType.NULL.matches(sourceType))
 			return true
 		if(sourceType is OptionalType)
 			sourceType = sourceType.baseType

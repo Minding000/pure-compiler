@@ -30,8 +30,8 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, val value: Val
 				}
 				type = operatorDefinition.returnType
 			} catch(error: SignatureResolutionAmbiguityError) {
-				linter.addMessage(source, "Call to operator '$kind$valueType' is ambiguous. " +
-					"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR) //TODO write test for this
+				//TODO write test for this
+				error.log(linter, source, "operator", "$kind$valueType")
 			}
 		}
 		staticValue = calculateStaticResult()

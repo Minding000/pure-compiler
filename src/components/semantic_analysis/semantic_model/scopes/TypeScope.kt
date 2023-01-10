@@ -9,10 +9,10 @@ import errors.internal.CompilerError
 import messages.Message
 import java.util.*
 
-class TypeScope(private val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
+class TypeScope(val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
 	lateinit var typeDefinition: TypeDefinition
 	private val typeDefinitions = HashMap<String, TypeDefinition>()
-	private val memberDeclarations = HashMap<String, MemberDeclaration>()
+	private val memberDeclarations = LinkedList<MemberDeclaration>()
 	private val interfaceMembers = HashMap<String, InterfaceMember>()
 	private val initializers = LinkedList<InitializerDefinition>()
 
@@ -34,13 +34,13 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 
 	override fun subscribe(type: Type) {
 		super.subscribe(type)
-		superScope?.subscribe(type)
 		for((_, typeDefinition) in typeDefinitions)
 			type.onNewType(typeDefinition)
 		for((_, interfaceMember) in interfaceMembers)
 			type.onNewValue(interfaceMember)
 		for(initializer in initializers)
 			type.onNewInitializer(initializer)
+		superScope?.subscribe(type)
 	}
 
 	override fun getSurroundingDefinition(): TypeDefinition {
@@ -51,7 +51,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		val abstractMembers = LinkedList<MemberDeclaration>()
 		if(superScope != null)
 			abstractMembers.addAll(superScope.getAbstractMembers())
-		for((_, memberDeclaration) in memberDeclarations) {
+		for(memberDeclaration in memberDeclarations) {
 			if(memberDeclaration.isAbstract)
 				abstractMembers.add(memberDeclaration)
 		}
@@ -60,20 +60,19 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 
 	fun inheritSignatures() {
 		for((_, memberDeclaration) in interfaceMembers) {
+			memberDeclaration.superMember = superScope?.resolveValue(memberDeclaration.name)
 			val function = memberDeclaration.value as? Function ?: continue
-			val superValue = superScope?.resolveValue(memberDeclaration.name)
-			function.superFunction = superValue?.value as? Function
+			val superFunction = memberDeclaration.superMember?.value as? Function
+			function.functionType.superFunctionType = superFunction?.functionType
 		}
 	}
 
 	fun ensureTrivialInitializers(linter: Linter) {
 		for(initializer in initializers) {
 			if(initializer.genericParameters.isNotEmpty())
-				linter.addMessage(initializer.source, "Object initializers can not take type parameters.",
-					Message.Type.ERROR)
+				linter.addMessage(initializer.source, "Object initializers can not take type parameters.", Message.Type.ERROR)
 			if(initializer.parameters.isNotEmpty())
-				linter.addMessage(initializer.source, "Object initializers can not take parameters.",
-					Message.Type.ERROR)
+				linter.addMessage(initializer.source, "Object initializers can not take parameters.", Message.Type.ERROR)
 		}
 	}
 
@@ -92,8 +91,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 						continue@initializerIteration
 				}
 				redeclarations.add(otherInitializer)
-				linter.addMessage(otherInitializer.source, "Redeclaration of" +
-						" initializer '$otherInitializer'," +
+				linter.addMessage(otherInitializer.source, "Redeclaration of initializer '$otherInitializer'," +
 						" previously declared in ${initializer.source.getStartString()}.", Message.Type.ERROR)
 			}
 		}
@@ -101,11 +99,11 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 	}
 
 	fun ensureNoAbstractMembers(linter: Linter) {
-		for((_, memberDeclaration) in memberDeclarations) {
+		for(memberDeclaration in memberDeclarations) {
 			if(memberDeclaration.isAbstract) {
 				linter.addMessage(memberDeclaration.source,
-					"Abstract member '${memberDeclaration.memberIdentifier}' is not allowed in non-abstract class '${typeDefinition.name}'.",
-					Message.Type.ERROR)
+					"Abstract member '${memberDeclaration.memberIdentifier}' is not allowed" +
+						" in non-abstract class '${typeDefinition.name}'.", Message.Type.ERROR)
 			}
 		}
 	}
@@ -114,12 +112,13 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		val missingOverrides = LinkedHashMap<TypeDefinition, LinkedList<MemberDeclaration>>()
 		val abstractSuperMembers = superScope?.getAbstractMembers() ?: return
 		for(abstractSuperMember in abstractSuperMembers) {
-			val overridingMember = memberDeclarations[abstractSuperMember.memberIdentifier]
+			//val overridingMember = memberDeclarations[abstractSuperMember.memberIdentifier]
+			val overridingMember = memberDeclarations.find { memberDeclaration ->
+				memberDeclaration.memberIdentifier == abstractSuperMember.memberIdentifier }
 			if(!abstractSuperMember.canBeOverriddenBy(overridingMember)) {
 				val parentDefinition = abstractSuperMember.parentDefinition
 					?: throw CompilerError("Member is missing parent definition.")
-				val missingOverridesFromType = missingOverrides.getOrPut(parentDefinition) {
-					LinkedList() }
+				val missingOverridesFromType = missingOverrides.getOrPut(parentDefinition) { LinkedList() }
 				missingOverridesFromType.add(abstractSuperMember)
 			}
 		}
@@ -172,7 +171,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 		}
 		if(value is Instance)
 			value.setType(typeDefinition)
-		memberDeclarations[value.memberIdentifier] = value
+		memberDeclarations.add(value)
 		onNewValue(value)
 		linter.addMessage(value.source, "Declaration of member '${typeDefinition.name}.${value.name}'.", Message.Type.DEBUG)
 	}
@@ -198,7 +197,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				return
 			}
 		}
-		memberDeclarations[newImplementation.memberIdentifier] = newImplementation
+		memberDeclarations.add(newImplementation)
 		linter.addMessage(newImplementation.source, "Declaration of function " +
 				"'${typeDefinition.name}.$name${newImplementation.signature.toString(false)}'.", Message.Type.DEBUG)
 	}
@@ -224,7 +223,7 @@ class TypeScope(private val parentScope: MutableScope, private val superScope: I
 				return
 			}
 		}
-		memberDeclarations[newImplementation.memberIdentifier] = newImplementation
+		memberDeclarations.add(newImplementation)
 		linter.addMessage(newImplementation.source, "Declaration of operator " +
 			"'${typeDefinition.name}.$name${newImplementation.signature.toString(false)}'.", Message.Type.DEBUG)
 	}

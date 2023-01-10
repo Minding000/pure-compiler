@@ -2,15 +2,15 @@ package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.GenericTypeDefinition
-import components.semantic_analysis.semantic_model.definitions.Parameter as SemanticParameterModel
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
-import components.semantic_analysis.semantic_model.types.ObjectType
+import components.semantic_analysis.semantic_model.types.LiteralType
 import components.syntax_parser.syntax_tree.general.Element
-import components.syntax_parser.syntax_tree.literals.Identifier
 import components.syntax_parser.syntax_tree.general.TypeElement
+import components.syntax_parser.syntax_tree.literals.Identifier
 import components.tokenizer.WordAtom
+import components.semantic_analysis.semantic_model.definitions.Parameter as SemanticParameterModel
 
 class Parameter(private val modifierList: ModifierList?, private val identifier: Identifier, private val type: TypeElement?):
     Element(modifierList?.start ?: identifier.start, identifier.end) {
@@ -31,7 +31,7 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
     }
 
 	fun concretizeAsGenericParameter(linter: Linter, scope: MutableScope): TypeDefinition {
-		val superType = type?.concretize(linter, scope) ?: ObjectType(this, Linter.LiteralType.ANY.className)
+		val superType = type?.concretize(linter, scope) ?: LiteralType(this, Linter.SpecialType.ANY)
 		val typeScope = TypeScope(scope, superType.scope)
 		val genericTypeDefinition = GenericTypeDefinition(this, identifier.getValue(), typeScope, superType)
 		typeScope.typeDefinition = genericTypeDefinition

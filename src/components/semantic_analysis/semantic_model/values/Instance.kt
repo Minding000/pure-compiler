@@ -37,11 +37,10 @@ class Instance(override val source: InstanceSyntaxTree, override val value: Vari
 		try {
 			val initializer = staticType.scope.resolveInitializer(valueParameters)
 			if(initializer == null)
-				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
-					Message.Type.ERROR)
+				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.", Message.Type.ERROR)
 		} catch(error: SignatureResolutionAmbiguityError) {
-			linter.addMessage(source, "Call to initializer '${getSignature()}' is ambiguous. " +
-				"Matching signatures:" + error.getSignatureList(), Message.Type.ERROR) //TODO write test for this
+			//TODO write test for this
+			error.log(linter, source, "initializer", getSignature())
 		}
 	}
 

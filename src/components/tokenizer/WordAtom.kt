@@ -76,6 +76,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	SWITCH("switch\\b"),
 	LOOP("loop\\b"),
 	OVER("over\\b"),
+	USING("using\\b"),
 	WHILE("while\\b"),
 	BREAK("break\\b"),
 	NEXT("next\\b"),

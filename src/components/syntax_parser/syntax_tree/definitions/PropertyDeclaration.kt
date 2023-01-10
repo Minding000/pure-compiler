@@ -1,27 +1,27 @@
 package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration as SemanticPropertyDeclarationModel
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.VariableSectionElement
-import components.syntax_parser.syntax_tree.literals.Identifier
 import components.syntax_parser.syntax_tree.general.TypeElement
 import components.syntax_parser.syntax_tree.general.ValueElement
+import components.syntax_parser.syntax_tree.literals.Identifier
 import components.tokenizer.WordAtom
-import java.lang.StringBuilder
+import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration as SemanticPropertyDeclarationModel
 
 class PropertyDeclaration(private val identifier: Identifier, private val type: TypeElement?,
 						  private val value: ValueElement?):
 	VariableSectionElement(identifier.start, (value ?: type ?: identifier).end) {
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.IMMUTABLE)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.IMMUTABLE, WordAtom.OVERRIDING)
 	}
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticPropertyDeclarationModel {
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isMutable = !parent.containsModifier(WordAtom.IMMUTABLE)
+		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val propertyDeclaration = SemanticPropertyDeclarationModel(
 			this,
 			identifier.getValue(),
@@ -29,7 +29,8 @@ class PropertyDeclaration(private val identifier: Identifier, private val type: 
 			(value ?: parent.value)?.concretize(linter, scope),
 			isAbstract,
 			parent.isConstant,
-			isMutable
+			isMutable,
+			isOverriding
 		)
 		scope.declareValue(linter, propertyDeclaration)
 		return propertyDeclaration

@@ -30,7 +30,7 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, val mode: Mode
 		val targetType = resolveTypeAlias(unresolvedTargetType)
 		// If assigning collection to object (different logic applies when assigning to a collection)
 		if(mode == Mode.CONSUMING)
-			return Linter.LiteralType.ANY.matches(targetType)
+			return Linter.SpecialType.ANY.matches(targetType)
 		return baseType.isAssignableTo(targetType)
 	}
 

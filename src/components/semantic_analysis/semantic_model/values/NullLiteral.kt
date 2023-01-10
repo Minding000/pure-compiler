@@ -1,20 +1,15 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.types.ObjectType
-import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.types.LiteralType
 import components.syntax_parser.syntax_tree.general.Element
 
 class NullLiteral(override val source: Element): LiteralValue(source) {
 
 	init {
-		val nullType = ObjectType(source, Linter.LiteralType.NULL.className)
+		val nullType = LiteralType(source, Linter.SpecialType.NULL)
 		addUnits(nullType)
 		type = nullType
-	}
-
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		linter.link(Linter.LiteralType.NULL, type)
 	}
 
 	override fun hashCode(): Int {

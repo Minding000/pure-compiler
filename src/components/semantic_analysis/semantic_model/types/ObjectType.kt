@@ -105,6 +105,12 @@ open class ObjectType(override val source: Element, val name: String, val typePa
 		}
 	}
 
+	override fun isInstanceOf(type: Linter.SpecialType): Boolean {
+		if(type.matches(this))
+			return true
+		return definition?.superType?.isInstanceOf(type) ?: false
+	}
+
 	override fun accepts(unresolvedSourceType: Type): Boolean {
 		(definition as? TypeAlias)?.let { typeAlias ->
 			return unresolvedSourceType.isAssignableTo(typeAlias.referenceType)
@@ -126,22 +132,6 @@ open class ObjectType(override val source: Element, val name: String, val typePa
 		if(equals(targetType))
 			return true
 		return definition?.superType?.isAssignableTo(targetType) ?: false
-	}
-
-	override fun getKeyType(linter: Linter): Type? { //TODO write test for this
-		if(typeParameters.size != 2) {
-			linter.addMessage(source, "Type '$this' doesn't have a key type.", Message.Type.ERROR)
-			return null
-		}
-		return typeParameters.first()
-	}
-
-	override fun getValueType(linter: Linter): Type? { //TODO write test for this
-		if(!(typeParameters.size == 1 || typeParameters.size == 2)) {
-			linter.addMessage(source, "Type '$this' doesn't have a value type.", Message.Type.ERROR)
-			return null
-		}
-		return typeParameters.last()
 	}
 
 	override fun getAbstractMembers(): List<MemberDeclaration> {

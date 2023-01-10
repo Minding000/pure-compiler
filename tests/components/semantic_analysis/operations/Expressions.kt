@@ -26,7 +26,7 @@ internal class Expressions {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val nullCheck = lintResult.find<NullCheck>()
-		assertTrue(Linter.LiteralType.BOOLEAN.matches(nullCheck?.type))
+		assertTrue(Linter.SpecialType.BOOLEAN.matches(nullCheck?.type))
 	}
 
 	@Test
@@ -131,8 +131,8 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		val positiveCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.CAST_CONDITION }
 		val negativeCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.NEGATED_CAST_CONDITION }
-		assertTrue(Linter.LiteralType.BOOLEAN.matches(positiveCast?.type))
-		assertTrue(Linter.LiteralType.BOOLEAN.matches(negativeCast?.type))
+		assertTrue(Linter.SpecialType.BOOLEAN.matches(positiveCast?.type))
+		assertTrue(Linter.SpecialType.BOOLEAN.matches(negativeCast?.type))
 	}
 
 	@Test

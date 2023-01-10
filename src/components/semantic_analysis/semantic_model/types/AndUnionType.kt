@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.types
 
+import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.InterfaceMember
@@ -33,6 +34,10 @@ class AndUnionType(override val source: Element, val types: List<Type>): Type(so
 
 	override fun onNewValue(value: InterfaceMember) {
 		this.scope.addValue(value)
+	}
+
+	override fun isInstanceOf(type: Linter.SpecialType): Boolean {
+		return types.any { part -> part.isInstanceOf(type) }
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

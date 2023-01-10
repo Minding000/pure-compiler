@@ -1,8 +1,10 @@
 package components.semantic_analysis.declarations
 
+import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
 import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
+import kotlin.test.assertEquals
 
 internal class GenericTypes {
 
@@ -43,5 +45,27 @@ internal class GenericTypes {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING,
 			"Generic type declarations are not allowed in objects")
+	}
+
+	@Test
+	fun `resolves generic parameters in super type`() {
+		val sourceCode =
+			"""
+				Int class
+				List class {
+					containing Element
+
+					to getFirst(): Element
+				}
+				IntegerList class: <Int>List {
+
+					init {
+						val firstElement = getFirst()
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "firstElement" }?.type
+		assertEquals("Int", variableType.toString())
 	}
 }

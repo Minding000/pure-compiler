@@ -4,7 +4,7 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.semantic_analysis.semantic_model.types.ObjectType
+import components.semantic_analysis.semantic_model.types.LiteralType
 import components.semantic_analysis.semantic_model.types.OrUnionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Operator
@@ -15,7 +15,7 @@ import java.util.*
 
 class FunctionSignature(override val source: Element, val scope: BlockScope, val genericParameters: List<TypeDefinition>,
 						val parameterTypes: List<Type?>, returnType: Type?, isPartOfImplementation: Boolean = false): Unit(source) {
-	val returnType = returnType ?: ObjectType(source, Linter.LiteralType.NOTHING.className)
+	val returnType = returnType ?: LiteralType(source, Linter.SpecialType.NOTHING)
 	var superFunctionSignature: FunctionSignature? = null
 
 	init {
@@ -40,13 +40,7 @@ class FunctionSignature(override val source: Element, val scope: BlockScope, val
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
-		for(unit in units) {
-			if(Linter.LiteralType.NOTHING.matches(unit)) {
-				linter.link(Linter.LiteralType.NOTHING, unit)
-				continue
-			}
-			unit.linkTypes(linter, this.scope)
-		}
+		super.linkTypes(linter, this.scope)
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -166,7 +160,7 @@ class FunctionSignature(override val source: Element, val scope: BlockScope, val
 
 	fun toString(useLambdaStyleForFunctions: Boolean, kind: Operator.Kind? = null): String {
 		return when(kind) {
-			Operator.Kind.BRACKETS_GET, Operator.Kind.BRACKETS_SET -> {
+			Operator.Kind.BRACKETS_GET -> {
 				var stringRepresentation = "["
 				if(genericParameters.isNotEmpty()) {
 					stringRepresentation += genericParameters.joinToString()
@@ -175,7 +169,26 @@ class FunctionSignature(override val source: Element, val scope: BlockScope, val
 						stringRepresentation += " "
 				}
 				stringRepresentation += "${parameterTypes.joinToString()}]"
-				if(!Linter.LiteralType.NOTHING.matches(returnType))
+				if(!Linter.SpecialType.NOTHING.matches(returnType))
+					stringRepresentation += ": $returnType"
+				stringRepresentation
+			}
+			Operator.Kind.BRACKETS_SET -> {
+				var stringRepresentation = "["
+				if(genericParameters.isNotEmpty()) {
+					stringRepresentation += genericParameters.joinToString()
+					stringRepresentation += ";"
+					if(parameterTypes.size > 1)
+						stringRepresentation += " "
+				}
+				for(typeIndex in 0 until parameterTypes.size - 1) {
+					if(typeIndex != 0)
+						stringRepresentation += ", "
+					stringRepresentation += parameterTypes[typeIndex]
+				}
+				stringRepresentation += "]"
+				stringRepresentation += "(${parameterTypes.lastOrNull()})"
+				if(!Linter.SpecialType.NOTHING.matches(returnType))
 					stringRepresentation += ": $returnType"
 				stringRepresentation
 			}
@@ -195,9 +208,9 @@ class FunctionSignature(override val source: Element, val scope: BlockScope, val
 					if(stringRepresentation.isNotEmpty())
 						stringRepresentation += " "
 					stringRepresentation += "=>"
-					stringRepresentation += if(Linter.LiteralType.NOTHING.matches(returnType)) "|" else " $returnType"
+					stringRepresentation += if(Linter.SpecialType.NOTHING.matches(returnType)) "|" else " $returnType"
 				} else {
-					if(!Linter.LiteralType.NOTHING.matches(returnType))
+					if(!Linter.SpecialType.NOTHING.matches(returnType))
 						stringRepresentation += ": $returnType"
 				}
 				stringRepresentation

@@ -1,20 +1,15 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.types.ObjectType
-import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.types.LiteralType
 import components.syntax_parser.syntax_tree.literals.StringLiteral as StringLiteralSyntaxTree
 
 class StringLiteral(override val source: StringLiteralSyntaxTree, val value: String): LiteralValue(source) {
 
 	init {
-		val stringType = ObjectType(source, Linter.LiteralType.STRING.className)
+		val stringType = LiteralType(source, Linter.SpecialType.STRING)
 		addUnits(stringType)
 		type = stringType
-	}
-
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		linter.link(Linter.LiteralType.STRING, type)
 	}
 
 	override fun hashCode(): Int {

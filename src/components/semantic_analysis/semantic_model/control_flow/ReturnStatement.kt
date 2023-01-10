@@ -34,7 +34,7 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, val value:
 				linter.addMessage(source, "Failed to resolve type of value '${source.getValue()}'.", Message.Type.ERROR)
 		}
 		targetFunction?.signature?.returnType?.let { returnType ->
-			if(Linter.LiteralType.NOTHING.matches(returnType)) {
+			if(Linter.SpecialType.NOTHING.matches(returnType)) {
 				if(value != null)
 					linter.addMessage(source, "Return value doesn't match the declared return type.", Message.Type.ERROR)
 			} else {

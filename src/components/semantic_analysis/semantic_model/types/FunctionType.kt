@@ -11,9 +11,22 @@ import messages.Message
 import java.util.*
 
 //TODO include target instance type (optional) e.g. transform: String.() -> String
-class FunctionType(override val source: Element): ObjectType(source, Linter.LiteralType.FUNCTION.className) {
+class FunctionType(override val source: Element): ObjectType(source, Linter.SpecialType.FUNCTION.className) {
 	private val signatures = LinkedList<FunctionSignature>()
 	var superFunctionType: FunctionType? = null
+		set(value) {
+			field = value
+			value?.let { superFunctionType ->
+				for(signature in signatures) {
+					for(superSignature in superFunctionType.signatures) {
+						if(signature.fulfillsInheritanceRequirementsOf(superSignature)) {
+							signature.superFunctionSignature = superSignature
+							break
+						}
+					}
+				}
+			}
+		}
 
 	constructor(source: Element, signature: FunctionSignature): this(source) {
 		addSignature(signature)
@@ -22,9 +35,9 @@ class FunctionType(override val source: Element): ObjectType(source, Linter.Lite
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		for(unit in units)
 			unit.linkTypes(linter, scope)
-		definition = linter.literalScopes[Linter.LiteralType.FUNCTION]?.resolveType(name)
+		definition = Linter.SpecialType.FUNCTION.scope?.resolveType(name)
 		if(definition == null)
-			linter.addMessage(source, "Type '$name' hasn't been declared yet.", Message.Type.ERROR)
+			linter.addMessage(source, "Literal type '$name' hasn't been declared yet.", Message.Type.ERROR)
 	}
 
 	fun hasSignatureOverriddenBy(subSignature: FunctionSignature): Boolean {
@@ -102,7 +115,7 @@ class FunctionType(override val source: Element): ObjectType(source, Linter.Lite
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
 		val targetType = resolveTypeAlias(unresolvedTargetType)
 		if(targetType !is FunctionType)
-			return Linter.LiteralType.ANY.matches(targetType)
+			return Linter.SpecialType.ANY.matches(targetType)
 		signatureAssignabilityCheck@for(requiredSignature in targetType.signatures) {
 			for(availableSignature in signatures) {
 				if(requiredSignature.accepts(availableSignature))

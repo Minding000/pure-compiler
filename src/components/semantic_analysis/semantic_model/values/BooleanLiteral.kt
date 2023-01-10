@@ -1,20 +1,15 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.types.ObjectType
-import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.types.LiteralType
 import components.syntax_parser.syntax_tree.general.Element
 
 class BooleanLiteral(override val source: Element, val value: Boolean): LiteralValue(source) {
 
 	init {
-		val type = ObjectType(source, Linter.LiteralType.BOOLEAN.className)
+		val type = LiteralType(source, Linter.SpecialType.BOOLEAN)
 		addUnits(type)
 		this.type = type
-	}
-
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		linter.link(Linter.LiteralType.BOOLEAN, type)
 	}
 
 	override fun hashCode(): Int {

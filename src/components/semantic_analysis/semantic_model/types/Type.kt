@@ -10,7 +10,6 @@ import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
 import java.util.*
 
 abstract class Type(source: Element): Unit(source) {
@@ -37,19 +36,11 @@ abstract class Type(source: Element): Unit(source) {
 		//  -> Simplify to '...'
 	}
 
+	open fun isInstanceOf(type: Linter.SpecialType): Boolean = false
+
 	abstract fun accepts(unresolvedSourceType: Type): Boolean
 
 	abstract fun isAssignableTo(unresolvedTargetType: Type): Boolean
-
-	open fun getKeyType(linter: Linter): Type? {
-		linter.addMessage("Type '$this' doesn't have a key type.", Message.Type.ERROR)
-		return null
-	}
-
-	open fun getValueType(linter: Linter): Type? {
-		linter.addMessage("Type '$this' doesn't have a value type.", Message.Type.ERROR)
-		return null
-	}
 
 	internal fun resolveTypeAlias(sourceType: Type): Type {
 		if(sourceType is ObjectType) {

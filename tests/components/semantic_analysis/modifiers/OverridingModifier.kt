@@ -4,146 +4,87 @@ import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
-internal class AbstractModifier {
+internal class OverridingModifier {
 
 	@Test
-	fun `is allowed on classes`() {
-		val sourceCode = "abstract Goldfish class"
+	fun `is not allowed on classes`() {
+		val sourceCode = "overriding Goldfish class"
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
 	}
 
 	@Test
 	fun `is not allowed on objects`() {
-		val sourceCode = "abstract Earth object"
+		val sourceCode = "overriding Earth object"
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
 	}
 
 	@Test
 	fun `is not allowed on enums`() {
-		val sourceCode = "abstract Tire enum {}"
+		val sourceCode = "overriding Tire enum"
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
+	}
+
+	@Test
+	fun `is not allowed on initializers`() {
+		val sourceCode =
+			"""
+				Forrest class {
+					overriding init
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
 	}
 
 	@Test
 	fun `is allowed on properties`() {
 		val sourceCode =
 			"""
-				abstract Goldfish class {
-					abstract val brain: Brain
+				Goldfish class {
+					overriding val brain: Brain
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
 	}
 
 	@Test
-	fun `is not allowed on computed properties`() {
+	fun `is allowed on computed properties`() {
 		val sourceCode =
 			"""
-				abstract Goldfish class {
-					abstract val name: String
+				Goldfish class {
+					overriding val name: String
 						gets "Bernd"
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
 	}
 
 	@Test
 	fun `is allowed on functions`() {
 		val sourceCode =
 			"""
-				abstract Goldfish class {
-					abstract to swim()
+				Goldfish class {
+					overriding to swim()
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
-			"Modifier 'abstract' is not allowed here")
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
 	}
 
 	@Test
-	fun `emits error for abstract member in non-abstract class`() {
-		val sourceCode = """
-			Int class
-			List class {
-				abstract val id: Int
-				abstract to clear()
-			}
-			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Abstract member 'id: Int' is not allowed in non-abstract class 'List'")
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Abstract member 'clear()' is not allowed in non-abstract class 'List'")
-	}
-
-	@Test
-	fun `doesn't emit error for abstract member in abstract class`() {
-		val sourceCode = """
-			Int class
-			abstract List class {
-				abstract val id: Int
-				abstract to clear()
-			}
-			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not allowed in non-abstract class")
-	}
-
-	@Test
-	fun `doesn't emit error for non-abstract member in non-abstract class`() {
-		val sourceCode = """
-			Int class {
-				init
-			}
-			List class {
-				val id = Int()
-				to clear()
-			}
-			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not allowed in non-abstract class")
-	}
-
-	@Test
-	fun `emits error for instantiation of abstract classes`() {
-		val sourceCode = """
-			abstract List class {
-				init
-			}
-			List()
-			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Abstract class 'List' cannot be instantiated")
-	}
-
-	@Test
-	fun `emits error for non-abstract subclasses that don't implement inherited abstract members`() {
-		val sourceCode = """
-			Int class
-			abstract Collection class {
-				abstract val size: Int
-			}
-			abstract List class: Collection {
-				abstract to clear()
-				abstract to clear(position: Int)
-			}
-			LinkedList class: List {
-				overriding to clear()
-			}
-			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
+	fun `is allowed on operators`() {
+		val sourceCode =
 			"""
-				Non-abstract class 'LinkedList' does not implement the following inherited members:
-				- Collection
-				  - size: Int
-				- List
-				  - clear(Int)
-			""".trimIndent())
+				Goldfish class {
+					overriding operator ++
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
 	}
 }

@@ -2,10 +2,10 @@ package components.semantic_analysis.semantic_model.operations
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.control_flow.IfStatement
-import components.semantic_analysis.semantic_model.types.ObjectType
+import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.types.LiteralType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.*
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.Cast as CastSyntaxTree
@@ -22,21 +22,17 @@ class Cast(override val source: CastSyntaxTree, val value: Value, val variableDe
 		addUnits(value, variableDeclaration)
 		type = if(operator.returnsBoolean) {
 			addUnits(referenceType)
-			ObjectType(source, Linter.LiteralType.BOOLEAN.className)
+			LiteralType(source, Linter.SpecialType.BOOLEAN)
 		} else if(operator == Operator.OPTIONAL_CAST) {
-			val type = OptionalType(source, referenceType)
-			addUnits(type)
-			type
+			OptionalType(source, referenceType)
 		} else {
-			addUnits(referenceType)
 			referenceType
 		}
+		addUnits(type)
 	}
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		super.linkTypes(linter, scope)
-		if(operator.returnsBoolean)
-			linter.link(Linter.LiteralType.BOOLEAN, type)
 		variableDeclaration?.type = referenceType
 	}
 
