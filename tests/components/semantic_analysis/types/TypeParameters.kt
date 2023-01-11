@@ -74,6 +74,7 @@ internal class TypeParameters {
 	fun `consuming type is only assignable to 'Any' type`() {
 		val sourceCode =
 			"""
+			referencing Pure
 			SoftDrink class {
 				init
 			}
