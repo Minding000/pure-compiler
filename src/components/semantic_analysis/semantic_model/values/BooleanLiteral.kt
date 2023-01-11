@@ -6,10 +6,13 @@ import components.syntax_parser.syntax_tree.general.Element
 
 class BooleanLiteral(override val source: Element, val value: Boolean): LiteralValue(source) {
 
+	constructor(source: Element, value: Boolean, linter: Linter): this(source, value) {
+		(type as? LiteralType)?.linkTypes(linter)
+	}
+
 	init {
-		val type = LiteralType(source, Linter.SpecialType.BOOLEAN)
+		type = LiteralType(source, Linter.SpecialType.BOOLEAN)
 		addUnits(type)
-		this.type = type
 	}
 
 	override fun hashCode(): Int {

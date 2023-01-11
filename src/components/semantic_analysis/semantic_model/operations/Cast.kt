@@ -40,9 +40,9 @@ class Cast(override val source: CastSyntaxTree, val value: Value, val variableDe
 		super.linkValues(linter, scope)
 		if(operator.returnsBoolean) {
 			if(isCastAlwaysSuccessful)
-				staticValue = BooleanLiteral(source, operator == Operator.CAST_CONDITION)
+				staticValue = BooleanLiteral(source, operator == Operator.CAST_CONDITION, linter)
 			else if(isCastNeverSuccessful)
-				staticValue = BooleanLiteral(source, operator == Operator.NEGATED_CAST_CONDITION)
+				staticValue = BooleanLiteral(source, operator == Operator.NEGATED_CAST_CONDITION, linter)
 		} else if(operator == Operator.SAFE_CAST) {
 			staticValue = value.staticValue
 		} else if(operator == Operator.THROWING_CAST) {
@@ -52,7 +52,7 @@ class Cast(override val source: CastSyntaxTree, val value: Value, val variableDe
 			if(isCastAlwaysSuccessful)
 				staticValue = value.staticValue
 			else if(isCastNeverSuccessful)
-				staticValue = NullLiteral(source)
+				staticValue = NullLiteral(source, linter)
 		}
 	}
 

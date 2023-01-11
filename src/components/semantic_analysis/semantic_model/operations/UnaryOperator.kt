@@ -34,20 +34,20 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, val value: Val
 				error.log(linter, source, "operator", "$kind$valueType")
 			}
 		}
-		staticValue = calculateStaticResult()
+		staticValue = calculateStaticResult(linter)
 	}
 
-	private fun calculateStaticResult(): Value? {
+	private fun calculateStaticResult(linter: Linter): Value? {
 		return when(kind) {
 			Operator.Kind.BRACKETS_GET -> null
 			Operator.Kind.EXCLAMATION_MARK -> {
 				val booleanValue = value.staticValue as? BooleanLiteral ?: return null
-				BooleanLiteral(source, !booleanValue.value)
+				BooleanLiteral(source, !booleanValue.value, linter)
 			}
 			Operator.Kind.TRIPLE_DOT -> null
 			Operator.Kind.MINUS -> {
 				val numberValue = value.staticValue as? NumberLiteral ?: return null
-				NumberLiteral(source, -numberValue.value)
+				NumberLiteral(source, -numberValue.value, linter)
 			}
 			else -> throw CompilerError("Static evaluation is not implemented for operators of kind '$kind'.")
 		}

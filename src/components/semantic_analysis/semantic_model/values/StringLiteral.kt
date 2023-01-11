@@ -7,9 +7,8 @@ import components.syntax_parser.syntax_tree.literals.StringLiteral as StringLite
 class StringLiteral(override val source: StringLiteralSyntaxTree, val value: String): LiteralValue(source) {
 
 	init {
-		val stringType = LiteralType(source, Linter.SpecialType.STRING)
-		addUnits(stringType)
-		type = stringType
+		type = LiteralType(source, Linter.SpecialType.STRING)
+		addUnits(type)
 	}
 
 	override fun hashCode(): Int {

@@ -6,10 +6,13 @@ import components.syntax_parser.syntax_tree.general.Element
 
 class NullLiteral(override val source: Element): LiteralValue(source) {
 
+	constructor(source: Element, linter: Linter): this(source) {
+		(type as? LiteralType)?.linkTypes(linter)
+	}
+
 	init {
-		val nullType = LiteralType(source, Linter.SpecialType.NULL)
-		addUnits(nullType)
-		type = nullType
+		type = LiteralType(source, Linter.SpecialType.NULL)
+		addUnits(type)
 	}
 
 	override fun hashCode(): Int {

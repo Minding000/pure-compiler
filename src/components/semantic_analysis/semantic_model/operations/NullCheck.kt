@@ -12,8 +12,8 @@ import components.syntax_parser.syntax_tree.operations.NullCheck as NullCheckSyn
 class NullCheck(override val source: NullCheckSyntaxTree, val value: Value): Value(source) {
 
 	init {
-		addUnits(value)
 		type = LiteralType(source, Linter.SpecialType.BOOLEAN)
+		addUnits(value, type)
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {
@@ -21,10 +21,10 @@ class NullCheck(override val source: NullCheckSyntaxTree, val value: Value): Val
 		value.staticValue?.type?.let { staticType ->
 			staticValue = if(Linter.SpecialType.NULL.matches(staticType)) {
 				linter.addMessage(source, "Null check always returns 'no'.", Message.Type.WARNING)
-				BooleanLiteral(source, false)
+				BooleanLiteral(source, false, linter)
 			} else if(staticType !is OptionalType) {
 				linter.addMessage(source, "Null check always returns 'yes'.", Message.Type.WARNING)
-				BooleanLiteral(source, true)
+				BooleanLiteral(source, true, linter)
 			} else null
 		}
 	}

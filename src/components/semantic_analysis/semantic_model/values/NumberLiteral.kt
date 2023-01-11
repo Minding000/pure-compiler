@@ -11,10 +11,13 @@ import java.math.BigDecimal
 class NumberLiteral(override val source: Element, val value: BigDecimal): LiteralValue(source) {
 	var isInteger = value.isRepresentedAsAnInteger()
 
+	constructor(source: Element, value: BigDecimal, linter: Linter): this(source, value) {
+		(type as? LiteralType)?.linkTypes(linter)
+	}
+
 	init {
-		val numberType = LiteralType(source, if(isInteger) Linter.SpecialType.INTEGER else Linter.SpecialType.FLOAT)
-		addUnits(numberType)
-		type = numberType
+		type = LiteralType(source, if(isInteger) Linter.SpecialType.INTEGER else Linter.SpecialType.FLOAT)
+		addUnits(type)
 	}
 
 	override fun isAssignableTo(targetType: Type?): Boolean {

@@ -68,6 +68,7 @@ open class ObjectType(override val source: Element, val enclosingType: ObjectTyp
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		super.linkTypes(linter, scope)
 		if(definition == null) {
+			//TODO mind enclosingType (write tests)
 			definition = scope.resolveType(name)
 			if(definition == null)
 				linter.addMessage(source, "Type '$name' hasn't been declared yet.", Message.Type.ERROR)
@@ -99,8 +100,8 @@ open class ObjectType(override val source: Element, val enclosingType: ObjectTyp
 				val genericType = genericTypes[parameterIndex]
 				val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
 				if(!genericType.acceptsSubstituteType(typeParameter)) {
-					linter.addMessage(source, "The type parameter " +
-						"'$typeParameter' is not assignable to '$genericType'.", Message.Type.ERROR)
+					linter.addMessage(source, "The type parameter '$typeParameter' is not assignable to '$genericType'.",
+						Message.Type.ERROR)
 				}
 			}
 		}

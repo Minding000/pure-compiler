@@ -31,10 +31,10 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, val left: Va
 				error.log(linter, source, "operator", "$leftType $kind ${right.type}")
 			}
 		}
-		staticValue = calculateStaticResult()
+		staticValue = calculateStaticResult(linter)
 	}
 
-	private fun calculateStaticResult(): Value? {
+	private fun calculateStaticResult(linter: Linter): Value? {
 		return when(kind) {
 			Operator.Kind.DOUBLE_QUESTION_MARK -> {
 				val leftValue = left.staticValue ?: return null
@@ -46,62 +46,62 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, val left: Va
 			Operator.Kind.AND -> {
 				val leftValue = left.staticValue as? BooleanLiteral ?: return null
 				val rightValue = right.staticValue as? BooleanLiteral ?: return null
-				BooleanLiteral(source, leftValue.value && rightValue.value)
+				BooleanLiteral(source, leftValue.value && rightValue.value, linter)
 			}
 			Operator.Kind.PIPE -> {
 				val leftValue = left.staticValue as? BooleanLiteral ?: return null
 				val rightValue = right.staticValue as? BooleanLiteral ?: return null
-				BooleanLiteral(source, leftValue.value || rightValue.value)
+				BooleanLiteral(source, leftValue.value || rightValue.value, linter)
 			}
 			Operator.Kind.PLUS -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				NumberLiteral(source, leftValue.value + rightValue.value)
+				NumberLiteral(source, leftValue.value + rightValue.value, linter)
 			}
 			Operator.Kind.MINUS -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				NumberLiteral(source, leftValue.value - rightValue.value)
+				NumberLiteral(source, leftValue.value - rightValue.value, linter)
 			}
 			Operator.Kind.STAR -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				NumberLiteral(source, leftValue.value * rightValue.value)
+				NumberLiteral(source, leftValue.value * rightValue.value, linter)
 			}
 			Operator.Kind.SLASH -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				NumberLiteral(source, leftValue.value / rightValue.value)
+				NumberLiteral(source, leftValue.value / rightValue.value, linter)
 			}
 			Operator.Kind.SMALLER_THAN -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				BooleanLiteral(source, leftValue.value < rightValue.value)
+				BooleanLiteral(source, leftValue.value < rightValue.value, linter)
 			}
 			Operator.Kind.GREATER_THAN -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				BooleanLiteral(source, leftValue.value > rightValue.value)
+				BooleanLiteral(source, leftValue.value > rightValue.value, linter)
 			}
 			Operator.Kind.SMALLER_THAN_OR_EQUAL_TO -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				BooleanLiteral(source, leftValue.value <= rightValue.value)
+				BooleanLiteral(source, leftValue.value <= rightValue.value, linter)
 			}
 			Operator.Kind.GREATER_THAN_OR_EQUAL_TO -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				BooleanLiteral(source, leftValue.value >= rightValue.value)
+				BooleanLiteral(source, leftValue.value >= rightValue.value, linter)
 			}
 			Operator.Kind.EQUAL_TO -> {
 				val leftValue = left.staticValue ?: return null
 				val rightValue = right.staticValue ?: return null
-				BooleanLiteral(source, leftValue == rightValue)
+				BooleanLiteral(source, leftValue == rightValue, linter)
 			}
 			Operator.Kind.NOT_EQUAL_TO -> {
 				val leftValue = left.staticValue ?: return null
 				val rightValue = right.staticValue ?: return null
-				BooleanLiteral(source, leftValue != rightValue)
+				BooleanLiteral(source, leftValue != rightValue, linter)
 			}
 			else -> throw CompilerError("Static evaluation is not implemented for operators of kind '$kind'.")
 		}
