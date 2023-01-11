@@ -99,7 +99,7 @@ internal class TypeResolution {
 				list.add(Germany)
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val memberAccess = lintResult.find<MemberAccess> { memberAccess -> memberAccess.member.name == "add" }
+		val memberAccess = lintResult.find<MemberAccess> { memberAccess -> memberAccess.member.toString() == "add" }
 		assertEquals("(Country) =>|", memberAccess?.type.toString())
 	}
 }

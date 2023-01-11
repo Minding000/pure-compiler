@@ -1,18 +1,16 @@
 package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
-import errors.internal.CompilerError
 import messages.Message
 import components.syntax_parser.syntax_tree.definitions.TypeSpecification as TypeSpecificationSyntaxTree
 
-class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val baseValue: Value,
-						val typeParameters: List<Type>): Value(source) {
+class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val typeParameters: List<Type>, val baseValue: VariableValue):
+	Value(source) {
 
 	init {
 		addUnits(baseValue)
@@ -34,11 +32,6 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val ba
 
 	override fun toString(): String {
 		val typeParameterList = typeParameters.joinToString(", ", "<", ">")
-		return when(baseValue) {
-			is VariableValue -> "$typeParameterList${baseValue.name}"
-			is MemberAccess -> "${baseValue.target.type}.$typeParameterList${baseValue.member.name}"
-			else -> throw CompilerError("Type specification can only contain VariableValues or MemberAccesses, " +
-				"but found '${baseValue.javaClass.simpleName}'.")
-		}
+		return "$typeParameterList${baseValue.name}"
 	}
 }

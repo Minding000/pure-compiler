@@ -2,10 +2,10 @@ package components.semantic_analysis.semantic_model.operations
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
-import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.operations.Assignment as AssignmentSyntaxTree
 
 class Assignment(override val source: AssignmentSyntaxTree, private val targets: List<Value>,
@@ -32,8 +32,8 @@ class Assignment(override val source: AssignmentSyntaxTree, private val targets:
 				target.type = sourceExpression.type
 			} else {
 				sourceExpression.type?.let { sourceType ->
-					linter.addMessage(target.source,
-						"Type '$sourceType' is not assignable to type '$targetType'.", Message.Type.ERROR)
+					linter.addMessage(target.source, "Type '$sourceType' is not assignable to type '$targetType'.",
+						Message.Type.ERROR)
 				}
 			}
 		}
@@ -44,19 +44,16 @@ class Assignment(override val source: AssignmentSyntaxTree, private val targets:
 			when(target) {
 				is VariableValue -> {
 					if(target.definition?.isConstant == true)
-						linter.addMessage(target.source,
-							"'${target.name}' cannot be reassigned, because it is constant.",
+						linter.addMessage(target.source, "'${target.name}' cannot be reassigned, because it is constant.",
 							Message.Type.ERROR)
 				}
 				is MemberAccess -> {
-					if(target.member.definition?.isConstant == true)
-						linter.addMessage(target.source,
-							"'${target.member.name}' cannot be reassigned, because it is constant.",
+					if(target.member !is VariableValue || target.member.definition?.isConstant == true)
+						linter.addMessage(target.source, "'${target.member}' cannot be reassigned, because it is constant.",
 							Message.Type.ERROR)
 				}
 				is IndexAccess -> {
-					target.target.type?.scope?.resolveIndexOperator(target.typeParameters, target.indices,
-						sourceExpression)
+					target.target.type?.scope?.resolveIndexOperator(target.typeParameters, target.indices, sourceExpression)
 				}
 				else -> {
 					linter.addMessage(target.source, "Expression is not assignable.", Message.Type.ERROR)

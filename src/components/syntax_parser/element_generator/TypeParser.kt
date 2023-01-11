@@ -1,12 +1,14 @@
 package components.syntax_parser.element_generator
 
+import components.syntax_parser.syntax_tree.definitions.FunctionType
+import components.syntax_parser.syntax_tree.definitions.ParameterTypeList
+import components.syntax_parser.syntax_tree.definitions.TypeParameter
+import components.syntax_parser.syntax_tree.general.TypeElement
+import components.syntax_parser.syntax_tree.literals.*
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
 import components.tokenizer.WordDescriptor
 import components.tokenizer.WordType
-import components.syntax_parser.syntax_tree.definitions.*
-import components.syntax_parser.syntax_tree.general.TypeElement
-import components.syntax_parser.syntax_tree.literals.*
 import java.util.*
 
 class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
@@ -81,11 +83,18 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	/**
 	 * ObjectType:
 	 *   <TypeList><Identifier>
+	 *   <ObjectType>.<TypeList><Identifier>
 	 */
 	private fun parseObjectType(): ObjectType {
-		val typeList = parseOptionalTypeList()
-		val identifier = parseIdentifier()
-		return ObjectType(typeList, identifier)
+		var objectType: ObjectType? = null
+		while(true) {
+			val typeList = parseOptionalTypeList()
+			val identifier = parseIdentifier()
+			objectType = ObjectType(objectType, typeList, identifier)
+			if(currentWord?.type != WordAtom.DOT)
+				return objectType
+			consume(WordAtom.DOT)
+		}
 	}
 
 	/**

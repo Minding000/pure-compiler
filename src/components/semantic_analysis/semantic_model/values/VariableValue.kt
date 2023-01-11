@@ -3,8 +3,8 @@ package components.semantic_analysis.semantic_model.values
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
 import components.syntax_parser.syntax_tree.literals.Identifier
+import messages.Message
 
 open class VariableValue(override val source: Element, val name: String): Value(source) {
 	var definition: ValueDeclaration? = null
@@ -37,4 +37,6 @@ open class VariableValue(override val source: Element, val name: String): Value(
 			return false
 		return definition == other.definition
 	}
+
+	override fun toString(): String = name
 }

@@ -228,16 +228,16 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 
 	/**
 	 * MemberAccess:
-	 *   <Accessor>[?].[<TypeList>]<Identifier>
+	 *   <Accessor>[?].<Identifier>
+	 *   <Accessor>[?].<TypeSpecification>
 	 */
-	private fun parseMemberAccess(rootExpression: ValueElement): ValueElement {
+	private fun parseMemberAccess(rootExpression: ValueElement): MemberAccess {
 		val accessor = consume(WordType.MEMBER_ACCESSOR)
-		val typeList = typeParser.parseOptionalTypeList()
-		var expression: ValueElement = MemberAccess(rootExpression, literalParser.parseIdentifier(),
-			accessor.type == WordAtom.OPTIONAL_ACCESSOR)
-		if(typeList != null)
-			expression = TypeSpecification(typeList.start, expression.end, expression, typeList)
-		return expression
+		val memberExpression = if(WordType.GENERICS_START.includes(currentWord?.type))
+			parseTypeSpecification()
+		else
+			literalParser.parseIdentifier()
+		return MemberAccess(rootExpression, memberExpression, accessor.type == WordAtom.OPTIONAL_ACCESSOR)
 	}
 
 	/**
@@ -337,9 +337,11 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <NumberLiteral>
 	 *   <StringLiteral>
 	 *   <SelfReference>
-	 *   <Identifier>
-	 *   <TypeSpecification>
 	 *   <ForeignLanguageExpression>
+	 *   <NullCheck>
+	 *   <Identifier>
+	 *   <InstanceAccess>
+	 *   <TypeSpecification>
 	 */
 	private fun parseAtom(): ValueElement {
 		val word = getCurrentWord("atom")
@@ -358,13 +360,10 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 			}
 			WordAtom.DOT -> parseInstanceAccess()
 			else -> {
-				if(WordType.GENERICS_START.includes(word.type)) {
-					val typeList = typeParser.parseTypeList()
-					val identifier = literalParser.parseIdentifier()
-					TypeSpecification(typeList.start, identifier.end, identifier, typeList)
-				} else {
+				if(WordType.GENERICS_START.includes(word.type))
+					parseTypeSpecification()
+				else
 					throw UnexpectedWordError(word, "atom")
-				}
 			}
 		}
 	}
@@ -415,6 +414,16 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 		val start = consume(WordAtom.DOT).start
 		val identifier = literalParser.parseIdentifier()
 		return InstanceAccess(start, identifier)
+	}
+
+	/**
+	 * TypeSpecification:
+	 *   <TypeList><Identifier>
+	 */
+	private fun parseTypeSpecification(): TypeSpecification {
+		val typeList = typeParser.parseTypeList()
+		val identifier = literalParser.parseIdentifier()
+		return TypeSpecification(typeList, identifier)
 	}
 
 	/**

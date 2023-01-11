@@ -91,7 +91,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 		signature += when(function) {
 			is VariableValue -> function.name
 			is TypeSpecification -> function
-			is MemberAccess -> "${function.target.type}.${function.member.name}"
+			is MemberAccess -> "${function.target.type}.${function.member}"
 			else -> "<anonymous function>"
 		}
 		signature += "("

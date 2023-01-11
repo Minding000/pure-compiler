@@ -1,19 +1,27 @@
 package components.syntax_parser.syntax_tree.literals
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.types.ObjectType as SemanticObjectTypeModel
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeElement
+import util.indent
+import components.semantic_analysis.semantic_model.types.ObjectType as SemanticObjectTypeModel
 
-class ObjectType(private val typeList: TypeList?, private val identifier: Identifier):
-	TypeElement(identifier.start, typeList?.end ?: identifier.end) {
+class ObjectType(private val enclosingType: ObjectType?, private val typeList: TypeList?, private val identifier: Identifier):
+	TypeElement(typeList?.start ?: identifier.start, identifier.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticObjectTypeModel {
-		return SemanticObjectTypeModel(this, identifier.getValue(),
-			typeList?.concretizeTypes(linter, scope) ?: listOf())
+		val typeList = typeList?.concretizeTypes(linter, scope) ?: listOf()
+		return SemanticObjectTypeModel(this, enclosingType?.concretize(linter, scope), typeList, identifier.getValue())
 	}
 
 	override fun toString(): String {
-		return "ObjectType { ${if(typeList == null) "" else "$typeList "}$identifier }"
+		var stringRepresentation = "ObjectType"
+		if(enclosingType != null)
+			stringRepresentation += " [${"\n$enclosingType".indent()}\n]"
+		stringRepresentation += " { "
+		if(typeList != null)
+			stringRepresentation += "$typeList "
+		stringRepresentation += "$identifier }"
+		return stringRepresentation
 	}
 }

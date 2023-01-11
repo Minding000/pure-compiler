@@ -1,7 +1,7 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class Accessors {
 
@@ -26,6 +26,113 @@ internal class Accessors {
 			"""
 				MemberAccess {
 					Identifier { player }.Identifier { inventory }
+				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses member type accesses in types`() {
+		val sourceCode = """
+			val editorTheme: Editor.Theme
+			""".trimIndent()
+		val expected =
+			"""
+				VariableSection [ val ] {
+					LocalVariableDeclaration { Identifier { editorTheme }: ObjectType [
+						ObjectType { Identifier { Editor } }
+					] { Identifier { Theme } } }
+				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses member type accesses with generics in the front in types`() {
+		val sourceCode = """
+			val integerListIterator: <Int>List.Iterator
+			""".trimIndent()
+		val expected =
+			"""
+				VariableSection [ val ] {
+					LocalVariableDeclaration { Identifier { integerListIterator }: ObjectType [
+						ObjectType { TypeList {
+							ObjectType { Identifier { Int } }
+						} Identifier { List } }
+					] { Identifier { Iterator } } }
+				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses member type accesses with generics in the middle in types`() {
+		val sourceCode = """
+			val brickStack: Inventory.<Brick>Stack
+			""".trimIndent()
+		val expected =
+			"""
+				VariableSection [ val ] {
+					LocalVariableDeclaration { Identifier { brickStack }: ObjectType [
+						ObjectType { Identifier { Inventory } }
+					] { TypeList {
+						ObjectType { Identifier { Brick } }
+					} Identifier { Stack } } }
+				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses member type accesses in initializer calls`() {
+		val sourceCode = """
+			val editorTheme = Editor.Theme()
+			""".trimIndent()
+		val expected =
+			"""
+				VariableSection [ val ] {
+					LocalVariableDeclaration { Identifier { editorTheme } = FunctionCall [ MemberAccess {
+						Identifier { Editor }.Identifier { Theme }
+					} ] {
+					} }
+				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses member type accesses with generics in the front in initializer calls`() {
+		val sourceCode = """
+			val integerListIterator = <Int>List.Iterator()
+			""".trimIndent()
+		val expected =
+			"""
+				VariableSection [ val ] {
+					LocalVariableDeclaration { Identifier { integerListIterator } = FunctionCall [ MemberAccess {
+						TypeSpecification [ TypeList {
+							ObjectType { Identifier { Int } }
+						} ] { Identifier { List } }.Identifier { Iterator }
+					} ] {
+					} }
+				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses member type accesses with generics in the middle in initializer calls`() {
+		val sourceCode = """
+			val brickStack = Inventory.<Brick>Stack()
+			""".trimIndent()
+		val expected =
+			"""
+				VariableSection [ val ] {
+					LocalVariableDeclaration { Identifier { brickStack } = FunctionCall [ MemberAccess {
+						Identifier { Inventory }.TypeSpecification [ TypeList {
+							ObjectType { Identifier { Brick } }
+						} ] { Identifier { Stack } }
+					} ] {
+					} }
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)

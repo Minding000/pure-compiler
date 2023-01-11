@@ -10,14 +10,15 @@ import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import java.util.*
 
-open class ObjectType(override val source: Element, val name: String, val typeParameters: List<Type> = listOf(),
+open class ObjectType(override val source: Element, val enclosingType: ObjectType?, val typeParameters: List<Type>, val name: String,
 					  var definition: TypeDefinition? = null): Type(source) {
 
+	constructor(source: Element, name: String): this(source, null, listOf(), name)
 
-	constructor(definition: TypeDefinition): this(definition.source, definition.name, listOf(), definition)
+	constructor(definition: TypeDefinition): this(definition.source, null, listOf(), definition.name, definition)
 
 	constructor(typeParameters: List<Type>, definition: TypeDefinition):
-			this(definition.source, definition.name, typeParameters, definition)
+		this(definition.source, null, typeParameters, definition.name, definition)
 
 	init {
 		addUnits(typeParameters)
@@ -33,15 +34,15 @@ open class ObjectType(override val source: Element, val name: String, val typePa
 			typeParameter.withTypeSubstitutions(typeSubstitutions) }
 		//TODO this might be nicer if it was written with a return in the callback
 		// -> withTypeParameter needs to have inline modifier
-		val specificType = ObjectType(source, name, specificTypeParameters)
+		val specificType = ObjectType(source, enclosingType, specificTypeParameters, name)
 		definition?.withTypeParameters(specificTypeParameters) { specificDefinition ->
 			specificType.definition = specificDefinition
 		}
 		return specificType
 	}
 
-	override fun simplified(): Type {
-		return ObjectType(source, name, typeParameters.map(Type::simplified), definition)
+	override fun simplified(): ObjectType {
+		return ObjectType(source, enclosingType?.simplified(), typeParameters.map(Type::simplified), name, definition)
 	}
 
 	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableList<Type>) {
