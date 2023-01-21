@@ -21,6 +21,7 @@ open class ObjectType(override val source: Element, val enclosingType: ObjectTyp
 		this(definition.source, null, typeParameters, definition.name, definition)
 
 	init {
+		addUnits(enclosingType)
 		addUnits(typeParameters)
 	}
 
@@ -68,15 +69,18 @@ open class ObjectType(override val source: Element, val enclosingType: ObjectTyp
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		super.linkTypes(linter, scope)
 		if(definition == null) {
-			//TODO mind enclosingType (write tests)
-			definition = scope.resolveType(name)
+			enclosingType?.resolveGenerics(linter)
+			val sourceScope = enclosingType?.scope ?: scope
+			definition = sourceScope.resolveType(name)
 			if(definition == null)
 				linter.addMessage(source, "Type '$name' hasn't been declared yet.", Message.Type.ERROR)
 		}
 	}
 
 	override fun resolveGenerics(linter: Linter) {
-		super.resolveGenerics(linter)
+		for(unit in units)
+			if(unit !== enclosingType)
+				unit.resolveGenerics(linter)
 		if(typeParameters.isNotEmpty()) {
 			definition?.withTypeParameters(typeParameters) { specificDefinition ->
 				definition = specificDefinition
@@ -166,8 +170,13 @@ open class ObjectType(override val source: Element, val enclosingType: ObjectTyp
 	}
 
 	override fun toString(): String {
-		if(typeParameters.isEmpty())
-			return name
-		return typeParameters.joinToString(", ", "<", ">$name")
+		var stringRepresentation = ""
+		if(enclosingType != null)
+			stringRepresentation += "$enclosingType."
+		stringRepresentation += if(typeParameters.isEmpty())
+			name
+		else
+			typeParameters.joinToString(", ", "<", ">$name")
+		return stringRepresentation
 	}
 }

@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.*
+import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.*
 import components.semantic_analysis.semantic_model.values.Function
@@ -62,8 +63,7 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 		for((_, memberDeclaration) in interfaceMembers) {
 			memberDeclaration.superMember = superScope?.resolveValue(memberDeclaration.name)
 			val function = memberDeclaration.value as? Function ?: continue
-			val superFunction = memberDeclaration.superMember?.value as? Function
-			function.functionType.superFunctionType = superFunction?.functionType
+			function.functionType.superFunctionType = memberDeclaration.superMember?.type as? FunctionType
 		}
 	}
 

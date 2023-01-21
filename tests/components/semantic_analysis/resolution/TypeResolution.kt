@@ -22,7 +22,7 @@ internal class TypeResolution {
 	}
 
 	@Test
-	fun `resolves types class`() {
+	fun `resolves class types`() {
 		val sourceCode =
 			"""
 				Bird class
@@ -34,7 +34,7 @@ internal class TypeResolution {
 	}
 
 	@Test
-	fun `resolves types object`() {
+	fun `resolves object types`() {
 		val sourceCode =
 			"""
 				BirdFeeder object
@@ -46,7 +46,7 @@ internal class TypeResolution {
 	}
 
 	@Test
-	fun `resolves types enum`() {
+	fun `resolves enum types`() {
 		val sourceCode =
 			"""
 				BirdType enum {}
@@ -67,6 +67,20 @@ internal class TypeResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "eventHandler" }
 		assertEquals("EventHandler", (declaration?.type as? ObjectType)?.definition?.name)
+	}
+
+	@Test
+	fun `resolves enclosed types`() {
+		val sourceCode =
+			"""
+				Bird class {
+					Type enum {}
+				}
+				var birdType: Bird.Type
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "birdType" }
+		assertEquals("Type", (declaration?.type as? ObjectType)?.definition?.name)
 	}
 
 	@Test
