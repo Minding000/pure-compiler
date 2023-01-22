@@ -30,26 +30,22 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 		when(val targetType = function.type) {
 			is StaticType -> resolveInitializerCall(linter, targetType)
 			is FunctionType -> resolveFunctionCall(linter, targetType)
-			else -> linter.addMessage(source, "'${function.source.getValue()}' is not callable.",
-				Message.Type.ERROR)
+			else -> linter.addMessage(source, "'${function.source.getValue()}' is not callable.", Message.Type.ERROR)
 		}
 	}
 
 	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {
 		(targetType.definition as? Class)?.let { `class` ->
 			if(`class`.isAbstract)
-				linter.addMessage(source, "Abstract class '${`class`.name}' cannot be instantiated.",
-					Message.Type.ERROR)
+				linter.addMessage(source, "Abstract class '${`class`.name}' cannot be instantiated.", Message.Type.ERROR)
 		}
-		val genericDefinitionTypes = (targetType.definition.baseDefinition ?: targetType.definition).scope
-			.getGenericTypeDefinitions()
+		val genericDefinitionTypes = (targetType.definition.baseDefinition ?: targetType.definition).scope.getGenericTypeDefinitions()
 		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
 		try {
 			val match = targetType.scope.resolveInitializer(genericDefinitionTypes, definitionTypeParameters,
 				typeParameters, valueParameters)
 			if(match == null) {
-				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.",
-					Message.Type.ERROR)
+				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.", Message.Type.ERROR)
 				return
 			}
 			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value },

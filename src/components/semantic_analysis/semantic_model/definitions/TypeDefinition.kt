@@ -10,12 +10,12 @@ import components.syntax_parser.syntax_tree.general.Element
 import util.linkedListOf
 import java.util.*
 
-abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope,
-							  val superType: Type?): Unit(source) {
-	var baseDefinition: TypeDefinition? = null
+abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope, val superType: Type?): Unit(source) {
+	// Only used in base definition
 	private val specificDefinitions = HashMap<Map<TypeDefinition, Type>, TypeDefinition>()
-	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>,
-		LinkedList<(TypeDefinition) -> kotlin.Unit>>()
+	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>, LinkedList<(TypeDefinition) -> kotlin.Unit>>()
+	// Only used in specific definition
+	var baseDefinition: TypeDefinition? = null
 
 	init {
 		addUnits(superType)

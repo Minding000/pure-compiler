@@ -13,11 +13,11 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree): Value(so
 	override fun linkValues(linter: Linter, scope: Scope) {
 		val surroundingDefinition = scope.getSurroundingDefinition()
 		if(surroundingDefinition == null) {
-			linter.addMessage(source, "Self references are not allowed outside of type definitions.",
-				Message.Type.ERROR)
+			linter.addMessage(source, "Self references are not allowed outside of type definitions.", Message.Type.ERROR)
 		} else {
 			definition = surroundingDefinition
-			type = ObjectType(surroundingDefinition)
+			val typeParameters = surroundingDefinition.scope.getGenericTypeDefinitions().map { ObjectType(it) }
+			type = ObjectType(typeParameters, surroundingDefinition)
 		}
 	}
 }
