@@ -15,7 +15,7 @@ internal class Assignments {
 				b = a
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Int' is not assignable to type 'String'.")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Int' is not assignable to type 'String'")
 	}
 
 	@Test
@@ -27,6 +27,63 @@ internal class Assignments {
 				b = a
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'b' cannot be reassigned, because it is constant.")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "'b' cannot be reassigned, because it is constant")
+	}
+
+	@Test
+	fun `allows assignment to uninitialized constant target variable in initializer`() {
+		val sourceCode =
+			"""
+				Int class {
+					init
+				}
+				Switch class {
+					val portCount: Int
+					init {
+						portCount = Int()
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "cannot be reassigned")
+	}
+
+	@Test
+	fun `emits error for assignment to constant target variable outside of initializer`() {
+		val sourceCode =
+			"""
+				Int class {
+					init
+				}
+				Switch class {
+					val portCount: Int
+					init {
+						portCount = Int()
+					}
+					to addPort() {
+						portCount = portCount + 1
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "'portCount' cannot be reassigned, because it is constant")
+	}
+
+	@Test
+	fun `emits error for assignment to initialized constant target variable in initializer`() {
+		val sourceCode =
+			"""
+				Int class {
+					init
+				}
+				Switch class {
+					val portCount = Int()
+					init {
+						portCount = Int()
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "'portCount' cannot be reassigned, because it is constant")
 	}
 }

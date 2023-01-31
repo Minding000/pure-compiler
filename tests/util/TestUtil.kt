@@ -1,15 +1,15 @@
 package util
 
 import code.Builder
-import components.syntax_parser.element_generator.ElementGenerator
+import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
+import components.syntax_parser.element_generator.ElementGenerator
 import components.tokenizer.WordAtom
 import components.tokenizer.WordGenerator
 import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
-import java.lang.StringBuilder
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -55,6 +55,14 @@ object TestUtil {
         linter.logger.printReport()
         return LintResult(linter, program)
     }
+
+	fun analyseDataFlow(sourceCode: String): DataFlowAnalyser.VariableTracker {
+		val parseResult = parse(sourceCode)
+		val program = Linter().lint(parseResult.program)
+		val testFileTracker = DataFlowAnalyser.analyseDataFlow(program).childTrackers["Test"]
+		assertNotNull(testFileTracker, "Missing test file tracker.")
+		return testFileTracker
+	}
 
 	fun assertTokenIsIgnored(sourceCode: String) {
 		val project = createTestProject(sourceCode)

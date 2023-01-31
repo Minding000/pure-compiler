@@ -8,8 +8,7 @@ import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.Assignment as AssignmentSyntaxTree
 
-class Assignment(override val source: AssignmentSyntaxTree, private val targets: List<Value>,
-				 private val sourceExpression: Value): Unit(source) {
+class Assignment(override val source: AssignmentSyntaxTree, val targets: List<Value>, val sourceExpression: Value): Unit(source) {
 
 	init {
 		addUnits(sourceExpression)
