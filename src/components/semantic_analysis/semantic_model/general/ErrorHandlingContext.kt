@@ -1,7 +1,8 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.StatementSection
 
@@ -13,13 +14,13 @@ class ErrorHandlingContext(override val source: StatementSection, val mainBlock:
 		addUnits(handleBlocks)
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		val initialState = tracker.currentState.copy()
 		// Analyse main block
 		tracker.currentState.firstVariableUsages.clear()
 		mainBlock.analyseDataFlow(linter, tracker)
 		// Collect usages that should link to the handle blocks
-		val potentiallyLastVariableUsages = HashMap<ValueDeclaration, MutableSet<DataFlowAnalyser.VariableUsage>>()
+		val potentiallyLastVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
 		if(handleBlocks.isNotEmpty() || alwaysBlock != null)
 			tracker.collectAllUsagesInto(potentiallyLastVariableUsages)
 		if(handleBlocks.isNotEmpty()) {

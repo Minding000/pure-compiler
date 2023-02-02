@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
@@ -49,10 +49,10 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		super.linkValues(linter, this.scope)
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		if(body == null)
 			return
-		val functionTracker = DataFlowAnalyser.VariableTracker()
+		val functionTracker = VariableTracker()
 		body.analyseDataFlow(linter, functionTracker)
 		functionTracker.calculateEndState()
 		tracker.addChild(parentFunction.name, functionTracker)

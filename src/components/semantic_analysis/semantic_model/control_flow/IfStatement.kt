@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
@@ -26,7 +26,7 @@ class IfStatement(override val source: IfStatementSyntaxTree, val condition: Val
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		condition.analyseDataFlow(linter, tracker)
 		val conditionState = tracker.currentState.copy()
 		positiveBranch.analyseDataFlow(linter, tracker)

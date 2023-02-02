@@ -1,8 +1,8 @@
 package util
 
 import code.Builder
-import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
 import components.syntax_parser.element_generator.ElementGenerator
 import components.tokenizer.WordAtom
 import components.tokenizer.WordGenerator
@@ -56,7 +56,7 @@ object TestUtil {
         return LintResult(linter, program)
     }
 
-	fun analyseDataFlow(sourceCode: String): DataFlowAnalyser.VariableTracker {
+	fun analyseDataFlow(sourceCode: String): VariableTracker {
 		val parseResult = parse(sourceCode)
 		val linter = Linter()
 		val program = linter.lint(parseResult.program)

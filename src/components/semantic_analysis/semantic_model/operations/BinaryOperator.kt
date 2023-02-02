@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
-import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.*
 import errors.internal.CompilerError
@@ -35,7 +35,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, val left: Va
 		staticValue = calculateStaticResult(linter)
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		left.analyseDataFlow(linter, tracker)
 		right.analyseDataFlow(linter, tracker)
 	}

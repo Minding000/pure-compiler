@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import messages.Message
@@ -21,7 +21,7 @@ class NextStatement(override val source: NextStatementSyntaxTree): Unit(source) 
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		tracker.registerNextStatement()
 	}
 }

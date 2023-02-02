@@ -1,7 +1,8 @@
 package components.semantic_analysis.semantic_model.operations
 
-import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Operator
@@ -34,10 +35,10 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, val 
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		modifier.analyseDataFlow(linter, tracker)
 		if(target is VariableValue) {
-			tracker.add(listOf(DataFlowAnalyser.VariableUsage.Type.READ, DataFlowAnalyser.VariableUsage.Type.MUTATION), target)
+			tracker.add(listOf(VariableUsage.Type.READ, VariableUsage.Type.MUTATION), target)
 		} else {
 			target.analyseDataFlow(linter, tracker)
 		}

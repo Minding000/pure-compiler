@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
@@ -65,7 +65,7 @@ abstract class Unit(open val source: Element) {
 			unit.linkValues(linter, scope)
 	}
 
-	open fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+	open fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		for(unit in units)
 			unit.analyseDataFlow(linter, tracker)
 	}

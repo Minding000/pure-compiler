@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import messages.Message
 import java.util.*
@@ -10,7 +10,7 @@ import source_structure.File as SourceFile
 
 class File(override val source: FileSyntaxTree, val file: SourceFile, val scope: FileScope): Unit(source) {
 	private val referencedFiles = LinkedList<File>()
-	val variableTracker = DataFlowAnalyser.VariableTracker()
+	val variableTracker = VariableTracker()
 
 	fun resolveFileReferences(linter: Linter, program: Program) {
 		for(unit in units) {

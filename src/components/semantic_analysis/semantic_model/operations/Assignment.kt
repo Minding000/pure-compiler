@@ -1,7 +1,8 @@
 package components.semantic_analysis.semantic_model.operations
 
-import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Value
@@ -39,11 +40,11 @@ class Assignment(override val source: AssignmentSyntaxTree, val targets: List<Va
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		sourceExpression.analyseDataFlow(linter, tracker)
 		for(target in targets) {
 			if(target is VariableValue) {
-				tracker.add(DataFlowAnalyser.VariableUsage.Type.WRITE, target)
+				tracker.add(VariableUsage.Type.WRITE, target)
 			} else {
 				target.analyseDataFlow(linter, tracker)
 			}

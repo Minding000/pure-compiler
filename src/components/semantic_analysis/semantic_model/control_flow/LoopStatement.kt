@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
@@ -23,7 +23,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, val scope: Blo
 		super.linkValues(linter, this.scope)
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		generator?.analyseDataFlow(linter, tracker)
 		tracker.currentState.firstVariableUsages.clear()
 		body.analyseDataFlow(linter, tracker)
