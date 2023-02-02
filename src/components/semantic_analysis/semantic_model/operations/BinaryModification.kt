@@ -1,10 +1,12 @@
 package components.semantic_analysis.semantic_model.operations
 
+import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.Value
+import components.semantic_analysis.semantic_model.values.VariableValue
 import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.BinaryModification as BinaryModificationSyntaxTree
@@ -29,6 +31,15 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, val 
 				//TODO write test for this
 				error.log(linter, source, "operator", "$valueType $kind ${modifier.type}")
 			}
+		}
+	}
+
+	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+		modifier.analyseDataFlow(linter, tracker)
+		if(target is VariableValue) {
+			tracker.add(listOf(DataFlowAnalyser.VariableUsage.Type.READ, DataFlowAnalyser.VariableUsage.Type.MUTATION), target)
+		} else {
+			target.analyseDataFlow(linter, tracker)
 		}
 	}
 }

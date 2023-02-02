@@ -31,7 +31,7 @@ internal class Assignments {
 	}
 
 	@Test
-	fun `allows assignment to uninitialized constant target variable in initializer`() {
+	fun `allows assignment to uninitialized member constant in initializer`() {
 		val sourceCode =
 			"""
 				Int class {

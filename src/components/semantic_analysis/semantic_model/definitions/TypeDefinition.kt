@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.definitions
 
+import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.MutableScope
@@ -78,6 +79,13 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, this.scope)
+	}
+
+	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+		for(member in scope.memberDeclarations) {
+			if(member is FunctionImplementation)
+				member.analyseDataFlow(linter, tracker)
+		}
 	}
 
 	override fun validate(linter: Linter) {

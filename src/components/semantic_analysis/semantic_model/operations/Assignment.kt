@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.operations
 
+import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -38,7 +39,18 @@ class Assignment(override val source: AssignmentSyntaxTree, val targets: List<Va
 		}
 	}
 
-	private fun verifyAssignability(linter: Linter) {
+	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+		sourceExpression.analyseDataFlow(linter, tracker)
+		for(target in targets) {
+			if(target is VariableValue) {
+				tracker.add(DataFlowAnalyser.VariableUsage.Type.WRITE, target)
+			} else {
+				target.analyseDataFlow(linter, tracker)
+			}
+		}
+	}
+
+	private fun verifyAssignability(linter: Linter) { //TODO use data flow analysis to check for re-assignments
 		for(target in targets) {
 			when(target) {
 				is VariableValue -> {

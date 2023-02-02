@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.control_flow
 
+import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -18,5 +19,9 @@ class NextStatement(override val source: NextStatementSyntaxTree): Unit(source) 
 		} else {
 			targetLoop = surroundingLoop
 		}
+	}
+
+	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+		tracker.registerNextStatement()
 	}
 }

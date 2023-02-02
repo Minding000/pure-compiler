@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.control_flow
 
+import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -19,5 +20,9 @@ class BreakStatement(override val source: BreakStatementSyntaxTree): Unit(source
 			surroundingLoop.mightGetBrokenOutOf = true
 			targetLoop = surroundingLoop
 		}
+	}
+
+	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+		tracker.registerBreakStatement()
 	}
 }

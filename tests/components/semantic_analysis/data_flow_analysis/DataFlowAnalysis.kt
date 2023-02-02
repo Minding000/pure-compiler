@@ -3,13 +3,14 @@ package components.semantic_analysis.data_flow_analysis
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 internal class DataFlowAnalysis {
 
 	@Test
 	fun `works without variables`() {
 		val tracker = TestUtil.analyseDataFlow("")
-		assertEquals(0, tracker.variables.size)
+		assertTrue(tracker.variables.isEmpty())
 	}
 
 	@Test

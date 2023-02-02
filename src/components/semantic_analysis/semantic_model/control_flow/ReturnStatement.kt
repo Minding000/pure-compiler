@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.control_flow
 
+import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -25,6 +26,11 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, val value:
 			targetFunction = surroundingFunction
 			surroundingFunction.mightReturnValue = true
 		}
+	}
+
+	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+		value?.analyseDataFlow(linter, tracker)
+		tracker.registerExecutionEnd()
 	}
 
 	override fun validate(linter: Linter) {

@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.general
 
+import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -64,6 +65,11 @@ abstract class Unit(open val source: Element) {
 			unit.linkValues(linter, scope)
 	}
 
+	open fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+		for(unit in units)
+			unit.analyseDataFlow(linter, tracker)
+	}
+
 	open fun validate(linter: Linter) {
 		val unitIterator = units.iterator()
 		for(unit in unitIterator)
@@ -78,12 +84,12 @@ abstract class Unit(open val source: Element) {
 		return null
 	}
 
-	fun <T: Unit>find(predicate: (T) -> Boolean, clazz: Class<T>): T? {
+	fun <T: Unit>find(predicate: (T) -> Boolean, `class`: Class<T>): T? {
 		@Suppress("UNCHECKED_CAST") // Cast will always work, because Class<T> == T
-		if(clazz.isAssignableFrom(this.javaClass) && predicate(this as T))
+		if(`class`.isAssignableFrom(this.javaClass) && predicate(this as T))
 			return this
 		for(unit in units)
-			return unit.find(predicate, clazz) ?: continue
+			return unit.find(predicate, `class`) ?: continue
 		return null
 	}
 

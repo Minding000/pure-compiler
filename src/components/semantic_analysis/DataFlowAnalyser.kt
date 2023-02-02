@@ -1,164 +1,11 @@
 package components.semantic_analysis
 
-import components.semantic_analysis.semantic_model.control_flow.*
-import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.general.*
 import components.semantic_analysis.semantic_model.general.Unit
-import components.semantic_analysis.semantic_model.operations.Assignment
-import components.semantic_analysis.semantic_model.operations.BinaryModification
-import components.semantic_analysis.semantic_model.operations.BinaryOperator
-import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import java.util.*
 
 object DataFlowAnalyser {
-
-	fun analyseDataFlow(program: Program): VariableTracker {
-		val tracker = VariableTracker()
-		for(file in program.files)
-			analyseDataFlow(file, tracker)
-		tracker.calculateEndState()
-		return tracker
-	}
-
-	private fun analyseDataFlow(unit: Unit, tracker: VariableTracker) {
-		when(unit) {
-			is File -> {
-				val fileTracker = VariableTracker()
-				for(unitInFile in unit.units)
-					analyseDataFlow(unitInFile, fileTracker)
-				fileTracker.calculateEndState()
-				tracker.addChild(unit.file.name, fileTracker)
-			}
-			is TypeDefinition -> {
-				for(member in unit.scope.memberDeclarations) {
-					if(member is FunctionImplementation)
-						analyseDataFlow(member, tracker)
-				}
-			}
-			is FunctionImplementation -> {
-				val body = unit.body ?: return
-				val functionTracker = VariableTracker()
-				analyseDataFlow(body, functionTracker)
-				functionTracker.calculateEndState()
-				tracker.addChild(unit.parentFunction.name, functionTracker)
-			}
-			is ErrorHandlingContext -> {
-				val initialState = tracker.currentState.copy()
-				// Analyse main block
-				tracker.currentState.firstVariableUsages.clear()
-				analyseDataFlow(unit.mainBlock, tracker)
-				val mainBlockState = tracker.currentState.copy()
-				// Collect usages that should link to the handle blocks
-				val potentiallyLastVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
-				tracker.collectAllUsagesInto(potentiallyLastVariableUsages)
-				val handleBlockStates = LinkedList<VariableTracker.VariableState>()
-				if(unit.handleBlocks.isNotEmpty()) {
-					// Analyse handle blocks
-					for(handleBlock in unit.handleBlocks) {
-						tracker.setVariableStates(initialState)
-						tracker.currentState.firstVariableUsages.clear()
-						analyseDataFlow(handleBlock, tracker)
-						tracker.linkToFirstUsages(potentiallyLastVariableUsages)
-						tracker.collectAllUsagesInto(potentiallyLastVariableUsages)
-						handleBlockStates.add(tracker.currentState.copy())
-					}
-				}
-				// Analyse always block (if it exists)
-				tracker.setVariableStates(mainBlockState)
-				if(unit.alwaysBlock != null) {
-					// First analyse for complete execution
-					analyseDataFlow(unit.alwaysBlock, tracker)
-					val completeExecutionState = tracker.currentState.copy()
-					// Then analyse for failure case
-					tracker.setVariableStates(initialState)
-					tracker.currentState.firstVariableUsages.clear()
-					analyseDataFlow(unit.alwaysBlock, tracker)
-					tracker.markAllUsagesAsExiting()
-					tracker.linkToFirstUsages(potentiallyLastVariableUsages)
-					tracker.registerExecutionEnd()
-					tracker.setVariableStates(completeExecutionState)
-				}
-			}
-			is StatementBlock -> {
-				for(statement in unit.statements)
-					analyseDataFlow(statement, tracker)
-			}
-			is HandleBlock -> {
-				if(unit.eventVariable != null)
-					tracker.declare(unit.eventVariable)
-				analyseDataFlow(unit.block, tracker)
-			}
-			is IfStatement -> {
-				analyseDataFlow(unit.condition, tracker)
-				val conditionState = tracker.currentState.copy()
-				analyseDataFlow(unit.positiveBranch, tracker)
-				val positiveBranchState = tracker.currentState.copy()
-				if(unit.negativeBranch == null) {
-					tracker.addVariableStates(conditionState)
-				} else {
-					tracker.setVariableStates(conditionState)
-					analyseDataFlow(unit.negativeBranch, tracker)
-					tracker.addVariableStates(positiveBranchState)
-				}
-			}
-			is LoopStatement -> {
-				if(unit.generator != null)
-					analyseDataFlow(unit.generator, tracker)
-				val loopStartState = tracker.currentState.copy()
-				analyseDataFlow(unit.body, tracker)
-				tracker.linkBackTo(loopStartState)
-				for(variableState in tracker.nextStatementStates)
-					tracker.link(variableState, loopStartState)
-				tracker.nextStatementStates.clear()
-				if(unit.generator == null)
-					tracker.currentState.lastVariableUsages.clear()
-				tracker.addVariableStates(*tracker.breakStatementStates.toTypedArray())
-				tracker.breakStatementStates.clear()
-			}
-			is NextStatement -> {
-				tracker.registerNextStatement()
-			}
-			is BreakStatement -> {
-				tracker.registerBreakStatement()
-			}
-			is ReturnStatement -> {
-				if(unit.value != null)
-					analyseDataFlow(unit.value, tracker)
-				tracker.registerExecutionEnd()
-			}
-			is LocalVariableDeclaration -> {
-				tracker.declare(unit)
-			}
-			is Assignment -> {
-				analyseDataFlow(unit.sourceExpression, tracker)
-				for(target in unit.targets) {
-					if(target is VariableValue) {
-						tracker.add(VariableUsage.Type.WRITE, target)
-					} else {
-						analyseDataFlow(target, tracker)
-					}
-				}
-			}
-			is VariableValue -> {
-				tracker.add(VariableUsage.Type.READ, unit)
-			}
-			is BinaryOperator -> {
-				analyseDataFlow(unit.left, tracker)
-				analyseDataFlow(unit.right, tracker)
-			}
-			is BinaryModification -> {
-				analyseDataFlow(unit.modifier, tracker)
-				if(unit.target is VariableValue) {
-					tracker.add(listOf(VariableUsage.Type.READ, VariableUsage.Type.MUTATION), unit.target)
-				} else {
-					analyseDataFlow(unit.target, tracker)
-				}
-			}
-		}
-	}
 
 	class VariableTracker {
 		val childTrackers = HashMap<String, VariableTracker>()
@@ -237,18 +84,17 @@ object DataFlowAnalyser {
 			currentState.lastVariableUsages.clear()
 		}
 
-		fun linkBackTo(previousState: VariableState) {
-			link(currentState.lastVariableUsages, previousState)
+		fun linkBackToStart() {
+			link(currentState, currentState)
 		}
 
-		fun link(referenceState: VariableState, previousState: VariableState) {
-			link(referenceState.lastVariableUsages, previousState)
+		fun linkBackToStartFrom(referenceState: VariableState) {
+			link(referenceState, currentState)
 		}
 
-		fun link(currentPreviousUsages: HashMap<ValueDeclaration, MutableSet<VariableUsage>>, previousState: VariableState) {
-			for((declaration, lastUsages) in currentPreviousUsages) {
-				val firstUsages = previousState.lastVariableUsages[declaration]?.firstOrNull()?.nextUsages ?: continue
-				for(firstUsage in firstUsages) {
+		fun link(originState: VariableState, targetState: VariableState) {
+			for((declaration, lastUsages) in originState.lastVariableUsages) {
+				for(firstUsage in targetState.firstVariableUsages[declaration] ?: continue) {
 					for(lastUsage in lastUsages) {
 						firstUsage.previousUsages.addFirst(lastUsage)
 						lastUsage.nextUsages.addFirst(firstUsage)
@@ -295,16 +141,14 @@ object DataFlowAnalyser {
 			}
 		}
 
-		fun collectAllUsagesInto(
-			potentiallyLastVariableUsages: HashMap<ValueDeclaration, MutableSet<VariableUsage>>
-		) {
+		fun collectAllUsagesInto(variableUsages: HashMap<ValueDeclaration, MutableSet<VariableUsage>>) {
 			var currentUsages = currentState.firstVariableUsages
 			while(true) {
 				var hasNextUsages = false
 				val nextVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
-				usagesToBeLinked@ for((declaration, usages) in currentUsages) {
-					val potentiallyLastUsages = potentiallyLastVariableUsages.getOrPut(declaration) { HashSet() }
-					potentiallyLastUsages.addAll(usages)
+				for((declaration, usages) in currentUsages) {
+					val cumulatedUsages = variableUsages.getOrPut(declaration) { HashSet() }
+					cumulatedUsages.addAll(usages)
 					val nextUsages = nextVariableUsages.getOrPut(declaration) { HashSet() }
 					for(usage in usages) {
 						hasNextUsages = true

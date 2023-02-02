@@ -2,8 +2,8 @@ package components.semantic_analysis.semantic_model.general
 
 import components.compiler.targets.llvm.BuildContext
 import components.semantic_analysis.Linter
-import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 import java.util.*
+import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
 class Program(val source: ProgramSyntaxTree) {
 	val files = LinkedList<File>()
@@ -53,6 +53,14 @@ class Program(val source: ProgramSyntaxTree) {
 	fun linkValues(linter: Linter) {
 		for(file in files)
 			file.linkValues(linter)
+	}
+
+	/**
+	 * Collects information about variable usage order.
+	 */
+	fun analyseDataFlow(linter: Linter) {
+		for(file in files)
+			file.analyseDataFlow(linter)
 	}
 
 	/**

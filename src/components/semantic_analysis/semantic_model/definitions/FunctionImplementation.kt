@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.definitions
 
+import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.general.Unit
@@ -46,6 +47,15 @@ class FunctionImplementation(override val source: Element, override val parentDe
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, this.scope)
+	}
+
+	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+		if(body == null)
+			return
+		val functionTracker = DataFlowAnalyser.VariableTracker()
+		body.analyseDataFlow(linter, functionTracker)
+		functionTracker.calculateEndState()
+		tracker.addChild(parentFunction.name, functionTracker)
 	}
 
 	override fun validate(linter: Linter) {

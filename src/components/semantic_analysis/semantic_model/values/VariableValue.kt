@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
+import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
@@ -22,6 +23,10 @@ open class VariableValue(override val source: Element, val name: String): Value(
 		type = definition.type
 		if(definition.isConstant)
 			staticValue = definition.value?.staticValue
+	}
+
+	override fun analyseDataFlow(linter: Linter, tracker: DataFlowAnalyser.VariableTracker) {
+		tracker.add(DataFlowAnalyser.VariableUsage.Type.READ, this)
 	}
 
 	override fun hashCode(): Int {

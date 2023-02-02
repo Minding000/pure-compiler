@@ -58,10 +58,11 @@ object TestUtil {
 
 	fun analyseDataFlow(sourceCode: String): DataFlowAnalyser.VariableTracker {
 		val parseResult = parse(sourceCode)
-		val program = Linter().lint(parseResult.program)
-		val testFileTracker = DataFlowAnalyser.analyseDataFlow(program).childTrackers["Test"]
-		assertNotNull(testFileTracker, "Missing test file tracker.")
-		return testFileTracker
+		val linter = Linter()
+		val program = linter.lint(parseResult.program)
+		val testFile = program.files.find { file -> file.file.name == "Test" }
+		assertNotNull(testFile, "Missing test file")
+		return testFile.variableTracker
 	}
 
 	fun assertTokenIsIgnored(sourceCode: String) {

@@ -1,14 +1,16 @@
 package components.semantic_analysis.semantic_model.general
 
+import components.semantic_analysis.DataFlowAnalyser
 import components.semantic_analysis.Linter
-import messages.Message
 import components.semantic_analysis.semantic_model.scopes.FileScope
+import messages.Message
+import java.util.*
 import components.syntax_parser.syntax_tree.general.File as FileSyntaxTree
 import source_structure.File as SourceFile
-import java.util.*
 
 class File(override val source: FileSyntaxTree, val file: SourceFile, val scope: FileScope): Unit(source) {
 	private val referencedFiles = LinkedList<File>()
+	val variableTracker = DataFlowAnalyser.VariableTracker()
 
 	fun resolveFileReferences(linter: Linter, program: Program) {
 		for(unit in units) {
@@ -52,6 +54,11 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, val scope:
 
 	fun linkValues(linter: Linter) {
 		linkValues(linter, scope)
+	}
+
+	fun analyseDataFlow(linter: Linter) {
+		analyseDataFlow(linter, variableTracker)
+		variableTracker.calculateEndState()
 	}
 
 //	override fun compile(context: BuildContext): Pointer? {

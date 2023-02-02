@@ -36,6 +36,9 @@ class Linter {
 		logger.addPhase("Value linking")
 		activePhase = Phase.VALUE_LINKING
 		semanticProgramModel.linkValues(this)
+		logger.addPhase("Data flow analysis")
+		activePhase = Phase.DATA_FLOW_ANALYSIS
+		semanticProgramModel.analyseDataFlow(this)
 		logger.addPhase("Validation")
 		activePhase = Phase.VALIDATION
 		semanticProgramModel.validate(this)
@@ -72,6 +75,7 @@ class Linter {
 		PROPERTY_PARAMETER_LINKING,
 		RESOLVE_GENERICS,
 		VALUE_LINKING,
+		DATA_FLOW_ANALYSIS,
 		VALIDATION,
 		DONE
 	}
