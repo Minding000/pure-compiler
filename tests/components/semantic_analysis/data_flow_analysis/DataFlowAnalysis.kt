@@ -9,7 +9,7 @@ internal class DataFlowAnalysis {
 	@Test
 	fun `works without variables`() {
 		val tracker = TestUtil.analyseDataFlow("")
-		assertEquals(0, tracker.variableUsages.size)
+		assertEquals(0, tracker.variables.size)
 	}
 
 	@Test
@@ -164,11 +164,12 @@ internal class DataFlowAnalysis {
 		""".trimIndent()
 		val report = """
 			start -> 1
-			1: declaration & write -> 3, 6
-			3: write -> 4, 6
-			4: read -> 8
-			6: write -> 8
+			1: declaration & write -> 3, 6, 8e
+			3: write -> 4, 6, 8e
+			4: read -> 6, 8, 8e
+			6: write -> 8e
 			8: read -> 10
+			8e: read -> end
 			10: write -> end
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)

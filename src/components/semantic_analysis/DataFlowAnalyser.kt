@@ -46,32 +46,40 @@ object DataFlowAnalyser {
 				tracker.addChild(unit.parentFunction.name, functionTracker)
 			}
 			is ErrorHandlingContext -> {
-				val initialState = tracker.createVariableState()
+				val initialState = tracker.currentState.copy()
+				// Analyse main block
+				tracker.currentState.firstVariableUsages.clear()
 				analyseDataFlow(unit.mainBlock, tracker)
-				val mainBlockState = tracker.createVariableState()
-				//TODO:
-				// - the last usage in the main block is not supposed to be linked to the handle blocks
-				//   -> but the logic for linking all other usages in the main block to the handle blocks currently depends on this behaviour
-				//     -> include firstUsages in VariableState? How?
-				//       -> record first usage since last VariableState creation
+				val mainBlockState = tracker.currentState.copy()
+				// Collect usages that should link to the handle blocks
+				val potentiallyLastVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
+				tracker.collectAllUsagesInto(potentiallyLastVariableUsages)
 				val handleBlockStates = LinkedList<VariableTracker.VariableState>()
-				for(handleBlock in unit.handleBlocks) {
-					analyseDataFlow(handleBlock, tracker)
-					handleBlockStates.add(tracker.createVariableState())
-					tracker.setVariableStates(mainBlockState)
-				}
-				for((declaration, lastUsagesBeforeMainBlock) in initialState.previousVariableUsages) {
-					for(lastUsageBeforeHandleBlocks in mainBlockState.previousVariableUsages[declaration] ?: continue) {
-						for(firstUsageInHandleBlock in lastUsageBeforeHandleBlocks.nextUsages) {
-							for(lastUsageBeforeMainBlock in lastUsagesBeforeMainBlock) {
-								linkUsageThread(lastUsageBeforeMainBlock, firstUsageInHandleBlock)
-							}
-						}
+				if(unit.handleBlocks.isNotEmpty()) {
+					// Analyse handle blocks
+					for(handleBlock in unit.handleBlocks) {
+						tracker.setVariableStates(initialState)
+						tracker.currentState.firstVariableUsages.clear()
+						analyseDataFlow(handleBlock, tracker)
+						tracker.linkToFirstUsages(potentiallyLastVariableUsages)
+						tracker.collectAllUsagesInto(potentiallyLastVariableUsages)
+						handleBlockStates.add(tracker.currentState.copy())
 					}
 				}
+				// Analyse always block (if it exists)
+				tracker.setVariableStates(mainBlockState)
 				if(unit.alwaysBlock != null) {
-					tracker.addVariableStates(*handleBlockStates.toTypedArray())
+					// First analyse for complete execution
 					analyseDataFlow(unit.alwaysBlock, tracker)
+					val completeExecutionState = tracker.currentState.copy()
+					// Then analyse for failure case
+					tracker.setVariableStates(initialState)
+					tracker.currentState.firstVariableUsages.clear()
+					analyseDataFlow(unit.alwaysBlock, tracker)
+					tracker.markAllUsagesAsExiting()
+					tracker.linkToFirstUsages(potentiallyLastVariableUsages)
+					tracker.registerExecutionEnd()
+					tracker.setVariableStates(completeExecutionState)
 				}
 			}
 			is StatementBlock -> {
@@ -85,9 +93,9 @@ object DataFlowAnalyser {
 			}
 			is IfStatement -> {
 				analyseDataFlow(unit.condition, tracker)
-				val conditionState = tracker.createVariableState()
+				val conditionState = tracker.currentState.copy()
 				analyseDataFlow(unit.positiveBranch, tracker)
-				val positiveBranchState = tracker.createVariableState()
+				val positiveBranchState = tracker.currentState.copy()
 				if(unit.negativeBranch == null) {
 					tracker.addVariableStates(conditionState)
 				} else {
@@ -99,14 +107,14 @@ object DataFlowAnalyser {
 			is LoopStatement -> {
 				if(unit.generator != null)
 					analyseDataFlow(unit.generator, tracker)
-				val previousState = tracker.createVariableState()
+				val loopStartState = tracker.currentState.copy()
 				analyseDataFlow(unit.body, tracker)
-				tracker.linkBackTo(previousState)
+				tracker.linkBackTo(loopStartState)
 				for(variableState in tracker.nextStatementStates)
-					tracker.link(variableState, previousState)
+					tracker.link(variableState, loopStartState)
 				tracker.nextStatementStates.clear()
 				if(unit.generator == null)
-					tracker.registerExecutionEnd()
+					tracker.currentState.lastVariableUsages.clear()
 				tracker.addVariableStates(*tracker.breakStatementStates.toTypedArray())
 				tracker.breakStatementStates.clear()
 			}
@@ -119,7 +127,7 @@ object DataFlowAnalyser {
 			is ReturnStatement -> {
 				if(unit.value != null)
 					analyseDataFlow(unit.value, tracker)
-				tracker.registerReturnStatement()
+				tracker.registerExecutionEnd()
 			}
 			is LocalVariableDeclaration -> {
 				tracker.declare(unit)
@@ -152,52 +160,42 @@ object DataFlowAnalyser {
 		}
 	}
 
-	private fun linkUsageThread(usage: VariableUsage, target: VariableUsage) {
-		if(!usage.nextUsages.contains(target)) {
-			for(nextUsage in usage.nextUsages)
-				linkUsageThread(nextUsage, target)
-			usage.nextUsages.add(target)
-			target.previousUsages.add(usage)
-		}
-	}
-
 	class VariableTracker {
 		val childTrackers = HashMap<String, VariableTracker>()
-		val variableUsages = HashMap<ValueDeclaration, MutableList<VariableUsage>>()
-		val previousVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
+		val variables = HashMap<ValueDeclaration, MutableList<VariableUsage>>()
+		val currentState = VariableState()
 		val nextStatementStates = LinkedList<VariableState>()
 		val breakStatementStates = LinkedList<VariableState>()
-		val returnStatementStates = LinkedList<VariableState>()
-
-		fun createVariableState(): VariableState {
-			val previousUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
-			for((declaration, usages) in previousVariableUsages)
-				previousUsages[declaration] = HashSet(usages)
-			return VariableState(previousUsages)
-		}
 
 		fun setVariableStates(vararg variableStates: VariableState) {
-			previousVariableUsages.clear()
+			currentState.lastVariableUsages.clear()
 			addVariableStates(*variableStates)
 		}
 
 		fun addVariableStates(vararg variableStates: VariableState) {
 			for(variableState in variableStates) {
-				for((declaration, previousUsages) in variableState.previousVariableUsages) {
-					val usages = previousVariableUsages.getOrPut(declaration) { LinkedHashSet() }
-					usages.addAll(previousUsages)
+				for((declaration, firstUsages) in variableState.firstVariableUsages) {
+					val allFirstUsages = currentState.firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
+					allFirstUsages.addAll(firstUsages)
+				}
+				for((declaration, lastUsages) in variableState.lastVariableUsages) {
+					val allLastUsages = currentState.lastVariableUsages.getOrPut(declaration) { LinkedHashSet() }
+					allLastUsages.addAll(lastUsages)
 				}
 			}
 		}
 
 		fun declare(declaration: ValueDeclaration) {
-			val usages = variableUsages.getOrPut(declaration) { LinkedList() }
-			val previousUsages = previousVariableUsages.getOrPut(declaration) { LinkedHashSet() }
+			val usages = variables.getOrPut(declaration) { LinkedList() }
+			val firstUsages = currentState.firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
+			val previousUsages = currentState.lastVariableUsages.getOrPut(declaration) { LinkedHashSet() }
 			val types = mutableListOf(VariableUsage.Type.DECLARATION)
 			if(declaration.value != null)
 				types.add(VariableUsage.Type.WRITE)
 			val usage = VariableUsage(types, declaration)
 			usages.add(usage)
+			if(firstUsages.isEmpty())
+				firstUsages.add(usage)
 			previousUsages.clear()
 			previousUsages.add(usage)
 		}
@@ -205,48 +203,51 @@ object DataFlowAnalyser {
 		fun add(type: VariableUsage.Type, variable: VariableValue) = add(listOf(type), variable)
 
 		fun add(types: List<VariableUsage.Type>, variable: VariableValue) {
-			val usages = variableUsages.getOrPut(variable.definition ?: return) { LinkedList() }
-			val previousUsages = previousVariableUsages.getOrPut(variable.definition ?: return) { LinkedHashSet() }
+			val usages = variables.getOrPut(variable.definition ?: return) { LinkedList() }
+			val firstUsages = currentState.firstVariableUsages.getOrPut(variable.definition ?: return) { LinkedHashSet() }
+			val lastUsages = currentState.lastVariableUsages.getOrPut(variable.definition ?: return) { LinkedHashSet() }
 			val usage = VariableUsage(types, variable)
-			for(previousUsage in previousUsages) {
+			for(previousUsage in lastUsages) {
 				usage.previousUsages.add(previousUsage)
 				previousUsage.nextUsages.add(usage)
 			}
 			usages.add(usage)
-			previousUsages.clear()
-			previousUsages.add(usage)
+			if(firstUsages.isEmpty())
+				firstUsages.add(usage)
+			lastUsages.clear()
+			lastUsages.add(usage)
 		}
 
 		fun registerExecutionEnd() {
-			previousVariableUsages.clear()
+			for((_, usages) in currentState.lastVariableUsages) {
+				for(usage in usages) {
+					usage.isLastUsage = true
+				}
+			}
+			currentState.lastVariableUsages.clear()
 		}
 
 		fun registerNextStatement() {
-			nextStatementStates.add(createVariableState())
-			registerExecutionEnd()
+			nextStatementStates.add(currentState.copy())
+			currentState.lastVariableUsages.clear()
 		}
 
 		fun registerBreakStatement() {
-			breakStatementStates.add(createVariableState())
-			registerExecutionEnd()
-		}
-
-		fun registerReturnStatement() {
-			returnStatementStates.add(createVariableState())
-			registerExecutionEnd()
+			breakStatementStates.add(currentState.copy())
+			currentState.lastVariableUsages.clear()
 		}
 
 		fun linkBackTo(previousState: VariableState) {
-			link(previousVariableUsages, previousState)
+			link(currentState.lastVariableUsages, previousState)
 		}
 
 		fun link(referenceState: VariableState, previousState: VariableState) {
-			link(referenceState.previousVariableUsages, previousState)
+			link(referenceState.lastVariableUsages, previousState)
 		}
 
 		fun link(currentPreviousUsages: HashMap<ValueDeclaration, MutableSet<VariableUsage>>, previousState: VariableState) {
 			for((declaration, lastUsages) in currentPreviousUsages) {
-				val firstUsages = previousState.previousVariableUsages[declaration]?.firstOrNull()?.nextUsages ?: continue
+				val firstUsages = previousState.lastVariableUsages[declaration]?.firstOrNull()?.nextUsages ?: continue
 				for(firstUsage in firstUsages) {
 					for(lastUsage in lastUsages) {
 						firstUsage.previousUsages.addFirst(lastUsage)
@@ -256,12 +257,63 @@ object DataFlowAnalyser {
 			}
 		}
 
+		fun linkToFirstUsages(usages: HashMap<ValueDeclaration, MutableSet<VariableUsage>>) {
+			for((declaration, potentiallyLastUsages) in usages) {
+				for(firstUsageInHandleBlock in currentState.firstVariableUsages[declaration] ?: continue) {
+					for(potentiallyLastUsage in potentiallyLastUsages) {
+						potentiallyLastUsage.nextUsages.add(firstUsageInHandleBlock)
+						firstUsageInHandleBlock.previousUsages.add(potentiallyLastUsage)
+					}
+				}
+			}
+		}
+
 		fun calculateEndState() {
-			addVariableStates(*returnStatementStates.toTypedArray())
-			for((declaration, usages) in variableUsages) {
+			for((declaration, usages) in variables) {
 				usages.firstOrNull()?.isFirstUsage = true
-				for(usage in previousVariableUsages[declaration] ?: continue)
+				for(usage in currentState.lastVariableUsages[declaration] ?: continue)
 					usage.isLastUsage = true
+			}
+		}
+
+		fun markAllUsagesAsExiting() {
+			var currentUsages = currentState.firstVariableUsages
+			while(true) {
+				var hasNextUsages = false
+				val nextVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
+				usagesToBeLinked@ for((declaration, usages) in currentUsages) {
+					val nextUsages = nextVariableUsages.getOrPut(declaration) { HashSet() }
+					for(usage in usages) {
+						usage.willExit = true
+						hasNextUsages = true
+						nextUsages.addAll(usage.nextUsages)
+					}
+				}
+				if(!hasNextUsages)
+					break
+				currentUsages = nextVariableUsages
+			}
+		}
+
+		fun collectAllUsagesInto(
+			potentiallyLastVariableUsages: HashMap<ValueDeclaration, MutableSet<VariableUsage>>
+		) {
+			var currentUsages = currentState.firstVariableUsages
+			while(true) {
+				var hasNextUsages = false
+				val nextVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
+				usagesToBeLinked@ for((declaration, usages) in currentUsages) {
+					val potentiallyLastUsages = potentiallyLastVariableUsages.getOrPut(declaration) { HashSet() }
+					potentiallyLastUsages.addAll(usages)
+					val nextUsages = nextVariableUsages.getOrPut(declaration) { HashSet() }
+					for(usage in usages) {
+						hasNextUsages = true
+						nextUsages.addAll(usage.nextUsages)
+					}
+				}
+				if(!hasNextUsages)
+					break
+				currentUsages = nextVariableUsages
 			}
 		}
 
@@ -270,28 +322,38 @@ object DataFlowAnalyser {
 		}
 
 		fun getReport(variableName: String): String? {
-			for((declaration, usages) in variableUsages) {
+			for((declaration, usages) in variables) {
 				if(variableName != declaration.name)
 					continue
-				var report = "start -> ${usages.first().usage.source.start.line.number}"
+				var report = "start -> ${usages.first()}"
 				for(usage in usages) {
-					val lineNumber = usage.usage.source.start.line.number
 					val typeString = usage.types.joinToString(" & ").lowercase()
-					var targetString = usage.nextUsages.joinToString { variableUsage ->
-						variableUsage.usage.source.start.line.number.toString() }
+					var targetString = usage.nextUsages.joinToString()
 					if(usage.isLastUsage) {
 						if(targetString.isNotEmpty())
 							targetString += ", "
 						targetString += "end"
 					}
-					report += "\n$lineNumber: $typeString -> $targetString"
+					report += "\n$usage: $typeString -> $targetString"
 				}
 				return report
 			}
 			return null
 		}
 
-		class VariableState(val previousVariableUsages: HashMap<ValueDeclaration, MutableSet<VariableUsage>>)
+		class VariableState {
+			val firstVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
+			val lastVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
+
+			fun copy(): VariableState {
+				val newState = VariableState()
+				for((declaration, usages) in firstVariableUsages)
+					newState.firstVariableUsages[declaration] = HashSet(usages)
+				for((declaration, usages) in lastVariableUsages)
+					newState.lastVariableUsages[declaration] = HashSet(usages)
+				return newState
+			}
+		}
 	}
 
 	class VariableUsage(val types: List<Type>, val usage: Unit) {
@@ -299,6 +361,14 @@ object DataFlowAnalyser {
 		var nextUsages = LinkedList<VariableUsage>()
 		var isFirstUsage = false
 		var isLastUsage = false
+		var willExit = false
+
+		override fun toString(): String {
+			var stringRepresentation = usage.source.start.line.number.toString()
+			if(willExit)
+				stringRepresentation += "e"
+			return stringRepresentation
+		}
 
 		enum class Type {
 			DECLARATION,
