@@ -10,9 +10,7 @@ internal class AndUnionTypes {
 	fun `and unions can be assigned to and unions`() {
 		val sourceCode =
 			"""
-				StreetVehicle class {
-					init
-				}
+				StreetVehicle class
 				PublicTransport class
 				Bus object: StreetVehicle & PublicTransport {}
 				val preferredVehicle: StreetVehicle & PublicTransport = Bus

@@ -10,14 +10,14 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.OrUnionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
+import components.syntax_parser.syntax_tree.general.Element
 import util.stringifyTypes
 import java.util.*
-import components.syntax_parser.syntax_tree.definitions.InitializerDefinition as InitializerDefinitionSyntaxTree
 
-class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree,
-							override val parentDefinition: TypeDefinition, val scope: BlockScope,
-							val genericParameters: List<TypeDefinition>, val parameters: List<Parameter>,
-							val body: Unit?, val isNative: Boolean): Unit(source), MemberDeclaration {
+class InitializerDefinition(override val source: Element, override val parentDefinition: TypeDefinition,
+							val scope: BlockScope, val genericParameters: List<TypeDefinition> = listOf(),
+							val parameters: List<Parameter> = listOf(), val body: Unit? = null, val isNative: Boolean = false):
+	Unit(source), MemberDeclaration {
 	override val memberIdentifier
 		get() = toString()
 	override val isAbstract = false
@@ -142,6 +142,14 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 		if(body == null)
 			return
 		val initializerTracker = VariableTracker(true)
+		for(parameter in parameters) {
+			if(parameter.type == null) { //TODO write test for this
+//				val property = scope.parentScope.resolveValue(parameter.name)
+//				initializerTracker.add(VariableUsage.Type.WRITE, property)
+			} else {
+				initializerTracker.declare(parameter)
+			}
+		}
 		body.analyseDataFlow(linter, initializerTracker)
 		initializerTracker.calculateEndState()
 		for((declaration, usages) in initializerTracker.variables) {

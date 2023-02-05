@@ -7,7 +7,7 @@ import util.TestUtil
 internal class Initialization {
 
 	@Test
-	fun `allows use of initialized local variable`() {
+	fun `allows use of initialized local variables`() {
 		val sourceCode =
 			"""
 				val x = 5
@@ -18,7 +18,7 @@ internal class Initialization {
 	}
 
 	@Test
-	fun `disallows use of uninitialized local variable`() {
+	fun `disallows use of uninitialized local variables`() {
 		val sourceCode =
 			"""
 				Int class
@@ -30,7 +30,7 @@ internal class Initialization {
 	}
 
 	@Test
-	fun `allows assignment of uninitialized constant local variable`() {
+	fun `allows assignments to uninitialized constant local variables`() {
 		val sourceCode =
 			"""
 				Int class
@@ -42,7 +42,7 @@ internal class Initialization {
 	}
 
 	@Test
-	fun `disallows assignment of possibly initialized constant local variable`() {
+	fun `disallows assignments to possibly initialized constant local variables`() {
 		val sourceCode =
 			"""
 				Int class
@@ -56,7 +56,7 @@ internal class Initialization {
 	}
 
 	@Test
-	fun `allows assignment of initialized local variable`() {
+	fun `allows assignments to initialized local variables`() {
 		val sourceCode =
 			"""
 				Int class
@@ -68,18 +68,32 @@ internal class Initialization {
 	}
 
 	@Test
-	fun `disallows assignment of initialized constant local variable`() {
+	fun `disallows assignments to initialized constant local variables`() {
 		val sourceCode =
 			"""
 				val x = 2
 				x = 4
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'x' cannot be reassigned, because it is constant.")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "'x' cannot be reassigned, because it is constant")
 	}
 
 	@Test
-	fun `disallows initialization of constant property outside of initializer`() {
+	fun `disallows assignments to parameter variables`() {
+		val sourceCode =
+			"""
+				Microphone class {
+					to setFilterThreshold(volumeInDecibels: Int) {
+						volumeInDecibels = 2
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "'volumeInDecibels' cannot be reassigned, because it is constant")
+	}
+
+	@Test
+	fun `disallows initialization of constant properties outside of initializer`() {
 		val sourceCode =
 			"""
 				Int class
@@ -96,7 +110,7 @@ internal class Initialization {
 	}
 
 	@Test
-	fun `allows initialization of uninitialized constant property inside of initializer`() {
+	fun `allows initialization of uninitialized constant properties inside of initializer`() {
 		val sourceCode =
 			"""
 				Int class
@@ -113,7 +127,7 @@ internal class Initialization {
 	}
 
 	@Test
-	fun `disallows initialization of initialized constant property inside of initializer`() {
+	fun `disallows initialization of initialized constant properties inside of initializer`() {
 		val sourceCode =
 			"""
 				Int class
@@ -129,7 +143,156 @@ internal class Initialization {
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "'numberOfArms' cannot be reassigned, because it is constant")
 	}
 
-	//TODO check if all properties get initialized in the initializer
-	//TODO check if functions use uninitialized properties in the initializer
-	//TODO check that function parameters are treated as local constants
+	@Test
+	fun `allows for properties to be initialized outside of initializer`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms = 2
+					init {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "The following properties have not been initialized")
+	}
+
+	@Test
+	fun `allows for properties to be initialized inside of initializer`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					init {
+						numberOfArms = 2
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "The following properties have not been initialized")
+	}
+
+	@Test
+	fun `disallows initializers that don't initialize all properties`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					init {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, """
+			The following properties have not been initialized by this initializer:
+			 - numberOfArms
+		""".trimIndent())
+	}
+
+	@Test
+	fun `disallows uninitialized properties when no explicit initializer exists`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, """
+			The following properties have not been initialized by this initializer:
+			 - numberOfArms
+		""".trimIndent())
+	}
+
+	@Test
+	fun `allows for initialized properties to be used`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					init {
+						numberOfArms = 2
+						numberOfArms
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "hasn't been initialized yet")
+	}
+
+	@Test
+	fun `disallows for uninitialized properties to be used`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					init {
+						numberOfArms
+						numberOfArms = 2
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Property 'numberOfArms' hasn't been initialized yet")
+	}
+
+	@Test
+	fun `recognizes when functions initialize properties`() {
+		val sourceCode =
+			"""
+				Human class {
+					var age: Int
+					init {
+						setNewborn()
+						age
+					}
+					to setNewborn() {
+						age = 0
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "hasn't been initialized yet")
+	}
+
+	@Test
+	fun `allows for functions that rely on an initialized property to be called`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					init {
+						numberOfArms = 2
+						printNumberOfArms()
+					}
+					to printNumberOfArms() {
+						numberOfArms
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "relies on the following uninitialized properties")
+	}
+
+	@Test
+	fun `disallows for functions that rely on an uninitialized property to be called`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					init {
+						printNumberOfArms()
+						numberOfArms = 2
+					}
+					to printNumberOfArms() {
+						numberOfArms
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, """
+			The function 'printNumberOfArms' relies on the following uninitialized properties:
+			 - numberOfArms
+		""".trimIndent())
+	}
+
+	//TODO also consider which properties of the super type get initialized by the super initializer
 }

@@ -142,12 +142,9 @@ internal class FunctionResolution {
 	fun `emits error for ambiguous function calls`() {
 		val sourceCode =
 			"""
-				Int class {
-					init
-				}
+				Int class
 				List class {
 					containing Element
-					init
 					it exists(index: Int)
 					it exists(element: Element)
 				}
@@ -163,9 +160,7 @@ internal class FunctionResolution {
 	fun `resolves function calls with a variable number of parameters`() {
 		val sourceCode =
 			"""
-				Int class {
-					init
-				}
+				Int class
 				IntegerList object {
 					to add(...integers: ...Int)
 				}

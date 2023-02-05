@@ -57,6 +57,8 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		if(body == null)
 			return
 		val functionTracker = VariableTracker()
+		for(parameter in parameters)
+			functionTracker.declare(parameter)
 		body.analyseDataFlow(linter, functionTracker)
 		functionTracker.calculateEndState()
 		for((declaration, usages) in functionTracker.variables) {

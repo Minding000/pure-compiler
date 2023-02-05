@@ -15,14 +15,9 @@ internal class TypeParameters {
 	fun `consuming type accepts base type`() {
 		val sourceCode =
 			"""
-			Paper class {
-				init
-			}
+			Paper class
 			TrashCan class {
 				containing T
-
-				init
-
 				to put(trash: T) {}
 			}
 			val recyclingBin = <Paper consuming>TrashCan()
@@ -44,14 +39,9 @@ internal class TypeParameters {
 	fun `producing type doesn't accept base type`() {
 		val sourceCode =
 			"""
-			SoftDrink class {
-				init
-			}
+			SoftDrink class
 			StorageRoom class {
 				containing Item
-
-				init
-
 				to store(item: Item) {}
 				to get(): Item {}
 			}
@@ -75,14 +65,9 @@ internal class TypeParameters {
 		val sourceCode =
 			"""
 			referencing Pure
-			SoftDrink class {
-				init
-			}
+			SoftDrink class
 			StorageRoom class {
 				containing Item
-
-				init
-
 				to store(item: Item) {}
 				to get(): Item {}
 			}
@@ -111,14 +96,9 @@ internal class TypeParameters {
 	fun `producing type is assignable to base type`() {
 		val sourceCode =
 			"""
-			SoftDrink class {
-				init
-			}
+			SoftDrink class
 			StorageRoom class {
 				containing Item
-
-				init
-
 				to store(item: Item) {}
 				to get(): Item {}
 			}

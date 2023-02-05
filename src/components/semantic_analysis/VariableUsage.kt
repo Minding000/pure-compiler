@@ -43,7 +43,8 @@ class VariableUsage(val types: List<Type>, val usage: Unit) {
 		if(isPossiblyInitialized != null)
 			return isPossiblyInitialized
 		isPossiblyInitializedCache = false
-		isPossiblyInitialized = types.contains(Type.WRITE) || (previousUsages.isNotEmpty() && previousUsages.any(VariableUsage::isPossiblyInitialized))
+		isPossiblyInitialized = types.contains(Type.WRITE)
+			|| (previousUsages.isNotEmpty() && previousUsages.any(VariableUsage::isPossiblyInitialized))
 		isPossiblyInitializedCache = isPossiblyInitialized
 		return isPossiblyInitialized
 	}

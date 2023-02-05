@@ -3,6 +3,7 @@ package components.semantic_analysis.semantic_model.definitions
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
@@ -69,6 +70,11 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 
 	override fun linkPropertyParameters(linter: Linter, scope: MutableScope) {
 		super.linkPropertyParameters(linter, this.scope)
+		if(this.scope.initializers.isEmpty()) {
+			val defaultInitializer = InitializerDefinition(source, this, BlockScope(this.scope))
+			addUnits(defaultInitializer)
+			this.scope.declareInitializer(linter, defaultInitializer)
+		}
 		this.scope.ensureUniqueInitializerSignatures(linter)
 	}
 

@@ -50,7 +50,6 @@ internal class ReturnStatements {
 			"""
 				Int class
 				Desk class {
-					init
 					to getMaximumHeightInMeters(): Int {
 						return Desk()
 					}
@@ -79,9 +78,7 @@ internal class ReturnStatements {
 	fun `detects return statements with extraneous return type`() {
 		val sourceCode =
 			"""
-				Int class {
-					init
-				}
+				Int class
 				Desk class {
 					to raiseToMaximum() {
 						return Int()
@@ -97,9 +94,7 @@ internal class ReturnStatements {
 		val sourceCode =
 			"""
 				Number class
-				Int class: Number {
-					init
-				}
+				Int class: Number
 				Desk class {
 					to getMaximumHeightInMeters(): Number {
 						return Int()
@@ -142,9 +137,7 @@ internal class ReturnStatements {
 	fun `detects functions with return type that might complete without returning a value in a handle block`() {
 		val sourceCode =
 			"""
-				Error class {
-					init
-				}
+				Error class
 				Int class
 				Desk class {
 					to raiseToMaximum(): Int {
@@ -188,9 +181,7 @@ internal class ReturnStatements {
 	fun `ignores functions with never return type that don't complete`() {
 		val sourceCode =
 			"""
-				Error class {
-					init
-				}
+				Error class
 				Desk class {
 					to raiseToMaximum(): Never {
 						raise Error()

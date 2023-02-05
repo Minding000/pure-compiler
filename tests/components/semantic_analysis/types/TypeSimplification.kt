@@ -13,12 +13,8 @@ internal class TypeSimplification {
 	fun `creates or union of independent classes`() {
 		val sourceCode =
 			"""
-				Cat class {
-					init
-				}
-				Human class {
-					init
-				}
+				Cat class
+				Human class
 				Randomizer object {
 					to chooseRandomElementOf(Element; first: Element, second: Element): Element
 				}
@@ -33,9 +29,7 @@ internal class TypeSimplification {
 	fun `doesn't create or union with duplicate class`() {
 		val sourceCode =
 			"""
-				Cat class {
-					init
-				}
+				Cat class
 				Randomizer object {
 					to chooseRandomElementOf(Element; first: Element, second: Element): Element
 				}
@@ -50,12 +44,8 @@ internal class TypeSimplification {
 	fun `doesn't create or union of super and sub class`() {
 		val sourceCode =
 			"""
-				Animal class {
-					init
-				}
-				Cat class: Animal {
-					init
-				}
+				Animal class
+				Cat class: Animal
 				Randomizer object {
 					to chooseRandomElementOf(Element; first: Element, second: Element): Element
 				}
@@ -70,12 +60,8 @@ internal class TypeSimplification {
 	fun `merges additional types into existing or union`() {
 		val sourceCode =
 			"""
-				Monkey class {
-					init
-				}
-				Horse class {
-					init
-				}
+				Monkey class
+				Horse class
 				Cat class
 				Randomizer object {
 					to chooseRandomElementOf(Element; first: Element, second: Element): Element
@@ -92,13 +78,9 @@ internal class TypeSimplification {
 	fun `merges multiple or unions`() {
 		val sourceCode =
 			"""
-				Human class {
-					init
-				}
+				Human class
 				Monkey class
-				Cat class {
-					init
-				}
+				Cat class
 				Horse class
 				Randomizer object {
 					to chooseRandomElementOf(Element; first: Element, second: Element): Element
@@ -119,9 +101,7 @@ internal class TypeSimplification {
 				Human class
 				Patient class
 				Bob object: Human & Patient {}
-				Horse class {
-					init
-				}
+				Horse class
 				Randomizer object {
 					to chooseRandomElementOf(Element; first: Element, second: Element): Element
 				}

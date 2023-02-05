@@ -13,9 +13,7 @@ internal class InitializerResolution {
 	fun `emits error for undeclared initializers`() {
 		val sourceCode =
 			"""
-				Item class {
-					init() {}
-				}
+				Item class
 				Item(Item())
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -26,9 +24,7 @@ internal class InitializerResolution {
 	fun `resolves initializer calls`() {
 		val sourceCode =
 			"""
-				Int class {
-					init
-				}
+				Int class
 				Window class {
 					init(width: Int, height: Int) {}
 				}
@@ -44,9 +40,7 @@ internal class InitializerResolution {
 	fun `resolves initializer calls with a variable number of parameters`() {
 		val sourceCode =
 			"""
-				Int class {
-					init
-				}
+				Int class
 				IntegerList class {
 					init(...integers: ...Int) {}
 				}
@@ -61,9 +55,7 @@ internal class InitializerResolution {
 	fun `emits error for ambiguous initializer calls`() {
 		val sourceCode =
 			"""
-				Int class {
-					init
-				}
+				Int class
 				List class {
 					containing Element
 

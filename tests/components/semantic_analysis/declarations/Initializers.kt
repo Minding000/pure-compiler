@@ -1,8 +1,10 @@
 package components.semantic_analysis.declarations
 
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
+import kotlin.test.assertNotNull
 
 internal class Initializers {
 
@@ -68,7 +70,7 @@ internal class Initializers {
 	}
 
 	@Test
-	fun `detects redeclarations of initializers signatures`() {
+	fun `detects redeclarations of initializer signatures`() {
 		val sourceCode =
 			"""
 				Trait class
@@ -81,5 +83,16 @@ internal class Initializers {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of initializer 'Human(Trait)'")
+	}
+
+	@Test
+	fun `creates default initializer if no initializer is defined`() {
+		val sourceCode =
+			"""
+				Human class
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val defaultInitializer = lintResult.find<InitializerDefinition>()
+		assertNotNull(defaultInitializer)
 	}
 }

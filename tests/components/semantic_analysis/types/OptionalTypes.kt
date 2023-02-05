@@ -10,9 +10,7 @@ internal class OptionalTypes {
 	fun `types object can be assigned to optional types`() {
 		val sourceCode =
 			"""
-				Car class {
-					init
-				}
+				Car class
 				val car: Car? = Car()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -34,9 +32,7 @@ internal class OptionalTypes {
 	fun `optional types can be assigned to optional types`() {
 		val sourceCode =
 			"""
-				Car class {
-					init
-				}
+				Car class
 				val carInDriveway: Car? = Car()
 				val car: Car? = carInDriveway
             """.trimIndent()

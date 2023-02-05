@@ -89,7 +89,6 @@ internal class TypeResolution {
 			"""
 				List class {
 					containing Element
-					init
 					to add(element: Element) {}
 				}
             """.trimIndent()
@@ -104,7 +103,6 @@ internal class TypeResolution {
 			"""
 				List class {
 					containing Element
-					init
 					to add(element: Element) {}
 				}
 				Country class

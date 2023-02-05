@@ -1,5 +1,6 @@
 package components.semantic_analysis
 
+import components.semantic_analysis.semantic_model.definitions.Parameter
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import java.util.*
@@ -34,7 +35,7 @@ class VariableTracker(val isInitializer: Boolean = false) {
 		val firstUsages = currentState.firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
 		val previousUsages = currentState.lastVariableUsages.getOrPut(declaration) { LinkedHashSet() }
 		val types = mutableListOf(VariableUsage.Type.DECLARATION)
-		if(declaration.value != null)
+		if(declaration is Parameter || declaration.value != null)
 			types.add(VariableUsage.Type.WRITE)
 		val usage = VariableUsage(types, declaration)
 		usages.add(usage)

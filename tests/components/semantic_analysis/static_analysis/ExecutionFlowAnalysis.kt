@@ -183,7 +183,6 @@ internal class ExecutionFlowAnalysis {
 			"""
 				Color enum {
 					instances RED
-					init
 				}
 				loop {
 					val result = Color.RED as? Color

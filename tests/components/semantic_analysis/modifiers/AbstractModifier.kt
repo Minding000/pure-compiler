@@ -97,9 +97,7 @@ internal class AbstractModifier {
 	@Test
 	fun `doesn't emit error for non-abstract member in non-abstract class`() {
 		val sourceCode = """
-			Int class {
-				init
-			}
+			Int class
 			List class {
 				val id = Int()
 				to clear()
@@ -112,9 +110,7 @@ internal class AbstractModifier {
 	@Test
 	fun `emits error for instantiation of abstract classes`() {
 		val sourceCode = """
-			abstract List class {
-				init
-			}
+			abstract List class
 			List()
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

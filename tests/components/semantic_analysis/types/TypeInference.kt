@@ -18,9 +18,7 @@ internal class TypeInference {
 	fun `infers variable type in declaration`() {
 		val sourceCode =
 			"""
-				Basketball class {
-					init
-				}
+				Basketball class
 				val ball = Basketball()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -53,7 +51,6 @@ internal class TypeInference {
 			"""
 				TransportLayerProtocol enum {
 					instances TCP, UDP
-					init
 				}
 				var protocol: TransportLayerProtocol? = null
 				protocol = .TCP
@@ -71,7 +68,6 @@ internal class TypeInference {
 			"""
 				TransportLayerProtocol enum {
 					instances TCP, UDP
-					init
 				}
 				Stream class {
 					val protocol: TransportLayerProtocol
@@ -93,7 +89,6 @@ internal class TypeInference {
 			"""
 				TransportLayerProtocol enum {
 					instances TCP, UDP
-					init
 				}
 				Port class
 				NetworkInterface object {
@@ -114,7 +109,6 @@ internal class TypeInference {
 			"""
 				TransportLayerProtocol enum {
 					instances TCP, UDP
-					init
 				}
 				Ports class
 				NetworkInterface object {
@@ -135,7 +129,6 @@ internal class TypeInference {
 			"""
 				TransportLayerProtocol enum {
 					instances TCP, UDP
-					init
 				}
 				val protocol = TransportLayerProtocol.TCP
 				switch protocol {
@@ -160,7 +153,6 @@ internal class TypeInference {
 				List class {
 					containing Item
 					var backup: <Item>List? = null
-					init
 				}
 				val receipts = <Receipt>List()
             """.trimIndent()
@@ -175,9 +167,7 @@ internal class TypeInference {
 		val sourceCode =
 			"""
 				referencing Pure
-				Plant class {
-					init
-				}
+				Plant class
 				Package class {
 					containing Item
 					val item: Item
@@ -204,7 +194,6 @@ internal class TypeInference {
 			"""
 				Box class {
 					containing Item
-					init
 				}
 				val letterBox = Box()
             """.trimIndent()
@@ -217,9 +206,7 @@ internal class TypeInference {
 	fun `infers generic type before constructor call`() {
 		val sourceCode =
 			"""
-				Letter class {
-					init
-				}
+				Letter class
 				Box class {
 					containing Item
 					val firstItem: Item
@@ -238,12 +225,11 @@ internal class TypeInference {
 	}
 
 	@Test
-	fun `infers generic type in constructor call`() {
+	fun `infers generic type in initializer call`() {
 		val sourceCode =
 			"""
 				List class {
 					containing Item
-					init
 					to add(item: Item) {}
 				}
 				Message class {
@@ -252,11 +238,9 @@ internal class TypeInference {
 				NewsletterMessage class: Message {}
 				Actions class {
 					containing M: Message
-					init
 				}
 				Account class {
 					val incomingMessages = <Message>List()
-					init
 				}
 				MailFolder class {
 					val messages: <Message>List
@@ -282,9 +266,7 @@ internal class TypeInference {
 		val sourceCode =
 			"""
 				Letter class
-				PostCard class: Letter {
-					init
-				}
+				PostCard class: Letter
 				PostOffice object {
 					to stamp(L: Letter; letter: L): L {
 						return letter
@@ -307,9 +289,7 @@ internal class TypeInference {
 		val sourceCode =
 			"""
 				Letter class
-				PostCard class: Letter {
-					init
-				}
+				PostCard class: Letter
 				PostOffice object {
 					to stamp(L: Letter; letter: L?): L? {
 						return letter
@@ -332,15 +312,10 @@ internal class TypeInference {
 		val sourceCode =
 			"""
 				IpAddress class
-				Ipv4Address class: IpAddress {
-					init
-				}
-				Ipv6Address class: IpAddress {
-					init
-				}
+				Ipv4Address class: IpAddress
+				Ipv6Address class: IpAddress
 				Client class {
 					containing A: IpAddress
-					init
 				}
 				Server object {
 					operator [A: IpAddress; ipAddress: A]: <A>Client {}

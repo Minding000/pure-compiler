@@ -28,7 +28,6 @@ internal class OperatorResolution {
 		val sourceCode =
 			"""
 				Fraction class {
-					init
 					operator -
 				}
 				val fraction = Fraction()
@@ -44,9 +43,7 @@ internal class OperatorResolution {
 	fun `emits error for undeclared binary operators`() {
 		val sourceCode =
 			"""
-				Matrix class {
-					init
-				}
+				Matrix class
 				val {
 					a = Matrix()
 					b = Matrix()
@@ -62,7 +59,6 @@ internal class OperatorResolution {
 		val sourceCode =
 			"""
 				Matrix class {
-					init
 					operator +(other: Matrix): Matrix
 				}
 				val {
@@ -93,7 +89,6 @@ internal class OperatorResolution {
 		val sourceCode =
 			"""
 				Fraction class {
-					init
 					operator --
 				}
 				val fraction = Fraction()
@@ -109,9 +104,7 @@ internal class OperatorResolution {
 	fun `emits error for undeclared binary modification operators`() {
 		val sourceCode =
 			"""
-				Matrix class {
-					init
-				}
+				Matrix class
 				val {
 					a = Matrix()
 					b = Matrix()
@@ -127,7 +120,6 @@ internal class OperatorResolution {
 		val sourceCode =
 			"""
 				Matrix class {
-					init
 					operator +=(other: Matrix): Matrix
 				}
 				val {
@@ -146,9 +138,7 @@ internal class OperatorResolution {
 	fun `emits error for call to nonexistent index operator`() {
 		val sourceCode =
 			"""
-				Position class {
-					init
-				}
+				Position class
 				ChessBoard object
 				val firstField = ChessBoard[Position()]
             """.trimIndent()
@@ -160,12 +150,8 @@ internal class OperatorResolution {
 	fun `emits error for assignment to readonly index operator`() {
 		val sourceCode =
 			"""
-				Position class {
-					init
-				}
-				Field class {
-					init
-				}
+				Position class
+				Field class
 				ChessBoard object {
 					native operator[position: Position](): Field
 				}
@@ -179,9 +165,7 @@ internal class OperatorResolution {
 	fun `resolves index operators`() {
 		val sourceCode =
 			"""
-				Position class {
-					init
-				}
+				Position class
 				Field class
 				ChessBoard object {
 					native operator[position: Position](): Field
@@ -197,9 +181,7 @@ internal class OperatorResolution {
 	fun `resolves calls to super operator`() {
 		val sourceCode =
 			"""
-				Int class {
-					init
-				}
+				Int class
 				Hinge class
 				Door class {
 					operator [index: Int](): Hinge
@@ -219,9 +201,7 @@ internal class OperatorResolution {
 	fun `resolves calls to overriding operator`() {
 		val sourceCode =
 			"""
-				Int class {
-					init
-				}
+				Int class
 				Hinge class
 				Door class {
 					operator [index: Int]: Hinge
@@ -308,15 +288,10 @@ internal class OperatorResolution {
 	fun `emits error for ambiguous operator calls`() {
 		val sourceCode =
 			"""
-				Int class {
-					init
-				}
+				Int class
 				Boolean class
 				List class {
 					containing Element
-
-					init
-
 					operator [index: Int]: Element
 					operator [element: Element]: Boolean
 				}
@@ -332,9 +307,7 @@ internal class OperatorResolution {
 	fun `resolves operator calls with a variable number of parameters`() {
 		val sourceCode =
 			"""
-				Int class {
-					init
-				}
+				Int class
 				IntegerList object {
 					operator +=(...integers: ...Int)
 				}

@@ -10,9 +10,7 @@ internal class OrUnionTypes {
 	fun `or unions can be assigned to or unions`() {
 		val sourceCode =
 			"""
-				Bus class {
-					init
-				}
+				Bus class
 				Car class
 				val preferredVehicle: Bus | Car = Bus()
 				val dailyCommuteVehicle: Bus | Car = preferredVehicle

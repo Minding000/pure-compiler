@@ -3,6 +3,7 @@ package components.semantic_analysis.semantic_model.values
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.literals.Identifier
@@ -28,8 +29,14 @@ open class VariableValue(override val source: Element, val name: String): Value(
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		val usage = tracker.add(VariableUsage.Type.READ, this) ?: return
-		if(definition is LocalVariableDeclaration && !usage.isPreviouslyInitialized())
-			linter.addMessage(source, "Local variable '$name' hasn't been initialized yet.", Message.Type.ERROR)
+		val declaration = definition
+		if(declaration is LocalVariableDeclaration) {
+			if(!usage.isPreviouslyInitialized())
+				linter.addMessage(source, "Local variable '$name' hasn't been initialized yet.", Message.Type.ERROR)
+		} else if(declaration is PropertyDeclaration) {
+			if(tracker.isInitializer && declaration.value == null && !usage.isPreviouslyInitialized())
+				linter.addMessage(source, "Property '$name' hasn't been initialized yet.", Message.Type.ERROR)
+		}
 	}
 
 	override fun hashCode(): Int {

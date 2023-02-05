@@ -6,8 +6,7 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
-class Parameter(override val source: ParameterSyntaxTree, name: String, type: Type?, isMutable: Boolean,
-				val hasDynamicSize: Boolean):
+class Parameter(override val source: ParameterSyntaxTree, name: String, type: Type?, isMutable: Boolean, val hasDynamicSize: Boolean):
 	ValueDeclaration(source, name, type, null, true, isMutable) {
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Parameter {

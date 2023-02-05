@@ -10,9 +10,7 @@ internal class ObjectTypes {
 	fun `types object can be assigned to types object`() {
 		val sourceCode =
 			"""
-				Car class {
-					init
-				}
+				Car class
 				val car: Car = Car()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

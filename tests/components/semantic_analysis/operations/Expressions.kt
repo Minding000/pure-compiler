@@ -36,7 +36,6 @@ internal class Expressions {
 				Brightness class
 				Star class {
 					var brightness: Brightness
-					init
 				}
 				val sun: Star? = Star()
 				sun?.brightness
@@ -52,7 +51,6 @@ internal class Expressions {
 			"""
 				Seat class
 				Car class {
-					init
 					var driverSeat: Seat? = null
 				}
 				val carInDriveway: Car? = Car()
@@ -70,7 +68,6 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				Star class {
-					init
 					native to shine()
 				}
 				val sun: Star? = Star()
@@ -86,7 +83,6 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				Star class {
-					init
 					native to shine()
 				}
 				val sun = Star()
@@ -102,9 +98,7 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				Vehicle class
-				Bus class: Vehicle {
-					init
-				}
+				Bus class: Vehicle
 				Cinema class
 				val roomWithSeats: Bus|Cinema = Bus()
 				roomWithSeats as! Vehicle
@@ -120,9 +114,7 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				Vehicle class
-				Bus class: Vehicle {
-					init
-				}
+				Bus class: Vehicle
 				Cinema class
 				val roomWithSeats: Bus|Cinema = Bus()
 				val isRoomVehicle = roomWithSeats is Vehicle
@@ -140,9 +132,7 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				Vehicle class
-				Bus class: Vehicle {
-					init
-				}
+				Bus class: Vehicle
 				Cinema class
 				val roomWithSeats: Bus|Cinema = Bus()
 				if roomWithSeats is vehicle: Vehicle {
@@ -159,9 +149,7 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				Vehicle class
-				Bus class: Vehicle {
-					init
-				}
+				Bus class: Vehicle
 				Cinema class
 				val roomWithSeats: Bus|Cinema = Bus()
 				loop {
@@ -311,9 +299,7 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				Vehicle class
-				Bus class: Vehicle {
-					init
-				}
+				Bus class: Vehicle
 				Cinema class
 				val roomWithSeats: Bus|Cinema = Bus()
 				roomWithSeats as? Vehicle
@@ -388,9 +374,7 @@ internal class Expressions {
 	fun `detects null checks that always return yes`() {
 		val sourceCode =
 			"""
-				Cable class {
-					init
-				}
+				Cable class
 				val cable = Cable()
 				if(cable?) {}
             """.trimIndent()
@@ -402,9 +386,7 @@ internal class Expressions {
 	fun `detects null checks that always return no`() {
 		val sourceCode =
 			"""
-				Cable class {
-					init
-				}
+				Cable class
 				val noCable: Cable? = null
 				if(noCable?) {}
             """.trimIndent()
@@ -417,9 +399,7 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				class Metal {}
-				List class {
-					init
-				}
+				List class
 				<Metal>List()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

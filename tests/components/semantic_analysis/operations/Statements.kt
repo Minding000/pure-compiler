@@ -12,7 +12,6 @@ internal class Statements {
 			"""
 				OperatingSystem enum {
 					instances WINDOWS, LINUX, MACOS
-					init
 				}
 				val operatingSystem = OperatingSystem.WINDOWS
 				switch operatingSystem {
@@ -67,7 +66,6 @@ internal class Statements {
 			"""
 				Date object {
 					instances CURRENT
-					init
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -82,7 +80,6 @@ internal class Statements {
 					instances PAST
 					instances CURRENT
 					instances FUTURE
-					init
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
