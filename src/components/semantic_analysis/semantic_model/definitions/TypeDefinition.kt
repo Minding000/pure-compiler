@@ -86,6 +86,8 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 			if(member is FunctionImplementation)
 				member.analyseDataFlow(linter, tracker)
 		}
+		for(initializer in scope.initializers)
+			initializer.analyseDataFlow(linter, tracker)
 	}
 
 	override fun validate(linter: Linter) {

@@ -1,6 +1,8 @@
 package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
@@ -134,6 +136,25 @@ class InitializerDefinition(override val source: InitializerDefinitionSyntaxTree
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, this.scope)
+	}
+
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+		if(body == null)
+			return
+		val initializerTracker = VariableTracker(true)
+		body.analyseDataFlow(linter, initializerTracker)
+		initializerTracker.calculateEndState()
+		for((declaration, usages) in initializerTracker.variables) {
+			if(declaration !is PropertyDeclaration)
+				continue
+			for(usage in usages) {
+				if(usage.types.contains(VariableUsage.Type.WRITE)) {
+					// propertiesBeingInitialized.add(declaration)
+					break
+				}
+			}
+		}
+		tracker.addChild(memberIdentifier, initializerTracker)
 	}
 
 	override fun toString(): String {

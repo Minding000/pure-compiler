@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
@@ -11,6 +12,7 @@ import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.Operator
 import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
+import java.util.*
 
 class FunctionImplementation(override val source: Element, override val parentDefinition: TypeDefinition?,
 							 val scope: BlockScope, genericParameters: List<TypeDefinition>,
@@ -30,6 +32,8 @@ class FunctionImplementation(override val source: Element, override val parentDe
 	val signature: FunctionSignature = FunctionSignature(source, scope, genericParameters,
 		parameters.map { parameter -> parameter.type }, returnType, true)
 	var mightReturnValue = false
+	val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
+	val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 
 	init {
 		scope.unit = this
@@ -55,6 +59,16 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		val functionTracker = VariableTracker()
 		body.analyseDataFlow(linter, functionTracker)
 		functionTracker.calculateEndState()
+		for((declaration, usages) in functionTracker.variables) {
+			if(declaration !is PropertyDeclaration)
+				continue
+			for(usage in usages) {
+				if(usage.types.contains(VariableUsage.Type.WRITE)) {
+					propertiesBeingInitialized.add(declaration)
+					break
+				}
+			}
+		}
 		tracker.addChild(parentFunction.name, functionTracker)
 	}
 
@@ -62,7 +76,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		super.validate(linter)
 		if(!Linter.SpecialType.NOTHING.matches(signature.returnType)) {
 			if(body != null) {
-				var someBlocksCompletesWithoutReturning = false
+				var someBlocksCompleteWithoutReturning = false
 				var mainBlockCompletesWithoutReturning = true
 				for(statement in body.mainBlock.statements) {
 					if(statement.isInterruptingExecution) {
@@ -71,7 +85,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 					}
 				}
 				if(mainBlockCompletesWithoutReturning) {
-					someBlocksCompletesWithoutReturning = true
+					someBlocksCompleteWithoutReturning = true
 				} else {
 					for(handleBlock in body.handleBlocks) {
 						var handleBlockCompletesWithoutReturning = true
@@ -82,16 +96,16 @@ class FunctionImplementation(override val source: Element, override val parentDe
 							}
 						}
 						if(handleBlockCompletesWithoutReturning) {
-							someBlocksCompletesWithoutReturning = true
+							someBlocksCompleteWithoutReturning = true
 							break
 						}
 					}
 				}
 				if(Linter.SpecialType.NEVER.matches(signature.returnType)) {
-					if(someBlocksCompletesWithoutReturning || mightReturnValue)
+					if(someBlocksCompleteWithoutReturning || mightReturnValue)
 						linter.addMessage(source, "Function might complete despite of 'Never' return type.", Message.Type.ERROR)
 				} else {
-					if(someBlocksCompletesWithoutReturning)
+					if(someBlocksCompleteWithoutReturning)
 						linter.addMessage(source, "Function might complete without returning a value.", Message.Type.ERROR)
 
 				}

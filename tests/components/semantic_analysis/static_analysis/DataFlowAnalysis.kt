@@ -1,4 +1,4 @@
-package components.semantic_analysis.data_flow_analysis
+package components.semantic_analysis.static_analysis
 
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -175,5 +175,28 @@ internal class DataFlowAnalysis {
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertEquals(report, tracker.getReport("a"))
+	}
+
+	@Test
+	fun `works with multiple first usages`() {
+		val sourceCode = """
+			var a = 0
+			Int class
+			DataProvider object {
+				to setA() {
+					if yes
+						a = 1
+					else
+						a = 2
+				}
+			}
+		""".trimIndent()
+		val report = """
+			start -> 6, 8
+			6: write -> end
+			8: write -> end
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertEquals(report, tracker.childTrackers["setA"]?.getReport("a"))
 	}
 }

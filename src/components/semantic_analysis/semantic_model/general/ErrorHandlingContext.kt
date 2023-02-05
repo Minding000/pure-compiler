@@ -30,7 +30,7 @@ class ErrorHandlingContext(override val source: StatementSection, val mainBlock:
 				tracker.setVariableStates(initialState)
 				tracker.currentState.firstVariableUsages.clear()
 				handleBlock.analyseDataFlow(linter, tracker)
-				tracker.linkToFirstUsages(potentiallyLastVariableUsages)
+				tracker.linkToStartFrom(potentiallyLastVariableUsages)
 				tracker.collectAllUsagesInto(potentiallyLastVariableUsages)
 			}
 			tracker.setVariableStates(mainBlockState)
@@ -45,7 +45,7 @@ class ErrorHandlingContext(override val source: StatementSection, val mainBlock:
 			tracker.currentState.firstVariableUsages.clear()
 			alwaysBlock.analyseDataFlow(linter, tracker)
 			tracker.markAllUsagesAsExiting()
-			tracker.linkToFirstUsages(potentiallyLastVariableUsages)
+			tracker.linkToStartFrom(potentiallyLastVariableUsages)
 			tracker.registerExecutionEnd()
 			tracker.setVariableStates(completeExecutionState)
 		}

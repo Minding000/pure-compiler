@@ -15,7 +15,7 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 	private val typeDefinitions = HashMap<String, TypeDefinition>()
 	val memberDeclarations = LinkedList<MemberDeclaration>()
 	private val interfaceMembers = HashMap<String, InterfaceMember>()
-	private val initializers = LinkedList<InitializerDefinition>()
+	val initializers = LinkedList<InitializerDefinition>()
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>, superScope: InterfaceScope?): TypeScope {
 		val specificTypeScope = TypeScope(parentScope, superScope)

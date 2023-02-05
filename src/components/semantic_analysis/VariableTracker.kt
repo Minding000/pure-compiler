@@ -4,7 +4,7 @@ import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import java.util.*
 
-class VariableTracker {
+class VariableTracker(val isInitializer: Boolean = false) {
 	val childTrackers = HashMap<String, VariableTracker>()
 	val variables = HashMap<ValueDeclaration, MutableList<VariableUsage>>()
 	val currentState = VariableState()
@@ -44,12 +44,12 @@ class VariableTracker {
 		previousUsages.add(usage)
 	}
 
-	fun add(type: VariableUsage.Type, variable: VariableValue) = add(listOf(type), variable)
+	fun add(type: VariableUsage.Type, variable: VariableValue): VariableUsage? = add(listOf(type), variable)
 
-	fun add(types: List<VariableUsage.Type>, variable: VariableValue) {
-		val usages = variables.getOrPut(variable.definition ?: return) { LinkedList() }
-		val firstUsages = currentState.firstVariableUsages.getOrPut(variable.definition ?: return) { LinkedHashSet() }
-		val lastUsages = currentState.lastVariableUsages.getOrPut(variable.definition ?: return) { LinkedHashSet() }
+	fun add(types: List<VariableUsage.Type>, variable: VariableValue): VariableUsage? {
+		val usages = variables.getOrPut(variable.definition ?: return null) { LinkedList() }
+		val firstUsages = currentState.firstVariableUsages.getOrPut(variable.definition ?: return null) { LinkedHashSet() }
+		val lastUsages = currentState.lastVariableUsages.getOrPut(variable.definition ?: return null) { LinkedHashSet() }
 		val usage = VariableUsage(types, variable)
 		for(previousUsage in lastUsages) {
 			usage.previousUsages.add(previousUsage)
@@ -60,6 +60,7 @@ class VariableTracker {
 			firstUsages.add(usage)
 		lastUsages.clear()
 		lastUsages.add(usage)
+		return usage
 	}
 
 	fun registerExecutionEnd() {
@@ -100,22 +101,24 @@ class VariableTracker {
 		}
 	}
 
-	fun linkToFirstUsages(usages: HashMap<ValueDeclaration, MutableSet<VariableUsage>>) {
-		for((declaration, potentiallyLastUsages) in usages) {
-			for(firstUsageInHandleBlock in currentState.firstVariableUsages[declaration] ?: continue) {
-				for(potentiallyLastUsage in potentiallyLastUsages) {
-					potentiallyLastUsage.nextUsages.add(firstUsageInHandleBlock)
-					firstUsageInHandleBlock.previousUsages.add(potentiallyLastUsage)
+	fun linkToStartFrom(variableUsages: HashMap<ValueDeclaration, MutableSet<VariableUsage>>) {
+		for((declaration, usages) in variableUsages) {
+			for(firstUsage in currentState.firstVariableUsages[declaration] ?: continue) {
+				for(usage in usages) {
+					usage.nextUsages.add(firstUsage)
+					firstUsage.previousUsages.add(usage)
 				}
 			}
 		}
 	}
 
 	fun calculateEndState() {
-		for((declaration, usages) in variables) {
-			usages.firstOrNull()?.isFirstUsage = true
-			for(usage in currentState.lastVariableUsages[declaration] ?: continue)
-				usage.isLastUsage = true
+		registerExecutionEnd()
+		for((_, usages) in variables) {
+			for(usage in usages) {
+				if(usage.previousUsages.isEmpty())
+					usage.isFirstUsage = true
+			}
 		}
 	}
 
@@ -166,7 +169,7 @@ class VariableTracker {
 		for((declaration, usages) in variables) {
 			if(variableName != declaration.name)
 				continue
-			var report = "start -> ${usages.first()}"
+			var report = "start -> ${usages.filter(VariableUsage::isFirstUsage).joinToString()}"
 			for(usage in usages) {
 				val typeString = usage.types.joinToString(" & ").lowercase()
 				var targetString = usage.nextUsages.joinToString()

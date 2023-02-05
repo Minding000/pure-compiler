@@ -3,6 +3,7 @@ package components.semantic_analysis.semantic_model.operations
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Value
@@ -24,7 +25,6 @@ class Assignment(override val source: AssignmentSyntaxTree, val targets: List<Va
 				target.sourceExpression = sourceExpression
 			target.linkValues(linter, scope)
 		}
-		verifyAssignability(linter)
 		for(target in targets) {
 			val targetType = target.type
 			if(sourceExpression.isAssignableTo(targetType)) {
@@ -43,34 +43,31 @@ class Assignment(override val source: AssignmentSyntaxTree, val targets: List<Va
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		sourceExpression.analyseDataFlow(linter, tracker)
 		for(target in targets) {
-			if(target is VariableValue) {
-				tracker.add(VariableUsage.Type.WRITE, target)
-			} else {
-				target.analyseDataFlow(linter, tracker)
-			}
-		}
-	}
-
-	private fun verifyAssignability(linter: Linter) { //TODO use data flow analysis to check for re-assignments
-		for(target in targets) {
 			when(target) {
 				is VariableValue -> {
-					if(target.definition?.isConstant == true)
-						linter.addMessage(target.source, "'${target.name}' cannot be reassigned, because it is constant.",
-							Message.Type.ERROR)
+					val usage = tracker.add(VariableUsage.Type.WRITE, target) ?: continue
+					val targetDeclaration = target.definition
+					if(targetDeclaration?.isConstant == true) {
+						if((targetDeclaration is PropertyDeclaration && !(tracker.isInitializer && targetDeclaration.value == null))
+							|| usage.isPreviouslyPossiblyInitialized())
+							linter.addMessage(target.source, "'${target.name}' cannot be reassigned, because it is constant.",
+								Message.Type.ERROR)
+					}
+					continue
 				}
-				is MemberAccess -> {
+				is MemberAccess -> { //TODO is this tested?
 					if(target.member !is VariableValue || target.member.definition?.isConstant == true)
 						linter.addMessage(target.source, "'${target.member}' cannot be reassigned, because it is constant.",
 							Message.Type.ERROR)
 				}
-				is IndexAccess -> {
+				is IndexAccess -> { //TODO is this tested?
 					target.target.type?.scope?.resolveIndexOperator(target.typeParameters, target.indices, sourceExpression)
 				}
-				else -> {
+				else -> { //TODO write test for this
 					linter.addMessage(target.source, "Expression is not assignable.", Message.Type.ERROR)
 				}
 			}
+			target.analyseDataFlow(linter, tracker)
 		}
 	}
 }

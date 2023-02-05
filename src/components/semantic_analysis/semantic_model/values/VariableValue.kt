@@ -27,7 +27,9 @@ open class VariableValue(override val source: Element, val name: String): Value(
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		tracker.add(VariableUsage.Type.READ, this)
+		val usage = tracker.add(VariableUsage.Type.READ, this) ?: return
+		if(definition is LocalVariableDeclaration && !usage.isPreviouslyInitialized())
+			linter.addMessage(source, "Local variable '$name' hasn't been initialized yet.", Message.Type.ERROR)
 	}
 
 	override fun hashCode(): Int {
