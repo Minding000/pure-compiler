@@ -1,6 +1,7 @@
 package components.semantic_analysis
 
 import components.semantic_analysis.semantic_model.definitions.Parameter
+import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import java.util.*
@@ -54,10 +55,13 @@ class VariableTracker(val isInitializer: Boolean = false) {
 	fun add(type: VariableUsage.Type, variable: VariableValue): VariableUsage? = add(listOf(type), variable)
 
 	fun add(types: List<VariableUsage.Type>, variable: VariableValue): VariableUsage? {
-		val declaration = variable.definition ?: return null
+		return add(types, variable.definition ?: return null, variable)
+	}
+
+	fun add(types: List<VariableUsage.Type>, declaration: ValueDeclaration, unit: Unit): VariableUsage {
 		val usages = variables.getOrPut(declaration) { LinkedList() }
 		val firstUsages = currentState.firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
-		val usage = VariableUsage(types, variable)
+		val usage = VariableUsage(types, unit)
 		val lastUsages = getLastVariableUsages(declaration)
 		for(lastUsage in lastUsages) {
 			usage.previousUsages.add(lastUsage)
@@ -174,7 +178,7 @@ class VariableTracker(val isInitializer: Boolean = false) {
 		for((declaration, usages) in variables) {
 			if(variableName != declaration.name)
 				continue
-			var report = "start -> ${usages.firstOrNull()?.nextUsages?.joinToString()}"
+			var report = "start -> ${usages.first().unit.source.start.line.number}"
 			for(usage in usages) {
 				val typeString = usage.types.joinToString(" & ").lowercase()
 				var targetString = usage.nextUsages.joinToString()

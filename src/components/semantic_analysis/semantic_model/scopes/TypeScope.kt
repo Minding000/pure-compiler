@@ -182,8 +182,7 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 				val newFunction = Function(newImplementation.source, name)
 				newFunction.addImplementation(newImplementation)
 				typeDefinition.addUnits(newFunction)
-				val newValue = PropertyDeclaration(newImplementation.source, name, newFunction.type, newFunction,
-					newFunction.isAbstract)
+				val newValue = PropertyDeclaration(newImplementation.source, name, newFunction.type, newFunction, newFunction.isAbstract)
 				newValue.parentDefinition = typeDefinition
 				interfaceMembers[name] = newValue
 				onNewValue(newValue)

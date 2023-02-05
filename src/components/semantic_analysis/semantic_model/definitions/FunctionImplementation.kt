@@ -2,7 +2,6 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
-import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
@@ -64,12 +63,14 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		for((declaration, usages) in functionTracker.variables) {
 			if(declaration !is PropertyDeclaration)
 				continue
-			for(usage in usages) {
-				if(usage.types.contains(VariableUsage.Type.WRITE)) {
-					propertiesBeingInitialized.add(declaration)
-					break
-				}
-			}
+			if(usages.first().isRequiredToBeInitialized())
+				propertiesRequiredToBeInitialized.add(declaration)
+		}
+		for((declaration, end) in functionTracker.ends) {
+			if(declaration !is PropertyDeclaration)
+				continue
+			if(end.isPreviouslyInitialized())
+				propertiesBeingInitialized.add(declaration)
 		}
 		tracker.addChild(parentFunction.name, functionTracker)
 	}

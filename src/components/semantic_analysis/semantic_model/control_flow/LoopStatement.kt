@@ -13,6 +13,17 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, val scope: Blo
 					val body: ErrorHandlingContext): Unit(source) {
 	override var isInterruptingExecution = false
 	var mightGetBrokenOutOf = false
+	private val hasFiniteGenerator: Boolean
+		get() {
+			if(generator == null) {
+				return false
+			} else if(generator is WhileGenerator) {
+				val condition = generator.condition.staticValue
+				if(condition is BooleanLiteral && condition.value)
+					return false
+			}
+			return true
+		}
 
 	init {
 		scope.unit = this
@@ -24,6 +35,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, val scope: Blo
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+		val initialState = tracker.currentState.copy()
 		generator?.analyseDataFlow(linter, tracker)
 		tracker.currentState.firstVariableUsages.clear()
 		body.analyseDataFlow(linter, tracker)
@@ -31,7 +43,9 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, val scope: Blo
 		for(variableState in tracker.nextStatementStates)
 			tracker.linkBackToStartFrom(variableState)
 		tracker.nextStatementStates.clear()
-		if(generator == null)
+		if(hasFiniteGenerator)
+			tracker.addVariableStates(initialState)
+		else
 			tracker.currentState.lastVariableUsages.clear()
 		tracker.addVariableStates(*tracker.breakStatementStates.toTypedArray())
 		tracker.breakStatementStates.clear()
@@ -39,14 +53,6 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, val scope: Blo
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		var hasFiniteGenerator = true
-		if(generator == null) {
-			hasFiniteGenerator = false
-		} else if(generator is WhileGenerator) {
-			val condition = generator.condition.staticValue
-			if(condition is BooleanLiteral && condition.value)
-				hasFiniteGenerator = false
-		}
 		if(!(hasFiniteGenerator || mightGetBrokenOutOf))
 			isInterruptingExecution = true
 	}

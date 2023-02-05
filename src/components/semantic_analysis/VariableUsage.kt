@@ -7,8 +7,20 @@ class VariableUsage(val types: List<Type>, val unit: Unit) {
 	var previousUsages = LinkedList<VariableUsage>()
 	var nextUsages = LinkedList<VariableUsage>()
 	var willExit = false
+	private var isRequiredToBeInitializedCache: Boolean? = null
 	private var isInitializedCache: Boolean? = null
 	private var isPossiblyInitializedCache: Boolean? = null
+
+	fun isRequiredToBeInitialized(): Boolean {
+		var isRequiredToBeInitialized = isRequiredToBeInitializedCache
+		if(isRequiredToBeInitialized != null)
+			return isRequiredToBeInitialized
+		isRequiredToBeInitializedCache = false
+		isRequiredToBeInitialized = types.contains(Type.READ)
+			|| (nextUsages.isNotEmpty() && nextUsages.any(VariableUsage::isRequiredToBeInitialized))
+		isRequiredToBeInitializedCache = isRequiredToBeInitialized
+		return isRequiredToBeInitialized
+	}
 
 	fun isPreviouslyInitialized(): Boolean {
 		if(previousUsages.isEmpty())

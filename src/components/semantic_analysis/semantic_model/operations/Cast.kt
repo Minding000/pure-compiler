@@ -61,12 +61,10 @@ class Cast(override val source: CastSyntaxTree, val value: Value, val variableDe
 		value.type?.let { valueType ->
 			if(valueType.isAssignableTo(referenceType)) {
 				if(operator.isConditional)
-					linter.addMessage(source, "Cast from '$valueType' to '$referenceType' is safe.",
-						Message.Type.WARNING)
+					linter.addMessage(source, "Cast from '$valueType' to '$referenceType' is safe.", Message.Type.WARNING)
 			} else {
 				if(!operator.isConditional)
-					linter.addMessage(source, "Cannot safely cast '$valueType' to '$referenceType'.",
-						Message.Type.ERROR)
+					linter.addMessage(source, "Cannot safely cast '$valueType' to '$referenceType'.", Message.Type.ERROR)
 			}
 		}
 		validateVariableDeclaration(linter)
@@ -90,20 +88,14 @@ class Cast(override val source: CastSyntaxTree, val value: Value, val variableDe
 				|| (operator == Operator.NEGATED_CAST_CONDITION && ifStatement.positiveBranch.isInterruptingExecution)
 		for(usage in variableDeclaration.usages) {
 			if(ifStatement.positiveBranch.contains(usage)) {
-				if(operator == Operator.NEGATED_CAST_CONDITION) {
-					linter.addMessage(usage.source, "Cannot access negated cast variable in positive branch.",
-						Message.Type.ERROR)
-				}
+				if(operator == Operator.NEGATED_CAST_CONDITION)
+					linter.addMessage(usage.source, "Cannot access negated cast variable in positive branch.", Message.Type.ERROR)
 			} else if(ifStatement.negativeBranch?.contains(usage) == true) {
-				if(operator == Operator.CAST_CONDITION) {
-					linter.addMessage(usage.source, "Cannot access cast variable in negative branch.",
-						Message.Type.ERROR)
-				}
+				if(operator == Operator.CAST_CONDITION)
+					linter.addMessage(usage.source, "Cannot access cast variable in negative branch.", Message.Type.ERROR)
 			} else {
-				if(!isVariableAccessibleAfterIfStatement) {
-					linter.addMessage(usage.source, "Cannot access cast variable after if statement.",
-						Message.Type.ERROR)
-				}
+				if(!isVariableAccessibleAfterIfStatement)
+					linter.addMessage(usage.source, "Cannot access cast variable after if statement.", Message.Type.ERROR)
 			}
 		}
 	}

@@ -292,8 +292,8 @@ internal class Initialization {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, """
-			The function 'printNumberOfArms' relies on the following uninitialized properties:
-			 - numberOfArms
+			The function 'printNumberOfArms()' relies on the following uninitialized properties:
+			 - numberOfArms: Int
 		""".trimIndent())
 	}
 

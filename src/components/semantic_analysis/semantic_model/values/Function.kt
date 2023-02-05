@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
+import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.syntax_parser.syntax_tree.general.Element
@@ -28,6 +29,14 @@ open class Function(source: Element, val name: String = "<anonymous function>", 
 		implementations.add(implementation)
 		functionType.addSignature(implementation.signature)
 		implementation.setParent(this)
+	}
+
+	fun getImplementationBySignature(signature: FunctionSignature): FunctionImplementation? {
+		for(implementation in implementations) {
+			if(implementation.signature == signature)
+				return implementation
+		}
+		return null
 	}
 
 	fun removeImplementation(implementation: FunctionImplementation) {

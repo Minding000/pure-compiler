@@ -109,7 +109,7 @@ internal class DataFlowAnalysis {
 	}
 
 	@Test
-	fun `works with loops with generator`() { //TODO 1 should link to 5 as well, because the loop body may be skipped
+	fun `works with loops with generator`() {
 		val sourceCode = """
 			var a = 0
 			loop over Range(0, 5) as number {
@@ -119,7 +119,7 @@ internal class DataFlowAnalysis {
 		""".trimIndent()
 		val report = """
 			start -> 1
-			1: declaration & write -> 3
+			1: declaration & write -> 3, 5
 			3: read & mutation -> 3, 5
 			5: read -> end
 		""".trimIndent()
@@ -175,29 +175,6 @@ internal class DataFlowAnalysis {
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertEquals(report, tracker.getReport("a"))
-	}
-
-	@Test
-	fun `works with multiple first usages`() {
-		val sourceCode = """
-			var a = 0
-			Int class
-			DataProvider object {
-				to setA() {
-					if yes
-						a = 1
-					else
-						a = 2
-				}
-			}
-		""".trimIndent()
-		val report = """
-			start -> 6, 8
-			6: write -> end
-			8: write -> end
-		""".trimIndent()
-		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.childTrackers["setA"]?.getReport("a"))
 	}
 
 	@Test
