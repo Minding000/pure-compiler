@@ -30,7 +30,7 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, val value:
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		value?.analyseDataFlow(linter, tracker)
-		tracker.registerExecutionEnd()
+		tracker.registerReturnStatement()
 	}
 
 	override fun validate(linter: Linter) {

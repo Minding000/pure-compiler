@@ -8,9 +8,11 @@ import java.util.*
 class VariableTracker(val isInitializer: Boolean = false) {
 	val childTrackers = HashMap<String, VariableTracker>()
 	val variables = HashMap<ValueDeclaration, MutableList<VariableUsage>>()
+	val ends = HashMap<ValueDeclaration, VariableUsage>()
 	val currentState = VariableState()
 	val nextStatementStates = LinkedList<VariableState>()
 	val breakStatementStates = LinkedList<VariableState>()
+	private val returnStatementStates = LinkedList<VariableState>()
 
 	fun setVariableStates(vararg variableStates: VariableState) {
 		currentState.lastVariableUsages.clear()
@@ -30,31 +32,36 @@ class VariableTracker(val isInitializer: Boolean = false) {
 		}
 	}
 
+	private fun getLastVariableUsages(declaration: ValueDeclaration): MutableSet<VariableUsage> {
+		return currentState.lastVariableUsages.getOrPut(declaration) { LinkedHashSet<VariableUsage>() }
+	}
+
 	fun declare(declaration: ValueDeclaration) {
 		val usages = variables.getOrPut(declaration) { LinkedList() }
 		val firstUsages = currentState.firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
-		val previousUsages = currentState.lastVariableUsages.getOrPut(declaration) { LinkedHashSet() }
 		val types = mutableListOf(VariableUsage.Type.DECLARATION)
 		if(declaration is Parameter || declaration.value != null)
 			types.add(VariableUsage.Type.WRITE)
 		val usage = VariableUsage(types, declaration)
+		val lastUsages = getLastVariableUsages(declaration)
 		usages.add(usage)
 		if(firstUsages.isEmpty())
 			firstUsages.add(usage)
-		previousUsages.clear()
-		previousUsages.add(usage)
+		lastUsages.clear()
+		lastUsages.add(usage)
 	}
 
 	fun add(type: VariableUsage.Type, variable: VariableValue): VariableUsage? = add(listOf(type), variable)
 
 	fun add(types: List<VariableUsage.Type>, variable: VariableValue): VariableUsage? {
-		val usages = variables.getOrPut(variable.definition ?: return null) { LinkedList() }
-		val firstUsages = currentState.firstVariableUsages.getOrPut(variable.definition ?: return null) { LinkedHashSet() }
-		val lastUsages = currentState.lastVariableUsages.getOrPut(variable.definition ?: return null) { LinkedHashSet() }
+		val declaration = variable.definition ?: return null
+		val usages = variables.getOrPut(declaration) { LinkedList() }
+		val firstUsages = currentState.firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
 		val usage = VariableUsage(types, variable)
-		for(previousUsage in lastUsages) {
-			usage.previousUsages.add(previousUsage)
-			previousUsage.nextUsages.add(usage)
+		val lastUsages = getLastVariableUsages(declaration)
+		for(lastUsage in lastUsages) {
+			usage.previousUsages.add(lastUsage)
+			lastUsage.nextUsages.add(usage)
 		}
 		usages.add(usage)
 		if(firstUsages.isEmpty())
@@ -64,15 +71,6 @@ class VariableTracker(val isInitializer: Boolean = false) {
 		return usage
 	}
 
-	fun registerExecutionEnd() {
-		for((_, usages) in currentState.lastVariableUsages) {
-			for(usage in usages) {
-				usage.isLastUsage = true
-			}
-		}
-		currentState.lastVariableUsages.clear()
-	}
-
 	fun registerNextStatement() {
 		nextStatementStates.add(currentState.copy())
 		currentState.lastVariableUsages.clear()
@@ -80,6 +78,11 @@ class VariableTracker(val isInitializer: Boolean = false) {
 
 	fun registerBreakStatement() {
 		breakStatementStates.add(currentState.copy())
+		currentState.lastVariableUsages.clear()
+	}
+
+	fun registerReturnStatement() {
+		returnStatementStates.add(currentState.copy())
 		currentState.lastVariableUsages.clear()
 	}
 
@@ -114,12 +117,13 @@ class VariableTracker(val isInitializer: Boolean = false) {
 	}
 
 	fun calculateEndState() {
-		registerExecutionEnd()
-		for((_, usages) in variables) {
-			for(usage in usages) {
-				if(usage.previousUsages.isEmpty())
-					usage.isFirstUsage = true
-			}
+		addVariableStates(*returnStatementStates.toTypedArray())
+		for((declaration, usages) in currentState.lastVariableUsages) {
+			val end = VariableUsage(listOf(VariableUsage.Type.END), declaration)
+			ends[declaration] = end
+			end.previousUsages.addAll(usages)
+			for(usage in usages)
+				usage.nextUsages.add(end)
 		}
 	}
 
@@ -170,15 +174,12 @@ class VariableTracker(val isInitializer: Boolean = false) {
 		for((declaration, usages) in variables) {
 			if(variableName != declaration.name)
 				continue
-			var report = "start -> ${usages.filter(VariableUsage::isFirstUsage).joinToString()}"
+			var report = "start -> ${usages.firstOrNull()?.nextUsages?.joinToString()}"
 			for(usage in usages) {
 				val typeString = usage.types.joinToString(" & ").lowercase()
 				var targetString = usage.nextUsages.joinToString()
-				if(usage.isLastUsage) {
-					if(targetString.isNotEmpty())
-						targetString += ", "
-					targetString += "end"
-				}
+				if(targetString.isEmpty())
+					targetString = "continues raise"
 				report += "\n$usage: $typeString -> $targetString"
 			}
 			return report

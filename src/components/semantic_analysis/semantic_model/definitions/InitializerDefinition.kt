@@ -2,7 +2,6 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
-import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
@@ -11,13 +10,13 @@ import components.semantic_analysis.semantic_model.types.OrUnionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
+import messages.Message
 import util.stringifyTypes
 import java.util.*
 
-class InitializerDefinition(override val source: Element, override val parentDefinition: TypeDefinition,
-							val scope: BlockScope, val genericParameters: List<TypeDefinition> = listOf(),
-							val parameters: List<Parameter> = listOf(), val body: Unit? = null, val isNative: Boolean = false):
-	Unit(source), MemberDeclaration {
+class InitializerDefinition(override val source: Element, override val parentDefinition: TypeDefinition, val scope: BlockScope,
+							val genericParameters: List<TypeDefinition> = listOf(), val parameters: List<Parameter> = listOf(),
+							val body: Unit? = null, val isNative: Boolean = false): Unit(source), MemberDeclaration {
 	override val memberIdentifier
 		get() = toString()
 	override val isAbstract = false
@@ -139,30 +138,37 @@ class InitializerDefinition(override val source: Element, override val parentDef
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		if(body == null)
-			return
-		val initializerTracker = VariableTracker(true)
-		for(parameter in parameters) {
-			if(parameter.type == null) { //TODO write test for this
+		val propertiesToBeInitialized = parentDefinition.scope.memberDeclarations.filter { member ->
+			member is PropertyDeclaration && member.value == null }.toMutableList()
+		if(body != null) {
+			val initializerTracker = VariableTracker(true)
+			for(member in parentDefinition.scope.memberDeclarations)
+				if(member is PropertyDeclaration)
+					initializerTracker.declare(member)
+			for(parameter in parameters) {
+				if(parameter.type == null) { //TODO write test for this
 //				val property = scope.parentScope.resolveValue(parameter.name)
 //				initializerTracker.add(VariableUsage.Type.WRITE, property)
-			} else {
-				initializerTracker.declare(parameter)
-			}
-		}
-		body.analyseDataFlow(linter, initializerTracker)
-		initializerTracker.calculateEndState()
-		for((declaration, usages) in initializerTracker.variables) {
-			if(declaration !is PropertyDeclaration)
-				continue
-			for(usage in usages) {
-				if(usage.types.contains(VariableUsage.Type.WRITE)) {
-					// propertiesBeingInitialized.add(declaration)
-					break
+				} else {
+					initializerTracker.declare(parameter)
 				}
 			}
+			body.analyseDataFlow(linter, initializerTracker)
+			initializerTracker.calculateEndState()
+			for((declaration, end) in initializerTracker.ends) {
+				if(declaration !is PropertyDeclaration)
+					continue
+				if(end.isPreviouslyInitialized())
+					propertiesToBeInitialized.remove(declaration)
+			}
+			tracker.addChild(memberIdentifier, initializerTracker)
 		}
-		tracker.addChild(memberIdentifier, initializerTracker)
+		if(propertiesToBeInitialized.isNotEmpty()) {
+			var message = "The following properties have not been initialized by this initializer:"
+			for(uninitializedProperty in propertiesToBeInitialized)
+				message += "\n - ${uninitializedProperty.memberIdentifier}"
+			linter.addMessage(source, message, Message.Type.ERROR)
+		}
 	}
 
 	override fun toString(): String {

@@ -172,18 +172,21 @@ internal class Initialization {
 	}
 
 	@Test
-	fun `disallows initializers that don't initialize all properties`() {
+	fun `disallows initializers that don't always initialize all properties`() {
 		val sourceCode =
 			"""
 				Human class {
 					val numberOfArms: Int
-					init {}
+					init {
+						if yes
+							numberOfArms = 2
+					}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, """
 			The following properties have not been initialized by this initializer:
-			 - numberOfArms
+			 - numberOfArms: Int
 		""".trimIndent())
 	}
 
@@ -198,7 +201,7 @@ internal class Initialization {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, """
 			The following properties have not been initialized by this initializer:
-			 - numberOfArms
+			 - numberOfArms: Int
 		""".trimIndent())
 	}
 

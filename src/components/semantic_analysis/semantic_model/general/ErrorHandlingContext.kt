@@ -46,7 +46,6 @@ class ErrorHandlingContext(override val source: StatementSection, val mainBlock:
 			alwaysBlock.analyseDataFlow(linter, tracker)
 			tracker.markAllUsagesAsExiting()
 			tracker.linkToStartFrom(potentiallyLastVariableUsages)
-			tracker.registerExecutionEnd()
 			tracker.setVariableStates(completeExecutionState)
 		}
 	}
