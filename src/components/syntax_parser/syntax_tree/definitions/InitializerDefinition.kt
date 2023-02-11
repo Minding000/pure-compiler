@@ -1,7 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition as SemanticInitializerDefinitionModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSection
@@ -11,6 +10,7 @@ import components.syntax_parser.syntax_tree.general.StatementSection
 import components.tokenizer.WordAtom
 import errors.internal.CompilerError
 import source_structure.Position
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition as SemanticInitializerDefinitionModel
 
 class InitializerDefinition(start: Position, private val parameterList: ParameterList?,
 							private val body: StatementSection?, end: Position):
@@ -34,6 +34,11 @@ class InitializerDefinition(start: Position, private val parameterList: Paramete
 	}
 
 	override fun toString(): String {
-		return "Initializer [ ${parameterList ?: ""} ] { ${body ?: ""} }"
+		var stringRepresentation = "Initializer"
+		if(parameterList != null)
+			stringRepresentation += " [ $parameterList ]"
+		if(body != null)
+			stringRepresentation += " { $body }"
+		return stringRepresentation
 	}
 }

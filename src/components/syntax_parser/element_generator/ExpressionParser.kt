@@ -11,9 +11,7 @@ import components.syntax_parser.syntax_tree.definitions.TypeSpecification
 import components.syntax_parser.syntax_tree.general.ForeignLanguageExpression
 import components.syntax_parser.syntax_tree.general.TypeElement
 import components.syntax_parser.syntax_tree.general.ValueElement
-import components.syntax_parser.syntax_tree.literals.ForeignLanguageLiteral
-import components.syntax_parser.syntax_tree.literals.Identifier
-import components.syntax_parser.syntax_tree.literals.SelfReference
+import components.syntax_parser.syntax_tree.literals.*
 import components.syntax_parser.syntax_tree.operations.BinaryOperator
 import components.syntax_parser.syntax_tree.operations.Cast
 import components.syntax_parser.syntax_tree.operations.NullCheck
@@ -229,12 +227,15 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	/**
 	 * MemberAccess:
 	 *   <Accessor>[?].<Identifier>
+	 *   <Accessor>[?].<InitializerReference>
 	 *   <Accessor>[?].<TypeSpecification>
 	 */
 	private fun parseMemberAccess(rootExpression: ValueElement): MemberAccess {
 		val accessor = consume(WordType.MEMBER_ACCESSOR)
 		val memberExpression = if(WordType.GENERICS_START.includes(currentWord?.type))
 			parseTypeSpecification()
+		else if(currentWord?.type == WordAtom.INITIALIZER)
+			parseInitializerReference()
 		else
 			literalParser.parseIdentifier()
 		return MemberAccess(rootExpression, memberExpression, accessor.type == WordAtom.OPTIONAL_ACCESSOR)
@@ -337,6 +338,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	 *   <NumberLiteral>
 	 *   <StringLiteral>
 	 *   <SelfReference>
+	 *   <SuperReference>
+	 *   <InitializerReference>
 	 *   <ForeignLanguageExpression>
 	 *   <NullCheck>
 	 *   <Identifier>
@@ -351,6 +354,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 			WordAtom.NUMBER_LITERAL -> literalParser.parseNumberLiteral()
 			WordAtom.STRING_LITERAL -> literalParser.parseStringLiteral()
 			WordAtom.SELF_REFERENCE -> parseSelfReference()
+			WordAtom.SUPER_REFERENCE -> parseSuperReference()
+			WordAtom.INITIALIZER -> parseInitializerReference()
 			WordAtom.IDENTIFIER -> {
 				when(nextWord?.type) {
 					WordAtom.FOREIGN_EXPRESSION -> parseForeignLanguageExpression()
@@ -370,10 +375,42 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 
 	/**
 	 * SelfReference:
-	 *   <self-reference>
+	 *   <self-reference>[<<ObjectType>>]
 	 */
 	private fun parseSelfReference(): SelfReference {
-		return SelfReference(consume(WordAtom.SELF_REFERENCE))
+		val word = consume(WordAtom.SELF_REFERENCE)
+		var end = word.end
+		var type: ObjectType? = null
+		if(WordType.GENERICS_START.includes(currentWord?.type)) {
+			consume(WordType.GENERICS_START)
+			type = typeParser.parseObjectType()
+			end = consume(WordType.GENERICS_END).end
+		}
+		return SelfReference(word, type, end)
+	}
+
+	/**
+	 * SuperReference:
+	 *   <super-reference>[<<ObjectType>>]
+	 */
+	private fun parseSuperReference(): SuperReference {
+		val word = consume(WordAtom.SUPER_REFERENCE)
+		var end = word.end
+		var type: ObjectType? = null
+		if(WordType.GENERICS_START.includes(currentWord?.type)) {
+			consume(WordType.GENERICS_START)
+			type = typeParser.parseObjectType()
+			end = consume(WordType.GENERICS_END).end
+		}
+		return SuperReference(word, type, end)
+	}
+
+	/**
+	 * InitializerReference:
+	 *   <init>
+	 */
+	private fun parseInitializerReference(): InitializerReference {
+		return InitializerReference(consume(WordAtom.INITIALIZER))
 	}
 
 	/**

@@ -18,6 +18,42 @@ internal class Accessors {
 	}
 
 	@Test
+	fun `parses self reference with specifier`() {
+		val sourceCode = """
+			this<Level>
+			""".trimIndent()
+		val expected =
+			"""
+				This [ ObjectType { Identifier { Level } } ]
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses super reference`() {
+		val sourceCode = """
+			super
+			""".trimIndent()
+		val expected =
+			"""
+				Super
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses super reference with specifier`() {
+		val sourceCode = """
+			super<Number>
+			""".trimIndent()
+		val expected =
+			"""
+				Super [ ObjectType { Identifier { Number } } ]
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
 	fun `parses member accesses`() {
 		val sourceCode = """
 			player.inventory

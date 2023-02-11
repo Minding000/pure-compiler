@@ -5,16 +5,16 @@ import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.ValueElement
 import components.tokenizer.Word
 import source_structure.Position
-import components.semantic_analysis.semantic_model.values.SelfReference as SemanticSelfReferenceModel
+import components.semantic_analysis.semantic_model.values.SuperReference as SemanticSuperReferenceModel
 
-class SelfReference(word: Word, private val specifier: ObjectType?, end: Position): ValueElement(word.start, end) {
+class SuperReference(word: Word, private val specifier: ObjectType?, end: Position): ValueElement(word.start, end) {
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticSelfReferenceModel {
-		return SemanticSelfReferenceModel(this, specifier?.concretize(linter, scope))
+	override fun concretize(linter: Linter, scope: MutableScope): SemanticSuperReferenceModel {
+		return SemanticSuperReferenceModel(this, specifier?.concretize(linter, scope))
 	}
 
 	override fun toString(): String {
-		var stringRepresentation = "This"
+		var stringRepresentation = "Super"
 		if(specifier != null)
 			stringRepresentation += " [ $specifier ]"
 		return stringRepresentation

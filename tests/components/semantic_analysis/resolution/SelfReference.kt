@@ -11,14 +11,27 @@ import kotlin.test.assertIs
 internal class SelfReference {
 
 	@Test
-	fun `detects self reference keyword outside of type definition`() {
+	fun `allows self reference keyword inside of type definition`() {
+		val sourceCode =
+			"""
+				Car class {
+					to test() {
+						this
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Self references are not allowed outside of type definitions")
+	}
+
+	@Test
+	fun `disallows self reference keyword outside of type definition`() {
 		val sourceCode =
 			"""
 				this
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Self references are not allowed outside of type definitions")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Self references are not allowed outside of type definitions")
 	}
 
 	@Test
@@ -67,5 +80,68 @@ internal class SelfReference {
 		val selfReferenceType = lintResult.find<SelfReference>()?.type
 		assertIs<ObjectType>(selfReferenceType)
 		assertEquals("FastestCar", selfReferenceType.definition?.name)
+	}
+
+	@Test
+	fun `references innermost class when there is no specifier`() {
+		val sourceCode =
+			"""
+				Outer class {
+					Inner class {
+						to referenceInner() {
+							this
+						}
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val selfReference = lintResult.find<SelfReference>()
+		assertEquals("Inner", selfReference?.type.toString())
+	}
+
+	@Test
+	fun `references specified class when there is a specifier`() {
+		val sourceCode =
+			"""
+				Outer class {
+					Inner class {
+						to referenceOuter() {
+							this<Outer>
+						}
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val selfReference = lintResult.find<SelfReference>()
+		assertEquals("Outer", selfReference?.type.toString())
+	}
+
+	@Test
+	fun `allows specifying a class that surrounds the reference`() {
+		val sourceCode =
+			"""
+				Main class {
+					to referenceMain() {
+						this<Main>
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Self references can only specify surrounding types")
+	}
+
+	@Test
+	fun `disallows specifying a class that doesn't surround the reference`() {
+		val sourceCode =
+			"""
+				Other class
+				Main class {
+					to referenceOther() {
+						this<Other>
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Self references can only specify surrounding types")
 	}
 }

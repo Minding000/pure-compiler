@@ -298,4 +298,10 @@ internal class Initialization {
 	}
 
 	//TODO also consider which properties of the super type get initialized by the super initializer
+	// - implement super keyword
+	// - super function calls
+	// - super operator calls
+	// - super initializer calls
+	//   - required
+	//   - no duplicate calls allowed
 }

@@ -1,6 +1,5 @@
 package components.syntax_parser
 
-import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -19,7 +18,7 @@ internal class FunctionDefinitions {
 					FunctionSection [ it ] {
 						Function [ Identifier { canEat } ParameterList {
 							Parameter { Identifier { food }: ObjectType { Identifier { Food } } }
-						}: ObjectType { Identifier { Bool } } ] {  }
+						}: ObjectType { Identifier { Bool } } ]
 					}
 				} }
             """.trimIndent()
@@ -91,19 +90,10 @@ internal class FunctionDefinitions {
 					}
 					Initializer [ ParameterList {
 						Parameter { Identifier { canSwim } }
-					} ] {  }
+					} ]
 				} }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
-	}
-
-	@Test
-	fun `doesn't parse initializer definitions outside of type definitions`() {
-		val sourceCode = """
-				init
-			""".trimIndent()
-		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected INITIALIZER")
 	}
 
 	@Test
@@ -116,7 +106,7 @@ internal class FunctionDefinitions {
 		val expected =
 			"""
 				TypeDefinition [ Identifier { Chair } class ] { TypeBody {
-					Initializer [  ] {  }
+					Initializer
 				} }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -272,7 +262,7 @@ internal class FunctionDefinitions {
 					FunctionSection [ to ] {
 						Function [ Identifier { setSounds } ParameterList {
 							Parameter [ ModifierList { Modifier { ... } } ] { Identifier { sounds }: QuantifiedType { ...ObjectType { Identifier { Sound } } } }
-						}: void ] {  }
+						}: void ]
 					}
 				} }
             """.trimIndent()

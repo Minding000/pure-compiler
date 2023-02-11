@@ -1,7 +1,7 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class ControlFlow {
 
@@ -55,7 +55,7 @@ internal class ControlFlow {
 	}
 
 	@Test
-	fun `parses initializer calls`() {
+	fun `parses external initializer calls`() {
 		val sourceCode = """
 			Human class {
 				to speak(words: String) {}
@@ -76,6 +76,51 @@ internal class ControlFlow {
 					LocalVariableDeclaration { Identifier { peter } = FunctionCall [ Identifier { Human } ] {
 					} }
 				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses internal initializer calls`() {
+		val sourceCode = """
+			Human class {
+				init {
+					init(5)
+				}
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ Identifier { Human } class ] { TypeBody {
+					Initializer { StatementSection { StatementBlock {
+						FunctionCall [ Init ] {
+							NumberLiteral { 5 }
+						}
+					} } }
+				} }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses internal super initializer calls`() {
+		val sourceCode = """
+			Human class {
+				init {
+					super.init()
+				}
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ Identifier { Human } class ] { TypeBody {
+					Initializer { StatementSection { StatementBlock {
+						FunctionCall [ MemberAccess {
+							Super.Init
+						} ] {
+						}
+					} } }
+				} }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}

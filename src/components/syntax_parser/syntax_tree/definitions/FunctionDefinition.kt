@@ -1,18 +1,17 @@
 package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.FunctionImplementation as SemanticFunctionImplementationModel
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.FunctionSection
 import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.general.StatementSection
-import components.syntax_parser.syntax_tree.literals.Identifier
 import components.syntax_parser.syntax_tree.general.TypeElement
+import components.syntax_parser.syntax_tree.literals.Identifier
 import components.tokenizer.WordAtom
 import errors.internal.CompilerError
-import java.lang.StringBuilder
+import components.semantic_analysis.semantic_model.definitions.FunctionImplementation as SemanticFunctionImplementationModel
 
 class FunctionDefinition(private val identifier: Identifier, private val parameterList: ParameterList,
 						 private val body: StatementSection?, private var returnType: TypeElement?):
@@ -47,16 +46,19 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 	}
 
 	override fun toString(): String {
-		return StringBuilder()
+		val stringRepresentation = StringBuilder()
 			.append("Function [ ")
 			.append(identifier)
 			.append(" ")
 			.append(parameterList)
 			.append(": ")
 			.append(returnType ?: "void")
-			.append(" ] { ")
-			.append(body ?: "")
-			.append(" }")
-			.toString()
+			.append(" ]")
+		if(body != null)
+			stringRepresentation
+				.append(" { ")
+				.append(body)
+				.append(" }")
+		return stringRepresentation.toString()
 	}
 }

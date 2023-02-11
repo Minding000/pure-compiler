@@ -16,6 +16,11 @@ internal class References {
 	}
 
 	@Test
+	fun `detects super reference tokens`() {
+		TestUtil.assertTokenType("super", WordAtom.SUPER_REFERENCE)
+	}
+
+	@Test
 	fun `detects identifier tokens`() {
 		TestUtil.assertTokenType("SystemClock", WordAtom.IDENTIFIER)
 		TestUtil.assertTokenType("a", WordAtom.IDENTIFIER)

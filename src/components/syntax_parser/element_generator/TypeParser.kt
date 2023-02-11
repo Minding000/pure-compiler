@@ -85,7 +85,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 *   <TypeList><Identifier>
 	 *   <ObjectType>.<TypeList><Identifier>
 	 */
-	private fun parseObjectType(): ObjectType {
+	fun parseObjectType(): ObjectType {
 		var objectType: ObjectType? = null
 		while(true) {
 			val typeList = parseOptionalTypeList()

@@ -102,6 +102,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	PRODUCING("producing\\b"), // Alternative: 'giving'
 	REFERENCING("referencing\\b"),
 	SELF_REFERENCE("this\\b"),
+	SUPER_REFERENCE("super\\b"),
 	// Identifier
 	IDENTIFIER("[\\p{L}][\\p{L}\\p{N}_]*"),
 	// Synthetic words (invalid regular expression to avoid match)
