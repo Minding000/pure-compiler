@@ -8,7 +8,7 @@ import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
 abstract class Unit(open val source: Element) {
-	var parent: Unit? = null
+	open var parent: Unit? = null
 	val units = LinkedList<Unit>()
 	open val isInterruptingExecution = false
 

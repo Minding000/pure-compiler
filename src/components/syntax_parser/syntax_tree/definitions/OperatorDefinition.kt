@@ -13,8 +13,8 @@ import errors.internal.CompilerError
 import messages.Message
 import components.semantic_analysis.semantic_model.values.Operator.Kind as OperatorKind
 
-class OperatorDefinition(private val operator: Operator, private val parameterList: ParameterList?,
-						 private val body: StatementSection?, private var returnType: TypeElement?):
+class OperatorDefinition(private val operator: Operator, private val parameterList: ParameterList?, private val body: StatementSection?,
+						 private var returnType: TypeElement?):
 	Element(operator.start, body?.end ?: returnType?.end ?: parameterList?.end ?: operator.end) {
 	lateinit var parent: OperatorSection
 

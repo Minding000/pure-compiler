@@ -3,18 +3,16 @@ package components.syntax_parser.syntax_tree.operations
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.Element
-import components.semantic_analysis.semantic_model.operations.Assignment as SemanticAssignmentModel
 import components.syntax_parser.syntax_tree.general.ValueElement
 import util.concretizeValues
 import util.indent
 import util.toLines
+import components.semantic_analysis.semantic_model.operations.Assignment as SemanticAssignmentModel
 
-class Assignment(private val targets: List<ValueElement>, val source: ValueElement):
-	Element(targets.first().start, source.end) {
+class Assignment(private val targets: List<ValueElement>, val source: ValueElement): Element(targets.first().start, source.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticAssignmentModel {
-		return SemanticAssignmentModel(this, targets.concretizeValues(linter, scope),
-			source.concretize(linter, scope))
+		return SemanticAssignmentModel(this, targets.concretizeValues(linter, scope), source.concretize(linter, scope))
 	}
 
 	override fun toString(): String {

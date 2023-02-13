@@ -2,7 +2,6 @@ package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.values.Instance as SemanticInstanceModel
 import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.general.ValueElement
 import components.syntax_parser.syntax_tree.literals.Identifier
@@ -10,13 +9,12 @@ import source_structure.Position
 import util.concretizeValues
 import util.indent
 import util.toLines
+import components.semantic_analysis.semantic_model.values.Instance as SemanticInstanceModel
 
-class Instance(val identifier: Identifier, val parameters: List<ValueElement>, end: Position):
-	Element(identifier.start, end) {
+class Instance(val identifier: Identifier, val parameters: List<ValueElement>, end: Position): Element(identifier.start, end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticInstanceModel {
-		val instance = SemanticInstanceModel(this, identifier.concretize(linter, scope),
-			parameters.concretizeValues(linter, scope))
+		val instance = SemanticInstanceModel(this, identifier.concretize(linter, scope), parameters.concretizeValues(linter, scope))
 		scope.declareValue(linter, instance)
 		return instance
 	}

@@ -13,6 +13,6 @@ class BreakStatement(word: Word): Element(word) {
 	}
 
 	override fun toString(): String {
-		return "Break {  }"
+		return "Break"
 	}
 }

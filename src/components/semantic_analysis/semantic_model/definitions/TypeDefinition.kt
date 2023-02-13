@@ -9,10 +9,19 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
+import messages.Message
 import util.linkedListOf
 import java.util.*
 
-abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope, val superType: Type?): Unit(source) {
+abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope, val superType: Type?,
+							  val isBound: Boolean = false): Unit(source) {
+	override var parent: Unit?
+		get() = super.parent
+		set(value) {
+			super.parent = value
+			parentTypeDefinition = value as? TypeDefinition
+		}
+	var parentTypeDefinition: TypeDefinition? = null
 	// Only used in base definition
 	private val specificDefinitions = HashMap<Map<TypeDefinition, Type>, TypeDefinition>()
 	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>, LinkedList<(TypeDefinition) -> kotlin.Unit>>()
@@ -100,6 +109,8 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 		super.validate(linter)
 		if((this as? Class)?.isAbstract != true)
 			scope.ensureAbstractSuperMembersImplemented(linter)
+		if(isBound && parentTypeDefinition == null)
+			linter.addMessage(source, "Can't bind type definition, because it doesn't have a parent.", Message.Type.WARNING)
 	}
 
 	fun acceptsSubstituteType(substituteType: Type): Boolean {

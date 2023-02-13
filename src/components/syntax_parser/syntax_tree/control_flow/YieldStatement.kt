@@ -6,8 +6,7 @@ import components.syntax_parser.syntax_tree.general.ValueElement
 import source_structure.Position
 import components.semantic_analysis.semantic_model.control_flow.YieldStatement as SemanticYieldStatementModel
 
-class YieldStatement(start: Position, private val key: ValueElement?, private val value: ValueElement):
-	ValueElement(start, value.end) {
+class YieldStatement(start: Position, private val key: ValueElement?, private val value: ValueElement): ValueElement(start, value.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticYieldStatementModel {
 		return SemanticYieldStatementModel(this, key?.concretize(linter, scope), value.concretize(linter, scope))

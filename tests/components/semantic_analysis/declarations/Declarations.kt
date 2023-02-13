@@ -160,4 +160,38 @@ internal class Declarations {
 		lintResult.assertMessageEmitted(Message.Type.WARNING,
 			"Generic parameters for the index operator are received in the index parameter list instead")
 	}
+
+	@Test
+	fun `allows unbound classes`() {
+		val sourceCode =
+			"""
+				Tree class
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
+			"Can't bind type definition, because it doesn't have a parent")
+	}
+
+	@Test
+	fun `allows classes to be bound if they have a parent`() {
+		val sourceCode =
+			"""
+				Parent class {
+					bound Child class
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
+			"Can't bind type definition, because it doesn't have a parent")
+	}
+
+	@Test
+	fun `disallows classes to be bound if they don't have a parent`() {
+		val sourceCode =
+			"""
+				bound Child class
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Can't bind type definition, because it doesn't have a parent")
+	}
 }

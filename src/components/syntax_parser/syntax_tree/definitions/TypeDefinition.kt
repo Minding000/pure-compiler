@@ -19,8 +19,7 @@ import messages.Message
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition as SemanticTypeDefinitionModel
 
 class TypeDefinition(private val identifier: Identifier, private val type: Word, private val superType: TypeElement?,
-					 private val body: TypeBody?):
-	Element(type.start, (body ?: superType ?: type).end), ModifierSectionChild {
+					 private val body: TypeBody?): Element(type.start, (body ?: superType ?: type).end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticTypeDefinitionModel {
@@ -30,26 +29,29 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 			WordAtom.CLASS -> {
 				parent?.validate(linter, Class.ALLOWED_MODIFIER_TYPES)
 				val isAbstract = parent?.containsModifier(WordAtom.ABSTRACT) ?: false
+				val isBound = parent?.containsModifier(WordAtom.BOUND) ?: false
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
 				if(!Linter.SpecialType.isRootType(name))
 					superType = superType ?: LiteralType(this, Linter.SpecialType.ANY)
 				val typeScope = TypeScope(scope, superType?.scope)
-				Class(this, name, typeScope, superType, isAbstract, isNative, isMutable)
+				Class(this, name, typeScope, superType, isAbstract, isBound, isNative, isMutable)
 			}
 			WordAtom.OBJECT -> {
 				parent?.validate(linter, Object.ALLOWED_MODIFIER_TYPES)
+				val isBound = parent?.containsModifier(WordAtom.BOUND) ?: false
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
 				superType = superType ?: LiteralType(this, Linter.SpecialType.ANY)
 				val typeScope = TypeScope(scope, superType.scope)
-				Object(this, name, typeScope, superType, isNative, isMutable)
+				Object(this, name, typeScope, superType, isBound, isNative, isMutable)
 			}
 			WordAtom.ENUM -> {
-				parent?.validate(linter)
+				parent?.validate(linter, Enum.ALLOWED_MODIFIER_TYPES)
+				val isBound = parent?.containsModifier(WordAtom.BOUND) ?: false
 				superType = superType ?: LiteralType(this, Linter.SpecialType.ANY)
 				val typeScope = TypeScope(scope, superType.scope)
-				Enum(this, name, typeScope, superType)
+				Enum(this, name, typeScope, superType, isBound)
 			}
 			else -> throw CompilerError("Encountered unknown type type.")
 		}
@@ -77,6 +79,8 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 				member.concretize(linter, typeDefinition.scope, typeDefinition.units)
 			}
 		}
+		for(unit in typeDefinition.units)
+			unit.parent = typeDefinition
 		typeDefinition.register(linter, scope)
 		return typeDefinition
 	}
@@ -85,10 +89,9 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		var stringRepresentation = "TypeDefinition [ $identifier ${type.getValue()}"
 		if(superType != null)
 			stringRepresentation += " $superType"
-		stringRepresentation += " ] { "
+		stringRepresentation += " ]"
 		if(body != null)
-			stringRepresentation += body
-		stringRepresentation += " }"
+			stringRepresentation += " { $body }"
 		return stringRepresentation
 	}
 }

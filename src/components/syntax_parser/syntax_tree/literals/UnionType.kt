@@ -9,8 +9,7 @@ import components.semantic_analysis.semantic_model.types.AndUnionType as Semanti
 import components.semantic_analysis.semantic_model.types.OrUnionType as SemanticOrUnionTypeModel
 import components.semantic_analysis.semantic_model.types.Type as SemanticTypeModel
 
-class UnionType(private val left: TypeElement, private val right: TypeElement, private val mode: Mode):
-	TypeElement(left.start, right.end) {
+class UnionType(private val left: TypeElement, private val right: TypeElement, private val mode: Mode): TypeElement(left.start, right.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticTypeModel {
 		val types = LinkedList<SemanticTypeModel>()

@@ -9,8 +9,7 @@ import components.syntax_parser.syntax_tree.literals.Identifier
 import components.tokenizer.WordAtom
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration as SemanticPropertyDeclarationModel
 
-class PropertyDeclaration(private val identifier: Identifier, private val type: TypeElement?,
-						  private val value: ValueElement?):
+class PropertyDeclaration(private val identifier: Identifier, private val type: TypeElement?, private val value: ValueElement?):
 	VariableSectionElement(identifier.start, (value ?: type ?: identifier).end) {
 
 	companion object {

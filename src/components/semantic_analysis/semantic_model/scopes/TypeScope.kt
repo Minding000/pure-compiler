@@ -181,7 +181,7 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 			null -> {
 				val newFunction = Function(newImplementation.source, name)
 				newFunction.addImplementation(newImplementation)
-				typeDefinition.addUnits(newFunction)
+				typeDefinition.addUnits(newFunction) //TODO Why add the function instead of the property?
 				val newValue = PropertyDeclaration(newImplementation.source, name, newFunction.type, newFunction, newFunction.isAbstract)
 				newValue.parentDefinition = typeDefinition
 				interfaceMembers[name] = newValue
@@ -207,7 +207,7 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 			null -> {
 				val newOperator = Operator(newImplementation.source, kind)
 				newOperator.addImplementation(newImplementation)
-				typeDefinition.addUnits(newOperator)
+				typeDefinition.addUnits(newOperator) //TODO Why add the operator instead of the property?
 				val newValue = PropertyDeclaration(newImplementation.source, name, newOperator.type, newOperator, newOperator.isAbstract)
 				newValue.parentDefinition = typeDefinition
 				interfaceMembers[name] = newValue

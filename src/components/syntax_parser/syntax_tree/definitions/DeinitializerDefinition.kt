@@ -25,6 +25,9 @@ class DeinitializerDefinition(start: Position, end: Position, private val body: 
 	}
 
 	override fun toString(): String {
-		return "Deinitializer { ${body ?: ""} }"
+		var stringRepresentation = "Deinitializer"
+		if(body != null)
+			stringRepresentation += " { $body }"
+		return stringRepresentation
 	}
 }

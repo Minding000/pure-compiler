@@ -43,7 +43,7 @@ internal class Mutability {
 		val expected =
 			"""
 				ModifierSection [ ModifierList { Modifier { immutable } } ] {
-					TypeDefinition [ Identifier { MainMonitor } object ] {  }
+					TypeDefinition [ Identifier { MainMonitor } object ]
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)

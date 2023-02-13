@@ -8,8 +8,7 @@ import source_structure.Position
 import util.indent
 import util.toLines
 
-class GenericsDeclaration(start: Position, private val elements: List<Parameter>):
-	MetaElement(start, elements.last().end) {
+class GenericsDeclaration(start: Position, private val elements: List<Parameter>): MetaElement(start, elements.last().end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
 		for(element in elements)

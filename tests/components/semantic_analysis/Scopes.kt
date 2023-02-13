@@ -40,7 +40,7 @@ internal class Scopes {
 		val source = TypeDefinition(Identifier(Word(position, position, WordAtom.IDENTIFIER)),
 			Word(position, position, WordAtom.CLASS), null, TypeBody(position, position, listOf()))
 		val scope = TypeScope(FileScope(), null)
-		return Class(source, "", scope, null, false, false, false)
+		return Class(source, "", scope, null, isAbstract = false, isBound = false, isNative = false, isMutable = false)
 	}
 
 	@Test

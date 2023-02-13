@@ -9,12 +9,11 @@ import components.semantic_analysis.semantic_model.values.LocalVariableDeclarati
 import components.tokenizer.WordAtom
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
-class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?,
-			val isAbstract: Boolean, val isNative: Boolean, val isMutable: Boolean):
-	TypeDefinition(source, name, scope, superType) {
+class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?, val isAbstract: Boolean,
+			isBound: Boolean, val isNative: Boolean, val isMutable: Boolean): TypeDefinition(source, name, scope, superType, isBound) {
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.IMMUTABLE, WordAtom.NATIVE)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.BOUND, WordAtom.IMMUTABLE, WordAtom.NATIVE)
 	}
 
 	init {
@@ -34,8 +33,8 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Class {
 		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
-		return Class(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.scope), superType,
-			isAbstract, isNative, isMutable)
+		return Class(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.scope), superType, isAbstract, isBound,
+			isNative, isMutable)
 	}
 
 	override fun validate(linter: Linter) {

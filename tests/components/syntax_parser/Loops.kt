@@ -28,7 +28,7 @@ internal class Loops {
 		val expected =
 			"""
 				Loop { StatementSection { StatementBlock {
-					Break {  }
+					Break
 				} } }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -44,7 +44,7 @@ internal class Loops {
 		val expected =
 			"""
 				Loop { StatementSection { StatementBlock {
-					Next {  }
+					Next
 				} } }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)

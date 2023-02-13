@@ -127,21 +127,22 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Self references can only specify surrounding types")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Self references can only specify types they are bound to")
 	}
 
 	@Test
-	fun `disallows specifying a class that doesn't surround the reference`() {
+	fun `disallows specifying a class that it's not bound to`() {
 		val sourceCode =
 			"""
-				Other class
-				Main class {
-					to referenceOther() {
-						this<Other>
+				Wrapper class {
+					Main class {
+						to referenceOther() {
+							this<Wrapper>
+						}
 					}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Self references can only specify surrounding types")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Self references can only specify types they are bound to")
 	}
 }

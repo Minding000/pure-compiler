@@ -11,6 +11,11 @@ internal class DeclarationModifiers {
 	}
 
 	@Test
+	fun `detects bound modifier tokens`() {
+		TestUtil.assertTokenType("bound", WordAtom.BOUND)
+	}
+
+	@Test
 	fun `detects immutable modifier tokens`() {
 		TestUtil.assertTokenType("immutable", WordAtom.IMMUTABLE)
 	}

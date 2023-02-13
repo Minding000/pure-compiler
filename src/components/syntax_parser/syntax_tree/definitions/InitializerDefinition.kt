@@ -12,8 +12,7 @@ import errors.internal.CompilerError
 import source_structure.Position
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition as SemanticInitializerDefinitionModel
 
-class InitializerDefinition(start: Position, private val parameterList: ParameterList?,
-							private val body: StatementSection?, end: Position):
+class InitializerDefinition(start: Position, private val parameterList: ParameterList?, private val body: StatementSection?, end: Position):
 	Element(start, end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
 
@@ -29,8 +28,8 @@ class InitializerDefinition(start: Position, private val parameterList: Paramete
 		val initializerScope = BlockScope(scope)
 		val genericParameters = parameterList?.concretizeGenerics(linter, initializerScope) ?: listOf()
 		val parameters = parameterList?.concretizeParameters(linter, initializerScope) ?: listOf()
-		return SemanticInitializerDefinitionModel(this, surroundingTypeDefinition, initializerScope,
-			genericParameters, parameters, body?.concretize(linter, initializerScope), isNative)
+		return SemanticInitializerDefinitionModel(this, surroundingTypeDefinition, initializerScope, genericParameters, parameters,
+			body?.concretize(linter, initializerScope), isNative)
 	}
 
 	override fun toString(): String {

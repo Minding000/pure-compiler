@@ -1,5 +1,6 @@
 package components.syntax_parser
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -10,7 +11,7 @@ internal class TypeDefinitions {
 		val sourceCode = "Animal class"
 		val expected =
 			"""
-				TypeDefinition [ Identifier { Animal } class ] {  }
+				TypeDefinition [ Identifier { Animal } class ]
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
@@ -31,7 +32,7 @@ internal class TypeDefinitions {
 		val sourceCode = "Dog object"
 		val expected =
 			"""
-				TypeDefinition [ Identifier { Dog } object ] {  }
+				TypeDefinition [ Identifier { Dog } object ]
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
@@ -141,7 +142,7 @@ internal class TypeDefinitions {
 		val expected =
 			"""
 				TypeDefinition [ Identifier { String } class ] { TypeBody {
-					TypeDefinition [ Identifier { Index } class ] {  }
+					TypeDefinition [ Identifier { Index } class ]
 				} }
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -153,7 +154,30 @@ internal class TypeDefinitions {
 		val expected =
 			"""
 				ModifierSection [ ModifierList { Modifier { abstract } } ] {
-					TypeDefinition [ Identifier { Goldfish } class ] {  }
+					TypeDefinition [ Identifier { Goldfish } class ]
+				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Disabled
+	@Test
+	fun `parses nested type definitions`() {
+		val sourceCode = "Couch.ArmRest class"
+		val expected =
+			"""
+				TypeDefinition [ Identifier { Couch }.Identifier { ArmRest } class ]
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses bound modifiers`() {
+		val sourceCode = "bound ArmRest class"
+		val expected =
+			"""
+				ModifierSection [ ModifierList { Modifier { bound } } ] {
+					TypeDefinition [ Identifier { ArmRest } class ]
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
@@ -165,7 +189,7 @@ internal class TypeDefinitions {
 		val expected =
 			"""
 				ModifierSection [ ModifierList { Modifier { native } } ] {
-					TypeDefinition [ Identifier { Goldfish } class ] {  }
+					TypeDefinition [ Identifier { Goldfish } class ]
 				}
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)

@@ -173,7 +173,7 @@ internal class ControlFlow {
 						Function [ Identifier { speak } ParameterList {
 							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
 						}: void ] { StatementSection { StatementBlock {
-							Return {  }
+							Return
 						} } }
 					}
 				} }
