@@ -34,7 +34,7 @@ class LintResult(private val linter: Linter, val program: Program) {
 			if(message.description.contains(expectedMessage)) {
 				if(message.type != expectedType)
 					throw AssertionError("Linter message '$expectedMessage' has type '${message.type}' instead of expected type '$expectedType'.")
-				throw AssertionError("Unexpected linter message '$expectedMessage' has been emitted.")
+				throw AssertionError("Linter message '$expectedMessage' has unexpectedly been emitted.")
 			}
 		}
 	}

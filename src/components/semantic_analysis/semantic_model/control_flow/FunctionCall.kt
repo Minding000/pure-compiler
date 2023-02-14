@@ -30,7 +30,11 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 	}
 
 	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+		for(unit in units) {
+			if(unit !== function)
+				unit.linkValues(linter, scope)
+		}
+		function.linkValues(linter, scope)
 		when(val targetType = function.type) {
 			is StaticType -> resolveInitializerCall(linter, targetType)
 			is FunctionType -> resolveFunctionCall(linter, targetType)

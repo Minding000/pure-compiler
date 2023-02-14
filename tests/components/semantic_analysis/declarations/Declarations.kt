@@ -194,4 +194,36 @@ internal class Declarations {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Can't bind type definition, because it doesn't have a parent")
 	}
+
+	@Test
+	fun `allows type definitions to inherit from other type definitions`() {
+		val sourceCode =
+			"""
+				Tool class
+				Drill class: Tool
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type definitions cannot inherit from themself")
+	}
+
+	@Test
+	fun `disallows type definitions to inherit from themself directly`() {
+		val sourceCode =
+			"""
+				Pen class: Pen
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type definitions cannot inherit from themself")
+	}
+
+	@Test
+	fun `disallows type definitions to inherit from themself indirectly`() {
+		val sourceCode =
+			"""
+				Egg class: Chicken
+				Chicken class: Egg
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type definitions cannot inherit from themself")
+	}
 }

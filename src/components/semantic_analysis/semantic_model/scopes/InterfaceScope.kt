@@ -17,6 +17,7 @@ class InterfaceScope(private val type: Type): Scope() {
 
 	fun hasType(type: TypeDefinition): Boolean = types.containsValue(type)
 
+	fun hasValue(valueName: String): Boolean = values.containsKey(valueName)
 	fun hasValue(value: InterfaceMember): Boolean = values.containsValue(value)
 
 	fun hasInstance(name: String): Boolean {

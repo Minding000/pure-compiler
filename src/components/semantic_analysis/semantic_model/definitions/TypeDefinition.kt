@@ -7,6 +7,8 @@ import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
+import components.semantic_analysis.semantic_model.types.AndUnionType
+import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
@@ -107,10 +109,43 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		if((this as? Class)?.isAbstract != true)
-			scope.ensureAbstractSuperMembersImplemented(linter)
 		if(isBound && parentTypeDefinition == null)
 			linter.addMessage(source, "Can't bind type definition, because it doesn't have a parent.", Message.Type.WARNING)
+		if(superType != null) {
+			if(inheritsFrom(this)) {
+				linter.addMessage(superType.source, "Type definitions cannot inherit from themself.", Message.Type.ERROR)
+				return
+			}
+			if((this as? Class)?.isAbstract != true)
+				scope.ensureAbstractSuperMembersImplemented(linter)
+		}
+	}
+
+	private fun inheritsFrom(definition: TypeDefinition): Boolean {
+		for(superType in getDirectSuperTypes()) {
+			if(superType.definition == definition)
+				return true
+			if(superType.definition?.inheritsFrom(definition) == true)
+				return true
+		}
+		return false
+	}
+
+	fun getAllSuperTypes(): List<ObjectType> {
+		val superTypes = LinkedList<ObjectType>()
+		for(superType in getDirectSuperTypes()) {
+			superTypes.add(superType)
+			superTypes.addAll(superType.definition?.getAllSuperTypes() ?: continue)
+		}
+		return superTypes
+	}
+
+	private fun getDirectSuperTypes(): List<ObjectType> {
+		return when(val superType = superType) {
+			is ObjectType -> listOf(superType)
+			is AndUnionType -> superType.types.filterIsInstance<ObjectType>()
+			else -> listOf()
+		}
 	}
 
 	fun acceptsSubstituteType(substituteType: Type): Boolean {

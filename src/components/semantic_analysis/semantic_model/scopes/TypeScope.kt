@@ -112,7 +112,6 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 		val missingOverrides = LinkedHashMap<TypeDefinition, LinkedList<MemberDeclaration>>()
 		val abstractSuperMembers = superScope?.getAbstractMembers() ?: return
 		for(abstractSuperMember in abstractSuperMembers) {
-			//val overridingMember = memberDeclarations[abstractSuperMember.memberIdentifier]
 			val overridingMember = memberDeclarations.find { memberDeclaration ->
 				memberDeclaration.memberIdentifier == abstractSuperMember.memberIdentifier }
 			if(!abstractSuperMember.canBeOverriddenBy(overridingMember)) {
