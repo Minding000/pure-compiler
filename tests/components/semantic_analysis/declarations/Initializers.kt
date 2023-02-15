@@ -1,9 +1,11 @@
 package components.semantic_analysis.declarations
 
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
+import components.semantic_analysis.semantic_model.definitions.Parameter
 import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class Initializers {
@@ -53,8 +55,7 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Object initializers can not take type parameters")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Object initializers can not take type parameters")
 	}
 
 	@Test
@@ -94,5 +95,46 @@ internal class Initializers {
 		val lintResult = TestUtil.lint(sourceCode)
 		val defaultInitializer = lintResult.find<InitializerDefinition>()
 		assertNotNull(defaultInitializer)
+	}
+
+	@Test
+	fun `resolves property parameters in initializers`() {
+		val sourceCode =
+			"""
+				Human class {
+					val age: Int
+					init(age)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Property parameters are only allowed in initializers")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Property parameter doesn't match any property")
+		val parameter = lintResult.find<Parameter>()
+		assertEquals("Int", parameter?.type.toString())
+	}
+
+	@Test
+	fun `disallows property parameters without matching property`() {
+		val sourceCode =
+			"""
+				Human class {
+					init(age)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Property parameter doesn't match any property")
+	}
+
+	@Test
+	fun `disallows property parameters outside of initializers`() {
+		val sourceCode =
+			"""
+				Human class {
+					val age: Int
+					to set(age)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Property parameters are only allowed in initializers")
 	}
 }

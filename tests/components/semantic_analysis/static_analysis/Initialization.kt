@@ -149,7 +149,7 @@ internal class Initialization {
 			"""
 				Human class {
 					val numberOfArms = 2
-					init {}
+					init
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -165,6 +165,19 @@ internal class Initialization {
 					init {
 						numberOfArms = 2
 					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "The following properties have not been initialized")
+	}
+
+	@Test
+	fun `allows for properties to be initialized by property parameters`() {
+		val sourceCode =
+			"""
+				Human class {
+					val age: Int
+					init(age)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

@@ -141,30 +141,28 @@ class InitializerDefinition(override val source: Element, override val parentDef
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		val propertiesToBeInitialized = parentDefinition.scope.memberDeclarations.filter { member ->
 			member is PropertyDeclaration && member.value == null }.toMutableList()
-		if(body != null) {
-			val initializerTracker = VariableTracker(true)
-			for(member in parentDefinition.scope.memberDeclarations)
-				if(member is PropertyDeclaration)
-					initializerTracker.declare(member)
-			for(parameter in parameters) {
-				if(parameter.isPropertySetter) {
-					parameter.propertyDeclaration?.let { propertyDeclaration ->
-						initializerTracker.add(VariableUsage.Type.WRITE, propertyDeclaration, propertyDeclaration)
-					}
-				} else {
-					parameter.analyseDataFlow(linter, initializerTracker)
+		val initializerTracker = VariableTracker(true)
+		for(member in parentDefinition.scope.memberDeclarations)
+			if(member is PropertyDeclaration)
+				initializerTracker.declare(member)
+		for(parameter in parameters) {
+			if(parameter.isPropertySetter) {
+				parameter.propertyDeclaration?.let { propertyDeclaration ->
+					initializerTracker.add(VariableUsage.Type.WRITE, propertyDeclaration, propertyDeclaration)
 				}
+			} else {
+				parameter.analyseDataFlow(linter, initializerTracker)
 			}
-			body.analyseDataFlow(linter, initializerTracker)
-			initializerTracker.calculateEndState()
-			for((declaration, end) in initializerTracker.ends) {
-				if(declaration !is PropertyDeclaration)
-					continue
-				if(end.isPreviouslyInitialized())
-					propertiesToBeInitialized.remove(declaration)
-			}
-			tracker.addChild(memberIdentifier, initializerTracker)
 		}
+		body?.analyseDataFlow(linter, initializerTracker)
+		initializerTracker.calculateEndState()
+		for((declaration, end) in initializerTracker.ends) {
+			if(declaration !is PropertyDeclaration)
+				continue
+			if(end.isPreviouslyInitialized())
+				propertiesToBeInitialized.remove(declaration)
+		}
+		tracker.addChild(memberIdentifier, initializerTracker)
 		if(propertiesToBeInitialized.isNotEmpty()) {
 			var message = "The following properties have not been initialized by this initializer:"
 			for(uninitializedProperty in propertiesToBeInitialized)

@@ -22,10 +22,11 @@ class Parameter(override val source: ParameterSyntaxTree, name: String, type: Ty
 			val parent = parent
 			if(parent is InitializerDefinition) {
 				propertyDeclaration = parent.parentDefinition.scope.resolveValue(name)
-				if(propertyDeclaration == null) //TODO test
+				if(propertyDeclaration == null)
 					linter.addMessage(source, "Property parameter doesn't match any property.", Message.Type.ERROR)
-				type = propertyDeclaration?.type
-			} else { //TODO test
+				else
+					type = propertyDeclaration?.type
+			} else {
 				linter.addMessage(source, "Property parameters are only allowed in initializers.", Message.Type.ERROR)
 			}
 		}
