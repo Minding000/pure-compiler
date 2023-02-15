@@ -36,8 +36,8 @@ class FunctionImplementation(override val source: Element, override val parentDe
 
 	init {
 		scope.unit = this
-		addUnits(body)
 		addUnits(parameters)
+		addUnits(body)
 	}
 
 	fun setParent(function: Function) {
@@ -56,9 +56,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		if(body == null)
 			return
 		val functionTracker = VariableTracker()
-		for(parameter in parameters)
-			functionTracker.declare(parameter)
-		body.analyseDataFlow(linter, functionTracker)
+		super.analyseDataFlow(linter, functionTracker)
 		functionTracker.calculateEndState()
 		for((declaration, usages) in functionTracker.variables) {
 			if(declaration !is PropertyDeclaration)

@@ -15,7 +15,7 @@ class HandleBlock(override val source: HandleBlockSyntaxTree, val eventType: Typ
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		if(eventVariable != null)
-			tracker.declare(eventVariable)
+			tracker.declare(eventVariable, true)
 		block.analyseDataFlow(linter, tracker)
 	}
 }

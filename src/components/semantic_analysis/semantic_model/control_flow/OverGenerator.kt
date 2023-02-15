@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.control_flow
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.LiteralType
@@ -31,6 +32,14 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, val collection
 		} else if(collectionType != null) {
 			setVariableTypes(linter, collectionType)
 		}
+	}
+
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+		collection.analyseDataFlow(linter, tracker)
+		if(iteratorVariableDeclaration != null)
+			tracker.declare(iteratorVariableDeclaration, true)
+		for(variableDeclaration in variableDeclarations)
+			tracker.declare(variableDeclaration, true)
 	}
 
 	private fun setVariableTypes(linter: Linter, collectionType: PluralType) {

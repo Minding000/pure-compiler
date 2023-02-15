@@ -192,4 +192,35 @@ internal class DataFlowAnalysis {
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertEquals(report, tracker.getReport("c"))
 	}
+
+	@Test
+	fun `over generator initializes declared variables`() {
+		val sourceCode = """
+			var a: ...Int
+			loop over a as value
+				break
+		""".trimIndent()
+		val report = """
+			start -> 2
+			2: declaration & write -> end
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertEquals(report, tracker.getReport("value"))
+	}
+
+	@Test
+	fun `handle blocks initialize error variable`() {
+		val sourceCode = """
+			val a: Int
+			{
+			} handle e: Error {
+			}
+		""".trimIndent()
+		val report = """
+			start -> 3
+			3: declaration & write -> end
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertEquals(report, tracker.getReport("e"))
+	}
 }

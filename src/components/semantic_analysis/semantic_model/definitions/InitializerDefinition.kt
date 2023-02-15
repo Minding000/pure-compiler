@@ -22,8 +22,8 @@ class InitializerDefinition(override val source: Element, override val parentDef
 	override val isAbstract = false
 
 	init {
-		addUnits(body)
 		addUnits(genericParameters, parameters)
+		addUnits(body)
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {
@@ -147,10 +147,10 @@ class InitializerDefinition(override val source: Element, override val parentDef
 					initializerTracker.declare(member)
 			for(parameter in parameters) {
 				if(parameter.type == null) { //TODO write test for this
-//				val property = scope.parentScope.resolveValue(parameter.name)
-//				initializerTracker.add(VariableUsage.Type.WRITE, property)
+//					val property = scope.parentScope.resolveValue(parameter.name)
+//					initializerTracker.add(VariableUsage.Type.WRITE, property)
 				} else {
-					initializerTracker.declare(parameter)
+					parameter.analyseDataFlow(linter, initializerTracker)
 				}
 			}
 			body.analyseDataFlow(linter, initializerTracker)
