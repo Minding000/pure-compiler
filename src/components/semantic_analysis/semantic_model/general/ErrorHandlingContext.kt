@@ -5,6 +5,7 @@ import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.StatementSection
+import java.util.*
 
 class ErrorHandlingContext(override val source: StatementSection, val mainBlock: StatementBlock,
 						   val handleBlocks: List<HandleBlock>, val alwaysBlock: StatementBlock?): Unit(source) {
@@ -26,14 +27,16 @@ class ErrorHandlingContext(override val source: StatementSection, val mainBlock:
 		if(handleBlocks.isNotEmpty()) {
 			// Analyse handle blocks
 			val mainBlockState = tracker.currentState.copy()
+			val handleBlockStates = LinkedList<VariableTracker.VariableState>()
 			for(handleBlock in handleBlocks) {
 				tracker.setVariableStates(initialState)
 				tracker.currentState.firstVariableUsages.clear()
 				handleBlock.analyseDataFlow(linter, tracker)
+				handleBlockStates.add(tracker.currentState.copy())
 				tracker.linkToStartFrom(potentiallyLastVariableUsages)
 				tracker.collectAllUsagesInto(potentiallyLastVariableUsages)
 			}
-			tracker.setVariableStates(mainBlockState)
+			tracker.setVariableStates(mainBlockState, *handleBlockStates.toTypedArray())
 		}
 		// Analyse always block (if it exists)
 		if(alwaysBlock != null) {

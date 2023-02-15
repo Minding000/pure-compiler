@@ -135,7 +135,7 @@ class VariableTracker(val isInitializer: Boolean = false) {
 		while(true) {
 			var hasNextUsages = false
 			val nextVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
-			usagesToBeLinked@ for((declaration, usages) in currentUsages) {
+			usagesToBeLinked@for((declaration, usages) in currentUsages) {
 				val nextUsages = nextVariableUsages.getOrPut(declaration) { HashSet() }
 				for(usage in usages) {
 					usage.willExit = true

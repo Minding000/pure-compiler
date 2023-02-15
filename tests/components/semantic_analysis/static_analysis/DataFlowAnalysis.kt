@@ -168,7 +168,7 @@ internal class DataFlowAnalysis {
 			1: declaration & write -> 3, 6, 8e
 			3: write -> 4, 6, 8e
 			4: read -> 6, 8, 8e
-			6: write -> 8e
+			6: write -> 8, 8e
 			8: read -> 10
 			8e: read -> continues raise
 			10: write -> end
