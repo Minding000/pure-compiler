@@ -238,6 +238,21 @@ internal class Initialization {
 	}
 
 	@Test
+	fun `recognizes when parameters initialize properties`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					init(numberOfArms) {
+						numberOfArms
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "hasn't been initialized yet")
+	}
+
+	@Test
 	fun `recognizes when functions initialize properties`() {
 		val sourceCode =
 			"""

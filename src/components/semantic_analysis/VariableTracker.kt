@@ -52,6 +52,7 @@ class VariableTracker(val isInitializer: Boolean = false) {
 	}
 
 	fun add(type: VariableUsage.Type, variable: VariableValue): VariableUsage? = add(listOf(type), variable)
+	fun add(type: VariableUsage.Type, declaration: ValueDeclaration, unit: Unit): VariableUsage = add(listOf(type), declaration, unit)
 
 	fun add(types: List<VariableUsage.Type>, variable: VariableValue): VariableUsage? {
 		return add(types, variable.definition ?: return null, variable)
