@@ -150,7 +150,31 @@ internal class ValueResolution {
 	}
 
 	@Test
-	fun `emits error for calls to uncallable value`() { //TODO don't emit error if value is null, because that will already produce an error
+	fun `doesn't emit error for calls to callable value`() {
+		val sourceCode =
+			"""
+				Bird object {
+					to fly()
+				}
+				Bird.fly()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not callable")
+	}
+
+	@Test
+	fun `doesn't emit error for calls to unresolved value`() {
+		val sourceCode =
+			"""
+				Bird object
+				Bird.fly()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not callable")
+	}
+
+	@Test
+	fun `emits error for calls to uncallable value`() {
 		val sourceCode =
 			"""
 				Bird object {

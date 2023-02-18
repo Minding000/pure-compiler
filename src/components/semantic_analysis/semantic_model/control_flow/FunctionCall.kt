@@ -38,6 +38,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 		when(val targetType = function.type) {
 			is StaticType -> resolveInitializerCall(linter, targetType)
 			is FunctionType -> resolveFunctionCall(linter, targetType)
+			null -> {}
 			else -> linter.addMessage(source, "'${function.source.getValue()}' is not callable.", Message.Type.ERROR)
 		}
 	}
