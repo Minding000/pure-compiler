@@ -55,7 +55,7 @@ internal class FunctionTypes {
 		val sourceCode =
 			"""
 				Paper class
-				Letter class: Paper {}
+				Letter class: Paper
 				Stamper object {
 					to stamp(L: Letter; letter: L): L
 				}
@@ -71,7 +71,7 @@ internal class FunctionTypes {
 		val sourceCode =
 			"""
 				Number class
-				Int class: Number {}
+				Int class: Number
 				Tree object {
 					to grow(amount: Int)
 				}
@@ -87,7 +87,7 @@ internal class FunctionTypes {
 		val sourceCode =
 			"""
 				Number class
-				Int class: Number {}
+				Int class: Number
 				CashMachine object {
 					to getBalance(): Number
 				}
@@ -104,7 +104,7 @@ internal class FunctionTypes {
 		val sourceCode =
 			"""
 				Paper class
-				Letter class: Paper {}
+				Letter class: Paper
 				Stamper object {
 					to stamp(P: Paper; paper: P): P
 				}
@@ -119,7 +119,7 @@ internal class FunctionTypes {
 		val sourceCode =
 			"""
 				Number class
-				Int class: Number {}
+				Int class: Number
 				Tree object {
 					to grow(amount: Number)
 				}
@@ -134,7 +134,7 @@ internal class FunctionTypes {
 		val sourceCode =
 			"""
 				Number class
-				Int class: Number {}
+				Int class: Number
 				CashMachine object {
 					to getBalance(): Int
 				}

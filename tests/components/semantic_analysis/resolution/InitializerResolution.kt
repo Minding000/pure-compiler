@@ -22,7 +22,7 @@ internal class InitializerResolution {
 	}
 
 	@Test
-	fun `resolves unbound initializer calls on unbound type definitions`() { //TODO unbound type properties should be static
+	fun `resolves unbound initializer calls on unbound type definitions`() {
 		val sourceCode =
 			"""
 				Window class {
@@ -31,8 +31,7 @@ internal class InitializerResolution {
 				Window.Pane()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Bound types can only be initialized within their parents instance context")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Cannot access instance member")
 		val initializerCall = lintResult.find<FunctionCall>()
 		assertNotNull(initializerCall?.type)
 	}
@@ -47,8 +46,8 @@ internal class InitializerResolution {
 				Window.Pane()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Bound types can only be initialized within their parents instance context")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Cannot access instance member 'Pane' from static context")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Value 'Pane' hasn't been declared yet")
 	}
 
 	@Test
@@ -61,8 +60,7 @@ internal class InitializerResolution {
 				Window().Pane()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Unbound types can only be initialized within their parents static context")
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Accessing static member")
 		val initializerCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
 		assertNotNull(initializerCall?.type)
 	}
@@ -77,8 +75,7 @@ internal class InitializerResolution {
 				Window().Pane()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Unbound types can only be initialized within their parents static context")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Accessing static member 'Pane' from instance context")
 	}
 
 	@Disabled
@@ -88,7 +85,7 @@ internal class InitializerResolution {
 			"""
 				Int class
 				IntegerList class {
-					init(...integers: ...Int) {}
+					init(...integers: ...Int)
 				}
 				IntegerList()
             """.trimIndent()
@@ -105,8 +102,8 @@ internal class InitializerResolution {
 				List class {
 					containing Element
 
-					init(index: Int) {}
-					init(element: Element) {}
+					init(index: Int)
+					init(element: Element)
 				}
 				val numbers = <Int>List(Int())
             """.trimIndent()

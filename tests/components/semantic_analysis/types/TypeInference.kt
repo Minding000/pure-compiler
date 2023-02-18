@@ -145,6 +145,8 @@ internal class TypeInference {
 		assertEquals(type, instanceAccess?.type)
 	}
 
+	//TODO add test: `resolves instance accesses in return statements`
+
 	@Test
 	fun `allows for recursive use of generic types`() {
 		val sourceCode =
@@ -235,7 +237,7 @@ internal class TypeInference {
 				Message class {
 					var actions: <Message>Actions
 				}
-				NewsletterMessage class: Message {}
+				NewsletterMessage class: Message
 				Actions class {
 					containing M: Message
 				}

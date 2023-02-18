@@ -4,6 +4,7 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
+import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.literals.Identifier
@@ -19,6 +20,14 @@ open class VariableValue(override val source: Element, val name: String): Value(
 		if(definition == null) {
 			linter.addMessage(source, "Value '$name' hasn't been declared yet.", Message.Type.ERROR)
 			return
+		}
+		if(scope is InterfaceScope && definition is InterfaceMember) {
+			if(scope.isStatic && !definition.isStatic) {
+				linter.addMessage(source, "Cannot access instance member '$name' from static context.", Message.Type.ERROR)
+				return
+			}
+			if(!scope.isStatic && definition.isStatic)
+				linter.addMessage(source, "Accessing static member '$name' from instance context.", Message.Type.WARNING)
 		}
 		definition.usages.add(this)
 		this.definition = definition

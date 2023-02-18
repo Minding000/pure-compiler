@@ -12,7 +12,7 @@ internal class AndUnionTypes {
 			"""
 				StreetVehicle class
 				PublicTransport class
-				Bus object: StreetVehicle & PublicTransport {}
+				Bus object: StreetVehicle & PublicTransport
 				val preferredVehicle: StreetVehicle & PublicTransport = Bus
 				val dailyCommuteVehicle: StreetVehicle & PublicTransport = preferredVehicle
             """.trimIndent()

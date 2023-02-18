@@ -49,7 +49,7 @@ internal class TypeResolution {
 	fun `resolves enum types`() {
 		val sourceCode =
 			"""
-				BirdType enum {}
+				BirdType enum
 				var birdType: BirdType
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -74,7 +74,7 @@ internal class TypeResolution {
 		val sourceCode =
 			"""
 				Bird class {
-					Type enum {}
+					Type enum
 				}
 				var birdType: Bird.Type
             """.trimIndent()
@@ -89,7 +89,7 @@ internal class TypeResolution {
 			"""
 				List class {
 					containing Element
-					to add(element: Element) {}
+					to add(element: Element)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

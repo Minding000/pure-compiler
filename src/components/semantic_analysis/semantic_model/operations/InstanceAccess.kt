@@ -9,10 +9,9 @@ import components.syntax_parser.syntax_tree.access.InstanceAccess as InstanceAcc
 class InstanceAccess(override val source: InstanceAccessSyntaxTree, name: String): VariableValue(source, name) {
 
 	override fun isAssignableTo(targetType: Type?): Boolean {
-		return if(targetType is OptionalType)
-			targetType.baseType.scope.hasInstance(name)
-		else
-			targetType?.scope?.hasInstance(name) ?: false
+		if(targetType is OptionalType)
+			return isAssignableTo(targetType.baseType)
+		return targetType?.scope?.hasInstance(name) ?: false
 	}
 
 	override fun setInferredType(inferredType: Type?) {

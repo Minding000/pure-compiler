@@ -10,7 +10,7 @@ import components.semantic_analysis.semantic_model.values.Value
 import errors.user.SignatureResolutionAmbiguityError
 import java.util.*
 
-class InterfaceScope(private val type: Type): Scope() {
+class InterfaceScope(private val type: Type, val isStatic: Boolean = false): Scope() {
 	private val types = HashMap<String, TypeDefinition>()
 	private val values = HashMap<String, InterfaceMember>()
 	private val initializers = LinkedList<InitializerDefinition>()
@@ -88,9 +88,8 @@ class InterfaceScope(private val type: Type): Scope() {
 		throw SignatureResolutionAmbiguityError(matches.map { match -> match.signature })
 	}
 
-	private fun getMatchingInitializers(genericDefinitionTypes: List<TypeDefinition>,
-										suppliedDefinitionTypes: List<Type>, suppliedTypes: List<Type>,
-										suppliedValues: List<Value>): List<MatchResult> {
+	private fun getMatchingInitializers(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
+										suppliedTypes: List<Type>, suppliedValues: List<Value>): List<MatchResult> {
 		val validSignatures = LinkedList<MatchResult>()
 		for(signature in initializers) {
 			var specificSignature = signature

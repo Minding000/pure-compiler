@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
@@ -33,6 +34,12 @@ class Parameter(override val source: ParameterSyntaxTree, name: String, type: Ty
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		tracker.declare(this, true)
+		if(isPropertySetter) {
+			propertyDeclaration?.let { propertyDeclaration ->
+				tracker.add(VariableUsage.Type.WRITE, propertyDeclaration, propertyDeclaration)
+			}
+		} else {
+			tracker.declare(this, true)
+		}
 	}
 }

@@ -329,7 +329,7 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				Fruit class
-				Apple object: Fruit {}
+				Apple object: Fruit
 				Apple as? Fruit
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -342,7 +342,7 @@ internal class Expressions {
 			"""
 				PrintResult class
 				Printer object {
-					to print(): PrintResult {}
+					to print(): PrintResult
 				}
 				try! Printer.print()
             """.trimIndent()
@@ -359,7 +359,7 @@ internal class Expressions {
 			"""
 				PrintResult class
 				Printer object {
-					to print(): PrintResult {}
+					to print(): PrintResult
 				}
 				try? Printer.print()
             """.trimIndent()
@@ -398,27 +398,25 @@ internal class Expressions {
 	fun `allows type specifications on initializers`() {
 		val sourceCode =
 			"""
-				class Metal {}
+				Metal class
 				List class
 				<Metal>List()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Type specifications can only be used on initializers")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type specifications can only be used on initializers")
 	}
 
 	@Test
 	fun `disallows type specifications on functions`() {
 		val sourceCode =
 			"""
-				class Metal {}
+				Metal class
 				Cable object {
 					to transmit()
 				}
 				Cable.<Metal>transmit()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Type specifications can only be used on initializers")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type specifications can only be used on initializers")
 	}
 }

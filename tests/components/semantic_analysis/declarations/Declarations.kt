@@ -61,7 +61,7 @@ internal class Declarations {
 		val sourceCode =
 			"""
 				Animal class
-				Animal enum {}
+				Animal enum
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of type 'Animal'")
@@ -74,9 +74,9 @@ internal class Declarations {
 				Pressure class
 				alias P = Pressure
 				Human class {
-					to sit(): Pressure {}
-					to sit(pressure: P) {}
-					to sit(pressure: Pressure) {}
+					to sit(): Pressure
+					to sit(pressure: P)
+					to sit(pressure: Pressure)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -91,9 +91,9 @@ internal class Declarations {
 				Time class
 				alias T = Time
 				Human class {
-					operator [start: T, end: T](time: T) {}
-					operator [time: T]: T {}
-					operator [time: Time]: Time {}
+					operator [start: T, end: T](time: T)
+					operator [time: T]: T
+					operator [time: Time]: Time
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

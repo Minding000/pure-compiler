@@ -12,8 +12,8 @@ import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
-abstract class Type(source: Element): Unit(source) {
-	val scope = InterfaceScope(this)
+abstract class Type(source: Element, isStatic: Boolean = false): Unit(source) {
+	val scope = InterfaceScope(this, isStatic)
 	//var llvmType: LLVMTypeRef? = null
 
 	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type

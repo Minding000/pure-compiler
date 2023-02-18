@@ -150,7 +150,7 @@ internal class ValueResolution {
 	}
 
 	@Test
-	fun `emits error for calls to uncallable value`() {
+	fun `emits error for calls to uncallable value`() { //TODO don't emit error if value is null, because that will already produce an error
 		val sourceCode =
 			"""
 				Bird object {

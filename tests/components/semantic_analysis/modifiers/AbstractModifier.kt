@@ -22,7 +22,7 @@ internal class AbstractModifier {
 
 	@Test
 	fun `is not allowed on enums`() {
-		val sourceCode = "abstract Tire enum {}"
+		val sourceCode = "abstract Tire enum"
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
 	}

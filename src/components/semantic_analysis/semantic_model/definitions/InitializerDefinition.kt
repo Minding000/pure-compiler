@@ -2,7 +2,6 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
-import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
@@ -145,15 +144,8 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		for(member in parentDefinition.scope.memberDeclarations)
 			if(member is PropertyDeclaration)
 				initializerTracker.declare(member)
-		for(parameter in parameters) {
-			if(parameter.isPropertySetter) {
-				parameter.propertyDeclaration?.let { propertyDeclaration ->
-					initializerTracker.add(VariableUsage.Type.WRITE, propertyDeclaration, propertyDeclaration)
-				}
-			} else {
-				parameter.analyseDataFlow(linter, initializerTracker)
-			}
-		}
+		for(parameter in parameters)
+			parameter.analyseDataFlow(linter, initializerTracker)
 		body?.analyseDataFlow(linter, initializerTracker)
 		initializerTracker.calculateEndState()
 		for((declaration, end) in initializerTracker.ends) {

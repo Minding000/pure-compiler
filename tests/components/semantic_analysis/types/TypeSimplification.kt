@@ -100,7 +100,7 @@ internal class TypeSimplification {
 			"""
 				Human class
 				Patient class
-				Bob object: Human & Patient {}
+				Bob object: Human & Patient
 				Horse class
 				Randomizer object {
 					to chooseRandomElementOf(Element; first: Element, second: Element): Element
@@ -120,10 +120,10 @@ internal class TypeSimplification {
 			"""
 				Human class
 				Patient class
-				Bob object: Human & Patient {}
+				Bob object: Human & Patient
 				val bob: Human & Patient = Bob
 				Horse class
-				Ferdinant object: Horse & Patient {}
+				Ferdinant object: Horse & Patient
 				val ferdinant: Horse & Patient = Ferdinant
 				Randomizer object {
 					to chooseRandomElementOf(Element; first: Element, second: Element): Element

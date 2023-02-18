@@ -71,8 +71,7 @@ abstract class Unit(open val source: Element) {
 	}
 
 	open fun validate(linter: Linter) {
-		val unitIterator = units.iterator()
-		for(unit in unitIterator)
+		for(unit in units)
 			unit.validate(linter)
 	}
 
