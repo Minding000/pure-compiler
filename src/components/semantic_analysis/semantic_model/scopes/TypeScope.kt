@@ -22,12 +22,20 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 		for((name, typeDefinition) in typeDefinitions) {
 			if(typeDefinition is GenericTypeDefinition)
 				continue
-			typeDefinition.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
-				specificTypeScope.typeDefinitions[name] = specificDefinition
+			if(typeDefinition.isBound) {
+				typeDefinition.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
+					specificTypeScope.typeDefinitions[name] = specificDefinition
+				}
+			} else {
+				specificTypeScope.typeDefinitions[name] = typeDefinition
 			}
 		}
-		for((name, interfaceMember) in interfaceMembers)
-			specificTypeScope.interfaceMembers[name] = interfaceMember.withTypeSubstitutions(typeSubstitution)
+		for((name, interfaceMember) in interfaceMembers) {
+			specificTypeScope.interfaceMembers[name] = if(interfaceMember.isStatic)
+				interfaceMember
+			else
+				interfaceMember.withTypeSubstitutions(typeSubstitution)
+		}
 		for(initializer in initializers)
 			specificTypeScope.initializers.add(initializer.withTypeSubstitutions(typeSubstitution))
 		return specificTypeScope
@@ -180,8 +188,14 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 			null -> {
 				val newFunction = Function(newImplementation.source, name)
 				newFunction.addImplementation(newImplementation)
-				typeDefinition.addUnits(newFunction) //TODO Why add the function instead of the property?
-				val newValue = PropertyDeclaration(newImplementation.source, name, newFunction.type, newFunction, newFunction.isAbstract)
+				//TODO Why add the function instead of the property?
+				typeDefinition.addUnits(newFunction)
+				//TODO add two properties (static & instance) - same for operators
+				// The function should have both of these types
+				// - only add instance values to ObjectType
+				// - access InstanceAccess through StaticType
+				val newValue = PropertyDeclaration(newImplementation.source, name, newFunction.type, newFunction, false,
+					newFunction.isAbstract)
 				newValue.parentDefinition = typeDefinition
 				interfaceMembers[name] = newValue
 				onNewValue(newValue)
@@ -207,7 +221,8 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 				val newOperator = Operator(newImplementation.source, kind)
 				newOperator.addImplementation(newImplementation)
 				typeDefinition.addUnits(newOperator) //TODO Why add the operator instead of the property?
-				val newValue = PropertyDeclaration(newImplementation.source, name, newOperator.type, newOperator, newOperator.isAbstract)
+				val newValue = PropertyDeclaration(newImplementation.source, name, newOperator.type, newOperator, false,
+					newOperator.isAbstract)
 				newValue.parentDefinition = typeDefinition
 				interfaceMembers[name] = newValue
 				onNewValue(newValue)

@@ -21,13 +21,14 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 	}
 
 	override fun register(linter: Linter, parentScope: MutableScope) {
-		parentScope.declareType(linter, this)
+		val targetScope = parentTypeDefinition?.scope ?: parentScope
+		targetScope.declareType(linter, this)
 		val type = ObjectType(this)
-		val valueDeclaration = if(parentScope is TypeScope)
-			PropertyDeclaration(source, name, type)
+		val valueDeclaration = if(targetScope is TypeScope)
+			PropertyDeclaration(source, name, type, null, !isBound)
 		else
 			LocalVariableDeclaration(source, name, type)
-		parentScope.declareValue(linter, valueDeclaration)
+		targetScope.declareValue(linter, valueDeclaration)
 		addUnits(valueDeclaration)
 	}
 

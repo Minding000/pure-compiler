@@ -10,7 +10,6 @@ import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
 import java.util.*
 
-//TODO include target instance type (optional) e.g. transform: String.() -> String
 class FunctionType(override val source: Element): ObjectType(source, Linter.SpecialType.FUNCTION.className) {
 	private val signatures = LinkedList<FunctionSignature>()
 	var superFunctionType: FunctionType? = null

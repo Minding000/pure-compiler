@@ -3,10 +3,7 @@ package components.semantic_analysis.semantic_model.definitions
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
-import components.semantic_analysis.semantic_model.scopes.BlockScope
-import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.scopes.Scope
-import components.semantic_analysis.semantic_model.scopes.TypeScope
+import components.semantic_analysis.semantic_model.scopes.*
 import components.semantic_analysis.semantic_model.types.AndUnionType
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type

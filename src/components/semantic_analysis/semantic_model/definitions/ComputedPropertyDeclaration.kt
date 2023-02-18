@@ -9,9 +9,9 @@ import components.semantic_analysis.semantic_model.values.Value
 import messages.Message
 import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclaration as ComputedPropertySyntaxTree
 
-class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, name: String, type: Type?,
-								  isConstant: Boolean, isOverriding: Boolean, val getExpression: Value?, val setStatement: Unit?):
-	InterfaceMember(source, name, type, null, false, isConstant, false, isOverriding) {
+class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, name: String, type: Type?, isConstant: Boolean,
+								  isOverriding: Boolean, val getExpression: Value?, val setStatement: Unit?):
+	InterfaceMember(source, name, type, null, false, false, isConstant, false, isOverriding) {
 
 	init {
 		addUnits(getExpression, setStatement)

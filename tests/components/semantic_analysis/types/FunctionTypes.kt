@@ -40,7 +40,7 @@ internal class FunctionTypes {
 	fun `can be assigned to itself`() {
 		val sourceCode =
 			"""
-				Tree class {
+				Tree object {
 					to grow()
 				}
 				val growthFunction: =>| = Tree.grow
@@ -56,7 +56,7 @@ internal class FunctionTypes {
 			"""
 				Paper class
 				Letter class: Paper {}
-				Stamper class {
+				Stamper object {
 					to stamp(L: Letter; letter: L): L
 				}
 				val stampFunction: (P: Paper; P) => P = Stamper.stamp
@@ -72,7 +72,7 @@ internal class FunctionTypes {
 			"""
 				Number class
 				Int class: Number {}
-				Tree class {
+				Tree object {
 					to grow(amount: Int)
 				}
 				val growthFunction: (Number) =>| = Tree.grow
@@ -88,7 +88,7 @@ internal class FunctionTypes {
 			"""
 				Number class
 				Int class: Number {}
-				CashMachine class {
+				CashMachine object {
 					to getBalance(): Number
 				}
 				val growthFunction: => Int = CashMachine.getBalance
@@ -105,7 +105,7 @@ internal class FunctionTypes {
 			"""
 				Paper class
 				Letter class: Paper {}
-				Stamper class {
+				Stamper object {
 					to stamp(P: Paper; paper: P): P
 				}
 				val stampFunction: (L: Letter; L) => L = Stamper.stamp
@@ -120,7 +120,7 @@ internal class FunctionTypes {
 			"""
 				Number class
 				Int class: Number {}
-				Tree class {
+				Tree object {
 					to grow(amount: Number)
 				}
 				val growthFunction: (Int) =>| = Tree.grow
@@ -135,7 +135,7 @@ internal class FunctionTypes {
 			"""
 				Number class
 				Int class: Number {}
-				CashMachine class {
+				CashMachine object {
 					to getBalance(): Int
 				}
 				val growthFunction: => Number = CashMachine.getBalance
@@ -150,7 +150,7 @@ internal class FunctionTypes {
 			"""
 				Body class
 				Error class
-				DataModel class {
+				DataModel object {
 					to process(result: Body | Error) {}
 				}
 				val resultProcessor: (Body) =>| & (Error) =>| = DataModel.process
@@ -163,7 +163,7 @@ internal class FunctionTypes {
 	fun `can be assigned to an any object type`() {
 		val sourceCode =
 			"""
-				DataModel class {
+				DataModel object {
 					to process() {}
 				}
 				val resultProcessor: Any = DataModel.process

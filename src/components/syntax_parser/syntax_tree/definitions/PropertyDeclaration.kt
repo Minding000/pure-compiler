@@ -26,6 +26,7 @@ class PropertyDeclaration(private val identifier: Identifier, private val type: 
 			identifier.getValue(),
 			(type ?: parent.type)?.concretize(linter, scope),
 			(value ?: parent.value)?.concretize(linter, scope),
+			false, //TODO should be 'true' for 'const'
 			isAbstract,
 			parent.isConstant,
 			isMutable,

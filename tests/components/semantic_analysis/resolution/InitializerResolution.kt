@@ -1,6 +1,7 @@
 package components.semantic_analysis.resolution
 
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
+import components.semantic_analysis.semantic_model.operations.MemberAccess
 import messages.Message
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -21,18 +22,63 @@ internal class InitializerResolution {
 	}
 
 	@Test
-	fun `resolves initializer calls`() {
+	fun `resolves unbound initializer calls on unbound type definitions`() { //TODO unbound type properties should be static
 		val sourceCode =
 			"""
-				Int class
 				Window class {
-					init(width: Int, height: Int) {}
+					Pane class
 				}
-				Window(Int(), Int())
+				Window.Pane()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
+			"Bound types can only be initialized within their parents instance context")
 		val initializerCall = lintResult.find<FunctionCall>()
 		assertNotNull(initializerCall?.type)
+	}
+
+	@Test
+	fun `disallows unbound initializer calls on bound type definitions`() {
+		val sourceCode =
+			"""
+				Window class {
+					bound Pane class
+				}
+				Window.Pane()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Bound types can only be initialized within their parents instance context")
+	}
+
+	@Test
+	fun `resolves bound initializer calls on bound type definitions`() {
+		val sourceCode =
+			"""
+				Window class {
+					bound Pane class
+				}
+				Window().Pane()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
+			"Unbound types can only be initialized within their parents static context")
+		val initializerCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
+		assertNotNull(initializerCall?.type)
+	}
+
+	@Test
+	fun `disallows bound initializer calls on unbound type definitions`() {
+		val sourceCode =
+			"""
+				Window class {
+					Pane class
+				}
+				Window().Pane()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Unbound types can only be initialized within their parents static context")
 	}
 
 	@Disabled

@@ -33,7 +33,7 @@ class StaticType(val definition: TypeDefinition): Type(definition.source) {
 	}
 
 	override fun onNewValue(value: InterfaceMember) {
-		if(value.isConstant)
+		if(value.isStatic)
 			this.scope.addValue(value)
 	}
 

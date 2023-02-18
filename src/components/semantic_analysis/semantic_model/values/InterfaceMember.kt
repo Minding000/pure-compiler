@@ -7,7 +7,7 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 
-abstract class InterfaceMember(source: Element, name: String, type: Type? = null, value: Value? = null,
+abstract class InterfaceMember(source: Element, name: String, type: Type? = null, value: Value? = null, val isStatic: Boolean = false,
 							   override val isAbstract: Boolean = false, isConstant: Boolean = true, isMutable: Boolean = false,
 							   val isOverriding: Boolean = false):
 	ValueDeclaration(source, name, type, value, isConstant, isMutable), MemberDeclaration {
