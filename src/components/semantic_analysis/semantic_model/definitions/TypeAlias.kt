@@ -5,7 +5,7 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.definitions.TypeAlias as TypeAliasSyntaxTree
 
 class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val referenceType: Type, scope: TypeScope):
-	TypeDefinition(source, name, scope, null) {
+	TypeDefinition(source, name, scope, null, null) {
 
 	init {
 		scope.typeDefinition = this

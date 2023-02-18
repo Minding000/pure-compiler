@@ -442,18 +442,21 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 
 	/**
 	 * TypeDefinition:
-	 *   <Identifier> <type-type>[: <Type>] <TypeBody>
+	 *   <Identifier> <type-type>[ in <ObjectType>][: <Type>] <TypeBody>
 	 */
 	private fun parseTypeDefinition(): TypeDefinition {
 		val identifier = parseIdentifier()
 		val type = consume(WordType.TYPE_TYPE)
-		var superType: TypeElement? = null
-		if(currentWord?.type == WordAtom.COLON) {
+		val explicitParentType = if(currentWord?.type == WordAtom.IN) {
+			consume(WordAtom.IN)
+			typeParser.parseObjectType()
+		} else null
+		val superType = if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
-			superType = typeParser.parseType(false)
-		}
+			typeParser.parseType(false)
+		} else null
 		val body = parseTypeBody()
-		return TypeDefinition(identifier, type, superType, body)
+		return TypeDefinition(identifier, type, explicitParentType, superType, body)
 	}
 
 	/**

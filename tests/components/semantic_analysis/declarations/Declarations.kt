@@ -1,9 +1,11 @@
 package components.semantic_analysis.declarations
 
+import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
 import org.junit.jupiter.api.Test
 import util.TestUtil
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class Declarations {
@@ -225,5 +227,32 @@ internal class Declarations {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type definitions cannot inherit from themself")
+	}
+
+	@Test
+	fun `allows explicit parent types on unscoped type definitions`() {
+		val sourceCode =
+			"""
+				Editor class
+				Theme class in Editor
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
+			"Explicit parent types are only allowed on unscoped type definitions")
+		val typeDefinition = lintResult.find<TypeDefinition> { typeDefinition -> typeDefinition.name == "Theme" }
+		assertEquals("Editor", typeDefinition?.parentTypeDefinition?.name)
+	}
+
+	@Test
+	fun `disallows explicit parent types on scoped type definitions`() {
+		val sourceCode =
+			"""
+				Editor class {
+					Theme class in Editor
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Explicit parent types are only allowed on unscoped type definitions")
 	}
 }

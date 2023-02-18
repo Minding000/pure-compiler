@@ -13,14 +13,11 @@ internal class OverGeneratorLoops {
 	fun `provides an index if iterator is an IndexIterator`() {
 		//TODO continue here:
 		// - resolve List issues
-		// - support "in" type definition syntax
-		// - validate bound / unbound initializer calls
 		val sourceCode =
 			"""
 				referencing Pure
 				val listOfWords = <String>List()
-				loop over listOfWords as index, word {
-				}
+				loop over listOfWords as index, word {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val indexVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "index" }?.type
@@ -34,8 +31,7 @@ internal class OverGeneratorLoops {
 			"""
 				referencing Pure
 				val mapFromWordToScore = <String, Float>Map()
-				loop over mapFromWordToScore as word, score {
-				}
+				loop over mapFromWordToScore as word, score {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val keyVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.type
@@ -49,8 +45,7 @@ internal class OverGeneratorLoops {
 			"""
 				referencing Pure
 				val listOfWords = <String>List()
-				loop over listOfWords as word {
-				}
+				loop over listOfWords as word {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val valueVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.type
@@ -66,8 +61,7 @@ internal class OverGeneratorLoops {
 				type MultipleStrings = ...String
 				val listOfWords: MultipleStrings? = null
 				if(!listOfWords?) {
-					loop over listOfWords as index, word {
-					}
+					loop over listOfWords as index, word {}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)

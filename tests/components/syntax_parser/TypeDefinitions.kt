@@ -1,6 +1,5 @@
 package components.syntax_parser
 
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -122,11 +121,10 @@ internal class TypeDefinitions {
 
 	@Test
 	fun `parses type definitions with inheritance`() {
-		val sourceCode = "Dog class: Animal & Soulmate {}"
+		val sourceCode = "Dog class: Animal & Soulmate"
 		val expected =
 			"""
-				TypeDefinition [ Identifier { Dog } class UnionType { ObjectType { Identifier { Animal } } & ObjectType { Identifier { Soulmate } } } ] { TypeBody {
-				} }
+				TypeDefinition [ Identifier { Dog } class: UnionType { ObjectType { Identifier { Animal } } & ObjectType { Identifier { Soulmate } } } ]
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
@@ -149,6 +147,16 @@ internal class TypeDefinitions {
 	}
 
 	@Test
+	fun `parses explicit parent types`() {
+		val sourceCode = "ArmRest class in Couch"
+		val expected =
+			"""
+				TypeDefinition [ Identifier { ArmRest } class in ObjectType { Identifier { Couch } } ]
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
 	fun `parses abstract modifiers`() {
 		val sourceCode = "abstract Goldfish class"
 		val expected =
@@ -156,17 +164,6 @@ internal class TypeDefinitions {
 				ModifierSection [ ModifierList { Modifier { abstract } } ] {
 					TypeDefinition [ Identifier { Goldfish } class ]
 				}
-            """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
-	}
-
-	@Disabled
-	@Test
-	fun `parses nested type definitions`() {
-		val sourceCode = "Couch.ArmRest class"
-		val expected =
-			"""
-				TypeDefinition [ Identifier { Couch }.Identifier { ArmRest } class ]
             """.trimIndent()
 		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}

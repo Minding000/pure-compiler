@@ -3,14 +3,16 @@ package components.semantic_analysis.semantic_model.definitions
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
+import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
 import components.tokenizer.WordAtom
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
-class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type?, val isAbstract: Boolean,
-			isBound: Boolean, val isNative: Boolean, val isMutable: Boolean): TypeDefinition(source, name, scope, superType, isBound) {
+class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?,
+			superType: Type?, val isAbstract: Boolean, isBound: Boolean, val isNative: Boolean, val isMutable: Boolean):
+	TypeDefinition(source, name, scope, explicitParentType, superType, isBound) {
 
 	companion object {
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.BOUND, WordAtom.IMMUTABLE, WordAtom.NATIVE)
@@ -34,8 +36,8 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Class {
 		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
-		return Class(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.scope), superType, isAbstract, isBound,
-			isNative, isMutable)
+		return Class(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.scope), explicitParentType, superType,
+			isAbstract, isBound, isNative, isMutable)
 	}
 
 	override fun validate(linter: Linter) {

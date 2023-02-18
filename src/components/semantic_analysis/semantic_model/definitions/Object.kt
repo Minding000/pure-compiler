@@ -9,8 +9,9 @@ import components.semantic_analysis.semantic_model.values.LocalVariableDeclarati
 import components.tokenizer.WordAtom
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
-class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, superType: Type, isBound: Boolean,
-			 val isNative: Boolean, val isMutable: Boolean): TypeDefinition(source, name, scope, superType, isBound) {
+class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?,
+			 superType: Type, isBound: Boolean, val isNative: Boolean, val isMutable: Boolean):
+	TypeDefinition(source, name, scope, explicitParentType, superType, isBound) {
 
 	companion object {
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.BOUND, WordAtom.NATIVE, WordAtom.IMMUTABLE)

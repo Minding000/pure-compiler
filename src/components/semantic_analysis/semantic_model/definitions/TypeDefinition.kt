@@ -12,8 +12,8 @@ import messages.Message
 import util.linkedListOf
 import java.util.*
 
-abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope, val superType: Type?,
-							  val isBound: Boolean = false): Unit(source) {
+abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope, val explicitParentType: ObjectType?,
+							  val superType: Type?, val isBound: Boolean = false): Unit(source) {
 	override var parent: Unit?
 		get() = super.parent
 		set(value) {
@@ -28,7 +28,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 	var baseDefinition: TypeDefinition? = null
 
 	init {
-		addUnits(superType)
+		addUnits(explicitParentType, superType)
 	}
 
 	open fun register(linter: Linter, parentScope: MutableScope) {}
@@ -74,6 +74,14 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 
 	override fun linkTypes(linter: Linter, scope: Scope) {
 		super.linkTypes(linter, this.scope)
+		if(explicitParentType != null) {
+			if(parentTypeDefinition == null) {
+				parentTypeDefinition = explicitParentType.definition
+			} else {
+				linter.addMessage(explicitParentType.source,
+					"Explicit parent types are only allowed on unscoped type definitions.", Message.Type.ERROR)
+			}
+		}
 	}
 
 	override fun linkPropertyParameters(linter: Linter, scope: MutableScope) {

@@ -29,4 +29,9 @@ internal class TypeDeclarations {
 	fun `detects generic type tokens`() {
 		TestUtil.assertTokenType("containing", WordAtom.CONTAINING)
 	}
+
+	@Test
+	fun `detects parent type tokens`() {
+		TestUtil.assertTokenType("in", WordAtom.IN)
+	}
 }
