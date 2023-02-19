@@ -18,36 +18,31 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, val value:
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, scope)
-		type = value?.type
 		val surroundingFunction = scope.getSurroundingFunction()
 		if(surroundingFunction == null) {
 			linter.addMessage(source, "Return statements are not allowed outside of functions.", Message.Type.ERROR)
+			return
+		}
+		targetFunction = surroundingFunction
+		surroundingFunction.mightReturnValue = true
+		val returnType = surroundingFunction.signature.returnType
+		if(value == null) {
+			if(!Linter.SpecialType.NOTHING.matches(returnType))
+				linter.addMessage(source, "Return statement needs a value.", Message.Type.ERROR)
 		} else {
-			targetFunction = surroundingFunction
-			surroundingFunction.mightReturnValue = true
+			if(Linter.SpecialType.NOTHING.matches(returnType)) {
+				linter.addMessage(source, "Return value is redundant.", Message.Type.WARNING)
+			} else if(value.isAssignableTo(returnType)) {
+				value.setInferredType(returnType)
+			} else {
+				linter.addMessage(source, "Return value doesn't match the declared return type.", Message.Type.ERROR)
+			}
 		}
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		value?.analyseDataFlow(linter, tracker)
 		tracker.registerReturnStatement()
-	}
-
-	override fun validate(linter: Linter) {
-		if(value != null) {
-			value.validate(linter)
-			if(type == null)
-				linter.addMessage(source, "Failed to resolve type of value '${source.getValue()}'.", Message.Type.ERROR)
-		}
-		targetFunction?.signature?.returnType?.let { returnType ->
-			if(Linter.SpecialType.NOTHING.matches(returnType)) {
-				if(value != null)
-					linter.addMessage(source, "Return value doesn't match the declared return type.", Message.Type.ERROR)
-			} else {
-				if(value?.isAssignableTo(returnType) != true)
-					linter.addMessage(source, "Return value doesn't match the declared return type.", Message.Type.ERROR)
-			}
-		}
 	}
 
 //	override fun compile(context: BuildContext): LLVMValueRef {

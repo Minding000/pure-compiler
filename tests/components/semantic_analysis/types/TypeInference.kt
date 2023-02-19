@@ -145,7 +145,25 @@ internal class TypeInference {
 		assertEquals(type, instanceAccess?.type)
 	}
 
-	//TODO add test: `resolves instance accesses in return statements`
+	@Test
+	fun `resolves instance accesses in return statements`() {
+		val sourceCode =
+			"""
+				TransportLayerProtocol enum {
+					instances TCP, UDP
+				}
+				Networking object {
+					to getLosslessProtocol(): TransportLayerProtocol {
+						return .TCP
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
+		assertNotNull(type)
+		val instanceAccess = lintResult.find<InstanceAccess>()
+		assertEquals(type, instanceAccess?.type)
+	}
 
 	@Test
 	fun `allows for recursive use of generic types`() {

@@ -71,11 +71,11 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Return value doesn't match the declared return type")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Return statement needs a value")
 	}
 
 	@Test
-	fun `detects return statements with extraneous return type`() {
+	fun `detects return statements with redundant return type`() {
 		val sourceCode =
 			"""
 				Int class
@@ -86,7 +86,7 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Return value doesn't match the declared return type")
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Return value is redundant")
 	}
 
 	@Test

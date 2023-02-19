@@ -11,8 +11,6 @@ internal class OverGeneratorLoops {
 
 	@Test
 	fun `provides an index if iterator is an IndexIterator`() {
-		//TODO resolve List issues:
-		// - Code cleanup.
 		val sourceCode =
 			"""
 				referencing Pure
