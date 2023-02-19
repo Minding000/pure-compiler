@@ -223,4 +223,57 @@ internal class DataFlowAnalysis {
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertEquals(report, tracker.getReport("e"))
 	}
+
+	@Test
+	fun `works with member accesses`() {
+		val sourceCode = """
+			val a: Int
+			a.b = 2
+		""".trimIndent()
+		val report = """
+			start -> 1
+			1: declaration -> 2
+			2: read -> end
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertEquals(report, tracker.getReport("a"))
+	}
+
+	@Test
+	fun `works with member accesses containing self references`() {
+		val sourceCode = """
+			A class {
+				val a: Int
+				init {
+					this.a
+				}
+			}
+		""".trimIndent()
+		val report = """
+			start -> 2
+			2: declaration -> 4
+			4: read -> end
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertEquals(report, tracker.childTrackers["A()"]?.getReport("a"))
+	}
+
+	@Test
+	fun `works with member accesses containing self references being written to`() {
+		val sourceCode = """
+			A class {
+				val a: Int
+				init {
+					this.a = 3
+				}
+			}
+		""".trimIndent()
+		val report = """
+			start -> 2
+			2: declaration -> 4
+			4: write -> end
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertEquals(report, tracker.childTrackers["A()"]?.getReport("a"))
+	}
 }

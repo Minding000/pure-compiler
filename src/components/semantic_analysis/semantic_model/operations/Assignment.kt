@@ -6,6 +6,7 @@ import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.values.SelfReference
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
@@ -59,6 +60,10 @@ class Assignment(override val source: AssignmentSyntaxTree, val targets: List<Va
 					if(target.member !is VariableValue || target.member.definition?.isConstant == true)
 						linter.addMessage(target.source, "'${target.member}' cannot be reassigned, because it is constant.",
 							Message.Type.ERROR)
+					if(target.target is SelfReference && target.member is VariableValue) {
+						tracker.add(VariableUsage.Type.WRITE, target.member)
+						continue
+					}
 				}
 				is IndexAccess -> { //TODO is this tested?
 					target.target.type?.scope?.resolveIndexOperator(target.typeParameters, target.indices, sourceExpression)

@@ -32,6 +32,8 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, private v
 		definition?.let { definition ->
 			val typeParameters = definition.scope.getGenericTypeDefinitions().map { ObjectType(it) }
 			type = ObjectType(typeParameters, definition)
+			type?.resolveGenerics(linter) //TODO find cleaner way to create ObjectType and call uncalled event stage functions
+			addUnits(type)
 		}
 	}
 

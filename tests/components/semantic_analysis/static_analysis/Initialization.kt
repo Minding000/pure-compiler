@@ -185,6 +185,18 @@ internal class Initialization {
 	}
 
 	@Test
+	fun `ignores static properties`() {
+		val sourceCode =
+			"""
+				Human class {
+					Arm class
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "The following properties have not been initialized")
+	}
+
+	@Test
 	fun `disallows initializers that don't always initialize all properties`() {
 		val sourceCode =
 			"""
@@ -296,6 +308,24 @@ internal class Initialization {
 					}
 					to printNumberOfArms() {
 						numberOfArms
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "relies on the following uninitialized properties")
+	}
+
+	@Test
+	fun `allows for functions that rely on an uninitialized property to be called outside of initializers`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					to getNumberOfArms(): Int {
+						return numberOfArms
+					}
+					to printNumberOfArms() {
+						getNumberOfArms()
 					}
 				}
             """.trimIndent()

@@ -2,6 +2,8 @@ package components.semantic_analysis.semantic_model.general
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
@@ -73,6 +75,14 @@ abstract class Unit(open val source: Element) {
 	open fun validate(linter: Linter) {
 		for(unit in units)
 			unit.validate(linter)
+	}
+
+	fun isInInitializer(): Boolean {
+		if(this is InitializerDefinition)
+			return true
+		if(this is FunctionImplementation)
+			return false
+		return parent?.isInInitializer() ?: return false
 	}
 
 	inline fun <reified T: Unit>find(noinline predicate: (T) -> Boolean): T? {

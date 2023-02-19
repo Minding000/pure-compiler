@@ -56,7 +56,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 			for(propertyBeingInitialized in targetImplementation.propertiesBeingInitialized)
 				tracker.add(VariableUsage.Type.WRITE, propertyBeingInitialized, this)
 		}
-		if(requiredButUninitializedProperties.isNotEmpty()) {
+		if(requiredButUninitializedProperties.isNotEmpty() && isInInitializer()) {
 			var message = "The function '${getSignature()}' relies on the following uninitialized properties:"
 			for(requiredButUninitializedProperty in requiredButUninitializedProperties)
 				message += "\n - ${requiredButUninitializedProperty.memberIdentifier}"

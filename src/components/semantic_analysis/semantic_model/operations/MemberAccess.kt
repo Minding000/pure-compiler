@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.FunctionType
@@ -8,6 +9,7 @@ import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.values.InitializerReference
+import components.semantic_analysis.semantic_model.values.SelfReference
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
@@ -44,6 +46,13 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, val target: Valu
 					staticValue = member.staticValue
 			}
 		}
+	}
+
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+		if(target is SelfReference)
+			member.analyseDataFlow(linter, tracker)
+		else
+			target.analyseDataFlow(linter, tracker)
 	}
 
 	fun filterForPossibleTargetTypes(availableTypes: List<ObjectType>): List<ObjectType> {

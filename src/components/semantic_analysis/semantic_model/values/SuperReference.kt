@@ -1,10 +1,7 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.operations.IndexAccess
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -38,7 +35,7 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, private
 		when(val parent = parent) {
 			is MemberAccess -> {
 				if(parent.member is InitializerReference) {
-					if(!isInInitializer(this)) {
+					if(!isInInitializer()) {
 						linter.addMessage(source, "The super initializer can only be called from initializers.",
 							Message.Type.ERROR)
 						return
@@ -78,13 +75,5 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, private
 		if(superType.definition?.baseDefinition == specifierDefinition)
 			return true
 		return false
-	}
-
-	private fun isInInitializer(unit: Unit): Boolean {
-		if(unit is InitializerDefinition)
-			return true
-		if(unit is FunctionImplementation)
-			return false
-		return isInInitializer(unit.parent ?: return false)
 	}
 }

@@ -4,8 +4,8 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
-import messages.Message
 import components.syntax_parser.syntax_tree.general.Element
+import messages.Message
 
 abstract class Value(override val source: Element, var type: Type? = null): Unit(source) {
 	open var staticValue: Value? = null
@@ -26,8 +26,7 @@ abstract class Value(override val source: Element, var type: Type? = null): Unit
 	override fun validate(linter: Linter) {
 		super.validate(linter)
 		if(type == null)
-			linter.addMessage(source, "Failed to resolve type of value '${source.getValue()}'.",
-				Message.Type.ERROR)
+			linter.addMessage(source, "Failed to resolve type of value '${source.getValue()}'.", Message.Type.ERROR)
 	}
 
 	override fun hashCode(): Int {
