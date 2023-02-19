@@ -6,6 +6,7 @@ import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.types.StaticType
 import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.literals.Identifier
 import messages.Message
@@ -40,10 +41,10 @@ open class VariableValue(override val source: Element, val name: String): Value(
 		val usage = tracker.add(VariableUsage.Type.READ, this) ?: return
 		val declaration = definition
 		if(declaration is LocalVariableDeclaration) {
-			if(!usage.isPreviouslyInitialized())
+			if(declaration.type !is StaticType && !usage.isPreviouslyInitialized())
 				linter.addMessage(source, "Local variable '$name' hasn't been initialized yet.", Message.Type.ERROR)
 		} else if(declaration is PropertyDeclaration) {
-			if(tracker.isInitializer && declaration.value == null && !usage.isPreviouslyInitialized())
+			if(tracker.isInitializer && !declaration.isStatic && declaration.value == null && !usage.isPreviouslyInitialized())
 				linter.addMessage(source, "Property '$name' hasn't been initialized yet.", Message.Type.ERROR)
 		}
 	}

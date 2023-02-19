@@ -12,8 +12,6 @@ internal class OverGeneratorLoops {
 	@Test
 	fun `provides an index if iterator is an IndexIterator`() {
 		//TODO resolve List issues:
-		// - Commit.
-		// - 'Range' and 'Exception' are not being resolved
 		// - Code cleanup.
 		val sourceCode =
 			"""

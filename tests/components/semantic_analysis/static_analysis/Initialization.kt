@@ -18,6 +18,17 @@ internal class Initialization {
 	}
 
 	@Test
+	fun `allows use of static local variables`() {
+		val sourceCode =
+			"""
+				Int class
+				Int()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "hasn't been initialized yet")
+	}
+
+	@Test
 	fun `disallows use of uninitialized local variables`() {
 		val sourceCode =
 			"""
