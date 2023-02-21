@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
+import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
@@ -63,6 +64,13 @@ class AndUnionType(override val source: Element, val types: List<Type>): Type(so
 		for(type in types)
 			abstractMembers.addAll(type.getAbstractMembers())
 		return abstractMembers
+	}
+
+	override fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {
+		val propertiesToBeInitialized = LinkedList<PropertyDeclaration>()
+		for(type in types)
+			propertiesToBeInitialized.addAll(type.getPropertiesToBeInitialized())
+		return propertiesToBeInitialized
 	}
 
 	override fun equals(other: Any?): Boolean {

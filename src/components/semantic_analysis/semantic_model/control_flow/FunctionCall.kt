@@ -46,18 +46,18 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		super.analyseDataFlow(linter, tracker)
 		val targetImplementation = targetImplementation
+		if(targetImplementation !is Callable)
+			return
 		val requiredButUninitializedProperties = LinkedList<PropertyDeclaration>()
-		if(targetImplementation is FunctionImplementation) {
-			for(propertyRequiredToBeInitialized in targetImplementation.propertiesRequiredToBeInitialized) {
-				val usage = tracker.add(VariableUsage.Type.READ, propertyRequiredToBeInitialized, this)
-				if(!usage.isPreviouslyInitialized())
-					requiredButUninitializedProperties.add(propertyRequiredToBeInitialized)
-			}
-			for(propertyBeingInitialized in targetImplementation.propertiesBeingInitialized)
-				tracker.add(VariableUsage.Type.WRITE, propertyBeingInitialized, this)
+		for(propertyRequiredToBeInitialized in targetImplementation.propertiesRequiredToBeInitialized) {
+			val usage = tracker.add(VariableUsage.Type.READ, propertyRequiredToBeInitialized, this)
+			if(!usage.isPreviouslyInitialized())
+				requiredButUninitializedProperties.add(propertyRequiredToBeInitialized)
 		}
+		for(propertyBeingInitialized in targetImplementation.propertiesBeingInitialized)
+			tracker.add(VariableUsage.Type.WRITE, propertyBeingInitialized, this)
 		if(tracker.isInitializer && requiredButUninitializedProperties.isNotEmpty()) {
-			var message = "The function '${getSignature()}' relies on the following uninitialized properties:"
+			var message = "The callable '${getSignature()}' relies on the following uninitialized properties:"
 			for(requiredButUninitializedProperty in requiredButUninitializedProperties)
 				message += "\n - ${requiredButUninitializedProperty.memberIdentifier}"
 			linter.addMessage(source, message, Message.Type.ERROR)

@@ -16,10 +16,12 @@ import java.util.*
 
 class InitializerDefinition(override val source: Element, override val parentDefinition: TypeDefinition, val scope: BlockScope,
 							val genericParameters: List<TypeDefinition> = listOf(), val parameters: List<Parameter> = listOf(),
-							val body: Unit? = null, val isNative: Boolean = false): Unit(source), MemberDeclaration {
+							val body: Unit? = null, val isNative: Boolean = false): Unit(source), MemberDeclaration, Callable {
 	override val memberIdentifier
 		get() = toString()
 	override val isAbstract = false
+	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
+	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 
 	init {
 		addUnits(genericParameters, parameters)
@@ -36,8 +38,7 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
-		return InitializerDefinition(source, parentDefinition, scope, specificGenericParameters, specificParameters,
-			body, isNative)
+		return InitializerDefinition(source, parentDefinition, scope, specificGenericParameters, specificParameters, body, isNative)
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -138,8 +139,7 @@ class InitializerDefinition(override val source: Element, override val parentDef
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		val propertiesToBeInitialized = parentDefinition.scope.memberDeclarations.filter { member ->
-			member is PropertyDeclaration && !member.isStatic && member.value == null }.toMutableList()
+		val propertiesToBeInitialized = parentDefinition.scope.getPropertiesToBeInitialized().toMutableList()
 		val initializerTracker = VariableTracker(true)
 		for(member in parentDefinition.scope.memberDeclarations)
 			if(member is PropertyDeclaration)
@@ -148,13 +148,11 @@ class InitializerDefinition(override val source: Element, override val parentDef
 			parameter.analyseDataFlow(linter, initializerTracker)
 		body?.analyseDataFlow(linter, initializerTracker)
 		initializerTracker.calculateEndState()
-		for((declaration, end) in initializerTracker.ends) {
-			if(declaration !is PropertyDeclaration)
-				continue
-			if(end.isPreviouslyInitialized())
-				propertiesToBeInitialized.remove(declaration)
-		}
+		initializerTracker.validate(linter)
+		propertiesBeingInitialized.addAll(initializerTracker.getPropertiesBeingInitialized())
+		propertiesRequiredToBeInitialized.addAll(initializerTracker.getPropertiesRequiredToBeInitialized())
 		tracker.addChild(memberIdentifier, initializerTracker)
+		propertiesToBeInitialized.removeAll(propertiesBeingInitialized)
 		if(propertiesToBeInitialized.isNotEmpty()) {
 			var message = "The following properties have not been initialized by this initializer:"
 			for(uninitializedProperty in propertiesToBeInitialized)

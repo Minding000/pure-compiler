@@ -1,8 +1,10 @@
 package components.semantic_analysis
 
+import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
+import messages.Message
 import java.util.*
 
 class VariableTracker(val isInitializer: Boolean = false) {
@@ -172,6 +174,40 @@ class VariableTracker(val isInitializer: Boolean = false) {
 
 	fun addChild(name: String, fileTracker: VariableTracker) {
 		childTrackers[name] = fileTracker
+	}
+
+	fun validate(linter: Linter) {
+		for((declaration, usages) in variables) {
+			for(usage in usages) {
+				if(usage.types.contains(VariableUsage.Type.WRITE) && declaration.isConstant) {
+					if((declaration is PropertyDeclaration && !isInitializer) || usage.isPreviouslyPossiblyInitialized())
+						linter.addMessage(usage.unit.source,
+							"'${declaration.name}' cannot be reassigned, because it is constant.", Message.Type.ERROR)
+				}
+			}
+		}
+	}
+
+	fun getPropertiesBeingInitialized(): List<PropertyDeclaration> {
+		val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
+		for((declaration, end) in ends) {
+			if(declaration !is PropertyDeclaration)
+				continue
+			if(end.isPreviouslyInitialized())
+				propertiesBeingInitialized.add(declaration)
+		}
+		return propertiesBeingInitialized
+	}
+
+	fun getPropertiesRequiredToBeInitialized(): List<PropertyDeclaration> {
+		val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
+		for((declaration, usages) in variables) {
+			if(declaration !is PropertyDeclaration)
+				continue
+			if(usages.first().isRequiredToBeInitialized())
+				propertiesRequiredToBeInitialized.add(declaration)
+		}
+		return propertiesRequiredToBeInitialized
 	}
 
 	fun getReport(variableName: String): String? {

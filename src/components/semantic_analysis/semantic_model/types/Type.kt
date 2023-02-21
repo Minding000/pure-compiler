@@ -2,15 +2,12 @@ package components.semantic_analysis.semantic_model.types
 
 //import org.bytedeco.llvm.LLVM.LLVMTypeRef
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
-import components.semantic_analysis.semantic_model.definitions.TypeAlias
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
-import java.util.*
+import errors.internal.CompilerError
 
 abstract class Type(source: Element, isStatic: Boolean = false): Unit(source) {
 	val scope = InterfaceScope(this, isStatic)
@@ -51,7 +48,9 @@ abstract class Type(source: Element, isStatic: Boolean = false): Unit(source) {
 		return sourceType
 	}
 
-	open fun getAbstractMembers(): List<MemberDeclaration> = LinkedList()
+	open fun getAbstractMembers(): List<MemberDeclaration> = throw CompilerError("Tried to get abstract members of non-super type.")
+	open fun getPropertiesToBeInitialized(): List<PropertyDeclaration> =
+		throw CompilerError("Tried to get properties to be initialized of non-super type.")
 
 //	abstract override fun compile(context: BuildContext): LLVMTypeRef
 }

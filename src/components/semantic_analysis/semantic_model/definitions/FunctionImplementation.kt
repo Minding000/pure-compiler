@@ -17,7 +17,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 							 val scope: BlockScope, genericParameters: List<TypeDefinition>,
 							 val parameters: List<Parameter>, val body: ErrorHandlingContext?, returnType: Type?,
 							 override val isAbstract: Boolean = false, val isMutating: Boolean = false,
-							 val isNative: Boolean = false, val isOverriding: Boolean = false): Unit(source), MemberDeclaration {
+							 val isNative: Boolean = false, val isOverriding: Boolean = false): Unit(source), MemberDeclaration, Callable {
 	lateinit var parentFunction: Function
 	override val memberIdentifier: String
 		get() {
@@ -31,8 +31,8 @@ class FunctionImplementation(override val source: Element, override val parentDe
 	val signature: FunctionSignature = FunctionSignature(source, scope, genericParameters,
 		parameters.map { parameter -> parameter.type }, returnType, true)
 	var mightReturnValue = false
-	val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
-	val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
+	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
+	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 
 	init {
 		scope.unit = this
@@ -58,18 +58,9 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		val functionTracker = VariableTracker()
 		super.analyseDataFlow(linter, functionTracker)
 		functionTracker.calculateEndState()
-		for((declaration, usages) in functionTracker.variables) {
-			if(declaration !is PropertyDeclaration)
-				continue
-			if(usages.first().isRequiredToBeInitialized())
-				propertiesRequiredToBeInitialized.add(declaration)
-		}
-		for((declaration, end) in functionTracker.ends) {
-			if(declaration !is PropertyDeclaration)
-				continue
-			if(end.isPreviouslyInitialized())
-				propertiesBeingInitialized.add(declaration)
-		}
+		functionTracker.validate(linter)
+		propertiesBeingInitialized.addAll(functionTracker.getPropertiesBeingInitialized())
+		propertiesRequiredToBeInitialized.addAll(functionTracker.getPropertiesRequiredToBeInitialized())
 		tracker.addChild(parentFunction.name, functionTracker)
 	}
 

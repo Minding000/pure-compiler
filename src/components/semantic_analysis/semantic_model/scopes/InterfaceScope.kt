@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
+import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Instance
@@ -10,7 +11,7 @@ import components.semantic_analysis.semantic_model.values.Value
 import errors.user.SignatureResolutionAmbiguityError
 import java.util.*
 
-class InterfaceScope(private val type: Type, val isStatic: Boolean = false): Scope() {
+class InterfaceScope(val type: Type, val isStatic: Boolean = false): Scope() {
 	private val types = HashMap<String, TypeDefinition>()
 	private val values = HashMap<String, InterfaceMember>()
 	private val initializers = LinkedList<InitializerDefinition>()
@@ -109,6 +110,7 @@ class InterfaceScope(private val type: Type, val isStatic: Boolean = false): Sco
 	class MatchResult(val signature: InitializerDefinition, val definitionTypeSubstitutions: Map<TypeDefinition, Type>)
 
 	fun getAbstractMembers(): List<MemberDeclaration> = type.getAbstractMembers()
+	fun getPropertiesToBeInitialized(): List<PropertyDeclaration> = type.getPropertiesToBeInitialized()
 
 	override fun toString(): String {
 		return "InterfaceScope of $type"

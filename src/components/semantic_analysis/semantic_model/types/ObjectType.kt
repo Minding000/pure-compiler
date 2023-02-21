@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
+import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.definitions.TypeAlias
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -142,6 +143,10 @@ open class ObjectType(override val source: Element, val enclosingType: ObjectTyp
 
 	override fun getAbstractMembers(): List<MemberDeclaration> {
 		return definition?.scope?.getAbstractMembers() ?: LinkedList()
+	}
+
+	override fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {
+		return definition?.scope?.getPropertiesToBeInitialized() ?: LinkedList()
 	}
 
 	override fun equals(other: Any?): Boolean {

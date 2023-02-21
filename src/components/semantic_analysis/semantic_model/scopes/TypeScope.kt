@@ -67,6 +67,15 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 		return abstractMembers
 	}
 
+	fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {
+		val propertiesToBeInitialized = LinkedList<PropertyDeclaration>()
+		if(superScope != null)
+			propertiesToBeInitialized.addAll(superScope.getPropertiesToBeInitialized())
+		propertiesToBeInitialized.addAll(memberDeclarations.filterIsInstance<PropertyDeclaration>().filter { member ->
+			!member.isStatic && member.value == null })
+		return propertiesToBeInitialized
+	}
+
 	fun inheritSignatures() {
 		for((_, memberDeclaration) in interfaceMembers) {
 			memberDeclaration.superMember = superScope?.resolveValue(memberDeclaration.name)

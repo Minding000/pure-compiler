@@ -90,6 +90,34 @@ internal class Initialization {
 	}
 
 	@Test
+	fun `disallows assignments to constant properties`() {
+		val sourceCode =
+			"""
+				Glasses class {
+					val frameId: Int
+				}
+				val glasses = Glasses()
+				glasses.frameId = 4
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "'frameId' cannot be reassigned, because it is constant")
+	}
+
+	@Test
+	fun `disallows assignments to functions`() {
+		val sourceCode =
+			"""
+				Glasses class {
+					to clean()
+				}
+				val glasses = Glasses()
+				glasses.clean = 4
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "'clean' cannot be reassigned, because it is constant")
+	}
+
+	@Test
 	fun `disallows assignments to parameter variables`() {
 		val sourceCode =
 			"""
@@ -110,7 +138,6 @@ internal class Initialization {
 				Int class
 				Human class {
 					val numberOfArms: Int
-
 					to talk() {
 						numberOfArms = 3
 					}
@@ -127,7 +154,6 @@ internal class Initialization {
 				Int class
 				Human class {
 					val numberOfArms: Int
-
 					init {
 						numberOfArms = 3
 					}
@@ -141,13 +167,39 @@ internal class Initialization {
 	fun `disallows initialization of initialized constant properties inside of initializer`() {
 		val sourceCode =
 			"""
-				Int class
 				Human class {
 					val numberOfArms = 2
-
 					init {
 						numberOfArms = 3
 					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "'numberOfArms' cannot be reassigned, because it is constant")
+	}
+
+	@Test
+	fun `disallows initialization of initialized constant properties inside of initializer using self references`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms = 2
+					init {
+						this.numberOfArms = 3
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "'numberOfArms' cannot be reassigned, because it is constant")
+	}
+
+	@Test
+	fun `disallows initialization of initialized constant properties inside of initializer using property parameters`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms = 2
+					init(numberOfArms)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -232,6 +284,27 @@ internal class Initialization {
 			"""
 				Human class {
 					val numberOfArms: Int
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, """
+			The following properties have not been initialized by this initializer:
+			 - numberOfArms: Int
+		""".trimIndent())
+	}
+
+	@Test
+	fun `disallows initializers that don't initialize all super properties`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					init {
+						numberOfArms = 2
+					}
+				}
+				Magician class: Human {
+					init
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -361,16 +434,50 @@ internal class Initialization {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, """
-			The function 'printNumberOfArms()' relies on the following uninitialized properties:
+			The callable 'printNumberOfArms()' relies on the following uninitialized properties:
 			 - numberOfArms: Int
 		""".trimIndent())
 	}
 
-	//TODO also consider which properties of the super type get initialized by the super initializer
-	// - implement super keyword
-	// - super function calls
-	// - super operator calls
-	// - super initializer calls
-	//   - required
-	//   - no duplicate calls allowed
+	@Test
+	fun `allows initialization of classes with super classes`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					init {
+						numberOfArms = 2
+					}
+				}
+				Magician class: Human {
+					init {
+						super.init()
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "doesn't call the following super initializers")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "has already been called in this initializer")
+	}
+
+	@Test
+	fun `disallows duplicate super initializer calls`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					init {
+						numberOfArms = 2
+					}
+				}
+				Magician class: Human {
+					init {
+						super.init()
+						super.init()
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "'numberOfArms' cannot be reassigned, because it is constant")
+	}
 }

@@ -3,7 +3,6 @@ package components.semantic_analysis.semantic_model.operations
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.VariableUsage
-import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.SelfReference
@@ -46,17 +45,10 @@ class Assignment(override val source: AssignmentSyntaxTree, val targets: List<Va
 		for(target in targets) {
 			when(target) {
 				is VariableValue -> {
-					val usage = tracker.add(VariableUsage.Type.WRITE, target) ?: continue
-					val targetDeclaration = target.definition
-					if(targetDeclaration?.isConstant == true) {
-						if((targetDeclaration is PropertyDeclaration && !(tracker.isInitializer && targetDeclaration.value == null))
-							|| usage.isPreviouslyPossiblyInitialized())
-							linter.addMessage(target.source, "'${target.name}' cannot be reassigned, because it is constant.",
-								Message.Type.ERROR)
-					}
+					tracker.add(VariableUsage.Type.WRITE, target)
 					continue
 				}
-				is MemberAccess -> { //TODO is this tested?
+				is MemberAccess -> {
 					if(target.member !is VariableValue || target.member.definition?.isConstant == true)
 						linter.addMessage(target.source, "'${target.member}' cannot be reassigned, because it is constant.",
 							Message.Type.ERROR)

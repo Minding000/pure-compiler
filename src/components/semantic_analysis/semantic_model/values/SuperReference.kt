@@ -11,7 +11,6 @@ import messages.Message
 import components.syntax_parser.syntax_tree.literals.SuperReference as SuperReferenceSyntaxTree
 
 open class SuperReference(override val source: SuperReferenceSyntaxTree, private val specifier: ObjectType?): Value(source) {
-	var definition: TypeDefinition? = null
 
 	init {
 		addUnits(specifier)
@@ -32,7 +31,7 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, private
 				return
 			}
 		}
-		when(val parent = parent) {
+		val possibleTargetTypes = when(val parent = parent) {
 			is MemberAccess -> {
 				if(parent.member is InitializerReference) {
 					if(!isInInitializer()) {
@@ -41,10 +40,10 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, private
 						return
 					}
 				}
-				superTypes = parent.filterForPossibleTargetTypes(superTypes)
+				parent.filterForPossibleTargetTypes(superTypes)
 			}
 			is IndexAccess -> {
-				superTypes = parent.filterForPossibleTargetTypes(superTypes)
+				parent.filterForPossibleTargetTypes(superTypes)
 			}
 			else -> {
 				linter.addMessage(source, "Super references are not allowed outside of member and index accesses.",
@@ -52,17 +51,16 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, private
 				return
 			}
 		}
-		if(superTypes.isEmpty()) {
+		if(possibleTargetTypes.isEmpty()) {
 			linter.addMessage(source, "The specified member does not exist on any super type of this type definition.",
 				Message.Type.ERROR)
-		} else if(superTypes.size > 1) {
+		} else if(possibleTargetTypes.size > 1) {
 			var message = "The super reference is ambiguous. Possible targets are:"
-			for(superType in superTypes)
+			for(superType in possibleTargetTypes)
 				message += "\n - $superType"
 			linter.addMessage(source, message, Message.Type.ERROR)
 		} else {
-			val intendedType = superTypes.first()
-			definition = intendedType.definition
+			val intendedType = possibleTargetTypes.first()
 			type = intendedType
 		}
 	}

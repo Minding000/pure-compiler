@@ -21,6 +21,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 			parentTypeDefinition = value as? TypeDefinition
 		}
 	var parentTypeDefinition: TypeDefinition? = null
+	private var hasCircularInheritance = false
 	// Only used in base definition
 	private val specificDefinitions = HashMap<Map<TypeDefinition, Type>, TypeDefinition>()
 	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>, LinkedList<(TypeDefinition) -> kotlin.Unit>>()
@@ -101,6 +102,10 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 
 	override fun linkValues(linter: Linter, scope: Scope) {
 		super.linkValues(linter, this.scope)
+		if(superType != null && inheritsFrom(this)) {
+			hasCircularInheritance = true
+			linter.addMessage(superType.source, "Type definitions cannot inherit from themself.", Message.Type.ERROR)
+		}
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
@@ -108,22 +113,18 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 			if(member is FunctionImplementation)
 				member.analyseDataFlow(linter, tracker)
 		}
-		for(initializer in scope.initializers)
-			initializer.analyseDataFlow(linter, tracker)
+		if(!hasCircularInheritance) {
+			for(initializer in scope.initializers)
+				initializer.analyseDataFlow(linter, tracker)
+		}
 	}
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
 		if(isBound && parentTypeDefinition == null)
 			linter.addMessage(source, "Can't bind type definition, because it doesn't have a parent.", Message.Type.WARNING)
-		if(superType != null) {
-			if(inheritsFrom(this)) {
-				linter.addMessage(superType.source, "Type definitions cannot inherit from themself.", Message.Type.ERROR)
-				return
-			}
-			if((this as? Class)?.isAbstract != true)
+			if((this as? Class)?.isAbstract != true && !hasCircularInheritance)
 				scope.ensureAbstractSuperMembersImplemented(linter)
-		}
 	}
 
 	private fun inheritsFrom(definition: TypeDefinition): Boolean {
