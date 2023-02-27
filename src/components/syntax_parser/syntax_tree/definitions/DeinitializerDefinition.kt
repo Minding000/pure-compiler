@@ -21,7 +21,7 @@ class DeinitializerDefinition(start: Position, end: Position, private val body: 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticDeinitializerDefinitionModel {
 		parent?.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
-		return SemanticDeinitializerDefinitionModel(this, body?.concretize(linter, scope), isNative)
+		return SemanticDeinitializerDefinitionModel(this, scope, body?.concretize(linter, scope), isNative)
 	}
 
 	override fun toString(): String {

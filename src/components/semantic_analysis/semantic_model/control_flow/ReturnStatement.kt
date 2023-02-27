@@ -8,7 +8,7 @@ import components.semantic_analysis.semantic_model.values.Value
 import messages.Message
 import components.syntax_parser.syntax_tree.control_flow.ReturnStatement as ReturnStatementSyntaxTree
 
-class ReturnStatement(override val source: ReturnStatementSyntaxTree, val value: Value?): Value(source) {
+class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Scope, val value: Value?): Value(source, scope) {
 	var targetFunction: FunctionImplementation? = null
 	override val isInterruptingExecution = true
 
@@ -16,8 +16,8 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, val value:
 		addUnits(value)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
 		val surroundingFunction = scope.getSurroundingFunction()
 		if(surroundingFunction == null) {
 			linter.addMessage(source, "Return statements are not allowed outside of functions.", Message.Type.ERROR)

@@ -10,8 +10,8 @@ import components.semantic_analysis.semantic_model.values.*
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.Cast as CastSyntaxTree
 
-class Cast(override val source: CastSyntaxTree, val value: Value, val variableDeclaration: ValueDeclaration?,
-		   val referenceType: Type, val operator: Operator): Value(source) {
+class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, val variableDeclaration: ValueDeclaration?,
+		   val referenceType: Type, val operator: Operator): Value(source, scope) {
 	override var isInterruptingExecution = false
 	private val isCastAlwaysSuccessful: Boolean
 		get() = (value.staticValue?.type ?: value.type)?.isAssignableTo(referenceType) ?: false
@@ -22,27 +22,27 @@ class Cast(override val source: CastSyntaxTree, val value: Value, val variableDe
 		addUnits(value, variableDeclaration)
 		type = if(operator.returnsBoolean) {
 			addUnits(referenceType)
-			LiteralType(source, Linter.SpecialType.BOOLEAN)
+			LiteralType(source, scope, Linter.SpecialType.BOOLEAN)
 		} else if(operator == Operator.OPTIONAL_CAST) {
-			OptionalType(source, referenceType)
+			OptionalType(source, scope, referenceType)
 		} else {
 			referenceType
 		}
 		addUnits(type)
 	}
 
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		super.linkTypes(linter, scope)
+	override fun linkTypes(linter: Linter) {
+		super.linkTypes(linter)
 		variableDeclaration?.type = referenceType
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
 		if(operator.returnsBoolean) {
 			if(isCastAlwaysSuccessful)
-				staticValue = BooleanLiteral(source, operator == Operator.CAST_CONDITION, linter)
+				staticValue = BooleanLiteral(source, scope, operator == Operator.CAST_CONDITION, linter)
 			else if(isCastNeverSuccessful)
-				staticValue = BooleanLiteral(source, operator == Operator.NEGATED_CAST_CONDITION, linter)
+				staticValue = BooleanLiteral(source, scope, operator == Operator.NEGATED_CAST_CONDITION, linter)
 		} else if(operator == Operator.SAFE_CAST) {
 			staticValue = value.staticValue
 		} else if(operator == Operator.THROWING_CAST) {
@@ -52,7 +52,7 @@ class Cast(override val source: CastSyntaxTree, val value: Value, val variableDe
 			if(isCastAlwaysSuccessful)
 				staticValue = value.staticValue
 			else if(isCastNeverSuccessful)
-				staticValue = NullLiteral(source, linter)
+				staticValue = NullLiteral(source, scope, linter)
 		}
 	}
 

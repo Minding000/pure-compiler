@@ -4,8 +4,6 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
-import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.OrUnionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
@@ -14,9 +12,9 @@ import messages.Message
 import util.stringifyTypes
 import java.util.*
 
-class InitializerDefinition(override val source: Element, override val parentDefinition: TypeDefinition, val scope: BlockScope,
+class InitializerDefinition(override val source: Element, override val parentDefinition: TypeDefinition, override val scope: BlockScope,
 							val genericParameters: List<TypeDefinition> = listOf(), val parameters: List<Parameter> = listOf(),
-							val body: Unit? = null, val isNative: Boolean = false): Unit(source), MemberDeclaration, Callable {
+							val body: Unit? = null, val isNative: Boolean = false): Unit(source, scope), MemberDeclaration, Callable {
 	override val memberIdentifier
 		get() = toString()
 	override val isAbstract = false
@@ -99,7 +97,7 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		}
 		if(inferredTypes.isEmpty())
 			return null
-		return OrUnionType(source, inferredTypes).simplified()
+		return OrUnionType(source, scope, inferredTypes).simplified()
 	}
 
 	fun isMoreSpecificThan(otherInitializerDefinition: InitializerDefinition): Boolean {
@@ -125,17 +123,9 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		return true
 	}
 
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		super.linkTypes(linter, this.scope)
-	}
-
-	override fun linkPropertyParameters(linter: Linter, scope: MutableScope) {
-		super.linkPropertyParameters(linter, this.scope)
-		scope.declareInitializer(linter, this)
-	}
-
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, this.scope)
+	override fun linkPropertyParameters(linter: Linter) {
+		super.linkPropertyParameters(linter)
+		parentDefinition.scope.declareInitializer(linter, this)
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {

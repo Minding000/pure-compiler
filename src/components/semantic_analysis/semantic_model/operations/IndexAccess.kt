@@ -9,8 +9,8 @@ import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
 import components.syntax_parser.syntax_tree.access.IndexAccess as IndexAccessSyntaxTree
 
-class IndexAccess(override val source: IndexAccessSyntaxTree, val target: Value, val typeParameters: List<Type>, val indices: List<Value>):
-	Value(source) {
+class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val target: Value, val typeParameters: List<Type>,
+				  val indices: List<Value>): Value(source, scope) {
 	var sourceExpression: Value? = null
 
 	init {
@@ -18,15 +18,15 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, val target: Value,
 		addUnits(typeParameters, indices)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
+	override fun linkValues(linter: Linter) {
 		for(unit in units) {
 			if(unit !== target)
-				unit.linkValues(linter, scope)
+				unit.linkValues(linter)
 		}
-		target.linkValues(linter, scope)
+		target.linkValues(linter)
 		target.type?.let { targetType ->
 			try {
-				val definition = targetType.scope.resolveIndexOperator(typeParameters, indices, sourceExpression)
+				val definition = targetType.interfaceScope.resolveIndexOperator(typeParameters, indices, sourceExpression)
 				if(definition == null) {
 					val name = "${target.type}[${indices.joinToString { index -> index.type.toString() }}]"
 					linter.addMessage(source, "Operator '$name(${sourceExpression?.type ?: ""})' hasn't been declared yet.",
@@ -58,7 +58,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, val target: Value,
 
 	fun filterForPossibleTargetTypes(availableTypes: List<ObjectType>): List<ObjectType> {
 		return availableTypes.filter { availableType ->
-			availableType.scope.resolveIndexOperator(typeParameters, indices, sourceExpression) != null
+			availableType.interfaceScope.resolveIndexOperator(typeParameters, indices, sourceExpression) != null
 		}
 	}
 }

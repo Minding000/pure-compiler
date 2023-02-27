@@ -9,22 +9,17 @@ import components.semantic_analysis.semantic_model.values.Value
 import messages.Message
 import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclaration as ComputedPropertySyntaxTree
 
-class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, name: String, type: Type?, isConstant: Boolean,
-								  isOverriding: Boolean, val getExpression: Value?, val setStatement: Unit?):
-	InterfaceMember(source, name, type, null, false, false, isConstant, false, isOverriding) {
+class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, scope: Scope, name: String, type: Type?,
+								  isConstant: Boolean, isOverriding: Boolean, val getExpression: Value?, val setStatement: Unit?):
+	InterfaceMember(source, scope, name, type, null, false, false, isConstant, false, isOverriding) {
 
 	init {
 		addUnits(getExpression, setStatement)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ComputedPropertyDeclaration {
-		return ComputedPropertyDeclaration(source, name, type?.withTypeSubstitutions(typeSubstitutions), isConstant, isOverriding,
+		return ComputedPropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), isConstant, isOverriding,
 			getExpression, setStatement)
-	}
-
-	override fun linkValues(linter: Linter, scope: Scope) {
-		for(unit in units)
-			unit.linkValues(linter, scope)
 	}
 
 	override fun validate(linter: Linter) {

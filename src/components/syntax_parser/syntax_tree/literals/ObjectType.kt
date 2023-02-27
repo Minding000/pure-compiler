@@ -11,7 +11,7 @@ class ObjectType(private val enclosingType: ObjectType?, private val typeList: T
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticObjectTypeModel {
 		val typeList = typeList?.concretizeTypes(linter, scope) ?: listOf()
-		return SemanticObjectTypeModel(this, enclosingType?.concretize(linter, scope), typeList, identifier.getValue())
+		return SemanticObjectTypeModel(this, scope, enclosingType?.concretize(linter, scope), typeList, identifier.getValue())
 	}
 
 	override fun toString(): String {

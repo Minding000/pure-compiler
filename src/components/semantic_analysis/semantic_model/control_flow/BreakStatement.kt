@@ -7,12 +7,12 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import messages.Message
 import components.syntax_parser.syntax_tree.control_flow.BreakStatement as BreakStatementSyntaxTree
 
-class BreakStatement(override val source: BreakStatementSyntaxTree): Unit(source) {
+class BreakStatement(override val source: BreakStatementSyntaxTree, scope: Scope): Unit(source, scope) {
 	var targetLoop: LoopStatement? = null
 	override val isInterruptingExecution = true
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
 		val surroundingLoop = scope.getSurroundingLoop()
 		if(surroundingLoop == null) {
 			linter.addMessage(source, "Break statements are not allowed outside of loops.", Message.Type.ERROR)

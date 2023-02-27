@@ -27,12 +27,12 @@ class Linter {
 		logger.addPhase("Type linking")
 		activePhase = Phase.TYPE_LINKING
 		semanticProgramModel.linkTypes(this)
-		logger.addPhase("Property parameter linking")
-		activePhase = Phase.PROPERTY_PARAMETER_LINKING
-		semanticProgramModel.linkPropertyParameters(this)
 		logger.addPhase("Resolve generics")
 		activePhase = Phase.RESOLVE_GENERICS
 		semanticProgramModel.resolveGenerics(this)
+		logger.addPhase("Property parameter linking")
+		activePhase = Phase.PROPERTY_PARAMETER_LINKING
+		semanticProgramModel.linkPropertyParameters(this)
 		logger.addPhase("Value linking")
 		activePhase = Phase.VALUE_LINKING
 		semanticProgramModel.linkValues(this)

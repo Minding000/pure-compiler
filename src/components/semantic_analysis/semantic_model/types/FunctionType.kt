@@ -10,7 +10,7 @@ import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
 import java.util.*
 
-class FunctionType(override val source: Element): ObjectType(source, Linter.SpecialType.FUNCTION.className) {
+class FunctionType(override val source: Element, scope: Scope): ObjectType(source, scope, Linter.SpecialType.FUNCTION.className) {
 	private val signatures = LinkedList<FunctionSignature>()
 	var superFunctionType: FunctionType? = null
 		set(value) {
@@ -27,13 +27,14 @@ class FunctionType(override val source: Element): ObjectType(source, Linter.Spec
 			}
 		}
 
-	constructor(source: Element, signature: FunctionSignature): this(source) {
+	constructor(source: Element, scope: Scope, signature: FunctionSignature): this(source, scope) {
 		addSignature(signature)
 	}
 
-	override fun linkTypes(linter: Linter, scope: Scope) {
+	override fun linkTypes(linter: Linter) {
+		interfaceScope.type = this
 		for(unit in units)
-			unit.linkTypes(linter, scope)
+			unit.linkTypes(linter)
 		definition = Linter.SpecialType.FUNCTION.scope?.resolveType(name)
 		if(definition == null)
 			linter.addMessage(source, "Literal type '$name' hasn't been declared yet.", Message.Type.ERROR)
@@ -101,7 +102,7 @@ class FunctionType(override val source: Element): ObjectType(source, Linter.Spec
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type {
-		val specificFunctionType = FunctionType(source)
+		val specificFunctionType = FunctionType(source, scope)
 		for(signature in signatures)
 			specificFunctionType.signatures.add(signature.withTypeSubstitutions(typeSubstitutions))
 		return specificFunctionType

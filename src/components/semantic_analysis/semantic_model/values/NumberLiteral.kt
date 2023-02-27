@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.LiteralType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
@@ -8,15 +9,15 @@ import components.syntax_parser.syntax_tree.general.Element
 import util.isRepresentedAsAnInteger
 import java.math.BigDecimal
 
-class NumberLiteral(override val source: Element, val value: BigDecimal): LiteralValue(source) {
+class NumberLiteral(override val source: Element, scope: Scope, val value: BigDecimal): LiteralValue(source, scope) {
 	var isInteger = value.isRepresentedAsAnInteger()
 
-	constructor(source: Element, value: BigDecimal, linter: Linter): this(source, value) {
+	constructor(source: Element, scope: Scope, value: BigDecimal, linter: Linter): this(source, scope, value) {
 		(type as? LiteralType)?.linkTypes(linter)
 	}
 
 	init {
-		type = LiteralType(source, if(isInteger) Linter.SpecialType.INTEGER else Linter.SpecialType.FLOAT)
+		type = LiteralType(source, scope, if(isInteger) Linter.SpecialType.INTEGER else Linter.SpecialType.FLOAT)
 		addUnits(type)
 	}
 

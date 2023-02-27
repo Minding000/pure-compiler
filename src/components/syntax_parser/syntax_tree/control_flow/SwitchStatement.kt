@@ -18,7 +18,8 @@ class SwitchStatement(private val subject: ValueElement, private val cases: Link
 		val cases = LinkedList<SemanticCaseModel>()
 		for(case in this.cases)
 			cases.add(case.concretize(linter, scope))
-		return SemanticSwitchStatementModel(this, subject.concretize(linter, scope), cases, elseBranch?.concretize(linter, scope))
+		return SemanticSwitchStatementModel(this, scope, subject.concretize(linter, scope), cases,
+			elseBranch?.concretize(linter, scope))
 	}
 
 	override fun toString(): String {

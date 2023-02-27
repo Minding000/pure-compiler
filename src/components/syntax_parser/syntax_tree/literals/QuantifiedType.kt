@@ -13,9 +13,9 @@ class QuantifiedType(private val baseType: TypeElement, private val hasDynamicQu
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticTypeModel {
 		var type = baseType.concretize(linter, scope)
 		if(isOptional)
-			type = SemanticOptionalTypeModel(this, type)
+			type = SemanticOptionalTypeModel(this, scope, type)
 		if(hasDynamicQuantity)
-			type = SemanticPluralTypeModel(this, type)
+			type = SemanticPluralTypeModel(this, scope, type)
 		return type
 	}
 

@@ -26,9 +26,9 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 		targetScope.declareType(linter, this)
 		val type = ObjectType(this)
 		val valueDeclaration = if(targetScope is TypeScope)
-			PropertyDeclaration(source, name, type, null, !isBound)
+			PropertyDeclaration(source, targetScope, name, type, null, !isBound)
 		else
-			LocalVariableDeclaration(source, name, type)
+			LocalVariableDeclaration(source, targetScope, name, type)
 		targetScope.declareValue(linter, valueDeclaration)
 		addUnits(valueDeclaration)
 	}

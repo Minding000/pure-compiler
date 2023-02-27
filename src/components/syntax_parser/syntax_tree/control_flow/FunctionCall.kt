@@ -15,7 +15,7 @@ class FunctionCall(private val functionReference: ValueElement, private val type
 				   private val valueParameters: List<ValueElement>, end: Position): ValueElement(functionReference.start, end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticFunctionCallModel {
-		return SemanticFunctionCallModel(this, functionReference.concretize(linter, scope),
+		return SemanticFunctionCallModel(this, scope, functionReference.concretize(linter, scope),
 			typeParameters.concretizeTypes(linter, scope), valueParameters.concretizeValues(linter, scope))
 	}
 

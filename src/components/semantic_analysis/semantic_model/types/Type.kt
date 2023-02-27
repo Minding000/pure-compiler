@@ -5,13 +5,18 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
+import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
 import errors.internal.CompilerError
 
-abstract class Type(source: Element, isStatic: Boolean = false): Unit(source) {
-	val scope = InterfaceScope(this, isStatic)
+abstract class Type(source: Element, scope: Scope, isStatic: Boolean = false): Unit(source, scope) {
 	//var llvmType: LLVMTypeRef? = null
+	val interfaceScope = InterfaceScope(isStatic)
+
+	init {
+		interfaceScope.type = this
+	}
 
 	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type
 

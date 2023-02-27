@@ -8,8 +8,8 @@ import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.control_flow.IfStatement as IfStatementSyntaxTree
 
-class IfStatement(override val source: IfStatementSyntaxTree, val condition: Value, val positiveBranch: Unit,
-				  val negativeBranch: Unit?): Unit(source) {
+class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val condition: Value, val positiveBranch: Unit,
+				  val negativeBranch: Unit?): Unit(source, scope) {
 	override var isInterruptingExecution = false
 	private var isConditionAlwaysTrue = false
 	private var isConditionAlwaysFalse = false
@@ -18,8 +18,8 @@ class IfStatement(override val source: IfStatementSyntaxTree, val condition: Val
 		addUnits(condition, positiveBranch, negativeBranch)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
 		(condition.staticValue as? BooleanLiteral)?.value.let { staticResult ->
 			isConditionAlwaysTrue = staticResult == true
 			isConditionAlwaysFalse = staticResult == false

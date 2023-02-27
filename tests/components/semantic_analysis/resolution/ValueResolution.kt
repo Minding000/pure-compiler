@@ -1,5 +1,6 @@
 package components.semantic_analysis.resolution
 
+import components.semantic_analysis.semantic_model.definitions.Parameter
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
@@ -48,6 +49,59 @@ internal class ValueResolution {
 	}
 
 	@Test
+	fun `infers type of property set to property with inferred type`() {
+		val sourceCode =
+			"""
+				Int class
+				MyHood object {
+					val size = DefaultHouse.livingAreaInSquareMeters
+				}
+				DefaultHouse object {
+					val livingAreaInSquareMeters = Int()
+				}
+				MyHood.size
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "size" }
+		assertEquals("Int", variableValue?.type.toString())
+	}
+
+	@Test
+	fun `infers type of property parameter set to property with inferred type`() {
+		val sourceCode =
+			"""
+				Int class
+				House class {
+					var size = DefaultHouse.livingAreaInSquareMeters
+					init(size)
+				}
+				DefaultHouse object {
+					val livingAreaInSquareMeters: Int = Int()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val parameter = lintResult.find<Parameter>()
+		assertEquals("Int", parameter?.type.toString())
+	}
+
+	@Test
+	fun `disallows circular type inference`() {
+		val sourceCode =
+			"""
+				House object {
+					val livingAreaInSquareMeters = Flat.livingAreaInSquareMeters
+				}
+				Flat object {
+					val livingAreaInSquareMeters = House.livingAreaInSquareMeters
+				}
+				House.livingAreaInSquareMeters
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"'livingAreaInSquareMeters' has no value, because it's part of a circular assignment")
+	}
+
+	@Test
 	fun `resolves parameters`() {
 		val sourceCode =
 			"""
@@ -74,7 +128,7 @@ internal class ValueResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val member = variableValue?.type?.scope?.resolveValue("isOpen")
+		val member = variableValue?.type?.interfaceScope?.resolveValue("isOpen")
 		assertNotNull(member)
 	}
 
@@ -93,7 +147,7 @@ internal class ValueResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val member = variableValue?.type?.scope?.resolveValue("isOpen")
+		val member = variableValue?.type?.interfaceScope?.resolveValue("isOpen")
 		assertIs<PropertyDeclaration>(member)
 		assertEquals("no", member.value?.source?.getValue())
 	}

@@ -5,7 +5,6 @@ import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
-import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.Operator
@@ -13,11 +12,11 @@ import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import java.util.*
 
-class FunctionImplementation(override val source: Element, override val parentDefinition: TypeDefinition?,
-							 val scope: BlockScope, genericParameters: List<TypeDefinition>,
-							 val parameters: List<Parameter>, val body: ErrorHandlingContext?, returnType: Type?,
-							 override val isAbstract: Boolean = false, val isMutating: Boolean = false,
-							 val isNative: Boolean = false, val isOverriding: Boolean = false): Unit(source), MemberDeclaration, Callable {
+class FunctionImplementation(override val source: Element, override val parentDefinition: TypeDefinition?, override val scope: BlockScope,
+							 genericParameters: List<TypeDefinition>, val parameters: List<Parameter>, val body: ErrorHandlingContext?,
+							 returnType: Type?, override val isAbstract: Boolean = false, val isMutating: Boolean = false,
+							 val isNative: Boolean = false, val isOverriding: Boolean = false):
+	Unit(source, scope), MemberDeclaration, Callable {
 	lateinit var parentFunction: Function
 	override val memberIdentifier: String
 		get() {
@@ -42,14 +41,6 @@ class FunctionImplementation(override val source: Element, override val parentDe
 
 	fun setParent(function: Function) {
 		parentFunction = function
-	}
-
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		super.linkTypes(linter, this.scope)
-	}
-
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, this.scope)
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {

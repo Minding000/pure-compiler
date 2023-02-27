@@ -2,20 +2,21 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.definitions.TypeParameter as TypeParameterSyntaxTree
 
-class TypeParameter(override val source: TypeParameterSyntaxTree, val mode: Mode, val baseType: Type): Type(source) {
+class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, val mode: Mode, val baseType: Type): Type(source, scope) {
 
 	init {
 		addUnits(baseType)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeParameter {
-		return TypeParameter(source, mode, baseType.withTypeSubstitutions(typeSubstitutions))
+		return TypeParameter(source, scope, mode, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun simplified(): Type {
-		return TypeParameter(source, mode, baseType.simplified())
+		return TypeParameter(source, scope, mode, baseType.simplified())
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

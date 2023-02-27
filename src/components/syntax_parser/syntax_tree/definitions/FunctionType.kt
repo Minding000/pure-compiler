@@ -3,10 +3,10 @@ package components.syntax_parser.syntax_tree.definitions
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.scopes.BlockScope
-import components.semantic_analysis.semantic_model.types.FunctionType as SemanticFunctionTypeModel
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeElement
 import source_structure.Position
+import components.semantic_analysis.semantic_model.types.FunctionType as SemanticFunctionTypeModel
 
 class FunctionType(start: Position, private val parameterList: ParameterTypeList?,
 				   private val returnType: TypeElement?, end: Position): TypeElement(start, end) {
@@ -16,7 +16,7 @@ class FunctionType(start: Position, private val parameterList: ParameterTypeList
 		val parameters = parameterList?.concretizeTypes(linter, functionScope) ?: listOf()
 		val signature = FunctionSignature(this, functionScope, listOf(), parameters,
 			returnType?.concretize(linter, functionScope))
-		return SemanticFunctionTypeModel(this, signature)
+		return SemanticFunctionTypeModel(this, scope, signature)
 	}
 
 	override fun toString(): String {

@@ -14,7 +14,8 @@ import components.semantic_analysis.semantic_model.values.Instance as SemanticIn
 class Instance(val identifier: Identifier, val parameters: List<ValueElement>, end: Position): Element(identifier.start, end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticInstanceModel {
-		val instance = SemanticInstanceModel(this, identifier.concretize(linter, scope), parameters.concretizeValues(linter, scope))
+		val instance = SemanticInstanceModel(this, scope, identifier.concretize(linter, scope),
+			parameters.concretizeValues(linter, scope))
 		scope.declareValue(linter, instance)
 		return instance
 	}

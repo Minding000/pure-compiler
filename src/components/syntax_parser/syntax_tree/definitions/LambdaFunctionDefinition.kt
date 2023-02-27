@@ -19,7 +19,7 @@ class LambdaFunctionDefinition(start: Position, private val parameterList: Param
 		val returnType = returnType?.concretize(linter, functionScope)
 		val implementation = SemanticFunctionImplementationModel(this, null, functionScope, listOf(), parameters,
 			body.concretize(linter, functionScope), returnType)
-		val function = SemanticFunctionModel(this)
+		val function = SemanticFunctionModel(this, scope)
 		function.addImplementation(implementation)
 		return function
 	}

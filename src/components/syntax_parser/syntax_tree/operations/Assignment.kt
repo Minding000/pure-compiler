@@ -12,7 +12,7 @@ import components.semantic_analysis.semantic_model.operations.Assignment as Sema
 class Assignment(private val targets: List<ValueElement>, val source: ValueElement): Element(targets.first().start, source.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticAssignmentModel {
-		return SemanticAssignmentModel(this, targets.concretizeValues(linter, scope), source.concretize(linter, scope))
+		return SemanticAssignmentModel(this, scope, targets.concretizeValues(linter, scope), source.concretize(linter, scope))
 	}
 
 	override fun toString(): String {

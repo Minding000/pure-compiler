@@ -7,14 +7,15 @@ import components.semantic_analysis.semantic_model.types.ObjectType
 import messages.Message
 import components.syntax_parser.syntax_tree.literals.SelfReference as SelfReferenceSyntaxTree
 
-open class SelfReference(override val source: SelfReferenceSyntaxTree, private val specifier: ObjectType?): Value(source) {
+open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Scope, private val specifier: ObjectType?):
+	Value(source, scope) {
 	var definition: TypeDefinition? = null
 
 	init {
 		addUnits(specifier)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
+	override fun linkValues(linter: Linter) {
 		val surroundingDefinition = scope.getSurroundingDefinition()
 		if(surroundingDefinition == null) {
 			linter.addMessage(source, "Self references are not allowed outside of type definitions.", Message.Type.ERROR)

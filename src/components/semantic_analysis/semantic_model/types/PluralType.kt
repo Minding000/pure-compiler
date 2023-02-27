@@ -1,20 +1,21 @@
 package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
 
-class PluralType(override val source: Element, val baseType: Type): Type(source) {
+class PluralType(override val source: Element, scope: Scope, val baseType: Type): Type(source, scope) {
 
 	init {
 		addUnits(baseType)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): PluralType {
-		return PluralType(source, baseType.withTypeSubstitutions(typeSubstitutions))
+		return PluralType(source, scope, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun simplified(): Type {
-		return PluralType(source, baseType.simplified())
+		return PluralType(source, scope, baseType.simplified())
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

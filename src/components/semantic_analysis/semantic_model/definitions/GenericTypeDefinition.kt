@@ -13,7 +13,6 @@ class GenericTypeDefinition(override val source: ParameterSyntaxTree, name: Stri
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): GenericTypeDefinition {
 		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
-		return GenericTypeDefinition(source, name,
-			scope.withTypeSubstitutions(typeSubstitutions, superType?.scope), superType)
+		return GenericTypeDefinition(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.interfaceScope), superType)
 	}
 }

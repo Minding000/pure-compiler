@@ -9,25 +9,22 @@ import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
 import components.syntax_parser.syntax_tree.definitions.TypeSpecification as TypeSpecificationSyntaxTree
 
-class TypeSpecification(override val source: TypeSpecificationSyntaxTree, val typeParameters: List<Type>, val baseValue: VariableValue):
-	Value(source) {
+class TypeSpecification(override val source: TypeSpecificationSyntaxTree, scope: Scope, val typeParameters: List<Type>,
+						val baseValue: VariableValue): Value(source, scope) {
 
 	init {
 		addUnits(baseValue)
 		addUnits(typeParameters)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
 		val baseType = baseValue.type
 		if(baseType !is StaticType) {
-			linter.addMessage(source, "Type specifications can only be used on initializers.",
-				Message.Type.ERROR)
+			linter.addMessage(source, "Type specifications can only be used on initializers.", Message.Type.ERROR)
 			return
 		}
-		baseType.withTypeParameters(typeParameters) { specificType ->
-			type = specificType
-		}
+		baseType.withTypeParameters(typeParameters) { specificType -> type = specificType }
 	}
 
 	override fun toString(): String {

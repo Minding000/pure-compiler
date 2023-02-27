@@ -9,8 +9,8 @@ import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import java.util.*
 
-open class Function(source: Element, val name: String = "<anonymous function>", val functionType: FunctionType = FunctionType(source)):
-	Value(source, functionType) {
+open class Function(source: Element, scope: Scope, val name: String = "<anonymous function>",
+					val functionType: FunctionType = FunctionType(source, scope)): Value(source, scope, functionType) {
 	open val memberType = "function"
 	protected val implementations = LinkedList<FunctionImplementation>()
 	val isAbstract: Boolean
@@ -19,7 +19,6 @@ open class Function(source: Element, val name: String = "<anonymous function>", 
 		}
 
 	init {
-		staticValue = this
 		addUnits(functionType)
 		addUnits(implementations)
 	}
@@ -45,9 +44,14 @@ open class Function(source: Element, val name: String = "<anonymous function>", 
 		functionType.removeSignature(implementation.signature)
 	}
 
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		super.linkTypes(linter, scope)
+	override fun linkTypes(linter: Linter) {
+		super.linkTypes(linter)
 		ensureUniqueSignatures(linter)
+	}
+
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
+		staticValue = this
 	}
 
 	override fun validate(linter: Linter) {

@@ -15,9 +15,9 @@ class UnionType(private val left: TypeElement, private val right: TypeElement, p
 		val types = LinkedList<SemanticTypeModel>()
 		addTypes(linter, scope, types, this)
 		return if(mode == Mode.AND)
-			SemanticAndUnionTypeModel(this, types)
+			SemanticAndUnionTypeModel(this, scope, types)
 		else
-			SemanticOrUnionTypeModel(this, types)
+			SemanticOrUnionTypeModel(this, scope, types)
 	}
 
 	private fun addTypes(linter: Linter, scope: MutableScope, types: LinkedList<SemanticTypeModel>, type: TypeElement) {

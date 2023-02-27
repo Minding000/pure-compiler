@@ -26,17 +26,18 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 		val targetScope = parentTypeDefinition?.scope ?: parentScope
 		targetScope.declareType(linter, this)
 		val staticType = StaticType(this)
+		addUnits(staticType)
 		val valueDeclaration = if(targetScope is TypeScope)
-			PropertyDeclaration(source, name, staticType, null, !isBound, isAbstract)
+			PropertyDeclaration(source, targetScope, name, staticType, null, !isBound, isAbstract)
 		else
-			LocalVariableDeclaration(source, name, staticType)
+			LocalVariableDeclaration(source, targetScope, name, staticType)
 		targetScope.declareValue(linter, valueDeclaration)
 		addUnits(valueDeclaration)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Class {
 		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
-		return Class(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.scope), explicitParentType, superType,
+		return Class(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.interfaceScope), explicitParentType, superType,
 			isAbstract, isBound, isNative, isMutable)
 	}
 

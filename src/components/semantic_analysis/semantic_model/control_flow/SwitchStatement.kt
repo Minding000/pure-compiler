@@ -6,11 +6,11 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.semantic_analysis.semantic_model.values.Value
 import messages.Message
+import java.util.*
 import components.syntax_parser.syntax_tree.control_flow.SwitchStatement as SwitchStatementSyntaxTree
-import java.util.LinkedList
 
-class SwitchStatement(override val source: SwitchStatementSyntaxTree, val subject: Value, val cases: List<Case>,
-					  val elseBranch: Unit?): Unit(source) {
+class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Scope, val subject: Value, val cases: List<Case>,
+					  val elseBranch: Unit?): Unit(source, scope) {
 	override var isInterruptingExecution = false
 
 	init {
@@ -18,8 +18,8 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, val subjec
 		addUnits(cases)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
 		for(case in cases) {
 			if(case.condition.isAssignableTo(subject.type)) {
 				case.condition.setInferredType(subject.type)

@@ -25,16 +25,18 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 		val targetScope = parentTypeDefinition?.scope ?: parentScope
 		targetScope.declareType(linter, this)
 		val staticType = StaticType(this)
+		addUnits(staticType)
 		val valueDeclaration = if(targetScope is TypeScope)
-			PropertyDeclaration(source, name, staticType, null, !isBound)
+			PropertyDeclaration(source, targetScope, name, staticType, null, !isBound)
 		else
-			LocalVariableDeclaration(source, name, staticType)
+			LocalVariableDeclaration(source, targetScope, name, staticType)
 		targetScope.declareValue(linter, valueDeclaration)
 		addUnits(valueDeclaration)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Enum {
 		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
-		return Enum(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.scope), explicitParentType, superType, isBound)
+		return Enum(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.interfaceScope), explicitParentType, superType,
+			isBound)
 	}
 }

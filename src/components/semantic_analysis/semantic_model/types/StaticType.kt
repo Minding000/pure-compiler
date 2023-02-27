@@ -4,7 +4,7 @@ import components.semantic_analysis.semantic_model.definitions.InitializerDefini
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 
-class StaticType(val definition: TypeDefinition): Type(definition.source, true) {
+class StaticType(val definition: TypeDefinition): Type(definition.source, definition.scope, true) {
 
 	init {
 		definition.scope.subscribe(this)
@@ -29,15 +29,15 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, true) 
 	}
 
 	override fun onNewType(type: TypeDefinition) {
-		this.scope.addType(type)
+		this.interfaceScope.addType(type)
 	}
 
 	override fun onNewValue(value: InterfaceMember) {
-		this.scope.addValue(value)
+		this.interfaceScope.addValue(value)
 	}
 
 	override fun onNewInitializer(initializer: InitializerDefinition) {
-		this.scope.addInitializer(initializer)
+		this.interfaceScope.addInitializer(initializer)
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

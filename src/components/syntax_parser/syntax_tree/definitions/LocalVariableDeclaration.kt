@@ -19,14 +19,9 @@ class LocalVariableDeclaration(private val identifier: Identifier, private val t
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticLocalVariableDeclarationModel {
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val isMutable = !parent.containsModifier(WordAtom.IMMUTABLE)
-		val variableDeclaration = SemanticLocalVariableDeclarationModel(
-			this,
-			identifier.getValue(),
-			(type ?: parent.type)?.concretize(linter, scope),
-			(value ?: parent.value)?.concretize(linter, scope),
-			parent.isConstant,
-			isMutable
-		)
+		val variableDeclaration = SemanticLocalVariableDeclarationModel(this, scope, identifier.getValue(),
+			(type ?: parent.type)?.concretize(linter, scope), (value ?: parent.value)?.concretize(linter, scope), parent.isConstant,
+			isMutable)
 		scope.declareValue(linter, variableDeclaration)
 		return variableDeclaration
 	}

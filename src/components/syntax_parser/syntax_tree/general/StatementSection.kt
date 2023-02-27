@@ -14,7 +14,8 @@ class StatementSection(private val mainBlock: StatementBlock, val handleBlocks: 
 		val handleBlocks = LinkedList<SemanticHandleBlockModel>()
 		for(handleBlock in this.handleBlocks)
 			handleBlocks.add(handleBlock.concretize(linter, scope))
-		return ErrorHandlingContext(this, mainBlock.concretize(linter, scope), handleBlocks, alwaysBlock?.concretize(linter, scope))
+		return ErrorHandlingContext(this, scope, mainBlock.concretize(linter, scope), handleBlocks,
+			alwaysBlock?.concretize(linter, scope))
 	}
 
 	override fun toString(): String {

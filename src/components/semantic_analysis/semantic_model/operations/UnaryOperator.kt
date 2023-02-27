@@ -11,18 +11,18 @@ import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.UnaryOperator as UnaryOperatorSyntaxTree
 
-class UnaryOperator(override val source: UnaryOperatorSyntaxTree, val value: Value, val kind: Operator.Kind):
-	Value(source) {
+class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, val value: Value, val kind: Operator.Kind):
+	Value(source, scope) {
 
 	init {
 		addUnits(value)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
 		value.type?.let { valueType ->
 			try {
-				val operatorDefinition = valueType.scope.resolveOperator(kind)
+				val operatorDefinition = valueType.interfaceScope.resolveOperator(kind)
 				if(operatorDefinition == null) {
 					linter.addMessage(source, "Operator '$kind$valueType' hasn't been declared yet.",
 						Message.Type.ERROR)
@@ -42,12 +42,12 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, val value: Val
 			Operator.Kind.BRACKETS_GET -> null
 			Operator.Kind.EXCLAMATION_MARK -> {
 				val booleanValue = value.staticValue as? BooleanLiteral ?: return null
-				BooleanLiteral(source, !booleanValue.value, linter)
+				BooleanLiteral(source, scope, !booleanValue.value, linter)
 			}
 			Operator.Kind.TRIPLE_DOT -> null
 			Operator.Kind.MINUS -> {
 				val numberValue = value.staticValue as? NumberLiteral ?: return null
-				NumberLiteral(source, -numberValue.value, linter)
+				NumberLiteral(source, scope, -numberValue.value, linter)
 			}
 			else -> throw CompilerError("Static evaluation is not implemented for operators of kind '$kind'.")
 		}

@@ -11,19 +11,20 @@ import components.semantic_analysis.semantic_model.values.VariableValue
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.Assignment as AssignmentSyntaxTree
 
-class Assignment(override val source: AssignmentSyntaxTree, val targets: List<Value>, val sourceExpression: Value): Unit(source) {
+class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val targets: List<Value>, val sourceExpression: Value):
+	Unit(source, scope) {
 
 	init {
 		addUnits(sourceExpression)
 		addUnits(targets)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		sourceExpression.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		sourceExpression.linkValues(linter)
 		for(target in targets) {
 			if(target is IndexAccess)
 				target.sourceExpression = sourceExpression
-			target.linkValues(linter, scope)
+			target.linkValues(linter)
 		}
 		for(target in targets) {
 			val targetType = target.type
@@ -58,7 +59,7 @@ class Assignment(override val source: AssignmentSyntaxTree, val targets: List<Va
 					}
 				}
 				is IndexAccess -> { //TODO is this tested?
-					target.target.type?.scope?.resolveIndexOperator(target.typeParameters, target.indices, sourceExpression)
+					target.target.type?.interfaceScope?.resolveIndexOperator(target.typeParameters, target.indices, sourceExpression)
 				}
 				else -> { //TODO write test for this
 					linter.addMessage(target.source, "Expression is not assignable.", Message.Type.ERROR)

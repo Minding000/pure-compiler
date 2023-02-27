@@ -23,7 +23,7 @@ class ComputedPropertyDeclaration(private val identifier: Identifier, private va
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val type = type ?: parent.type
-		val computedProperty = SemanticComputedPropertyDeclarationModel(this, identifier.getValue(),
+		val computedProperty = SemanticComputedPropertyDeclarationModel(this, scope, identifier.getValue(),
 			type?.concretize(linter, scope), parent.isConstant, isOverriding, getExpression?.concretize(linter, scope),
 			setStatement?.concretize(linter, scope))
 		scope.declareValue(linter, computedProperty)

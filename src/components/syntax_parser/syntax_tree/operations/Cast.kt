@@ -1,14 +1,14 @@
 package components.syntax_parser.syntax_tree.operations
 
-import errors.internal.CompilerError
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
-import components.semantic_analysis.semantic_model.operations.Cast as SemanticCastModel
+import components.syntax_parser.syntax_tree.general.TypeElement
 import components.syntax_parser.syntax_tree.general.ValueElement
 import components.syntax_parser.syntax_tree.literals.Identifier
-import components.syntax_parser.syntax_tree.general.TypeElement
+import errors.internal.CompilerError
 import util.indent
+import components.semantic_analysis.semantic_model.operations.Cast as SemanticCastModel
 
 class Cast(val value: ValueElement, val operator: String, val identifier: Identifier?, val type: TypeElement):
 	ValueElement(value.start, type.end) {
@@ -20,11 +20,11 @@ class Cast(val value: ValueElement, val operator: String, val identifier: Identi
 		val variableDeclaration = if(identifier == null) {
 			null
 		} else {
-			val variableDeclaration = LocalVariableDeclaration(identifier)
+			val variableDeclaration = LocalVariableDeclaration(identifier, scope)
 			scope.declareValue(linter, variableDeclaration)
 			variableDeclaration
 		}
-		return SemanticCastModel(this, value.concretize(linter, scope), variableDeclaration,
+		return SemanticCastModel(this, scope, value.concretize(linter, scope), variableDeclaration,
 			type.concretize(linter, scope), operator)
 	}
 

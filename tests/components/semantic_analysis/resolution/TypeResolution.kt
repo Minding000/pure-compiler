@@ -106,7 +106,7 @@ internal class TypeResolution {
 					to add(element: Element) {}
 				}
 				Country class
-				Germany object: Country {}
+				Germany object: Country
 				val list = <Country>List()
 				list.add(Germany)
             """.trimIndent()

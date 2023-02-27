@@ -9,8 +9,8 @@ import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import java.util.*
 
-abstract class ValueDeclaration(override val source: Element, val name: String, var type: Type? = null, value: Value? = null,
-								val isConstant: Boolean = true, val isMutable: Boolean = false): Unit(source) {
+abstract class ValueDeclaration(override val source: Element, scope: Scope, val name: String, var type: Type? = null, value: Value? = null,
+								val isConstant: Boolean = true, val isMutable: Boolean = false): Unit(source, scope) {
 	open val value = value
 	val usages = LinkedList<VariableValue>()
 
@@ -20,8 +20,8 @@ abstract class ValueDeclaration(override val source: Element, val name: String, 
 
 	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ValueDeclaration
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
 		val value = value
 		if(value == null) {
 			if(type == null)
@@ -30,10 +30,10 @@ abstract class ValueDeclaration(override val source: Element, val name: String, 
 			if(value.isAssignableTo(type)) {
 				value.setInferredType(type)
 			} else if(type == null) {
+				value.linkValues(linter)
 				type = value.type
 			} else {
-				linter.addMessage(source, "Type '${value.type}' is not assignable to type '$type'.",
-					Message.Type.ERROR)
+				linter.addMessage(source, "Type '${value.type}' is not assignable to type '$type'.", Message.Type.ERROR)
 			}
 		}
 	}

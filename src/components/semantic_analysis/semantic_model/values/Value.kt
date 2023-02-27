@@ -2,12 +2,13 @@ package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 
-abstract class Value(override val source: Element, var type: Type? = null): Unit(source) {
+abstract class Value(override val source: Element, public override var scope: Scope, var type: Type? = null): Unit(source, scope) {
 	open var staticValue: Value? = null
 
 	open fun isAssignableTo(targetType: Type?): Boolean {

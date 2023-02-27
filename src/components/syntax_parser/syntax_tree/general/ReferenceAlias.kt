@@ -8,7 +8,7 @@ import components.semantic_analysis.semantic_model.general.ReferenceAlias as Sem
 class ReferenceAlias(private val originalName: Identifier, private val aliasName: Identifier): Element(originalName.start, aliasName.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticReferenceAliasModel {
-		return SemanticReferenceAliasModel(this, originalName.getValue(), aliasName.getValue())
+		return SemanticReferenceAliasModel(this, scope, originalName.getValue(), aliasName.getValue())
 	}
 
 	override fun toString(): String {

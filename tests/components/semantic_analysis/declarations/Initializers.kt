@@ -101,6 +101,7 @@ internal class Initializers {
 	fun `resolves property parameters in initializers`() {
 		val sourceCode =
 			"""
+				Int class
 				Human class {
 					val age: Int
 					init(age)

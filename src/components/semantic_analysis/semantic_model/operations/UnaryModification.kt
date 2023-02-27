@@ -9,17 +9,18 @@ import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.UnaryModification as UnaryModificationSyntaxTree
 
-class UnaryModification(override val source: UnaryModificationSyntaxTree, val target: Value, val kind: Operator.Kind): Unit(source) {
+class UnaryModification(override val source: UnaryModificationSyntaxTree, scope: Scope, val target: Value, val kind: Operator.Kind):
+	Unit(source, scope) {
 
 	init {
 		addUnits(target)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
 		target.type?.let { valueType ->
 			try {
-				val operatorDefinition = valueType.scope.resolveOperator(kind)
+				val operatorDefinition = valueType.interfaceScope.resolveOperator(kind)
 				if(operatorDefinition == null) {
 					linter.addMessage(source, "Operator '$valueType$kind' hasn't been declared yet.", Message.Type.ERROR)
 				}

@@ -9,22 +9,22 @@ import components.semantic_analysis.semantic_model.values.Value
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.NullCheck as NullCheckSyntaxTree
 
-class NullCheck(override val source: NullCheckSyntaxTree, val value: Value): Value(source) {
+class NullCheck(override val source: NullCheckSyntaxTree, scope: Scope, val value: Value): Value(source, scope) {
 
 	init {
-		type = LiteralType(source, Linter.SpecialType.BOOLEAN)
+		type = LiteralType(source, scope, Linter.SpecialType.BOOLEAN)
 		addUnits(value, type)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
 		value.staticValue?.type?.let { staticType ->
 			staticValue = if(Linter.SpecialType.NULL.matches(staticType)) {
 				linter.addMessage(source, "Null check always returns 'no'.", Message.Type.WARNING)
-				BooleanLiteral(source, false, linter)
+				BooleanLiteral(source, scope, false, linter)
 			} else if(staticType !is OptionalType) {
 				linter.addMessage(source, "Null check always returns 'yes'.", Message.Type.WARNING)
-				BooleanLiteral(source, true, linter)
+				BooleanLiteral(source, scope, true, linter)
 			} else null
 		}
 	}

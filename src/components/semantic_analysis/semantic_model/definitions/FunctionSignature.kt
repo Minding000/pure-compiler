@@ -3,7 +3,6 @@ package components.semantic_analysis.semantic_model.definitions
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
-import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.LiteralType
 import components.semantic_analysis.semantic_model.types.OrUnionType
 import components.semantic_analysis.semantic_model.types.Type
@@ -13,9 +12,9 @@ import components.syntax_parser.syntax_tree.general.Element
 import errors.internal.CompilerError
 import java.util.*
 
-class FunctionSignature(override val source: Element, val scope: BlockScope, val genericParameters: List<TypeDefinition>,
-						val parameterTypes: List<Type?>, returnType: Type?, isPartOfImplementation: Boolean = false): Unit(source) {
-	val returnType = returnType ?: LiteralType(source, Linter.SpecialType.NOTHING)
+class FunctionSignature(override val source: Element, override val scope: BlockScope, val genericParameters: List<TypeDefinition>,
+						val parameterTypes: List<Type?>, returnType: Type?, isPartOfImplementation: Boolean = false): Unit(source, scope) {
+	val returnType = returnType ?: LiteralType(source, scope, Linter.SpecialType.NOTHING)
 	var superFunctionSignature: FunctionSignature? = null
 
 	init {
@@ -37,10 +36,6 @@ class FunctionSignature(override val source: Element, val scope: BlockScope, val
 			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitution))
 		return FunctionSignature(source, scope, specificGenericParameters, specificParametersTypes,
 			returnType.withTypeSubstitutions(typeSubstitution))
-	}
-
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		super.linkTypes(linter, this.scope)
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -80,7 +75,7 @@ class FunctionSignature(override val source: Element, val scope: BlockScope, val
 		}
 		if(inferredTypes.isEmpty())
 			return null
-		return OrUnionType(source, inferredTypes).simplified()
+		return OrUnionType(source, scope, inferredTypes).simplified()
 	}
 
 	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean {

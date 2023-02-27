@@ -9,7 +9,7 @@ import components.semantic_analysis.semantic_model.control_flow.YieldStatement a
 class YieldStatement(start: Position, private val key: ValueElement?, private val value: ValueElement): ValueElement(start, value.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticYieldStatementModel {
-		return SemanticYieldStatementModel(this, key?.concretize(linter, scope), value.concretize(linter, scope))
+		return SemanticYieldStatementModel(this, scope, key?.concretize(linter, scope), value.concretize(linter, scope))
 	}
 
 	override fun toString(): String {

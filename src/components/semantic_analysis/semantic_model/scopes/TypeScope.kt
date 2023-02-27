@@ -195,7 +195,7 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 	override fun declareFunction(linter: Linter, name: String, newImplementation: FunctionImplementation) {
 		when(val existingInterfaceMember = interfaceMembers[name]?.value) {
 			null -> {
-				val newFunction = Function(newImplementation.source, name)
+				val newFunction = Function(newImplementation.source, this, name)
 				newFunction.addImplementation(newImplementation)
 				//TODO Why add the function instead of the property?
 				typeDefinition.addUnits(newFunction)
@@ -203,7 +203,7 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 				// The function should have both of these types
 				// - only add instance values to ObjectType
 				// - access InstanceAccess through StaticType
-				val newValue = PropertyDeclaration(newImplementation.source, name, newFunction.type, newFunction, false,
+				val newValue = PropertyDeclaration(newImplementation.source, this, name, newFunction.type, newFunction, false,
 					newFunction.isAbstract)
 				newValue.parentDefinition = typeDefinition
 				interfaceMembers[name] = newValue
@@ -227,10 +227,10 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 		val name = kind.stringRepresentation
 		when(val existingInterfaceMember = interfaceMembers[name]?.value) {
 			null -> {
-				val newOperator = Operator(newImplementation.source, kind)
+				val newOperator = Operator(newImplementation.source, this, kind)
 				newOperator.addImplementation(newImplementation)
 				typeDefinition.addUnits(newOperator) //TODO Why add the operator instead of the property?
-				val newValue = PropertyDeclaration(newImplementation.source, name, newOperator.type, newOperator, false,
+				val newValue = PropertyDeclaration(newImplementation.source, this, name, newOperator.type, newOperator, false,
 					newOperator.isAbstract)
 				newValue.parentDefinition = typeDefinition
 				interfaceMembers[name] = newValue

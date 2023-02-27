@@ -4,12 +4,11 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
-abstract class Unit(open val source: Element) {
+abstract class Unit(open val source: Element, protected open val scope: Scope) {
 	open var parent: Unit? = null
 	val units = LinkedList<Unit>()
 	open val isInterruptingExecution = false
@@ -47,9 +46,9 @@ abstract class Unit(open val source: Element) {
 		return other.source.end < source.start
 	}
 
-	open fun linkTypes(linter: Linter, scope: Scope) {
+	open fun linkTypes(linter: Linter) {
 		for(unit in units)
-			unit.linkTypes(linter, scope)
+			unit.linkTypes(linter)
 	}
 
 	open fun resolveGenerics(linter: Linter) {
@@ -57,14 +56,14 @@ abstract class Unit(open val source: Element) {
 			unit.resolveGenerics(linter)
 	}
 
-	open fun linkPropertyParameters(linter: Linter, scope: MutableScope) {
+	open fun linkPropertyParameters(linter: Linter) {
 		for(unit in units)
-			unit.linkPropertyParameters(linter, scope)
+			unit.linkPropertyParameters(linter)
 	}
 
-	open fun linkValues(linter: Linter, scope: Scope) {
+	open fun linkValues(linter: Linter) {
 		for(unit in units)
-			unit.linkValues(linter, scope)
+			unit.linkValues(linter)
 	}
 
 	open fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {

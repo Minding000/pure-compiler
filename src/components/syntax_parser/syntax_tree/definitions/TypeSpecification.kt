@@ -10,7 +10,8 @@ import components.semantic_analysis.semantic_model.definitions.TypeSpecification
 class TypeSpecification(private val typeList: TypeList, private val identifier: Identifier): ValueElement(typeList.start, identifier.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticTypeSpecificationModel {
-		return SemanticTypeSpecificationModel(this, typeList.concretizeTypes(linter, scope), identifier.concretize(linter, scope))
+		return SemanticTypeSpecificationModel(this, scope, typeList.concretizeTypes(linter, scope),
+			identifier.concretize(linter, scope))
 	}
 
 	override fun toString(): String {

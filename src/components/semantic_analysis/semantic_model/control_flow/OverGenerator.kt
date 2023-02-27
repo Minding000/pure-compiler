@@ -15,17 +15,17 @@ import messages.Message
 import java.util.*
 import components.syntax_parser.syntax_tree.control_flow.OverGenerator as OverGeneratorSyntaxTree
 
-class OverGenerator(override val source: OverGeneratorSyntaxTree, val collection: Value,
+class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, val collection: Value,
 					val iteratorVariableDeclaration: LocalVariableDeclaration?, val variableDeclarations: List<LocalVariableDeclaration>):
-	Unit(source) {
+	Unit(source, scope) {
 
 	init {
 		addUnits(collection, iteratorVariableDeclaration)
 		addUnits(variableDeclarations)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		collection.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		collection.linkValues(linter)
 		val collectionType = collection.type
 		if(collectionType is PluralType) {
 			setVariableTypes(linter, collectionType)
@@ -50,7 +50,7 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, val collection
 				"Plural types only provide index and element (2) values, but ${variableDeclarations.size} were declared.",
 				Message.Type.ERROR)
 		} else if(variableDeclarations.size == 2) {
-			variableDeclarations.firstOrNull()?.type = LiteralType(source, Linter.SpecialType.INTEGER, linter)
+			variableDeclarations.firstOrNull()?.type = LiteralType(source, scope, Linter.SpecialType.INTEGER, linter)
 		}
 		variableDeclarations.lastOrNull()?.type = collectionType.baseType
 	}
@@ -61,22 +61,22 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, val collection
 			return
 		}
 		try {
-			val iteratorProperty = collectionType.scope.resolveValue("createIterator")
+			val iteratorProperty = collectionType.interfaceScope.resolveValue("createIterator")
 			val iteratorFunction = iteratorProperty?.value as? Function
 			val iteratorSignature = iteratorFunction?.functionType?.resolveSignature()
 			val iteratorType = iteratorSignature?.returnType ?: return
 			iteratorVariableDeclaration?.type = iteratorType
 			val availableValueTypes = LinkedList<Type?>()
 			if(iteratorType.isInstanceOf(Linter.SpecialType.INDEX_ITERATOR)) {
-				val indexProperty = iteratorType.scope.resolveValue("currentIndex")
+				val indexProperty = iteratorType.interfaceScope.resolveValue("currentIndex")
 				availableValueTypes.add(indexProperty?.type)
 			}
 			if(iteratorType.isInstanceOf(Linter.SpecialType.KEY_ITERATOR)) {
-				val keyProperty = iteratorType.scope.resolveValue("currentKey")
+				val keyProperty = iteratorType.interfaceScope.resolveValue("currentKey")
 				availableValueTypes.add(keyProperty?.type)
 			}
 			if(iteratorType.isInstanceOf(Linter.SpecialType.VALUE_ITERATOR)) {
-				val valueProperty = iteratorType.scope.resolveValue("currentValue")
+				val valueProperty = iteratorType.interfaceScope.resolveValue("currentValue")
 				availableValueTypes.add(valueProperty?.type)
 			}
 			if(variableDeclarations.size > availableValueTypes.size) {

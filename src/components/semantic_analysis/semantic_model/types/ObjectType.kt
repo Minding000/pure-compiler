@@ -11,15 +11,16 @@ import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import java.util.*
 
-open class ObjectType(override val source: Element, val enclosingType: ObjectType?, val typeParameters: List<Type>, val name: String,
-					  var definition: TypeDefinition? = null): Type(source) {
+open class ObjectType(override val source: Element, scope: Scope, val enclosingType: ObjectType?, val typeParameters: List<Type>,
+					  val name: String, var definition: TypeDefinition? = null): Type(source, scope) {
 
-	constructor(source: Element, name: String): this(source, null, listOf(), name)
+	constructor(source: Element, surroundingScope: Scope, name: String): this(source, surroundingScope, null, listOf(), name)
 
-	constructor(definition: TypeDefinition): this(definition.source, null, listOf(), definition.name, definition)
+	constructor(definition: TypeDefinition):
+		this(definition.source, definition.scope, null, listOf(), definition.name, definition)
 
 	constructor(typeParameters: List<Type>, definition: TypeDefinition):
-		this(definition.source, null, typeParameters, definition.name, definition)
+		this(definition.source, definition.scope, null, typeParameters, definition.name, definition)
 
 	init {
 		addUnits(enclosingType)
@@ -36,7 +37,7 @@ open class ObjectType(override val source: Element, val enclosingType: ObjectTyp
 			typeParameter.withTypeSubstitutions(typeSubstitutions) }
 		//TODO this might be nicer if it was written with a return in the callback
 		// -> withTypeParameter needs to have inline modifier
-		val specificType = ObjectType(source, enclosingType, specificTypeParameters, name)
+		val specificType = ObjectType(source, scope, enclosingType, specificTypeParameters, name)
 		definition?.withTypeParameters(specificTypeParameters) { specificDefinition ->
 			specificType.definition = specificDefinition
 		}
@@ -44,7 +45,7 @@ open class ObjectType(override val source: Element, val enclosingType: ObjectTyp
 	}
 
 	override fun simplified(): ObjectType {
-		return ObjectType(source, enclosingType?.simplified(), typeParameters.map(Type::simplified), name, definition)
+		return ObjectType(source, scope, enclosingType?.simplified(), typeParameters.map(Type::simplified), name, definition)
 	}
 
 	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableList<Type>) {
@@ -60,18 +61,18 @@ open class ObjectType(override val source: Element, val enclosingType: ObjectTyp
 	}
 
 	override fun onNewType(type: TypeDefinition) {
-		this.scope.addType(type)
+		interfaceScope.addType(type)
 	}
 
 	override fun onNewValue(value: InterfaceMember) {
-		this.scope.addValue(value)
+		interfaceScope.addValue(value)
 	}
 
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		super.linkTypes(linter, scope)
+	override fun linkTypes(linter: Linter) {
+		super.linkTypes(linter)
 		if(definition == null) {
 			enclosingType?.resolveGenerics(linter)
-			val sourceScope = enclosingType?.scope ?: scope
+			val sourceScope = enclosingType?.interfaceScope ?: scope
 			definition = sourceScope.resolveType(name)
 			if(definition == null)
 				linter.addMessage(source, "Type '$name' hasn't been declared yet.", Message.Type.ERROR)

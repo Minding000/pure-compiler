@@ -9,7 +9,7 @@ import components.semantic_analysis.semantic_model.control_flow.NextStatement as
 class NextStatement(word: Word): Element(word) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticNextStatementModel {
-		return SemanticNextStatementModel(this)
+		return SemanticNextStatementModel(this, scope)
 	}
 
 	override fun toString(): String {

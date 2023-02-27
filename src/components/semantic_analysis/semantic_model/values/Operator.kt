@@ -1,10 +1,11 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 
-class Operator(source: Element, val kind: Kind): Function(source, kind.stringRepresentation) {
+class Operator(source: Element, scope: Scope, val kind: Kind): Function(source, scope, kind.stringRepresentation) {
 	override val memberType = "operator"
 
 	override fun validate(linter: Linter) {

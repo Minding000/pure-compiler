@@ -5,12 +5,11 @@ import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
-import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.syntax_parser.syntax_tree.control_flow.LoopStatement as LoopStatementSyntaxTree
 
-class LoopStatement(override val source: LoopStatementSyntaxTree, val scope: BlockScope, val generator: Unit?,
-					val body: ErrorHandlingContext): Unit(source) {
+class LoopStatement(override val source: LoopStatementSyntaxTree, override val scope: BlockScope, val generator: Unit?,
+					val body: ErrorHandlingContext): Unit(source, scope) {
 	override var isInterruptingExecution = false
 	var mightGetBrokenOutOf = false
 	private val hasFiniteGenerator: Boolean
@@ -28,10 +27,6 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, val scope: Blo
 	init {
 		scope.unit = this
 		addUnits(generator, body)
-	}
-
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, this.scope)
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {

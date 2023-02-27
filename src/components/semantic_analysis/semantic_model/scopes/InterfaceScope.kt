@@ -11,7 +11,8 @@ import components.semantic_analysis.semantic_model.values.Value
 import errors.user.SignatureResolutionAmbiguityError
 import java.util.*
 
-class InterfaceScope(val type: Type, val isStatic: Boolean = false): Scope() {
+class InterfaceScope(val isStatic: Boolean = false): Scope() {
+	lateinit var type: Type
 	private val types = HashMap<String, TypeDefinition>()
 	private val values = HashMap<String, InterfaceMember>()
 	private val initializers = LinkedList<InitializerDefinition>()

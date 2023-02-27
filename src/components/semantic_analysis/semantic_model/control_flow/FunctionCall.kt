@@ -19,9 +19,9 @@ import util.stringifyTypes
 import java.util.*
 import components.syntax_parser.syntax_tree.control_flow.FunctionCall as FunctionCallSyntaxTree
 
-class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Value, val typeParameters: List<Type>,
-				   val valueParameters: List<Value>): Value(source) {
-	var targetImplementation: MemberDeclaration? = null
+class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, val function: Value, val typeParameters: List<Type>,
+				   val valueParameters: List<Value>): Value(source, scope) {
+	private var targetImplementation: MemberDeclaration? = null
 
 	init {
 		staticValue = this
@@ -29,12 +29,12 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 		addUnits(typeParameters, valueParameters)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
+	override fun linkValues(linter: Linter) {
 		for(unit in units) {
 			if(unit !== function)
-				unit.linkValues(linter, scope)
+				unit.linkValues(linter)
 		}
-		function.linkValues(linter, scope)
+		function.linkValues(linter)
 		when(val targetType = function.type) {
 			is StaticType -> resolveInitializerCall(linter, targetType)
 			is FunctionType -> resolveFunctionCall(linter, targetType)
@@ -72,7 +72,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, val function: Va
 		val genericDefinitionTypes = (targetType.definition.baseDefinition ?: targetType.definition).scope.getGenericTypeDefinitions()
 		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
 		try {
-			val match = targetType.scope.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters,
+			val match = targetType.interfaceScope.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters,
 				valueParameters)
 			if(match == null) {
 				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.", Message.Type.ERROR)

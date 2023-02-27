@@ -2,23 +2,24 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
 
-class OptionalType(override val source: Element, val baseType: Type): Type(source) {
+class OptionalType(override val source: Element, scope: Scope, val baseType: Type): Type(source, scope) {
 
 	init {
 		addUnits(baseType)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): OptionalType {
-		return OptionalType(source, baseType.withTypeSubstitutions(typeSubstitutions))
+		return OptionalType(source, scope, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun simplified(): Type {
 		var baseType = baseType
 		while(baseType is OptionalType)
 			baseType = baseType.baseType
-		return OptionalType(source, baseType.simplified())
+		return OptionalType(source, scope, baseType.simplified())
 	}
 
 	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableList<Type>) {

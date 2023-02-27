@@ -12,18 +12,18 @@ import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
 import components.syntax_parser.syntax_tree.operations.BinaryModification as BinaryModificationSyntaxTree
 
-class BinaryModification(override val source: BinaryModificationSyntaxTree, val target: Value, val modifier: Value,
-						 val kind: Operator.Kind): Unit(source) {
+class BinaryModification(override val source: BinaryModificationSyntaxTree, scope: Scope, val target: Value, val modifier: Value,
+						 val kind: Operator.Kind): Unit(source, scope) {
 
 	init {
 		addUnits(target, modifier)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
 		target.type?.let { valueType ->
 			try {
-				val operatorDefinition = valueType.scope.resolveOperator(kind, listOf(modifier))
+				val operatorDefinition = valueType.interfaceScope.resolveOperator(kind, listOf(modifier))
 				if(operatorDefinition == null) {
 					linter.addMessage(source, "Operator '$valueType $kind ${modifier.type}' hasn't been declared yet.",
 						Message.Type.ERROR)

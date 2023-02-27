@@ -23,7 +23,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "Door" }
-		val functionType = variableValue?.type?.scope?.resolveValue("open")?.type
+		val functionType = variableValue?.type?.interfaceScope?.resolveValue("open")?.type
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.resolveSignature()
 		assertNotNull(signature)
@@ -45,7 +45,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val functionType = variableValue?.type?.scope?.resolveValue("open")?.type
+		val functionType = variableValue?.type?.interfaceScope?.resolveValue("open")?.type
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.resolveSignature()
 		assertNotNull(signature)
@@ -66,7 +66,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val functionType = variableValue?.type?.scope?.resolveValue("open")?.type
+		val functionType = variableValue?.type?.interfaceScope?.resolveValue("open")?.type
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.resolveSignature()
 		assertNotNull(signature)

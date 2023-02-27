@@ -12,8 +12,9 @@ import messages.Message
 import util.linkedListOf
 import java.util.*
 
-abstract class TypeDefinition(override val source: Element, val name: String, val scope: TypeScope, val explicitParentType: ObjectType?,
-							  val superType: Type?, val isBound: Boolean = false): Unit(source) {
+abstract class TypeDefinition(override val source: Element, val name: String, public override val scope: TypeScope,
+							  val explicitParentType: ObjectType?, val superType: Type?, val isBound: Boolean = false):
+	Unit(source, scope) {
 	override var parent: Unit?
 		get() = super.parent
 		set(value) {
@@ -73,8 +74,8 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 		}
 	}
 
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		super.linkTypes(linter, this.scope)
+	override fun linkTypes(linter: Linter) {
+		super.linkTypes(linter)
 		if(explicitParentType != null) {
 			if(parentTypeDefinition == null) {
 				parentTypeDefinition = explicitParentType.definition
@@ -85,8 +86,13 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 		}
 	}
 
-	override fun linkPropertyParameters(linter: Linter, scope: MutableScope) {
-		super.linkPropertyParameters(linter, this.scope)
+	override fun resolveGenerics(linter: Linter) {
+		super.resolveGenerics(linter)
+		this.scope.inheritSignatures()
+	}
+
+	override fun linkPropertyParameters(linter: Linter) {
+		super.linkPropertyParameters(linter)
 		if(this.scope.initializers.isEmpty()) {
 			val defaultInitializer = InitializerDefinition(source, this, BlockScope(this.scope))
 			addUnits(defaultInitializer)
@@ -95,13 +101,8 @@ abstract class TypeDefinition(override val source: Element, val name: String, va
 		this.scope.ensureUniqueInitializerSignatures(linter)
 	}
 
-	override fun resolveGenerics(linter: Linter) {
-		super.resolveGenerics(linter)
-		this.scope.inheritSignatures()
-	}
-
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, this.scope)
+	override fun linkValues(linter: Linter) {
+		super.linkValues(linter)
 		if(superType != null && inheritsFrom(this)) {
 			hasCircularInheritance = true
 			linter.addMessage(superType.source, "Type definitions cannot inherit from themself.", Message.Type.ERROR)

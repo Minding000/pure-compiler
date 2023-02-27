@@ -9,7 +9,7 @@ import components.semantic_analysis.semantic_model.control_flow.Try as SemanticT
 class Try(private val expression: ValueElement, private val isOptional: Boolean, start: Position): ValueElement(start, expression.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticTryModel {
-		return SemanticTryModel(this, expression.concretize(linter, scope), isOptional)
+		return SemanticTryModel(this, scope, expression.concretize(linter, scope), isOptional)
 	}
 
 	override fun toString(): String {

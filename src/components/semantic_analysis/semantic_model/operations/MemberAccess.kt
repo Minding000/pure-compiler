@@ -13,15 +13,15 @@ import messages.Message
 import java.util.*
 import components.syntax_parser.syntax_tree.access.MemberAccess as MemberAccessSyntaxTree
 
-class MemberAccess(override val source: MemberAccessSyntaxTree, val target: Value, val member: Value, private val isOptional: Boolean):
-	Value(source) {
+class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, val target: Value, val member: Value,
+				   private val isOptional: Boolean): Value(source, scope) {
 
 	init {
 		addUnits(target, member)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		target.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		target.linkValues(linter)
 		target.type?.let { targetTypeVal ->
 			var targetType = targetTypeVal
 			if(targetType is OptionalType) {
@@ -34,10 +34,11 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, val target: Valu
 					linter.addMessage(source, "Optional member access on guaranteed type '$targetType' is unnecessary.",
 						Message.Type.WARNING)
 			}
-			member.linkValues(linter, targetType.scope)
+			member.scope = targetType.interfaceScope
+			member.linkValues(linter)
 			member.type?.let { memberType ->
 				type = if(isOptional && memberType !is OptionalType)
-					OptionalType(source, memberType)
+					OptionalType(source, scope, memberType)
 				else
 					memberType
 				if(!isOptional)
@@ -60,20 +61,20 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, val target: Valu
 				is InitializerReference -> {
 					val staticType = StaticType(availableType.definition ?: continue)
 					val functionCall = parent as? FunctionCall ?: continue
-					if(staticType.scope.resolveInitializer(listOf(), listOf(), functionCall.typeParameters, functionCall.valueParameters)
-						== null)
+					if(staticType.interfaceScope.resolveInitializer(listOf(), listOf(), functionCall.typeParameters,
+							functionCall.valueParameters) == null)
 						continue
 					possibleTargetTypes.add(staticType)
 				}
 				is VariableValue -> {
 					val parent = parent
 					if(parent is FunctionCall) {
-						val functionType = availableType.scope.resolveValue(member)?.type as? FunctionType? ?: continue
+						val functionType = availableType.interfaceScope.resolveValue(member)?.type as? FunctionType? ?: continue
 						val functionCall = parent as? FunctionCall ?: continue
 						if(functionType.resolveSignature(functionCall.typeParameters, functionCall.valueParameters) == null)
 							continue
 					} else {
-						if(!availableType.scope.hasValue(member.name))
+						if(!availableType.interfaceScope.hasValue(member.name))
 							continue
 					}
 					possibleTargetTypes.add(availableType)

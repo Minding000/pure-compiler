@@ -9,7 +9,7 @@ import components.semantic_analysis.semantic_model.control_flow.BreakStatement a
 class BreakStatement(word: Word): Element(word) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticBreakStatementModel {
-		return SemanticBreakStatementModel(this)
+		return SemanticBreakStatementModel(this, scope)
 	}
 
 	override fun toString(): String {

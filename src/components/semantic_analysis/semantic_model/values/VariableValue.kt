@@ -11,17 +11,20 @@ import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.literals.Identifier
 import messages.Message
 
-open class VariableValue(override val source: Element, val name: String): Value(source) {
+open class VariableValue(override val source: Element, scope: Scope, val name: String): Value(source, scope) {
 	var definition: ValueDeclaration? = null
 
-	constructor(source: Identifier): this(source, source.getValue())
+	constructor(source: Identifier, scope: Scope): this(source, scope, source.getValue())
 
-	override fun linkValues(linter: Linter, scope: Scope) {
+	override fun linkValues(linter: Linter) {
+		if(definition != null)
+			return
 		val definition = scope.resolveValue(this)
 		if(definition == null) {
 			linter.addMessage(source, "Value '$name' hasn't been declared yet.", Message.Type.ERROR)
 			return
 		}
+		val scope = scope
 		if(scope is InterfaceScope && definition is InterfaceMember) {
 			if(scope.isStatic && !definition.isStatic) {
 				linter.addMessage(source, "Cannot access instance member '$name' from static context.", Message.Type.ERROR)
@@ -32,6 +35,7 @@ open class VariableValue(override val source: Element, val name: String): Value(
 		}
 		definition.usages.add(this)
 		this.definition = definition
+		definition.linkValues(linter)
 		type = definition.type
 		if(definition.isConstant)
 			staticValue = definition.value?.staticValue

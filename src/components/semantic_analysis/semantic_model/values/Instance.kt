@@ -10,17 +10,16 @@ import errors.user.SignatureResolutionAmbiguityError
 import messages.Message
 import components.syntax_parser.syntax_tree.definitions.Instance as InstanceSyntaxTree
 
-class Instance(override val source: InstanceSyntaxTree, override val value: VariableValue, val valueParameters: List<Value>):
-	InterfaceMember(source, value.name, null, value, true) {
+class Instance(override val source: InstanceSyntaxTree, scope: Scope, override val value: VariableValue, val valueParameters: List<Value>):
+	InterfaceMember(source, scope, value.name, null, value, true) {
 	lateinit var typeDefinition: TypeDefinition
 
 	init {
-		value.staticValue = value
 		addUnits(valueParameters)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Instance {
-		return Instance(source, value, valueParameters)
+		return Instance(source, scope, value, valueParameters)
 	}
 
 	fun setType(typeDefinition: TypeDefinition) {
@@ -30,12 +29,15 @@ class Instance(override val source: InstanceSyntaxTree, override val value: Vari
 		this.type = type
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, scope)
+	override fun linkValues(linter: Linter) {
+		value.definition = this
+		value.type = type
+		value.staticValue = value
 		val staticType = StaticType(typeDefinition)
 		addUnits(staticType)
+		super.linkValues(linter)
 		try {
-			val initializer = staticType.scope.resolveInitializer(valueParameters)
+			val initializer = staticType.interfaceScope.resolveInitializer(valueParameters)
 			if(initializer == null)
 				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.", Message.Type.ERROR)
 		} catch(error: SignatureResolutionAmbiguityError) {

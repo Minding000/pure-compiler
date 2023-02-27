@@ -3,12 +3,13 @@ package components.semantic_analysis.semantic_model.general
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.StatementSection
 import java.util.*
 
-class ErrorHandlingContext(override val source: StatementSection, val mainBlock: StatementBlock,
-						   val handleBlocks: List<HandleBlock>, val alwaysBlock: StatementBlock?): Unit(source) {
+class ErrorHandlingContext(override val source: StatementSection, scope: Scope, val mainBlock: StatementBlock,
+						   val handleBlocks: List<HandleBlock>, val alwaysBlock: StatementBlock?): Unit(source, scope) {
 
 	init {
 		addUnits(mainBlock, alwaysBlock)

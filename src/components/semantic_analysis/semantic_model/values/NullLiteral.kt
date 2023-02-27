@@ -1,17 +1,18 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.LiteralType
 import components.syntax_parser.syntax_tree.general.Element
 
-class NullLiteral(override val source: Element): LiteralValue(source) {
+class NullLiteral(override val source: Element, scope: Scope): LiteralValue(source, scope) {
 
-	constructor(source: Element, linter: Linter): this(source) {
+	constructor(source: Element, scope: Scope, linter: Linter): this(source, scope) {
 		(type as? LiteralType)?.linkTypes(linter)
 	}
 
 	init {
-		type = LiteralType(source, Linter.SpecialType.NULL)
+		type = LiteralType(source, scope, Linter.SpecialType.NULL)
 		addUnits(type)
 	}
 

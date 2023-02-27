@@ -10,13 +10,14 @@ import components.semantic_analysis.semantic_model.types.Type
 import messages.Message
 import components.syntax_parser.syntax_tree.literals.SuperReference as SuperReferenceSyntaxTree
 
-open class SuperReference(override val source: SuperReferenceSyntaxTree, private val specifier: ObjectType?): Value(source) {
+open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: Scope, private val specifier: ObjectType?):
+	Value(source, scope) {
 
 	init {
 		addUnits(specifier)
 	}
 
-	override fun linkValues(linter: Linter, scope: Scope) {
+	override fun linkValues(linter: Linter) {
 		val surroundingDefinition = scope.getSurroundingDefinition()
 		if(surroundingDefinition == null) {
 			linter.addMessage(source, "Super references are not allowed outside of type definitions.", Message.Type.ERROR)

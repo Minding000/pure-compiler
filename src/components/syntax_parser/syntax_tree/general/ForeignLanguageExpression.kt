@@ -10,7 +10,7 @@ class ForeignLanguageExpression(private val foreignParser: Identifier, private v
 	ValueElement(foreignParser.start, content.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticForeignLanguageExpressionModel {
-		return SemanticForeignLanguageExpressionModel(this, foreignParser.concretize(linter, scope), content.getValue())
+		return SemanticForeignLanguageExpressionModel(this, scope, foreignParser.concretize(linter, scope), content.getValue())
 	}
 
 	override fun toString(): String {

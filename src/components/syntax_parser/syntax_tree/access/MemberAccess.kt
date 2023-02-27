@@ -10,7 +10,7 @@ class MemberAccess(val target: ValueElement, val member: ValueElement, private v
 	ValueElement(target.start, member.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticMemberAccessModel {
-		return SemanticMemberAccessModel(this, target.concretize(linter, scope), member.concretize(linter, scope), isOptional)
+		return SemanticMemberAccessModel(this, scope, target.concretize(linter, scope), member.concretize(linter, scope), isOptional)
 	}
 
 	override fun toString(): String {

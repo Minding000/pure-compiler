@@ -1,17 +1,15 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.scopes.BlockScope
-import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import java.util.*
 import components.syntax_parser.syntax_tree.definitions.GeneratorDefinition as GeneratorDefinitionSyntaxTree
 
-class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, val scope: BlockScope, name: String,
+class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, override val scope: BlockScope, name: String,
 						  val parameters: List<Parameter>, val keyReturnType: Type?, val valueReturnType: Type,
-						  val body: ErrorHandlingContext): ValueDeclaration(source, name) {
+						  val body: ErrorHandlingContext): ValueDeclaration(source, scope, name) {
 
 	init {
 		addUnits(keyReturnType, valueReturnType, body)
@@ -25,13 +23,5 @@ class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, va
 		return GeneratorDefinition(source, scope, name, specificParameters,
 			keyReturnType?.withTypeSubstitutions(typeSubstitutions),
 			valueReturnType.withTypeSubstitutions(typeSubstitutions), body)
-	}
-
-	override fun linkTypes(linter: Linter, scope: Scope) {
-		super.linkTypes(linter, this.scope)
-	}
-
-	override fun linkValues(linter: Linter, scope: Scope) {
-		super.linkValues(linter, this.scope)
 	}
 }

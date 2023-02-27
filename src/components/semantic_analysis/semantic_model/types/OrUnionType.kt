@@ -2,23 +2,24 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
-class OrUnionType(override val source: Element, val types: List<Type>): Type(source) {
+class OrUnionType(override val source: Element, scope: Scope, val types: List<Type>): Type(source, scope) {
 
 	init {
 		addUnits(types)
 		for(type in types)
-			type.scope.subscribe(this)
+			type.interfaceScope.subscribe(this)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): OrUnionType {
 		val specificTypes = LinkedList<Type>()
 		for(type in types)
 			specificTypes.add(type.withTypeSubstitutions(typeSubstitutions))
-		return OrUnionType(source, specificTypes)
+		return OrUnionType(source, scope, specificTypes)
 	}
 
 	override fun simplified(): Type {
@@ -44,21 +45,21 @@ class OrUnionType(override val source: Element, val types: List<Type>): Type(sou
 		}
 		if(simplifiedUniqueTypes.size == 1)
 			return simplifiedUniqueTypes.first()
-		return OrUnionType(source, simplifiedUniqueTypes.toList())
+		return OrUnionType(source, scope, simplifiedUniqueTypes.toList())
 	}
 
 	override fun onNewType(type: TypeDefinition) {
 		for(part in types)
-			if(!part.scope.hasType(type))
+			if(!part.interfaceScope.hasType(type))
 				return
-		this.scope.addType(type)
+		this.interfaceScope.addType(type)
 	}
 
 	override fun onNewValue(value: InterfaceMember) {
 		for(part in types)
-			if(!part.scope.hasValue(value))
+			if(!part.interfaceScope.hasValue(value))
 				return
-		this.scope.addValue(value)
+		this.interfaceScope.addValue(value)
 	}
 
 	override fun isInstanceOf(type: Linter.SpecialType): Boolean {

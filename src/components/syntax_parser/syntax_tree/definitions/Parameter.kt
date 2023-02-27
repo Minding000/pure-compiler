@@ -23,7 +23,7 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
         modifierList?.validate(linter, ALLOWED_MODIFIER_TYPES)
         val isMutable = modifierList?.containsModifier(WordAtom.MUTABLE) ?: false
         val hasDynamicSize = modifierList?.containsModifier(WordAtom.SPREAD) ?: false
-        val parameter = SemanticParameterModel(this, identifier.getValue(), type?.concretize(linter, scope), isMutable,
+        val parameter = SemanticParameterModel(this, scope, identifier.getValue(), type?.concretize(linter, scope), isMutable,
                 hasDynamicSize)
         if(type != null)
             scope.declareValue(linter, parameter)
@@ -31,8 +31,8 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
     }
 
 	fun concretizeAsGenericParameter(linter: Linter, scope: MutableScope): TypeDefinition {
-		val superType = type?.concretize(linter, scope) ?: LiteralType(this, Linter.SpecialType.ANY)
-		val typeScope = TypeScope(scope, superType.scope)
+		val superType = type?.concretize(linter, scope) ?: LiteralType(this, scope, Linter.SpecialType.ANY)
+		val typeScope = TypeScope(scope, superType.interfaceScope)
 		val genericTypeDefinition = GenericTypeDefinition(this, identifier.getValue(), typeScope, superType)
 		typeScope.typeDefinition = genericTypeDefinition
 		scope.declareType(linter, genericTypeDefinition)

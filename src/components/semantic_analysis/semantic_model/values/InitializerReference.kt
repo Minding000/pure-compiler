@@ -7,9 +7,10 @@ import components.semantic_analysis.semantic_model.types.StaticType
 import messages.Message
 import components.syntax_parser.syntax_tree.literals.InitializerReference as InitializerReferenceSyntaxTree
 
-open class InitializerReference(override val source: InitializerReferenceSyntaxTree): Value(source) {
+open class InitializerReference(override val source: InitializerReferenceSyntaxTree, scope: Scope): Value(source, scope) {
 
-	override fun linkValues(linter: Linter, scope: Scope) {
+	override fun linkValues(linter: Linter) {
+		val scope = scope
 		if(scope is InterfaceScope && scope.type is StaticType) {
 			type = scope.type
 		} else {
@@ -18,6 +19,8 @@ open class InitializerReference(override val source: InitializerReferenceSyntaxT
 				linter.addMessage(source, "Initializer references are not allowed outside of initializers.", Message.Type.ERROR)
 			} else {
 				type = StaticType(surroundingDefinition)
+				addUnits(type)
+				type?.linkValues(linter)
 			}
 		}
 	}

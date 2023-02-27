@@ -36,8 +36,8 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
 				if(!Linter.SpecialType.isRootType(name))
-					superType = superType ?: LiteralType(this, Linter.SpecialType.ANY)
-				val typeScope = TypeScope(scope, superType?.scope)
+					superType = superType ?: LiteralType(this, scope, Linter.SpecialType.ANY)
+				val typeScope = TypeScope(scope, superType?.interfaceScope)
 				Class(this, name, typeScope, explicitParentType, superType, isAbstract, isBound, isNative, isMutable)
 			}
 			WordAtom.OBJECT -> {
@@ -45,15 +45,15 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 				val isBound = parent?.containsModifier(WordAtom.BOUND) ?: false
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
-				superType = superType ?: LiteralType(this, Linter.SpecialType.ANY)
-				val typeScope = TypeScope(scope, superType.scope)
+				superType = superType ?: LiteralType(this, scope, Linter.SpecialType.ANY)
+				val typeScope = TypeScope(scope, superType.interfaceScope)
 				Object(this, name, typeScope, explicitParentType, superType, isBound, isNative, isMutable)
 			}
 			WordAtom.ENUM -> {
 				parent?.validate(linter, Enum.ALLOWED_MODIFIER_TYPES)
 				val isBound = parent?.containsModifier(WordAtom.BOUND) ?: false
-				superType = superType ?: LiteralType(this, Linter.SpecialType.ANY)
-				val typeScope = TypeScope(scope, superType.scope)
+				superType = superType ?: LiteralType(this, scope, Linter.SpecialType.ANY)
+				val typeScope = TypeScope(scope, superType.interfaceScope)
 				Enum(this, name, typeScope, explicitParentType, superType, isBound)
 			}
 			else -> throw CompilerError("Encountered unknown type definition type.")

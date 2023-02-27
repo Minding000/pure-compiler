@@ -12,7 +12,7 @@ class BinaryModification(val target: ValueElement, val modifier: ValueElement, v
 	Element(target.start, modifier.end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticBinaryModificationModel {
-		return SemanticBinaryModificationModel(this, target.concretize(linter, scope), modifier.concretize(linter, scope),
+		return SemanticBinaryModificationModel(this, scope, target.concretize(linter, scope), modifier.concretize(linter, scope),
 			operator.getKind())
 	}
 
