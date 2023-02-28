@@ -1,16 +1,19 @@
 package components.semantic_analysis
 
+import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
 import messages.MessageLogger
+import java.util.*
 import components.semantic_analysis.semantic_model.general.Program as SemanticProgramModel
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
 class Linter {
 	val logger = MessageLogger("linter", Message.Type.INFO)
+	val propertyDeclarationStack = LinkedList<PropertyDeclaration>()
 	private var activePhase = Phase.PENDING //TODO consider removing this property if it is not needed
 
 	fun lint(programSyntaxTree: ProgramSyntaxTree): SemanticProgramModel {

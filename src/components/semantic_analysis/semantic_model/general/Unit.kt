@@ -17,7 +17,7 @@ abstract class Unit(open val source: Element, protected open val scope: Scope) {
 		for(newUnit in newUnits) {
 			if(newUnit != null) {
 				newUnit.parent = this
-				this.units.add(newUnit)
+				units.add(newUnit)
 			}
 		}
 	}

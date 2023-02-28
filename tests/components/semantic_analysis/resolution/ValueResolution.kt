@@ -80,6 +80,7 @@ internal class ValueResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "part of a circular assignment")
 		val parameter = lintResult.find<Parameter>()
 		assertEquals("Int", parameter?.type.toString())
 	}
@@ -89,16 +90,18 @@ internal class ValueResolution {
 		val sourceCode =
 			"""
 				House object {
-					val livingAreaInSquareMeters = Flat.livingAreaInSquareMeters
+					val livingAreaInSquareMeters = Flat.size
 				}
 				Flat object {
-					val livingAreaInSquareMeters = House.livingAreaInSquareMeters
+					val size = House.livingAreaInSquareMeters
 				}
 				House.livingAreaInSquareMeters
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR,
 			"'livingAreaInSquareMeters' has no value, because it's part of a circular assignment")
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"'size' has no value, because it's part of a circular assignment")
 	}
 
 	@Test
