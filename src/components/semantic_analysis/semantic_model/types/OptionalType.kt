@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
@@ -28,6 +29,10 @@ class OptionalType(override val source: Element, scope: Scope, val baseType: Typ
 		else
 			sourceType
 		baseType.inferType(genericType, sourceBaseType, inferredTypes)
+	}
+
+	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
+		return baseType.getConversionsFrom(sourceType)
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

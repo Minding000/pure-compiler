@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
@@ -64,6 +65,10 @@ class OrUnionType(override val source: Element, scope: Scope, val types: List<Ty
 
 	override fun isInstanceOf(type: Linter.SpecialType): Boolean {
 		return types.all { part -> part.isInstanceOf(type) }
+	}
+
+	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
+		return types.flatMap { type -> type.getConversionsFrom(sourceType) }
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

@@ -16,6 +16,11 @@ internal class DeclarationModifiers {
 	}
 
 	@Test
+	fun `detects converting modifier tokens`() {
+		TestUtil.assertTokenType("converting", WordAtom.CONVERTING)
+	}
+
+	@Test
 	fun `detects immutable modifier tokens`() {
 		TestUtil.assertTokenType("immutable", WordAtom.IMMUTABLE)
 	}

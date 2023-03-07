@@ -3,6 +3,7 @@ package components.semantic_analysis.semantic_model.operations
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.SelfReference
@@ -13,6 +14,7 @@ import components.syntax_parser.syntax_tree.operations.Assignment as AssignmentS
 
 class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val targets: List<Value>, val sourceExpression: Value):
 	Unit(source, scope) {
+	var conversion: InitializerDefinition? = null
 
 	init {
 		addUnits(sourceExpression)
@@ -30,14 +32,27 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 			val targetType = target.type
 			if(sourceExpression.isAssignableTo(targetType)) {
 				sourceExpression.setInferredType(targetType)
-			} else if(targetType == null) {
-				target.type = sourceExpression.type
-			} else {
-				sourceExpression.type?.let { sourceType ->
-					linter.addMessage(target.source, "Type '$sourceType' is not assignable to type '$targetType'.",
-						Message.Type.ERROR)
-				}
+				continue
 			}
+			val sourceType = sourceExpression.type ?: continue
+			if(targetType == null) {
+				target.type = sourceType
+				continue
+			}
+			val conversions = targetType.getConversionsFrom(sourceType)
+			if(conversions.isNotEmpty()) {
+				if(conversions.size > 1) {
+					var message = "Conversion from '$sourceType' to '$targetType' needs to be explicit," +
+						" because there are multiple possible conversions:"
+					for(conversion in conversions)
+						message += "\n - ${conversion.parentDefinition.name}"
+					linter.addMessage(source, message, Message.Type.ERROR)
+				} else {
+					conversion = conversions.first()
+				}
+				continue
+			}
+			linter.addMessage(source, "Type '$sourceType' is not assignable to type '$targetType'.", Message.Type.ERROR)
 		}
 	}
 

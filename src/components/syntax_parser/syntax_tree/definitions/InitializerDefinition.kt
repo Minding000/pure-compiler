@@ -17,19 +17,21 @@ class InitializerDefinition(start: Position, private val parameterList: Paramete
 	override var parent: ModifierSection? = null
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.CONVERTING, WordAtom.NATIVE)
 	}
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticInitializerDefinitionModel {
 		parent?.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val surroundingTypeDefinition = scope.getSurroundingDefinition()
 			?: throw CompilerError("Initializer expected surrounding type definition.")
+		val isAbstract = parent?.containsModifier(WordAtom.ABSTRACT) ?: false
+		val isConverting = parent?.containsModifier(WordAtom.CONVERTING) ?: false
 		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 		val initializerScope = BlockScope(scope)
 		val genericParameters = parameterList?.concretizeGenerics(linter, initializerScope) ?: listOf()
 		val parameters = parameterList?.concretizeParameters(linter, initializerScope) ?: listOf()
 		return SemanticInitializerDefinitionModel(this, surroundingTypeDefinition, initializerScope, genericParameters, parameters,
-			body?.concretize(linter, initializerScope), isNative)
+			body?.concretize(linter, initializerScope), isAbstract, isConverting, isNative)
 	}
 
 	override fun toString(): String {

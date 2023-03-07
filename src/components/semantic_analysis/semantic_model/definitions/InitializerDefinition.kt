@@ -14,10 +14,10 @@ import java.util.*
 
 class InitializerDefinition(override val source: Element, override val parentDefinition: TypeDefinition, override val scope: BlockScope,
 							val genericParameters: List<TypeDefinition> = listOf(), val parameters: List<Parameter> = listOf(),
-							val body: Unit? = null, val isNative: Boolean = false): Unit(source, scope), MemberDeclaration, Callable {
+							val body: Unit? = null, override val isAbstract: Boolean = false, val isConverting: Boolean = false,
+							val isNative: Boolean = false): Unit(source, scope), MemberDeclaration, Callable {
 	override val memberIdentifier
 		get() = toString()
-	override val isAbstract = false
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 
@@ -36,7 +36,8 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
-		return InitializerDefinition(source, parentDefinition, scope, specificGenericParameters, specificParameters, body, isNative)
+		return InitializerDefinition(source, parentDefinition, scope, specificGenericParameters, specificParameters, body, isAbstract,
+			isConverting, isNative)
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -123,6 +124,10 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		return true
 	}
 
+	fun isConvertingFrom(sourceType: Type): Boolean {
+		return isConverting && parameters.size == 1 && parameters.first().type?.accepts(sourceType) ?: false
+	}
+
 	override fun linkPropertyParameters(linter: Linter) {
 		super.linkPropertyParameters(linter)
 		parentDefinition.scope.declareInitializer(linter, this)
@@ -148,6 +153,16 @@ class InitializerDefinition(override val source: Element, override val parentDef
 			for(uninitializedProperty in propertiesToBeInitialized)
 				message += "\n - ${uninitializedProperty.memberIdentifier}"
 			linter.addMessage(source, message, Message.Type.ERROR)
+		}
+	}
+
+	override fun validate(linter: Linter) {
+		super.validate(linter)
+		if(isConverting) {
+			if(genericParameters.isNotEmpty())
+				linter.addMessage(source, "Converting initializers cannot take type parameters.", Message.Type.WARNING)
+			if(parameters.size != 1)
+				linter.addMessage(source, "Converting initializers have to take exactly one parameter.", Message.Type.WARNING)
 		}
 	}
 

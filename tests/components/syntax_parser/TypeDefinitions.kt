@@ -181,6 +181,24 @@ internal class TypeDefinitions {
 	}
 
 	@Test
+	fun `parses converting modifiers`() {
+		val sourceCode = """
+			Submarine class {
+				converting init
+			}
+		""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ Identifier { Submarine } class ] { TypeBody {
+					ModifierSection [ ModifierList { Modifier { converting } } ] {
+						Initializer
+					}
+				} }
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+	}
+
+	@Test
 	fun `parses native modifiers`() {
 		val sourceCode = "native Goldfish class"
 		val expected =

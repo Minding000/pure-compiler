@@ -29,7 +29,7 @@ internal class Declarations {
 				var toast
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type or value is required")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Declaration requires a type or value to infer a type from")
 	}
 
 	@Test

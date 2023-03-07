@@ -57,5 +57,7 @@ abstract class Type(source: Element, scope: Scope, isStatic: Boolean = false): U
 	open fun getPropertiesToBeInitialized(): List<PropertyDeclaration> =
 		throw CompilerError("Tried to get properties to be initialized of non-super type.")
 
+	open fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> = listOf()
+
 //	abstract override fun compile(context: BuildContext): LLVMTypeRef
 }

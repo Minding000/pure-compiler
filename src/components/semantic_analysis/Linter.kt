@@ -114,7 +114,7 @@ class Linter {
 		fun matches(type: Type?): Boolean {
 			if(type !is ObjectType)
 				return false
-			return type.name == className && type.definition?.scope?.parentScope == scope
+			return type.name == className && type.definition?.scope?.enclosingScope == scope
 		}
 	}
 }

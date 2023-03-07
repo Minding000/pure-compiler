@@ -111,4 +111,8 @@ internal class InitializerResolution {
 		lintResult.assertMessageEmitted(Message.Type.ERROR,
 			"Call to initializer '<Int>List(Int)' is ambiguous")
 	}
+
+	//TODO abstract initializers
+	// - require initializers to be implemented in non-abstract sub-class
+	// - require 'converting' keyword to match
 }

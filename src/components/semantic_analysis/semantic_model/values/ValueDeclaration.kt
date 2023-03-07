@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -13,6 +14,7 @@ abstract class ValueDeclaration(override val source: Element, scope: Scope, val 
 								val isConstant: Boolean = true, val isMutable: Boolean = false): Unit(source, scope) {
 	open val value = value
 	val usages = LinkedList<VariableValue>()
+	var conversion: InitializerDefinition? = null
 
 	init {
 		addUnits(type, value)
@@ -25,16 +27,33 @@ abstract class ValueDeclaration(override val source: Element, scope: Scope, val 
 		val value = value
 		if(value == null) {
 			if(type == null)
-				linter.addMessage(source, "Type or value is required.", Message.Type.ERROR)
+				linter.addMessage(source, "Declaration requires a type or value to infer a type from.", Message.Type.ERROR)
 		} else {
-			if(value.isAssignableTo(type)) {
-				value.setInferredType(type)
-			} else if(type == null) {
-				value.linkValues(linter)
-				type = value.type
-			} else {
-				linter.addMessage(source, "Type '${value.type}' is not assignable to type '$type'.", Message.Type.ERROR)
+			val targetType = type
+			if(value.isAssignableTo(targetType)) {
+				value.setInferredType(targetType)
+				return
 			}
+			value.linkValues(linter)
+			val sourceType = value.type ?: return
+			if(targetType == null) {
+				type = sourceType
+				return
+			}
+			val conversions = targetType.getConversionsFrom(sourceType)
+			if(conversions.isNotEmpty()) {
+				if(conversions.size > 1) {
+					var message = "Conversion from '$sourceType' to '$targetType' needs to be explicit," +
+						" because there are multiple possible conversions:"
+					for(conversion in conversions)
+						message += "\n - ${conversion.parentDefinition.name}"
+					linter.addMessage(source, message, Message.Type.ERROR)
+				} else {
+					conversion = conversions.first()
+				}
+				return
+			}
+			linter.addMessage(source, "Type '${sourceType}' is not assignable to type '$targetType'.", Message.Type.ERROR)
 		}
 	}
 }

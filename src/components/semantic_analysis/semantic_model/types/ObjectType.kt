@@ -1,15 +1,11 @@
 package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
-import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
-import components.semantic_analysis.semantic_model.definitions.TypeAlias
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
 import messages.Message
-import java.util.*
 
 open class ObjectType(override val source: Element, scope: Scope, val enclosingType: ObjectType?, val typeParameters: List<Type>,
 					  val name: String, var definition: TypeDefinition? = null): Type(source, scope) {
@@ -143,11 +139,15 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 	}
 
 	override fun getAbstractMembers(): List<MemberDeclaration> {
-		return definition?.scope?.getAbstractMembers() ?: LinkedList()
+		return definition?.scope?.getAbstractMembers() ?: listOf()
 	}
 
 	override fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {
-		return definition?.scope?.getPropertiesToBeInitialized() ?: LinkedList()
+		return definition?.scope?.getPropertiesToBeInitialized() ?: listOf()
+	}
+
+	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
+		return definition?.scope?.getConversionsFrom(sourceType) ?: listOf()
 	}
 
 	override fun equals(other: Any?): Boolean {

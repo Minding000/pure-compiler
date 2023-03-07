@@ -95,6 +95,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	ALWAYS("always\\b"),
 	ABSTRACT("abstract\\b"),
 	BOUND("bound\\b"),
+	CONVERTING("converting\\b"),
 	IMMUTABLE("immutable\\b"),
 	MUTABLE("mutable\\b"),
 	MUTATING("mutating\\b"),

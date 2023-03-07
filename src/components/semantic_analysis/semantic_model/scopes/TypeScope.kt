@@ -10,7 +10,7 @@ import errors.internal.CompilerError
 import messages.Message
 import java.util.*
 
-class TypeScope(val parentScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
+class TypeScope(val enclosingScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
 	lateinit var typeDefinition: TypeDefinition
 	private val typeDefinitions = HashMap<String, TypeDefinition>()
 	val memberDeclarations = LinkedList<MemberDeclaration>()
@@ -18,7 +18,7 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 	val initializers = LinkedList<InitializerDefinition>()
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>, superScope: InterfaceScope?): TypeScope {
-		val specificTypeScope = TypeScope(parentScope, superScope)
+		val specificTypeScope = TypeScope(enclosingScope, superScope)
 		for((name, typeDefinition) in typeDefinitions) {
 			if(typeDefinition is GenericTypeDefinition)
 				continue
@@ -142,9 +142,9 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 			return
 		var message = "Non-abstract class '${typeDefinition.name}' does not implement the following inherited members:"
 		for((parent, missingMembers) in missingOverrides) {
-			message += "\n- ${parent.name}"
+			message += "\n - ${parent.name}"
 			for(member in missingMembers)
-				message += "\n  - ${member.memberIdentifier}"
+				message += "\n   - ${member.memberIdentifier}"
 		}
 		linter.addMessage(typeDefinition.source, message, Message.Type.ERROR)
 	}
@@ -152,12 +152,11 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
 		initializers.add(initializer)
 		onNewInitializer(initializer)
-		linter.addMessage(initializer.source,
-			"Declaration of initializer '$initializer'.", Message.Type.DEBUG)
+		linter.addMessage(initializer.source, "Declaration of initializer '$initializer'.", Message.Type.DEBUG)
 	}
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {
-		var previousDeclaration = parentScope.resolveType(type.name)
+		var previousDeclaration = enclosingScope.resolveType(type.name)
 		if(previousDeclaration != null)
 			linter.addMessage(type.source, "'${type.name}' shadows a type," +
 				" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.WARNING)
@@ -175,7 +174,7 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 		if(value !is InterfaceMember)
 			throw CompilerError("Tried to declare non-member of type '${value.javaClass.simpleName}' in type scope.")
 		value.parentDefinition = typeDefinition
-		var previousDeclaration = parentScope.resolveValue(value.name)
+		var previousDeclaration = enclosingScope.resolveValue(value.name)
 		if(previousDeclaration != null)
 			linter.addMessage(value.source, "'${value.name}' shadows a member," +
 				" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.WARNING)
@@ -253,20 +252,20 @@ class TypeScope(val parentScope: MutableScope, private val superScope: Interface
 	override fun resolveValue(name: String): ValueDeclaration? {
 		return interfaceMembers[name]
 			?: superScope?.resolveValue(name)
-			?: parentScope.resolveValue(name)
+			?: enclosingScope.resolveValue(name)
 	}
 
 	override fun resolveType(name: String): TypeDefinition? {
 		return typeDefinitions[name]
 			?: superScope?.resolveType(name)
-			?: parentScope.resolveType(name)
+			?: enclosingScope.resolveType(name)
 	}
 
-	fun getGenericTypeDefinitions(): LinkedList<GenericTypeDefinition> {
-		val genericTypes = LinkedList<GenericTypeDefinition>()
-		for((_, typeDefinition) in typeDefinitions)
-			if(typeDefinition is GenericTypeDefinition)
-				genericTypes.add(typeDefinition)
-		return genericTypes
+	fun getGenericTypeDefinitions(): List<GenericTypeDefinition> {
+		return typeDefinitions.values.filterIsInstance<GenericTypeDefinition>()
+	}
+
+	fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
+		return initializers.filter { initializer -> initializer.isConvertingFrom(sourceType) }
 	}
 }

@@ -14,7 +14,6 @@ class LiteralType(override val source: Element, scope: Scope, val literalType: L
 	}
 
 	override fun linkTypes(linter: Linter) {
-		super.linkTypes(linter)
 		definition = literalType.scope?.resolveType(name)
 		if(definition == null)
 			linter.addMessage(source, "Literal type '$name' hasn't been declared yet.", Message.Type.ERROR)

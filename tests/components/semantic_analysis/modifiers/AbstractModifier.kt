@@ -28,6 +28,18 @@ internal class AbstractModifier {
 	}
 
 	@Test
+	fun `is allowed on initializers`() {
+		val sourceCode =
+			"""
+				abstract Mask class {
+					abstract init
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+	}
+
+	@Test
 	fun `is allowed on properties`() {
 		val sourceCode =
 			"""
@@ -66,7 +78,20 @@ internal class AbstractModifier {
 	}
 
 	@Test
-	fun `emits error for abstract member in non-abstract class`() {
+	fun `allows abstract members in abstract classes`() {
+		val sourceCode = """
+			Int class
+			abstract List class {
+				abstract val id: Int
+				abstract to clear()
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not allowed in non-abstract class")
+	}
+
+	@Test
+	fun `disallows abstract members in non-abstract classes`() {
 		val sourceCode = """
 			Int class
 			List class {
@@ -82,20 +107,7 @@ internal class AbstractModifier {
 	}
 
 	@Test
-	fun `doesn't emit error for abstract member in abstract class`() {
-		val sourceCode = """
-			Int class
-			abstract List class {
-				abstract val id: Int
-				abstract to clear()
-			}
-			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not allowed in non-abstract class")
-	}
-
-	@Test
-	fun `doesn't emit error for non-abstract member in non-abstract class`() {
+	fun `allows non-abstract members in non-abstract classes`() {
 		val sourceCode = """
 			Int class
 			List class {
@@ -108,7 +120,7 @@ internal class AbstractModifier {
 	}
 
 	@Test
-	fun `emits error for instantiation of abstract classes`() {
+	fun `disallows instantiation of abstract classes`() {
 		val sourceCode = """
 			abstract List class
 			List()
@@ -118,7 +130,7 @@ internal class AbstractModifier {
 	}
 
 	@Test
-	fun `emits error for non-abstract subclasses that don't implement inherited abstract members`() {
+	fun `disallows non-abstract subclasses that don't implement inherited abstract members`() {
 		val sourceCode = """
 			Int class
 			abstract Collection class {
@@ -136,10 +148,10 @@ internal class AbstractModifier {
 		lintResult.assertMessageEmitted(Message.Type.ERROR,
 			"""
 				Non-abstract class 'LinkedList' does not implement the following inherited members:
-				- Collection
-				  - size: Int
-				- List
-				  - clear(Int)
+				 - Collection
+				   - size: Int
+				 - List
+				   - clear(Int)
 			""".trimIndent())
 	}
 }

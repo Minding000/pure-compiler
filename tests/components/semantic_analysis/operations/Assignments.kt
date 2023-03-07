@@ -10,11 +10,25 @@ internal class Assignments {
 	fun `emits error for incompatible source expression type`() {
 		val sourceCode =
 			"""
+				Int class
+				String class
+				val a = Int()
+				var b = String()
+				b = a
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Int' is not assignable to type 'String'")
+	}
+
+	@Test
+	fun `allows for integers to be assigned to floats`() {
+		val sourceCode =
+			"""
 				val a = 5
-				var b = "I'm not a number"
+				var b = 6.2
 				b = a
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Int' is not assignable to type 'String'")
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type 'Float' is not assignable to type 'Int'")
 	}
 }
