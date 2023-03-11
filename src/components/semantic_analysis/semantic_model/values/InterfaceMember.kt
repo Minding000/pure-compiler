@@ -19,13 +19,13 @@ abstract class InterfaceMember(source: Element, scope: Scope, name: String, type
 
 	abstract override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): InterfaceMember
 
-	override fun validate(linter: Linter) {
+	override fun validate(linter: Linter) { //TODO test this for initializers
 		super.validate(linter)
 		if(value !is Function) {
 			if(superMember == null) {
 				if(isOverriding)
-					linter.addMessage(source,
-						"'overriding' keyword is used, but the property doesn't have a super property.", Message.Type.WARNING)
+					linter.addMessage(source, "'overriding' keyword is used, but the property doesn't have a super property.",
+						Message.Type.WARNING)
 			} else {
 				if(!isOverriding)
 					linter.addMessage(source, "Missing 'overriding' keyword.", Message.Type.WARNING)

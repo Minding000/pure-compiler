@@ -55,8 +55,10 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	}
 
 	fun addInitializer(initializer: InitializerDefinition) {
-		initializers.add(initializer)
-		onNewInitializer(initializer)
+		if(!initializers.contains(initializer)) {
+			initializers.add(initializer)
+			onNewInitializer(initializer)
+		}
 	}
 
 	override fun resolveValue(name: String): InterfaceMember? {
@@ -67,13 +69,20 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 		return types[name]
 	}
 
+	fun getSuperInitializer(initializer: InitializerDefinition): InitializerDefinition? {
+		for(superInitializer in initializers) {
+			if(initializer.fulfillsInheritanceRequirementsOf(superInitializer))
+				return superInitializer
+		}
+		return null
+	}
+
 	fun resolveInitializer(suppliedValues: List<Value>): MatchResult? =
 		resolveInitializer(listOf(), listOf(), listOf(), suppliedValues)
 
 	fun resolveInitializer(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
 						   suppliedTypes: List<Type>, suppliedValues: List<Value>): MatchResult? {
-		val matches = getMatchingInitializers(genericDefinitionTypes, suppliedDefinitionTypes, suppliedTypes,
-			suppliedValues)
+		val matches = getMatchingInitializers(genericDefinitionTypes, suppliedDefinitionTypes, suppliedTypes, suppliedValues)
 		if(matches.isEmpty())
 			return null
 		specificityPrecedenceLoop@for(match in matches) {
@@ -93,17 +102,17 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	private fun getMatchingInitializers(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
 										suppliedTypes: List<Type>, suppliedValues: List<Value>): List<MatchResult> {
 		val validSignatures = LinkedList<MatchResult>()
-		for(signature in initializers) {
-			var specificSignature = signature
-			val definitionTypeSubstitutions = signature.getDefinitionTypeSubstitutions(genericDefinitionTypes,
-				suppliedDefinitionTypes, suppliedValues) ?: continue
+		for(initializer in initializers) {
+			var specificInitializer = initializer
+			val definitionTypeSubstitutions = initializer.getDefinitionTypeSubstitutions(genericDefinitionTypes, suppliedDefinitionTypes,
+				suppliedValues) ?: continue
 			if(definitionTypeSubstitutions.isNotEmpty())
-				specificSignature = specificSignature.withTypeSubstitutions(definitionTypeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
-			val typeSubstitutions = specificSignature.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
+				specificInitializer = specificInitializer.withTypeSubstitutions(definitionTypeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
+			val typeSubstitutions = specificInitializer.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
 			if(typeSubstitutions.isNotEmpty())
-				specificSignature = specificSignature.withTypeSubstitutions(typeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
-			if(specificSignature.accepts(suppliedValues))
-				validSignatures.add(MatchResult(specificSignature, definitionTypeSubstitutions))
+				specificInitializer = specificInitializer.withTypeSubstitutions(typeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
+			if(specificInitializer.accepts(suppliedValues))
+				validSignatures.add(MatchResult(specificInitializer, definitionTypeSubstitutions))
 		}
 		return validSignatures
 	}

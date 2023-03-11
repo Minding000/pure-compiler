@@ -29,15 +29,15 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 	}
 
 	override fun onNewType(type: TypeDefinition) {
-		this.interfaceScope.addType(type)
+		interfaceScope.addType(type)
 	}
 
 	override fun onNewValue(value: InterfaceMember) {
-		this.interfaceScope.addValue(value)
+		interfaceScope.addValue(value)
 	}
 
 	override fun onNewInitializer(initializer: InitializerDefinition) {
-		this.interfaceScope.addInitializer(initializer)
+		interfaceScope.addInitializer(initializer)
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

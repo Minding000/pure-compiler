@@ -108,11 +108,6 @@ internal class InitializerResolution {
 				val numbers = <Int>List(Int())
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Call to initializer '<Int>List(Int)' is ambiguous")
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Call to initializer '<Int>List(Int)' is ambiguous")
 	}
-
-	//TODO abstract initializers
-	// - require initializers to be implemented in non-abstract sub-class
-	// - require 'converting' keyword to match
 }

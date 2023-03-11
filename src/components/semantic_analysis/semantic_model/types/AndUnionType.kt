@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
@@ -36,6 +37,10 @@ class AndUnionType(override val source: Element, scope: Scope, val types: List<T
 
 	override fun onNewValue(value: InterfaceMember) {
 		interfaceScope.addValue(value)
+	}
+
+	override fun onNewInitializer(initializer: InitializerDefinition) {
+		interfaceScope.addInitializer(initializer)
 	}
 
 	override fun isInstanceOf(type: Linter.SpecialType): Boolean {

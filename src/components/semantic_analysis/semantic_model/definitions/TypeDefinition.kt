@@ -86,11 +86,6 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 		}
 	}
 
-	override fun resolveGenerics(linter: Linter) {
-		super.resolveGenerics(linter)
-		this.scope.inheritSignatures()
-	}
-
 	override fun linkPropertyParameters(linter: Linter) {
 		super.linkPropertyParameters(linter)
 		if(this.scope.initializers.isEmpty()) {
@@ -99,6 +94,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 			this.scope.declareInitializer(linter, defaultInitializer)
 		}
 		this.scope.ensureUniqueInitializerSignatures(linter)
+		this.scope.inheritSignatures()
 	}
 
 	override fun linkValues(linter: Linter) {

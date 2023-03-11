@@ -64,6 +64,10 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		interfaceScope.addValue(value)
 	}
 
+	override fun onNewInitializer(initializer: InitializerDefinition) {
+		interfaceScope.addInitializer(initializer)
+	}
+
 	override fun linkTypes(linter: Linter) {
 		super.linkTypes(linter)
 		if(definition == null) {

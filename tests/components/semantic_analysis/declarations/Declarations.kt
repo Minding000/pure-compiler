@@ -212,7 +212,10 @@ internal class Declarations {
 	fun `disallows type definitions to inherit from themself directly`() {
 		val sourceCode =
 			"""
-				Pen class: Pen
+				Pen class: Pen {
+					Type class
+					val value: Type
+				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type definitions cannot inherit from themself")

@@ -17,7 +17,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 							 returnType: Type?, override val isAbstract: Boolean = false, val isMutating: Boolean = false,
 							 val isNative: Boolean = false, val isOverriding: Boolean = false):
 	Unit(source, scope), MemberDeclaration, Callable {
-	lateinit var parentFunction: Function
+	private lateinit var parentFunction: Function
 	override val memberIdentifier: String
 		get() {
 			val parentOperator = parentFunction as? Operator
@@ -52,7 +52,11 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		functionTracker.validate(linter)
 		propertiesBeingInitialized.addAll(functionTracker.getPropertiesBeingInitialized())
 		propertiesRequiredToBeInitialized.addAll(functionTracker.getPropertiesRequiredToBeInitialized())
-		tracker.addChild(parentFunction.name, functionTracker)
+		var trackerName = ""
+		if(parentDefinition != null)
+			trackerName += "${parentDefinition.name}."
+		trackerName += memberIdentifier
+		tracker.addChild(trackerName, functionTracker)
 	}
 
 	override fun validate(linter: Linter) {

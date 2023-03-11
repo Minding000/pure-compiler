@@ -13,31 +13,44 @@ import util.stringifyTypes
 import java.util.*
 
 class InitializerDefinition(override val source: Element, override val parentDefinition: TypeDefinition, override val scope: BlockScope,
-							val genericParameters: List<TypeDefinition> = listOf(), val parameters: List<Parameter> = listOf(),
+							val typeParameters: List<TypeDefinition> = listOf(), val parameters: List<Parameter> = listOf(),
 							val body: Unit? = null, override val isAbstract: Boolean = false, val isConverting: Boolean = false,
 							val isNative: Boolean = false): Unit(source, scope), MemberDeclaration, Callable {
 	override val memberIdentifier
-		get() = toString()
+		get() = toString(true)
+	var superInitializer: InitializerDefinition? = null
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 
 	init {
-		addUnits(genericParameters, parameters)
+		addUnits(typeParameters, parameters)
 		addUnits(body)
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {
-		val specificGenericParameters = LinkedList<TypeDefinition>()
-		for(genericParameter in genericParameters) {
-			genericParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
-				specificGenericParameters.add(specificDefinition)
+		val specificTypeParameters = LinkedList<TypeDefinition>()
+		for(typeParameter in typeParameters) {
+			typeParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
+				specificTypeParameters.add(specificDefinition)
 			}
 		}
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
-		return InitializerDefinition(source, parentDefinition, scope, specificGenericParameters, specificParameters, body, isAbstract,
+		return InitializerDefinition(source, parentDefinition, scope, specificTypeParameters, specificParameters, body, isAbstract,
 			isConverting, isNative)
+	}
+
+	fun fulfillsInheritanceRequirementsOf(superInitializer: InitializerDefinition): Boolean {
+		if(parameters.size != superInitializer.parameters.size)
+			return false
+		for(parameterIndex in parameters.indices) {
+			val superParameterType = superInitializer.parameters[parameterIndex].type ?: continue
+			val baseParameterType = parameters[parameterIndex].type ?: continue
+			if(!baseParameterType.accepts(superParameterType))
+				return false
+		}
+		return true
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -71,20 +84,20 @@ class InitializerDefinition(override val source: Element, override val parentDef
 	}
 
 	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
-		if(genericParameters.size < suppliedTypes.size)
+		if(typeParameters.size < suppliedTypes.size)
 			return null
 		if(parameters.size != suppliedValues.size)
 			return null
 		val typeSubstitutions = HashMap<TypeDefinition, Type>()
-		for(parameterIndex in genericParameters.indices) {
-			val genericParameter = genericParameters[parameterIndex]
-			val requiredType = genericParameter.superType
+		for(parameterIndex in typeParameters.indices) {
+			val typeParameter = typeParameters[parameterIndex]
+			val requiredType = typeParameter.superType
 			val suppliedType = suppliedTypes.getOrNull(parameterIndex)
-				?: inferTypeParameter(genericParameter, suppliedValues)
+				?: inferTypeParameter(typeParameter, suppliedValues)
 				?: return null
 			if(requiredType?.accepts(suppliedType) == false)
 				return null
-			typeSubstitutions[genericParameter] = suppliedType
+			typeSubstitutions[typeParameter] = suppliedType
 		}
 		return typeSubstitutions
 	}
@@ -146,7 +159,7 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		initializerTracker.validate(linter)
 		propertiesBeingInitialized.addAll(initializerTracker.getPropertiesBeingInitialized())
 		propertiesRequiredToBeInitialized.addAll(initializerTracker.getPropertiesRequiredToBeInitialized())
-		tracker.addChild(memberIdentifier, initializerTracker)
+		tracker.addChild("${parentDefinition.name}.${memberIdentifier}", initializerTracker)
 		propertiesToBeInitialized.removeAll(propertiesBeingInitialized)
 		if(propertiesToBeInitialized.isNotEmpty()) {
 			var message = "The following properties have not been initialized by this initializer:"
@@ -159,22 +172,30 @@ class InitializerDefinition(override val source: Element, override val parentDef
 	override fun validate(linter: Linter) {
 		super.validate(linter)
 		if(isConverting) {
-			if(genericParameters.isNotEmpty())
+			if(typeParameters.isNotEmpty())
 				linter.addMessage(source, "Converting initializers cannot take type parameters.", Message.Type.WARNING)
 			if(parameters.size != 1)
 				linter.addMessage(source, "Converting initializers have to take exactly one parameter.", Message.Type.WARNING)
+		} else {
+			if(superInitializer?.isConverting == true)
+				linter.addMessage(source, "Overriding initializer of converting initializer needs to be converting.",
+					Message.Type.ERROR)
 		}
 	}
 
 	override fun toString(): String {
+		return toString(false)
+	}
+
+	fun toString(isInternal: Boolean): String {
 		var stringRepresentation = ""
 		val genericTypeDefinitions = parentDefinition.scope.getGenericTypeDefinitions()
 		if(genericTypeDefinitions.isNotEmpty())
 			stringRepresentation += "<${genericTypeDefinitions.joinToString()}>"
-		stringRepresentation += parentDefinition.name
+		stringRepresentation += if(isInternal) "init" else parentDefinition.name
 		stringRepresentation += "("
-		if(genericParameters.isNotEmpty()) {
-			stringRepresentation += genericParameters.joinToString()
+		if(typeParameters.isNotEmpty()) {
+			stringRepresentation += typeParameters.joinToString()
 			stringRepresentation += ";"
 			if(parameters.isNotEmpty())
 				stringRepresentation += " "

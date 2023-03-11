@@ -3,6 +3,7 @@ package components.semantic_analysis.semantic_model.scopes
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.types.FunctionType
+import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.*
 import components.semantic_analysis.semantic_model.values.Function
@@ -49,7 +50,8 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 			type.onNewValue(interfaceMember)
 		for(initializer in initializers)
 			type.onNewInitializer(initializer)
-		superScope?.subscribe(type)
+		if(type !is StaticType)
+			superScope?.subscribe(type)
 	}
 
 	override fun getSurroundingDefinition(): TypeDefinition {
@@ -77,16 +79,18 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 	}
 
 	fun inheritSignatures() {
-		for((_, memberDeclaration) in interfaceMembers) {
-			memberDeclaration.superMember = superScope?.resolveValue(memberDeclaration.name)
-			val function = memberDeclaration.value as? Function ?: continue
-			function.functionType.superFunctionType = memberDeclaration.superMember?.type as? FunctionType
+		for(initializer in initializers)
+			initializer.superInitializer = superScope?.getSuperInitializer(initializer)
+		for((_, interfaceMember) in interfaceMembers) {
+			interfaceMember.superMember = superScope?.resolveValue(interfaceMember.name)
+			val function = interfaceMember.value as? Function ?: continue
+			function.functionType.superFunctionType = interfaceMember.superMember?.type as? FunctionType
 		}
 	}
 
 	fun ensureTrivialInitializers(linter: Linter) {
 		for(initializer in initializers) {
-			if(initializer.genericParameters.isNotEmpty())
+			if(initializer.typeParameters.isNotEmpty())
 				linter.addMessage(initializer.source, "Object initializers can not take type parameters.", Message.Type.ERROR)
 			if(initializer.parameters.isNotEmpty())
 				linter.addMessage(initializer.source, "Object initializers can not take parameters.", Message.Type.ERROR)
@@ -152,6 +156,7 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
 		initializers.add(initializer)
 		onNewInitializer(initializer)
+		memberDeclarations.add(initializer)
 		linter.addMessage(initializer.source, "Declaration of initializer '$initializer'.", Message.Type.DEBUG)
 	}
 

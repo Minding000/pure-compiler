@@ -103,10 +103,12 @@ class FunctionSignature(override val source: Element, override val scope: BlockS
 			return false
 		if(parameterTypes.size != superSignature.parameterTypes.size)
 			return false
-		for(parameterIndex in parameterTypes.indices)
-			if(superSignature.parameterTypes[parameterIndex]?.let {
-						superParameterType -> parameterTypes[parameterIndex]?.accepts(superParameterType) } == false)
+		for(parameterIndex in parameterTypes.indices) {
+			val superParameterType = superSignature.parameterTypes[parameterIndex] ?: continue
+			val baseParameterType = parameterTypes[parameterIndex] ?: continue
+			if(!baseParameterType.accepts(superParameterType))
 				return false
+		}
 		return true
 	}
 

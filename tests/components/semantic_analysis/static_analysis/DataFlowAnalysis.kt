@@ -146,7 +146,7 @@ internal class DataFlowAnalysis {
 			7: read -> end
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.childTrackers["getNumber"]?.getReport("a"))
+		assertEquals(report, tracker.childTrackers["DataProvider.getNumber(): Int"]?.getReport("a"))
 	}
 
 	@Test
@@ -255,7 +255,7 @@ internal class DataFlowAnalysis {
 			4: read -> end
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.childTrackers["A()"]?.getReport("a"))
+		assertEquals(report, tracker.childTrackers["A.init()"]?.getReport("a"))
 	}
 
 	@Test
@@ -274,6 +274,6 @@ internal class DataFlowAnalysis {
 			4: write -> end
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.childTrackers["A()"]?.getReport("a"))
+		assertEquals(report, tracker.childTrackers["A.init()"]?.getReport("a"))
 	}
 }

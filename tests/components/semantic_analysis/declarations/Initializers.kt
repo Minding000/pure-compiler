@@ -138,4 +138,160 @@ internal class Initializers {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertMessageEmitted(Message.Type.ERROR, "Property parameters are only allowed in initializers")
 	}
+
+	@Test
+	fun `allows abstract classes to contain abstract initializers`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Plant class {
+					abstract init(size: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not allowed in non-abstract class")
+	}
+
+	@Test
+	fun `disallows non-abstract classes to contain abstract initializers`() {
+		val sourceCode =
+			"""
+				Int class
+				Plant class {
+					abstract init(size: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, "Abstract member 'init(Int)' is not allowed in non-abstract class 'Plant'")
+	}
+
+	@Test
+	fun `allows abstract classes to not override abstract initializers`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Plant class {
+					abstract init(size: Int)
+				}
+				abstract Tree class: Plant
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "does not implement the following inherited members")
+	}
+
+	@Test
+	fun `allows non-abstract classes to not override non-abstract initializers`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Plant class {
+					init(size: Int)
+				}
+				Tree class: Plant
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "does not implement the following inherited members")
+	}
+
+	@Test
+	fun `allows abstract classes to override abstract initializers`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Plant class {
+					abstract init(size: Int)
+				}
+				Tree class: Plant {
+					overriding init(size: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "does not implement the following inherited members")
+	}
+
+	@Test
+	fun `disallows non-abstract classes to not override abstract initializers`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Plant class {
+					abstract init(size: Int)
+				}
+				Tree class: Plant
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR, """
+			Non-abstract class 'Tree' does not implement the following inherited members:
+			 - Plant
+			   - init(Int)
+		""".trimIndent())
+	}
+
+	@Test
+	fun `allows overriding converting initializers with converting initializer`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Number class {
+					converting abstract init(value: Int)
+				}
+				Float class: Number {
+					overriding converting init(value: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
+			"Overriding initializer of converting initializer needs to be converting")
+	}
+
+	@Test
+	fun `allows overriding non-converting initializers with non-converting initializer`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Number class {
+					abstract init(value: Int)
+				}
+				Float class: Number {
+					overriding init(value: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
+			"Overriding initializer of converting initializer needs to be converting")
+	}
+
+	@Test
+	fun `allows overriding non-converting initializers with converting initializer`() {
+		val sourceCode =
+			"""
+				Float class
+				abstract Number class {
+					abstract init(value: Float)
+				}
+				Double class: Number {
+					overriding converting init(value: Float)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
+			"Overriding initializer of converting initializer needs to be converting")
+	}
+
+	@Test
+	fun `disallows overriding converting initializers with non-converting initializer`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Number class {
+					converting abstract init(value: Int)
+				}
+				Float class: Number {
+					overriding init(value: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.ERROR,
+			"Overriding initializer of converting initializer needs to be converting")
+	}
 }
