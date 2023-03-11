@@ -87,7 +87,8 @@ internal class FunctionResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Missing 'overriding' keyword")
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"Function 'Potato.getNutritionScore(): Float' is missing the 'overriding' keyword")
 	}
 
 	@Test
@@ -105,7 +106,7 @@ internal class FunctionResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Missing 'overriding' keyword")
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "is missing the 'overriding' keyword")
 		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
 			"'overriding' keyword is used, but the function doesn't have a super function")
 	}

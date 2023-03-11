@@ -156,24 +156,6 @@ internal class ValueResolution {
 	}
 
 	@Test
-	fun `detects missing overriding keyword on properties`() {
-		val sourceCode =
-			"""
-				Number class
-				Float class: Number
-				Food class {
-					val nutritionScore: Number
-				}
-				Vegetable class: Food
-				Potato class: Vegetable {
-					val nutritionScore: Float
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Missing 'overriding' keyword")
-	}
-
-	@Test
 	fun `allows for properties to be overridden`() {
 		val sourceCode =
 			"""
@@ -188,9 +170,28 @@ internal class ValueResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Missing 'overriding' keyword")
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "is missing the 'overriding' keyword")
 		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
 			"'overriding' keyword is used, but the property doesn't have a super property")
+	}
+
+	@Test
+	fun `detects missing overriding keyword on properties`() {
+		val sourceCode =
+			"""
+				Number class
+				Float class: Number
+				Food class {
+					val nutritionScore: Number
+				}
+				Vegetable class: Food
+				Potato class: Vegetable {
+					val nutritionScore: Float
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"Property 'nutritionScore: Float' is missing the 'overriding' keyword.")
 	}
 
 	@Test

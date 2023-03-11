@@ -28,18 +28,6 @@ internal class OverridingModifier {
 	}
 
 	@Test
-	fun `is not allowed on initializers`() {
-		val sourceCode =
-			"""
-				Forrest class {
-					overriding init
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
-	}
-
-	@Test
 	fun `is allowed on properties`() {
 		val sourceCode =
 			"""
@@ -58,6 +46,18 @@ internal class OverridingModifier {
 				Goldfish class {
 					overriding val name: String
 						gets "Bernd"
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
+	}
+
+	@Test
+	fun `is allowed on initializers`() {
+		val sourceCode =
+			"""
+				Dictionary class {
+					overriding init()
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

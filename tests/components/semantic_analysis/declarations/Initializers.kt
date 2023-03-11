@@ -294,4 +294,85 @@ internal class Initializers {
 		lintResult.assertMessageEmitted(Message.Type.ERROR,
 			"Overriding initializer of converting initializer needs to be converting")
 	}
+
+	@Test
+	fun `allows for initializers to be overridden`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Number class {
+					abstract init(value: Int)
+				}
+				Float class: Number {
+					overriding init(value: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "is missing the 'overriding' keyword")
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
+			"'overriding' keyword is used, but the initializer doesn't have an abstract super initializer")
+	}
+
+	@Test
+	fun `detects missing overriding keyword on initializers`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Number class {
+					abstract init(value: Int)
+				}
+				Float class: Number {
+					init(value: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING, "Initializer 'Float(Int)' is missing the 'overriding' keyword")
+	}
+
+	@Test
+	fun `detects overriding keyword being used without super initializer`() {
+		val sourceCode =
+			"""
+				Float class: Number {
+					overriding init(value: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"'overriding' keyword is used, but the initializer doesn't have an abstract super initializer")
+	}
+
+	@Test
+	fun `doesn't require overriding keyword on initializers with non-abstract initializer with same signature in super type`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Number class {
+					init(value: Int)
+				}
+				Float class: Number {
+					init(value: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
+			"Initializer 'Float(Int)' is missing the 'overriding' keyword")
+	}
+
+	@Test
+	fun `detects overriding keyword being used with non-abstract super initializer`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Number class {
+					init(value: Int)
+				}
+				Float class: Number {
+					overriding init(value: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"'overriding' keyword is used, but the initializer doesn't have an abstract super initializer")
+	}
 }

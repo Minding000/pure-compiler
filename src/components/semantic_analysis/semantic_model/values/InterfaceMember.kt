@@ -19,7 +19,7 @@ abstract class InterfaceMember(source: Element, scope: Scope, name: String, type
 
 	abstract override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): InterfaceMember
 
-	override fun validate(linter: Linter) { //TODO test this for initializers
+	override fun validate(linter: Linter) {
 		super.validate(linter)
 		if(value !is Function) {
 			if(superMember == null) {
@@ -28,7 +28,8 @@ abstract class InterfaceMember(source: Element, scope: Scope, name: String, type
 						Message.Type.WARNING)
 			} else {
 				if(!isOverriding)
-					linter.addMessage(source, "Missing 'overriding' keyword.", Message.Type.WARNING)
+					linter.addMessage(source, "Property '$memberIdentifier' is missing the 'overriding' keyword.",
+						Message.Type.WARNING)
 			}
 		}
 	}

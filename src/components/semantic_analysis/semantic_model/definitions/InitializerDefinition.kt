@@ -15,7 +15,8 @@ import java.util.*
 class InitializerDefinition(override val source: Element, override val parentDefinition: TypeDefinition, override val scope: BlockScope,
 							val typeParameters: List<TypeDefinition> = listOf(), val parameters: List<Parameter> = listOf(),
 							val body: Unit? = null, override val isAbstract: Boolean = false, val isConverting: Boolean = false,
-							val isNative: Boolean = false): Unit(source, scope), MemberDeclaration, Callable {
+							val isNative: Boolean = false, val isOverriding: Boolean = false):
+	Unit(source, scope), MemberDeclaration, Callable {
 	override val memberIdentifier
 		get() = toString(true)
 	var superInitializer: InitializerDefinition? = null
@@ -38,7 +39,7 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
 		return InitializerDefinition(source, parentDefinition, scope, specificTypeParameters, specificParameters, body, isAbstract,
-			isConverting, isNative)
+			isConverting, isNative, isOverriding)
 	}
 
 	fun fulfillsInheritanceRequirementsOf(superInitializer: InitializerDefinition): Boolean {
@@ -180,6 +181,23 @@ class InitializerDefinition(override val source: Element, override val parentDef
 			if(superInitializer?.isConverting == true)
 				linter.addMessage(source, "Overriding initializer of converting initializer needs to be converting.",
 					Message.Type.ERROR)
+		}
+		val superInitializer = superInitializer
+		if(superInitializer == null) {
+			if(isOverriding)
+				linter.addMessage(source,
+					"'overriding' keyword is used, but the initializer doesn't have an abstract super initializer.",
+					Message.Type.WARNING)
+		} else {
+			if(superInitializer.isAbstract) {
+				if(!isOverriding)
+					linter.addMessage(source, "Initializer '$this' is missing the 'overriding' keyword.", Message.Type.WARNING)
+			} else {
+				if(isOverriding)
+					linter.addMessage(source,
+						"'overriding' keyword is used, but the initializer doesn't have an abstract super initializer.",
+						Message.Type.WARNING)
+			}
 		}
 	}
 

@@ -60,7 +60,9 @@ open class Function(source: Element, scope: Scope, val name: String = "<anonymou
 		for(implementation in implementations) {
 			if(functionType.superFunctionType?.hasSignatureOverriddenBy(implementation.signature) == true) {
 				if(!implementation.isOverriding)
-					linter.addMessage(implementation.source, "Missing 'overriding' keyword.", Message.Type.WARNING)
+					linter.addMessage(implementation.source,
+						"${memberType.replaceFirstChar { it.titlecase() }} '$implementation' is missing the 'overriding' keyword.",
+						Message.Type.WARNING)
 			} else {
 				if(implementation.isOverriding)
 					linter.addMessage(implementation.source,

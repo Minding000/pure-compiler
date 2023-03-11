@@ -233,7 +233,8 @@ internal class OperatorResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Missing 'overriding' keyword")
+		lintResult.assertMessageEmitted(Message.Type.WARNING,
+			"Operator 'VegetableShoppingList[Int]: Int' is missing the 'overriding' keyword")
 	}
 
 	@Test
@@ -250,7 +251,7 @@ internal class OperatorResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Missing 'overriding' keyword")
+		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "is missing the 'overriding' keyword")
 		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
 			"'overriding' keyword is used, but the operator doesn't have a super operator")
 	}
