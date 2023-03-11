@@ -54,24 +54,6 @@ open class Function(source: Element, scope: Scope, val name: String = "<anonymou
 		staticValue = this
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
-		//TODO consider moving this logic to FunctionSignature (this requires having a superSignature property)
-		for(implementation in implementations) {
-			if(functionType.superFunctionType?.hasSignatureOverriddenBy(implementation.signature) == true) {
-				if(!implementation.isOverriding)
-					linter.addMessage(implementation.source,
-						"${memberType.replaceFirstChar { it.titlecase() }} '$implementation' is missing the 'overriding' keyword.",
-						Message.Type.WARNING)
-			} else {
-				if(implementation.isOverriding)
-					linter.addMessage(implementation.source,
-						"'overriding' keyword is used, but the $memberType doesn't have a super $memberType.",
-						Message.Type.WARNING)
-			}
-		}
-	}
-
 	private fun ensureUniqueSignatures(linter: Linter) {
 		val redeclarations = LinkedList<FunctionImplementation>()
 		for(initializerIndex in 0 until implementations.size - 1) {

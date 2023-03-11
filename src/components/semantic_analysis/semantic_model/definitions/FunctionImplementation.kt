@@ -61,6 +61,15 @@ class FunctionImplementation(override val source: Element, override val parentDe
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
+		if(signature.superFunctionSignature != null) {
+			if(!isOverriding)
+				linter.addMessage(source, "${parentFunction.memberType.replaceFirstChar { it.titlecase() }} '$this'" +
+					" is missing the 'overriding' keyword.", Message.Type.WARNING)
+		} else {
+			if(isOverriding)
+				linter.addMessage(source, "'overriding' keyword is used, but the ${parentFunction.memberType}" +
+					" doesn't have a super ${parentFunction.memberType}.", Message.Type.WARNING)
+		}
 		if(!Linter.SpecialType.NOTHING.matches(signature.returnType)) {
 			if(body != null) {
 				var someBlocksCompleteWithoutReturning = false
