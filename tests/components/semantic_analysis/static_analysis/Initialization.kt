@@ -1,6 +1,10 @@
 package components.semantic_analysis.static_analysis
 
-import messages.Message
+import logger.Severity
+import logger.issues.initialization.ConstantReassignment
+import logger.issues.initialization.NotInitialized
+import logger.issues.initialization.ReliesOnUninitializedProperties
+import logger.issues.initialization.UninitializedProperties
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -14,7 +18,7 @@ internal class Initialization {
 				x
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "hasn't been initialized")
+		lintResult.assertIssueNotDetected<NotInitialized>()
 	}
 
 	@Test
@@ -25,7 +29,7 @@ internal class Initialization {
 				Int()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "hasn't been initialized yet")
+		lintResult.assertIssueNotDetected<NotInitialized>()
 	}
 
 	@Test
@@ -37,7 +41,7 @@ internal class Initialization {
 				x
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Local variable 'x' hasn't been initialized yet")
+		lintResult.assertIssueDetected<NotInitialized>("Local variable 'x' hasn't been initialized yet.", Severity.ERROR)
 	}
 
 	@Test
@@ -49,7 +53,7 @@ internal class Initialization {
 				x = 4
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "cannot be reassigned, because it is constant")
+		lintResult.assertIssueNotDetected<ConstantReassignment>()
 	}
 
 	@Test
@@ -63,7 +67,8 @@ internal class Initialization {
 				x = 4
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "cannot be reassigned, because it is constant")
+		lintResult.assertIssueDetected<ConstantReassignment>("'x' cannot be reassigned, because it is constant.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -75,7 +80,7 @@ internal class Initialization {
 				x = 4
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "cannot be reassigned, because it is constant")
+		lintResult.assertIssueNotDetected<ConstantReassignment>()
 	}
 
 	@Test
@@ -86,7 +91,7 @@ internal class Initialization {
 				x = 4
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'x' cannot be reassigned, because it is constant")
+		lintResult.assertIssueDetected<ConstantReassignment>("'x' cannot be reassigned, because it is constant.")
 	}
 
 	@Test
@@ -100,7 +105,7 @@ internal class Initialization {
 				glasses.frameId = 4
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'frameId' cannot be reassigned, because it is constant")
+		lintResult.assertIssueDetected<ConstantReassignment>("'frameId' cannot be reassigned, because it is constant.")
 	}
 
 	@Test
@@ -114,7 +119,7 @@ internal class Initialization {
 				glasses.clean = 4
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'clean' cannot be reassigned, because it is constant")
+		lintResult.assertIssueDetected<ConstantReassignment>("'clean' cannot be reassigned, because it is constant.")
 	}
 
 	@Test
@@ -128,7 +133,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'volumeInDecibels' cannot be reassigned, because it is constant")
+		lintResult.assertIssueDetected<ConstantReassignment>("'volumeInDecibels' cannot be reassigned, because it is constant.")
 	}
 
 	@Test
@@ -144,7 +149,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'numberOfArms' cannot be reassigned, because it is constant")
+		lintResult.assertIssueDetected<ConstantReassignment>("'numberOfArms' cannot be reassigned, because it is constant.")
 	}
 
 	@Test
@@ -160,7 +165,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "cannot be reassigned, because it is constant")
+		lintResult.assertIssueNotDetected<ConstantReassignment>()
 	}
 
 	@Test
@@ -175,7 +180,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'numberOfArms' cannot be reassigned, because it is constant")
+		lintResult.assertIssueDetected<ConstantReassignment>("'numberOfArms' cannot be reassigned, because it is constant.")
 	}
 
 	@Test
@@ -190,7 +195,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'numberOfArms' cannot be reassigned, because it is constant")
+		lintResult.assertIssueDetected<ConstantReassignment>("'numberOfArms' cannot be reassigned, because it is constant.")
 	}
 
 	@Test
@@ -203,7 +208,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'numberOfArms' cannot be reassigned, because it is constant")
+		lintResult.assertIssueDetected<ConstantReassignment>("'numberOfArms' cannot be reassigned, because it is constant.")
 	}
 
 	@Test
@@ -216,7 +221,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "The following properties have not been initialized")
+		lintResult.assertIssueNotDetected<UninitializedProperties>()
 	}
 
 	@Test
@@ -231,7 +236,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "The following properties have not been initialized")
+		lintResult.assertIssueNotDetected<UninitializedProperties>()
 	}
 
 	@Test
@@ -244,7 +249,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "The following properties have not been initialized")
+		lintResult.assertIssueNotDetected<UninitializedProperties>()
 	}
 
 	@Test
@@ -256,7 +261,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "The following properties have not been initialized")
+		lintResult.assertIssueNotDetected<UninitializedProperties>()
 	}
 
 	@Test
@@ -272,10 +277,10 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, """
+		lintResult.assertIssueDetected<UninitializedProperties>("""
 			The following properties have not been initialized by this initializer:
 			 - numberOfArms: Int
-		""".trimIndent())
+		""".trimIndent(), Severity.ERROR)
 	}
 
 	@Test
@@ -287,7 +292,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, """
+		lintResult.assertIssueDetected<UninitializedProperties>("""
 			The following properties have not been initialized by this initializer:
 			 - numberOfArms: Int
 		""".trimIndent())
@@ -308,7 +313,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, """
+		lintResult.assertIssueDetected<UninitializedProperties>("""
 			The following properties have not been initialized by this initializer:
 			 - numberOfArms: Int
 		""".trimIndent())
@@ -327,7 +332,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "hasn't been initialized yet")
+		lintResult.assertIssueNotDetected<NotInitialized>()
 	}
 
 	@Test
@@ -343,7 +348,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Property 'numberOfArms' hasn't been initialized yet")
+		lintResult.assertIssueDetected<NotInitialized>("Property 'numberOfArms' hasn't been initialized yet.")
 	}
 
 	@Test
@@ -358,7 +363,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "hasn't been initialized yet")
+		lintResult.assertIssueNotDetected<NotInitialized>()
 	}
 
 	@Test
@@ -377,7 +382,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "hasn't been initialized yet")
+		lintResult.assertIssueNotDetected<NotInitialized>()
 	}
 
 	@Test
@@ -396,7 +401,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "relies on the following uninitialized properties")
+		lintResult.assertIssueNotDetected<ReliesOnUninitializedProperties>()
 	}
 
 	@Test
@@ -414,7 +419,7 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "relies on the following uninitialized properties")
+		lintResult.assertIssueNotDetected<ReliesOnUninitializedProperties>()
 	}
 
 	@Test
@@ -433,10 +438,10 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, """
+		lintResult.assertIssueDetected<ReliesOnUninitializedProperties>("""
 			The callable 'printNumberOfArms()' relies on the following uninitialized properties:
 			 - numberOfArms: Int
-		""".trimIndent())
+		""".trimIndent(), Severity.ERROR)
 	}
 
 	@Test
@@ -456,8 +461,8 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "doesn't call the following super initializers")
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "has already been called in this initializer")
+		lintResult.assertIssueNotDetected<ConstantReassignment>()
+		lintResult.assertIssueNotDetected<UninitializedProperties>()
 	}
 
 	@Test
@@ -478,6 +483,6 @@ internal class Initialization {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'numberOfArms' cannot be reassigned, because it is constant")
+		lintResult.assertIssueDetected<ConstantReassignment>("'numberOfArms' cannot be reassigned, because it is constant.")
 	}
 }

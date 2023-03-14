@@ -7,7 +7,7 @@ import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
-import messages.Message
+import logger.issues.resolution.*
 import components.syntax_parser.syntax_tree.literals.SuperReference as SuperReferenceSyntaxTree
 
 open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: Scope, private val specifier: ObjectType?):
@@ -20,15 +20,14 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 	override fun linkValues(linter: Linter) {
 		val surroundingDefinition = scope.getSurroundingDefinition()
 		if(surroundingDefinition == null) {
-			linter.addMessage(source, "Super references are not allowed outside of type definitions.", Message.Type.ERROR)
+			linter.addIssue(SuperReferenceOutsideOfTypeDefinition(source))
 			return
 		}
 		var superTypes = surroundingDefinition.getAllSuperTypes()
 		specifier?.definition?.let { specifierDefinition ->
 			superTypes = superTypes.filter { superType -> matchesSpecifier(superType, specifierDefinition) }
 			if(superTypes.isEmpty()) {
-				linter.addMessage(source, "'${surroundingDefinition.name}' does not inherit from '$specifier'.",
-					Message.Type.ERROR)
+				linter.addIssue(SuperReferenceSpecifierNotInherited(source, surroundingDefinition, specifier))
 				return
 			}
 		}
@@ -36,8 +35,7 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 			is MemberAccess -> {
 				if(parent.member is InitializerReference) {
 					if(!isInInitializer()) {
-						linter.addMessage(source, "The super initializer can only be called from initializers.",
-							Message.Type.ERROR)
+						linter.addIssue(SuperInitializerCallOutsideOfInitializer(source))
 						return
 					}
 				}
@@ -47,19 +45,14 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 				parent.filterForPossibleTargetTypes(superTypes)
 			}
 			else -> {
-				linter.addMessage(source, "Super references are not allowed outside of member and index accesses.",
-					Message.Type.ERROR)
+				linter.addIssue(SuperReferenceOutsideOfAccess(source))
 				return
 			}
 		}
 		if(possibleTargetTypes.isEmpty()) {
-			linter.addMessage(source, "The specified member does not exist on any super type of this type definition.",
-				Message.Type.ERROR)
+			linter.addIssue(SuperMemberNotFound(source))
 		} else if(possibleTargetTypes.size > 1) {
-			var message = "The super reference is ambiguous. Possible targets are:"
-			for(superType in possibleTargetTypes)
-				message += "\n - $superType"
-			linter.addMessage(source, message, Message.Type.ERROR)
+			linter.addIssue(SuperReferenceAmbiguity(source, possibleTargetTypes))
 		} else {
 			val intendedType = possibleTargetTypes.first()
 			type = intendedType

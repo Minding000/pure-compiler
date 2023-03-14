@@ -4,7 +4,11 @@ import components.semantic_analysis.semantic_model.control_flow.FunctionCall
 import components.semantic_analysis.semantic_model.operations.IndexAccess
 import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.VariableValue
-import messages.Message
+import logger.Severity
+import logger.issues.modifiers.MissingOverridingKeyword
+import logger.issues.modifiers.OverriddenSuperMissing
+import logger.issues.resolution.NotFound
+import logger.issues.resolution.SignatureAmbiguity
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -20,7 +24,7 @@ internal class OperatorResolution {
 				!a
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator '!Int' hasn't been declared yet")
+		lintResult.assertIssueDetected<NotFound>("Operator '!Int' hasn't been declared yet.")
 	}
 
 	@Test
@@ -51,7 +55,7 @@ internal class OperatorResolution {
 				var c = a - b
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator 'Matrix - Matrix' hasn't been declared yet")
+		lintResult.assertIssueDetected<NotFound>("Operator 'Matrix - Matrix' hasn't been declared yet.")
 	}
 
 	@Test
@@ -81,7 +85,7 @@ internal class OperatorResolution {
 				a--
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator 'Int--' hasn't been declared yet")
+		lintResult.assertIssueDetected<NotFound>("Operator 'Int--' hasn't been declared yet.")
 	}
 
 	@Test
@@ -112,7 +116,7 @@ internal class OperatorResolution {
 				a += b
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator 'Matrix += Matrix' hasn't been declared yet")
+		lintResult.assertIssueDetected<NotFound>("Operator 'Matrix += Matrix' hasn't been declared yet.")
 	}
 
 	@Test
@@ -143,7 +147,7 @@ internal class OperatorResolution {
 				val firstField = ChessBoard[Position()]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator 'ChessBoard[Position]()' hasn't been declared yet.")
+		lintResult.assertIssueDetected<NotFound>("Operator 'ChessBoard[Position]()' hasn't been declared yet.")
 	}
 
 	@Test
@@ -158,7 +162,7 @@ internal class OperatorResolution {
 				ChessBoard[Position()] = Field()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Operator 'ChessBoard[Position](Field)' hasn't been declared yet.")
+		lintResult.assertIssueDetected<NotFound>("Operator 'ChessBoard[Position](Field)' hasn't been declared yet.")
 	}
 
 	@Test
@@ -233,8 +237,8 @@ internal class OperatorResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"Operator 'VegetableShoppingList[Int]: Int' is missing the 'overriding' keyword")
+		lintResult.assertIssueDetected<MissingOverridingKeyword>(
+			"Operator 'VegetableShoppingList[Int]: Int' is missing the 'overriding' keyword.")
 	}
 
 	@Test
@@ -251,9 +255,8 @@ internal class OperatorResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "is missing the 'overriding' keyword")
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
-			"'overriding' keyword is used, but the operator doesn't have a super operator")
+		lintResult.assertIssueNotDetected<MissingOverridingKeyword>()
+		lintResult.assertIssueNotDetected<OverriddenSuperMissing>()
 	}
 
 	@Test
@@ -265,8 +268,8 @@ internal class OperatorResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"'overriding' keyword is used, but the operator doesn't have a super operator")
+		lintResult.assertIssueDetected<OverriddenSuperMissing>(
+			"'overriding' keyword is used, but the operator doesn't have a super operator.", Severity.WARNING)
 	}
 
 	@Test
@@ -281,8 +284,7 @@ internal class OperatorResolution {
 				List[Bright]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Operator 'List[Bright]()' hasn't been declared yet")
+		lintResult.assertIssueDetected<NotFound>("Operator 'List[Bright]()' hasn't been declared yet.", Severity.ERROR)
 	}
 
 	@Test
@@ -300,7 +302,11 @@ internal class OperatorResolution {
 				numbers[Int()]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Call to operator '<Int>List[Int]' is ambiguous")
+		lintResult.assertIssueDetected<SignatureAmbiguity>("""
+			Call to operator '<Int>List[Int]' is ambiguous. Matching signatures:
+			 - '(Int) => Int' declared at Test.Test:5:10
+			 - '(Int) => Boolean' declared at Test.Test:6:10
+		""".trimIndent())
 	}
 
 	@Disabled

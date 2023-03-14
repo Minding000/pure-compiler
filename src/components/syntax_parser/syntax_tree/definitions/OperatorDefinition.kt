@@ -10,7 +10,8 @@ import components.syntax_parser.syntax_tree.general.StatementSection
 import components.syntax_parser.syntax_tree.general.TypeElement
 import components.tokenizer.WordAtom
 import errors.internal.CompilerError
-import messages.Message
+import logger.issues.definition.GenericOperator
+import logger.issues.definition.TypeParametersOutsideOfIndexParameterList
 import components.semantic_analysis.semantic_model.values.Operator.Kind as OperatorKind
 
 class OperatorDefinition(private val operator: Operator, private val parameterList: ParameterList?, private val body: StatementSection?,
@@ -33,11 +34,9 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 		val operatorScope = BlockScope(scope)
 		if(parameterList?.containsGenericParameterList == true) {
 			if(operator is IndexOperator) {
-				linter.addMessage(parameterList, "Generic parameters for the index operator " +
-					"are received in the index parameter list instead.", Message.Type.WARNING)
+				linter.addIssue(TypeParametersOutsideOfIndexParameterList(parameterList))
 			} else {
-				linter.addMessage(parameterList,
-					"Operators (except for the index operator) can not be generic.", Message.Type.WARNING)
+				linter.addIssue(GenericOperator(parameterList))
 			}
 		}
 		var parameters = parameterList?.concretizeParameters(linter, operatorScope) ?: listOf()

@@ -2,7 +2,8 @@ package components.semantic_analysis.static_analysis
 
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.VariableValue
-import messages.Message
+import logger.Severity
+import logger.issues.constant_conditions.UnreachableStatement
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertIs
@@ -19,7 +20,7 @@ internal class ExecutionFlowAnalysis {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable")
+		lintResult.assertIssueDetected<UnreachableStatement>("Statement is unreachable.", Severity.WARNING)
 	}
 
 	@Test
@@ -34,7 +35,7 @@ internal class ExecutionFlowAnalysis {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable")
+		lintResult.assertIssueDetected<UnreachableStatement>()
 	}
 
 	@Test
@@ -48,7 +49,7 @@ internal class ExecutionFlowAnalysis {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Statement is unreachable")
+		lintResult.assertIssueNotDetected<UnreachableStatement>()
 	}
 
 	@Test
@@ -65,7 +66,7 @@ internal class ExecutionFlowAnalysis {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable")
+		lintResult.assertIssueDetected<UnreachableStatement>()
 	}
 
 	@Test
@@ -82,7 +83,7 @@ internal class ExecutionFlowAnalysis {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Statement is unreachable")
+		lintResult.assertIssueNotDetected<UnreachableStatement>()
 	}
 
 	@Test
@@ -96,7 +97,7 @@ internal class ExecutionFlowAnalysis {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable")
+		lintResult.assertIssueDetected<UnreachableStatement>()
 	}
 
 	@Test
@@ -110,7 +111,7 @@ internal class ExecutionFlowAnalysis {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable")
+		lintResult.assertIssueDetected<UnreachableStatement>()
 	}
 
 	@Test
@@ -124,7 +125,7 @@ internal class ExecutionFlowAnalysis {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Statement is unreachable")
+		lintResult.assertIssueNotDetected<UnreachableStatement>()
 	}
 
 	@Test
@@ -139,7 +140,7 @@ internal class ExecutionFlowAnalysis {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Statement is unreachable")
+		lintResult.assertIssueNotDetected<UnreachableStatement>()
 	}
 
 	@Test
@@ -156,7 +157,7 @@ internal class ExecutionFlowAnalysis {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable")
+		lintResult.assertIssueDetected<UnreachableStatement>()
 	}
 
 	@Test
@@ -174,7 +175,7 @@ internal class ExecutionFlowAnalysis {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Statement is unreachable")
+		lintResult.assertIssueDetected<UnreachableStatement>()
 	}
 
 	@Test

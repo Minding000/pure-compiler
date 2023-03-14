@@ -4,7 +4,7 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.StaticType
-import messages.Message
+import logger.issues.resolution.InitializerReferenceOutsideOfInitializer
 import components.syntax_parser.syntax_tree.literals.InitializerReference as InitializerReferenceSyntaxTree
 
 open class InitializerReference(override val source: InitializerReferenceSyntaxTree, scope: Scope): Value(source, scope) {
@@ -16,7 +16,7 @@ open class InitializerReference(override val source: InitializerReferenceSyntaxT
 		} else {
 			val surroundingDefinition = scope.getSurroundingDefinition()
 			if(surroundingDefinition == null || !isInInitializer()) {
-				linter.addMessage(source, "Initializer references are not allowed outside of initializers.", Message.Type.ERROR)
+				linter.addIssue(InitializerReferenceOutsideOfInitializer(source))
 			} else {
 				type = StaticType(surroundingDefinition)
 				addUnits(type)

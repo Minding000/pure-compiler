@@ -9,7 +9,10 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.SelfReference
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
-import messages.Message
+import logger.issues.constant_conditions.ExpressionNotAssignable
+import logger.issues.constant_conditions.TypeNotAssignable
+import logger.issues.initialization.ConstantReassignment
+import logger.issues.resolution.ConversionAmbiguity
 import components.syntax_parser.syntax_tree.operations.Assignment as AssignmentSyntaxTree
 
 class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val targets: List<Value>, val sourceExpression: Value):
@@ -42,17 +45,13 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 			val conversions = targetType.getConversionsFrom(sourceType)
 			if(conversions.isNotEmpty()) {
 				if(conversions.size > 1) {
-					var message = "Conversion from '$sourceType' to '$targetType' needs to be explicit," +
-						" because there are multiple possible conversions:"
-					for(conversion in conversions)
-						message += "\n - ${conversion.parentDefinition.name}"
-					linter.addMessage(source, message, Message.Type.ERROR)
-				} else {
-					conversion = conversions.first()
+					linter.addIssue(ConversionAmbiguity(source, sourceType, targetType, conversions))
+					continue
 				}
+				conversion = conversions.first()
 				continue
 			}
-			linter.addMessage(source, "Type '$sourceType' is not assignable to type '$targetType'.", Message.Type.ERROR)
+			linter.addIssue(TypeNotAssignable(source, sourceType, targetType))
 		}
 	}
 
@@ -66,8 +65,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 				}
 				is MemberAccess -> {
 					if(target.member !is VariableValue || target.member.definition?.isConstant == true)
-						linter.addMessage(target.source, "'${target.member}' cannot be reassigned, because it is constant.",
-							Message.Type.ERROR)
+						linter.addIssue(ConstantReassignment(source, target.member.toString()))
 					if(target.target is SelfReference && target.member is VariableValue) {
 						tracker.add(VariableUsage.Type.WRITE, target.member)
 						continue
@@ -77,7 +75,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 					target.target.type?.interfaceScope?.resolveIndexOperator(target.typeParameters, target.indices, sourceExpression)
 				}
 				else -> { //TODO write test for this
-					linter.addMessage(target.source, "Expression is not assignable.", Message.Type.ERROR)
+					linter.addIssue(ExpressionNotAssignable(target.source))
 				}
 			}
 			target.analyseDataFlow(linter, tracker)

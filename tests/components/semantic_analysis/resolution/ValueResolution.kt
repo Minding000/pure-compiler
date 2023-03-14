@@ -3,7 +3,12 @@ package components.semantic_analysis.resolution
 import components.semantic_analysis.semantic_model.definitions.Parameter
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
-import messages.Message
+import logger.Severity
+import logger.issues.initialization.CircularAssignment
+import logger.issues.modifiers.MissingOverridingKeyword
+import logger.issues.modifiers.OverriddenSuperMissing
+import logger.issues.resolution.NotCallable
+import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -19,7 +24,7 @@ internal class ValueResolution {
 				numberOfDogs
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Value 'numberOfDogs' hasn't been declared yet")
+		lintResult.assertIssueDetected<NotFound>("Value 'numberOfDogs' hasn't been declared yet.")
 	}
 
 	@Test
@@ -80,7 +85,7 @@ internal class ValueResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "part of a circular assignment")
+		lintResult.assertIssueNotDetected<CircularAssignment>()
 		val parameter = lintResult.find<Parameter>()
 		assertEquals("Int", parameter?.type.toString())
 	}
@@ -98,10 +103,10 @@ internal class ValueResolution {
 				House.livingAreaInSquareMeters
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"'livingAreaInSquareMeters' has no value, because it's part of a circular assignment")
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"'size' has no value, because it's part of a circular assignment")
+		lintResult.assertIssueDetected<CircularAssignment>(
+			"'livingAreaInSquareMeters' has no value, because it's part of a circular assignment.", Severity.ERROR)
+		lintResult.assertIssueDetected<CircularAssignment>(
+			"'size' has no value, because it's part of a circular assignment.")
 	}
 
 	@Test
@@ -170,9 +175,8 @@ internal class ValueResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "is missing the 'overriding' keyword")
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
-			"'overriding' keyword is used, but the property doesn't have a super property")
+		lintResult.assertIssueNotDetected<MissingOverridingKeyword>()
+		lintResult.assertIssueNotDetected<OverriddenSuperMissing>()
 	}
 
 	@Test
@@ -190,7 +194,7 @@ internal class ValueResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
+		lintResult.assertIssueDetected<MissingOverridingKeyword>(
 			"Property 'nutritionScore: Float' is missing the 'overriding' keyword.")
 	}
 
@@ -203,8 +207,8 @@ internal class ValueResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"'overriding' keyword is used, but the property doesn't have a super property")
+		lintResult.assertIssueDetected<OverriddenSuperMissing>(
+			"'overriding' keyword is used, but the property doesn't have a super property.")
 	}
 
 	@Test
@@ -217,7 +221,7 @@ internal class ValueResolution {
 				Bird.fly()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not callable")
+		lintResult.assertIssueNotDetected<NotCallable>()
 	}
 
 	@Test
@@ -228,7 +232,7 @@ internal class ValueResolution {
 				Bird.fly()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not callable")
+		lintResult.assertIssueNotDetected<NotCallable>()
 	}
 
 	@Test
@@ -241,6 +245,6 @@ internal class ValueResolution {
 				Bird.age()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'Bird.age' is not callable")
+		lintResult.assertIssueDetected<NotCallable>("'Bird.age' is not callable.", Severity.ERROR)
 	}
 }

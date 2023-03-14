@@ -4,7 +4,7 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
-import messages.Message
+import logger.issues.loops.NextStatementOutsideOfLoop
 import components.syntax_parser.syntax_tree.control_flow.NextStatement as NextStatementSyntaxTree
 
 class NextStatement(override val source: NextStatementSyntaxTree, scope: Scope): Unit(source, scope) {
@@ -15,10 +15,10 @@ class NextStatement(override val source: NextStatementSyntaxTree, scope: Scope):
 		super.linkValues(linter)
 		val surroundingLoop = scope.getSurroundingLoop()
 		if(surroundingLoop == null) {
-			linter.addMessage(source, "Next statements are not allowed outside of loops.", Message.Type.ERROR)
-		} else {
-			targetLoop = surroundingLoop
+			linter.addIssue(NextStatementOutsideOfLoop(source))
+			return
 		}
+		targetLoop = surroundingLoop
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {

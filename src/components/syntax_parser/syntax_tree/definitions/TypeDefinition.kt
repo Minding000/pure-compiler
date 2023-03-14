@@ -16,7 +16,9 @@ import components.syntax_parser.syntax_tree.literals.ObjectType
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
 import errors.internal.CompilerError
-import messages.Message
+import logger.issues.definition.GenericTypeDeclarationInObject
+import logger.issues.definition.InvalidInstanceLocation
+import logger.issues.definition.MultipleInstanceLists
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition as SemanticTypeDefinitionModel
 
 class TypeDefinition(private val identifier: Identifier, private val type: Word, private val explicitParentType: ObjectType?,
@@ -63,19 +65,17 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 			for(member in body.members) {
 				if(member is InstanceList) {
 					if(!(typeDefinition is Enum || typeDefinition is Class)) {
-						linter.addMessage(member, "Instance declarations are only allowed in enums and classes.",
-							Message.Type.WARNING)
+						linter.addIssue(InvalidInstanceLocation(member))
 						continue
 					}
 					if(instanceList == null) {
 						instanceList = member
 					} else {
-						linter.addMessage(member, "Instance declarations can be merged.", Message.Type.WARNING)
+						linter.addIssue(MultipleInstanceLists(member))
 					}
 				} else if(member is GenericsDeclaration) {
 					if(typeDefinition is Object) {
-						linter.addMessage(member, "Generic type declarations are not allowed in objects.",
-							Message.Type.WARNING)
+						linter.addIssue(GenericTypeDeclarationInObject(member))
 						continue
 					}
 				}

@@ -1,7 +1,8 @@
 package components.semantic_analysis.resolution
 
 import components.semantic_analysis.semantic_model.values.SuperReference
-import messages.Message
+import logger.Severity
+import logger.issues.resolution.*
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -20,11 +21,9 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Super references are not allowed outside of type definitions")
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Super references are not allowed outside of member and index accesses")
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "super initializer can only be called from initializers")
+		lintResult.assertIssueNotDetected<SuperReferenceOutsideOfTypeDefinition>()
+		lintResult.assertIssueNotDetected<SuperReferenceOutsideOfAccess>()
+		lintResult.assertIssueNotDetected<SuperInitializerCallOutsideOfInitializer>()
 	}
 
 	@Test
@@ -34,7 +33,8 @@ internal class SuperReference {
 				super
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Super references are not allowed outside of type definitions")
+		lintResult.assertIssueDetected<SuperReferenceOutsideOfTypeDefinition>(
+			"Super references are not allowed outside of type definitions.", Severity.ERROR)
 	}
 
 	@Test
@@ -48,8 +48,8 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Super references are not allowed outside of member and index accesses")
+		lintResult.assertIssueDetected<SuperReferenceOutsideOfAccess>(
+			"Super references are not allowed outside of member and index accesses.", Severity.ERROR)
 	}
 
 	@Test
@@ -63,7 +63,8 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "The super initializer can only be called from initializers")
+		lintResult.assertIssueDetected<SuperInitializerCallOutsideOfInitializer>(
+			"The super initializer can only be called from initializers.", Severity.ERROR)
 	}
 
 	@Test
@@ -78,7 +79,7 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "does not inherit from")
+		lintResult.assertIssueNotDetected<SuperReferenceSpecifierNotInherited>()
 	}
 
 	@Test
@@ -94,7 +95,7 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "does not inherit from")
+		lintResult.assertIssueNotDetected<SuperReferenceSpecifierNotInherited>()
 	}
 
 	@Test
@@ -109,7 +110,8 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'Car' does not inherit from 'Machine'")
+		lintResult.assertIssueDetected<SuperReferenceSpecifierNotInherited>("'Car' does not inherit from 'Machine'.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -123,7 +125,8 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'Car' does not inherit from 'Car'")
+		lintResult.assertIssueDetected<SuperReferenceSpecifierNotInherited>("'Car' does not inherit from 'Car'.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -140,8 +143,7 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"The specified member does not exist on any super type of this type definition")
+		lintResult.assertIssueNotDetected<SuperMemberNotFound>()
 	}
 
 	@Test
@@ -156,8 +158,8 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"The specified member does not exist on any super type of this type definition")
+		lintResult.assertIssueDetected<SuperMemberNotFound>(
+			"The specified member does not exist on any super type of this type definition.", Severity.ERROR)
 	}
 
 	@Test
@@ -175,8 +177,7 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"The specified member does not exist on any super type of this type definition")
+		lintResult.assertIssueNotDetected<SuperMemberNotFound>()
 	}
 
 	@Test
@@ -192,8 +193,8 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"The specified member does not exist on any super type of this type definition")
+		lintResult.assertIssueDetected<SuperMemberNotFound>(
+			"The specified member does not exist on any super type of this type definition.")
 	}
 
 	@Test
@@ -211,8 +212,7 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"The specified member does not exist on any super type of this type definition")
+		lintResult.assertIssueNotDetected<SuperMemberNotFound>()
 	}
 
 	@Test
@@ -230,8 +230,8 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"The specified member does not exist on any super type of this type definition")
+		lintResult.assertIssueDetected<SuperMemberNotFound>(
+			"The specified member does not exist on any super type of this type definition.")
 	}
 
 	@Test
@@ -249,8 +249,7 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"The specified member does not exist on any super type of this type definition")
+		lintResult.assertIssueNotDetected<SuperMemberNotFound>()
 	}
 
 	@Test
@@ -266,8 +265,8 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"The specified member does not exist on any super type of this type definition")
+		lintResult.assertIssueDetected<SuperMemberNotFound>(
+			"The specified member does not exist on any super type of this type definition.")
 	}
 
 	@Test
@@ -285,7 +284,7 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "The super reference is ambiguous")
+		lintResult.assertIssueNotDetected<SuperReferenceAmbiguity>()
 	}
 
 	@Test
@@ -305,11 +304,11 @@ internal class SuperReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,"""
+		lintResult.assertIssueDetected<SuperReferenceAmbiguity>("""
 			The super reference is ambiguous. Possible targets are:
 			 - Bird
 			 - Fish
-		""".trimIndent())
+		""".trimIndent(), Severity.ERROR)
 	}
 
 	@Test

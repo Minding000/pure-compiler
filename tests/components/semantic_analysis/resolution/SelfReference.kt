@@ -2,7 +2,9 @@ package components.semantic_analysis.resolution
 
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.SelfReference
-import messages.Message
+import logger.Severity
+import logger.issues.resolution.SelfReferenceOutsideOfTypeDefinition
+import logger.issues.resolution.SelfReferenceSpecifierNotBound
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -21,7 +23,7 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Self references are not allowed outside of type definitions")
+		lintResult.assertIssueNotDetected<SelfReferenceOutsideOfTypeDefinition>()
 	}
 
 	@Test
@@ -31,7 +33,8 @@ internal class SelfReference {
 				this
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Self references are not allowed outside of type definitions")
+		lintResult.assertIssueDetected<SelfReferenceOutsideOfTypeDefinition>(
+			"Self references are not allowed outside of type definitions.", Severity.ERROR)
 	}
 
 	@Test
@@ -127,7 +130,7 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Self references can only specify types they are bound to")
+		lintResult.assertIssueNotDetected<SelfReferenceSpecifierNotBound>()
 	}
 
 	@Test
@@ -143,6 +146,7 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Self references can only specify types they are bound to")
+		lintResult.assertIssueDetected<SelfReferenceSpecifierNotBound>(
+			"Self references can only specify types they are bound to.", Severity.ERROR)
 	}
 }

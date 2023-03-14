@@ -1,6 +1,10 @@
 package components.semantic_analysis.declarations
 
-import messages.Message
+import logger.Severity
+import logger.issues.definition.ComputedPropertyMissingType
+import logger.issues.definition.ComputedVariableWithoutSetter
+import logger.issues.definition.SetterInComputedValue
+import logger.issues.initialization.ConstantReassignment
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -17,8 +21,8 @@ internal class ComputedProperties {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Computed properties need to have an explicitly declared type")
+		lintResult.assertIssueDetected<ComputedPropertyMissingType>(
+			"Computed properties need to have an explicitly declared type.", Severity.ERROR)
 	}
 
 	@Test
@@ -32,10 +36,8 @@ internal class ComputedProperties {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Computed value property cannot have a setter")
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Computed variable property needs to have a setter")
+		lintResult.assertIssueNotDetected<SetterInComputedValue>()
+		lintResult.assertIssueNotDetected<ComputedVariableWithoutSetter>()
 	}
 
 	@Test
@@ -48,14 +50,26 @@ internal class ComputedProperties {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Computed value property cannot have a setter")
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Computed variable property needs to have a setter")
+		lintResult.assertIssueNotDetected<SetterInComputedValue>()
+		lintResult.assertIssueNotDetected<ComputedVariableWithoutSetter>()
 	}
 
 	@Test
 	fun `disallows computed property without setter to be declared as 'var'`() {
+		val sourceCode = """
+			Computer object {
+				var deviceCount: Int
+				var monitorCount: Int
+					gets deviceCount
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<ComputedVariableWithoutSetter>("Computed variable property needs to have a setter.",
+			Severity.ERROR)
+	}
+
+	@Test
+	fun `disallows computed property with setter to be declared as 'val'`() {
 		val sourceCode = """
 			Computer object {
 				var deviceCount: Int
@@ -65,22 +79,7 @@ internal class ComputedProperties {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Computed value property cannot have a setter")
-	}
-
-	@Test
-	fun `disallows computed property with setter to be declared as 'val'`() {
-		val sourceCode = """
-			Computer object {
-				var deviceCount: Int
-				var monitorCount: Int
-					gets deviceCount
-			}
-			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Computed variable property needs to have a setter")
+		lintResult.assertIssueDetected<SetterInComputedValue>("Computed value property cannot have a setter.", Severity.ERROR)
 	}
 
 	@Test
@@ -95,7 +94,7 @@ internal class ComputedProperties {
 			Computer.monitorCount = 2
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "cannot be reassigned")
+		lintResult.assertIssueNotDetected<ConstantReassignment>()
 	}
 
 	@Test
@@ -108,7 +107,6 @@ internal class ComputedProperties {
 			Computer.powerSupplyCount = 2
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted( Message.Type.ERROR,
-			"'powerSupplyCount' cannot be reassigned, because it is constant")
+		lintResult.assertIssueDetected<ConstantReassignment>()
 	}
 }

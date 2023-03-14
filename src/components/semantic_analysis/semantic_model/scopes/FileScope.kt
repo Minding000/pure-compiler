@@ -3,7 +3,8 @@ package components.semantic_analysis.semantic_model.scopes
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
-import messages.Message
+import logger.issues.definition.Declaration
+import logger.issues.definition.Redeclaration
 
 class FileScope: MutableScope() {
 	private val referencedTypes = HashMap<String, TypeDefinition>()
@@ -19,12 +20,11 @@ class FileScope: MutableScope() {
 	override fun declareType(linter: Linter, type: TypeDefinition) {
 		val previousDeclaration = referencedTypes[type.name] ?: types.putIfAbsent(type.name, type)
 		if(previousDeclaration != null) {
-			linter.addMessage(type.source, "Redeclaration of type '${type.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
+			linter.addIssue(Redeclaration(type.source, "type", type.name, previousDeclaration.source))
 			return
 		}
 		onNewType(type)
-		linter.addMessage(type.source, "Declaration of type '${type.name}'.", Message.Type.DEBUG)
+		linter.addIssue(Declaration(type.source, "type", type.name))
 	}
 
 	override fun resolveType(name: String): TypeDefinition? {
@@ -34,12 +34,10 @@ class FileScope: MutableScope() {
 	override fun declareValue(linter: Linter, value: ValueDeclaration) {
 		val previousDeclaration = referencedValues[value.name] ?: values.putIfAbsent(value.name, value)
 		if(previousDeclaration != null) {
-			linter.addMessage(value.source, "Redeclaration of value '${value.name}'," +
-					" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
+			linter.addIssue(Redeclaration(value.source, "value", value.name, previousDeclaration.source))
 			return
 		}
-		linter.addMessage(value.source, "Declaration of value '${value.name}'.",
-			Message.Type.DEBUG)
+		linter.addIssue(Declaration(value.source, "value", value.name))
 	}
 
 	override fun resolveValue(name: String): ValueDeclaration? {

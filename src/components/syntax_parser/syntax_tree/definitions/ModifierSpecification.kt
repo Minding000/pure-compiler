@@ -1,8 +1,9 @@
 package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.Linter
-import messages.Message
 import components.tokenizer.WordAtom
+import logger.issues.modifiers.DisallowedModifier
+import logger.issues.modifiers.DuplicateModifier
 
 interface ModifierSpecification {
 
@@ -13,11 +14,11 @@ interface ModifierSpecification {
 		for(modifier in getModifiers()) {
 			val name = modifier.getValue()
 			if(!allowedModifierTypes.contains(modifier.type)) {
-				linter.addMessage(modifier, "Modifier '$name' is not allowed here.", Message.Type.WARNING)
+				linter.addIssue(DisallowedModifier(modifier))
 				continue
 			}
 			if(uniqueModifiers.contains(name)) {
-				linter.addMessage(modifier, "Duplicate '$name' modifier.", Message.Type.WARNING)
+				linter.addIssue(DuplicateModifier(modifier))
 				continue
 			}
 			uniqueModifiers.add(name)

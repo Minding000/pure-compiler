@@ -8,7 +8,8 @@ import components.semantic_analysis.semantic_model.types.OrUnionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
+import logger.issues.initialization.UninitializedProperties
+import logger.issues.modifiers.*
 import util.stringifyTypes
 import java.util.*
 
@@ -162,41 +163,32 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		propertiesRequiredToBeInitialized.addAll(initializerTracker.getPropertiesRequiredToBeInitialized())
 		tracker.addChild("${parentDefinition.name}.${memberIdentifier}", initializerTracker)
 		propertiesToBeInitialized.removeAll(propertiesBeingInitialized)
-		if(propertiesToBeInitialized.isNotEmpty()) {
-			var message = "The following properties have not been initialized by this initializer:"
-			for(uninitializedProperty in propertiesToBeInitialized)
-				message += "\n - ${uninitializedProperty.memberIdentifier}"
-			linter.addMessage(source, message, Message.Type.ERROR)
-		}
+		if(propertiesToBeInitialized.isNotEmpty())
+			linter.addIssue(UninitializedProperties(source, propertiesToBeInitialized))
 	}
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
 		if(isConverting) {
 			if(typeParameters.isNotEmpty())
-				linter.addMessage(source, "Converting initializers cannot take type parameters.", Message.Type.WARNING)
+				linter.addIssue(ConvertingInitializerTakingTypeParameters(source))
 			if(parameters.size != 1)
-				linter.addMessage(source, "Converting initializers have to take exactly one parameter.", Message.Type.WARNING)
+				linter.addIssue(ConvertingInitializerWithInvalidParameterCount(source))
 		} else {
 			if(superInitializer?.isConverting == true)
-				linter.addMessage(source, "Overriding initializer of converting initializer needs to be converting.",
-					Message.Type.ERROR)
+				linter.addIssue(OverridingInitializerMissingConvertingKeyword(source))
 		}
 		val superInitializer = superInitializer
 		if(superInitializer == null) {
 			if(isOverriding)
-				linter.addMessage(source,
-					"'overriding' keyword is used, but the initializer doesn't have an abstract super initializer.",
-					Message.Type.WARNING)
+				linter.addIssue(OverriddenSuperInitializerMissing(source))
 		} else {
 			if(superInitializer.isAbstract) {
 				if(!isOverriding)
-					linter.addMessage(source, "Initializer '$this' is missing the 'overriding' keyword.", Message.Type.WARNING)
+					linter.addIssue(MissingOverridingKeyword(source, "Initializer", toString()))
 			} else {
 				if(isOverriding)
-					linter.addMessage(source,
-						"'overriding' keyword is used, but the initializer doesn't have an abstract super initializer.",
-						Message.Type.WARNING)
+					linter.addIssue(OverriddenSuperInitializerMissing(source))
 			}
 		}
 	}

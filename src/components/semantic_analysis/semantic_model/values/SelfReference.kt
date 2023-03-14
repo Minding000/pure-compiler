@@ -4,7 +4,8 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
-import messages.Message
+import logger.issues.resolution.SelfReferenceOutsideOfTypeDefinition
+import logger.issues.resolution.SelfReferenceSpecifierNotBound
 import components.syntax_parser.syntax_tree.literals.SelfReference as SelfReferenceSyntaxTree
 
 open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Scope, private val specifier: ObjectType?):
@@ -18,7 +19,7 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 	override fun linkValues(linter: Linter) {
 		val surroundingDefinition = scope.getSurroundingDefinition()
 		if(surroundingDefinition == null) {
-			linter.addMessage(source, "Self references are not allowed outside of type definitions.", Message.Type.ERROR)
+			linter.addIssue(SelfReferenceOutsideOfTypeDefinition(source))
 			return
 		}
 		if(specifier == null) {
@@ -27,7 +28,7 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 			specifier.definition?.let { specifierDefinition ->
 				definition = specifierDefinition
 				if(!isBoundTo(surroundingDefinition, specifierDefinition))
-					linter.addMessage(source, "Self references can only specify types they are bound to.", Message.Type.ERROR)
+					linter.addIssue(SelfReferenceSpecifierNotBound(source))
 			}
 		}
 		definition?.let { definition ->

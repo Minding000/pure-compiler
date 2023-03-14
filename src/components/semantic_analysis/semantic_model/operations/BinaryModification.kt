@@ -9,7 +9,7 @@ import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
 import errors.user.SignatureResolutionAmbiguityError
-import messages.Message
+import logger.issues.resolution.NotFound
 import components.syntax_parser.syntax_tree.operations.BinaryModification as BinaryModificationSyntaxTree
 
 class BinaryModification(override val source: BinaryModificationSyntaxTree, scope: Scope, val target: Value, val modifier: Value,
@@ -25,8 +25,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 			try {
 				val operatorDefinition = valueType.interfaceScope.resolveOperator(kind, listOf(modifier))
 				if(operatorDefinition == null) {
-					linter.addMessage(source, "Operator '$valueType $kind ${modifier.type}' hasn't been declared yet.",
-						Message.Type.ERROR)
+					linter.addIssue(NotFound(source, "Operator", "$valueType $kind ${modifier.type}"))
 				}
 			} catch(error: SignatureResolutionAmbiguityError) {
 				//TODO write test for this

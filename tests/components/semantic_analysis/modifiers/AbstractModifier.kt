@@ -1,6 +1,10 @@
 package components.semantic_analysis.modifiers
 
-import messages.Message
+import logger.Severity
+import logger.issues.definition.AbstractMemberInNonAbstractTypeDefinition
+import logger.issues.definition.MissingImplementations
+import logger.issues.modifiers.AbstractClassInstantiation
+import logger.issues.modifiers.DisallowedModifier
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -10,21 +14,21 @@ internal class AbstractModifier {
 	fun `is allowed on classes`() {
 		val sourceCode = "abstract Goldfish class"
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test
 	fun `is not allowed on objects`() {
 		val sourceCode = "abstract Earth object"
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+		lintResult.assertIssueDetected<DisallowedModifier>()
 	}
 
 	@Test
 	fun `is not allowed on enums`() {
 		val sourceCode = "abstract Tire enum"
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+		lintResult.assertIssueDetected<DisallowedModifier>()
 	}
 
 	@Test
@@ -36,7 +40,7 @@ internal class AbstractModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test
@@ -48,7 +52,7 @@ internal class AbstractModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test
@@ -61,7 +65,7 @@ internal class AbstractModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'abstract' is not allowed here")
+		lintResult.assertIssueDetected<DisallowedModifier>()
 	}
 
 	@Test
@@ -73,8 +77,7 @@ internal class AbstractModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
-			"Modifier 'abstract' is not allowed here")
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test
@@ -87,7 +90,7 @@ internal class AbstractModifier {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not allowed in non-abstract class")
+		lintResult.assertIssueNotDetected<AbstractMemberInNonAbstractTypeDefinition>()
 	}
 
 	@Test
@@ -100,10 +103,10 @@ internal class AbstractModifier {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Abstract member 'id: Int' is not allowed in non-abstract class 'List'")
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Abstract member 'clear()' is not allowed in non-abstract class 'List'")
+		lintResult.assertIssueDetected<AbstractMemberInNonAbstractTypeDefinition>(
+			"Abstract member 'id: Int' is not allowed in non-abstract type definition 'List'.", Severity.ERROR)
+		lintResult.assertIssueDetected<AbstractMemberInNonAbstractTypeDefinition>(
+			"Abstract member 'clear()' is not allowed in non-abstract type definition 'List'.", Severity.ERROR)
 	}
 
 	@Test
@@ -116,7 +119,17 @@ internal class AbstractModifier {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not allowed in non-abstract class")
+		lintResult.assertIssueNotDetected<AbstractMemberInNonAbstractTypeDefinition>()
+	}
+
+	@Test
+	fun `allows instantiation of non-abstract classes`() {
+		val sourceCode = """
+			List class
+			List()
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<AbstractClassInstantiation>()
 	}
 
 	@Test
@@ -126,7 +139,8 @@ internal class AbstractModifier {
 			List()
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Abstract class 'List' cannot be instantiated")
+		lintResult.assertIssueDetected<AbstractClassInstantiation>("Abstract class 'List' cannot be instantiated.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -145,13 +159,13 @@ internal class AbstractModifier {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
+		lintResult.assertIssueDetected<MissingImplementations>(
 			"""
 				Non-abstract class 'LinkedList' does not implement the following inherited members:
 				 - Collection
 				   - size: Int
 				 - List
 				   - clear(Int)
-			""".trimIndent())
+			""".trimIndent(), Severity.ERROR)
 	}
 }

@@ -45,6 +45,8 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	private val literalParser
 		get() = elementGenerator.literalParser
 
+	override fun getCurrentPosition(): Position = elementGenerator.getCurrentPosition()
+
 	override fun consume(type: WordDescriptor): Word {
 		return elementGenerator.consume(type)
 	}

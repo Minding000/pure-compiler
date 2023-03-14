@@ -1,6 +1,7 @@
 package components.semantic_analysis.operations
 
-import messages.Message
+import logger.Severity
+import logger.issues.constant_conditions.TypeNotAssignable
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -17,7 +18,7 @@ internal class Assignments {
 				b = a
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Int' is not assignable to type 'String'")
+		lintResult.assertIssueDetected<TypeNotAssignable>("Type 'Int' is not assignable to type 'String'.", Severity.ERROR)
 	}
 
 	@Test
@@ -29,6 +30,6 @@ internal class Assignments {
 				b = a
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type 'Float' is not assignable to type 'Int'")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 }

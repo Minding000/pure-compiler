@@ -8,7 +8,7 @@ import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.Value
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
-import messages.Message
+import logger.issues.resolution.NotFound
 import components.syntax_parser.syntax_tree.operations.UnaryOperator as UnaryOperatorSyntaxTree
 
 class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, val value: Value, val kind: Operator.Kind):
@@ -24,8 +24,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 			try {
 				val operatorDefinition = valueType.interfaceScope.resolveOperator(kind)
 				if(operatorDefinition == null) {
-					linter.addMessage(source, "Operator '$kind$valueType' hasn't been declared yet.",
-						Message.Type.ERROR)
+					linter.addIssue(NotFound(source, "Operator", "$kind$valueType"))
 					return@let
 				}
 				type = operatorDefinition.returnType

@@ -10,7 +10,10 @@ import components.semantic_analysis.semantic_model.operations.NullCheck
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.values.VariableValue
-import messages.Message
+import logger.Severity
+import logger.issues.access.GuaranteedAccessWithNullCheck
+import logger.issues.access.OptionalAccessWithoutNullCheck
+import logger.issues.constant_conditions.*
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.*
@@ -74,8 +77,8 @@ internal class Expressions {
 				sun.shine()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Cannot access member of optional type 'Star?' without null check.")
+		lintResult.assertIssueDetected<OptionalAccessWithoutNullCheck>(
+			"Cannot access member of optional type 'Star?' without null check.", Severity.ERROR)
 	}
 
 	@Test
@@ -89,8 +92,8 @@ internal class Expressions {
 				sun?.shine()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"Optional member access on guaranteed type 'Star' is unnecessary.")
+		lintResult.assertIssueDetected<GuaranteedAccessWithNullCheck>(
+			"Optional member access on guaranteed type 'Star' is unnecessary.", Severity.WARNING)
 	}
 
 	@Test
@@ -192,8 +195,8 @@ internal class Expressions {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Cannot access cast variable in negative branch")
+		lintResult.assertIssueDetected<CastVariableAccessInNegativeBranch>(
+			"Cannot access cast variable in negative branch.", Severity.ERROR)
 	}
 
 	@Test
@@ -206,8 +209,8 @@ internal class Expressions {
 				car
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Cannot access cast variable after if statement")
+		lintResult.assertIssueDetected<CastVariableAccessAfterIfStatement>(
+			"Cannot access cast variable after if statement.", Severity.ERROR)
 	}
 
 	@Test
@@ -258,8 +261,8 @@ internal class Expressions {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Cannot access negated cast variable in positive branch")
+		lintResult.assertIssueDetected<NegatedCastVariableAccessInPositiveBranch>(
+			"Cannot access negated cast variable in positive branch.", Severity.ERROR)
 	}
 
 	@Test
@@ -272,8 +275,8 @@ internal class Expressions {
 				car
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Cannot access cast variable after if statement")
+		lintResult.assertIssueDetected<CastVariableAccessAfterIfStatement>(
+			"Cannot access cast variable after if statement.", Severity.ERROR)
 	}
 
 	@Test
@@ -321,7 +324,7 @@ internal class Expressions {
 				Apple as Orange
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Cannot safely cast 'Apple' to 'Orange'")
+		lintResult.assertIssueDetected<UnsafeSafeCast>("Cannot safely cast 'Apple' to 'Orange'.", Severity.ERROR)
 	}
 
 	@Test
@@ -333,7 +336,7 @@ internal class Expressions {
 				Apple as? Fruit
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Cast from 'Apple' to 'Fruit' is safe.")
+		lintResult.assertIssueDetected<ConditionalCastIsSafe>("Cast from 'Apple' to 'Fruit' is safe.", Severity.WARNING)
 	}
 
 	@Test
@@ -379,7 +382,7 @@ internal class Expressions {
 				if(cable?) {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Null check always returns 'yes'")
+		lintResult.assertIssueDetected<StaticNullCheckValue>("Null check always returns 'yes'.", Severity.WARNING)
 	}
 
 	@Test
@@ -391,7 +394,7 @@ internal class Expressions {
 				if(noCable?) {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Null check always returns 'no'")
+		lintResult.assertIssueDetected<StaticNullCheckValue>("Null check always returns 'no'.", Severity.WARNING)
 	}
 
 	@Test
@@ -403,7 +406,7 @@ internal class Expressions {
 				<Metal>List()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type specifications can only be used on initializers")
+		lintResult.assertIssueNotDetected<TypeSpecificationOutsideOfInitializerCall>()
 	}
 
 	@Test
@@ -417,6 +420,7 @@ internal class Expressions {
 				Cable.<Metal>transmit()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type specifications can only be used on initializers")
+		lintResult.assertIssueDetected<TypeSpecificationOutsideOfInitializerCall>(
+			"Type specifications can only be used on initializers.", Severity.ERROR)
 	}
 }

@@ -5,7 +5,10 @@ import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Value
-import messages.Message
+import logger.issues.returns.RedundantReturnValue
+import logger.issues.returns.ReturnStatementMissingValue
+import logger.issues.returns.ReturnStatementOutsideOfCallable
+import logger.issues.returns.ReturnValueTypeMismatch
 import components.syntax_parser.syntax_tree.control_flow.ReturnStatement as ReturnStatementSyntaxTree
 
 class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Scope, val value: Value?): Value(source, scope) {
@@ -20,7 +23,7 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 		super.linkValues(linter)
 		val surroundingFunction = scope.getSurroundingFunction()
 		if(surroundingFunction == null) {
-			linter.addMessage(source, "Return statements are not allowed outside of functions.", Message.Type.ERROR)
+			linter.addIssue(ReturnStatementOutsideOfCallable(source))
 			return
 		}
 		targetFunction = surroundingFunction
@@ -28,14 +31,14 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 		val returnType = surroundingFunction.signature.returnType
 		if(value == null) {
 			if(!Linter.SpecialType.NOTHING.matches(returnType))
-				linter.addMessage(source, "Return statement needs a value.", Message.Type.ERROR)
+				linter.addIssue(ReturnStatementMissingValue(source))
 		} else {
 			if(Linter.SpecialType.NOTHING.matches(returnType)) {
-				linter.addMessage(source, "Return value is redundant.", Message.Type.WARNING)
+				linter.addIssue(RedundantReturnValue(source))
 			} else if(value.isAssignableTo(returnType)) {
 				value.setInferredType(returnType)
 			} else {
-				linter.addMessage(source, "Return value doesn't match the declared return type.", Message.Type.ERROR)
+				linter.addIssue(ReturnValueTypeMismatch(source))
 			}
 		}
 	}

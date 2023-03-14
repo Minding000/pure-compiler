@@ -9,7 +9,8 @@ import components.semantic_analysis.semantic_model.values.InitializerReference
 import components.semantic_analysis.semantic_model.values.SelfReference
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
-import messages.Message
+import logger.issues.access.GuaranteedAccessWithNullCheck
+import logger.issues.access.OptionalAccessWithoutNullCheck
 import java.util.*
 import components.syntax_parser.syntax_tree.access.MemberAccess as MemberAccessSyntaxTree
 
@@ -26,13 +27,11 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			var targetType = targetTypeVal
 			if(targetType is OptionalType) {
 				if(!isOptional)
-					linter.addMessage(source, "Cannot access member of optional type '$targetType' without null check.",
-						Message.Type.ERROR)
+					linter.addIssue(OptionalAccessWithoutNullCheck(source, targetType))
 				targetType = targetType.baseType
 			} else {
 				if(isOptional)
-					linter.addMessage(source, "Optional member access on guaranteed type '$targetType' is unnecessary.",
-						Message.Type.WARNING)
+					linter.addIssue(GuaranteedAccessWithNullCheck(source, targetType))
 			}
 			member.scope = targetType.interfaceScope
 			member.linkValues(linter)

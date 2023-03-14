@@ -6,7 +6,7 @@ import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
+import logger.issues.definition.Redeclaration
 import java.util.*
 
 open class Function(source: Element, scope: Scope, val name: String = "<anonymous function>",
@@ -65,8 +65,8 @@ open class Function(source: Element, scope: Scope, val name: String = "<anonymou
 				if(!otherImplementation.signature.hasSameParameterTypesAs(implementation.signature))
 					continue
 				redeclarations.add(otherImplementation)
-				linter.addMessage(otherImplementation.source, "Redeclaration of $memberType '$otherImplementation', " +
-						"previously declared in ${implementation.source.getStartString()}.", Message.Type.ERROR)
+				linter.addIssue(Redeclaration(otherImplementation.source, memberType, otherImplementation.toString(),
+					implementation.source))
 			}
 		}
 		for(implementation in redeclarations)

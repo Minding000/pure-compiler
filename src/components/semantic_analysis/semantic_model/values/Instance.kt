@@ -7,7 +7,7 @@ import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import errors.user.SignatureResolutionAmbiguityError
-import messages.Message
+import logger.issues.resolution.NotFound
 import components.syntax_parser.syntax_tree.definitions.Instance as InstanceSyntaxTree
 
 class Instance(override val source: InstanceSyntaxTree, scope: Scope, override val value: VariableValue, val valueParameters: List<Value>):
@@ -39,7 +39,7 @@ class Instance(override val source: InstanceSyntaxTree, scope: Scope, override v
 		try {
 			val initializer = staticType.interfaceScope.resolveInitializer(valueParameters)
 			if(initializer == null)
-				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.", Message.Type.ERROR)
+				linter.addIssue(NotFound(source, "Initializer", getSignature()))
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
 			error.log(linter, source, "initializer", getSignature())

@@ -3,7 +3,7 @@ package components.semantic_analysis.semantic_model.values
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
+import logger.issues.definition.*
 
 class Operator(source: Element, scope: Scope, val kind: Kind): Function(source, scope, kind.stringRepresentation) {
 	override val memberType = "operator"
@@ -13,23 +13,22 @@ class Operator(source: Element, scope: Scope, val kind: Kind): Function(source, 
 		for(implementation in implementations) {
 			if(kind == Kind.BRACKETS_SET) {
 				if(!Linter.SpecialType.NOTHING.matches(implementation.signature.returnType))
-					linter.addMessage(source, "Index operators can not accept and return a value at the same time.",
-						Message.Type.WARNING)
+					linter.addIssue(ReadWriteIndexOperator(source))
 			} else if(kind != Kind.BRACKETS_GET) {
 				if(Linter.SpecialType.NOTHING.matches(implementation.signature.returnType)) {
 					if(kind.returnsValue)
-						linter.addMessage(source, "This operator is expected to return a value.", Message.Type.WARNING)
+						linter.addIssue(OperatorExpectedToReturn(source))
 				} else {
 					if(!kind.returnsValue)
-						linter.addMessage(source, "This operator is not expected to return a value.", Message.Type.WARNING)
+						linter.addIssue(OperatorExpectedToNotReturn(source))
 				}
 				if(kind.isUnary) {
 					if(implementation.parameters.size > 1 || !kind.isBinary && implementation.parameters.isNotEmpty())
-						linter.addMessage(source, "Unary operators can't accept parameters.", Message.Type.WARNING)
+						linter.addIssue(ParameterInUnaryOperator(source))
 				}
 				if(kind.isBinary) {
 					if(implementation.parameters.size > 1 || !kind.isUnary && implementation.parameters.isEmpty())
-						linter.addMessage(source, "Binary operators need to accept exactly one parameter.", Message.Type.WARNING)
+						linter.addIssue(BinaryOperatorWithInvalidParameterCount(source))
 				}
 			}
 		}

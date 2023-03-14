@@ -6,7 +6,7 @@ import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
-import messages.Message
+import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -218,8 +218,7 @@ internal class TypeInference {
 				val letterBox = Box()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Initializer 'Box()' hasn't been declared yet")
+		lintResult.assertIssueDetected<NotFound>("Initializer 'Box()' hasn't been declared yet.")
 	}
 
 	@Test

@@ -3,7 +3,7 @@ package components.semantic_analysis.semantic_model.general
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.scopes.FileScope
-import messages.Message
+import logger.issues.resolution.ReferencedFileNotFound
 import java.util.*
 import components.syntax_parser.syntax_tree.general.File as FileSyntaxTree
 import source_structure.File as SourceFile
@@ -22,11 +22,10 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, public ove
 				if(file.matches(fileReference.parts)) {
 					referencedFiles.add(file)
 					noFilesFound = false
-					linter.addMessage("'${file.file.name}' referenced in '${this.file.name}' by ${fileReference.parts}.", Message.Type.DEBUG)
 				}
 			}
 			if(noFilesFound)
-				linter.addMessage("Failed to resolve file '${fileReference.identifier}'.", Message.Type.ERROR)
+				linter.addIssue(ReferencedFileNotFound(fileReference))
 		}
 	}
 

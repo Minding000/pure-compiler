@@ -1,8 +1,9 @@
 package components.syntax_parser
 
-import messages.Message
-import util.TestUtil
+import logger.Severity
+import logger.issues.parsing.InvalidSyntax
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class UnaryOperators {
 
@@ -65,20 +66,35 @@ internal class UnaryOperators {
 	fun `emits error for multiple negations`() {
 		val sourceCode = "!!yes"
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected NOT")
+		parseResult.assertIssueDetected<InvalidSyntax>("""
+			Unexpected NOT in Test.Test:1:1: '!'.
+			!!yes
+			 ^
+			Expected atom instead.
+		""".trimIndent(), Severity.ERROR)
 	}
 
 	@Test
 	fun `emits error for multiple negative signs`() {
 		val sourceCode = "--4"
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected DECREMENT")
+		parseResult.assertIssueDetected<InvalidSyntax>("""
+			Unexpected DECREMENT in Test.Test:1:0: '--'.
+			--4
+			^^
+			Expected atom instead.
+		""".trimIndent())
 	}
 
 	@Test
 	fun `emits error for multiple positive signs`() {
 		val sourceCode = "++8"
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected INCREMENT")
+		parseResult.assertIssueDetected<InvalidSyntax>("""
+			Unexpected INCREMENT in Test.Test:1:0: '++'.
+			++8
+			^^
+			Expected atom instead.
+		""".trimIndent())
 	}
 }

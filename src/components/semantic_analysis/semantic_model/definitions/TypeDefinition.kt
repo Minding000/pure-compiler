@@ -8,7 +8,9 @@ import components.semantic_analysis.semantic_model.types.AndUnionType
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
+import logger.issues.definition.CircularInheritance
+import logger.issues.definition.ExplicitParentOnScopedTypeDefinition
+import logger.issues.modifiers.NoParentToBindTo
 import util.linkedListOf
 import java.util.*
 
@@ -80,8 +82,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 			if(parentTypeDefinition == null) {
 				parentTypeDefinition = explicitParentType.definition
 			} else {
-				linter.addMessage(explicitParentType.source,
-					"Explicit parent types are only allowed on unscoped type definitions.", Message.Type.ERROR)
+				linter.addIssue(ExplicitParentOnScopedTypeDefinition(explicitParentType.source))
 			}
 		}
 	}
@@ -101,7 +102,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 		super.linkValues(linter)
 		if(superType != null && inheritsFrom(this)) {
 			hasCircularInheritance = true
-			linter.addMessage(superType.source, "Type definitions cannot inherit from themself.", Message.Type.ERROR)
+			linter.addIssue(CircularInheritance(superType.source))
 		}
 	}
 
@@ -119,7 +120,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 	override fun validate(linter: Linter) {
 		super.validate(linter)
 		if(isBound && parentTypeDefinition == null)
-			linter.addMessage(source, "Can't bind type definition, because it doesn't have a parent.", Message.Type.WARNING)
+			linter.addIssue(NoParentToBindTo(source))
 			if((this as? Class)?.isAbstract != true && !hasCircularInheritance)
 				scope.ensureAbstractSuperMembersImplemented(linter)
 	}

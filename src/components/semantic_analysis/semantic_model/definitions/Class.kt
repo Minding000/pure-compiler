@@ -44,6 +44,6 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
 		if(!isAbstract)
-			scope.ensureNoAbstractMembers(linter)
+			scope.ensureNoAbstractMembers(linter) //TODO what about abstract members in objects and enums?
 	}
 }

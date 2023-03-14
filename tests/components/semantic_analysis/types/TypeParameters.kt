@@ -3,7 +3,9 @@ package components.semantic_analysis.types
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
-import messages.Message
+import logger.Severity
+import logger.issues.definition.TypeParameterCountMismatch
+import logger.issues.definition.TypeParameterNotAssignable
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -129,8 +131,8 @@ internal class TypeParameters {
 			val room: <SoftDrink, SoftDrink>StorageRoom
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Number of provided type parameters (2) doesn't match number of declared generic types (1)")
+		lintResult.assertIssueDetected<TypeParameterCountMismatch>(
+			"Number of provided type parameters (2) doesn't match number of declared generic types (1).", Severity.ERROR)
 	}
 
 	@Test
@@ -145,7 +147,7 @@ internal class TypeParameters {
 			val room: <Dish>StorageRoom
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"The type parameter 'Dish' is not assignable to 'Item: SoftDrink'")
+		lintResult.assertIssueDetected<TypeParameterNotAssignable>(
+			"The type parameter 'Dish' is not assignable to 'Item: SoftDrink'.", Severity.ERROR)
 	}
 }

@@ -14,9 +14,10 @@ import components.tokenizer.Word
 import components.tokenizer.WordAtom
 import components.tokenizer.WordDescriptor
 import components.tokenizer.WordType
+import errors.user.SyntaxError
 import errors.user.UnexpectedWordError
 import errors.user.UserError
-import messages.Message
+import logger.issues.parsing.InvalidSyntax
 import source_structure.Position
 import java.util.*
 
@@ -37,6 +38,8 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		get() = elementGenerator.typeParser
 	private val literalParser
 		get() = elementGenerator.literalParser
+
+	override fun getCurrentPosition(): Position = elementGenerator.getCurrentPosition()
 
 	override fun consume(type: WordDescriptor): Word {
 		return elementGenerator.consume(type)
@@ -65,7 +68,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			try {
 				statements.add(parseStatement())
 			} catch(error: UserError) {
-				elementGenerator.addMessage(error.message, Message.Type.ERROR)
+				elementGenerator.addIssue(InvalidSyntax(error.message, (error as? SyntaxError)?.section))
 				currentWord?.let { invalidWord ->
 					elementGenerator.wordGenerator.skipLine(invalidWord)
 					currentWord = elementGenerator.wordGenerator.getNextWord()

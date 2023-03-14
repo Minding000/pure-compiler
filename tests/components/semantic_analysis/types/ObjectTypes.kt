@@ -1,6 +1,6 @@
 package components.semantic_analysis.types
 
-import messages.Message
+import logger.issues.constant_conditions.TypeNotAssignable
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -14,6 +14,6 @@ internal class ObjectTypes {
 				val car: Car = Car()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 }

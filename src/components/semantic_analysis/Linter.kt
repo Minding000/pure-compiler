@@ -4,15 +4,16 @@ import components.semantic_analysis.semantic_model.definitions.PropertyDeclarati
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
-import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
-import messages.MessageLogger
+import logger.Issue
+import logger.Logger
+import logger.Severity
+import logger.issues.resolution.LiteralFileNotFound
 import java.util.*
 import components.semantic_analysis.semantic_model.general.Program as SemanticProgramModel
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
 class Linter {
-	val logger = MessageLogger("linter", Message.Type.INFO)
+	val logger = Logger("linter", Severity.INFO)
 	val propertyDeclarationStack = LinkedList<PropertyDeclaration>()
 	private var activePhase = Phase.PENDING //TODO consider removing this property if it is not needed
 
@@ -53,21 +54,13 @@ class Linter {
 	private fun getLiteralScope(semanticProgramModel: SemanticProgramModel, pathParts: List<String>): FileScope? {
 		val file = semanticProgramModel.getFile(pathParts)
 		if(file == null)
-			logger.add(Message("Failed to get literal scope '${pathParts.joinToString(".")}'.", Message.Type.ERROR))
+			addIssue(LiteralFileNotFound(pathParts))
 		return file?.scope
 	}
 
-	fun addMessage(description: String, type: Message.Type = Message.Type.INFO) {
-		logger.add(Message(description, type))
-	}
+	fun addIssue(issue: Issue) = logger.add(issue)
 
-	fun addMessage(element: Element, description: String, type: Message.Type = Message.Type.INFO) {
-		addMessage("${element.getStartString()}: $description", type)
-	}
-
-	fun hasCompleted(phase: Phase): Boolean {
-		return phase < activePhase
-	}
+	fun hasCompleted(phase: Phase): Boolean = phase < activePhase
 
 	enum class Phase {
 		PENDING,

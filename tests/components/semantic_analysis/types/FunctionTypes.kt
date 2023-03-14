@@ -1,7 +1,7 @@
 package components.semantic_analysis.types
 
 import components.semantic_analysis.semantic_model.values.Function
-import messages.Message
+import logger.issues.constant_conditions.TypeNotAssignable
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -46,7 +46,7 @@ internal class FunctionTypes {
 				val growthFunction: =>| = Tree.grow
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
 	@Disabled
@@ -62,8 +62,8 @@ internal class FunctionTypes {
 				val stampFunction: (P: Paper; P) => P = Stamper.stamp
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Type '(L: Letter; L) => L' is not assignable to type '(P: Paper; P) => P'")
+		lintResult.assertIssueDetected<TypeNotAssignable>(
+			"Type '(L: Letter; L) => L' is not assignable to type '(P: Paper; P) => P'.")
 	}
 
 	@Test
@@ -78,8 +78,8 @@ internal class FunctionTypes {
 				val growthFunction: (Number) =>| = Tree.grow
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Type '(Int) =>|' is not assignable to type '(Number) =>|'")
+		lintResult.assertIssueDetected<TypeNotAssignable>(
+			"Type '(Int) =>|' is not assignable to type '(Number) =>|'.")
 	}
 
 	@Test
@@ -94,8 +94,8 @@ internal class FunctionTypes {
 				val growthFunction: => Int = CashMachine.getBalance
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Type '=> Number' is not assignable to type '=> Int'")
+		lintResult.assertIssueDetected<TypeNotAssignable>(
+			"Type '=> Number' is not assignable to type '=> Int'.")
 	}
 
 	@Disabled
@@ -111,7 +111,7 @@ internal class FunctionTypes {
 				val stampFunction: (L: Letter; L) => L = Stamper.stamp
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
 	@Test
@@ -126,7 +126,7 @@ internal class FunctionTypes {
 				val growthFunction: (Int) =>| = Tree.grow
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
 	@Test
@@ -141,7 +141,7 @@ internal class FunctionTypes {
 				val growthFunction: => Number = CashMachine.getBalance
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
 	@Test
@@ -156,7 +156,7 @@ internal class FunctionTypes {
 				val resultProcessor: (Body) =>| & (Error) =>| = DataModel.process
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
 	@Test
@@ -169,6 +169,6 @@ internal class FunctionTypes {
 				val resultProcessor: Any = DataModel.process
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 }

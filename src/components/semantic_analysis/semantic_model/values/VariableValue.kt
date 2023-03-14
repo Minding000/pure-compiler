@@ -9,7 +9,10 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.literals.Identifier
-import messages.Message
+import logger.issues.access.InstanceAccessFromStaticContext
+import logger.issues.access.StaticAccessFromInstanceContext
+import logger.issues.initialization.NotInitialized
+import logger.issues.resolution.NotFound
 
 open class VariableValue(override val source: Element, scope: Scope, val name: String): Value(source, scope) {
 	var definition: ValueDeclaration? = null
@@ -21,17 +24,17 @@ open class VariableValue(override val source: Element, scope: Scope, val name: S
 			return
 		val definition = scope.resolveValue(this)
 		if(definition == null) {
-			linter.addMessage(source, "Value '$name' hasn't been declared yet.", Message.Type.ERROR)
+			linter.addIssue(NotFound(source, "Value", name))
 			return
 		}
 		val scope = scope
 		if(scope is InterfaceScope && definition is InterfaceMember) {
 			if(scope.isStatic && !definition.isStatic) {
-				linter.addMessage(source, "Cannot access instance member '$name' from static context.", Message.Type.ERROR)
+				linter.addIssue(InstanceAccessFromStaticContext(source, name))
 				return
 			}
 			if(!scope.isStatic && definition.isStatic)
-				linter.addMessage(source, "Accessing static member '$name' from instance context.", Message.Type.WARNING)
+				linter.addIssue(StaticAccessFromInstanceContext(source, name))
 		}
 		definition.usages.add(this)
 		this.definition = definition
@@ -46,10 +49,10 @@ open class VariableValue(override val source: Element, scope: Scope, val name: S
 		val declaration = definition
 		if(declaration is LocalVariableDeclaration) {
 			if(declaration.type !is StaticType && !usage.isPreviouslyInitialized())
-				linter.addMessage(source, "Local variable '$name' hasn't been initialized yet.", Message.Type.ERROR)
+				linter.addIssue(NotInitialized(source, "Local variable", name))
 		} else if(declaration is PropertyDeclaration) {
 			if(tracker.isInitializer && !declaration.isStatic && declaration.value == null && !usage.isPreviouslyInitialized())
-				linter.addMessage(source, "Property '$name' hasn't been initialized yet.", Message.Type.ERROR)
+				linter.addIssue(NotInitialized(source, "Property", name))
 		}
 	}
 

@@ -1,7 +1,8 @@
 package components.semantic_analysis.declarations
 
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
-import messages.Message
+import logger.Severity
+import logger.issues.definition.GenericTypeDeclarationInObject
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -17,8 +18,7 @@ internal class GenericTypes {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
-			"Generic type declarations are not allowed")
+		lintResult.assertIssueNotDetected<GenericTypeDeclarationInObject>()
 	}
 
 	@Test
@@ -30,8 +30,7 @@ internal class GenericTypes {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
-			"Generic type declarations are not allowed")
+		lintResult.assertIssueNotDetected<GenericTypeDeclarationInObject>()
 	}
 
 	@Test
@@ -43,8 +42,8 @@ internal class GenericTypes {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"Generic type declarations are not allowed in objects")
+		lintResult.assertIssueDetected<GenericTypeDeclarationInObject>("Generic type declarations are not allowed in objects.",
+			Severity.WARNING)
 	}
 
 	@Test

@@ -1,9 +1,11 @@
 package components.syntax_parser.element_generator
 
-import errors.user.UnexpectedEndOfFileError
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
 import components.tokenizer.WordDescriptor
+import errors.user.UnexpectedEndOfFileError
+import source_structure.Position
+import source_structure.Section
 
 abstract class Generator {
 	internal abstract var currentWord: Word?
@@ -18,10 +20,17 @@ abstract class Generator {
 	}
 
 	internal fun getCurrentWord(expectation: String): Word {
-		return currentWord ?: throw UnexpectedEndOfFileError(expectation)
+		val currentWord = currentWord
+		if(currentWord == null) {
+			val position = getCurrentPosition()
+			throw UnexpectedEndOfFileError(expectation, Section(position, position))
+		}
+		return currentWord
 	}
 
 	internal fun getCurrentWord(expectation: WordDescriptor): Word {
 		return getCurrentWord(expectation.toString())
 	}
+
+	internal abstract fun getCurrentPosition(): Position
 }

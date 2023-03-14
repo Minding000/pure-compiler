@@ -14,8 +14,11 @@ import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
 import errors.user.SignatureResolutionAmbiguityError
-import messages.Message
-import util.stringifyTypes
+import logger.issues.initialization.ReliesOnUninitializedProperties
+import logger.issues.modifiers.AbstractClassInstantiation
+import logger.issues.resolution.NotCallable
+import logger.issues.resolution.NotFound
+import logger.issues.resolution.SignatureMismatch
 import java.util.*
 import components.syntax_parser.syntax_tree.control_flow.FunctionCall as FunctionCallSyntaxTree
 
@@ -39,7 +42,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 			is StaticType -> resolveInitializerCall(linter, targetType)
 			is FunctionType -> resolveFunctionCall(linter, targetType)
 			null -> {}
-			else -> linter.addMessage(source, "'${function.source.getValue()}' is not callable.", Message.Type.ERROR)
+			else -> linter.addIssue(NotCallable(function))
 		}
 	}
 
@@ -56,18 +59,14 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 		}
 		for(propertyBeingInitialized in targetImplementation.propertiesBeingInitialized)
 			tracker.add(VariableUsage.Type.WRITE, propertyBeingInitialized, this)
-		if(tracker.isInitializer && requiredButUninitializedProperties.isNotEmpty()) {
-			var message = "The callable '${getSignature()}' relies on the following uninitialized properties:"
-			for(requiredButUninitializedProperty in requiredButUninitializedProperties)
-				message += "\n - ${requiredButUninitializedProperty.memberIdentifier}"
-			linter.addMessage(source, message, Message.Type.ERROR)
-		}
+		if(tracker.isInitializer && requiredButUninitializedProperties.isNotEmpty())
+			linter.addIssue(ReliesOnUninitializedProperties(source, getSignature(), requiredButUninitializedProperties))
 	}
 
 	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {
 		(targetType.definition as? Class)?.let { `class` ->
 			if(`class`.isAbstract)
-				linter.addMessage(source, "Abstract class '${`class`.name}' cannot be instantiated.", Message.Type.ERROR)
+				linter.addIssue(AbstractClassInstantiation(source, `class`))
 		}
 		val genericDefinitionTypes = (targetType.definition.baseDefinition ?: targetType.definition).scope.getGenericTypeDefinitions()
 		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
@@ -75,7 +74,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 			val match = targetType.interfaceScope.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters,
 				valueParameters)
 			if(match == null) {
-				linter.addMessage(source, "Initializer '${getSignature()}' hasn't been declared yet.", Message.Type.ERROR)
+				linter.addIssue(NotFound(source, "Initializer", getSignature()))
 				return
 			}
 			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value },
@@ -93,17 +92,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 		try {
 			val signature = functionType.resolveSignature(typeParameters, valueParameters)
 			if(signature == null) {
-				var parameterStringRepresentation = ""
-				if(typeParameters.isNotEmpty()) {
-					parameterStringRepresentation += typeParameters.joinToString()
-					parameterStringRepresentation += ";"
-					if(valueParameters.isNotEmpty())
-						parameterStringRepresentation += " "
-				}
-				parameterStringRepresentation += valueParameters.stringifyTypes()
-				linter.addMessage(source,
-					"The provided parameters ($parameterStringRepresentation) don't match any signature " +
-						"of function '${function.source.getValue()}'.", Message.Type.ERROR)
+				linter.addIssue(SignatureMismatch(function, typeParameters, valueParameters))
 				return
 			}
 			type = signature.returnType

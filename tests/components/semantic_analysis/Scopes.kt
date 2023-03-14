@@ -14,7 +14,8 @@ import components.syntax_parser.syntax_tree.definitions.TypeDefinition
 import components.syntax_parser.syntax_tree.literals.Identifier
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
-import messages.Message
+import logger.Issue
+import logger.issues.definition.DisallowedDeclarationType
 import org.junit.jupiter.api.Test
 import source_structure.File
 import source_structure.Line
@@ -26,14 +27,14 @@ import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
 internal class Scopes {
 
-	private fun assertErrorEmitted(message: String, setup: (Linter, Position) -> Unit) {
+	private inline fun <reified I: Issue> assertIssueDetected(message: String, setup: (Linter, Position) -> Unit) {
 		val linter = Linter()
 		linter.logger.addPhase("Test")
 		val line = Line(File(Module("Test"), listOf(), "Test", ""), 0, 0, 1)
 		val position = Position(0, line, 0)
 		setup(linter, position)
 		val lintResult = LintResult(linter, Program(ProgramSyntaxTree(listOf())))
-		lintResult.assertMessageEmitted(Message.Type.ERROR, message)
+		lintResult.assertIssueDetected<I>(message)
 	}
 
 	private fun getTestClass(position: Position): Class {
@@ -46,7 +47,8 @@ internal class Scopes {
 
 	@Test
 	fun `prohibits initializer declarations in blocks`() {
-		assertErrorEmitted("Initializer declarations aren't allowed in 'BlockScope'.") { linter, position ->
+		assertIssueDetected<DisallowedDeclarationType>("Initializer declarations aren't allowed in 'BlockScope'.") {
+				linter, position ->
 			val syntaxTree = InitializerDefinitionSyntaxTree(position, null, null, position)
 			val initializerDefinition = InitializerDefinition(
 				syntaxTree, getTestClass(position), BlockScope(FileScope()), listOf(), listOf(),
@@ -59,7 +61,8 @@ internal class Scopes {
 
 	@Test
 	fun `prohibits function declarations in blocks`() {
-		assertErrorEmitted("Function declarations aren't allowed in 'BlockScope'.") { linter, position ->
+		assertIssueDetected<DisallowedDeclarationType>("Function declarations aren't allowed in 'BlockScope'.") {
+				linter, position ->
 			val syntaxTree = FunctionDefinition(Identifier(Word(position, position, WordAtom.IDENTIFIER)),
 				ParameterList(position, position, null, listOf()), null, null)
 			val functionImplementation = FunctionImplementation(syntaxTree, getTestClass(position),

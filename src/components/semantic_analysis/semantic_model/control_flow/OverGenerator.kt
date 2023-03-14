@@ -11,7 +11,10 @@ import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
 import components.semantic_analysis.semantic_model.values.Value
 import errors.user.SignatureResolutionAmbiguityError
-import messages.Message
+import logger.issues.loops.NotIterable
+import logger.issues.loops.PluralTypeIteratorDeclaration
+import logger.issues.loops.TooManyIterableVariableDeclarations
+import logger.issues.loops.TooManyPluralTypeVariableDeclarations
 import java.util.*
 import components.syntax_parser.syntax_tree.control_flow.OverGenerator as OverGeneratorSyntaxTree
 
@@ -44,11 +47,9 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 
 	private fun setVariableTypes(linter: Linter, collectionType: PluralType) {
 		if(iteratorVariableDeclaration != null)
-			linter.addMessage(iteratorVariableDeclaration.source, "Plural types don't provide an iterator.", Message.Type.ERROR)
+			linter.addIssue(PluralTypeIteratorDeclaration(iteratorVariableDeclaration.source))
 		if(variableDeclarations.size > 2) {
-			linter.addMessage(source,
-				"Plural types only provide index and element (2) values, but ${variableDeclarations.size} were declared.",
-				Message.Type.ERROR)
+			linter.addIssue(TooManyPluralTypeVariableDeclarations(source, variableDeclarations))
 		} else if(variableDeclarations.size == 2) {
 			variableDeclarations.firstOrNull()?.type = LiteralType(source, scope, Linter.SpecialType.INTEGER, linter)
 		}
@@ -57,7 +58,7 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 
 	private fun setVariableTypes(linter: Linter, collectionType: Type) {
 		if(!collectionType.isInstanceOf(Linter.SpecialType.ITERABLE)) {
-			linter.addMessage(collection.source, "The provided object is not iterable.", Message.Type.ERROR)
+			linter.addIssue(NotIterable(collection.source))
 			return
 		}
 		try {
@@ -80,9 +81,7 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 				availableValueTypes.add(valueProperty?.type)
 			}
 			if(variableDeclarations.size > availableValueTypes.size) {
-				linter.addMessage(source, "The number of declared variables (${variableDeclarations.size})" +
-					" is larger than the number of values provided by the iterables iterator (${availableValueTypes.size}).",
-					Message.Type.ERROR)
+				linter.addIssue(TooManyIterableVariableDeclarations(source, variableDeclarations, availableValueTypes))
 				return
 			}
 			for(index in variableDeclarations.indices) {

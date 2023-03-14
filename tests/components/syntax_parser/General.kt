@@ -1,8 +1,9 @@
 package components.syntax_parser
 
-import messages.Message
-import util.TestUtil
+import logger.Severity
+import logger.issues.parsing.InvalidSyntax
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class General {
 
@@ -17,7 +18,10 @@ internal class General {
 			player.
 			""".trimIndent()
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected end of file")
+		parseResult.assertIssueDetected<InvalidSyntax>("""
+			Unexpected end of file.
+			Expected IDENTIFIER instead.
+		""".trimIndent(), Severity.ERROR)
 	}
 
 	@Test

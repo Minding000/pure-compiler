@@ -3,7 +3,7 @@ package components.semantic_analysis.resolution
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
-import messages.Message
+import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -18,7 +18,7 @@ internal class TypeResolution {
 				var eagle: Eagle
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Eagle' hasn't been declared yet")
+		lintResult.assertIssueDetected<NotFound>("Type 'Eagle' hasn't been declared yet.")
 	}
 
 	@Test

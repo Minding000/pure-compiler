@@ -9,6 +9,7 @@ import components.tokenizer.Word
 import components.tokenizer.WordAtom
 import components.tokenizer.WordDescriptor
 import components.tokenizer.WordType
+import source_structure.Position
 import java.util.*
 
 class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
@@ -24,6 +25,8 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 
 	private val literalParser
 		get() = elementGenerator.literalParser
+
+	override fun getCurrentPosition(): Position = elementGenerator.getCurrentPosition()
 
 	override fun consume(type: WordDescriptor): Word {
 		return elementGenerator.consume(type)

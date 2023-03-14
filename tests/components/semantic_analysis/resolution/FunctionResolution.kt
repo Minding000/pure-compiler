@@ -3,7 +3,11 @@ package components.semantic_analysis.resolution
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.values.VariableValue
-import messages.Message
+import logger.Severity
+import logger.issues.modifiers.MissingOverridingKeyword
+import logger.issues.modifiers.OverriddenSuperMissing
+import logger.issues.resolution.SignatureAmbiguity
+import logger.issues.resolution.SignatureMismatch
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -87,8 +91,8 @@ internal class FunctionResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"Function 'Potato.getNutritionScore(): Float' is missing the 'overriding' keyword")
+		lintResult.assertIssueDetected<MissingOverridingKeyword>(
+			"Function 'Potato.getNutritionScore(): Float' is missing the 'overriding' keyword.")
 	}
 
 	@Test
@@ -106,9 +110,8 @@ internal class FunctionResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "is missing the 'overriding' keyword")
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
-			"'overriding' keyword is used, but the function doesn't have a super function")
+		lintResult.assertIssueNotDetected<MissingOverridingKeyword>()
+		lintResult.assertIssueNotDetected<OverriddenSuperMissing>()
 	}
 
 	@Test
@@ -120,8 +123,8 @@ internal class FunctionResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"'overriding' keyword is used, but the function doesn't have a super function")
+		lintResult.assertIssueDetected<OverriddenSuperMissing>(
+			"'overriding' keyword is used, but the function doesn't have a super function.", Severity.WARNING)
 	}
 
 	@Test
@@ -135,8 +138,8 @@ internal class FunctionResolution {
 				Light.shine(Bright)
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"The provided parameters (Bright) don't match any signature of function 'Light.shine'")
+		lintResult.assertIssueDetected<SignatureMismatch>(
+			"The provided parameters (Bright) don't match any signature of function 'Light.shine'.", Severity.ERROR)
 	}
 
 	@Test
@@ -153,7 +156,11 @@ internal class FunctionResolution {
 				numbers.exists(Int())
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Call to function '<Int>List.exists(Int)' is ambiguous")
+		lintResult.assertIssueDetected<SignatureAmbiguity>("""
+			Call to function '<Int>List.exists(Int)' is ambiguous. Matching signatures:
+			 - '(Int) =>|' declared at Test.Test:4:4
+			 - '(Int) =>|' declared at Test.Test:5:4
+		""".trimIndent(), Severity.ERROR)
 	}
 
 	@Disabled

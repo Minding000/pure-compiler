@@ -1,7 +1,7 @@
 package components.semantic_analysis.types
 
 import components.semantic_analysis.semantic_model.definitions.TypeAlias
-import messages.Message
+import logger.issues.constant_conditions.TypeNotAssignable
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -19,7 +19,7 @@ internal class TypeAliases {
 				var typeAliasValue: EventHandler = complexTypeValue
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
 	@Test
@@ -32,7 +32,7 @@ internal class TypeAliases {
 				var complexTypeValue: (Event) =>| = typeAliasValue
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
 	@Test
@@ -46,7 +46,7 @@ internal class TypeAliases {
 				Event class
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not assignable to type")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
 	@Disabled
@@ -60,7 +60,7 @@ internal class TypeAliases {
 				alias Processor = Handler
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "'Handler' has no type, because it's part of a circular alias")
+		//lintResult.assertIssueDetected<>("'Handler' has no type, because it's part of a circular alias.", Severity.ERROR)
 		val typeAlias = lintResult.find<TypeAlias>()
 		assertNotNull(typeAlias?.referenceType)
 	}

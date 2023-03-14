@@ -4,7 +4,7 @@ import components.semantic_analysis.semantic_model.definitions.PropertyDeclarati
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
-import messages.Message
+import logger.issues.initialization.ConstantReassignment
 import java.util.*
 
 class VariableTracker(val isInitializer: Boolean = false) {
@@ -181,8 +181,7 @@ class VariableTracker(val isInitializer: Boolean = false) {
 			for(usage in usages) {
 				if(usage.types.contains(VariableUsage.Type.WRITE) && declaration.isConstant) {
 					if((declaration is PropertyDeclaration && !isInitializer) || usage.isPreviouslyPossiblyInitialized())
-						linter.addMessage(usage.unit.source,
-							"'${declaration.name}' cannot be reassigned, because it is constant.", Message.Type.ERROR)
+						linter.addIssue(ConstantReassignment(usage.unit.source, declaration.name))
 				}
 			}
 		}

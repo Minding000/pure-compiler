@@ -2,7 +2,12 @@ package components.semantic_analysis.declarations
 
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.VariableValue
-import messages.Message
+import logger.Severity
+import logger.issues.constant_conditions.TypeNotAssignable
+import logger.issues.definition.*
+import logger.issues.modifiers.DisallowedModifier
+import logger.issues.modifiers.DuplicateModifier
+import logger.issues.modifiers.NoParentToBindTo
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -19,7 +24,7 @@ internal class Declarations {
 				var toast: Toast = Banana
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type 'Banana' is not assignable to type 'Toast'")
+		lintResult.assertIssueDetected<TypeNotAssignable>("Type 'Banana' is not assignable to type 'Toast'.", Severity.ERROR)
 	}
 
 	@Test
@@ -29,7 +34,8 @@ internal class Declarations {
 				var toast
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Declaration requires a type or value to infer a type from")
+		lintResult.assertIssueDetected<DeclarationMissingTypeOrValue>(
+			"Declaration requires a type or value to infer a type from.", Severity.ERROR)
 	}
 
 	@Test
@@ -43,7 +49,8 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "'defaultHandler' shadows a member")
+		lintResult.assertIssueDetected<ShadowsElement>(
+			"'defaultHandler' shadows a member, previously declared in Test.Test:2:4.", Severity.WARNING)
 	}
 
 	@Test
@@ -55,7 +62,8 @@ internal class Declarations {
 				val car: Car
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of value 'car'")
+		lintResult.assertIssueDetected<Redeclaration>("Redeclaration of value 'car', previously declared in Test.Test:2:4.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -66,7 +74,8 @@ internal class Declarations {
 				Animal enum
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of type 'Animal'")
+		lintResult.assertIssueDetected<Redeclaration>("Redeclaration of value 'Animal', previously declared in Test.Test:1:7.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -82,8 +91,8 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Redeclaration of function 'Human.sit(Pressure)'")
+		lintResult.assertIssueDetected<Redeclaration>(
+			"Redeclaration of function 'Human.sit(Pressure)', previously declared in Test.Test:5:4.", Severity.ERROR)
 	}
 
 	@Test
@@ -99,7 +108,8 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of operator 'Human[Time]: Time'")
+		lintResult.assertIssueDetected<Redeclaration>(
+			"Redeclaration of operator 'Human[Time]: Time', previously declared in Test.Test:5:10.", Severity.ERROR)
 	}
 
 	@Test
@@ -109,7 +119,7 @@ internal class Declarations {
 				overriding House class
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
+		lintResult.assertIssueDetected<DisallowedModifier>("Modifier 'overriding' is not allowed here.", Severity.WARNING)
 	}
 
 	@Test
@@ -119,7 +129,7 @@ internal class Declarations {
 				native native Memory class
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Duplicate 'native' modifier")
+		lintResult.assertIssueDetected<DuplicateModifier>("Duplicate 'native' modifier.", Severity.WARNING)
 	}
 
 	@Test
@@ -147,8 +157,8 @@ internal class Declarations {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"Operators (except for the index operator) can not be generic")
+		lintResult.assertIssueDetected<GenericOperator>("Operators (except for the index operator) can not be generic.",
+			Severity.WARNING)
 	}
 
 	@Test
@@ -159,8 +169,8 @@ internal class Declarations {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"Generic parameters for the index operator are received in the index parameter list instead")
+		lintResult.assertIssueDetected<TypeParametersOutsideOfIndexParameterList>(
+			"Type parameters for the index operator are received in the index parameter list instead.", Severity.WARNING)
 	}
 
 	@Test
@@ -170,8 +180,7 @@ internal class Declarations {
 				Tree class
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
-			"Can't bind type definition, because it doesn't have a parent")
+		lintResult.assertIssueNotDetected<NoParentToBindTo>()
 	}
 
 	@Test
@@ -183,8 +192,7 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
-			"Can't bind type definition, because it doesn't have a parent")
+		lintResult.assertIssueNotDetected<NoParentToBindTo>()
 	}
 
 	@Test
@@ -194,7 +202,8 @@ internal class Declarations {
 				bound Child class
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Can't bind type definition, because it doesn't have a parent")
+		lintResult.assertIssueDetected<NoParentToBindTo>("Can't bind type definition, because it doesn't have a parent.",
+			Severity.WARNING)
 	}
 
 	@Test
@@ -205,7 +214,7 @@ internal class Declarations {
 				Drill class: Tool
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Type definitions cannot inherit from themself")
+		lintResult.assertIssueNotDetected<CircularInheritance>()
 	}
 
 	@Test
@@ -218,7 +227,7 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type definitions cannot inherit from themself")
+		lintResult.assertIssueDetected<CircularInheritance>("Type definitions cannot inherit from themself.", Severity.ERROR)
 	}
 
 	@Test
@@ -229,7 +238,7 @@ internal class Declarations {
 				Chicken class: Egg
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Type definitions cannot inherit from themself")
+		lintResult.assertIssueDetected<CircularInheritance>()
 	}
 
 	@Test
@@ -240,8 +249,7 @@ internal class Declarations {
 				Theme class in Editor
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Explicit parent types are only allowed on unscoped type definitions")
+		lintResult.assertIssueNotDetected<ExplicitParentOnScopedTypeDefinition>()
 		val typeDefinition = lintResult.find<TypeDefinition> { typeDefinition -> typeDefinition.name == "Theme" }
 		assertEquals("Editor", typeDefinition?.parentTypeDefinition?.name)
 	}
@@ -255,7 +263,7 @@ internal class Declarations {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Explicit parent types are only allowed on unscoped type definitions")
+		lintResult.assertIssueDetected<ExplicitParentOnScopedTypeDefinition>(
+			"Explicit parent types are only allowed on unscoped type definitions.", Severity.ERROR)
 	}
 }

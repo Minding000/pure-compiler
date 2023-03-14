@@ -4,7 +4,7 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
-import messages.Message
+import logger.issues.loops.BreakStatementOutsideOfLoop
 import components.syntax_parser.syntax_tree.control_flow.BreakStatement as BreakStatementSyntaxTree
 
 class BreakStatement(override val source: BreakStatementSyntaxTree, scope: Scope): Unit(source, scope) {
@@ -15,7 +15,7 @@ class BreakStatement(override val source: BreakStatementSyntaxTree, scope: Scope
 		super.linkValues(linter)
 		val surroundingLoop = scope.getSurroundingLoop()
 		if(surroundingLoop == null) {
-			linter.addMessage(source, "Break statements are not allowed outside of loops.", Message.Type.ERROR)
+			linter.addIssue(BreakStatementOutsideOfLoop(source))
 		} else {
 			surroundingLoop.mightGetBrokenOutOf = true
 			targetLoop = surroundingLoop

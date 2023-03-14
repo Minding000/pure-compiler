@@ -6,7 +6,7 @@ import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
-import messages.Message
+import logger.issues.constant_conditions.TypeSpecificationOutsideOfInitializerCall
 import components.syntax_parser.syntax_tree.definitions.TypeSpecification as TypeSpecificationSyntaxTree
 
 class TypeSpecification(override val source: TypeSpecificationSyntaxTree, scope: Scope, val typeParameters: List<Type>,
@@ -21,7 +21,7 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, scope:
 		super.linkValues(linter)
 		val baseType = baseValue.type
 		if(baseType !is StaticType) {
-			linter.addMessage(source, "Type specifications can only be used on initializers.", Message.Type.ERROR)
+			linter.addIssue(TypeSpecificationOutsideOfInitializerCall(source))
 			return
 		}
 		baseType.withTypeParameters(typeParameters) { specificType -> type = specificType }

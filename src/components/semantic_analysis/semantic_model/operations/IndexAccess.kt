@@ -6,7 +6,7 @@ import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import errors.user.SignatureResolutionAmbiguityError
-import messages.Message
+import logger.issues.resolution.NotFound
 import components.syntax_parser.syntax_tree.access.IndexAccess as IndexAccessSyntaxTree
 
 class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val target: Value, val typeParameters: List<Type>,
@@ -29,8 +29,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 				val definition = targetType.interfaceScope.resolveIndexOperator(typeParameters, indices, sourceExpression)
 				if(definition == null) {
 					val name = "${target.type}[${indices.joinToString { index -> index.type.toString() }}]"
-					linter.addMessage(source, "Operator '$name(${sourceExpression?.type ?: ""})' hasn't been declared yet.",
-						Message.Type.ERROR)
+					linter.addIssue(NotFound(source, "Operator", "$name(${sourceExpression?.type ?: ""})"))
 					return@let
 				}
 				type = definition.returnType

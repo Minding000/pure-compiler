@@ -2,37 +2,17 @@ package components.semantic_analysis.declarations
 
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.Parameter
-import messages.Message
+import logger.Severity
+import logger.issues.definition.*
+import logger.issues.modifiers.MissingOverridingKeyword
+import logger.issues.modifiers.OverriddenSuperInitializerMissing
+import logger.issues.modifiers.OverridingInitializerMissingConvertingKeyword
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class Initializers {
-
-	@Test
-	fun `allows initializers in classes`() {
-		val sourceCode =
-			"""
-				Human class {
-					init
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Initializers are only allowed inside")
-	}
-
-	@Test
-	fun `allows initializers in enums`() {
-		val sourceCode =
-			"""
-				Mood enum {
-					init
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Initializers are only allowed inside")
-	}
 
 	@Test
 	fun `allows initializers inside objects without parameters`() {
@@ -43,7 +23,8 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "can not take parameters")
+		lintResult.assertIssueNotDetected<ObjectInitializerTakingTypeParameters>()
+		lintResult.assertIssueNotDetected<ObjectInitializerTakingParameters>()
 	}
 
 	@Test
@@ -55,7 +36,8 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Object initializers can not take type parameters")
+		lintResult.assertIssueDetected<ObjectInitializerTakingTypeParameters>(
+			"Object initializers can not take type parameters.", Severity.ERROR)
 	}
 
 	@Test
@@ -67,7 +49,8 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Object initializers can not take parameters")
+		lintResult.assertIssueDetected<ObjectInitializerTakingParameters>("Object initializers can not take parameters.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -83,7 +66,8 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Redeclaration of initializer 'Human(Trait)'")
+		lintResult.assertIssueDetected<Redeclaration>(
+			"Redeclaration of initializer 'Human(Trait)', previously declared in Test.Test:5:1.")
 	}
 
 	@Test
@@ -108,8 +92,8 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Property parameters are only allowed in initializers")
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Property parameter doesn't match any property")
+		lintResult.assertIssueNotDetected<PropertyParameterOutsideOfInitializer>()
+		lintResult.assertIssueNotDetected<PropertyParameterMismatch>()
 		val parameter = lintResult.find<Parameter>()
 		assertEquals("Int", parameter?.type.toString())
 	}
@@ -123,7 +107,8 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Property parameter doesn't match any property")
+		lintResult.assertIssueDetected<PropertyParameterMismatch>("Property parameter doesn't match any property.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -136,7 +121,8 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Property parameters are only allowed in initializers")
+		lintResult.assertIssueDetected<PropertyParameterOutsideOfInitializer>("Property parameter is not allowed here.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -149,7 +135,7 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "is not allowed in non-abstract class")
+		lintResult.assertIssueNotDetected<AbstractMemberInNonAbstractTypeDefinition>()
 	}
 
 	@Test
@@ -162,7 +148,8 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Abstract member 'init(Int)' is not allowed in non-abstract class 'Plant'")
+		lintResult.assertIssueDetected<AbstractMemberInNonAbstractTypeDefinition>(
+			"Abstract member 'init(Int)' is not allowed in non-abstract type definition 'Plant'.", Severity.ERROR)
 	}
 
 	@Test
@@ -176,7 +163,7 @@ internal class Initializers {
 				abstract Tree class: Plant
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "does not implement the following inherited members")
+		lintResult.assertIssueNotDetected<MissingImplementations>()
 	}
 
 	@Test
@@ -190,7 +177,7 @@ internal class Initializers {
 				Tree class: Plant
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "does not implement the following inherited members")
+		lintResult.assertIssueNotDetected<MissingImplementations>()
 	}
 
 	@Test
@@ -206,7 +193,7 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "does not implement the following inherited members")
+		lintResult.assertIssueNotDetected<MissingImplementations>()
 	}
 
 	@Test
@@ -220,11 +207,11 @@ internal class Initializers {
 				Tree class: Plant
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, """
+		lintResult.assertIssueDetected<MissingImplementations>("""
 			Non-abstract class 'Tree' does not implement the following inherited members:
 			 - Plant
 			   - init(Int)
-		""".trimIndent())
+		""".trimIndent(), Severity.ERROR)
 	}
 
 	@Test
@@ -240,8 +227,7 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Overriding initializer of converting initializer needs to be converting")
+		lintResult.assertIssueNotDetected<OverridingInitializerMissingConvertingKeyword>()
 	}
 
 	@Test
@@ -257,8 +243,7 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Overriding initializer of converting initializer needs to be converting")
+		lintResult.assertIssueNotDetected<OverridingInitializerMissingConvertingKeyword>()
 	}
 
 	@Test
@@ -274,8 +259,7 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Overriding initializer of converting initializer needs to be converting")
+		lintResult.assertIssueNotDetected<OverridingInitializerMissingConvertingKeyword>()
 	}
 
 	@Test
@@ -291,8 +275,8 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR,
-			"Overriding initializer of converting initializer needs to be converting")
+		lintResult.assertIssueDetected<OverridingInitializerMissingConvertingKeyword>(
+			"Overriding initializer of converting initializer needs to be converting.", Severity.ERROR)
 	}
 
 	@Test
@@ -308,9 +292,8 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "is missing the 'overriding' keyword")
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
-			"'overriding' keyword is used, but the initializer doesn't have an abstract super initializer")
+		lintResult.assertIssueNotDetected<MissingOverridingKeyword>()
+		lintResult.assertIssueNotDetected<OverriddenSuperInitializerMissing>()
 	}
 
 	@Test
@@ -326,7 +309,8 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Initializer 'Float(Int)' is missing the 'overriding' keyword")
+		lintResult.assertIssueDetected<MissingOverridingKeyword>("Initializer 'Float(Int)' is missing the 'overriding' keyword.",
+			Severity.WARNING)
 	}
 
 	@Test
@@ -338,8 +322,8 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"'overriding' keyword is used, but the initializer doesn't have an abstract super initializer")
+		lintResult.assertIssueDetected<OverriddenSuperInitializerMissing>(
+			"'overriding' keyword is used, but the initializer doesn't have an abstract super initializer.", Severity.WARNING)
 	}
 
 	@Test
@@ -355,8 +339,7 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
-			"Initializer 'Float(Int)' is missing the 'overriding' keyword")
+		lintResult.assertIssueNotDetected<MissingOverridingKeyword>()
 	}
 
 	@Test
@@ -372,7 +355,6 @@ internal class Initializers {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"'overriding' keyword is used, but the initializer doesn't have an abstract super initializer")
+		lintResult.assertIssueDetected<OverriddenSuperInitializerMissing>()
 	}
 }

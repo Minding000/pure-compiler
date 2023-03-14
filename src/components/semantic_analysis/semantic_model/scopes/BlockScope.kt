@@ -7,7 +7,8 @@ import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
-import messages.Message
+import logger.issues.definition.Declaration
+import logger.issues.definition.Redeclaration
 
 class BlockScope(val parentScope: MutableScope): MutableScope() {
 	var unit: Unit? = null
@@ -17,12 +18,11 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 	override fun declareType(linter: Linter, type: TypeDefinition) {
 		val previousDeclaration = parentScope.resolveType(type.name) ?: types.putIfAbsent(type.name, type)
 		if(previousDeclaration != null) {
-			linter.addMessage(type.source, "Redeclaration of type '${type.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
+			linter.addIssue(Redeclaration(type.source, "type", type.name, previousDeclaration.source))
 			return
 		}
 		onNewType(type)
-		linter.addMessage(type.source, "Declaration of type '${type.name}'.", Message.Type.DEBUG)
+		linter.addIssue(Declaration(type.source, "type", type.name))
 	}
 
 	override fun getSurroundingDefinition(): TypeDefinition? {
@@ -44,11 +44,10 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 	override fun declareValue(linter: Linter, value: ValueDeclaration) {
 		val previousDeclaration = parentScope.resolveValue(value.name) ?: values.putIfAbsent(value.name, value)
 		if(previousDeclaration != null) {
-			linter.addMessage(value.source, "Redeclaration of value '${value.name}'," +
-					" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
+			linter.addIssue(Redeclaration(value.source, "value", value.name, previousDeclaration.source))
 			return
 		}
-		linter.addMessage(value.source, "Declaration of value '${value.name}'.", Message.Type.DEBUG)
+		linter.addIssue(Declaration(value.source, "value", value.name))
 	}
 
 	override fun resolveValue(name: String): ValueDeclaration? {

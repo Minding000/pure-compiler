@@ -6,7 +6,7 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
+import logger.issues.resolution.MissingType
 
 abstract class Value(override val source: Element, public override var scope: Scope, var type: Type? = null): Unit(source, scope) {
 	open var staticValue: Value? = null
@@ -27,7 +27,7 @@ abstract class Value(override val source: Element, public override var scope: Sc
 	override fun validate(linter: Linter) {
 		super.validate(linter)
 		if(type == null)
-			linter.addMessage(source, "Failed to resolve type of value '${source.getValue()}'.", Message.Type.ERROR)
+			linter.addIssue(MissingType(source))
 	}
 
 	override fun hashCode(): Int {

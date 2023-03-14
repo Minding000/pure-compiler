@@ -6,7 +6,9 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.Value
-import messages.Message
+import logger.issues.definition.ComputedPropertyMissingType
+import logger.issues.definition.ComputedVariableWithoutSetter
+import logger.issues.definition.SetterInComputedValue
 import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclaration as ComputedPropertySyntaxTree
 
 class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, scope: Scope, name: String, type: Type?,
@@ -25,16 +27,13 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 	override fun validate(linter: Linter) {
 		super.validate(linter)
 		if(type == null)
-			linter.addMessage(source, "Computed properties need to have an explicitly declared type.",
-				Message.Type.ERROR)
+			linter.addIssue(ComputedPropertyMissingType(source))
 		if(isConstant) {
 			if(setStatement != null)
-				linter.addMessage(setStatement.source, "Computed value property cannot have a setter.",
-					Message.Type.ERROR)
+				linter.addIssue(SetterInComputedValue(setStatement.source))
 		} else {
 			if(setStatement == null)
-				linter.addMessage(source, "Computed variable property needs to have a setter.",
-					Message.Type.ERROR)
+				linter.addIssue(ComputedVariableWithoutSetter(source))
 		}
 	}
 }

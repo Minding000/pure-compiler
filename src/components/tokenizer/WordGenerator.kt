@@ -57,6 +57,8 @@ class WordGenerator(private val project: Project) {
 		characterIndex = 0
 	}
 
+	fun getCurrentPosition() = Position(position, line, characterIndex)
+
 	fun getRemainingLine(wordType: WordAtom): Word? {
 		if(file.content.length == position)
 			return null
@@ -117,7 +119,7 @@ class WordGenerator(private val project: Project) {
 			}
 			return word
 		}
-		throw SyntaxError("Unknown word in ${file.name}:${line.number}:$characterIndex: " +
-			"'${file.content[position].stringify()}'")
+		throw SyntaxError("Unknown word in ${file.name}:${line.number}:$characterIndex: '${file.content[position].stringify()}'",
+			Section(getCurrentPosition(), Position(position, line, characterIndex + 1)))
 	}
 }

@@ -8,7 +8,7 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.*
 import components.semantic_analysis.semantic_model.values.Function
 import errors.internal.CompilerError
-import messages.Message
+import logger.issues.definition.*
 import java.util.*
 
 class TypeScope(val enclosingScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
@@ -91,9 +91,9 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 	fun ensureTrivialInitializers(linter: Linter) {
 		for(initializer in initializers) {
 			if(initializer.typeParameters.isNotEmpty())
-				linter.addMessage(initializer.source, "Object initializers can not take type parameters.", Message.Type.ERROR)
+				linter.addIssue(ObjectInitializerTakingTypeParameters(initializer.source))
 			if(initializer.parameters.isNotEmpty())
-				linter.addMessage(initializer.source, "Object initializers can not take parameters.", Message.Type.ERROR)
+				linter.addIssue(ObjectInitializerTakingParameters(initializer.source))
 		}
 	}
 
@@ -112,8 +112,7 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 						continue@initializerIteration
 				}
 				redeclarations.add(otherInitializer)
-				linter.addMessage(otherInitializer.source, "Redeclaration of initializer '$otherInitializer'," +
-						" previously declared in ${initializer.source.getStartString()}.", Message.Type.ERROR)
+				linter.addIssue(Redeclaration(otherInitializer.source, "initializer", otherInitializer.toString(), initializer.source))
 			}
 		}
 		initializers.removeAll(redeclarations)
@@ -121,11 +120,8 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 
 	fun ensureNoAbstractMembers(linter: Linter) {
 		for(memberDeclaration in memberDeclarations) {
-			if(memberDeclaration.isAbstract) {
-				linter.addMessage(memberDeclaration.source,
-					"Abstract member '${memberDeclaration.memberIdentifier}' is not allowed" +
-						" in non-abstract class '${typeDefinition.name}'.", Message.Type.ERROR)
-			}
+			if(memberDeclaration.isAbstract)
+				linter.addIssue(AbstractMemberInNonAbstractTypeDefinition(memberDeclaration, typeDefinition))
 		}
 	}
 
@@ -144,35 +140,28 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 		}
 		if(missingOverrides.isEmpty())
 			return
-		var message = "Non-abstract class '${typeDefinition.name}' does not implement the following inherited members:"
-		for((parent, missingMembers) in missingOverrides) {
-			message += "\n - ${parent.name}"
-			for(member in missingMembers)
-				message += "\n   - ${member.memberIdentifier}"
-		}
-		linter.addMessage(typeDefinition.source, message, Message.Type.ERROR)
+		linter.addIssue(MissingImplementations(typeDefinition, missingOverrides))
 	}
 
 	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
 		initializers.add(initializer)
 		onNewInitializer(initializer)
 		memberDeclarations.add(initializer)
-		linter.addMessage(initializer.source, "Declaration of initializer '$initializer'.", Message.Type.DEBUG)
+		linter.addIssue(Declaration(initializer.source, "initializer", initializer.toString()))
 	}
 
 	override fun declareType(linter: Linter, type: TypeDefinition) {
 		var previousDeclaration = enclosingScope.resolveType(type.name)
 		if(previousDeclaration != null)
-			linter.addMessage(type.source, "'${type.name}' shadows a type," +
-				" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.WARNING)
+			linter.addIssue(ShadowsElement(type.source, "type", type.name, previousDeclaration.source))
 		previousDeclaration = superScope?.resolveType(type.name) ?: typeDefinitions.putIfAbsent(type.name, type)
 		if(previousDeclaration != null) {
-			linter.addMessage(type.source, "Redeclaration of type '${typeDefinition.name}.${type.name}'," +
-						" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
+			linter.addIssue(Redeclaration(type.source, "type", "${typeDefinition.name}.${type.name}",
+				previousDeclaration.source))
 			return
 		}
 		onNewType(type)
-		linter.addMessage(type.source, "Declaration of type '${typeDefinition.name}.${type.name}'.", Message.Type.DEBUG)
+		linter.addIssue(Declaration(type.source, "type", "${typeDefinition.name}.${type.name}"))
 	}
 
 	override fun declareValue(linter: Linter, value: ValueDeclaration) {
@@ -181,19 +170,18 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 		value.parentDefinition = typeDefinition
 		var previousDeclaration = enclosingScope.resolveValue(value.name)
 		if(previousDeclaration != null)
-			linter.addMessage(value.source, "'${value.name}' shadows a member," +
-				" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.WARNING)
+			linter.addIssue(ShadowsElement(value.source, "member", value.name, previousDeclaration.source))
 		previousDeclaration = superScope?.resolveValue(value.name) ?: interfaceMembers.putIfAbsent(value.name, value)
 		if(previousDeclaration != null) {
-			linter.addMessage(value.source, "Redeclaration of member '${typeDefinition.name}.${value.name}'," +
-				" previously declared in ${previousDeclaration.source.getStartString()}.", Message.Type.ERROR)
+			linter.addIssue(Redeclaration(value.source, "member", "${typeDefinition.name}.${value.name}",
+				previousDeclaration.source))
 			return
 		}
 		if(value is Instance)
 			value.setType(typeDefinition)
 		memberDeclarations.add(value)
 		onNewValue(value)
-		linter.addMessage(value.source, "Declaration of member '${typeDefinition.name}.${value.name}'.", Message.Type.DEBUG)
+		linter.addIssue(Declaration(value.source, "member", "${typeDefinition.name}.${value.name}"))
 	}
 
 	override fun declareFunction(linter: Linter, name: String, newImplementation: FunctionImplementation) {
@@ -217,14 +205,14 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 				existingInterfaceMember.addImplementation(newImplementation)
 			}
 			else -> {
-				linter.addMessage(newImplementation.source, "Redeclaration of member '${typeDefinition.name}.$name', " +
-							"previously declared in ${existingInterfaceMember.source.getStartString()}.", Message.Type.ERROR)
+				linter.addIssue(Redeclaration(newImplementation.source, "member", "${typeDefinition.name}.$name",
+					existingInterfaceMember.source))
 				return
 			}
 		}
 		memberDeclarations.add(newImplementation)
-		linter.addMessage(newImplementation.source, "Declaration of function " +
-				"'${typeDefinition.name}.$name${newImplementation.signature.toString(false)}'.", Message.Type.DEBUG)
+		val signature = "${typeDefinition.name}.$name${newImplementation.signature.toString(false)}"
+		linter.addIssue(Declaration(newImplementation.source, "function", signature))
 	}
 
 	override fun declareOperator(linter: Linter, kind: Operator.Kind, newImplementation: FunctionImplementation) {
@@ -244,14 +232,14 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 				existingInterfaceMember.addImplementation(newImplementation)
 			}
 			else -> {
-				linter.addMessage(newImplementation.source, "Redeclaration of member '${typeDefinition.name}.$name', " +
-					"previously declared in ${existingInterfaceMember.source.getStartString()}.", Message.Type.ERROR)
+				linter.addIssue(Redeclaration(newImplementation.source, "member", "${typeDefinition.name}.$name",
+					existingInterfaceMember.source))
 				return
 			}
 		}
 		memberDeclarations.add(newImplementation)
-		linter.addMessage(newImplementation.source, "Declaration of operator " +
-			"'${typeDefinition.name}.$name${newImplementation.signature.toString(false)}'.", Message.Type.DEBUG)
+		val signature = "${typeDefinition.name}.$name${newImplementation.signature.toString(false)}"
+		linter.addIssue(Declaration(newImplementation.source, "operator", signature))
 	}
 
 	override fun resolveValue(name: String): ValueDeclaration? {

@@ -6,7 +6,8 @@ import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
-import messages.Message
+import logger.issues.definition.PropertyParameterMismatch
+import logger.issues.definition.PropertyParameterOutsideOfInitializer
 import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
 class Parameter(override val source: ParameterSyntaxTree, scope: Scope, name: String, type: Type?, isMutable: Boolean,
@@ -24,13 +25,13 @@ class Parameter(override val source: ParameterSyntaxTree, scope: Scope, name: St
 			if(parent is InitializerDefinition) {
 				propertyDeclaration = parent.parentDefinition.scope.resolveValue(name)
 				if(propertyDeclaration == null) {
-					linter.addMessage(source, "Property parameter doesn't match any property.", Message.Type.ERROR)
+					linter.addIssue(PropertyParameterMismatch(source))
 				} else {
 					propertyDeclaration?.linkValues(linter)
 					type = propertyDeclaration?.type
 				}
 			} else {
-				linter.addMessage(source, "Property parameters are only allowed in initializers.", Message.Type.ERROR)
+				linter.addIssue(PropertyParameterOutsideOfInitializer(source))
 			}
 		}
 	}

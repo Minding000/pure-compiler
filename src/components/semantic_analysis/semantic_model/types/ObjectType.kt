@@ -5,7 +5,9 @@ import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
+import logger.issues.definition.TypeParameterCountMismatch
+import logger.issues.definition.TypeParameterNotAssignable
+import logger.issues.resolution.NotFound
 
 open class ObjectType(override val source: Element, scope: Scope, val enclosingType: ObjectType?, val typeParameters: List<Type>,
 					  val name: String, var definition: TypeDefinition? = null): Type(source, scope) {
@@ -75,7 +77,7 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 			val sourceScope = enclosingType?.interfaceScope ?: scope
 			definition = sourceScope.resolveType(name)
 			if(definition == null)
-				linter.addMessage(source, "Type '$name' hasn't been declared yet.", Message.Type.ERROR)
+				linter.addIssue(NotFound(source, "Type", name))
 		}
 	}
 
@@ -95,20 +97,15 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		super.validate(linter)
 		(definition?.baseDefinition ?: definition)?.let { definition ->
 			val genericTypes = definition.scope.getGenericTypeDefinitions()
-			if(typeParameters.size != genericTypes.size) {
-				linter.addMessage(source, "Number of provided type parameters " +
-					"(${typeParameters.size}) doesn't match number of declared " +
-					"generic types (${genericTypes.size}).", Message.Type.ERROR)
-			}
+			if(typeParameters.size != genericTypes.size)
+				linter.addIssue(TypeParameterCountMismatch(source, typeParameters, genericTypes))
 			if(typeParameters.isEmpty())
 				return
 			for(parameterIndex in genericTypes.indices) {
 				val genericType = genericTypes[parameterIndex]
 				val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
-				if(!genericType.acceptsSubstituteType(typeParameter)) {
-					linter.addMessage(source, "The type parameter '$typeParameter' is not assignable to '$genericType'.",
-						Message.Type.ERROR)
-				}
+				if(!genericType.acceptsSubstituteType(typeParameter))
+					linter.addIssue(TypeParameterNotAssignable(source, typeParameter, genericType))
 			}
 		}
 	}

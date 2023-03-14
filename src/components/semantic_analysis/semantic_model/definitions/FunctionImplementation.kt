@@ -9,7 +9,10 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.Operator
 import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
+import logger.issues.constant_conditions.FunctionCompletesDespiteNever
+import logger.issues.constant_conditions.FunctionCompletesWithoutReturning
+import logger.issues.modifiers.MissingOverridingKeyword
+import logger.issues.modifiers.OverriddenSuperMissing
 import java.util.*
 
 class FunctionImplementation(override val source: Element, override val parentDefinition: TypeDefinition?, override val scope: BlockScope,
@@ -63,12 +66,10 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		super.validate(linter)
 		if(signature.superFunctionSignature != null) {
 			if(!isOverriding)
-				linter.addMessage(source, "${parentFunction.memberType.replaceFirstChar { it.titlecase() }} '$this'" +
-					" is missing the 'overriding' keyword.", Message.Type.WARNING)
+				linter.addIssue(MissingOverridingKeyword(source, parentFunction.memberType.replaceFirstChar { it.titlecase() }, toString()))
 		} else {
 			if(isOverriding)
-				linter.addMessage(source, "'overriding' keyword is used, but the ${parentFunction.memberType}" +
-					" doesn't have a super ${parentFunction.memberType}.", Message.Type.WARNING)
+				linter.addIssue(OverriddenSuperMissing(source, parentFunction.memberType))
 		}
 		if(!Linter.SpecialType.NOTHING.matches(signature.returnType)) {
 			if(body != null) {
@@ -99,10 +100,10 @@ class FunctionImplementation(override val source: Element, override val parentDe
 				}
 				if(Linter.SpecialType.NEVER.matches(signature.returnType)) {
 					if(someBlocksCompleteWithoutReturning || mightReturnValue)
-						linter.addMessage(source, "Function might complete despite of 'Never' return type.", Message.Type.ERROR)
+						linter.addIssue(FunctionCompletesDespiteNever(source))
 				} else {
 					if(someBlocksCompleteWithoutReturning)
-						linter.addMessage(source, "Function might complete without returning a value.", Message.Type.ERROR)
+						linter.addIssue(FunctionCompletesWithoutReturning(source))
 
 				}
 			}

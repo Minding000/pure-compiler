@@ -1,6 +1,12 @@
 package components.semantic_analysis.operations
 
-import messages.Message
+import logger.Severity
+import logger.issues.definition.InvalidInstanceLocation
+import logger.issues.definition.MultipleInstanceLists
+import logger.issues.loops.BreakStatementOutsideOfLoop
+import logger.issues.loops.NextStatementOutsideOfLoop
+import logger.issues.switches.DuplicateCase
+import logger.issues.switches.RedundantElse
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -24,7 +30,8 @@ internal class Statements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Duplicated case '.WINDOWS'")
+		lintResult.assertIssueDetected<DuplicateCase>("Duplicated case '.WINDOWS', previously defined in Test.Test:6:1.",
+			Severity.WARNING)
 	}
 
 	@Test
@@ -41,8 +48,8 @@ internal class Statements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"The else branch is redundant, because the switch is already exhaustive without it")
+		lintResult.assertIssueDetected<RedundantElse>(
+			"The else branch is redundant, because the switch is already exhaustive without it.", Severity.WARNING)
 	}
 
 	@Test
@@ -57,7 +64,7 @@ internal class Statements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "else branch is redundant")
+		lintResult.assertIssueNotDetected<RedundantElse>()
 	}
 
 	@Test
@@ -69,7 +76,8 @@ internal class Statements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Instance declarations are only allowed in enums and classes")
+		lintResult.assertIssueDetected<InvalidInstanceLocation>("Instance declarations are only allowed in enums and classes.",
+			Severity.WARNING)
 	}
 
 	@Test
@@ -83,7 +91,7 @@ internal class Statements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Instance declarations can be merged")
+		lintResult.assertIssueDetected<MultipleInstanceLists>("Instance declarations can be merged.", Severity.WARNING)
 	}
 
 	@Test
@@ -93,7 +101,8 @@ internal class Statements {
 				break
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Break statements are not allowed outside of loops")
+		lintResult.assertIssueDetected<BreakStatementOutsideOfLoop>("Break statements are not allowed outside of loops.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -105,7 +114,7 @@ internal class Statements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Break statements are not allowed outside of loops")
+		lintResult.assertIssueNotDetected<BreakStatementOutsideOfLoop>()
 	}
 
 	@Test
@@ -115,7 +124,8 @@ internal class Statements {
 				next
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Next statements are not allowed outside of loops")
+		lintResult.assertIssueDetected<NextStatementOutsideOfLoop>("Next statements are not allowed outside of loops.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -127,6 +137,6 @@ internal class Statements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Next statements are not allowed outside of loops")
+		lintResult.assertIssueNotDetected<NextStatementOutsideOfLoop>()
 	}
 }

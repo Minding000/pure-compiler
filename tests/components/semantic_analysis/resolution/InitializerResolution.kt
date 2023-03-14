@@ -2,7 +2,11 @@ package components.semantic_analysis.resolution
 
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
 import components.semantic_analysis.semantic_model.operations.MemberAccess
-import messages.Message
+import logger.Severity
+import logger.issues.access.InstanceAccessFromStaticContext
+import logger.issues.access.StaticAccessFromInstanceContext
+import logger.issues.resolution.NotFound
+import logger.issues.resolution.SignatureAmbiguity
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -18,7 +22,7 @@ internal class InitializerResolution {
 				Item(Item())
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Initializer 'Item(Item)' hasn't been declared yet")
+		lintResult.assertIssueDetected<NotFound>("Initializer 'Item(Item)' hasn't been declared yet.", Severity.ERROR)
 	}
 
 	@Test
@@ -31,7 +35,7 @@ internal class InitializerResolution {
 				Window.Pane()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Cannot access instance member")
+		lintResult.assertIssueNotDetected<InstanceAccessFromStaticContext>()
 		val initializerCall = lintResult.find<FunctionCall>()
 		assertNotNull(initializerCall?.type)
 	}
@@ -46,8 +50,9 @@ internal class InitializerResolution {
 				Window.Pane()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Cannot access instance member 'Pane' from static context")
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Value 'Pane' hasn't been declared yet")
+		lintResult.assertIssueDetected<InstanceAccessFromStaticContext>(
+			"Cannot access instance member 'Pane' from static context.", Severity.ERROR)
+		lintResult.assertIssueNotDetected<NotFound>()
 	}
 
 	@Test
@@ -60,7 +65,7 @@ internal class InitializerResolution {
 				Window().Pane()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Accessing static member")
+		lintResult.assertIssueNotDetected<StaticAccessFromInstanceContext>()
 		val initializerCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
 		assertNotNull(initializerCall?.type)
 	}
@@ -75,7 +80,8 @@ internal class InitializerResolution {
 				Window().Pane()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Accessing static member 'Pane' from instance context")
+		lintResult.assertIssueDetected<StaticAccessFromInstanceContext>("Accessing static member 'Pane' from instance context.",
+			Severity.WARNING)
 	}
 
 	@Disabled
@@ -108,6 +114,10 @@ internal class InitializerResolution {
 				val numbers = <Int>List(Int())
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Call to initializer '<Int>List(Int)' is ambiguous")
+		lintResult.assertIssueDetected<SignatureAmbiguity>("""
+			Call to initializer '<Int>List(Int)' is ambiguous. Matching signatures:
+			 - '<Element>List(Int)' declared at Test.Test:5:1
+			 - '<Element>List(Int)' declared at Test.Test:6:1
+		""".trimIndent(), Severity.ERROR)
 	}
 }

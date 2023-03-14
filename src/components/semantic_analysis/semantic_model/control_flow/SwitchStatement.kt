@@ -5,7 +5,10 @@ import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.semantic_analysis.semantic_model.values.Value
-import messages.Message
+import logger.issues.switches.CaseTypeMismatch
+import logger.issues.switches.DuplicateCase
+import logger.issues.switches.NoCases
+import logger.issues.switches.RedundantElse
 import java.util.*
 import components.syntax_parser.syntax_tree.control_flow.SwitchStatement as SwitchStatementSyntaxTree
 
@@ -20,14 +23,14 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 
 	override fun linkValues(linter: Linter) {
 		super.linkValues(linter)
+		val subjectType = subject.type
 		for(case in cases) {
-			if(case.condition.isAssignableTo(subject.type)) {
-				case.condition.setInferredType(subject.type)
+			if(case.condition.isAssignableTo(subjectType)) {
+				case.condition.setInferredType(subjectType)
 			} else {
-				case.condition.type?.let { conditionType ->
-					linter.addMessage(case.condition.source, "Condition type '$conditionType' " +
-						"is not comparable to subject type '${subject.type}'.", Message.Type.ERROR)
-				}
+				val conditionType = case.condition.type
+				if(subjectType != null && conditionType != null)
+					linter.addIssue(CaseTypeMismatch(source, conditionType, subjectType))
 			}
 		}
 	}
@@ -36,7 +39,7 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 		super.validate(linter)
 		var areAllBranchesInterruptingExecution = elseBranch?.isInterruptingExecution ?: true
 		if(cases.isEmpty()) {
-			linter.addMessage(source, "The switch statement doesn't have any cases.", Message.Type.WARNING)
+			linter.addIssue(NoCases(source))
 		} else {
 			val casesWithUniqueConditions = LinkedList<Case>()
 			for(case in cases) {
@@ -45,19 +48,14 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 				val caseWithUniqueCondition = casesWithUniqueConditions.find {
 						caseWithUniqueCondition -> caseWithUniqueCondition.condition == case.condition }
 				if(caseWithUniqueCondition != null) {
-					linter.addMessage(case.condition.source,
-						"Duplicated case '${case.condition.source.getValue()}'," +
-							" previously defined in ${caseWithUniqueCondition.condition.source.getStartString()}.",
-						Message.Type.ERROR)
+					linter.addIssue(DuplicateCase(caseWithUniqueCondition, case))
 					continue
 				}
 				casesWithUniqueConditions.add(case)
 			}
 		}
 		if(elseBranch != null && isExhaustiveWithoutElseBranch())
-			linter.addMessage(elseBranch.source,
-				"The else branch is redundant, because the switch is already exhaustive without it.",
-				Message.Type.WARNING)
+			linter.addIssue(RedundantElse(elseBranch.source))
 		isInterruptingExecution = (getBranchForValue(subject.staticValue)?.isInterruptingExecution ?: false)
 			|| (isExhaustive() && areAllBranchesInterruptingExecution)
 	}

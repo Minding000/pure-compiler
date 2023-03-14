@@ -1,6 +1,7 @@
 package components.semantic_analysis.declarations
 
-import messages.Message
+import logger.Severity
+import logger.issues.definition.*
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -14,8 +15,8 @@ internal class OperatorSignatureValidation {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING,
-			"Index operators can not accept and return a value at the same time")
+		lintResult.assertIssueDetected<ReadWriteIndexOperator>(
+			"Index operators can not accept and return a value at the same time.", Severity.WARNING)
 	}
 
 	@Test
@@ -27,8 +28,7 @@ internal class OperatorSignatureValidation {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING,
-			"Index operators can not accept and return a value at the same time")
+		lintResult.assertIssueNotDetected<ReadWriteIndexOperator>()
 	}
 
 	@Test
@@ -39,7 +39,8 @@ internal class OperatorSignatureValidation {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Binary operators need to accept exactly one parameter")
+		lintResult.assertIssueDetected<BinaryOperatorWithInvalidParameterCount>(
+			"Binary operators need to accept exactly one parameter.", Severity.WARNING)
 	}
 
 	@Test
@@ -50,7 +51,7 @@ internal class OperatorSignatureValidation {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Binary operators need to accept exactly one parameter")
+		lintResult.assertIssueNotDetected<BinaryOperatorWithInvalidParameterCount>()
 	}
 
 	@Test
@@ -61,7 +62,7 @@ internal class OperatorSignatureValidation {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Binary operators need to accept exactly one parameter")
+		lintResult.assertIssueNotDetected<BinaryOperatorWithInvalidParameterCount>()
 	}
 
 	@Test
@@ -72,7 +73,7 @@ internal class OperatorSignatureValidation {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Unary operators can't accept parameters")
+		lintResult.assertIssueDetected<ParameterInUnaryOperator>("Unary operators can't accept parameters.", Severity.WARNING)
 	}
 
 	@Test
@@ -83,7 +84,7 @@ internal class OperatorSignatureValidation {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Unary operators can't accept parameters")
+		lintResult.assertIssueNotDetected<ParameterInUnaryOperator>()
 	}
 
 	@Test
@@ -94,7 +95,7 @@ internal class OperatorSignatureValidation {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Unary operators can't accept parameters")
+		lintResult.assertIssueNotDetected<ParameterInUnaryOperator>()
 	}
 
 	@Test
@@ -105,7 +106,8 @@ internal class OperatorSignatureValidation {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "This operator is expected to return a value")
+		lintResult.assertIssueDetected<OperatorExpectedToReturn>("This operator is expected to return a value.",
+			Severity.WARNING)
 	}
 
 	@Test
@@ -116,8 +118,8 @@ internal class OperatorSignatureValidation {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "This operator is expected to return a value")
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "This operator is not expected to return a value")
+		lintResult.assertIssueNotDetected<OperatorExpectedToReturn>()
+		lintResult.assertIssueNotDetected<OperatorExpectedToNotReturn>()
 	}
 
 	@Test
@@ -128,7 +130,8 @@ internal class OperatorSignatureValidation {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "This operator is not expected to return a value")
+		lintResult.assertIssueDetected<OperatorExpectedToNotReturn>("This operator is not expected to return a value.",
+			Severity.WARNING)
 	}
 
 	@Test
@@ -139,7 +142,7 @@ internal class OperatorSignatureValidation {
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "This operator is expected to return a value")
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "This operator is not expected to return a value")
+		lintResult.assertIssueNotDetected<OperatorExpectedToReturn>()
+		lintResult.assertIssueNotDetected<OperatorExpectedToNotReturn>()
 	}
 }

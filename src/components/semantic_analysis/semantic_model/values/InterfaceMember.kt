@@ -6,7 +6,8 @@ import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
+import logger.issues.modifiers.MissingOverridingKeyword
+import logger.issues.modifiers.OverriddenSuperMissing
 
 abstract class InterfaceMember(source: Element, scope: Scope, name: String, type: Type? = null, value: Value? = null,
 							   val isStatic: Boolean = false, override val isAbstract: Boolean = false, isConstant: Boolean = true,
@@ -24,12 +25,10 @@ abstract class InterfaceMember(source: Element, scope: Scope, name: String, type
 		if(value !is Function) {
 			if(superMember == null) {
 				if(isOverriding)
-					linter.addMessage(source, "'overriding' keyword is used, but the property doesn't have a super property.",
-						Message.Type.WARNING)
+					linter.addIssue(OverriddenSuperMissing(source, "property"))
 			} else {
 				if(!isOverriding)
-					linter.addMessage(source, "Property '$memberIdentifier' is missing the 'overriding' keyword.",
-						Message.Type.WARNING)
+					linter.addIssue(MissingOverridingKeyword(source, "Property", memberIdentifier))
 			}
 		}
 	}

@@ -7,7 +7,7 @@ import components.semantic_analysis.semantic_model.types.LiteralType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.*
-import messages.Message
+import logger.issues.constant_conditions.*
 import components.syntax_parser.syntax_tree.operations.Cast as CastSyntaxTree
 
 class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, val variableDeclaration: ValueDeclaration?,
@@ -61,10 +61,10 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		value.type?.let { valueType ->
 			if(valueType.isAssignableTo(referenceType)) {
 				if(operator.isConditional)
-					linter.addMessage(source, "Cast from '$valueType' to '$referenceType' is safe.", Message.Type.WARNING)
+					linter.addIssue(ConditionalCastIsSafe(source, valueType, referenceType))
 			} else {
 				if(!operator.isConditional)
-					linter.addMessage(source, "Cannot safely cast '$valueType' to '$referenceType'.", Message.Type.ERROR)
+					linter.addIssue(UnsafeSafeCast(source, valueType, referenceType))
 			}
 		}
 		validateVariableDeclaration(linter)
@@ -74,13 +74,12 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		if(variableDeclaration == null)
 			return
 		if(!operator.returnsBoolean) {
-			linter.addMessage(source, "Only 'is' casts can declare a variable.", Message.Type.WARNING)
+			linter.addIssue(CastVariableWithoutIs(source))
 			return
 		}
 		val ifStatement = parent as? IfStatement
 		if(ifStatement == null) {
-			linter.addMessage(source, "'is' casts can only declare a variable in an if statement condition.",
-				Message.Type.WARNING)
+			linter.addIssue(CastVariableOutsideOfIfStatement(source))
 			return
 		}
 		val isVariableAccessibleAfterIfStatement =
@@ -89,13 +88,13 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		for(usage in variableDeclaration.usages) {
 			if(ifStatement.positiveBranch.contains(usage)) {
 				if(operator == Operator.NEGATED_CAST_CONDITION)
-					linter.addMessage(usage.source, "Cannot access negated cast variable in positive branch.", Message.Type.ERROR)
+					linter.addIssue(NegatedCastVariableAccessInPositiveBranch(usage.source))
 			} else if(ifStatement.negativeBranch?.contains(usage) == true) {
 				if(operator == Operator.CAST_CONDITION)
-					linter.addMessage(usage.source, "Cannot access cast variable in negative branch.", Message.Type.ERROR)
+					linter.addIssue(CastVariableAccessInNegativeBranch(usage.source))
 			} else {
 				if(!isVariableAccessibleAfterIfStatement)
-					linter.addMessage(usage.source, "Cannot access cast variable after if statement.", Message.Type.ERROR)
+					linter.addIssue(CastVariableAccessAfterIfStatement(usage.source))
 			}
 		}
 	}

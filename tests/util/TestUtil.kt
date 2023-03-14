@@ -16,6 +16,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 object TestUtil {
+	const val TEST_FILE_NAME = "Test"
     private val defaultErrorStream = System.err
     private val testErrorStream = ByteArrayOutputStream()
 
@@ -33,7 +34,7 @@ object TestUtil {
 	private fun createTestProject(sourceCode: String, includeRequiredModules: Boolean = false): Project {
 		val project = Project("Test")
 		val testModule = Module("Test")
-		testModule.addFile(LinkedList(), "Test", sourceCode)
+		testModule.addFile(LinkedList(), TEST_FILE_NAME, sourceCode)
 		project.addModule(testModule)
 		if(includeRequiredModules)
 			Builder.loadRequiredModules(project)
@@ -60,7 +61,7 @@ object TestUtil {
 		val parseResult = parse(sourceCode)
 		val linter = Linter()
 		val program = linter.lint(parseResult.program)
-		val testFile = program.files.find { file -> file.file.name == "Test" }
+		val testFile = program.files.find { file -> file.file.name == TEST_FILE_NAME }
 		assertNotNull(testFile, "Missing test file")
 		return testFile.variableTracker
 	}

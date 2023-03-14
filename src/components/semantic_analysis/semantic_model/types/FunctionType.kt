@@ -7,7 +7,7 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
 import errors.user.SignatureResolutionAmbiguityError
-import messages.Message
+import logger.issues.resolution.LiteralTypeNotFound
 import java.util.*
 
 class FunctionType(override val source: Element, scope: Scope): ObjectType(source, scope, Linter.SpecialType.FUNCTION.className) {
@@ -37,7 +37,7 @@ class FunctionType(override val source: Element, scope: Scope): ObjectType(sourc
 			unit.linkTypes(linter)
 		definition = Linter.SpecialType.FUNCTION.scope?.resolveType(name)
 		if(definition == null)
-			linter.addMessage(source, "Literal type '$name' hasn't been declared yet.", Message.Type.ERROR)
+			linter.addIssue(LiteralTypeNotFound(source, name))
 	}
 
 	fun hasSignatureOverriddenBy(subSignature: FunctionSignature): Boolean {

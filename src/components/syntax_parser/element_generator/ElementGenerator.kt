@@ -7,8 +7,10 @@ import components.tokenizer.WordAtom
 import components.tokenizer.WordDescriptor
 import components.tokenizer.WordGenerator
 import errors.user.UnexpectedWordError
-import messages.Message
-import messages.MessageLogger
+import logger.Issue
+import logger.Logger
+import logger.Severity
+import source_structure.Position
 import source_structure.Project
 import java.util.*
 
@@ -17,15 +19,15 @@ class ElementGenerator(project: Project): Generator() {
 	override var currentWord: Word? = null
 	override var nextWord: Word? = null
 	override var parseForeignLanguageLiteralNext = false
-	val logger = MessageLogger("parser", Message.Type.INFO)
+	val logger = Logger("parser", Severity.INFO)
 	val statementParser = StatementParser(this)
 	val expressionParser = ExpressionParser(this)
 	val typeParser = TypeParser(this)
 	val literalParser = LiteralParser(this)
 
-	fun addMessage(description: String, type: Message.Type = Message.Type.INFO) {
-		logger.add(Message(description, type))
-	}
+	fun addIssue(issue: Issue) = logger.add(issue)
+
+	override fun getCurrentPosition(): Position = wordGenerator.getCurrentPosition()
 
 	override fun consume(type: WordDescriptor): Word {
 		val consumedWord = getCurrentWord(type)

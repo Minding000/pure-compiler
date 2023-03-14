@@ -1,8 +1,9 @@
 package components.syntax_parser
 
-import messages.Message
-import util.TestUtil
+import logger.Severity
+import logger.issues.parsing.InvalidSyntax
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class Members {
 
@@ -179,7 +180,12 @@ internal class Members {
 			native init() {}
 			""".trimIndent()
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected INIT")
+		parseResult.assertIssueDetected<InvalidSyntax>("""
+			Unexpected INITIALIZER in Test.Test:1:7: 'init'.
+			native init() {}
+			       ^^^^
+			Expected declaration instead.
+		""".trimIndent(), Severity.ERROR)
 	}
 
 	@Test
@@ -188,7 +194,12 @@ internal class Members {
 			native to fillCup() {}
 			""".trimIndent()
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected TO")
+		parseResult.assertIssueDetected<InvalidSyntax>("""
+			Unexpected TO in Test.Test:1:7: 'to'.
+			native to fillCup() {}
+			       ^^
+			Expected declaration instead.
+		""".trimIndent())
 	}
 
 	@Test
@@ -197,7 +208,12 @@ internal class Members {
 			native operator ++() {}
 			""".trimIndent()
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected OPERATOR")
+		parseResult.assertIssueDetected<InvalidSyntax>("""
+			Unexpected OPERATOR in Test.Test:1:7: 'operator'.
+			native operator ++() {}
+			       ^^^^^^^^
+			Expected declaration instead.
+		""".trimIndent())
 	}
 
 	@Test
@@ -206,6 +222,11 @@ internal class Members {
 			val x gets 3
 			""".trimIndent()
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertMessageEmitted(Message.Type.ERROR, "Unexpected GETS")
+		parseResult.assertIssueDetected<InvalidSyntax>("""
+			Unexpected GETS in Test.Test:1:6: 'gets'.
+			val x gets 3
+			      ^^^^
+			Expected atom instead.
+		""".trimIndent())
 	}
 }

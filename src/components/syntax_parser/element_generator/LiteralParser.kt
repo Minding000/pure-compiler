@@ -1,9 +1,10 @@
 package components.syntax_parser.element_generator
 
+import components.syntax_parser.syntax_tree.literals.*
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
 import components.tokenizer.WordDescriptor
-import components.syntax_parser.syntax_tree.literals.*
+import source_structure.Position
 
 class LiteralParser(private val elementGenerator: ElementGenerator): Generator() {
 	override var currentWord: Word?
@@ -15,6 +16,8 @@ class LiteralParser(private val elementGenerator: ElementGenerator): Generator()
 	override var parseForeignLanguageLiteralNext: Boolean
 		get() = elementGenerator.parseForeignLanguageLiteralNext
 		set(value) { elementGenerator.parseForeignLanguageLiteralNext = value }
+
+	override fun getCurrentPosition(): Position = elementGenerator.getCurrentPosition()
 
 	override fun consume(type: WordDescriptor): Word {
 		return elementGenerator.consume(type)

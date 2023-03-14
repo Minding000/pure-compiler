@@ -1,6 +1,7 @@
 package components.semantic_analysis.resolution
 
-import messages.Message
+import logger.Severity
+import logger.issues.resolution.InitializerReferenceOutsideOfInitializer
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -19,8 +20,7 @@ internal class InitializerReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"Initializer references are not allowed outside of initializers")
+		lintResult.assertIssueNotDetected<InitializerReferenceOutsideOfInitializer>()
 	}
 
 	@Test
@@ -34,6 +34,7 @@ internal class InitializerReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Initializer references are not allowed outside of initializers")
+		lintResult.assertIssueDetected<InitializerReferenceOutsideOfInitializer>(
+			"Initializer references are not allowed outside of initializers.", Severity.ERROR)
 	}
 }

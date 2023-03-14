@@ -1,6 +1,6 @@
 package components.semantic_analysis.modifiers
 
-import messages.Message
+import logger.issues.modifiers.DisallowedModifier
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -10,21 +10,21 @@ internal class OverridingModifier {
 	fun `is not allowed on classes`() {
 		val sourceCode = "overriding Goldfish class"
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
+		lintResult.assertIssueDetected<DisallowedModifier>()
 	}
 
 	@Test
 	fun `is not allowed on objects`() {
 		val sourceCode = "overriding Earth object"
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
+		lintResult.assertIssueDetected<DisallowedModifier>()
 	}
 
 	@Test
 	fun `is not allowed on enums`() {
 		val sourceCode = "overriding Tire enum"
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
+		lintResult.assertIssueDetected<DisallowedModifier>()
 	}
 
 	@Test
@@ -36,7 +36,7 @@ internal class OverridingModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test
@@ -49,7 +49,7 @@ internal class OverridingModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test
@@ -61,7 +61,7 @@ internal class OverridingModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test
@@ -73,7 +73,7 @@ internal class OverridingModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test
@@ -85,6 +85,6 @@ internal class OverridingModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'overriding' is not allowed here")
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 }

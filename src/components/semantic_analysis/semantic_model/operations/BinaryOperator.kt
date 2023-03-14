@@ -6,7 +6,7 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.*
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
-import messages.Message
+import logger.issues.resolution.NotFound
 import components.syntax_parser.syntax_tree.operations.BinaryOperator as BinaryOperatorSyntaxTree
 
 class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope, val left: Value, val right: Value,
@@ -22,8 +22,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			try {
 				val operatorDefinition = leftType.interfaceScope.resolveOperator(kind, right)
 				if(operatorDefinition == null) {
-					linter.addMessage(source, "Operator '$leftType $kind ${right.type}' hasn't been declared yet.",
-						Message.Type.ERROR)
+					linter.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.type}"))
 					return@let
 				}
 				type = operatorDefinition.returnType

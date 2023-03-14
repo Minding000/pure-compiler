@@ -7,7 +7,9 @@ import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
+import logger.issues.constant_conditions.TypeNotAssignable
+import logger.issues.definition.DeclarationMissingTypeOrValue
+import logger.issues.resolution.ConversionAmbiguity
 import java.util.*
 
 abstract class ValueDeclaration(override val source: Element, scope: Scope, val name: String, var type: Type? = null, value: Value? = null,
@@ -27,7 +29,7 @@ abstract class ValueDeclaration(override val source: Element, scope: Scope, val 
 		val value = value
 		if(value == null) {
 			if(type == null)
-				linter.addMessage(source, "Declaration requires a type or value to infer a type from.", Message.Type.ERROR)
+				linter.addIssue(DeclarationMissingTypeOrValue(source))
 		} else {
 			val targetType = type
 			if(value.isAssignableTo(targetType)) {
@@ -43,17 +45,13 @@ abstract class ValueDeclaration(override val source: Element, scope: Scope, val 
 			val conversions = targetType.getConversionsFrom(sourceType)
 			if(conversions.isNotEmpty()) {
 				if(conversions.size > 1) {
-					var message = "Conversion from '$sourceType' to '$targetType' needs to be explicit," +
-						" because there are multiple possible conversions:"
-					for(conversion in conversions)
-						message += "\n - ${conversion.parentDefinition.name}"
-					linter.addMessage(source, message, Message.Type.ERROR)
-				} else {
-					conversion = conversions.first()
+					linter.addIssue(ConversionAmbiguity(source, sourceType, targetType, conversions))
+					return
 				}
+				conversion = conversions.first()
 				return
 			}
-			linter.addMessage(source, "Type '${sourceType}' is not assignable to type '$targetType'.", Message.Type.ERROR)
+			linter.addIssue(TypeNotAssignable(source, sourceType, targetType))
 		}
 	}
 }

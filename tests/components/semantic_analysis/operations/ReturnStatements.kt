@@ -1,6 +1,12 @@
 package components.semantic_analysis.operations
 
-import messages.Message
+import logger.Severity
+import logger.issues.constant_conditions.FunctionCompletesDespiteNever
+import logger.issues.constant_conditions.FunctionCompletesWithoutReturning
+import logger.issues.returns.RedundantReturnValue
+import logger.issues.returns.ReturnStatementMissingValue
+import logger.issues.returns.ReturnStatementOutsideOfCallable
+import logger.issues.returns.ReturnValueTypeMismatch
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -13,7 +19,8 @@ internal class ReturnStatements {
 				return
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Return statements are not allowed outside of functions")
+		lintResult.assertIssueDetected<ReturnStatementOutsideOfCallable>(
+			"Return statements are not allowed outside of callables.", Severity.ERROR)
 	}
 
 	@Test
@@ -27,7 +34,7 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Return statements are not allowed outside of functions")
+		lintResult.assertIssueDetected<ReturnStatementOutsideOfCallable>()
 	}
 
 	@Test
@@ -41,7 +48,7 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Return statements are not allowed outside of functions")
+		lintResult.assertIssueNotDetected<ReturnStatementOutsideOfCallable>()
 	}
 
 	@Test
@@ -56,37 +63,8 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Return value doesn't match the declared return type")
-	}
-
-	@Test
-	fun `detects return statements with missing return value`() {
-		val sourceCode =
-			"""
-				Int class
-				Desk class {
-					to getMaximumHeightInMeters(): Int {
-						return
-					}
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Return statement needs a value")
-	}
-
-	@Test
-	fun `detects return statements with redundant return type`() {
-		val sourceCode =
-			"""
-				Int class
-				Desk class {
-					to raiseToMaximum() {
-						return Int()
-					}
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Return value is redundant")
+		lintResult.assertIssueDetected<ReturnValueTypeMismatch>("Return value doesn't match the declared return type.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -102,7 +80,7 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,"Return value doesn't match the declared return type")
+		lintResult.assertIssueNotDetected<ReturnValueTypeMismatch>()
 	}
 
 	@Test
@@ -116,7 +94,37 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,"Return value doesn't match the declared return type")
+		lintResult.assertIssueNotDetected<ReturnValueTypeMismatch>()
+	}
+
+	@Test
+	fun `detects return statements with missing return value`() {
+		val sourceCode =
+			"""
+				Int class
+				Desk class {
+					to getMaximumHeightInMeters(): Int {
+						return
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<ReturnStatementMissingValue>("Return statement needs a value.", Severity.ERROR)
+	}
+
+	@Test
+	fun `detects return statements with redundant return type`() {
+		val sourceCode =
+			"""
+				Int class
+				Desk class {
+					to raiseToMaximum() {
+						return Int()
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<RedundantReturnValue>("Return value is redundant.", Severity.WARNING)
 	}
 
 	@Test
@@ -130,7 +138,8 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Function might complete without returning a value")
+		lintResult.assertIssueDetected<FunctionCompletesWithoutReturning>("Function might complete without returning a value.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -147,7 +156,7 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Function might complete without returning a value")
+		lintResult.assertIssueDetected<FunctionCompletesWithoutReturning>()
 	}
 
 	@Test
@@ -160,7 +169,8 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Function might complete despite of 'Never' return type")
+		lintResult.assertIssueDetected<FunctionCompletesDespiteNever>("Function might complete despite of 'Never' return type.",
+			Severity.ERROR)
 	}
 
 	@Test
@@ -174,7 +184,7 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, "Function might complete despite of 'Never' return type")
+		lintResult.assertIssueDetected<FunctionCompletesDespiteNever>()
 	}
 
 	@Test
@@ -189,6 +199,6 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "Function might complete despite of 'Never' return type")
+		lintResult.assertIssueNotDetected<FunctionCompletesDespiteNever>()
 	}
 }

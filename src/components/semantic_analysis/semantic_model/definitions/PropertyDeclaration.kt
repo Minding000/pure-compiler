@@ -6,7 +6,7 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
-import messages.Message
+import logger.issues.initialization.CircularAssignment
 
 class PropertyDeclaration(source: Element, scope: Scope, name: String, type: Type? = null, value: Value? = null, isStatic: Boolean = false,
 						  isAbstract: Boolean = false, isConstant: Boolean = true, isMutable: Boolean = false,
@@ -20,10 +20,8 @@ class PropertyDeclaration(source: Element, scope: Scope, name: String, type: Typ
 
 	override fun linkValues(linter: Linter) {
 		if(linter.propertyDeclarationStack.contains(this)) {
-			for(propertyDeclaration in linter.propertyDeclarationStack) {
-				linter.addMessage(propertyDeclaration.source,
-					"'${propertyDeclaration.name}' has no value, because it's part of a circular assignment.", Message.Type.ERROR)
-			}
+			for(propertyDeclaration in linter.propertyDeclarationStack)
+				linter.addIssue(CircularAssignment(propertyDeclaration))
 			return
 		}
 		linter.propertyDeclarationStack.add(this)

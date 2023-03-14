@@ -1,6 +1,11 @@
 package components.semantic_analysis.modifiers
 
-import messages.Message
+import logger.Severity
+import logger.issues.constant_conditions.TypeNotAssignable
+import logger.issues.modifiers.ConvertingInitializerTakingTypeParameters
+import logger.issues.modifiers.ConvertingInitializerWithInvalidParameterCount
+import logger.issues.modifiers.DisallowedModifier
+import logger.issues.resolution.ConversionAmbiguity
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -15,7 +20,7 @@ internal class ConvertingModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Modifier 'converting' is not allowed here")
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test
@@ -27,7 +32,7 @@ internal class ConvertingModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Converting initializers have to take exactly one parameter")
+		lintResult.assertIssueNotDetected<ConvertingInitializerWithInvalidParameterCount>()
 	}
 
 	@Test
@@ -39,7 +44,8 @@ internal class ConvertingModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Converting initializers have to take exactly one parameter")
+		lintResult.assertIssueDetected<ConvertingInitializerWithInvalidParameterCount>(
+			"Converting initializers have to take exactly one parameter.", Severity.ERROR)
 	}
 
 	@Test
@@ -51,7 +57,7 @@ internal class ConvertingModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Converting initializers have to take exactly one parameter")
+		lintResult.assertIssueDetected<ConvertingInitializerWithInvalidParameterCount>()
 	}
 
 	@Test
@@ -63,7 +69,7 @@ internal class ConvertingModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.WARNING, "Converting initializers cannot take type parameters")
+		lintResult.assertIssueNotDetected<ConvertingInitializerTakingTypeParameters>()
 	}
 
 	@Test
@@ -75,7 +81,8 @@ internal class ConvertingModifier {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.WARNING, "Converting initializers cannot take type parameters")
+		lintResult.assertIssueDetected<ConvertingInitializerTakingTypeParameters>(
+			"Converting initializers cannot take type parameters.", Severity.ERROR)
 	}
 
 	@Test
@@ -90,7 +97,7 @@ internal class ConvertingModifier {
 				val converted: Float = original
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "not assignable")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
 	@Test
@@ -106,7 +113,7 @@ internal class ConvertingModifier {
 				converted = original
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR, "not assignable")
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
 	@Test
@@ -122,8 +129,7 @@ internal class ConvertingModifier {
 				val converted: Float | Int64 = original
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageNotEmitted(Message.Type.ERROR,
-			"needs to be explicit, because there are multiple possible conversions")
+		lintResult.assertIssueNotDetected<ConversionAmbiguity>()
 	}
 
 	@Test
@@ -141,10 +147,10 @@ internal class ConvertingModifier {
 				val converted: Float | Int64 = original
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertMessageEmitted(Message.Type.ERROR, """
+		lintResult.assertIssueDetected<ConversionAmbiguity>("""
 			Conversion from 'Int' to 'Float | Int64' needs to be explicit, because there are multiple possible conversions:
 			 - Float
 			 - Int64
-		""".trimIndent())
+		""".trimIndent(), Severity.ERROR)
 	}
 }
