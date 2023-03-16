@@ -42,6 +42,7 @@ abstract class ValueDeclaration(override val source: Element, scope: Scope, val 
 				type = sourceType
 				return
 			}
+			//TODO fix: initializers may not exist yet (linkPropertyParameters)
 			val conversions = targetType.getConversionsFrom(sourceType)
 			if(conversions.isNotEmpty()) {
 				if(conversions.size > 1) {

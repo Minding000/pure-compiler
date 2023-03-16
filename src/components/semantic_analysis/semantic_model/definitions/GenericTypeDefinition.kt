@@ -6,6 +6,7 @@ import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSy
 
 class GenericTypeDefinition(override val source: ParameterSyntaxTree, name: String, scope: TypeScope, superType: Type?):
 	TypeDefinition(source, name, scope, null, superType) {
+	override val isDefinition = false
 
 	init {
 		scope.typeDefinition = this

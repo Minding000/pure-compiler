@@ -10,7 +10,7 @@ class MissingImplementations(val typeDefinition: TypeDefinition, val missingOver
 	Issue(Severity.ERROR, typeDefinition.source) {
 	override val text: String
 		get() {
-			var stringRepresentation = "Non-abstract class '${typeDefinition.name}' does not implement the following inherited members:"
+			var stringRepresentation = "Non-abstract type definition '${typeDefinition.name}' does not implement the following inherited members:"
 			for((parent, missingMembers) in missingOverrides) {
 				stringRepresentation += "\n - ${parent.name}"
 				for(member in missingMembers)

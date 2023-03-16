@@ -3,7 +3,9 @@ package components.semantic_analysis.semantic_model.definitions
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
-import components.semantic_analysis.semantic_model.scopes.*
+import components.semantic_analysis.semantic_model.scopes.BlockScope
+import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.AndUnionType
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
@@ -17,6 +19,7 @@ import java.util.*
 abstract class TypeDefinition(override val source: Element, val name: String, public override val scope: TypeScope,
 							  val explicitParentType: ObjectType?, val superType: Type?, val isBound: Boolean = false):
 	Unit(source, scope) {
+	protected open val isDefinition = true
 	override var parent: Unit?
 		get() = super.parent
 		set(value) {
@@ -89,13 +92,13 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 
 	override fun linkPropertyParameters(linter: Linter) {
 		super.linkPropertyParameters(linter)
-		if(this.scope.initializers.isEmpty()) {
-			val defaultInitializer = InitializerDefinition(source, this, BlockScope(this.scope))
+		if(isDefinition && scope.initializers.isEmpty()) {
+			val defaultInitializer = InitializerDefinition(source, this, BlockScope(scope))
 			addUnits(defaultInitializer)
-			this.scope.declareInitializer(linter, defaultInitializer)
+			scope.declareInitializer(linter, defaultInitializer)
 		}
-		this.scope.ensureUniqueInitializerSignatures(linter)
-		this.scope.inheritSignatures()
+		scope.ensureUniqueInitializerSignatures(linter)
+		scope.inheritSignatures()
 	}
 
 	override fun linkValues(linter: Linter) {
@@ -121,8 +124,8 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 		super.validate(linter)
 		if(isBound && parentTypeDefinition == null)
 			linter.addIssue(NoParentToBindTo(source))
-			if((this as? Class)?.isAbstract != true && !hasCircularInheritance)
-				scope.ensureAbstractSuperMembersImplemented(linter)
+		if(isDefinition && (this as? Class)?.isAbstract != true && !hasCircularInheritance)
+			scope.ensureAbstractSuperMembersImplemented(linter)
 	}
 
 	private fun inheritsFrom(definition: TypeDefinition): Boolean {

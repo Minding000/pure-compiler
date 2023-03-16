@@ -153,4 +153,22 @@ internal class ConvertingModifier {
 			 - Int64
 		""".trimIndent(), Severity.ERROR)
 	}
+
+	@Test
+	fun `allows for conversion to generic type`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Number class {
+					abstract converting init(value: Int)
+				}
+				Range class {
+					containing N: Number
+					val start: N = Int()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
+		lintResult.assertIssueNotDetected<ConversionAmbiguity>()
+	}
 }

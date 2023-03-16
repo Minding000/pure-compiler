@@ -197,6 +197,22 @@ internal class Initializers {
 	}
 
 	@Test
+	fun `doesn't require generic type definitions to override abstract initializers`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract Plant class {
+					abstract init(size: Int)
+				}
+				abstract Garden class {
+					containing Tree: Plant
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
 	fun `disallows non-abstract classes to not override abstract initializers`() {
 		val sourceCode =
 			"""
@@ -208,7 +224,7 @@ internal class Initializers {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<MissingImplementations>("""
-			Non-abstract class 'Tree' does not implement the following inherited members:
+			Non-abstract type definition 'Tree' does not implement the following inherited members:
 			 - Plant
 			   - init(Int)
 		""".trimIndent(), Severity.ERROR)

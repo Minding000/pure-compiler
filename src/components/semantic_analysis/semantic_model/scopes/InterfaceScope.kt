@@ -122,6 +122,10 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	fun getAbstractMembers(): List<MemberDeclaration> = type.getAbstractMembers()
 	fun getPropertiesToBeInitialized(): List<PropertyDeclaration> = type.getPropertiesToBeInitialized()
 
+	fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
+		return initializers.filter { initializer -> initializer.isConvertingFrom(sourceType) }
+	}
+
 	override fun toString(): String {
 		return "InterfaceScope of $type"
 	}

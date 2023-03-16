@@ -259,6 +259,12 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 	}
 
 	fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
-		return initializers.filter { initializer -> initializer.isConvertingFrom(sourceType) }
+		val conversions = LinkedList<InitializerDefinition>()
+		for(initializer in initializers)
+			if(initializer.isConvertingFrom(sourceType))
+				conversions.add(initializer)
+		if(superScope != null)
+			conversions.addAll(superScope.getConversionsFrom(sourceType))
+		return conversions
 	}
 }

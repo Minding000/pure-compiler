@@ -6,6 +6,7 @@ import components.syntax_parser.syntax_tree.definitions.TypeAlias as TypeAliasSy
 
 class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val referenceType: Type, scope: TypeScope):
 	TypeDefinition(source, name, scope, null, null) {
+	override val isDefinition = false
 
 	init {
 		scope.typeDefinition = this

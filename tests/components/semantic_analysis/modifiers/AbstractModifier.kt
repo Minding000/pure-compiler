@@ -161,7 +161,7 @@ internal class AbstractModifier {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<MissingImplementations>(
 			"""
-				Non-abstract class 'LinkedList' does not implement the following inherited members:
+				Non-abstract type definition 'LinkedList' does not implement the following inherited members:
 				 - Collection
 				   - size: Int
 				 - List
