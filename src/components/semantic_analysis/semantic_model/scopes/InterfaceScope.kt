@@ -7,15 +7,13 @@ import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Instance
 import components.semantic_analysis.semantic_model.values.InterfaceMember
-import components.semantic_analysis.semantic_model.values.Value
-import errors.user.SignatureResolutionAmbiguityError
 import java.util.*
 
 class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	lateinit var type: Type
 	private val types = HashMap<String, TypeDefinition>()
 	private val values = HashMap<String, InterfaceMember>()
-	private val initializers = LinkedList<InitializerDefinition>()
+	val initializers = LinkedList<InitializerDefinition>()
 
 	fun hasType(type: TypeDefinition): Boolean = types.containsValue(type)
 
@@ -76,48 +74,6 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 		}
 		return null
 	}
-
-	fun resolveInitializer(suppliedValues: List<Value>): MatchResult? =
-		resolveInitializer(listOf(), listOf(), listOf(), suppliedValues)
-
-	fun resolveInitializer(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
-						   suppliedTypes: List<Type>, suppliedValues: List<Value>): MatchResult? {
-		val matches = getMatchingInitializers(genericDefinitionTypes, suppliedDefinitionTypes, suppliedTypes, suppliedValues)
-		if(matches.isEmpty())
-			return null
-		specificityPrecedenceLoop@for(match in matches) {
-			for(otherMatch in matches) {
-				if(otherMatch == match)
-					continue
-				if(!match.signature.isMoreSpecificThan(otherMatch.signature))
-					continue@specificityPrecedenceLoop
-			}
-			for(parameterIndex in suppliedValues.indices)
-				suppliedValues[parameterIndex].setInferredType(match.signature.parameters[parameterIndex].type)
-			return match
-		}
-		throw SignatureResolutionAmbiguityError(matches.map { match -> match.signature })
-	}
-
-	private fun getMatchingInitializers(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
-										suppliedTypes: List<Type>, suppliedValues: List<Value>): List<MatchResult> {
-		val validSignatures = LinkedList<MatchResult>()
-		for(initializer in initializers) {
-			var specificInitializer = initializer
-			val definitionTypeSubstitutions = initializer.getDefinitionTypeSubstitutions(genericDefinitionTypes, suppliedDefinitionTypes,
-				suppliedValues) ?: continue
-			if(definitionTypeSubstitutions.isNotEmpty())
-				specificInitializer = specificInitializer.withTypeSubstitutions(definitionTypeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
-			val typeSubstitutions = specificInitializer.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
-			if(typeSubstitutions.isNotEmpty())
-				specificInitializer = specificInitializer.withTypeSubstitutions(typeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
-			if(specificInitializer.accepts(suppliedValues))
-				validSignatures.add(MatchResult(specificInitializer, definitionTypeSubstitutions))
-		}
-		return validSignatures
-	}
-
-	class MatchResult(val signature: InitializerDefinition, val definitionTypeSubstitutions: Map<TypeDefinition, Type>)
 
 	fun getAbstractMembers(): List<MemberDeclaration> = type.getAbstractMembers()
 	fun getPropertiesToBeInitialized(): List<PropertyDeclaration> = type.getPropertiesToBeInitialized()

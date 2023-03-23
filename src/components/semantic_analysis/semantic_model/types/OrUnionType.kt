@@ -67,8 +67,8 @@ class OrUnionType(override val source: Element, scope: Scope, val types: List<Ty
 		return types.all { part -> part.isInstanceOf(type) }
 	}
 
-	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
-		return types.flatMap { type -> type.getConversionsFrom(sourceType) }
+	override fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> {
+		return types.flatMap { type -> type.getConversionsFrom(linter, sourceType) }
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

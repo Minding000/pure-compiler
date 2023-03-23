@@ -28,6 +28,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 		}
 	var parentTypeDefinition: TypeDefinition? = null
 	private var hasCircularInheritance = false
+	var arePropertyParametersLinked = false
 	// Only used in base definition
 	private val specificDefinitions = HashMap<Map<TypeDefinition, Type>, TypeDefinition>()
 	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>, LinkedList<(TypeDefinition) -> kotlin.Unit>>()
@@ -91,12 +92,12 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 	}
 
 	override fun linkPropertyParameters(linter: Linter) {
+		if(arePropertyParametersLinked)
+			return
+		arePropertyParametersLinked = true
 		super.linkPropertyParameters(linter)
-		if(isDefinition && scope.initializers.isEmpty()) {
-			val defaultInitializer = InitializerDefinition(source, this, BlockScope(scope))
-			addUnits(defaultInitializer)
-			scope.declareInitializer(linter, defaultInitializer)
-		}
+		if(isDefinition && scope.initializers.isEmpty())
+			addDefaultInitializer(linter)
 		scope.ensureUniqueInitializerSignatures(linter)
 		scope.inheritSignatures()
 	}
@@ -128,6 +129,12 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 			scope.ensureAbstractSuperMembersImplemented(linter)
 	}
 
+	private fun addDefaultInitializer(linter: Linter) {
+		val defaultInitializer = InitializerDefinition(source, this, BlockScope(scope))
+		addUnits(defaultInitializer)
+		scope.declareInitializer(linter, defaultInitializer)
+	}
+
 	private fun inheritsFrom(definition: TypeDefinition): Boolean {
 		for(superType in getDirectSuperTypes()) {
 			if(superType.definition == definition)
@@ -153,6 +160,12 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 			is AndUnionType -> superType.types.filterIsInstance<ObjectType>()
 			else -> listOf()
 		}
+	}
+
+	open fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> {
+		if(!arePropertyParametersLinked)
+			linkPropertyParameters(linter)
+		return scope.getConversionsFrom(sourceType)
 	}
 
 	fun acceptsSubstituteType(substituteType: Type): Boolean {

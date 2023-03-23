@@ -4,6 +4,7 @@ import components.semantic_analysis.semantic_model.definitions.Parameter
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
+import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.initialization.CircularAssignment
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
@@ -88,6 +89,38 @@ internal class ValueResolution {
 		lintResult.assertIssueNotDetected<CircularAssignment>()
 		val parameter = lintResult.find<Parameter>()
 		assertEquals("Int", parameter?.type.toString())
+	}
+
+	@Test
+	fun `infers type of property parameter with unlinked initializer call as the value`() {
+		val sourceCode =
+			"""
+				House class {
+					var livingAreaInSquareMeters = Int()
+					init(livingAreaInSquareMeters)
+				}
+				Int class
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+	}
+
+	@Test
+	fun `infers type of property parameter with type that requires an unlinked converting initializer`() {
+		val sourceCode =
+			"""
+				Int class: Number
+				House class {
+					containing N: Number
+					var livingAreaInSquareMeters: N = Int()
+					init(livingAreaInSquareMeters)
+				}
+				abstract Number class {
+					converting init(value: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
 	@Test

@@ -147,8 +147,8 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		return definition?.scope?.getPropertiesToBeInitialized() ?: listOf()
 	}
 
-	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
-		return definition?.scope?.getConversionsFrom(sourceType) ?: listOf()
+	override fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> {
+		return definition?.getConversionsFrom(linter, sourceType) ?: listOf()
 	}
 
 	override fun equals(other: Any?): Boolean {

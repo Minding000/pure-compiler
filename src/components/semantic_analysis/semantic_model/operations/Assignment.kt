@@ -42,7 +42,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 				target.type = sourceType
 				continue
 			}
-			val conversions = targetType.getConversionsFrom(sourceType)
+			val conversions = targetType.getConversionsFrom(linter, sourceType)
 			if(conversions.isNotEmpty()) {
 				if(conversions.size > 1) {
 					linter.addIssue(ConversionAmbiguity(source, sourceType, targetType, conversions))

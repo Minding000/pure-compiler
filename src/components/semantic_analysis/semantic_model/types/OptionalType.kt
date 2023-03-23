@@ -31,8 +31,8 @@ class OptionalType(override val source: Element, scope: Scope, val baseType: Typ
 		baseType.inferType(genericType, sourceBaseType, inferredTypes)
 	}
 
-	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
-		return baseType.getConversionsFrom(sourceType)
+	override fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> {
+		return baseType.getConversionsFrom(linter, sourceType)
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

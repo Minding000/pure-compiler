@@ -53,15 +53,15 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			target.analyseDataFlow(linter, tracker)
 	}
 
-	fun filterForPossibleTargetTypes(availableTypes: List<ObjectType>): List<Type> {
+	fun filterForPossibleTargetTypes(linter: Linter, availableTypes: List<ObjectType>): List<Type> {
 		val possibleTargetTypes = LinkedList<Type>()
 		for(availableType in availableTypes) {
 			when(member) {
 				is InitializerReference -> {
 					val staticType = StaticType(availableType.definition ?: continue)
 					val functionCall = parent as? FunctionCall ?: continue
-					if(staticType.interfaceScope.resolveInitializer(listOf(), listOf(), functionCall.typeParameters,
-							functionCall.valueParameters) == null)
+					if(staticType.resolveInitializer(linter, listOf(), listOf(), functionCall.typeParameters, functionCall.valueParameters)
+						== null)
 						continue
 					possibleTargetTypes.add(staticType)
 				}

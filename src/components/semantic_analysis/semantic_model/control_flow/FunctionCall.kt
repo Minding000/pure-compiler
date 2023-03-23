@@ -71,7 +71,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 		val genericDefinitionTypes = (targetType.definition.baseDefinition ?: targetType.definition).scope.getGenericTypeDefinitions()
 		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
 		try {
-			val match = targetType.interfaceScope.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters,
+			val match = targetType.resolveInitializer(linter, genericDefinitionTypes, definitionTypeParameters, typeParameters,
 				valueParameters)
 			if(match == null) {
 				linter.addIssue(NotFound(source, "Initializer", getSignature()))

@@ -37,7 +37,7 @@ class Instance(override val source: InstanceSyntaxTree, scope: Scope, override v
 		addUnits(staticType)
 		super.linkValues(linter)
 		try {
-			val initializer = staticType.interfaceScope.resolveInitializer(valueParameters)
+			val initializer = staticType.resolveInitializer(linter, valueParameters)
 			if(initializer == null)
 				linter.addIssue(NotFound(source, "Initializer", getSignature()))
 		} catch(error: SignatureResolutionAmbiguityError) {

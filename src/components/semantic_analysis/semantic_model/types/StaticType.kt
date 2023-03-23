@@ -1,8 +1,12 @@
 package components.semantic_analysis.semantic_model.types
 
+import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.InterfaceMember
+import components.semantic_analysis.semantic_model.values.Value
+import errors.user.SignatureResolutionAmbiguityError
+import java.util.*
 
 class StaticType(val definition: TypeDefinition): Type(definition.source, definition.scope, true) {
 
@@ -54,6 +58,50 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 			return true
 		return definition.superType?.isAssignableTo(targetType) ?: false
 	}
+
+	fun resolveInitializer(linter: Linter, suppliedValues: List<Value>): MatchResult? =
+		resolveInitializer(linter, listOf(), listOf(), listOf(), suppliedValues)
+
+	fun resolveInitializer(linter: Linter, genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
+						   suppliedTypes: List<Type>, suppliedValues: List<Value>): MatchResult? {
+		if(!definition.arePropertyParametersLinked)
+			definition.linkPropertyParameters(linter)
+		val matches = getMatchingInitializers(genericDefinitionTypes, suppliedDefinitionTypes, suppliedTypes, suppliedValues)
+		if(matches.isEmpty())
+			return null
+		specificityPrecedenceLoop@for(match in matches) {
+			for(otherMatch in matches) {
+				if(otherMatch == match)
+					continue
+				if(!match.signature.isMoreSpecificThan(otherMatch.signature))
+					continue@specificityPrecedenceLoop
+			}
+			for(parameterIndex in suppliedValues.indices)
+				suppliedValues[parameterIndex].setInferredType(match.signature.parameters[parameterIndex].type)
+			return match
+		}
+		throw SignatureResolutionAmbiguityError(matches.map { match -> match.signature })
+	}
+
+	private fun getMatchingInitializers(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
+										suppliedTypes: List<Type>, suppliedValues: List<Value>): List<MatchResult> {
+		val validSignatures = LinkedList<MatchResult>()
+		for(initializer in interfaceScope.initializers) {
+			var specificInitializer = initializer
+			val definitionTypeSubstitutions = initializer.getDefinitionTypeSubstitutions(genericDefinitionTypes, suppliedDefinitionTypes,
+				suppliedValues) ?: continue
+			if(definitionTypeSubstitutions.isNotEmpty())
+				specificInitializer = specificInitializer.withTypeSubstitutions(definitionTypeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
+			val typeSubstitutions = specificInitializer.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
+			if(typeSubstitutions.isNotEmpty())
+				specificInitializer = specificInitializer.withTypeSubstitutions(typeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
+			if(specificInitializer.accepts(suppliedValues))
+				validSignatures.add(MatchResult(specificInitializer, definitionTypeSubstitutions))
+		}
+		return validSignatures
+	}
+
+	class MatchResult(val signature: InitializerDefinition, val definitionTypeSubstitutions: Map<TypeDefinition, Type>)
 
 	override fun equals(other: Any?): Boolean {
 		if(other !is StaticType)

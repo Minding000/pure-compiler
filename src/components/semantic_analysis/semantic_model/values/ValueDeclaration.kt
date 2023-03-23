@@ -42,8 +42,7 @@ abstract class ValueDeclaration(override val source: Element, scope: Scope, val 
 				type = sourceType
 				return
 			}
-			//TODO fix: initializers may not exist yet (linkPropertyParameters)
-			val conversions = targetType.getConversionsFrom(sourceType)
+			val conversions = targetType.getConversionsFrom(linter, sourceType)
 			if(conversions.isNotEmpty()) {
 				if(conversions.size > 1) {
 					linter.addIssue(ConversionAmbiguity(source, sourceType, targetType, conversions))

@@ -39,7 +39,7 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 						return
 					}
 				}
-				parent.filterForPossibleTargetTypes(superTypes)
+				parent.filterForPossibleTargetTypes(linter, superTypes)
 			}
 			is IndexAccess -> {
 				parent.filterForPossibleTargetTypes(superTypes)
