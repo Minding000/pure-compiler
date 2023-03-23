@@ -14,20 +14,20 @@ import components.tokenizer.Word
 import components.tokenizer.WordAtom
 import components.tokenizer.WordDescriptor
 import components.tokenizer.WordType
-import errors.user.SyntaxError
+import errors.user.UnexpectedEndOfFileError
 import errors.user.UnexpectedWordError
 import errors.user.UserError
 import logger.issues.parsing.InvalidSyntax
+import logger.issues.parsing.UnexpectedEndOfFile
+import logger.issues.parsing.UnexpectedWord
 import source_structure.Position
 import java.util.*
 
 class StatementParser(private val elementGenerator: ElementGenerator): Generator() {
-	override var currentWord: Word?
+	override val currentWord: Word?
 		get() = elementGenerator.currentWord
-		set(value) { elementGenerator.currentWord = value }
-	override var nextWord: Word?
+	override val nextWord: Word?
 		get() = elementGenerator.nextWord
-		set(value) { elementGenerator.nextWord = value }
 	override var parseForeignLanguageLiteralNext: Boolean
 		get() = elementGenerator.parseForeignLanguageLiteralNext
 		set(value) { elementGenerator.parseForeignLanguageLiteralNext = value }
@@ -46,9 +46,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	}
 
 	private fun isExpressionAssignable(expression: Element): Boolean {
-		return expression is Identifier
-				|| expression is MemberAccess
-				|| expression is IndexAccess
+		return expression is Identifier || expression is MemberAccess || expression is IndexAccess
 	}
 
 	private fun parseExpression(): ValueElement {
@@ -68,11 +66,13 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			try {
 				statements.add(parseStatement())
 			} catch(error: UserError) {
-				elementGenerator.addIssue(InvalidSyntax(error.message, (error as? SyntaxError)?.section))
+				elementGenerator.addIssue(when(error) {
+					is UnexpectedEndOfFileError -> UnexpectedEndOfFile(error.message, error.section)
+					is UnexpectedWordError -> UnexpectedWord(error.message, error.section)
+					else -> InvalidSyntax(error.message)
+				})
 				currentWord?.let { invalidWord ->
-					elementGenerator.wordGenerator.skipLine(invalidWord)
-					currentWord = elementGenerator.wordGenerator.getNextWord()
-					nextWord = elementGenerator.wordGenerator.getNextWord()
+					elementGenerator.skipLine(invalidWord)
 				}
 			}
 		}

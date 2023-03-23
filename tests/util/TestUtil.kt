@@ -6,6 +6,8 @@ import components.semantic_analysis.VariableTracker
 import components.syntax_parser.element_generator.ElementGenerator
 import components.tokenizer.WordAtom
 import components.tokenizer.WordGenerator
+import logger.Logger
+import logger.Severity
 import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream
@@ -69,14 +71,16 @@ object TestUtil {
 	fun assertTokenIsIgnored(sourceCode: String) {
 		val project = createTestProject(sourceCode)
 		val wordGenerator = WordGenerator(project)
-		val word = wordGenerator.getNextWord()
+		val logger = Logger("Tokenizer test", Severity.DEBUG)
+		val word = wordGenerator.getNextWord(logger)
 		assertNull(word?.getValue(), "Token is not ignored")
 	}
 
 	fun assertTokenType(sourceCode: String, type: WordAtom) {
 		val project = createTestProject(sourceCode)
 		val wordGenerator = WordGenerator(project)
-		val word = wordGenerator.getNextWord()
+		val logger = Logger("Tokenizer test", Severity.DEBUG)
+		val word = wordGenerator.getNextWord(logger)
 		assertNotNull(word, "No token found")
 		assertEquals(sourceCode, word.getValue(), "The generated token doesn't match the entire input")
 		assertEquals(type, word.type, "The generated token doesn't match the expected type")

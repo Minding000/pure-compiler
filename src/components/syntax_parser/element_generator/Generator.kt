@@ -8,8 +8,8 @@ import source_structure.Position
 import source_structure.Section
 
 abstract class Generator {
-	internal abstract var currentWord: Word?
-	internal abstract var nextWord: Word?
+	internal abstract val currentWord: Word?
+	internal abstract val nextWord: Word?
 	internal abstract var parseForeignLanguageLiteralNext: Boolean
 
 	internal abstract fun consume(type: WordDescriptor): Word

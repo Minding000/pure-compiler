@@ -28,12 +28,10 @@ import java.util.regex.Pattern
 
 class ExpressionParser(private val elementGenerator: ElementGenerator): Generator() {
 	private val typeParameterListCheck: Pattern = Pattern.compile("[;()\\[\\]]")
-	override var currentWord: Word?
+	override val currentWord: Word?
 		get() = elementGenerator.currentWord
-		set(value) { elementGenerator.currentWord = value }
-	override var nextWord: Word?
+	override val nextWord: Word?
 		get() = elementGenerator.nextWord
-		set(value) { elementGenerator.nextWord = value }
 	override var parseForeignLanguageLiteralNext: Boolean
 		get() = elementGenerator.parseForeignLanguageLiteralNext
 		set(value) { elementGenerator.parseForeignLanguageLiteralNext = value }

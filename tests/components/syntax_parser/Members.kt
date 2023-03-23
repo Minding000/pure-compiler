@@ -1,7 +1,7 @@
 package components.syntax_parser
 
 import logger.Severity
-import logger.issues.parsing.InvalidSyntax
+import logger.issues.parsing.UnexpectedWord
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -180,7 +180,7 @@ internal class Members {
 			native init() {}
 			""".trimIndent()
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertIssueDetected<InvalidSyntax>("""
+		parseResult.assertIssueDetected<UnexpectedWord>("""
 			Unexpected INITIALIZER in Test.Test:1:7: 'init'.
 			native init() {}
 			       ^^^^
@@ -194,7 +194,7 @@ internal class Members {
 			native to fillCup() {}
 			""".trimIndent()
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertIssueDetected<InvalidSyntax>("""
+		parseResult.assertIssueDetected<UnexpectedWord>("""
 			Unexpected TO in Test.Test:1:7: 'to'.
 			native to fillCup() {}
 			       ^^
@@ -208,7 +208,7 @@ internal class Members {
 			native operator ++() {}
 			""".trimIndent()
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertIssueDetected<InvalidSyntax>("""
+		parseResult.assertIssueDetected<UnexpectedWord>("""
 			Unexpected OPERATOR in Test.Test:1:7: 'operator'.
 			native operator ++() {}
 			       ^^^^^^^^
@@ -222,7 +222,7 @@ internal class Members {
 			val x gets 3
 			""".trimIndent()
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertIssueDetected<InvalidSyntax>("""
+		parseResult.assertIssueDetected<UnexpectedWord>("""
 			Unexpected GETS in Test.Test:1:6: 'gets'.
 			val x gets 3
 			      ^^^^

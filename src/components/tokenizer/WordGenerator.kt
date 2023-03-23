@@ -1,8 +1,8 @@
 package components.tokenizer
 
-import errors.user.SyntaxError
+import logger.Logger
+import logger.issues.tokenization.UnknownWord
 import source_structure.*
-import util.stringify
 import java.util.regex.Pattern
 
 class WordGenerator(private val project: Project) {
@@ -89,7 +89,7 @@ class WordGenerator(private val project: Project) {
 		return file.content[matcher.start()]
 	}
 
-	fun getNextWord(): Word? {
+	fun getNextWord(logger: Logger): Word? {
 		if(file.content.length == position)
 			return null
 		matcher.region(position, file.content.length)
@@ -103,7 +103,7 @@ class WordGenerator(private val project: Project) {
 			val wordStartColumn = characterIndex
 			characterIndex += rawWord.length
 			val word = if(wordType.ignore)
-				getNextWord()
+				getNextWord(logger)
 			else
 				Word(Position(wordStartIndex, line, wordStartColumn),
 					Position(position, line, characterIndex), wordType)
@@ -119,7 +119,9 @@ class WordGenerator(private val project: Project) {
 			}
 			return word
 		}
-		throw SyntaxError("Unknown word in ${file.name}:${line.number}:$characterIndex: '${file.content[position].stringify()}'",
-			Section(getCurrentPosition(), Position(position, line, characterIndex + 1)))
+		logger.add(UnknownWord(getCurrentPosition()))
+		position++
+		characterIndex++
+		return getNextWord(logger)
 	}
 }

@@ -42,16 +42,22 @@ class ElementGenerator(project: Project): Generator() {
 				return consumedWord
 			}
 		}
-		nextWord = wordGenerator.getNextWord()
+		nextWord = wordGenerator.getNextWord(logger)
 		return consumedWord
+	}
+
+	fun skipLine(invalidWord: Word) {
+		wordGenerator.skipLine(invalidWord)
+		currentWord = wordGenerator.getNextWord(logger)
+		nextWord = wordGenerator.getNextWord(logger)
 	}
 
 	fun parseProgram(): Program {
 		logger.addPhase("Parsing program")
 		val files = LinkedList<File>()
 		while(!wordGenerator.done) {
-			currentWord = wordGenerator.getNextWord()
-			nextWord = wordGenerator.getNextWord()
+			currentWord = wordGenerator.getNextWord(logger)
+			nextWord = wordGenerator.getNextWord(logger)
 			files.add(parseFile())
 			wordGenerator.loadNextFile()
 		}
@@ -68,6 +74,6 @@ class ElementGenerator(project: Project): Generator() {
 	private fun parseFile(): File {
 		val file = wordGenerator.getFile()
 		val statements = statementParser.parseStatements()
-		return File(file.getStart(), file.getEnd(), file, statements)
+		return File(file, statements)
 	}
 }

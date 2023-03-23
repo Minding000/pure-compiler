@@ -1,7 +1,8 @@
 package components.syntax_parser
 
 import logger.Severity
-import logger.issues.parsing.InvalidSyntax
+import logger.issues.parsing.UnexpectedEndOfFile
+import logger.issues.tokenization.UnknownWord
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -15,13 +16,39 @@ internal class General {
 	@Test
 	fun `emits error for unexpected end of file`() {
 		val sourceCode = """
-			player.
+			!
 			""".trimIndent()
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertIssueDetected<InvalidSyntax>("""
-			Unexpected end of file.
-			Expected IDENTIFIER instead.
+		parseResult.assertIssueDetected<UnexpectedEndOfFile>("""
+			Unexpected end of file 'Test.Test'.
+			Expected atom instead.
 		""".trimIndent(), Severity.ERROR)
+	}
+
+	@Test
+	fun `emits error for unknown words`() {
+		val sourceCode = """
+			↓
+			""".trimIndent()
+		val parseResult = TestUtil.parse(sourceCode)
+		parseResult.assertIssueDetected<UnknownWord>("""
+			Unknown word in Test:1:0: '↓'.
+		""".trimIndent(), Severity.ERROR)
+	}
+
+	@Test
+	fun `recovers after unknown words`() {
+		val sourceCode = """
+			☻
+			player.name
+			""".trimIndent()
+		val expected =
+			"""
+				MemberAccess {
+					Identifier { player }.Identifier { name }
+				}
+            """.trimIndent()
+		TestUtil.assertSameSyntaxTree(expected, sourceCode)
 	}
 
 	@Test

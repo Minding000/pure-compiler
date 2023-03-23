@@ -4,7 +4,6 @@ import logger.Issue
 import logger.Severity
 import source_structure.Section
 
-//TODO Split into more specific issues (end of file, unknown word, unexpected word)
 class InvalidSyntax(override val text: String, section: Section? = null): Issue(Severity.ERROR, section) {
 	override val description = "The syntax is invalid."
 }

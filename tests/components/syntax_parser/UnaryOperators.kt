@@ -1,7 +1,7 @@
 package components.syntax_parser
 
 import logger.Severity
-import logger.issues.parsing.InvalidSyntax
+import logger.issues.parsing.UnexpectedWord
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -66,7 +66,7 @@ internal class UnaryOperators {
 	fun `emits error for multiple negations`() {
 		val sourceCode = "!!yes"
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertIssueDetected<InvalidSyntax>("""
+		parseResult.assertIssueDetected<UnexpectedWord>("""
 			Unexpected NOT in Test.Test:1:1: '!'.
 			!!yes
 			 ^
@@ -78,7 +78,7 @@ internal class UnaryOperators {
 	fun `emits error for multiple negative signs`() {
 		val sourceCode = "--4"
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertIssueDetected<InvalidSyntax>("""
+		parseResult.assertIssueDetected<UnexpectedWord>("""
 			Unexpected DECREMENT in Test.Test:1:0: '--'.
 			--4
 			^^
@@ -90,7 +90,7 @@ internal class UnaryOperators {
 	fun `emits error for multiple positive signs`() {
 		val sourceCode = "++8"
 		val parseResult = TestUtil.parse(sourceCode)
-		parseResult.assertIssueDetected<InvalidSyntax>("""
+		parseResult.assertIssueDetected<UnexpectedWord>("""
 			Unexpected INCREMENT in Test.Test:1:0: '++'.
 			++8
 			^^
