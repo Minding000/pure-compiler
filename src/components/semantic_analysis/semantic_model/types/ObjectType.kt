@@ -37,7 +37,7 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		//TODO this might be nicer if it was written with a return in the callback
 		// -> withTypeParameter needs to have inline modifier
 		val specificType = ObjectType(source, scope, enclosingType, specificTypeParameters, name)
-		val typeSubstitutions = if(isBound) typeSubstitutions else HashMap<TypeDefinition, Type>()
+		val typeSubstitutions = if(isBound) typeSubstitutions else mapOf()
 		definition?.withTypeParameters(linter, specificTypeParameters, typeSubstitutions) { specificDefinition ->
 			specificType.definition = specificDefinition
 			specificDefinition.scope.subscribe(specificType)
