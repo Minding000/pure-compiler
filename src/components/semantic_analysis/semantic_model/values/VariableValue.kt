@@ -38,7 +38,7 @@ open class VariableValue(override val source: Element, scope: Scope, val name: S
 		}
 		definition.usages.add(this)
 		this.definition = definition
-		definition.linkValues(linter)
+		definition.preLinkValues(linter)
 		type = definition.type
 		if(definition.isConstant)
 			staticValue = definition.value?.staticValue

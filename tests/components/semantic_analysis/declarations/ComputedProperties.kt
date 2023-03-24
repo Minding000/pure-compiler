@@ -5,11 +5,14 @@ import logger.issues.definition.ComputedPropertyMissingType
 import logger.issues.definition.ComputedVariableWithoutSetter
 import logger.issues.definition.SetterInComputedValue
 import logger.issues.initialization.ConstantReassignment
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
 internal class ComputedProperties {
 
+	//TODO what about multiline getters and setters? -> require type, because inference can be ambiguous
+	@Disabled
 	@Test
 	fun `requires type to be declared explicitly`() {
 		val sourceCode = """

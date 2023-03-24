@@ -27,7 +27,7 @@ class Parameter(override val source: ParameterSyntaxTree, scope: Scope, name: St
 				if(propertyDeclaration == null) {
 					linter.addIssue(PropertyParameterMismatch(source))
 				} else {
-					propertyDeclaration?.linkValues(linter)
+					propertyDeclaration?.preLinkValues(linter)
 					type = propertyDeclaration?.type
 				}
 			} else {

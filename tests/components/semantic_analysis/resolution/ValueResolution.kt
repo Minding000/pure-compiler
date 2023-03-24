@@ -1,13 +1,14 @@
 package components.semantic_analysis.resolution
 
+import components.semantic_analysis.semantic_model.definitions.ComputedPropertyDeclaration
 import components.semantic_analysis.semantic_model.definitions.Parameter
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
+import logger.issues.definition.ComputedPropertyMissingType
 import logger.issues.initialization.CircularAssignment
-import logger.issues.modifiers.MissingOverridingKeyword
-import logger.issues.modifiers.OverriddenSuperMissing
+import logger.issues.modifiers.*
 import logger.issues.resolution.NotCallable
 import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
@@ -92,6 +93,21 @@ internal class ValueResolution {
 	}
 
 	@Test
+	fun `infers type of computed properties from get expressions`() {
+		val sourceCode =
+			"""
+				Int class
+				House class {
+					val size gets Int()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ComputedPropertyMissingType>()
+		val computedPropertyDeclaration = lintResult.find<ComputedPropertyDeclaration>()
+		assertEquals("Int", computedPropertyDeclaration?.type.toString())
+	}
+
+	@Test
 	fun `infers type of property parameter with unlinked initializer call as the value`() {
 		val sourceCode =
 			"""
@@ -129,6 +145,25 @@ internal class ValueResolution {
 			"""
 				House object {
 					val livingAreaInSquareMeters = Flat.size
+				}
+				Flat object {
+					val size = House.livingAreaInSquareMeters
+				}
+				House.livingAreaInSquareMeters
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<CircularAssignment>(
+			"'livingAreaInSquareMeters' has no value, because it's part of a circular assignment.", Severity.ERROR)
+		lintResult.assertIssueDetected<CircularAssignment>(
+			"'size' has no value, because it's part of a circular assignment.")
+	}
+
+	@Test
+	fun `disallows circular type inference including in get expressions`() {
+		val sourceCode =
+			"""
+				House object {
+					val livingAreaInSquareMeters gets Flat.size
 				}
 				Flat object {
 					val size = House.livingAreaInSquareMeters
@@ -210,6 +245,9 @@ internal class ValueResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<MissingOverridingKeyword>()
 		lintResult.assertIssueNotDetected<OverriddenSuperMissing>()
+		lintResult.assertIssueNotDetected<OverridingPropertyTypeNotAssignable>()
+		lintResult.assertIssueNotDetected<OverridingPropertyTypeMismatch>()
+		lintResult.assertIssueNotDetected<VariablePropertyOverriddenByValue>()
 	}
 
 	@Test
@@ -242,6 +280,60 @@ internal class ValueResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<OverriddenSuperMissing>(
 			"'overriding' keyword is used, but the property doesn't have a super property.")
+	}
+
+	@Test
+	fun `detects overriding value property with incompatible type`() { //TODO write similar tests for function & operator return types
+		val sourceCode =
+			"""
+				Number class
+				Float class: Number
+				Food class {
+					val nutritionScore: Number
+				}
+				Potato class: Food {
+					overriding val nutritionScore: Food
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<OverridingPropertyTypeNotAssignable>(
+			"Type of overriding property 'Food' is not assignable to the type of the overridden property 'Number'.",
+			Severity.ERROR)
+	}
+
+	@Test
+	fun `detects overriding variable property with incompatible type`() {
+		val sourceCode =
+			"""
+				Number class
+				Float class: Number
+				Food class {
+					var nutritionScore: Number
+				}
+				Potato class: Food {
+					overriding var nutritionScore: Float
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<OverridingPropertyTypeMismatch>(
+			"Type of overriding property 'Float' does not match the type of the overridden property 'Number'.", Severity.ERROR)
+	}
+
+	@Test
+	fun `detects variable property being overridden by value property`() {
+		val sourceCode =
+			"""
+				Number class
+				Food class {
+					var nutritionScore: Number
+				}
+				Potato class: Food {
+					overriding val nutritionScore: Number
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<VariablePropertyOverriddenByValue>(
+			"Variable super property 'nutritionScore' cannot be overridden by value property.", Severity.ERROR)
 	}
 
 	@Test

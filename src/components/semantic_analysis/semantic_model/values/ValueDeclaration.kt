@@ -14,6 +14,7 @@ import java.util.*
 
 abstract class ValueDeclaration(override val source: Element, scope: Scope, val name: String, var type: Type? = null, value: Value? = null,
 								val isConstant: Boolean = true, val isMutable: Boolean = false): Unit(source, scope) {
+	private var isLinked = false
 	open val value = value
 	val usages = LinkedList<VariableValue>()
 	var conversion: InitializerDefinition? = null
@@ -24,7 +25,14 @@ abstract class ValueDeclaration(override val source: Element, scope: Scope, val 
 
 	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ValueDeclaration
 
+	fun preLinkValues(linter: Linter) {
+		linkValues(linter)
+	}
+
 	override fun linkValues(linter: Linter) {
+		if(isLinked)
+			return
+		isLinked = true
 		super.linkValues(linter)
 		val value = value
 		if(value == null) {
