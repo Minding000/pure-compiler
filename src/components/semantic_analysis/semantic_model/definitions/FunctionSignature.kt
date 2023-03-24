@@ -24,18 +24,18 @@ class FunctionSignature(override val source: Element, override val scope: BlockS
 			addUnits(parameterTypes)
 	}
 
-	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {
+	fun withTypeSubstitutions(linter: Linter, typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {
 		val specificGenericParameters = LinkedList<TypeDefinition>()
 		for(genericParameter in genericParameters) {
-			genericParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
+			genericParameter.withTypeSubstitutions(linter, typeSubstitution) { specificDefinition ->
 				specificGenericParameters.add(specificDefinition)
 			}
 		}
 		val specificParametersTypes = LinkedList<Type?>()
 		for(parameterType in parameterTypes)
-			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitution))
+			specificParametersTypes.add(parameterType?.withTypeSubstitutions(linter, typeSubstitution))
 		return FunctionSignature(source, scope, specificGenericParameters, specificParametersTypes,
-			returnType.withTypeSubstitutions(typeSubstitution))
+			returnType.withTypeSubstitutions(linter, typeSubstitution))
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {

@@ -26,7 +26,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		target.linkValues(linter)
 		target.type?.let { targetType ->
 			try {
-				val definition = targetType.interfaceScope.resolveIndexOperator(typeParameters, indices, sourceExpression)
+				val definition = targetType.interfaceScope.resolveIndexOperator(linter, typeParameters, indices, sourceExpression)
 				if(definition == null) {
 					val name = "${target.type}[${indices.joinToString { index -> index.type.toString() }}]"
 					linter.addIssue(NotFound(source, "Operator", "$name(${sourceExpression?.type ?: ""})"))
@@ -55,9 +55,9 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		return signature
 	}
 
-	fun filterForPossibleTargetTypes(availableTypes: List<ObjectType>): List<ObjectType> {
+	fun filterForPossibleTargetTypes(linter: Linter, availableTypes: List<ObjectType>): List<ObjectType> {
 		return availableTypes.filter { availableType ->
-			availableType.interfaceScope.resolveIndexOperator(typeParameters, indices, sourceExpression) != null
+			availableType.interfaceScope.resolveIndexOperator(linter, typeParameters, indices, sourceExpression) != null
 		}
 	}
 }

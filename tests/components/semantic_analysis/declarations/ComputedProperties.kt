@@ -11,7 +11,8 @@ import util.TestUtil
 
 internal class ComputedProperties {
 
-	//TODO what about multiline getters and setters? -> require type, because inference can be ambiguous
+	//TODO what about multiline getters and setters?
+	// -> require type, because inference can be ambiguous
 	@Disabled
 	@Test
 	fun `requires type to be declared explicitly`() {

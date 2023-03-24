@@ -17,9 +17,10 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		addUnits(getExpression, setStatement)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ComputedPropertyDeclaration {
-		return ComputedPropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), isConstant, isOverriding,
-			getExpression, setStatement)
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): ComputedPropertyDeclaration {
+		preLinkValues(linter)
+		return ComputedPropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(linter, typeSubstitutions), isConstant,
+			isOverriding, getExpression, setStatement)
 	}
 
 	override fun linkValues(linter: Linter) {

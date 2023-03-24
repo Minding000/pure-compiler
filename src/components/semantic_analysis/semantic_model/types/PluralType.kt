@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.types
 
+import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
@@ -10,8 +11,8 @@ class PluralType(override val source: Element, scope: Scope, val baseType: Type)
 		addUnits(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): PluralType {
-		return PluralType(source, scope, baseType.withTypeSubstitutions(typeSubstitutions))
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): PluralType {
+		return PluralType(source, scope, baseType.withTypeSubstitutions(linter, typeSubstitutions))
 	}
 
 	override fun simplified(): Type {

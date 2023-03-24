@@ -90,7 +90,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 
 	private fun resolveFunctionCall(linter: Linter, functionType: FunctionType) {
 		try {
-			val signature = functionType.resolveSignature(typeParameters, valueParameters)
+			val signature = functionType.resolveSignature(linter, typeParameters, valueParameters)
 			if(signature == null) {
 				linter.addIssue(SignatureMismatch(function, typeParameters, valueParameters))
 				return

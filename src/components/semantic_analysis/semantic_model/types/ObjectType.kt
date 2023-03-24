@@ -25,19 +25,22 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		addUnits(typeParameters)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type {
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Type {
 		val substituteType = typeSubstitutions[definition]
 		if(substituteType != null)
 			return substituteType
-		if(typeParameters.isEmpty())
+		val isBound = definition?.isBound == true
+		if(!isBound && typeParameters.isEmpty())
 			return this
 		val specificTypeParameters = typeParameters.map { typeParameter ->
-			typeParameter.withTypeSubstitutions(typeSubstitutions) }
+			typeParameter.withTypeSubstitutions(linter, typeSubstitutions) }
 		//TODO this might be nicer if it was written with a return in the callback
 		// -> withTypeParameter needs to have inline modifier
 		val specificType = ObjectType(source, scope, enclosingType, specificTypeParameters, name)
-		definition?.withTypeParameters(specificTypeParameters) { specificDefinition ->
+		val typeSubstitutions = if(isBound) typeSubstitutions else HashMap<TypeDefinition, Type>()
+		definition?.withTypeParameters(linter, specificTypeParameters, typeSubstitutions) { specificDefinition ->
 			specificType.definition = specificDefinition
+			specificDefinition.scope.subscribe(specificType)
 		}
 		return specificType
 	}
@@ -86,7 +89,7 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 			if(unit !== enclosingType)
 				unit.resolveGenerics(linter)
 		if(typeParameters.isNotEmpty()) {
-			definition?.withTypeParameters(typeParameters) { specificDefinition ->
+			definition?.withTypeParameters(linter, typeParameters) { specificDefinition ->
 				definition = specificDefinition
 			}
 		}

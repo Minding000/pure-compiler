@@ -58,10 +58,11 @@ class FunctionType(override val source: Element, scope: Scope): ObjectType(sourc
 		signatures.remove(signature)
 	}
 
-	fun resolveSignature(suppliedValues: List<Value>): FunctionSignature? = resolveSignature(listOf(), suppliedValues)
+	fun resolveSignature(linter: Linter, suppliedValues: List<Value>): FunctionSignature? =
+		resolveSignature(linter, listOf(), suppliedValues)
 
-	fun resolveSignature(suppliedTypes: List<Type> = listOf(), suppliedValues: List<Value> = listOf()): FunctionSignature? {
-		val validSignatures = getMatchingSignatures(suppliedTypes, suppliedValues)
+	fun resolveSignature(linter: Linter, suppliedTypes: List<Type> = listOf(), suppliedValues: List<Value> = listOf()): FunctionSignature? {
+		val validSignatures = getMatchingSignatures(linter, suppliedTypes, suppliedValues)
 		if(validSignatures.isEmpty())
 			return null
 		specificityPrecedenceLoop@for(signature in validSignatures) {
@@ -78,19 +79,19 @@ class FunctionType(override val source: Element, scope: Scope): ObjectType(sourc
 		throw SignatureResolutionAmbiguityError(validSignatures)
 	}
 
-	private fun getMatchingSignatures(suppliedTypes: List<Type>, suppliedValues: List<Value>): List<FunctionSignature> {
+	private fun getMatchingSignatures(linter: Linter, suppliedTypes: List<Type>, suppliedValues: List<Value>): List<FunctionSignature> {
 		val validSignatures = LinkedList<FunctionSignature>()
 		for(signature in signatures) {
 			val typeSubstitutions = signature.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
 			val specificSignature = if(typeSubstitutions.isEmpty())
 				signature
 			else
-				signature.withTypeSubstitutions(typeSubstitutions)
+				signature.withTypeSubstitutions(linter, typeSubstitutions)
 			if(specificSignature.accepts(suppliedValues))
 				validSignatures.add(specificSignature)
 		}
 		superFunctionType?.let { superFunctionType ->
-			val validSuperSignatures = superFunctionType.getMatchingSignatures(suppliedTypes, suppliedValues)
+			val validSuperSignatures = superFunctionType.getMatchingSignatures(linter, suppliedTypes, suppliedValues)
 			validSuperSignatures@for(validSuperSignature in validSuperSignatures) {
 				for(validSignature in validSignatures)
 					if(validSignature.superFunctionSignature === validSuperSignature)
@@ -101,10 +102,10 @@ class FunctionType(override val source: Element, scope: Scope): ObjectType(sourc
 		return validSignatures
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type {
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Type {
 		val specificFunctionType = FunctionType(source, scope)
 		for(signature in signatures)
-			specificFunctionType.signatures.add(signature.withTypeSubstitutions(typeSubstitutions))
+			specificFunctionType.signatures.add(signature.withTypeSubstitutions(linter, typeSubstitutions))
 		return specificFunctionType
 	}
 

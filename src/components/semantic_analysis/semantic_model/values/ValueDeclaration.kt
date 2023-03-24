@@ -23,7 +23,7 @@ abstract class ValueDeclaration(override val source: Element, scope: Scope, val 
 		addUnits(type, value)
 	}
 
-	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ValueDeclaration
+	abstract fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): ValueDeclaration
 
 	fun preLinkValues(linter: Linter) {
 		linkValues(linter)

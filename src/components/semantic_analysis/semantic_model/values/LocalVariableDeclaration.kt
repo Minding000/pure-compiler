@@ -14,8 +14,9 @@ class LocalVariableDeclaration(source: Element, scope: Scope, name: String, type
 
 	constructor(source: Identifier, scope: Scope, type: Type? = null): this(source, scope, source.getValue(), type)
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): LocalVariableDeclaration {
-		return LocalVariableDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), value, isConstant, isMutable)
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): LocalVariableDeclaration {
+		return LocalVariableDeclaration(source, scope, name, type?.withTypeSubstitutions(linter, typeSubstitutions), value, isConstant,
+			isMutable)
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {

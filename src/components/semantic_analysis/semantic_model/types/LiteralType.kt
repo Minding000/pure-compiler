@@ -19,7 +19,7 @@ class LiteralType(override val source: Element, scope: Scope, val literalType: L
 			linter.addIssue(NotFound(source, "Literal type", name, true))
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type {
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Type {
 		return this
 	}
 }

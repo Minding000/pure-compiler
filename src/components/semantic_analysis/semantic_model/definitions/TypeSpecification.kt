@@ -24,7 +24,7 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, scope:
 			linter.addIssue(TypeSpecificationOutsideOfInitializerCall(source))
 			return
 		}
-		baseType.withTypeParameters(typeParameters) { specificType -> type = specificType }
+		baseType.withTypeParameters(linter, typeParameters) { specificType -> type = specificType }
 	}
 
 	override fun toString(): String {

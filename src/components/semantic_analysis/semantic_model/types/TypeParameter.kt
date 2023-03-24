@@ -11,8 +11,8 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, 
 		addUnits(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeParameter {
-		return TypeParameter(source, scope, mode, baseType.withTypeSubstitutions(typeSubstitutions))
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): TypeParameter {
+		return TypeParameter(source, scope, mode, baseType.withTypeSubstitutions(linter, typeSubstitutions))
 	}
 
 	override fun simplified(): Type {

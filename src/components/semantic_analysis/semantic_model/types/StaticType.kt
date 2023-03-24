@@ -14,11 +14,11 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 		definition.scope.subscribe(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): StaticType {
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): StaticType {
 		// Assumption: StaticTypes don't have the recursion issues ObjectTypes have,
 		//  since there can't be a StaticType inside a class definition
 		lateinit var specificType: StaticType
-		definition.withTypeSubstitutions(typeSubstitutions) { specificDefinition ->
+		definition.withTypeSubstitutions(linter, typeSubstitutions) { specificDefinition ->
 			specificType = StaticType(specificDefinition)
 		}
 		return specificType
@@ -26,8 +26,8 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 
 	override fun simplified(): Type = this
 
-	fun withTypeParameters(typeParameters: List<Type>, onCompletion: (StaticType) -> Unit) {
-		definition.withTypeParameters(typeParameters) { specificDefinition ->
+	fun withTypeParameters(linter: Linter, typeParameters: List<Type>, onCompletion: (StaticType) -> Unit) {
+		definition.withTypeParameters(linter, typeParameters) { specificDefinition ->
 			onCompletion(StaticType(specificDefinition))
 		}
 	}
@@ -66,7 +66,7 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 						   suppliedTypes: List<Type>, suppliedValues: List<Value>): MatchResult? {
 		if(!definition.arePropertyParametersLinked)
 			definition.linkPropertyParameters(linter)
-		val matches = getMatchingInitializers(genericDefinitionTypes, suppliedDefinitionTypes, suppliedTypes, suppliedValues)
+		val matches = getMatchingInitializers(linter, genericDefinitionTypes, suppliedDefinitionTypes, suppliedTypes, suppliedValues)
 		if(matches.isEmpty())
 			return null
 		specificityPrecedenceLoop@for(match in matches) {
@@ -83,7 +83,7 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 		throw SignatureResolutionAmbiguityError(matches.map { match -> match.signature })
 	}
 
-	private fun getMatchingInitializers(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
+	private fun getMatchingInitializers(linter: Linter, genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
 										suppliedTypes: List<Type>, suppliedValues: List<Value>): List<MatchResult> {
 		val validSignatures = LinkedList<MatchResult>()
 		for(initializer in interfaceScope.initializers) {
@@ -91,10 +91,10 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 			val definitionTypeSubstitutions = initializer.getDefinitionTypeSubstitutions(genericDefinitionTypes, suppliedDefinitionTypes,
 				suppliedValues) ?: continue
 			if(definitionTypeSubstitutions.isNotEmpty())
-				specificInitializer = specificInitializer.withTypeSubstitutions(definitionTypeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
+				specificInitializer = specificInitializer.withTypeSubstitutions(linter, definitionTypeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
 			val typeSubstitutions = specificInitializer.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
 			if(typeSubstitutions.isNotEmpty())
-				specificInitializer = specificInitializer.withTypeSubstitutions(typeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
+				specificInitializer = specificInitializer.withTypeSubstitutions(linter, typeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
 			if(specificInitializer.accepts(suppliedValues))
 				validSignatures.add(MatchResult(specificInitializer, definitionTypeSubstitutions))
 		}

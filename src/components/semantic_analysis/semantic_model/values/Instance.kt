@@ -18,7 +18,7 @@ class Instance(override val source: InstanceSyntaxTree, scope: Scope, override v
 		addUnits(valueParameters)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Instance {
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Instance {
 		return Instance(source, scope, value, valueParameters)
 	}
 

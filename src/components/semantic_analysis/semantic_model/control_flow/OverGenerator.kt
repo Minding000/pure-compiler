@@ -4,10 +4,10 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.LiteralType
 import components.semantic_analysis.semantic_model.types.PluralType
 import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
 import components.semantic_analysis.semantic_model.values.Value
 import errors.user.SignatureResolutionAmbiguityError
@@ -62,22 +62,25 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 			return
 		}
 		try {
-			val iteratorProperty = collectionType.interfaceScope.resolveValue("createIterator")
-			val iteratorFunction = iteratorProperty?.value as? Function
-			val iteratorSignature = iteratorFunction?.functionType?.resolveSignature()
-			val iteratorType = iteratorSignature?.returnType ?: return
+			val iteratorCreationProperty = collectionType.interfaceScope.resolveValue("createIterator")
+			val iteratorCreationFunctionType = iteratorCreationProperty?.type as? FunctionType
+			val iteratorCreationSignature = iteratorCreationFunctionType?.resolveSignature(linter)
+			val iteratorType = iteratorCreationSignature?.returnType ?: return
 			iteratorVariableDeclaration?.type = iteratorType
 			val availableValueTypes = LinkedList<Type?>()
 			if(iteratorType.isInstanceOf(Linter.SpecialType.INDEX_ITERATOR)) {
 				val indexProperty = iteratorType.interfaceScope.resolveValue("currentIndex")
+				indexProperty?.preLinkValues(linter)
 				availableValueTypes.add(indexProperty?.type)
 			}
 			if(iteratorType.isInstanceOf(Linter.SpecialType.KEY_ITERATOR)) {
 				val keyProperty = iteratorType.interfaceScope.resolveValue("currentKey")
+				keyProperty?.preLinkValues(linter)
 				availableValueTypes.add(keyProperty?.type)
 			}
 			if(iteratorType.isInstanceOf(Linter.SpecialType.VALUE_ITERATOR)) {
 				val valueProperty = iteratorType.interfaceScope.resolveValue("currentValue")
+				valueProperty?.preLinkValues(linter)
 				availableValueTypes.add(valueProperty?.type)
 			}
 			if(variableDeclarations.size > availableValueTypes.size) {

@@ -14,9 +14,9 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val refe
 		addUnits(referenceType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeAlias {
-		return TypeAlias(source, name, referenceType.withTypeSubstitutions(typeSubstitutions),
-			scope.withTypeSubstitutions(typeSubstitutions, null))
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): TypeAlias {
+		return TypeAlias(source, name, referenceType.withTypeSubstitutions(linter, typeSubstitutions),
+			scope.withTypeSubstitutions(linter, typeSubstitutions, null))
 	}
 
 	override fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> {

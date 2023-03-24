@@ -41,9 +41,9 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 
 	open fun register(linter: Linter, parentScope: MutableScope) {}
 
-	protected abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeDefinition
+	protected abstract fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): TypeDefinition
 
-	fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>, onCompletion: (TypeDefinition) -> kotlin.Unit) {
+	fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>, onCompletion: (TypeDefinition) -> kotlin.Unit) {
 		var definition = specificDefinitions[typeSubstitutions]
 		if(definition != null) {
 			onCompletion(definition)
@@ -56,25 +56,29 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 		}
 		pendingTypeSubstitution = linkedListOf(onCompletion)
 		pendingTypeSubstitutions[typeSubstitutions] = pendingTypeSubstitution
-		definition = withTypeSubstitutions(typeSubstitutions)
+		definition = withTypeSubstitutions(linter, typeSubstitutions)
 		specificDefinitions[typeSubstitutions] = definition
 		for(onTypeSubstitution in pendingTypeSubstitution)
 			onTypeSubstitution(definition)
 		pendingTypeSubstitutions.remove(typeSubstitutions)
 	}
 
-	fun withTypeParameters(typeParameters: List<Type>, onCompletion: (TypeDefinition) -> kotlin.Unit) {
+	fun withTypeParameters(linter: Linter, typeParameters: List<Type>, onCompletion: (TypeDefinition) -> kotlin.Unit) =
+		withTypeParameters(linter, typeParameters, HashMap<TypeDefinition, Type>(), onCompletion)
+
+	fun withTypeParameters(linter: Linter, typeParameters: List<Type>, typeSubstitutions: Map<TypeDefinition, Type>,
+						   onCompletion: (TypeDefinition) -> kotlin.Unit) {
 		baseDefinition?.let { baseDefinition ->
-			return baseDefinition.withTypeParameters(typeParameters, onCompletion)
+			return baseDefinition.withTypeParameters(linter, typeParameters, typeSubstitutions, onCompletion)
 		}
+		val typeSubstitutions = typeSubstitutions.toMutableMap()
 		val placeholders = scope.getGenericTypeDefinitions()
-		val typeSubstitutions = HashMap<TypeDefinition, Type>()
 		for(parameterIndex in placeholders.indices) {
 			val placeholder = placeholders[parameterIndex]
 			val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
 			typeSubstitutions[placeholder] = typeParameter
 		}
-		withTypeSubstitutions(typeSubstitutions) { specificTypeDefinition ->
+		withTypeSubstitutions(linter, typeSubstitutions) { specificTypeDefinition ->
 			specificTypeDefinition.baseDefinition = this
 			onCompletion(specificTypeDefinition)
 		}

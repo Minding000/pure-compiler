@@ -12,8 +12,8 @@ class OptionalType(override val source: Element, scope: Scope, val baseType: Typ
 		addUnits(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): OptionalType {
-		return OptionalType(source, scope, baseType.withTypeSubstitutions(typeSubstitutions))
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): OptionalType {
+		return OptionalType(source, scope, baseType.withTypeSubstitutions(linter, typeSubstitutions))
 	}
 
 	override fun simplified(): Type {

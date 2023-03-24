@@ -20,7 +20,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		super.linkValues(linter)
 		left.type?.let { leftType ->
 			try {
-				val operatorDefinition = leftType.interfaceScope.resolveOperator(kind, right)
+				val operatorDefinition = leftType.interfaceScope.resolveOperator(linter, kind, right)
 				if(operatorDefinition == null) {
 					linter.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.type}"))
 					return@let

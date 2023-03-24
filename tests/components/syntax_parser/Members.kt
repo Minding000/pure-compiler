@@ -32,7 +32,7 @@ internal class Members {
 	}
 
 	@Test
-	fun `parses computed members`() {
+	fun `parses computed members`() { //TODO also test parsing computed property with get body
 		val sourceCode = """
 			Rectangle class {
 				containing Unit: Number

@@ -29,16 +29,16 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		addUnits(body)
 	}
 
-	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {
+	fun withTypeSubstitutions(linter: Linter, typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {
 		val specificTypeParameters = LinkedList<TypeDefinition>()
 		for(typeParameter in typeParameters) {
-			typeParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
+			typeParameter.withTypeSubstitutions(linter, typeSubstitution) { specificDefinition ->
 				specificTypeParameters.add(specificDefinition)
 			}
 		}
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
-			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
+			specificParameters.add(parameter.withTypeSubstitutions(linter, typeSubstitution))
 		return InitializerDefinition(source, parentDefinition, scope, specificTypeParameters, specificParameters, body, isAbstract,
 			isConverting, isNative, isOverriding)
 	}

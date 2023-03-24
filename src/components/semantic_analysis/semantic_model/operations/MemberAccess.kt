@@ -70,7 +70,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 					if(parent is FunctionCall) {
 						val functionType = availableType.interfaceScope.resolveValue(member)?.type as? FunctionType? ?: continue
 						val functionCall = parent as? FunctionCall ?: continue
-						if(functionType.resolveSignature(functionCall.typeParameters, functionCall.valueParameters) == null)
+						if(functionType.resolveSignature(linter, functionCall.typeParameters, functionCall.valueParameters) == null)
 							continue
 					} else {
 						if(!availableType.interfaceScope.hasValue(member.name))

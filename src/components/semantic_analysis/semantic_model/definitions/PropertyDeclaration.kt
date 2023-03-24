@@ -16,8 +16,8 @@ open class PropertyDeclaration(source: Element, scope: Scope, name: String, type
 							   isMutable: Boolean = false, isOverriding: Boolean = false):
 	InterfaceMember(source, scope, name, type, value, isStatic, isAbstract, isConstant, isMutable, isOverriding) {
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): PropertyDeclaration {
-		return PropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), value, isStatic, isAbstract,
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): PropertyDeclaration {
+		return PropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(linter, typeSubstitutions), value, isStatic, isAbstract,
 			isConstant, isMutable, isOverriding)
 	}
 

@@ -15,8 +15,8 @@ class Parameter(override val source: ParameterSyntaxTree, scope: Scope, name: St
 	val isPropertySetter = type == null
 	var propertyDeclaration: ValueDeclaration? = null
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Parameter {
-		return Parameter(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), isMutable, hasDynamicSize)
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Parameter {
+		return Parameter(source, scope, name, type?.withTypeSubstitutions(linter, typeSubstitutions), isMutable, hasDynamicSize)
 	}
 
 	override fun linkPropertyParameters(linter: Linter) {

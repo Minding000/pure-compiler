@@ -42,7 +42,7 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 				parent.filterForPossibleTargetTypes(linter, superTypes)
 			}
 			is IndexAccess -> {
-				parent.filterForPossibleTargetTypes(superTypes)
+				parent.filterForPossibleTargetTypes(linter, superTypes)
 			}
 			else -> {
 				linter.addIssue(SuperReferenceOutsideOfAccess(source))

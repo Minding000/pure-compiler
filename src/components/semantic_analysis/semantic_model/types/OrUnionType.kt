@@ -16,10 +16,10 @@ class OrUnionType(override val source: Element, scope: Scope, val types: List<Ty
 			type.interfaceScope.subscribe(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): OrUnionType {
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): OrUnionType {
 		val specificTypes = LinkedList<Type>()
 		for(type in types)
-			specificTypes.add(type.withTypeSubstitutions(typeSubstitutions))
+			specificTypes.add(type.withTypeSubstitutions(linter, typeSubstitutions))
 		return OrUnionType(source, scope, specificTypes)
 	}
 

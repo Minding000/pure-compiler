@@ -35,10 +35,10 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 		addUnits(valueDeclaration)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Class {
-		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
-		return Class(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.interfaceScope), explicitParentType, superType,
-			isAbstract, isBound, isNative, isMutable)
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Class {
+		val superType = superType?.withTypeSubstitutions(linter, typeSubstitutions)
+		return Class(source, name, scope.withTypeSubstitutions(linter, typeSubstitutions, superType?.interfaceScope), explicitParentType,
+			superType, isAbstract, isBound, isNative, isMutable)
 	}
 
 	override fun validate(linter: Linter) {

@@ -72,7 +72,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 					}
 				}
 				is IndexAccess -> { //TODO is this tested?
-					target.target.type?.interfaceScope?.resolveIndexOperator(target.typeParameters, target.indices, sourceExpression)
+					target.target.type?.interfaceScope?.resolveIndexOperator(linter, target.typeParameters, target.indices, sourceExpression)
 				}
 				else -> { //TODO write test for this
 					linter.addIssue(ExpressionNotAssignable(target.source))

@@ -22,7 +22,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		super.linkValues(linter)
 		value.type?.let { valueType ->
 			try {
-				val operatorDefinition = valueType.interfaceScope.resolveOperator(kind)
+				val operatorDefinition = valueType.interfaceScope.resolveOperator(linter, kind)
 				if(operatorDefinition == null) {
 					linter.addIssue(NotFound(source, "Operator", "$kind$valueType"))
 					return@let

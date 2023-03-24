@@ -18,7 +18,7 @@ abstract class InterfaceMember(source: Element, scope: Scope, name: String, type
 		get() = "$name${if(type == null) "" else ": $type"}"
 	var superMember: InterfaceMember? = null
 
-	abstract override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): InterfaceMember
+	abstract override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): InterfaceMember
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)

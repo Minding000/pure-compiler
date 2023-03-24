@@ -34,9 +34,9 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 		addUnits(valueDeclaration)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Enum {
-		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
-		return Enum(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.interfaceScope), explicitParentType, superType,
-			isBound)
+	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Enum {
+		val superType = superType?.withTypeSubstitutions(linter, typeSubstitutions)
+		return Enum(source, name, scope.withTypeSubstitutions(linter, typeSubstitutions, superType?.interfaceScope), explicitParentType,
+			superType, isBound)
 	}
 }

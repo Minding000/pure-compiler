@@ -23,7 +23,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		super.linkValues(linter)
 		target.type?.let { valueType ->
 			try {
-				val operatorDefinition = valueType.interfaceScope.resolveOperator(kind, listOf(modifier))
+				val operatorDefinition = valueType.interfaceScope.resolveOperator(linter, kind, listOf(modifier))
 				if(operatorDefinition == null) {
 					linter.addIssue(NotFound(source, "Operator", "$valueType $kind ${modifier.type}"))
 				}

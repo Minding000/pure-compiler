@@ -18,13 +18,13 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 	private val interfaceMembers = HashMap<String, InterfaceMember>()
 	val initializers = LinkedList<InitializerDefinition>()
 
-	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>, superScope: InterfaceScope?): TypeScope {
+	fun withTypeSubstitutions(linter: Linter, typeSubstitution: Map<TypeDefinition, Type>, superScope: InterfaceScope?): TypeScope {
 		val specificTypeScope = TypeScope(enclosingScope, superScope)
 		for((name, typeDefinition) in typeDefinitions) {
 			if(typeDefinition is GenericTypeDefinition)
 				continue
 			if(typeDefinition.isBound) {
-				typeDefinition.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
+				typeDefinition.withTypeSubstitutions(linter, typeSubstitution) { specificDefinition ->
 					specificTypeScope.typeDefinitions[name] = specificDefinition
 				}
 			} else {
@@ -35,10 +35,10 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 			specificTypeScope.interfaceMembers[name] = if(interfaceMember.isStatic)
 				interfaceMember
 			else
-				interfaceMember.withTypeSubstitutions(typeSubstitution)
+				interfaceMember.withTypeSubstitutions(linter, typeSubstitution)
 		}
 		for(initializer in initializers)
-			specificTypeScope.initializers.add(initializer.withTypeSubstitutions(typeSubstitution))
+			specificTypeScope.initializers.add(initializer.withTypeSubstitutions(linter, typeSubstitution))
 		return specificTypeScope
 	}
 

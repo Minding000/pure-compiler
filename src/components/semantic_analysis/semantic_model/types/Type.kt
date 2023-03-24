@@ -18,7 +18,7 @@ abstract class Type(source: Element, scope: Scope, isStatic: Boolean = false): U
 		interfaceScope.type = this
 	}
 
-	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type
+	abstract fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Type
 
 	abstract fun simplified(): Type
 
