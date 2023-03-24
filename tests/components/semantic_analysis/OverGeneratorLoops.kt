@@ -56,11 +56,8 @@ internal class OverGeneratorLoops {
 		val sourceCode =
 			"""
 				referencing Pure
-				type MultipleStrings = ...String
-				val listOfWords: MultipleStrings? = null
-				if(!listOfWords?) {
-					loop over listOfWords as index, word {}
-				}
+				val listOfWords: ...String
+				loop over listOfWords as index, word {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val indexVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "index" }?.type
