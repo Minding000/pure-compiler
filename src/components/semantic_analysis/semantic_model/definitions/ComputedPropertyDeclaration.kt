@@ -11,7 +11,7 @@ import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclarat
 
 class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, scope: Scope, name: String, type: Type?,
 								  isConstant: Boolean, isOverriding: Boolean, val getExpression: Value?, val setStatement: Unit?):
-	PropertyDeclaration(source, scope, name, type, null, false, false, isConstant, false, isOverriding) {
+	PropertyDeclaration(source, scope, name, type, getExpression, false, false, isConstant, false, isOverriding) {
 
 	init {
 		addUnits(getExpression, setStatement)
@@ -21,12 +21,6 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		preLinkValues(linter)
 		return ComputedPropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(linter, typeSubstitutions), isConstant,
 			isOverriding, getExpression, setStatement)
-	}
-
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
-		if(type == null)
-			type = getExpression?.type
 	}
 
 	override fun validate(linter: Linter) {
