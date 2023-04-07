@@ -56,6 +56,22 @@ internal class TypeSimplification {
 		assertEquals("Animal", valueDeclaration?.type.toString())
 	}
 
+	@Disabled("This requires 'potentially optional' generic types.")
+	@Test
+	fun `creates optional type`() {
+		val sourceCode =
+			"""
+				Cat class
+				Randomizer object {
+					to chooseRandomElementOf(Element; first: Element, second: Element): Element
+				}
+				Randomizer.chooseRandomElementOf(Cat(), null)
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val valueDeclaration = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
+		assertEquals("Cat?", valueDeclaration?.type.toString())
+	}
+
 	@Test
 	fun `merges additional types into existing or union`() {
 		val sourceCode =

@@ -379,7 +379,7 @@ internal class Expressions {
 			"""
 				Cable class
 				val cable = Cable()
-				if(cable?) {}
+				if cable? {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<StaticNullCheckValue>("Null check always returns 'yes'.", Severity.WARNING)
@@ -391,7 +391,7 @@ internal class Expressions {
 			"""
 				Cable class
 				val noCable: Cable? = null
-				if(noCable?) {}
+				if noCable? {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<StaticNullCheckValue>("Null check always returns 'no'.", Severity.WARNING)

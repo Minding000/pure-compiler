@@ -27,4 +27,8 @@ class BooleanLiteral(override val source: Element, scope: Scope, val value: Bool
 			return false
 		return value == other.value
 	}
+
+	override fun toString(): String {
+		return if(value) "yes" else "no"
+	}
 }

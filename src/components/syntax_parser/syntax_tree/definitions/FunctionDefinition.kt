@@ -29,7 +29,7 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticFunctionImplementationModel {
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val surroundingTypeDefinition = scope.getSurroundingDefinition()
-			?: throw CompilerError("Function expected surrounding type definition.")
+			?: throw CompilerError(this, "Function expected surrounding type definition.")
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isMutating = parent.containsModifier(WordAtom.MUTATING)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)

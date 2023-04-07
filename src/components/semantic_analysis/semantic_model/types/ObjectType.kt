@@ -165,6 +165,8 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 			return false
 		if(definition != otherType.definition)
 			return false
+		if(definition == null && name != otherType.name)
+			return false
 		if(typeParameters.size != otherType.typeParameters.size)
 			return false
 		for(genericParameterIndex in typeParameters.indices)

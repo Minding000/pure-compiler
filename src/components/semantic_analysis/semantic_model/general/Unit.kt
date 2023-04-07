@@ -8,7 +8,7 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
-abstract class Unit(open val source: Element, protected open val scope: Scope) {
+abstract class Unit(open val source: Element, open val scope: Scope) {
 	open var parent: Unit? = null
 	val units = LinkedList<Unit>()
 	open val isInterruptingExecution = false

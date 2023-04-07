@@ -22,7 +22,7 @@ class ErrorHandlingContext(override val source: StatementSection, scope: Scope, 
 		tracker.currentState.firstVariableUsages.clear()
 		mainBlock.analyseDataFlow(linter, tracker)
 		// Collect usages that should link to the handle blocks
-		val potentiallyLastVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
+		val potentiallyLastVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>() // This is done to avoid creating a state for each variable usage in an error handling context
 		if(handleBlocks.isNotEmpty() || alwaysBlock != null)
 			tracker.collectAllUsagesInto(potentiallyLastVariableUsages)
 		if(handleBlocks.isNotEmpty()) {
@@ -31,10 +31,10 @@ class ErrorHandlingContext(override val source: StatementSection, scope: Scope, 
 			val handleBlockStates = LinkedList<VariableTracker.VariableState>()
 			for(handleBlock in handleBlocks) {
 				tracker.setVariableStates(initialState)
+				tracker.addLastVariableUsages(potentiallyLastVariableUsages)
 				tracker.currentState.firstVariableUsages.clear()
 				handleBlock.analyseDataFlow(linter, tracker)
 				handleBlockStates.add(tracker.currentState.copy())
-				tracker.linkToStartFrom(potentiallyLastVariableUsages)
 				tracker.collectAllUsagesInto(potentiallyLastVariableUsages)
 			}
 			tracker.setVariableStates(mainBlockState, *handleBlockStates.toTypedArray())
@@ -46,10 +46,10 @@ class ErrorHandlingContext(override val source: StatementSection, scope: Scope, 
 			val completeExecutionState = tracker.currentState.copy()
 			// Then analyse for failure case
 			tracker.setVariableStates(initialState)
+			tracker.addLastVariableUsages(potentiallyLastVariableUsages)
 			tracker.currentState.firstVariableUsages.clear()
 			alwaysBlock.analyseDataFlow(linter, tracker)
 			tracker.markAllUsagesAsExiting()
-			tracker.linkToStartFrom(potentiallyLastVariableUsages)
 			tracker.setVariableStates(completeExecutionState)
 		}
 	}

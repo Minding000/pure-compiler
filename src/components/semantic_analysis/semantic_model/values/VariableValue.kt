@@ -45,7 +45,10 @@ open class VariableValue(override val source: Element, scope: Scope, val name: S
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		val usage = tracker.add(VariableUsage.Type.READ, this) ?: return
+		val usage = tracker.add(VariableUsage.Kind.READ, this)
+		setEndStates(tracker)
+		if(usage == null)
+			return
 		val declaration = definition
 		if(declaration is LocalVariableDeclaration) {
 			if(declaration.type !is StaticType && !usage.isPreviouslyInitialized())
@@ -54,6 +57,10 @@ open class VariableValue(override val source: Element, scope: Scope, val name: S
 			if(tracker.isInitializer && !declaration.isStatic && declaration.value == null && !usage.isPreviouslyInitialized())
 				linter.addIssue(NotInitialized(source, "Property", name))
 		}
+	}
+
+	override fun getComputedLiteralValue(tracker: VariableTracker): LiteralValue? {
+		return tracker.getCurrentLiteralValueOf(definition)
 	}
 
 	override fun hashCode(): Int {

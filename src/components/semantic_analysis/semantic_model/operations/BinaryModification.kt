@@ -5,9 +5,8 @@ import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.semantic_analysis.semantic_model.values.Operator
-import components.semantic_analysis.semantic_model.values.Value
-import components.semantic_analysis.semantic_model.values.VariableValue
+import components.semantic_analysis.semantic_model.values.*
+import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
 import components.syntax_parser.syntax_tree.operations.BinaryModification as BinaryModificationSyntaxTree
@@ -37,9 +36,23 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		modifier.analyseDataFlow(linter, tracker)
 		if(target is VariableValue) {
-			tracker.add(listOf(VariableUsage.Type.READ, VariableUsage.Type.MUTATION), target)
+			tracker.add(listOf(VariableUsage.Kind.READ, VariableUsage.Kind.MUTATION), target, tracker.getCurrentTypeOf(target.definition),
+				getComputedLiteralValue(linter, tracker))
 		} else {
 			target.analyseDataFlow(linter, tracker)
 		}
+	}
+
+	private fun getComputedLiteralValue(linter: Linter, tracker: VariableTracker): LiteralValue? {
+		val targetValue = (target.getComputedLiteralValue(tracker) as? NumberLiteral ?: return null).value
+		val modifierValue = (modifier.getComputedLiteralValue(tracker) as? NumberLiteral ?: return null).value
+		val resultingValue = when(kind) {
+			Operator.Kind.PLUS_EQUALS -> targetValue + modifierValue
+			Operator.Kind.MINUS_EQUALS -> targetValue - modifierValue
+			Operator.Kind.STAR_EQUALS -> targetValue * modifierValue
+			Operator.Kind.SLASH_EQUALS -> targetValue / modifierValue
+			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
+		}
+		return NumberLiteral(source, scope, resultingValue, linter)
 	}
 }

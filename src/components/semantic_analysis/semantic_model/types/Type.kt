@@ -53,9 +53,10 @@ abstract class Type(source: Element, scope: Scope, isStatic: Boolean = false): U
 		return sourceType
 	}
 
-	open fun getAbstractMembers(): List<MemberDeclaration> = throw CompilerError("Tried to get abstract members of non-super type.")
+	open fun getAbstractMembers(): List<MemberDeclaration> =
+		throw CompilerError(source, "Tried to get abstract members of non-super type.")
 	open fun getPropertiesToBeInitialized(): List<PropertyDeclaration> =
-		throw CompilerError("Tried to get properties to be initialized of non-super type.")
+		throw CompilerError(source, "Tried to get properties to be initialized of non-super type.")
 
 	open fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> = listOf()
 

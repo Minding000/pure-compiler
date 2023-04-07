@@ -19,7 +19,7 @@ class InstanceAccess(override val source: InstanceAccessSyntaxTree, scope: Scope
 		super.setInferredType(inferredType)
 		type?.let { type ->
 			val definition = type.interfaceScope.resolveValue(this)
-				?: throw CompilerError("Inferred type doesn't contain instance value.")
+				?: throw CompilerError(source, "Inferred type doesn't contain instance value.")
 			definition.usages.add(this)
 			this.definition = definition
 			staticValue = definition.value

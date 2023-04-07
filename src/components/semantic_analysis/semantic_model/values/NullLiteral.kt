@@ -24,6 +24,10 @@ class NullLiteral(override val source: Element, scope: Scope): LiteralValue(sour
 		return other is NullLiteral
 	}
 
+	override fun toString(): String {
+		return "null"
+	}
+
 	//	override fun compile(context: BuildContext): LLVMValueRef {
 //		return LLVM.LLVMConstNull(resolveType())
 //	}

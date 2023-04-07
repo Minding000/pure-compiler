@@ -1,15 +1,19 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
+import errors.internal.CompilerError
 import logger.issues.resolution.MissingType
 
-abstract class Value(override val source: Element, public override var scope: Scope, var type: Type? = null): Unit(source, scope) {
-	open var staticValue: Value? = null
+abstract class Value(override val source: Element, override var scope: Scope, var type: Type? = null): Unit(source, scope) {
+	open var staticValue: Value? = null //TODO remove: replaced by usage.resultingLiteralValue
+	protected var positiveState: VariableTracker.VariableState? = null
+	protected var negativeState: VariableTracker.VariableState? = null
 
 	open fun isAssignableTo(targetType: Type?): Boolean {
 		return type?.let { type -> targetType?.accepts(type) } ?: false
@@ -24,11 +28,45 @@ abstract class Value(override val source: Element, public override var scope: Sc
 		}
 	}
 
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+		super.analyseDataFlow(linter, tracker)
+		setEndStates(tracker)
+	}
+
 	override fun validate(linter: Linter) {
 		super.validate(linter)
 		if(type == null)
 			linter.addIssue(MissingType(source))
 	}
+
+	fun setEndStates(tracker: VariableTracker) {
+		val currentState = tracker.currentState.copy()
+		positiveState = currentState
+		negativeState = currentState
+	}
+
+	fun setEndState(tracker: VariableTracker, isPositive: Boolean) = setEndState(tracker.currentState.copy(), isPositive)
+
+	fun setEndState(state: VariableTracker.VariableState, isPositive: Boolean) {
+		if(isPositive)
+			positiveState = state
+		else
+			negativeState = state
+	}
+
+	fun getEndState(isPositive: Boolean): VariableTracker.VariableState {
+		return if(isPositive) getPositiveEndState() else getNegativeEndState()
+	}
+
+	open fun getPositiveEndState(): VariableTracker.VariableState {
+		return positiveState ?: throw CompilerError(source, "Tried to access missing positive state.")
+	}
+
+	open fun getNegativeEndState(): VariableTracker.VariableState {
+		return negativeState ?: throw CompilerError(source, "Tried to access missing negative state.")
+	}
+
+	open fun getComputedLiteralValue(tracker: VariableTracker): LiteralValue? = null
 
 	override fun hashCode(): Int {
 		return type.hashCode()

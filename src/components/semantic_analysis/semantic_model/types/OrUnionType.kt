@@ -46,7 +46,14 @@ class OrUnionType(override val source: Element, scope: Scope, val types: List<Ty
 		}
 		if(simplifiedUniqueTypes.size == 1)
 			return simplifiedUniqueTypes.first()
-		return OrUnionType(source, scope, simplifiedUniqueTypes.toList())
+		val isOptional = simplifiedUniqueTypes.removeIf { type -> Linter.SpecialType.NULL.matches(type) }
+		var simplifiedType = if(simplifiedUniqueTypes.size == 1)
+			simplifiedUniqueTypes.first()
+		else
+			OrUnionType(source, scope, simplifiedUniqueTypes.toList())
+		if(isOptional)
+			simplifiedType = OptionalType(source, scope, simplifiedType)
+		return simplifiedType
 	}
 
 	override fun onNewType(type: TypeDefinition) {

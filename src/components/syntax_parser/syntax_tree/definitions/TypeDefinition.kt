@@ -58,7 +58,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 				val typeScope = TypeScope(scope, superType.interfaceScope)
 				Enum(this, name, typeScope, explicitParentType, superType, isBound)
 			}
-			else -> throw CompilerError("Encountered unknown type definition type.")
+			else -> throw CompilerError(this, "Encountered unknown type definition type: ${type.type}")
 		}
 		var instanceList: InstanceList? = null
 		if(body != null) {

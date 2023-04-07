@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.operations
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.*
 import errors.internal.CompilerError
@@ -35,8 +36,36 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+		val isConditional = Linter.SpecialType.BOOLEAN.matches(left.type) && (kind == Operator.Kind.AND || kind == Operator.Kind.PIPE)
+		val isComparison = kind == Operator.Kind.EQUAL_TO || kind == Operator.Kind.NOT_EQUAL_TO
 		left.analyseDataFlow(linter, tracker)
-		right.analyseDataFlow(linter, tracker)
+		if(isConditional) {
+			val isAnd = kind == Operator.Kind.AND
+			tracker.setVariableStates(left.getEndState(isAnd))
+			right.analyseDataFlow(linter, tracker)
+			setEndState(right.getEndState(isAnd), isAnd)
+			tracker.setVariableStates(left.getEndState(!isAnd))
+			tracker.addVariableStates(right.getEndState(!isAnd))
+			setEndState(tracker, !isAnd)
+			tracker.addVariableStates(getEndState(isAnd))
+		} else if(isComparison) {
+			right.analyseDataFlow(linter, tracker)
+			val variableValue = left as? VariableValue ?: right as? VariableValue
+			val literalValue = left as? LiteralValue ?: right as? LiteralValue
+			val declaration = variableValue?.definition
+			if(declaration != null && literalValue != null) {
+				val isPositive = kind == Operator.Kind.EQUAL_TO
+				setEndState(tracker, !isPositive)
+				tracker.add(VariableUsage.Kind.HINT, declaration, this, literalValue.type, literalValue)
+				setEndState(tracker, isPositive)
+				tracker.addVariableStates(getEndState(!isPositive))
+			} else {
+				setEndStates(tracker)
+			}
+		} else {
+			right.analyseDataFlow(linter, tracker)
+			setEndStates(tracker)
+		}
 	}
 
 	private fun calculateStaticResult(linter: Linter): Value? {
@@ -108,7 +137,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				val rightValue = right.staticValue ?: return null
 				BooleanLiteral(source, scope, leftValue != rightValue, linter)
 			}
-			else -> throw CompilerError("Static evaluation is not implemented for operators of kind '$kind'.")
+			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
 	}
 }

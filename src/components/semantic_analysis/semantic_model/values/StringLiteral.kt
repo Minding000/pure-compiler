@@ -23,4 +23,8 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 			return false
 		return value == other.value
 	}
+
+	override fun toString(): String {
+		return "\"$value\""
+	}
 }

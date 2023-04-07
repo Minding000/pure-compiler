@@ -1,6 +1,8 @@
 package components.semantic_analysis.semantic_model.operations
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.control_flow.IfStatement
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.LiteralType
@@ -56,6 +58,28 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		}
 	}
 
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+		super.analyseDataFlow(linter, tracker)
+		if(operator.returnsBoolean) {
+			val variableValue = value as? VariableValue
+			val declaration = variableValue?.definition
+			if(declaration != null) {
+				val commonState = tracker.currentState.copy()
+				tracker.add(VariableUsage.Kind.HINT, declaration, this, referenceType)
+				setEndState(tracker, operator == Operator.CAST_CONDITION)
+				tracker.setVariableStates(commonState)
+				val variableType = variableValue.type as? OptionalType
+				val baseType = variableType?.baseType
+				if(baseType == referenceType) {
+					val nullLiteral = NullLiteral(source, scope, linter)
+					tracker.add(VariableUsage.Kind.HINT, declaration, this, nullLiteral.type, nullLiteral)
+					setEndState(tracker, operator == Operator.NEGATED_CAST_CONDITION)
+				}
+				tracker.setVariableStates(commonState)
+			}
+		}
+	}
+
 	override fun validate(linter: Linter) {
 		super.validate(linter)
 		value.type?.let { valueType ->
@@ -82,6 +106,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 			linter.addIssue(CastVariableOutsideOfIfStatement(source))
 			return
 		}
+		//TODO handle this using data-flow instead
 		val isVariableAccessibleAfterIfStatement =
 			(operator == Operator.CAST_CONDITION && ifStatement.negativeBranch?.isInterruptingExecution == true)
 				|| (operator == Operator.NEGATED_CAST_CONDITION && ifStatement.positiveBranch.isInterruptingExecution)

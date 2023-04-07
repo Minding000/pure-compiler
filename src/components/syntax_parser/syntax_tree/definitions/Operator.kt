@@ -16,7 +16,7 @@ open class Operator(start: Position, end: Position): MetaElement(start, end) {
 			if(type.stringRepresentation == name)
 				return type
 		}
-		throw CompilerError("Unknown operator kind '$name' encountered.")
+		throw CompilerError(this, "Unknown operator kind '$name' encountered.")
 	}
 
 	override fun toString(): String {

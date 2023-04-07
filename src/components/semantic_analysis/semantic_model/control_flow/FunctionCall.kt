@@ -53,12 +53,12 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 			return
 		val requiredButUninitializedProperties = LinkedList<PropertyDeclaration>()
 		for(propertyRequiredToBeInitialized in targetImplementation.propertiesRequiredToBeInitialized) {
-			val usage = tracker.add(VariableUsage.Type.READ, propertyRequiredToBeInitialized, this)
+			val usage = tracker.add(VariableUsage.Kind.READ, propertyRequiredToBeInitialized, this)
 			if(!usage.isPreviouslyInitialized())
 				requiredButUninitializedProperties.add(propertyRequiredToBeInitialized)
 		}
 		for(propertyBeingInitialized in targetImplementation.propertiesBeingInitialized)
-			tracker.add(VariableUsage.Type.WRITE, propertyBeingInitialized, this)
+			tracker.add(VariableUsage.Kind.WRITE, propertyBeingInitialized, this)
 		if(tracker.isInitializer && requiredButUninitializedProperties.isNotEmpty())
 			linter.addIssue(ReliesOnUninitializedProperties(source, getSignature(), requiredButUninitializedProperties))
 	}

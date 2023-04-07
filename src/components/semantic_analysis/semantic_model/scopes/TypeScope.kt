@@ -133,7 +133,7 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 				memberDeclaration.memberIdentifier == abstractSuperMember.memberIdentifier }
 			if(!abstractSuperMember.canBeOverriddenBy(overridingMember)) {
 				val parentDefinition = abstractSuperMember.parentDefinition
-					?: throw CompilerError("Member is missing parent definition.")
+					?: throw CompilerError(typeDefinition.source, "Member is missing parent definition.")
 				val missingOverridesFromType = missingOverrides.getOrPut(parentDefinition) { LinkedList() }
 				missingOverridesFromType.add(abstractSuperMember)
 			}
@@ -166,7 +166,8 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 
 	override fun declareValue(linter: Linter, value: ValueDeclaration) {
 		if(value !is InterfaceMember)
-			throw CompilerError("Tried to declare non-member of type '${value.javaClass.simpleName}' in type scope.")
+			throw CompilerError(typeDefinition.source,
+				"Tried to declare non-member of type '${value.javaClass.simpleName}' in type scope.")
 		value.parentDefinition = typeDefinition
 		var previousDeclaration = enclosingScope.resolveValue(value.name)
 		if(previousDeclaration != null)

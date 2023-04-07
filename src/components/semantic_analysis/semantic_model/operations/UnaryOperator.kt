@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
 import components.semantic_analysis.Linter
+import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.semantic_analysis.semantic_model.values.NumberLiteral
@@ -36,6 +37,14 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		staticValue = calculateStaticResult(linter)
 	}
 
+	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+		super.analyseDataFlow(linter, tracker)
+		if(Linter.SpecialType.BOOLEAN.matches(value.type) && kind == Operator.Kind.EXCLAMATION_MARK) {
+			positiveState = value.getNegativeEndState()
+			negativeState = value.getPositiveEndState()
+		}
+	}
+
 	private fun calculateStaticResult(linter: Linter): Value? {
 		return when(kind) {
 			Operator.Kind.BRACKETS_GET -> null
@@ -48,7 +57,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 				val numberValue = value.staticValue as? NumberLiteral ?: return null
 				NumberLiteral(source, scope, -numberValue.value, linter)
 			}
-			else -> throw CompilerError("Static evaluation is not implemented for operators of kind '$kind'.")
+			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
 	}
 }

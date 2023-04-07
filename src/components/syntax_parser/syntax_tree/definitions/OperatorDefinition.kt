@@ -26,7 +26,7 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 	override fun concretize(linter: Linter, scope: MutableScope): FunctionImplementation {
 		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
 		val surroundingTypeDefinition = scope.getSurroundingDefinition()
-			?: throw CompilerError("Operator expected surrounding type definition.")
+			?: throw CompilerError(this, "Operator expected surrounding type definition.")
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isMutating = parent.containsModifier(WordAtom.MUTATING)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)

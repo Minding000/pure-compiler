@@ -19,7 +19,7 @@ class ModifierSection(private val modifierList: ModifierList, private val sectio
 	init {
 		for(section in sections) {
 			if(section !is ModifierSectionChild)
-				throw CompilerError("Element not allowed in modifier section: $section")
+				throw CompilerError(this, "Element not allowed in modifier section: $section")
 			section.parent = this
 		}
 	}

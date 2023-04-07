@@ -4,12 +4,12 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
-import components.semantic_analysis.semantic_model.types.OrUnionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
 import logger.issues.initialization.UninitializedProperties
 import logger.issues.modifiers.*
+import util.combine
 import util.stringifyTypes
 import java.util.*
 
@@ -113,7 +113,7 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		}
 		if(inferredTypes.isEmpty())
 			return null
-		return OrUnionType(source, scope, inferredTypes).simplified()
+		return inferredTypes.combine(this)
 	}
 
 	fun isMoreSpecificThan(otherInitializerDefinition: InitializerDefinition): Boolean {

@@ -195,7 +195,7 @@ internal class TypeInference {
 				}
 				PackageOpener object {
 					to unwrap(Item; package: <Item>Package): Item {
-						if(package.item is p: <Any producing>Package)
+						if package.item is p: <Any producing>Package
 							return unwrap(p)
 						return package.item
 					}
@@ -265,7 +265,7 @@ internal class TypeInference {
 					val messages: <Message>List
 					init(MessageType: Message; account: Account, availableActions: <MessageType>Actions) {
 						loop over account.incomingMessages as incomingMessage {
-							if(incomingMessage is MessageType) {
+							if incomingMessage is MessageType {
 								incomingMessage.actions = availableActions
 								messages.add(incomingMessage)
 							}

@@ -212,7 +212,7 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	private fun parseAccessor(): ValueElement {
 		var expression = parsePrimary()
 		while(WordType.ACCESSOR.includes(currentWord?.type)) {
-			expression =  if(WordType.MEMBER_ACCESSOR.includes(currentWord?.type))
+			expression = if(WordType.MEMBER_ACCESSOR.includes(currentWord?.type))
 				parseMemberAccess(expression)
 			else if(currentWord?.type == WordAtom.OPENING_PARENTHESIS)
 				parseFunctionCall(expression)

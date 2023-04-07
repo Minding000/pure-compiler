@@ -15,8 +15,7 @@ class Cast(val value: ValueElement, val operator: String, val identifier: Identi
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticCastModel {
 		val operator = SemanticCastModel.Operator.values().find { castType ->
-			castType.stringRepresentation == operator }
-			?: throw CompilerError("Unknown cast operator '$operator'.")
+			castType.stringRepresentation == operator } ?: throw CompilerError(this, "Unknown cast operator '$operator'.")
 		val variableDeclaration = if(identifier == null) {
 			null
 		} else {

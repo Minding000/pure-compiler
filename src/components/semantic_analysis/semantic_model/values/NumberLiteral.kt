@@ -50,6 +50,10 @@ class NumberLiteral(override val source: Element, scope: Scope, val value: BigDe
 		return value == other.value
 	}
 
+	override fun toString(): String {
+		return value.toString()
+	}
+
 //	override fun compile(context: BuildContext): LLVMValueRef {
 //		return LLVMConstInt(LLVMInt32Type(), value.toLong(), LLVMIRCompiler.LLVM_NO)
 //	}

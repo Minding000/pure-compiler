@@ -4,12 +4,12 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.LiteralType
-import components.semantic_analysis.semantic_model.types.OrUnionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
 import errors.internal.CompilerError
+import util.combine
 import java.util.*
 
 class FunctionSignature(override val source: Element, override val scope: BlockScope, val genericParameters: List<TypeDefinition>,
@@ -75,7 +75,7 @@ class FunctionSignature(override val source: Element, override val scope: BlockS
 		}
 		if(inferredTypes.isEmpty())
 			return null
-		return OrUnionType(source, scope, inferredTypes).simplified()
+		return inferredTypes.combine(this)
 	}
 
 	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean {
@@ -224,7 +224,7 @@ class FunctionSignature(override val source: Element, override val scope: BlockS
 						stringRepresentation += ": $returnType"
 					stringRepresentation
 				} else {
-					throw CompilerError("Operator of kind '${kind.name}' is neither unary nor binary.")
+					throw CompilerError(source, "Operator of kind '${kind.name}' is neither unary nor binary.")
 				}
 			}
 		}
