@@ -178,6 +178,54 @@ internal class DataFlowAnalysis {
 	}
 
 	@Test
+	fun `works with switch statements with else branches`() {
+		val sourceCode = """
+			var d = -1
+			switch d {
+				0: d
+				d: d
+				else: d
+			}
+		""".trimIndent()
+		val report = """
+			start -> 1
+			1: declaration & write -> 2 (Int, -1)
+			2: read -> 3, 4 (Int, -1)
+			3: hint -> 3 (Int, 0)
+			3: read -> end (Int, 0)
+			4: read -> 4, 5 (Int, -1)
+			4: hint -> 4 (Int, -1)
+			4: read -> end (Int, -1)
+			5: read -> end (Int, -1)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertEquals(report, tracker.getReportFor("d"))
+	}
+
+	@Test
+	fun `works with switch statements without else branches`() {
+		val sourceCode = """
+			var d = -1
+			switch d {
+				0: d
+				d: d
+			}
+		""".trimIndent()
+		val report = """
+			start -> 1
+			1: declaration & write -> 2 (Int, -1)
+			2: read -> 3, 4 (Int, -1)
+			3: hint -> 3 (Int, 0)
+			3: read -> end (Int, 0)
+			4: read -> 4, end (Int, -1)
+			4: hint -> 4 (Int, -1)
+			4: read -> end (Int, -1)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertEquals(report, tracker.getReportFor("d"))
+	}
+
+	@Test
 	fun `works when last usage is optional`() {
 		val sourceCode = """
 			var c = 0
