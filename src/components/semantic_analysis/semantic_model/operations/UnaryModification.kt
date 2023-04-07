@@ -5,7 +5,10 @@ import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.semantic_analysis.semantic_model.values.*
+import components.semantic_analysis.semantic_model.values.NumberLiteral
+import components.semantic_analysis.semantic_model.values.Operator
+import components.semantic_analysis.semantic_model.values.Value
+import components.semantic_analysis.semantic_model.values.VariableValue
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
@@ -40,14 +43,14 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		if(target is VariableValue) {
 			tracker.add(listOf(VariableUsage.Kind.READ, VariableUsage.Kind.MUTATION), target, tracker.getCurrentTypeOf(target.definition),
-				getComputedLiteralValue(linter, tracker))
+				getComputedTargetValue(linter, tracker))
 		} else {
 			target.analyseDataFlow(linter, tracker)
 		}
 	}
 
-	private fun getComputedLiteralValue(linter: Linter, tracker: VariableTracker): LiteralValue? {
-		val targetValue = (target.getComputedLiteralValue(tracker) as? NumberLiteral ?: return null).value
+	private fun getComputedTargetValue(linter: Linter, tracker: VariableTracker): Value? {
+		val targetValue = (target.getComputedValue(tracker) as? NumberLiteral ?: return null).value
 		val resultingValue = when(kind) {
 			Operator.Kind.DOUBLE_PLUS -> targetValue + STEP
 			Operator.Kind.DOUBLE_MINUS -> targetValue - STEP

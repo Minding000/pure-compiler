@@ -150,7 +150,7 @@ class InitializerDefinition(override val source: Element, override val parentDef
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		val propertiesToBeInitialized = parentDefinition.scope.getPropertiesToBeInitialized().toMutableList()
-		val initializerTracker = VariableTracker(true)
+		val initializerTracker = VariableTracker(linter, true)
 		for(member in parentDefinition.scope.memberDeclarations)
 			if(member is PropertyDeclaration)
 				initializerTracker.declare(member)

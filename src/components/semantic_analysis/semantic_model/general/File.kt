@@ -8,9 +8,9 @@ import java.util.*
 import components.syntax_parser.syntax_tree.general.File as FileSyntaxTree
 import source_structure.File as SourceFile
 
-class File(override val source: FileSyntaxTree, val file: SourceFile, public override val scope: FileScope): Unit(source, scope) {
+class File(override val source: FileSyntaxTree, val file: SourceFile, override val scope: FileScope): Unit(source, scope) {
 	private val referencedFiles = LinkedList<File>()
-	val variableTracker = VariableTracker()
+	lateinit var variableTracker: VariableTracker
 
 	fun resolveFileReferences(linter: Linter, program: Program) {
 		for(unit in units) {
@@ -48,6 +48,7 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, public ove
 	}
 
 	fun analyseDataFlow(linter: Linter) {
+		variableTracker = VariableTracker(linter)
 		analyseDataFlow(linter, variableTracker)
 		variableTracker.calculateEndState()
 		variableTracker.validate(linter)

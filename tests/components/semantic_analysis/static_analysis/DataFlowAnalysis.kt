@@ -293,8 +293,10 @@ internal class DataFlowAnalysis {
 		assertEquals(report, tracker.getReportFor("a"))
 	}
 
+	//TODO add warning on expected division by zero
+
 	@Test
-	fun `branches on boolean or`() {
+	fun `branches on boolean or`() { //TODO add value hint when variable is used in boolean expression
 		val sourceCode = """
 			var a: Bool
 			a | a
@@ -367,6 +369,32 @@ internal class DataFlowAnalysis {
 			start -> 1
 			1: declaration & write -> 2 (Int, 1)
 			2: read & mutation -> end (Int, 3)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertEquals(report, tracker.getReportFor("a"))
+	}
+
+	@Test
+	fun `calculates value from unary operators`() {
+		val sourceCode = """
+			var a = !yes
+		""".trimIndent()
+		val report = """
+			start -> 1
+			1: declaration & write -> end (Bool, no)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertEquals(report, tracker.getReportFor("a"))
+	}
+
+	@Test
+	fun `calculates value from binary operators`() {
+		val sourceCode = """
+			var a = 1 + 1
+		""".trimIndent()
+		val report = """
+			start -> 1
+			1: declaration & write -> end (Int, 2)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertEquals(report, tracker.getReportFor("a"))

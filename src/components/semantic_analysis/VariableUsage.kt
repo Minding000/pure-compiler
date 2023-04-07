@@ -2,11 +2,10 @@ package components.semantic_analysis
 
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.LiteralValue
+import components.semantic_analysis.semantic_model.values.Value
 import java.util.*
 
-class VariableUsage(val kinds: List<Kind>, val unit: Unit, var resultingType: Type? = null,
-					var resultingLiteralValue: LiteralValue? = null) {
+class VariableUsage(val kinds: List<Kind>, val unit: Unit, var resultingType: Type? = null, var resultingValue: Value? = null) {
 	private var isRequiredToBeInitializedCache: Boolean? = null
 	private var isInitializedCache: Boolean? = null
 	private var isPossiblyInitializedCache: Boolean? = null

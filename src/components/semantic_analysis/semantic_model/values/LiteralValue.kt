@@ -12,7 +12,7 @@ abstract class LiteralValue(source: Element, scope: Scope): Value(source, scope)
 		staticValue = this
 	}
 
-	override fun getComputedLiteralValue(tracker: VariableTracker): LiteralValue {
+	override fun getComputedValue(tracker: VariableTracker): Value? {
 		return this
 	}
 }

@@ -49,7 +49,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
 		if(body == null)
 			return
-		val functionTracker = VariableTracker()
+		val functionTracker = VariableTracker(linter)
 		super.analyseDataFlow(linter, functionTracker)
 		functionTracker.calculateEndState()
 		functionTracker.validate(linter)

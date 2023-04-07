@@ -59,8 +59,8 @@ open class VariableValue(override val source: Element, scope: Scope, val name: S
 		}
 	}
 
-	override fun getComputedLiteralValue(tracker: VariableTracker): LiteralValue? {
-		return tracker.getCurrentLiteralValueOf(definition)
+	override fun getComputedValue(tracker: VariableTracker): Value? {
+		return tracker.getCurrentValueOf(definition)
 	}
 
 	override fun hashCode(): Int {

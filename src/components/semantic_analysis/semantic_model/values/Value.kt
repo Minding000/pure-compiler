@@ -11,7 +11,7 @@ import errors.internal.CompilerError
 import logger.issues.resolution.MissingType
 
 abstract class Value(override val source: Element, override var scope: Scope, var type: Type? = null): Unit(source, scope) {
-	open var staticValue: Value? = null //TODO remove: replaced by usage.resultingLiteralValue
+	open var staticValue: Value? = null
 	protected var positiveState: VariableTracker.VariableState? = null
 	protected var negativeState: VariableTracker.VariableState? = null
 
@@ -66,7 +66,7 @@ abstract class Value(override val source: Element, override var scope: Scope, va
 		return negativeState ?: throw CompilerError(source, "Tried to access missing negative state.")
 	}
 
-	open fun getComputedLiteralValue(tracker: VariableTracker): LiteralValue? = null
+	open fun getComputedValue(tracker: VariableTracker): Value? = null
 
 	override fun hashCode(): Int {
 		return type.hashCode()
@@ -76,6 +76,10 @@ abstract class Value(override val source: Element, override var scope: Scope, va
 		if(other !is Value)
 			return false
 		return type == other.type
+	}
+
+	override fun toString(): String {
+		return "${javaClass.simpleName}#${hashCode()}"
 	}
 
 //	abstract override fun compile(context: BuildContext): LLVMValueRef

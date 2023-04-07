@@ -60,7 +60,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		for(target in targets) {
 			when(target) {
 				is VariableValue -> {
-					tracker.add(VariableUsage.Kind.WRITE, target, sourceExpression.type, sourceExpression.getComputedLiteralValue(tracker))
+					tracker.add(VariableUsage.Kind.WRITE, target, sourceExpression.type, sourceExpression.getComputedValue(tracker))
 					continue
 				}
 				is MemberAccess -> {
@@ -68,7 +68,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 						linter.addIssue(ConstantReassignment(source, target.member.toString()))
 					if(target.target is SelfReference && target.member is VariableValue) {
 						tracker.add(VariableUsage.Kind.WRITE, target.member, sourceExpression.type,
-							sourceExpression.getComputedLiteralValue(tracker))
+							sourceExpression.getComputedValue(tracker))
 						continue
 					}
 				}

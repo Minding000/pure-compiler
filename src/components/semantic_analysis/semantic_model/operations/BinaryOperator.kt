@@ -32,7 +32,6 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				error.log(linter, source, "operator", "$leftType $kind ${right.type}")
 			}
 		}
-		staticValue = calculateStaticResult(linter)
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
@@ -66,9 +65,11 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			right.analyseDataFlow(linter, tracker)
 			setEndStates(tracker)
 		}
+		staticValue = getComputedValue(tracker)
 	}
 
-	private fun calculateStaticResult(linter: Linter): Value? {
+	override fun getComputedValue(tracker: VariableTracker): Value? {
+		val linter = tracker.linter
 		return when(kind) {
 			Operator.Kind.DOUBLE_QUESTION_MARK -> {
 				val leftValue = left.staticValue ?: return null

@@ -3,17 +3,17 @@ package components.semantic_analysis
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.LiteralValue
+import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.issues.initialization.ConstantReassignment
 import util.combine
 import java.util.*
 
-class VariableTracker(val isInitializer: Boolean = false) {
+class VariableTracker(val linter: Linter, val isInitializer: Boolean = false) {
 	val childTrackers = HashMap<String, VariableTracker>()
 	val variables = HashMap<ValueDeclaration, MutableList<VariableUsage>>()
-	val ends = HashMap<ValueDeclaration, VariableUsage>()
+	private val ends = HashMap<ValueDeclaration, VariableUsage>()
 	val currentState = VariableState()
 	val nextStatementStates = LinkedList<VariableState>()
 	val breakStatementStates = LinkedList<VariableState>()
@@ -61,15 +61,15 @@ class VariableTracker(val isInitializer: Boolean = false) {
 		return type
 	}
 
-	fun getCurrentLiteralValueOf(declaration: ValueDeclaration?): LiteralValue? {
-		var literalValue: LiteralValue? = null
+	fun getCurrentValueOf(declaration: ValueDeclaration?): Value? {
+		var value: Value? = null
 		for(usage in currentState.lastVariableUsages[declaration] ?: return null) {
-			if(literalValue == null)
-				literalValue = usage.resultingLiteralValue ?: return null
-			else if(literalValue != usage.resultingLiteralValue)
+			if(value == null)
+				value = usage.resultingValue ?: return null
+			else if(value != usage.resultingValue)
 				return null
 		}
-		return literalValue
+		return value
 	}
 
 	fun declare(declaration: ValueDeclaration, isInitialized: Boolean = false) {
@@ -78,7 +78,8 @@ class VariableTracker(val isInitializer: Boolean = false) {
 		val types = mutableListOf(VariableUsage.Kind.DECLARATION)
 		if(isInitialized || declaration.value != null)
 			types.add(VariableUsage.Kind.WRITE)
-		val usage = VariableUsage(types, declaration, declaration.type, declaration.value?.getComputedLiteralValue(this))
+		val computedValue = declaration.value?.getComputedValue(this)
+		val usage = VariableUsage(types, declaration, computedValue?.type ?: declaration.type, computedValue)
 		val lastUsages = getLastVariableUsagesOf(declaration)
 		usages.add(usage)
 		if(firstUsages.isEmpty())
@@ -88,24 +89,24 @@ class VariableTracker(val isInitializer: Boolean = false) {
 	}
 
 	fun add(kind: VariableUsage.Kind, variable: VariableValue, resultingType: Type? = getCurrentTypeOf(variable.definition),
-			resultingLiteralValue: LiteralValue? = getCurrentLiteralValueOf(variable.definition)): VariableUsage? =
-		add(listOf(kind), variable, resultingType, resultingLiteralValue)
+			resultingValue: Value? = getCurrentValueOf(variable.definition)): VariableUsage? =
+		add(listOf(kind), variable, resultingType, resultingValue)
 	fun add(kind: VariableUsage.Kind, declaration: ValueDeclaration, unit: Unit, resultingType: Type? = getCurrentTypeOf(declaration),
-			resultingLiteralValue: LiteralValue? = getCurrentLiteralValueOf(declaration)): VariableUsage =
-		add(listOf(kind), declaration, unit, resultingType, resultingLiteralValue)
+			resultingValue: Value? = getCurrentValueOf(declaration)): VariableUsage =
+		add(listOf(kind), declaration, unit, resultingType, resultingValue)
 
 	fun add(kinds: List<VariableUsage.Kind>, variable: VariableValue, resultingType: Type? = getCurrentTypeOf(variable.definition),
-			resultingLiteralValue: LiteralValue? = getCurrentLiteralValueOf(variable.definition)): VariableUsage? {
-		return add(kinds, variable.definition ?: return null, variable, resultingType, resultingLiteralValue)
+			resultingValue: Value? = getCurrentValueOf(variable.definition)): VariableUsage? {
+		return add(kinds, variable.definition ?: return null, variable, resultingType, resultingValue)
 	}
 
 	fun add(kinds: List<VariableUsage.Kind>, declaration: ValueDeclaration, unit: Unit,
 			resultingType: Type? = getCurrentTypeOf(declaration),
-			resultingLiteralValue: LiteralValue? = getCurrentLiteralValueOf(declaration)): VariableUsage {
+			resultingValue: Value? = getCurrentValueOf(declaration)): VariableUsage {
 		val usages = variables.getOrPut(declaration) { LinkedList() }
 		val firstUsages = currentState.firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
 		val lastUsages = getLastVariableUsagesOf(declaration)
-		val usage = VariableUsage(kinds, unit, resultingType, resultingLiteralValue)
+		val usage = VariableUsage(kinds, unit, resultingType, resultingValue)
 		for(lastUsage in lastUsages) {
 			usage.previousUsages.add(lastUsage)
 			lastUsage.nextUsages.add(usage)
@@ -260,7 +261,7 @@ class VariableTracker(val isInitializer: Boolean = false) {
 				var targetString = usage.nextUsages.joinToString()
 				if(targetString.isEmpty())
 					targetString = "continues raise"
-				report += "\n$usage: $typeString -> $targetString (${usage.resultingType}, ${usage.resultingLiteralValue})"
+				report += "\n$usage: $typeString -> $targetString (${usage.resultingType}, ${usage.resultingValue})"
 			}
 			return report
 		}

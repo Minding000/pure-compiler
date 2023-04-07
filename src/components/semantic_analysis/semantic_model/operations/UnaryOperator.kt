@@ -34,7 +34,6 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 				error.log(linter, source, "operator", "$kind$valueType")
 			}
 		}
-		staticValue = calculateStaticResult(linter)
 	}
 
 	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
@@ -43,19 +42,20 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 			positiveState = value.getNegativeEndState()
 			negativeState = value.getPositiveEndState()
 		}
+		staticValue = getComputedValue(tracker)
 	}
 
-	private fun calculateStaticResult(linter: Linter): Value? {
+	override fun getComputedValue(tracker: VariableTracker): Value? {
 		return when(kind) {
 			Operator.Kind.BRACKETS_GET -> null
 			Operator.Kind.EXCLAMATION_MARK -> {
 				val booleanValue = value.staticValue as? BooleanLiteral ?: return null
-				BooleanLiteral(source, scope, !booleanValue.value, linter)
+				BooleanLiteral(source, scope, !booleanValue.value, tracker.linter)
 			}
 			Operator.Kind.TRIPLE_DOT -> null
 			Operator.Kind.MINUS -> {
 				val numberValue = value.staticValue as? NumberLiteral ?: return null
-				NumberLiteral(source, scope, -numberValue.value, linter)
+				NumberLiteral(source, scope, -numberValue.value, tracker.linter)
 			}
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
