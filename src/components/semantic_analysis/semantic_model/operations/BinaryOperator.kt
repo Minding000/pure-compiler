@@ -41,6 +41,12 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		if(isConditional) {
 			val isAnd = kind == Operator.Kind.AND
 			tracker.setVariableStates(left.getEndState(isAnd))
+			val variableValue = left as? VariableValue
+			val declaration = variableValue?.definition
+			if(declaration != null) {
+				val booleanLiteral = BooleanLiteral(source, scope, isAnd, linter)
+				tracker.add(VariableUsage.Kind.HINT, declaration, this, booleanLiteral.type, booleanLiteral)
+			}
 			right.analyseDataFlow(linter, tracker)
 			setEndState(right.getEndState(isAnd), isAnd)
 			tracker.setVariableStates(left.getEndState(!isAnd))

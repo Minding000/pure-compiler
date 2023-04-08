@@ -54,12 +54,8 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 			caseStates.add(tracker.currentState.copy())
 			tracker.setVariableStates(negativeState)
 		}
-		if(elseBranch == null) {
-			tracker.addVariableStates(*caseStates.toTypedArray())
-		} else {
-			elseBranch.analyseDataFlow(linter, tracker)
-			tracker.addVariableStates(*caseStates.toTypedArray())
-		}
+		elseBranch?.analyseDataFlow(linter, tracker)
+		tracker.addVariableStates(*caseStates.toTypedArray())
 	}
 
 	override fun validate(linter: Linter) {
