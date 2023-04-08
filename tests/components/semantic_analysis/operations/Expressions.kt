@@ -73,12 +73,26 @@ internal class Expressions {
 				Star class {
 					native to shine()
 				}
-				val sun: Star? = Star()
+				val sun: Star? = null
 				sun.shine()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<OptionalAccessWithoutNullCheck>(
-			"Cannot access member of optional type 'Star?' without null check.", Severity.ERROR)
+			"Cannot access member of optional type 'Null' without null check.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows member access on optional type with non-null value`() {
+		val sourceCode =
+			"""
+				Star class {
+					native to shine()
+				}
+				val sun: Star? = Star()
+				sun.shine()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<OptionalAccessWithoutNullCheck>()
 	}
 
 	@Test
@@ -88,7 +102,7 @@ internal class Expressions {
 				Star class {
 					native to shine()
 				}
-				val sun = Star()
+				val sun: Star? = Star()
 				sun?.shine()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -378,7 +392,8 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				Cable class
-				var cable = Cable()
+				var cable: Cable? = null
+				cable = Cable()
 				if cable? {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -390,7 +405,8 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				Cable class
-				var noCable: Cable? = null
+				var noCable: Cable? = Cable()
+				noCable = null
 				if noCable? {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

@@ -23,16 +23,10 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 
 	override fun linkValues(linter: Linter) {
 		target.linkValues(linter)
-		target.type?.let { targetTypeVal ->
-			var targetType = targetTypeVal
-			if(targetType is OptionalType) {
-				if(!isOptional)
-					linter.addIssue(OptionalAccessWithoutNullCheck(source, targetType))
+		var targetType = target.type
+		if(targetType != null) {
+			if(targetType is OptionalType)
 				targetType = targetType.baseType
-			} else {
-				if(isOptional)
-					linter.addIssue(GuaranteedAccessWithNullCheck(source, targetType))
-			}
 			member.scope = targetType.interfaceScope
 			member.linkValues(linter)
 			member.type?.let { memberType ->
@@ -51,6 +45,20 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			member.analyseDataFlow(tracker)
 		else
 			target.analyseDataFlow(tracker)
+		val targetType = target.getComputedType(tracker)
+		if(targetType != null) {
+			if(isTypePotentiallyNull(targetType)) {
+				if(!isOptional)
+					tracker.linter.addIssue(OptionalAccessWithoutNullCheck(source, targetType))
+			} else {
+				if(isOptional)
+					tracker.linter.addIssue(GuaranteedAccessWithNullCheck(source, targetType))
+			}
+		}
+	}
+
+	private fun isTypePotentiallyNull(type: Type): Boolean {
+		return type is OptionalType || Linter.SpecialType.NULL.matches(type)
 	}
 
 	fun filterForPossibleTargetTypes(linter: Linter, availableTypes: List<ObjectType>): List<Type> {
