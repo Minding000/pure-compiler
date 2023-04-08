@@ -378,7 +378,7 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				Cable class
-				val cable = Cable()
+				var cable = Cable()
 				if cable? {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -390,7 +390,7 @@ internal class Expressions {
 		val sourceCode =
 			"""
 				Cable class
-				val noCable: Cable? = null
+				var noCable: Cable? = null
 				if noCable? {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

@@ -16,7 +16,7 @@ import logger.issues.modifiers.NoParentToBindTo
 import util.linkedListOf
 import java.util.*
 
-abstract class TypeDefinition(override val source: Element, val name: String, public override val scope: TypeScope,
+abstract class TypeDefinition(override val source: Element, val name: String, override val scope: TypeScope,
 							  val explicitParentType: ObjectType?, val superType: Type?, val isBound: Boolean = false):
 	Unit(source, scope) {
 	protected open val isDefinition = true

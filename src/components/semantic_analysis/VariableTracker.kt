@@ -78,8 +78,9 @@ class VariableTracker(val linter: Linter, val isInitializer: Boolean = false) {
 		val types = mutableListOf(VariableUsage.Kind.DECLARATION)
 		if(isInitialized || declaration.value != null)
 			types.add(VariableUsage.Kind.WRITE)
+		val computedType = declaration.value?.getComputedType(this) ?: declaration.type
 		val computedValue = declaration.value?.getComputedValue(this)
-		val usage = VariableUsage(types, declaration, computedValue?.type ?: declaration.type, computedValue)
+		val usage = VariableUsage(types, declaration, computedType, computedValue)
 		val lastUsages = getLastVariableUsagesOf(declaration)
 		usages.add(usage)
 		if(firstUsages.isEmpty())

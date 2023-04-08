@@ -66,7 +66,8 @@ abstract class Value(override val source: Element, override var scope: Scope, va
 		return negativeState ?: throw CompilerError(source, "Tried to access missing negative state.")
 	}
 
-	open fun getComputedValue(tracker: VariableTracker): Value? = null
+	open fun getComputedValue(tracker: VariableTracker): Value? = staticValue //TODO get this from dataflow
+	open fun getComputedType(tracker: VariableTracker): Type? = getComputedValue(tracker)?.type
 
 	override fun hashCode(): Int {
 		return type.hashCode()

@@ -63,6 +63,10 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 			tracker.linter.addIssue(ReliesOnUninitializedProperties(source, getSignature(), requiredButUninitializedProperties))
 	}
 
+	override fun getComputedType(tracker: VariableTracker): Type? {
+		return type
+	}
+
 	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {
 		(targetType.definition as? Class)?.let { `class` ->
 			if(`class`.isAbstract)

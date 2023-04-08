@@ -20,19 +20,6 @@ class NullCheck(override val source: NullCheckSyntaxTree, scope: Scope, val valu
 		addUnits(value, type)
 	}
 
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
-		value.staticValue?.type?.let { staticType ->
-			staticValue = if(Linter.SpecialType.NULL.matches(staticType)) {
-				linter.addIssue(StaticNullCheckValue(source, "no"))
-				BooleanLiteral(source, scope, false, linter)
-			} else if(staticType !is OptionalType) {
-				linter.addIssue(StaticNullCheckValue(source, "yes"))
-				BooleanLiteral(source, scope, true, linter)
-			} else null
-		}
-	}
-
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
 		val variableValue = value as? VariableValue
@@ -51,5 +38,20 @@ class NullCheck(override val source: NullCheckSyntaxTree, scope: Scope, val valu
 			}
 			tracker.setVariableStates(commonState)
 		}
+		staticValue = getComputedValue(tracker)
+	}
+
+	override fun getComputedValue(tracker: VariableTracker): Value? {
+		val linter = tracker.linter
+		val valueType = value.getComputedType(tracker)
+		return if(valueType == null)
+			null
+		else if(Linter.SpecialType.NULL.matches(valueType)) {
+			linter.addIssue(StaticNullCheckValue(source, "no"))
+			BooleanLiteral(source, scope, false, linter)
+		} else if(valueType !is OptionalType) {
+			linter.addIssue(StaticNullCheckValue(source, "yes"))
+			BooleanLiteral(source, scope, true, linter)
+		} else null
 	}
 }

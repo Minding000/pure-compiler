@@ -20,6 +20,7 @@ class LocalVariableDeclaration(source: Element, scope: Scope, name: String, type
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
+		super.analyseDataFlow(tracker)
 		tracker.declare(this)
 	}
 }
