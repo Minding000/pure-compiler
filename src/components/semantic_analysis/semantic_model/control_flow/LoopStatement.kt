@@ -29,11 +29,11 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		addUnits(generator, body)
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		val initialState = tracker.currentState.copy()
-		generator?.analyseDataFlow(linter, tracker)
+		generator?.analyseDataFlow(tracker)
 		tracker.currentState.firstVariableUsages.clear()
-		body.analyseDataFlow(linter, tracker)
+		body.analyseDataFlow(tracker)
 		tracker.linkBackToStart()
 		for(variableState in tracker.nextStatementStates)
 			tracker.linkBackToStartFrom(variableState)

@@ -28,8 +28,8 @@ abstract class Value(override val source: Element, override var scope: Scope, va
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		super.analyseDataFlow(linter, tracker)
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		super.analyseDataFlow(tracker)
 		setEndStates(tracker)
 	}
 

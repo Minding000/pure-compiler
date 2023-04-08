@@ -36,8 +36,8 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		super.analyseDataFlow(linter, tracker)
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		super.analyseDataFlow(tracker)
 		if(Linter.SpecialType.BOOLEAN.matches(value.type) && kind == Operator.Kind.EXCLAMATION_MARK) {
 			positiveState = value.getNegativeEndState()
 			negativeState = value.getPositiveEndState()

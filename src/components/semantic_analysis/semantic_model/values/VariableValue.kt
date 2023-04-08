@@ -44,7 +44,7 @@ open class VariableValue(override val source: Element, scope: Scope, val name: S
 			staticValue = definition.value?.staticValue
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		val usage = tracker.add(VariableUsage.Kind.READ, this)
 		setEndStates(tracker)
 		if(usage == null)
@@ -52,10 +52,10 @@ open class VariableValue(override val source: Element, scope: Scope, val name: S
 		val declaration = definition
 		if(declaration is LocalVariableDeclaration) {
 			if(declaration.type !is StaticType && !usage.isPreviouslyInitialized())
-				linter.addIssue(NotInitialized(source, "Local variable", name))
+				tracker.linter.addIssue(NotInitialized(source, "Local variable", name))
 		} else if(declaration is PropertyDeclaration) {
 			if(tracker.isInitializer && !declaration.isStatic && declaration.value == null && !usage.isPreviouslyInitialized())
-				linter.addIssue(NotInitialized(source, "Property", name))
+				tracker.linter.addIssue(NotInitialized(source, "Property", name))
 		}
 	}
 

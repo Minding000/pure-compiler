@@ -19,7 +19,7 @@ class LocalVariableDeclaration(source: Element, scope: Scope, name: String, type
 			isMutable)
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		tracker.declare(this)
 	}
 }

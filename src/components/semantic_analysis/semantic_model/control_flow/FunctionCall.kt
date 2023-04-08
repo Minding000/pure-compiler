@@ -46,8 +46,8 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		super.analyseDataFlow(linter, tracker)
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		super.analyseDataFlow(tracker)
 		val targetImplementation = targetImplementation
 		if(targetImplementation !is Callable)
 			return
@@ -60,7 +60,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 		for(propertyBeingInitialized in targetImplementation.propertiesBeingInitialized)
 			tracker.add(VariableUsage.Kind.WRITE, propertyBeingInitialized, this)
 		if(tracker.isInitializer && requiredButUninitializedProperties.isNotEmpty())
-			linter.addIssue(ReliesOnUninitializedProperties(source, getSignature(), requiredButUninitializedProperties))
+			tracker.linter.addIssue(ReliesOnUninitializedProperties(source, getSignature(), requiredButUninitializedProperties))
 	}
 
 	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {

@@ -34,27 +34,27 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		val isConditional = Linter.SpecialType.BOOLEAN.matches(left.type) && (kind == Operator.Kind.AND || kind == Operator.Kind.PIPE)
 		val isComparison = kind == Operator.Kind.EQUAL_TO || kind == Operator.Kind.NOT_EQUAL_TO
-		left.analyseDataFlow(linter, tracker)
+		left.analyseDataFlow(tracker)
 		if(isConditional) {
 			val isAnd = kind == Operator.Kind.AND
 			tracker.setVariableStates(left.getEndState(isAnd))
 			val variableValue = left as? VariableValue
 			val declaration = variableValue?.definition
 			if(declaration != null) {
-				val booleanLiteral = BooleanLiteral(source, scope, isAnd, linter)
+				val booleanLiteral = BooleanLiteral(source, scope, isAnd, tracker.linter)
 				tracker.add(VariableUsage.Kind.HINT, declaration, this, booleanLiteral.type, booleanLiteral)
 			}
-			right.analyseDataFlow(linter, tracker)
+			right.analyseDataFlow(tracker)
 			setEndState(right.getEndState(isAnd), isAnd)
 			tracker.setVariableStates(left.getEndState(!isAnd))
 			tracker.addVariableStates(right.getEndState(!isAnd))
 			setEndState(tracker, !isAnd)
 			tracker.addVariableStates(getEndState(isAnd))
 		} else if(isComparison) {
-			right.analyseDataFlow(linter, tracker)
+			right.analyseDataFlow(tracker)
 			val variableValue = left as? VariableValue ?: right as? VariableValue
 			val literalValue = left as? LiteralValue ?: right as? LiteralValue
 			val declaration = variableValue?.definition
@@ -68,7 +68,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				setEndStates(tracker)
 			}
 		} else {
-			right.analyseDataFlow(linter, tracker)
+			right.analyseDataFlow(tracker)
 			setEndStates(tracker)
 		}
 		staticValue = getComputedValue(tracker)

@@ -43,8 +43,8 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		value?.analyseDataFlow(linter, tracker)
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		value?.analyseDataFlow(tracker)
 		tracker.registerReturnStatement()
 	}
 

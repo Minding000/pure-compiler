@@ -218,7 +218,7 @@ class VariableTracker(val linter: Linter, val isInitializer: Boolean = false) {
 		childTrackers[name] = fileTracker
 	}
 
-	fun validate(linter: Linter) {
+	fun validate() {
 		for((declaration, usages) in variables) {
 			for(usage in usages) {
 				if(usage.kinds.contains(VariableUsage.Kind.WRITE) && declaration.isConstant) {

@@ -21,7 +21,7 @@ class NextStatement(override val source: NextStatementSyntaxTree, scope: Scope):
 		targetLoop = surroundingLoop
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		tracker.registerNextStatement()
 	}
 }

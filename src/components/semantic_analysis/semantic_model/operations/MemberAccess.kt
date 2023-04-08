@@ -46,11 +46,11 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		if(target is SelfReference)
-			member.analyseDataFlow(linter, tracker)
+			member.analyseDataFlow(tracker)
 		else
-			target.analyseDataFlow(linter, tracker)
+			target.analyseDataFlow(tracker)
 	}
 
 	fun filterForPossibleTargetTypes(linter: Linter, availableTypes: List<ObjectType>): List<Type> {

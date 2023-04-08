@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.Type
@@ -14,9 +13,9 @@ class HandleBlock(override val source: HandleBlockSyntaxTree, scope: Scope, val 
 		addUnits(eventType, eventVariable, block)
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		if(eventVariable != null)
 			tracker.declare(eventVariable, true)
-		block.analyseDataFlow(linter, tracker)
+		block.analyseDataFlow(tracker)
 	}
 }

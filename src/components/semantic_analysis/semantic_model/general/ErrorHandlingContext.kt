@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.VariableUsage
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -16,11 +15,11 @@ class ErrorHandlingContext(override val source: StatementSection, scope: Scope, 
 		addUnits(handleBlocks)
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		val initialState = tracker.currentState.copy()
 		// Analyse main block
 		tracker.currentState.firstVariableUsages.clear()
-		mainBlock.analyseDataFlow(linter, tracker)
+		mainBlock.analyseDataFlow(tracker)
 		// Collect usages that should link to the handle blocks
 		val potentiallyLastVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>() // This is done to avoid creating a state for each variable usage in an error handling context
 		if(handleBlocks.isNotEmpty() || alwaysBlock != null)
@@ -33,7 +32,7 @@ class ErrorHandlingContext(override val source: StatementSection, scope: Scope, 
 				tracker.setVariableStates(initialState)
 				tracker.addLastVariableUsages(potentiallyLastVariableUsages)
 				tracker.currentState.firstVariableUsages.clear()
-				handleBlock.analyseDataFlow(linter, tracker)
+				handleBlock.analyseDataFlow(tracker)
 				handleBlockStates.add(tracker.currentState.copy())
 				tracker.collectAllUsagesInto(potentiallyLastVariableUsages)
 			}
@@ -42,13 +41,13 @@ class ErrorHandlingContext(override val source: StatementSection, scope: Scope, 
 		// Analyse always block (if it exists)
 		if(alwaysBlock != null) {
 			// First analyse for complete execution
-			alwaysBlock.analyseDataFlow(linter, tracker)
+			alwaysBlock.analyseDataFlow(tracker)
 			val completeExecutionState = tracker.currentState.copy()
 			// Then analyse for failure case
 			tracker.setVariableStates(initialState)
 			tracker.addLastVariableUsages(potentiallyLastVariableUsages)
 			tracker.currentState.firstVariableUsages.clear()
-			alwaysBlock.analyseDataFlow(linter, tracker)
+			alwaysBlock.analyseDataFlow(tracker)
 			tracker.markAllUsagesAsExiting()
 			tracker.setVariableStates(completeExecutionState)
 		}

@@ -37,8 +37,8 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		collection.analyseDataFlow(linter, tracker)
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		collection.analyseDataFlow(tracker)
 		if(iteratorVariableDeclaration != null)
 			tracker.declare(iteratorVariableDeclaration, true)
 		for(variableDeclaration in variableDeclarations)

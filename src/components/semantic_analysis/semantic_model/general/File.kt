@@ -49,9 +49,9 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 
 	fun analyseDataFlow(linter: Linter) {
 		variableTracker = VariableTracker(linter)
-		analyseDataFlow(linter, variableTracker)
+		analyseDataFlow(variableTracker)
 		variableTracker.calculateEndState()
-		variableTracker.validate(linter)
+		variableTracker.validate()
 	}
 
 //	override fun compile(context: BuildContext): Pointer? {

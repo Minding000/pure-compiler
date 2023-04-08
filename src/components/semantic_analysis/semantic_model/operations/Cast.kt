@@ -58,8 +58,8 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		super.analyseDataFlow(linter, tracker)
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		super.analyseDataFlow(tracker)
 		if(operator.returnsBoolean) {
 			val variableValue = value as? VariableValue
 			val declaration = variableValue?.definition
@@ -71,7 +71,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 				val variableType = variableValue.type as? OptionalType
 				val baseType = variableType?.baseType
 				if(baseType == referenceType) {
-					val nullLiteral = NullLiteral(source, scope, linter)
+					val nullLiteral = NullLiteral(source, scope, tracker.linter)
 					tracker.add(VariableUsage.Kind.HINT, declaration, this, nullLiteral.type, nullLiteral)
 					setEndState(tracker, operator == Operator.NEGATED_CAST_CONDITION)
 				}

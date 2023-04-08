@@ -148,23 +148,23 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		parentDefinition.scope.declareInitializer(linter, this)
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		val propertiesToBeInitialized = parentDefinition.scope.getPropertiesToBeInitialized().toMutableList()
-		val initializerTracker = VariableTracker(linter, true)
+		val initializerTracker = VariableTracker(tracker.linter, true)
 		for(member in parentDefinition.scope.memberDeclarations)
 			if(member is PropertyDeclaration)
 				initializerTracker.declare(member)
 		for(parameter in parameters)
-			parameter.analyseDataFlow(linter, initializerTracker)
-		body?.analyseDataFlow(linter, initializerTracker)
+			parameter.analyseDataFlow(initializerTracker)
+		body?.analyseDataFlow(initializerTracker)
 		initializerTracker.calculateEndState()
-		initializerTracker.validate(linter)
+		initializerTracker.validate()
 		propertiesBeingInitialized.addAll(initializerTracker.getPropertiesBeingInitialized())
 		propertiesRequiredToBeInitialized.addAll(initializerTracker.getPropertiesRequiredToBeInitialized())
 		tracker.addChild("${parentDefinition.name}.${memberIdentifier}", initializerTracker)
 		propertiesToBeInitialized.removeAll(propertiesBeingInitialized)
 		if(propertiesToBeInitialized.isNotEmpty())
-			linter.addIssue(UninitializedProperties(source, propertiesToBeInitialized))
+			tracker.linter.addIssue(UninitializedProperties(source, propertiesToBeInitialized))
 	}
 
 	override fun validate(linter: Linter) {

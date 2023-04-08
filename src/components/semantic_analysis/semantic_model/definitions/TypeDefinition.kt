@@ -114,14 +114,14 @@ abstract class TypeDefinition(override val source: Element, val name: String, pu
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		for(member in scope.memberDeclarations) {
 			if(member is FunctionImplementation)
-				member.analyseDataFlow(linter, tracker)
+				member.analyseDataFlow(tracker)
 		}
 		if(!hasCircularInheritance) {
 			for(initializer in scope.initializers)
-				initializer.analyseDataFlow(linter, tracker)
+				initializer.analyseDataFlow(tracker)
 		}
 	}
 

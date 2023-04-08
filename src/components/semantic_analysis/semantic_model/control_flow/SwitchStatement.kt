@@ -38,23 +38,23 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		subject.analyseDataFlow(linter, tracker)
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		subject.analyseDataFlow(tracker)
 		val caseStates = LinkedList<VariableTracker.VariableState>()
 		val variableValue = subject as? VariableValue
 		val subjectDeclaration = variableValue?.definition
 		for(case in cases) {
-			case.condition.analyseDataFlow(linter, tracker)
+			case.condition.analyseDataFlow(tracker)
 			val negativeState = tracker.currentState.copy()
 			if(subjectDeclaration != null) {
 				val computedValue = case.condition.getComputedValue(tracker)
 				tracker.add(VariableUsage.Kind.HINT, subjectDeclaration, case, computedValue?.type, computedValue)
 			}
-			case.result.analyseDataFlow(linter, tracker)
+			case.result.analyseDataFlow(tracker)
 			caseStates.add(tracker.currentState.copy())
 			tracker.setVariableStates(negativeState)
 		}
-		elseBranch?.analyseDataFlow(linter, tracker)
+		elseBranch?.analyseDataFlow(tracker)
 		tracker.addVariableStates(*caseStates.toTypedArray())
 	}
 

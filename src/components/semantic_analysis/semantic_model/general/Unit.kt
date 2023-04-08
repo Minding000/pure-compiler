@@ -66,9 +66,9 @@ abstract class Unit(open val source: Element, open val scope: Scope) {
 			unit.linkValues(linter)
 	}
 
-	open fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	open fun analyseDataFlow(tracker: VariableTracker) {
 		for(unit in units)
-			unit.analyseDataFlow(linter, tracker)
+			unit.analyseDataFlow(tracker)
 	}
 
 	open fun validate(linter: Linter) {

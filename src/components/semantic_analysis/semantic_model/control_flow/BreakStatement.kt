@@ -22,7 +22,7 @@ class BreakStatement(override val source: BreakStatementSyntaxTree, scope: Scope
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		tracker.registerBreakStatement()
 	}
 }

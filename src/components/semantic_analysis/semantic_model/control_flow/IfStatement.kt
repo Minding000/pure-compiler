@@ -26,16 +26,16 @@ class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val 
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		condition.analyseDataFlow(linter, tracker)
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		condition.analyseDataFlow(tracker)
 		tracker.setVariableStates(condition.getPositiveEndState())
-		positiveBranch.analyseDataFlow(linter, tracker)
+		positiveBranch.analyseDataFlow(tracker)
 		if(negativeBranch == null) {
 			tracker.addVariableStates(condition.getNegativeEndState())
 		} else {
 			val positiveBranchState = tracker.currentState.copy()
 			tracker.setVariableStates(condition.getNegativeEndState())
-			negativeBranch.analyseDataFlow(linter, tracker)
+			negativeBranch.analyseDataFlow(tracker)
 			tracker.addVariableStates(positiveBranchState)
 		}
 	}

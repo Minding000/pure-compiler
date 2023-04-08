@@ -55,8 +55,8 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		sourceExpression.analyseDataFlow(linter, tracker)
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		sourceExpression.analyseDataFlow(tracker)
 		for(target in targets) {
 			when(target) {
 				is VariableValue -> {
@@ -65,7 +65,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 				}
 				is MemberAccess -> {
 					if(target.member !is VariableValue || target.member.definition?.isConstant == true)
-						linter.addIssue(ConstantReassignment(source, target.member.toString()))
+						tracker.linter.addIssue(ConstantReassignment(source, target.member.toString()))
 					if(target.target is SelfReference && target.member is VariableValue) {
 						tracker.add(VariableUsage.Kind.WRITE, target.member, sourceExpression.type,
 							sourceExpression.getComputedValue(tracker))
@@ -73,13 +73,13 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 					}
 				}
 				is IndexAccess -> { //TODO is this tested?
-					target.target.type?.interfaceScope?.resolveIndexOperator(linter, target.typeParameters, target.indices, sourceExpression)
+					target.target.type?.interfaceScope?.resolveIndexOperator(tracker.linter, target.typeParameters, target.indices, sourceExpression)
 				}
 				else -> { //TODO write test for this
-					linter.addIssue(ExpressionNotAssignable(target.source))
+					tracker.linter.addIssue(ExpressionNotAssignable(target.source))
 				}
 			}
-			target.analyseDataFlow(linter, tracker)
+			target.analyseDataFlow(tracker)
 		}
 	}
 }

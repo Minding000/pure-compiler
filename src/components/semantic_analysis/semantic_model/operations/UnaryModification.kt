@@ -40,22 +40,22 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		if(target is VariableValue) {
 			tracker.add(listOf(VariableUsage.Kind.READ, VariableUsage.Kind.MUTATION), target, tracker.getCurrentTypeOf(target.definition),
-				getComputedTargetValue(linter, tracker))
+				getComputedTargetValue(tracker))
 		} else {
-			target.analyseDataFlow(linter, tracker)
+			target.analyseDataFlow(tracker)
 		}
 	}
 
-	private fun getComputedTargetValue(linter: Linter, tracker: VariableTracker): Value? {
+	private fun getComputedTargetValue(tracker: VariableTracker): Value? {
 		val targetValue = (target.getComputedValue(tracker) as? NumberLiteral ?: return null).value
 		val resultingValue = when(kind) {
 			Operator.Kind.DOUBLE_PLUS -> targetValue + STEP
 			Operator.Kind.DOUBLE_MINUS -> targetValue - STEP
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
-		return NumberLiteral(source, scope, resultingValue, linter)
+		return NumberLiteral(source, scope, resultingValue, tracker.linter)
 	}
 }

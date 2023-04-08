@@ -33,13 +33,13 @@ class NullCheck(override val source: NullCheckSyntaxTree, scope: Scope, val valu
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
-		super.analyseDataFlow(linter, tracker)
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		super.analyseDataFlow(tracker)
 		val variableValue = value as? VariableValue
 		val declaration = variableValue?.definition
 		if(declaration != null) {
 			val commonState = tracker.currentState.copy()
-			val nullLiteral = NullLiteral(source, scope, linter)
+			val nullLiteral = NullLiteral(source, scope, tracker.linter)
 			tracker.add(VariableUsage.Kind.HINT, declaration, this, nullLiteral.type, nullLiteral)
 			positiveState = tracker.currentState.copy()
 			tracker.setVariableStates(commonState)

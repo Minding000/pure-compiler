@@ -46,13 +46,13 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		parentFunction = function
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		if(body == null)
 			return
-		val functionTracker = VariableTracker(linter)
-		super.analyseDataFlow(linter, functionTracker)
+		val functionTracker = VariableTracker(tracker.linter)
+		super.analyseDataFlow(functionTracker)
 		functionTracker.calculateEndState()
-		functionTracker.validate(linter)
+		functionTracker.validate()
 		propertiesBeingInitialized.addAll(functionTracker.getPropertiesBeingInitialized())
 		propertiesRequiredToBeInitialized.addAll(functionTracker.getPropertiesRequiredToBeInitialized())
 		var trackerName = ""

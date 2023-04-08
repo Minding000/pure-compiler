@@ -36,7 +36,7 @@ class Parameter(override val source: ParameterSyntaxTree, scope: Scope, name: St
 		}
 	}
 
-	override fun analyseDataFlow(linter: Linter, tracker: VariableTracker) {
+	override fun analyseDataFlow(tracker: VariableTracker) {
 		if(isPropertySetter) {
 			propertyDeclaration?.let { propertyDeclaration ->
 				tracker.add(VariableUsage.Kind.WRITE, propertyDeclaration, propertyDeclaration)
