@@ -14,6 +14,7 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 
 	init {
 		addUnits(specifier)
+		specifier?.setIsNonSpecificContext()
 	}
 
 	override fun linkValues(linter: Linter) {
@@ -25,10 +26,12 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 		if(specifier == null) {
 			definition = surroundingDefinition
 		} else {
-			specifier.definition?.let { specifierDefinition ->
-				definition = specifierDefinition
-				if(!isBoundTo(surroundingDefinition, specifierDefinition))
-					linter.addIssue(SelfReferenceSpecifierNotBound(source))
+			val specifierDefinition = specifier.definition
+			if(specifierDefinition != null) {
+				if(isBoundTo(surroundingDefinition, specifierDefinition))
+					definition = specifierDefinition
+				else
+					linter.addIssue(SelfReferenceSpecifierNotBound(source, surroundingDefinition, specifierDefinition))
 			}
 		}
 		definition?.let { definition ->

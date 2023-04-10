@@ -485,4 +485,20 @@ internal class Initialization {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<ConstantReassignment>("'numberOfArms' cannot be reassigned, because it is constant.")
 	}
+
+	@Test
+	fun `allows inner classes and objects`() {
+		val sourceCode =
+			"""
+				Map class {
+					Faction enum
+					PlayerSpawn object
+					Details class
+					bound EnemySpawn class
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotInitialized>()
+		lintResult.assertIssueNotDetected<UninitializedProperties>()
+	}
 }

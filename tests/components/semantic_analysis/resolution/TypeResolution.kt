@@ -3,6 +3,7 @@ package components.semantic_analysis.resolution
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
+import logger.issues.definition.TypeParameterCountMismatch
 import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -81,6 +82,22 @@ internal class TypeResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "birdType" }
 		assertEquals("Type", (declaration?.type as? ObjectType)?.definition?.name)
+	}
+
+	@Test
+	fun `resolves types enclosing in generic types`() {
+		val sourceCode =
+			"""
+				List class {
+					containing Element
+					View class
+				}
+				var listView: List.View
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<TypeParameterCountMismatch>()
+		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "listView" }
+		assertEquals("View", (declaration?.type as? ObjectType)?.definition?.name)
 	}
 
 	@Test

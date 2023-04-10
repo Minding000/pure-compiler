@@ -74,7 +74,7 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 		if(superScope != null)
 			propertiesToBeInitialized.addAll(superScope.getPropertiesToBeInitialized())
 		propertiesToBeInitialized.addAll(memberDeclarations.filterIsInstance<PropertyDeclaration>().filter { member ->
-			!member.isStatic && member.value == null })
+			!member.isStatic && member.type !is StaticType && member.value == null })
 		return propertiesToBeInitialized
 	}
 

@@ -380,13 +380,13 @@ class ExpressionParser(private val elementGenerator: ElementGenerator): Generato
 	private fun parseSelfReference(): SelfReference {
 		val word = consume(WordAtom.SELF_REFERENCE)
 		var end = word.end
-		var type: ObjectType? = null
+		var specifier: ObjectType? = null
 		if(WordType.GENERICS_START.includes(currentWord?.type)) {
 			consume(WordType.GENERICS_START)
-			type = typeParser.parseObjectType()
+			specifier = typeParser.parseObjectType(false)
 			end = consume(WordType.GENERICS_END).end
 		}
-		return SelfReference(word, type, end)
+		return SelfReference(word, specifier, end)
 	}
 
 	/**

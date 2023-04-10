@@ -83,13 +83,15 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 
 	/**
 	 * ObjectType:
-	 *   <TypeList><Identifier>
-	 *   <ObjectType>.<TypeList><Identifier>
+	 *   [<TypeList>]<Identifier>
+	 *   <ObjectType>.[<TypeList>]<Identifier>
 	 */
-	fun parseObjectType(): ObjectType {
+	fun parseObjectType(allowTypeList: Boolean = true): ObjectType {
 		var objectType: ObjectType? = null
 		while(true) {
-			val typeList = parseOptionalTypeList()
+			val typeList = if(allowTypeList)
+				parseOptionalTypeList()
+			else null
 			val identifier = parseIdentifier()
 			objectType = ObjectType(objectType, typeList, identifier)
 			if(currentWord?.type != WordAtom.DOT)

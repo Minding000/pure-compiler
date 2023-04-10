@@ -11,6 +11,7 @@ import logger.issues.resolution.NotFound
 
 open class ObjectType(override val source: Element, scope: Scope, val enclosingType: ObjectType?, val typeParameters: List<Type>,
 					  val name: String, var definition: TypeDefinition? = null): Type(source, scope) {
+	private var isInSpecificContext = true
 
 	constructor(source: Element, surroundingScope: Scope, name: String): this(source, surroundingScope, null, listOf(), name)
 
@@ -49,6 +50,11 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		return ObjectType(source, scope, enclosingType?.simplified(), typeParameters.map(Type::simplified), name, definition)
 	}
 
+	fun setIsNonSpecificContext() {
+		isInSpecificContext = false
+		enclosingType?.setIsNonSpecificContext()
+	}
+
 	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableList<Type>) {
 		if(sourceType is ObjectType) {
 			for(typeParameterIndex in typeParameters.indices) {
@@ -81,6 +87,8 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 			definition = sourceScope.resolveType(name)
 			if(definition == null)
 				linter.addIssue(NotFound(source, "Type", name))
+			if(definition?.isBound != true)
+				enclosingType?.setIsNonSpecificContext()
 		}
 	}
 
@@ -98,6 +106,11 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
+		if(isInSpecificContext)
+			ensureSpecificDefinition(linter)
+	}
+
+	private fun ensureSpecificDefinition(linter: Linter) {
 		(definition?.baseDefinition ?: definition)?.let { definition ->
 			val genericTypes = definition.scope.getGenericTypeDefinitions()
 			if(typeParameters.size != genericTypes.size)

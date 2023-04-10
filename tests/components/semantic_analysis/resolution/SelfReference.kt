@@ -3,6 +3,7 @@ package components.semantic_analysis.resolution
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.SelfReference
 import logger.Severity
+import logger.issues.definition.TypeParameterCountMismatch
 import logger.issues.resolution.SelfReferenceOutsideOfTypeDefinition
 import logger.issues.resolution.SelfReferenceSpecifierNotBound
 import org.junit.jupiter.api.Test
@@ -107,7 +108,7 @@ internal class SelfReference {
 		val sourceCode =
 			"""
 				Outer class {
-					Inner class {
+					bound Inner class {
 						to referenceOuter() {
 							this<Outer>
 						}
@@ -117,6 +118,24 @@ internal class SelfReference {
 		val lintResult = TestUtil.lint(sourceCode)
 		val selfReference = lintResult.find<SelfReference>()
 		assertEquals("Outer", selfReference?.type.toString())
+	}
+
+	@Test
+	fun `allows specifying enclosed type`() {
+		val sourceCode =
+			"""
+				Outer class {
+					bound Middle class
+				}
+				bound Inner class in Outer.Middle {
+					to referenceMiddle() {
+						this<Outer.Middle>
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val selfReference = lintResult.find<SelfReference>()
+		assertEquals("Middle", selfReference?.type.toString())
 	}
 
 	@Test
@@ -147,6 +166,25 @@ internal class SelfReference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<SelfReferenceSpecifierNotBound>(
-			"Self references can only specify types they are bound to.", Severity.ERROR)
+			"Specified type 'Wrapper' is not bound to surrounding type 'Main'.", Severity.ERROR)
+	}
+
+	@Test
+	fun `specifier does not require generic parameters`() {
+		val sourceCode =
+			"""
+				Wrapper class {
+					containing Key
+					val key: Key? = null
+					bound Main class {
+						var key: Key?
+						to referenceOther() {
+							key = this<Wrapper>.key
+						}
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<TypeParameterCountMismatch>()
 	}
 }
