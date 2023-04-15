@@ -24,6 +24,7 @@ internal class Expressions {
 	fun `returns boolean from null checks`() {
 		val sourceCode =
 			"""
+				referencing Pure
 				val a: Int? = 5
 				val b = a?
             """.trimIndent()

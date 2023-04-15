@@ -2,6 +2,7 @@ package components.semantic_analysis.declarations
 
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
 import logger.Severity
+import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.definition.GenericTypeDeclarationInObject
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -66,5 +67,24 @@ internal class GenericTypes {
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "firstElement" }?.type
 		assertEquals("Int", variableType.toString())
+	}
+
+	@Test
+	fun `doesn't check specific copies for issues`() {
+		val sourceCode =
+			"""
+				Int class
+				List class {
+					containing Element
+
+					val firstElement: Element = getFirstElement()
+
+					to getFirstElement(): Element
+				}
+				val integerList = <Int>List()
+				integerList.firstElement
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 }
