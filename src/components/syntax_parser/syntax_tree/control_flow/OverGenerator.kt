@@ -17,16 +17,8 @@ class OverGenerator(start: Position, private val collection: ValueElement, priva
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticOverGeneratorModel {
 		return SemanticOverGeneratorModel(this, scope, collection.concretize(linter, scope),
-			iteratorVariableDeclaration?.let { variableDeclaration ->
-				val variable = LocalVariableDeclaration(variableDeclaration, scope)
-				scope.declareValue(linter, variable)
-				variable
-			},
-			variableDeclarations.map { variableDeclaration ->
-				val variable = LocalVariableDeclaration(variableDeclaration, scope)
-				scope.declareValue(linter, variable)
-				variable
-			})
+			iteratorVariableDeclaration?.let { variableDeclaration -> LocalVariableDeclaration(variableDeclaration, scope) },
+			variableDeclarations.map { variableDeclaration -> LocalVariableDeclaration(variableDeclaration, scope) })
 	}
 
 	override fun toString(): String {

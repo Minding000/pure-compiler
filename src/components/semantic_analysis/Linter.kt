@@ -28,6 +28,9 @@ class Linter {
 		activePhase = Phase.LITERAL_SCOPE_RESOLUTION
 		for(literalType in SpecialType.values())
 			literalType.scope = getLiteralScope(semanticProgramModel, literalType.pathParts)
+		logger.addPhase("Declaration")
+		activePhase = Phase.DECLARATION
+		semanticProgramModel.declare(this)
 		logger.addPhase("Type linking")
 		activePhase = Phase.TYPE_LINKING
 		semanticProgramModel.linkTypes(this)
@@ -67,6 +70,7 @@ class Linter {
 		CONCRETIZATION,
 		LITERAL_SCOPE_RESOLUTION,
 		FILE_REFERENCE_RESOLUTION,
+		DECLARATION,
 		TYPE_LINKING,
 		PROPERTY_PARAMETER_LINKING,
 		RESOLVE_GENERICS,

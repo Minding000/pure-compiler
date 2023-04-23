@@ -9,11 +9,11 @@ interface ModifierSpecification {
 
 	fun getModifiers(): List<Modifier>
 
-	fun validate(linter: Linter, allowedModifierTypes: List<WordAtom> = listOf()) {
+	fun validate(linter: Linter, allowedModifiers: List<WordAtom> = listOf()) {
 		val uniqueModifiers = HashSet<String>()
 		for(modifier in getModifiers()) {
 			val name = modifier.getValue()
-			if(!allowedModifierTypes.contains(modifier.type)) {
+			if(!allowedModifiers.contains(modifier.type)) {
 				linter.addIssue(DisallowedModifier(modifier))
 				continue
 			}
@@ -25,9 +25,9 @@ interface ModifierSpecification {
 		}
 	}
 
-	fun containsModifier(searchedModifierType: WordAtom): Boolean {
+	fun containsModifier(modifier: WordAtom): Boolean {
 		for(presentModifier in getModifiers())
-			if(presentModifier.type == searchedModifierType)
+			if(presentModifier.type == modifier)
 				return true
 		return false
 	}

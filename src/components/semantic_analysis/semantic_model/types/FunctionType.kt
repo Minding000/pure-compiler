@@ -53,11 +53,6 @@ class FunctionType(override val source: Element, scope: Scope): ObjectType(sourc
 		signatures.add(signature)
 	}
 
-	fun removeSignature(signature: FunctionSignature) {
-		removeUnit(signature)
-		signatures.remove(signature)
-	}
-
 	fun resolveSignature(linter: Linter, suppliedValues: List<Value>): FunctionSignature? =
 		resolveSignature(linter, listOf(), suppliedValues)
 

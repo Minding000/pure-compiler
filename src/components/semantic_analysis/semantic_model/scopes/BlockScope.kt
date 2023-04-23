@@ -7,22 +7,20 @@ import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
-import logger.issues.definition.Declaration
 import logger.issues.definition.Redeclaration
 
-class BlockScope(val parentScope: MutableScope): MutableScope() {
+class BlockScope(private val parentScope: MutableScope): MutableScope() {
 	var unit: Unit? = null
 	val types = HashMap<String, TypeDefinition>()
 	val values = HashMap<String, ValueDeclaration>()
 
-	override fun declareType(linter: Linter, type: TypeDefinition) {
-		val previousDeclaration = parentScope.resolveType(type.name) ?: types.putIfAbsent(type.name, type)
+	override fun declareType(linter: Linter, typeDefinition: TypeDefinition) {
+		val previousDeclaration = parentScope.resolveType(typeDefinition.name) ?: types.putIfAbsent(typeDefinition.name, typeDefinition)
 		if(previousDeclaration != null) {
-			linter.addIssue(Redeclaration(type.source, "type", type.name, previousDeclaration.source))
+			linter.addIssue(Redeclaration(typeDefinition.source, "type", typeDefinition.name, previousDeclaration.source))
 			return
 		}
-		onNewType(type)
-		linter.addIssue(Declaration(type.source, "type", type.name))
+		onNewType(typeDefinition)
 	}
 
 	override fun getSurroundingDefinition(): TypeDefinition? {
@@ -41,13 +39,12 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 		return types[name] ?: parentScope.resolveType(name)
 	}
 
-	override fun declareValue(linter: Linter, value: ValueDeclaration) {
-		val previousDeclaration = parentScope.resolveValue(value.name) ?: values.putIfAbsent(value.name, value)
+	override fun declareValue(linter: Linter, valueDeclaration: ValueDeclaration) {
+		val previousDeclaration = parentScope.resolveValue(valueDeclaration.name) ?: values.putIfAbsent(valueDeclaration.name, valueDeclaration)
 		if(previousDeclaration != null) {
-			linter.addIssue(Redeclaration(value.source, "value", value.name, previousDeclaration.source))
+			linter.addIssue(Redeclaration(valueDeclaration.source, "value", valueDeclaration.name, previousDeclaration.source))
 			return
 		}
-		linter.addIssue(Declaration(value.source, "value", value.name))
 	}
 
 	override fun resolveValue(name: String): ValueDeclaration? {

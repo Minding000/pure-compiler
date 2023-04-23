@@ -4,11 +4,11 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
-import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.AndUnionType
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
+import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.Element
 import logger.issues.definition.CircularInheritance
 import logger.issues.definition.ExplicitParentOnScopedTypeDefinition
@@ -17,8 +17,8 @@ import util.linkedListOf
 import java.util.*
 
 abstract class TypeDefinition(override val source: Element, val name: String, override val scope: TypeScope,
-							  val explicitParentType: ObjectType?, val superType: Type?, val isBound: Boolean = false):
-	Unit(source, scope) {
+							  val explicitParentType: ObjectType? = null, val superType: Type? = null, val members: List<Unit> = listOf(),
+							  val isBound: Boolean = false): Unit(source, scope) {
 	protected open val isDefinition = true
 	override var parent: Unit?
 		get() = super.parent
@@ -37,9 +37,12 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 
 	init {
 		addUnits(explicitParentType, superType)
+		addUnits(members)
+		for(member in members) {
+			if(member is InterfaceMember)
+				member.parentDefinition = this
+		}
 	}
-
-	open fun register(linter: Linter, parentScope: MutableScope) {}
 
 	protected abstract fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): TypeDefinition
 
@@ -95,6 +98,8 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 		}
 	}
 
+	fun preLinkPropertyParameters(linter: Linter) = linkPropertyParameters(linter)
+
 	override fun linkPropertyParameters(linter: Linter) {
 		if(arePropertyParametersLinked)
 			return
@@ -134,9 +139,10 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 	}
 
 	private fun addDefaultInitializer(linter: Linter) {
-		val defaultInitializer = InitializerDefinition(source, this, BlockScope(scope))
+		val defaultInitializer = InitializerDefinition(source, BlockScope(scope))
 		addUnits(defaultInitializer)
-		scope.declareInitializer(linter, defaultInitializer)
+		defaultInitializer.linkTypes(linter)
+		defaultInitializer.linkPropertyParameters(linter)
 	}
 
 	private fun inheritsFrom(definition: TypeDefinition): Boolean {

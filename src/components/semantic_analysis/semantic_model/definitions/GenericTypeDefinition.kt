@@ -13,9 +13,15 @@ class GenericTypeDefinition(override val source: ParameterSyntaxTree, name: Stri
 		scope.typeDefinition = this
 	}
 
+	override fun declare(linter: Linter) {
+		super.declare(linter)
+		scope.enclosingScope.declareType(linter, this)
+	}
+
 	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): GenericTypeDefinition {
 		val superType = superType?.withTypeSubstitutions(linter, typeSubstitutions)
-		return GenericTypeDefinition(source, name, scope.withTypeSubstitutions(linter, typeSubstitutions, superType?.interfaceScope), superType)
+		return GenericTypeDefinition(source, name, scope.withTypeSubstitutions(linter, typeSubstitutions, superType?.interfaceScope),
+			superType)
 	}
 
 	override fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> {

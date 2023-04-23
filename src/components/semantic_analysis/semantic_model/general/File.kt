@@ -8,13 +8,18 @@ import java.util.*
 import components.syntax_parser.syntax_tree.general.File as FileSyntaxTree
 import source_structure.File as SourceFile
 
-class File(override val source: FileSyntaxTree, val file: SourceFile, override val scope: FileScope): Unit(source, scope) {
+class File(override val source: FileSyntaxTree, val file: SourceFile, override val scope: FileScope, val statements: List<Unit>):
+	Unit(source, scope) {
 	private val referencedFiles = LinkedList<File>()
 	lateinit var variableTracker: VariableTracker
 
+	init {
+		addUnits(statements)
+	}
+
 	fun resolveFileReferences(linter: Linter, program: Program) {
-		for(unit in units) {
-			val fileReference = unit as? FileReference ?: continue
+		for(statement in statements) {
+			val fileReference = statement as? FileReference ?: continue
 			var noFilesFound = true
 			for(file in program.files) {
 				if(file == this)
@@ -55,8 +60,8 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 	}
 
 //	override fun compile(context: BuildContext): Pointer? {
-//		for(unit in units)
-//			unit.compile(context)
+//		for(statement in statements)
+//			statement.compile(context)
 //		return null
 //	}
 }

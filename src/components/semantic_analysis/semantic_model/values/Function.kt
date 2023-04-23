@@ -12,15 +12,12 @@ import java.util.*
 open class Function(source: Element, scope: Scope, val name: String = "<anonymous function>",
 					val functionType: FunctionType = FunctionType(source, scope)): Value(source, scope, functionType) {
 	open val memberType = "function"
-	protected val implementations = LinkedList<FunctionImplementation>()
+	val implementations = LinkedList<FunctionImplementation>()
 	val isAbstract: Boolean
-		get() {
-			return implementations.any { implementation -> implementation.isAbstract }
-		}
+		get() = implementations.any { implementation -> implementation.isAbstract }
 
 	init {
 		addUnits(functionType)
-		addUnits(implementations)
 	}
 
 	fun addImplementation(implementation: FunctionImplementation) {
@@ -36,12 +33,6 @@ open class Function(source: Element, scope: Scope, val name: String = "<anonymou
 				return implementation
 		}
 		return null
-	}
-
-	fun removeImplementation(implementation: FunctionImplementation) {
-		removeUnit(implementation)
-		implementations.remove(implementation)
-		functionType.removeSignature(implementation.signature)
 	}
 
 	override fun linkTypes(linter: Linter) {
@@ -69,7 +60,5 @@ open class Function(source: Element, scope: Scope, val name: String = "<anonymou
 					implementation.source))
 			}
 		}
-		for(implementation in redeclarations)
-			removeImplementation(implementation)
 	}
 }

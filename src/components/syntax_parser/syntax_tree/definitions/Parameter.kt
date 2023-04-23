@@ -23,20 +23,13 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
         modifierList?.validate(linter, ALLOWED_MODIFIER_TYPES)
         val isMutable = modifierList?.containsModifier(WordAtom.MUTABLE) ?: false
         val hasDynamicSize = modifierList?.containsModifier(WordAtom.SPREAD) ?: false
-        val parameter = SemanticParameterModel(this, scope, identifier.getValue(), type?.concretize(linter, scope), isMutable,
-                hasDynamicSize)
-        if(type != null)
-            scope.declareValue(linter, parameter)
-        return parameter
+        return SemanticParameterModel(this, scope, identifier.getValue(), type?.concretize(linter, scope), isMutable, hasDynamicSize)
     }
 
 	fun concretizeAsGenericParameter(linter: Linter, scope: MutableScope): TypeDefinition {
 		val superType = type?.concretize(linter, scope) ?: LiteralType(this, scope, Linter.SpecialType.ANY)
 		val typeScope = TypeScope(scope, superType.interfaceScope)
-		val genericTypeDefinition = GenericTypeDefinition(this, identifier.getValue(), typeScope, superType)
-		typeScope.typeDefinition = genericTypeDefinition
-		scope.declareType(linter, genericTypeDefinition)
-		return genericTypeDefinition
+		return GenericTypeDefinition(this, identifier.getValue(), typeScope, superType)
 	}
 
     override fun toString(): String {

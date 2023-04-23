@@ -8,7 +8,6 @@ import components.syntax_parser.syntax_tree.definitions.sections.ModifierSection
 import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.general.StatementSection
 import components.tokenizer.WordAtom
-import errors.internal.CompilerError
 import source_structure.Position
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition as SemanticInitializerDefinitionModel
 
@@ -22,8 +21,6 @@ class InitializerDefinition(start: Position, private val parameterList: Paramete
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticInitializerDefinitionModel {
 		parent?.validate(linter, ALLOWED_MODIFIER_TYPES)
-		val surroundingTypeDefinition = scope.getSurroundingDefinition()
-			?: throw CompilerError(this, "Initializer expected surrounding type definition.")
 		val isAbstract = parent?.containsModifier(WordAtom.ABSTRACT) ?: false
 		val isConverting = parent?.containsModifier(WordAtom.CONVERTING) ?: false
 		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
@@ -31,7 +28,7 @@ class InitializerDefinition(start: Position, private val parameterList: Paramete
 		val initializerScope = BlockScope(scope)
 		val genericParameters = parameterList?.concretizeGenerics(linter, initializerScope) ?: listOf()
 		val parameters = parameterList?.concretizeParameters(linter, initializerScope) ?: listOf()
-		return SemanticInitializerDefinitionModel(this, surroundingTypeDefinition, initializerScope, genericParameters, parameters,
+		return SemanticInitializerDefinitionModel(this, initializerScope, genericParameters, parameters,
 			body?.concretize(linter, initializerScope), isAbstract, isConverting, isNative, isOverriding)
 	}
 

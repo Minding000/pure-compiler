@@ -5,8 +5,9 @@ import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.*
 import components.semantic_analysis.semantic_model.values.Function
+import components.semantic_analysis.semantic_model.values.InterfaceMember
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import errors.internal.CompilerError
 import logger.issues.definition.*
 import java.util.*
@@ -133,7 +134,7 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 				memberDeclaration.memberIdentifier == abstractSuperMember.memberIdentifier }
 			if(!abstractSuperMember.canBeOverriddenBy(overridingMember)) {
 				val parentDefinition = abstractSuperMember.parentDefinition
-					?: throw CompilerError(typeDefinition.source, "Member is missing parent definition.")
+					?: throw CompilerError(abstractSuperMember.source, "Member is missing parent definition.")
 				val missingOverridesFromType = missingOverrides.getOrPut(parentDefinition) { LinkedList() }
 				missingOverridesFromType.add(abstractSuperMember)
 			}
@@ -147,100 +148,42 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 		initializers.add(initializer)
 		onNewInitializer(initializer)
 		memberDeclarations.add(initializer)
-		linter.addIssue(Declaration(initializer.source, "initializer", initializer.toString()))
 	}
 
-	override fun declareType(linter: Linter, type: TypeDefinition) {
-		var previousDeclaration = enclosingScope.resolveType(type.name)
+	override fun declareType(linter: Linter, typeDefinition: TypeDefinition) {
+		var previousDeclaration = enclosingScope.resolveType(typeDefinition.name)
 		if(previousDeclaration != null)
-			linter.addIssue(ShadowsElement(type.source, "type", type.name, previousDeclaration.source))
-		previousDeclaration = superScope?.resolveType(type.name) ?: typeDefinitions.putIfAbsent(type.name, type)
+			linter.addIssue(ShadowsElement(typeDefinition.source, "type", typeDefinition.name, previousDeclaration.source))
+		previousDeclaration = superScope?.resolveType(typeDefinition.name)
+			?: typeDefinitions.putIfAbsent(typeDefinition.name, typeDefinition)
 		if(previousDeclaration != null) {
-			linter.addIssue(Redeclaration(type.source, "type", "${typeDefinition.name}.${type.name}",
+			linter.addIssue(Redeclaration(typeDefinition.source, "type", "${this.typeDefinition.name}.${typeDefinition.name}",
 				previousDeclaration.source))
 			return
 		}
-		onNewType(type)
-		linter.addIssue(Declaration(type.source, "type", "${typeDefinition.name}.${type.name}"))
+		onNewType(typeDefinition)
 	}
 
-	override fun declareValue(linter: Linter, value: ValueDeclaration) {
-		if(value !is InterfaceMember)
-			throw CompilerError(typeDefinition.source,
-				"Tried to declare non-member of type '${value.javaClass.simpleName}' in type scope.")
-		value.parentDefinition = typeDefinition
-		var previousDeclaration = enclosingScope.resolveValue(value.name)
+	override fun declareValue(linter: Linter, valueDeclaration: ValueDeclaration) {
+		if(valueDeclaration !is InterfaceMember)
+			throw CompilerError(valueDeclaration.source,
+				"Tried to declare non-member of type '${valueDeclaration.javaClass.simpleName}' in type scope.")
+		var previousDeclaration = enclosingScope.resolveValue(valueDeclaration.name)
 		if(previousDeclaration != null)
-			linter.addIssue(ShadowsElement(value.source, "member", value.name, previousDeclaration.source))
-		previousDeclaration = superScope?.resolveValue(value.name) ?: interfaceMembers.putIfAbsent(value.name, value)
+			linter.addIssue(ShadowsElement(valueDeclaration.source, "member", valueDeclaration.name, previousDeclaration.source))
+		previousDeclaration = superScope?.resolveValue(valueDeclaration.name) ?: interfaceMembers.putIfAbsent(valueDeclaration.name,
+			valueDeclaration)
 		if(previousDeclaration != null) {
-			linter.addIssue(Redeclaration(value.source, "member", "${typeDefinition.name}.${value.name}",
-				previousDeclaration.source))
+			linter.addIssue(Redeclaration(valueDeclaration.source, "member",
+				"${typeDefinition.name}.${valueDeclaration.name}", previousDeclaration.source))
 			return
 		}
-		if(value is Instance)
-			value.setType(typeDefinition)
-		memberDeclarations.add(value)
-		onNewValue(value)
-		linter.addIssue(Declaration(value.source, "member", "${typeDefinition.name}.${value.name}"))
-	}
-
-	override fun declareFunction(linter: Linter, name: String, newImplementation: FunctionImplementation) {
-		when(val existingInterfaceMember = interfaceMembers[name]?.value) {
-			null -> {
-				val newFunction = Function(newImplementation.source, this, name)
-				newFunction.addImplementation(newImplementation)
-				//TODO Why add the function instead of the property?
-				typeDefinition.addUnits(newFunction)
-				//TODO add two properties (static & instance) - same for operators
-				// The function should have both of these types
-				// - only add instance values to ObjectType
-				// - access InstanceAccess through StaticType
-				val newValue = PropertyDeclaration(newImplementation.source, this, name, newFunction.type, newFunction, false,
-					newFunction.isAbstract)
-				newValue.parentDefinition = typeDefinition
-				interfaceMembers[name] = newValue
-				onNewValue(newValue)
-			}
-			is Function -> {
-				existingInterfaceMember.addImplementation(newImplementation)
-			}
-			else -> {
-				linter.addIssue(Redeclaration(newImplementation.source, "member", "${typeDefinition.name}.$name",
-					existingInterfaceMember.source))
-				return
-			}
-		}
-		memberDeclarations.add(newImplementation)
-		val signature = "${typeDefinition.name}.$name${newImplementation.signature.toString(false)}"
-		linter.addIssue(Declaration(newImplementation.source, "function", signature))
-	}
-
-	override fun declareOperator(linter: Linter, kind: Operator.Kind, newImplementation: FunctionImplementation) {
-		val name = kind.stringRepresentation
-		when(val existingInterfaceMember = interfaceMembers[name]?.value) {
-			null -> {
-				val newOperator = Operator(newImplementation.source, this, kind)
-				newOperator.addImplementation(newImplementation)
-				typeDefinition.addUnits(newOperator) //TODO Why add the operator instead of the property?
-				val newValue = PropertyDeclaration(newImplementation.source, this, name, newOperator.type, newOperator, false,
-					newOperator.isAbstract)
-				newValue.parentDefinition = typeDefinition
-				interfaceMembers[name] = newValue
-				onNewValue(newValue)
-			}
-			is Function -> {
-				existingInterfaceMember.addImplementation(newImplementation)
-			}
-			else -> {
-				linter.addIssue(Redeclaration(newImplementation.source, "member", "${typeDefinition.name}.$name",
-					existingInterfaceMember.source))
-				return
-			}
-		}
-		memberDeclarations.add(newImplementation)
-		val signature = "${typeDefinition.name}.$name${newImplementation.signature.toString(false)}"
-		linter.addIssue(Declaration(newImplementation.source, "operator", signature))
+		val value = valueDeclaration.value
+		if(value is Function)
+			memberDeclarations.addAll(value.implementations)
+		else
+			memberDeclarations.add(valueDeclaration)
+		onNewValue(valueDeclaration)
 	}
 
 	override fun resolveValue(name: String): ValueDeclaration? {

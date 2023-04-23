@@ -13,11 +13,10 @@ class HandleBlock(start: Position, private val type: TypeElement, private val id
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticHandleBlockModel {
 		val statementBlock = block.concretize(linter, scope)
 		val eventType = type.concretize(linter, scope)
-		val variableValueDeclaration = if(identifier != null) {
-			val declaration = LocalVariableDeclaration(identifier, scope, eventType)
-			statementBlock.scope.declareValue(linter, declaration)
-			declaration
-		} else null
+		val variableValueDeclaration = if(identifier == null)
+			null
+		else
+			LocalVariableDeclaration(identifier, statementBlock.scope, eventType)
 		return SemanticHandleBlockModel(this, scope, eventType, variableValueDeclaration, statementBlock)
 	}
 

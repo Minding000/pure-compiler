@@ -3,20 +3,26 @@ package components.semantic_analysis.semantic_model.definitions
 import components.semantic_analysis.Linter
 import components.semantic_analysis.VariableTracker
 import components.semantic_analysis.VariableUsage
-import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import logger.issues.definition.PropertyParameterMismatch
 import logger.issues.definition.PropertyParameterOutsideOfInitializer
 import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
-class Parameter(override val source: ParameterSyntaxTree, scope: Scope, name: String, type: Type?, isMutable: Boolean,
-				val hasDynamicSize: Boolean): ValueDeclaration(source, scope, name, type, null, true, isMutable) {
+class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, name: String, type: Type?, isMutable: Boolean,
+				val hasDynamicSize: Boolean, isSpecificCopy: Boolean = false):
+	ValueDeclaration(source, scope, name, type, null, true, isMutable, isSpecificCopy) {
 	val isPropertySetter = type == null
 	var propertyDeclaration: ValueDeclaration? = null
 
 	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Parameter {
 		return Parameter(source, scope, name, type?.withTypeSubstitutions(linter, typeSubstitutions), isMutable, hasDynamicSize)
+	}
+
+	override fun declare(linter: Linter) {
+		if(type != null)
+			scope.declareValue(linter, this)
 	}
 
 	override fun linkPropertyParameters(linter: Linter) {

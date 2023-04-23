@@ -2,16 +2,18 @@ package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
+import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
 import components.syntax_parser.syntax_tree.definitions.Instance as InstanceSyntaxTree
 
-class Instance(override val source: InstanceSyntaxTree, scope: Scope, override val value: VariableValue, val valueParameters: List<Value>):
-	InterfaceMember(source, scope, value.name, null, value, true) {
+class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, override val value: VariableValue,
+			   val valueParameters: List<Value>, isSpecificCopy: Boolean = false):
+	InterfaceMember(source, scope, value.name, null, value, true, isSpecificCopy = isSpecificCopy) {
 	lateinit var typeDefinition: TypeDefinition
 
 	init {
@@ -19,11 +21,12 @@ class Instance(override val source: InstanceSyntaxTree, scope: Scope, override v
 	}
 
 	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Instance {
-		return Instance(source, scope, value, valueParameters)
+		return Instance(source, scope, value, valueParameters, true)
 	}
 
-	fun setType(typeDefinition: TypeDefinition) {
-		this.typeDefinition = typeDefinition
+	override fun linkTypes(linter: Linter) {
+		this.typeDefinition = scope.getSurroundingDefinition()
+			?: throw CompilerError(source, "Instance outside of type definition.")
 		val type = ObjectType(typeDefinition)
 		addUnits(type)
 		this.type = type

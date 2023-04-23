@@ -24,6 +24,14 @@ class Program(val source: ProgramSyntaxTree) {
 	}
 
 	/**
+	 * Declares types and values.
+	 */
+	fun declare(linter: Linter) {
+		for(file in files)
+			file.declare(linter)
+	}
+
+	/**
 	 * Links type usages to their declaration.
 	 */
 	fun linkTypes(linter: Linter) {

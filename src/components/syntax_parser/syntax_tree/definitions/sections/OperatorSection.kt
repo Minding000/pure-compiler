@@ -8,7 +8,6 @@ import components.tokenizer.Word
 import source_structure.Position
 import util.indent
 import util.toLines
-import java.lang.StringBuilder
 
 class OperatorSection(declarationType: Word, private val operators: List<OperatorDefinition>,
 					  end: Position): DeclarationSection(declarationType.start, end), ModifierSectionChild {
@@ -20,8 +19,8 @@ class OperatorSection(declarationType: Word, private val operators: List<Operato
 	}
 
 	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
-		for(function in operators)
-			function.concretize(linter, scope, units)
+		for(operator in operators)
+			operator.concretize(linter, scope, units)
 	}
 
 	override fun toString(): String {

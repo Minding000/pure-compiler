@@ -10,7 +10,8 @@ import components.syntax_parser.syntax_tree.definitions.GeneratorDefinition as G
 
 class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, override val scope: BlockScope, name: String,
 						  val parameters: List<Parameter>, val keyReturnType: Type?, val valueReturnType: Type,
-						  val body: ErrorHandlingContext): ValueDeclaration(source, scope, name) {
+						  val body: ErrorHandlingContext, isSpecificCopy: Boolean = false):
+	ValueDeclaration(source, scope, name, isSpecificCopy = isSpecificCopy) {
 
 	init {
 		addUnits(keyReturnType, valueReturnType, body)
@@ -21,8 +22,7 @@ class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, ov
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(linter, typeSubstitutions))
-		return GeneratorDefinition(source, scope, name, specificParameters,
-			keyReturnType?.withTypeSubstitutions(linter, typeSubstitutions),
+		return GeneratorDefinition(source, scope, name, specificParameters, keyReturnType?.withTypeSubstitutions(linter, typeSubstitutions),
 			valueReturnType.withTypeSubstitutions(linter, typeSubstitutions), body)
 	}
 }

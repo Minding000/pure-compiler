@@ -8,14 +8,13 @@ import components.syntax_parser.syntax_tree.general.TypeElement
 import source_structure.Position
 import components.semantic_analysis.semantic_model.types.FunctionType as SemanticFunctionTypeModel
 
-class FunctionType(start: Position, private val parameterList: ParameterTypeList?,
-				   private val returnType: TypeElement?, end: Position): TypeElement(start, end) {
+class FunctionType(start: Position, private val parameterList: ParameterTypeList?, private val returnType: TypeElement?, end: Position):
+	TypeElement(start, end) {
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticFunctionTypeModel {
 		val functionScope = BlockScope(scope)
 		val parameters = parameterList?.concretizeTypes(linter, functionScope) ?: listOf()
-		val signature = FunctionSignature(this, functionScope, listOf(), parameters,
-			returnType?.concretize(linter, functionScope))
+		val signature = FunctionSignature(this, functionScope, listOf(), parameters, returnType?.concretize(linter, functionScope))
 		return SemanticFunctionTypeModel(this, scope, signature)
 	}
 

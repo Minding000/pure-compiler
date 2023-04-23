@@ -15,11 +15,11 @@ import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 import java.util.*
 
-class FunctionImplementation(override val source: Element, override val parentDefinition: TypeDefinition?, override val scope: BlockScope,
-							 genericParameters: List<TypeDefinition>, val parameters: List<Parameter>, val body: ErrorHandlingContext?,
-							 returnType: Type?, override val isAbstract: Boolean = false, val isMutating: Boolean = false,
-							 val isNative: Boolean = false, val isOverriding: Boolean = false):
-	Unit(source, scope), MemberDeclaration, Callable {
+class FunctionImplementation(override val source: Element, override val scope: BlockScope, genericParameters: List<TypeDefinition>,
+							 val parameters: List<Parameter>, val body: ErrorHandlingContext?, returnType: Type?,
+							 override val isAbstract: Boolean = false, val isMutating: Boolean = false, val isNative: Boolean = false,
+							 val isOverriding: Boolean = false): Unit(source, scope), MemberDeclaration, Callable {
+	override var parentDefinition: TypeDefinition? = null
 	private lateinit var parentFunction: Function
 	override val memberIdentifier: String
 		get() {
@@ -46,6 +46,11 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		parentFunction = function
 	}
 
+	override fun linkTypes(linter: Linter) {
+		super.linkTypes(linter)
+		parentDefinition = scope.getSurroundingDefinition()
+	}
+
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		if(body == null)
 			return
@@ -56,6 +61,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 		propertiesBeingInitialized.addAll(functionTracker.getPropertiesBeingInitialized())
 		propertiesRequiredToBeInitialized.addAll(functionTracker.getPropertiesRequiredToBeInitialized())
 		var trackerName = ""
+		val parentDefinition = parentDefinition
 		if(parentDefinition != null)
 			trackerName += "${parentDefinition.name}."
 		trackerName += memberIdentifier
@@ -112,6 +118,7 @@ class FunctionImplementation(override val source: Element, override val parentDe
 
 	override fun toString(): String {
 		var stringRepresentation = ""
+		val parentDefinition = parentDefinition
 		if(parentDefinition != null) {
 			stringRepresentation += parentDefinition.name
 			if(parentFunction !is Operator)

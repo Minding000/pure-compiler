@@ -72,7 +72,8 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 			if(`class`.isAbstract)
 				linter.addIssue(AbstractClassInstantiation(source, `class`))
 		}
-		val genericDefinitionTypes = (targetType.definition.baseDefinition ?: targetType.definition).scope.getGenericTypeDefinitions()
+		val baseDefinition = targetType.getBaseDefinition()
+		val genericDefinitionTypes = baseDefinition.scope.getGenericTypeDefinitions()
 		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
 		try {
 			val match = targetType.resolveInitializer(linter, genericDefinitionTypes, definitionTypeParameters, typeParameters,
@@ -81,8 +82,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 				linter.addIssue(NotFound(source, "Initializer", getSignature()))
 				return
 			}
-			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value },
-				targetType.definition)
+			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value }, baseDefinition)
 			type.resolveGenerics(linter)
 			addUnits(type)
 			this.type = type

@@ -64,8 +64,7 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 
 	fun resolveInitializer(linter: Linter, genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
 						   suppliedTypes: List<Type>, suppliedValues: List<Value>): MatchResult? {
-		if(!definition.arePropertyParametersLinked)
-			definition.linkPropertyParameters(linter)
+		definition.preLinkPropertyParameters(linter)
 		val matches = getMatchingInitializers(linter, genericDefinitionTypes, suppliedDefinitionTypes, suppliedTypes, suppliedValues)
 		if(matches.isEmpty())
 			return null
@@ -102,6 +101,10 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 	}
 
 	class MatchResult(val signature: InitializerDefinition, val definitionTypeSubstitutions: Map<TypeDefinition, Type>)
+
+	fun getBaseDefinition(): TypeDefinition {
+		return definition.baseDefinition ?: definition
+	}
 
 	override fun equals(other: Any?): Boolean {
 		if(other !is StaticType)

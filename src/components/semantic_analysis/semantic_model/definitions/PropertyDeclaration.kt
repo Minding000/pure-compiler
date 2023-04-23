@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.Value
@@ -11,14 +11,14 @@ import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
 import logger.issues.modifiers.VariablePropertyOverriddenByValue
 
-open class PropertyDeclaration(source: Element, scope: Scope, name: String, type: Type? = null, value: Value? = null,
+open class PropertyDeclaration(source: Element, scope: MutableScope, name: String, type: Type? = null, value: Value? = null,
 							   isStatic: Boolean = false, isAbstract: Boolean = false, isConstant: Boolean = true,
-							   isMutable: Boolean = false, isOverriding: Boolean = false):
-	InterfaceMember(source, scope, name, type, value, isStatic, isAbstract, isConstant, isMutable, isOverriding) {
+							   isMutable: Boolean = false, isOverriding: Boolean = false, isSpecificCopy: Boolean = false):
+	InterfaceMember(source, scope, name, type, value, isStatic, isAbstract, isConstant, isMutable, isOverriding, isSpecificCopy) {
 
 	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): PropertyDeclaration {
 		return PropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(linter, typeSubstitutions), value, isStatic, isAbstract,
-			isConstant, isMutable, isOverriding)
+			isConstant, isMutable, isOverriding, true)
 	}
 
 	override fun linkValues(linter: Linter) {

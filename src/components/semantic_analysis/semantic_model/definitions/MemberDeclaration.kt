@@ -11,8 +11,6 @@ interface MemberDeclaration {
 	fun canBeOverriddenBy(other: MemberDeclaration?): Boolean {
 		if(other == null)
 			return false
-		if(other.memberIdentifier != memberIdentifier)
-			return false
-		return true
+		return other.memberIdentifier == memberIdentifier
 	}
 }

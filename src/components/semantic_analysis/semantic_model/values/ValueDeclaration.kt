@@ -4,7 +4,7 @@ import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.Unit
-import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
 import logger.issues.constant_conditions.TypeNotAssignable
@@ -12,9 +12,10 @@ import logger.issues.definition.DeclarationMissingTypeOrValue
 import logger.issues.resolution.ConversionAmbiguity
 import java.util.*
 
-abstract class ValueDeclaration(override val source: Element, scope: Scope, val name: String, var type: Type? = null, value: Value? = null,
-								val isConstant: Boolean = true, val isMutable: Boolean = false): Unit(source, scope) {
-	private var isLinked = false
+abstract class ValueDeclaration(override val source: Element, override val scope: MutableScope, val name: String, var type: Type? = null,
+								value: Value? = null, val isConstant: Boolean = true, val isMutable: Boolean = false,
+								val isSpecificCopy: Boolean = false): Unit(source, scope) {
+	private var hasLinkedValues = false
 	open val value = value
 	val usages = LinkedList<VariableValue>()
 	var conversion: InitializerDefinition? = null
@@ -25,14 +26,21 @@ abstract class ValueDeclaration(override val source: Element, scope: Scope, val 
 
 	abstract fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): ValueDeclaration
 
+	override fun declare(linter: Linter) {
+		super.declare(linter)
+		scope.declareValue(linter, this)
+	}
+
 	fun preLinkValues(linter: Linter) {
+		if(isSpecificCopy)
+			return
 		linkValues(linter)
 	}
 
 	override fun linkValues(linter: Linter) {
-		if(isLinked)
+		if(hasLinkedValues)
 			return
-		isLinked = true
+		hasLinkedValues = true
 		super.linkValues(linter)
 		val value = value
 		if(value == null) {

@@ -54,7 +54,19 @@ internal class Declarations {
 	}
 
 	@Test
-	fun `detects redeclarations of variables`() {
+	fun `allows variable declarations`() {
+		val sourceCode =
+			"""
+				Car class
+				var car1: Car
+				var car2: Car
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<Redeclaration>()
+	}
+
+	@Test
+	fun `detects variable redeclarations`() {
 		val sourceCode =
 			"""
 				Car class
@@ -67,7 +79,18 @@ internal class Declarations {
 	}
 
 	@Test
-	fun `detects redeclarations of types`() {
+	fun `allows type declarations`() {
+		val sourceCode =
+			"""
+				Animal class
+				AnimalType enum
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<Redeclaration>()
+	}
+
+	@Test
+	fun `detects type redeclarations`() {
 		val sourceCode =
 			"""
 				Animal class
@@ -79,24 +102,53 @@ internal class Declarations {
 	}
 
 	@Test
-	fun `detects redeclarations of function signatures`() {
+	fun `allows function declarations`() {
+		val sourceCode =
+			"""
+				Int class
+				Human class {
+					to push()
+					to push(pressure: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<Redeclaration>()
+	}
+
+	@Test
+	fun `detects function redeclarations`() {
 		val sourceCode =
 			"""
 				Pressure class
 				alias P = Pressure
 				Human class {
-					to sit(): Pressure
-					to sit(pressure: P)
-					to sit(pressure: Pressure)
+					to push(): Pressure
+					to push(pressure: P)
+					to push(pressure: Pressure)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<Redeclaration>(
-			"Redeclaration of function 'Human.sit(Pressure)', previously declared in Test.Test:5:4.", Severity.ERROR)
+			"Redeclaration of function 'Human.push(Pressure)', previously declared in Test.Test:5:4.", Severity.ERROR)
 	}
 
 	@Test
-	fun `detects redeclarations of operator signatures`() {
+	fun `allows operator declarations`() {
+		val sourceCode =
+			"""
+				Time class
+				Mood class
+				Human class {
+					operator [time: Time]: Mood
+					operator [start: Time, end: Time]: Mood
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<Redeclaration>()
+	}
+
+	@Test
+	fun `detects operator redeclarations`() {
 		val sourceCode =
 			"""
 				Time class

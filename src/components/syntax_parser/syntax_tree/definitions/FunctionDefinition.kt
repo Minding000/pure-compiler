@@ -1,7 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.FunctionSection
@@ -10,7 +9,6 @@ import components.syntax_parser.syntax_tree.general.StatementSection
 import components.syntax_parser.syntax_tree.general.TypeElement
 import components.syntax_parser.syntax_tree.literals.Identifier
 import components.tokenizer.WordAtom
-import errors.internal.CompilerError
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation as SemanticFunctionImplementationModel
 
 class FunctionDefinition(private val identifier: Identifier, private val parameterList: ParameterList,
@@ -19,17 +17,11 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 	lateinit var parent: FunctionSection
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.MUTATING, WordAtom.NATIVE, WordAtom.OVERRIDING)
-	}
-
-	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
-		concretize(linter, scope)
+		val ALLOWED_MODIFIERS = listOf(WordAtom.ABSTRACT, WordAtom.MUTATING, WordAtom.NATIVE, WordAtom.OVERRIDING)
 	}
 
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticFunctionImplementationModel {
-		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
-		val surroundingTypeDefinition = scope.getSurroundingDefinition()
-			?: throw CompilerError(this, "Function expected surrounding type definition.")
+		parent.validate(linter, ALLOWED_MODIFIERS)
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isMutating = parent.containsModifier(WordAtom.MUTATING)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
@@ -38,12 +30,11 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 		val genericParameters = parameterList.concretizeGenerics(linter, functionScope) ?: listOf()
 		val parameters = parameterList.concretizeParameters(linter, functionScope)
 		val returnType = returnType?.concretize(linter, functionScope)
-		val implementation = SemanticFunctionImplementationModel(this, surroundingTypeDefinition, functionScope,
-			genericParameters, parameters, body?.concretize(linter, functionScope), returnType, isAbstract, isMutating,
-			isNative, isOverriding)
-		scope.declareFunction(linter, identifier.getValue(), implementation)
-		return implementation
+		return SemanticFunctionImplementationModel(this, functionScope, genericParameters, parameters,
+			body?.concretize(linter, functionScope), returnType, isAbstract, isMutating, isNative, isOverriding)
 	}
+
+	fun getName(): String = identifier.getValue()
 
 	override fun toString(): String {
 		val stringRepresentation = StringBuilder()

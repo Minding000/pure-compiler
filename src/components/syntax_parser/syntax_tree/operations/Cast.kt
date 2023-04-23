@@ -16,13 +16,10 @@ class Cast(val value: ValueElement, val operator: String, val identifier: Identi
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticCastModel {
 		val operator = SemanticCastModel.Operator.values().find { castType ->
 			castType.stringRepresentation == operator } ?: throw CompilerError(this, "Unknown cast operator '$operator'.")
-		val variableDeclaration = if(identifier == null) {
+		val variableDeclaration = if(identifier == null)
 			null
-		} else {
-			val variableDeclaration = LocalVariableDeclaration(identifier, scope)
-			scope.declareValue(linter, variableDeclaration)
-			variableDeclaration
-		}
+		else
+			LocalVariableDeclaration(identifier, scope)
 		return SemanticCastModel(this, scope, value.concretize(linter, scope), variableDeclaration,
 			type.concretize(linter, scope), operator)
 	}

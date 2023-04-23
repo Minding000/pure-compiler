@@ -3,17 +3,19 @@ package components.syntax_parser.syntax_tree.definitions
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.definitions.Parameter as SemanticParameterModel
 import components.syntax_parser.syntax_tree.general.MetaElement
 import source_structure.Position
 import util.indent
 import util.toLines
 import java.util.*
+import components.semantic_analysis.semantic_model.definitions.Parameter as SemanticParameterModel
 
 class ParameterList(start: Position, end: Position, private val genericParameters: List<Parameter>?,
 					private val parameters: List<Parameter>): MetaElement(start, end) {
 	val containsGenericParameterList: Boolean
 		get() = genericParameters != null
+	val containsParameters: Boolean
+		get() = parameters.isNotEmpty()
 
 	fun concretizeGenerics(linter: Linter, scope: MutableScope): List<TypeDefinition>? {
 		if(genericParameters == null)

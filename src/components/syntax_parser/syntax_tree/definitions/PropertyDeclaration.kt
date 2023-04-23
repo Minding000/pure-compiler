@@ -21,12 +21,11 @@ class PropertyDeclaration(private val identifier: Identifier, private val type: 
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isMutable = !parent.containsModifier(WordAtom.IMMUTABLE)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
+		val type = (type ?: parent.type)?.concretize(linter, scope)
+		val value = (value ?: parent.value)?.concretize(linter, scope)
 		//TODO 'isStatic' should be 'true' for 'const'
-		val propertyDeclaration = SemanticPropertyDeclarationModel(this, scope, identifier.getValue(),
-			(type ?: parent.type)?.concretize(linter, scope), (value ?: parent.value)?.concretize(linter, scope), false,
-			isAbstract, parent.isConstant, isMutable, isOverriding)
-		scope.declareValue(linter, propertyDeclaration)
-		return propertyDeclaration
+		return SemanticPropertyDeclarationModel(this, scope, identifier.getValue(), type, value, false, isAbstract,
+			parent.isConstant, isMutable, isOverriding)
 	}
 
 	override fun toString(): String {

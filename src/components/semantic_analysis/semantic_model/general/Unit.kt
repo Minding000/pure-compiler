@@ -46,6 +46,11 @@ abstract class Unit(open val source: Element, open val scope: Scope) {
 		return other.source.end < source.start
 	}
 
+	open fun declare(linter: Linter) {
+		for(unit in units)
+			unit.declare(linter)
+	}
+
 	open fun linkTypes(linter: Linter) {
 		for(unit in units)
 			unit.linkTypes(linter)

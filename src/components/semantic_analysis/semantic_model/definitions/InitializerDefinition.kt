@@ -7,17 +7,19 @@ import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
+import errors.internal.CompilerError
 import logger.issues.initialization.UninitializedProperties
 import logger.issues.modifiers.*
 import util.combine
 import util.stringifyTypes
 import java.util.*
 
-class InitializerDefinition(override val source: Element, override val parentDefinition: TypeDefinition, override val scope: BlockScope,
-							val typeParameters: List<TypeDefinition> = listOf(), val parameters: List<Parameter> = listOf(),
+class InitializerDefinition(override val source: Element, override val scope: BlockScope,
+							val typeParameters: List<TypeDefinition> = emptyList(), val parameters: List<Parameter> = emptyList(),
 							val body: Unit? = null, override val isAbstract: Boolean = false, val isConverting: Boolean = false,
 							val isNative: Boolean = false, val isOverriding: Boolean = false):
 	Unit(source, scope), MemberDeclaration, Callable {
+	override lateinit var parentDefinition: TypeDefinition
 	override val memberIdentifier
 		get() = toString(true)
 	var superInitializer: InitializerDefinition? = null
@@ -39,8 +41,10 @@ class InitializerDefinition(override val source: Element, override val parentDef
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(linter, typeSubstitution))
-		return InitializerDefinition(source, parentDefinition, scope, specificTypeParameters, specificParameters, body, isAbstract,
+		val initializerDefinition = InitializerDefinition(source, scope, specificTypeParameters, specificParameters, body, isAbstract,
 			isConverting, isNative, isOverriding)
+		initializerDefinition.parentDefinition = parentDefinition
+		return initializerDefinition
 	}
 
 	fun fulfillsInheritanceRequirementsOf(superInitializer: InitializerDefinition): Boolean {
@@ -141,6 +145,12 @@ class InitializerDefinition(override val source: Element, override val parentDef
 
 	fun isConvertingFrom(sourceType: Type): Boolean {
 		return isConverting && parameters.size == 1 && parameters.first().type?.accepts(sourceType) ?: false
+	}
+
+	override fun linkTypes(linter: Linter) {
+		super.linkTypes(linter)
+		parentDefinition = scope.getSurroundingDefinition()
+			?: throw CompilerError(source, "Initializer expected surrounding type definition.")
 	}
 
 	override fun linkPropertyParameters(linter: Linter) {

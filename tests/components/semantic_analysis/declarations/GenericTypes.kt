@@ -1,6 +1,7 @@
 package components.semantic_analysis.declarations
 
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
+import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.definition.GenericTypeDeclarationInObject
@@ -77,7 +78,7 @@ internal class GenericTypes {
 				List class {
 					containing Element
 
-					val firstElement: Element = getFirstElement()
+					val firstElement = getFirstElement()
 
 					to getFirstElement(): Element
 				}
@@ -86,5 +87,25 @@ internal class GenericTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<TypeNotAssignable>()
+	}
+
+	@Test
+	fun `implicit types in specific copies are available`() {
+		val sourceCode =
+			"""
+				val integerList = <Int>List()
+				integerList.firstElement
+				Int class
+				List class {
+					containing Element
+
+					val firstElement = getFirstElement()
+
+					to getFirstElement(): Element
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableValueType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "firstElement" }?.type
+		assertEquals("Int", variableValueType.toString())
 	}
 }

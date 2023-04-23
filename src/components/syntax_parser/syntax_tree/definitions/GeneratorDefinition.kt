@@ -1,7 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.GeneratorDefinition as SemanticGeneratorDefinitionModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.Element
@@ -9,6 +8,7 @@ import components.syntax_parser.syntax_tree.general.StatementSection
 import components.syntax_parser.syntax_tree.general.TypeElement
 import components.syntax_parser.syntax_tree.literals.Identifier
 import source_structure.Position
+import components.semantic_analysis.semantic_model.definitions.GeneratorDefinition as SemanticGeneratorDefinitionModel
 
 class GeneratorDefinition(start: Position, private val identifier: Identifier, private val parameterList: ParameterList,
 						  private var keyReturnType: TypeElement?, private var valueReturnType: TypeElement,
@@ -17,11 +17,9 @@ class GeneratorDefinition(start: Position, private val identifier: Identifier, p
 	override fun concretize(linter: Linter, scope: MutableScope): SemanticGeneratorDefinitionModel {
 		val generatorScope = BlockScope(scope)
 		val parameters = parameterList.concretizeParameters(linter, generatorScope)
-		val generatorDefinition = SemanticGeneratorDefinitionModel(this, generatorScope, identifier.getValue(),
-			parameters, keyReturnType?.concretize(linter, generatorScope),
-			valueReturnType.concretize(linter, generatorScope), body.concretize(linter, generatorScope))
-		scope.declareValue(linter, generatorDefinition)
-		return generatorDefinition
+		return SemanticGeneratorDefinitionModel(this, generatorScope, identifier.getValue(), parameters,
+			keyReturnType?.concretize(linter, generatorScope), valueReturnType.concretize(linter, generatorScope),
+			body.concretize(linter, generatorScope))
 	}
 
 	override fun toString(): String {

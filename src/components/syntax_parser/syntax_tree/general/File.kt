@@ -3,6 +3,7 @@ package components.syntax_parser.syntax_tree.general
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
+import util.concretize
 import util.indent
 import util.toLines
 import components.semantic_analysis.semantic_model.general.File as SemanticFileModel
@@ -11,10 +12,7 @@ import source_structure.File as SourceFile
 class File(private val file: SourceFile, private val statements: List<Element>): Element(file.getStart(), file.getEnd()) {
 
     override fun concretize(linter: Linter, scope: MutableScope): SemanticFileModel {
-        val file = SemanticFileModel(this, file, scope as FileScope)
-        for(statement in statements)
-            statement.concretize(linter, scope, file.units)
-        return file
+        return SemanticFileModel(this, file, scope as FileScope, statements.concretize(linter, scope))
     }
 
     override fun toString(): String {

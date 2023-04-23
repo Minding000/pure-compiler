@@ -19,10 +19,7 @@ class TypeAlias(start: Position, private val modifierList: ModifierList?, privat
 		modifierList?.validate(linter)
 		val type = type.concretize(linter, scope)
 		val typeScope = TypeScope(scope, null)
-		val typeAlias = SemanticTypeAliasModel(this, identifier.getValue(), type, typeScope)
-		typeScope.typeDefinition = typeAlias
-		scope.declareType(linter, typeAlias)
-		return typeAlias
+		return SemanticTypeAliasModel(this, identifier.getValue(), type, typeScope)
 	}
 
 	override fun toString(): String {
