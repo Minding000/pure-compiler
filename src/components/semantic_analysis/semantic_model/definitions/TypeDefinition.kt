@@ -18,7 +18,7 @@ import java.util.*
 
 abstract class TypeDefinition(override val source: Element, val name: String, override val scope: TypeScope,
 							  val explicitParentType: ObjectType? = null, val superType: Type? = null, val members: List<Unit> = listOf(),
-							  val isBound: Boolean = false): Unit(source, scope) {
+							  val isBound: Boolean = false, val isSpecificCopy: Boolean = false): Unit(source, scope) {
 	protected open val isDefinition = true
 	override var parent: Unit?
 		get() = super.parent
@@ -98,7 +98,11 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 		}
 	}
 
-	fun preLinkPropertyParameters(linter: Linter) = linkPropertyParameters(linter)
+	fun preLinkPropertyParameters(linter: Linter) {
+		if(isSpecificCopy)
+			return
+		linkPropertyParameters(linter)
+	}
 
 	override fun linkPropertyParameters(linter: Linter) {
 		if(arePropertyParametersLinked)

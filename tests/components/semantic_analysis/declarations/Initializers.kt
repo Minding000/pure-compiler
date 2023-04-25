@@ -54,6 +54,24 @@ internal class Initializers {
 	}
 
 	@Test
+	fun `allows initializer declarations`() {
+		val sourceCode =
+			"""
+				Tank class {
+					containing Liquid
+					init
+					init(liquid: Liquid)
+				}
+				Water class
+				Hydrogen class
+				<Water>Tank()
+				<Hydrogen>Tank()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<Redeclaration>()
+	}
+
+	@Test
 	fun `detects redeclarations of initializer signatures`() {
 		val sourceCode =
 			"""

@@ -11,7 +11,8 @@ import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDe
 
 class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?,
 			superType: Type?, members: List<Unit>, val isAbstract: Boolean, isBound: Boolean, val isNative: Boolean,
-			val isMutable: Boolean): TypeDefinition(source, name, scope, explicitParentType, superType, members, isBound) {
+			val isMutable: Boolean, isSpecificCopy: Boolean = false):
+	TypeDefinition(source, name, scope, explicitParentType, superType, members, isBound, isSpecificCopy) {
 
 	init {
 		scope.typeDefinition = this
@@ -34,7 +35,7 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 		preLinkValues(linter)
 		val superType = superType?.withTypeSubstitutions(linter, typeSubstitutions)
 		return Class(source, name, scope.withTypeSubstitutions(linter, typeSubstitutions, superType?.interfaceScope), explicitParentType,
-			superType, members, isAbstract, isBound, isNative, isMutable)
+			superType, members, isAbstract, isBound, isNative, isMutable, true)
 	}
 
 	private fun preLinkValues(linter: Linter) {

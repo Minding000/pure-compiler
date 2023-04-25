@@ -10,7 +10,8 @@ import components.semantic_analysis.semantic_model.values.LocalVariableDeclarati
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?, superType: Type?,
-		   members: List<Unit>, isBound: Boolean): TypeDefinition(source, name, scope, explicitParentType, superType, members, isBound) {
+		   members: List<Unit>, isBound: Boolean, isSpecificCopy: Boolean = false):
+	TypeDefinition(source, name, scope, explicitParentType, superType, members, isBound, isSpecificCopy) {
 
 	init {
 		scope.typeDefinition = this
@@ -33,7 +34,7 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 		preLinkValues(linter)
 		val superType = superType?.withTypeSubstitutions(linter, typeSubstitutions)
 		return Enum(source, name, scope.withTypeSubstitutions(linter, typeSubstitutions, superType?.interfaceScope), explicitParentType,
-			superType, members, isBound)
+			superType, members, isBound, true)
 	}
 
 	private fun preLinkValues(linter: Linter) {
