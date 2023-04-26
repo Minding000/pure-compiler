@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.Value
@@ -34,21 +35,23 @@ open class PropertyDeclaration(source: Element, scope: MutableScope, name: Strin
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)
-		val superMember = superMember
-		if(superMember !== null) {
-			val type = type
-			val superType = superMember.type
-			if(type !== null && superType !== null) {
-				if(isConstant) {
-					if(!type.isAssignableTo(superType))
-						linter.addIssue(OverridingPropertyTypeNotAssignable(type, superType))
-				} else {
-					if(type != superType)
-						linter.addIssue(OverridingPropertyTypeMismatch(type, superType))
-				}
-			}
-			if(!superMember.isConstant && isConstant)
-				linter.addIssue(VariablePropertyOverriddenByValue(this))
+		validateSuperMember(linter)
+	}
+
+	private fun validateSuperMember(linter: Linter) {
+		val superMember = superMember ?: return
+		if(!superMember.isConstant && isConstant)
+			linter.addIssue(VariablePropertyOverriddenByValue(this))
+		val type = type ?: return
+		val superType = superMember.type ?: return
+		if(type is FunctionType && superType is FunctionType)
+			return
+		if(isConstant) {
+			if(!type.isAssignableTo(superType))
+				linter.addIssue(OverridingPropertyTypeNotAssignable(type, superType))
+		} else {
+			if(type != superType)
+				linter.addIssue(OverridingPropertyTypeMismatch(type, superType))
 		}
 	}
 }

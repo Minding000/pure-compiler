@@ -6,6 +6,8 @@ import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
+import logger.issues.modifiers.OverridingPropertyTypeMismatch
+import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
 import logger.issues.resolution.SignatureAmbiguity
 import logger.issues.resolution.SignatureMismatch
 import org.junit.jupiter.api.Disabled
@@ -48,6 +50,8 @@ internal class FunctionResolution {
 				GlassDoor.open()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<OverridingPropertyTypeNotAssignable>()
+		lintResult.assertIssueNotDetected<OverridingPropertyTypeMismatch>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
 		val functionType = variableValue?.type?.interfaceScope?.resolveValue("open")?.type
 		assertIs<FunctionType>(functionType)

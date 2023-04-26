@@ -7,6 +7,8 @@ import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
+import logger.issues.modifiers.OverridingPropertyTypeMismatch
+import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
 import logger.issues.resolution.NotFound
 import logger.issues.resolution.SignatureAmbiguity
 import org.junit.jupiter.api.Disabled
@@ -197,6 +199,8 @@ internal class OperatorResolution {
 				GlassDoor[Int()]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<OverridingPropertyTypeNotAssignable>()
+		lintResult.assertIssueNotDetected<OverridingPropertyTypeMismatch>()
 		val indexAccess = lintResult.find<IndexAccess>()
 		assertNotNull(indexAccess?.type)
 	}
