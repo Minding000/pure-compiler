@@ -46,10 +46,10 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 		return true
 	}
 
-	override fun declare(linter: Linter) {
-		super.declare(linter)
+	override fun determineTypes(linter: Linter) {
 		for(referencedFile in referencedFiles)
 			scope.reference(referencedFile.scope)
+		super.determineTypes(linter)
 	}
 
 	fun analyseDataFlow(linter: Linter) {
