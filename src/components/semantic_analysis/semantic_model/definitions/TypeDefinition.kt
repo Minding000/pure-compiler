@@ -106,7 +106,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 			addDefaultInitializer(linter)
 		scope.ensureUniqueInitializerSignatures(linter)
 		scope.inheritSignatures()
-		if(superType != null && inheritsFrom(this)) {
+		if(superType != null && inheritsFrom(linter, this)) {
 			hasCircularInheritance = true
 			linter.addIssue(CircularInheritance(superType.source))
 		}
@@ -137,11 +137,12 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 		addUnits(defaultInitializer)
 	}
 
-	private fun inheritsFrom(definition: TypeDefinition): Boolean {
+	private fun inheritsFrom(linter: Linter, definition: TypeDefinition): Boolean {
 		for(superType in getDirectSuperTypes()) {
+			superType.determineTypes(linter)
 			if(superType.definition == definition)
 				return true
-			if(superType.definition?.inheritsFrom(definition) == true)
+			if(superType.definition?.inheritsFrom(linter, definition) == true)
 				return true
 		}
 		return false
