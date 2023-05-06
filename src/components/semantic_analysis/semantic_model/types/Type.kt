@@ -13,6 +13,9 @@ import errors.internal.CompilerError
 abstract class Type(source: Element, scope: Scope, isStatic: Boolean = false): Unit(source, scope) {
 	//var llvmType: LLVMTypeRef? = null
 	val interfaceScope = InterfaceScope(isStatic)
+	private var hasResolvedDefinitions = false
+	var isAlias = false
+	var effectiveType = this
 
 	init {
 		interfaceScope.type = this
@@ -29,6 +32,17 @@ abstract class Type(source: Element, scope: Scope, isStatic: Boolean = false): U
 	open fun onNewValue(value: InterfaceMember) {}
 
 	open fun onNewInitializer(initializer: InitializerDefinition) {}
+
+	final override fun determineTypes(linter: Linter) {
+		if(hasResolvedDefinitions)
+			return
+		hasResolvedDefinitions = true
+		resolveDefinitions(linter)
+	}
+
+	protected open fun resolveDefinitions(linter: Linter) {
+		super.determineTypes(linter)
+	}
 
 	override fun validate(linter: Linter) {
 		super.validate(linter)

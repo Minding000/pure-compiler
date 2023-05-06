@@ -24,8 +24,8 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 		addUnits(cases)
 	}
 
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		val subjectType = subject.type
 		for(case in cases) {
 			if(case.condition.isAssignableTo(subjectType)) {

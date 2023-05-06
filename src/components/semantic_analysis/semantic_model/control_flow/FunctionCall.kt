@@ -28,16 +28,12 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 
 	init {
 		staticValue = this
-		addUnits(function)
 		addUnits(typeParameters, valueParameters)
+		addUnits(function)
 	}
 
-	override fun linkValues(linter: Linter) {
-		for(unit in units) {
-			if(unit !== function)
-				unit.linkValues(linter)
-		}
-		function.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		when(val targetType = function.type) {
 			is StaticType -> resolveInitializerCall(linter, targetType)
 			is FunctionType -> resolveFunctionCall(linter, targetType)
@@ -83,7 +79,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 				return
 			}
 			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value }, baseDefinition)
-			type.resolveGenerics(linter)
+			type.determineTypes(linter)
 			addUnits(type)
 			this.type = type
 			targetImplementation = match.signature

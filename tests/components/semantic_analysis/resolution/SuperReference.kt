@@ -206,7 +206,7 @@ internal class SuperReference {
 					to travel(distance: Int)
 				}
 				Car class: Vehicle {
-					to travel(distance: Int) {
+					overriding to travel(distance: Int) {
 						super.travel(distance)
 					}
 				}
@@ -239,11 +239,12 @@ internal class SuperReference {
 		val sourceCode =
 			"""
 				Int class
+				Seat class
 				Vehicle class {
-					operator[seatIndex: Int]
+					operator[seatIndex: Int]: Seat
 				}
 				Car class: Vehicle {
-					operator[seatIndex: Int] {
+					overriding operator[seatIndex: Int]: Seat {
 						return super[seatIndex]
 					}
 				}

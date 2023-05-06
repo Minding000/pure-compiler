@@ -28,7 +28,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 		}
 	var parentTypeDefinition: TypeDefinition? = null
 	private var hasCircularInheritance = false
-	var arePropertyParametersLinked = false
+	var hasDeterminedTypes = isSpecificCopy
 	// Only used in base definition
 	private val specificDefinitions = HashMap<Map<TypeDefinition, Type>, TypeDefinition>()
 	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>, LinkedList<(TypeDefinition) -> kotlin.Unit>>()
@@ -87,8 +87,11 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 		}
 	}
 
-	override fun linkTypes(linter: Linter) {
-		super.linkTypes(linter)
+	override fun determineTypes(linter: Linter) {
+		if(hasDeterminedTypes)
+			return
+		hasDeterminedTypes = true
+		explicitParentType?.determineTypes(linter)
 		if(explicitParentType != null) {
 			if(parentTypeDefinition == null) {
 				parentTypeDefinition = explicitParentType.definition
@@ -96,27 +99,13 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 				linter.addIssue(ExplicitParentOnScopedTypeDefinition(explicitParentType.source))
 			}
 		}
-	}
-
-	fun preLinkPropertyParameters(linter: Linter) {
-		if(isSpecificCopy)
-			return
-		linkPropertyParameters(linter)
-	}
-
-	override fun linkPropertyParameters(linter: Linter) {
-		if(arePropertyParametersLinked)
-			return
-		arePropertyParametersLinked = true
-		super.linkPropertyParameters(linter)
+		for(unit in units)
+			if(unit !== explicitParentType)
+				unit.determineTypes(linter)
 		if(isDefinition && scope.initializers.isEmpty())
 			addDefaultInitializer(linter)
 		scope.ensureUniqueInitializerSignatures(linter)
 		scope.inheritSignatures()
-	}
-
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
 		if(superType != null && inheritsFrom(this)) {
 			hasCircularInheritance = true
 			linter.addIssue(CircularInheritance(superType.source))
@@ -144,9 +133,8 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 
 	private fun addDefaultInitializer(linter: Linter) {
 		val defaultInitializer = InitializerDefinition(source, BlockScope(scope))
+		defaultInitializer.determineTypes(linter)
 		addUnits(defaultInitializer)
-		defaultInitializer.linkTypes(linter)
-		defaultInitializer.linkPropertyParameters(linter)
 	}
 
 	private fun inheritsFrom(definition: TypeDefinition): Boolean {
@@ -177,8 +165,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 	}
 
 	open fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> {
-		if(!arePropertyParametersLinked)
-			linkPropertyParameters(linter)
+		determineTypes(linter)
 		return scope.getConversionsFrom(sourceType)
 	}
 

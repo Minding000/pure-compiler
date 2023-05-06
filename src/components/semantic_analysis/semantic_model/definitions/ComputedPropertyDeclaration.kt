@@ -12,7 +12,8 @@ import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclarat
 class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, scope: MutableScope, name: String, type: Type?,
 								  isConstant: Boolean, isOverriding: Boolean, val getExpression: Value?, val setStatement: Unit?,
 								  isSpecificCopy: Boolean = false):
-	PropertyDeclaration(source, scope, name, type, getExpression, false, false, isConstant, false, isOverriding, isSpecificCopy) {
+	PropertyDeclaration(source, scope, name, type, getExpression, false, false, isConstant, false, isOverriding,
+		isSpecificCopy) {
 
 	init {
 		addUnits(getExpression, setStatement)

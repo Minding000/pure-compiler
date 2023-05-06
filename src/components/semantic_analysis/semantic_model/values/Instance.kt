@@ -24,21 +24,18 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, ove
 		return Instance(source, scope, value, valueParameters, true)
 	}
 
-	override fun linkTypes(linter: Linter) {
+	override fun determineType(linter: Linter) {
 		this.typeDefinition = scope.getSurroundingDefinition()
 			?: throw CompilerError(source, "Instance outside of type definition.")
 		val type = ObjectType(typeDefinition)
 		addUnits(type)
 		this.type = type
-	}
-
-	override fun linkValues(linter: Linter) {
 		value.definition = this
 		value.type = type
 		value.staticValue = value
 		val staticType = StaticType(typeDefinition)
 		addUnits(staticType)
-		super.linkValues(linter)
+		super.determineType(linter)
 		try {
 			val initializer = staticType.resolveInitializer(linter, valueParameters)
 			if(initializer == null)

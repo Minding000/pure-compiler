@@ -21,8 +21,8 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		addUnits(target, modifier)
 	}
 
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		target.type?.let { valueType ->
 			try {
 				val operatorDefinition = valueType.interfaceScope.resolveOperator(linter, kind, listOf(modifier))

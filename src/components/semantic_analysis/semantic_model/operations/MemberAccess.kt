@@ -21,14 +21,14 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		addUnits(target, member)
 	}
 
-	override fun linkValues(linter: Linter) {
-		target.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		target.determineTypes(linter)
 		var targetType = target.type
 		if(targetType != null) {
 			if(targetType is OptionalType)
 				targetType = targetType.baseType
 			member.scope = targetType.interfaceScope
-			member.linkValues(linter)
+			member.determineTypes(linter)
 			member.type?.let { memberType ->
 				type = if(isOptional && memberType !is OptionalType)
 					OptionalType(source, scope, memberType)

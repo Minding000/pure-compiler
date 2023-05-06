@@ -18,8 +18,8 @@ class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val 
 		addUnits(condition, positiveBranch, negativeBranch)
 	}
 
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		(condition.staticValue as? BooleanLiteral)?.value.let { staticResult ->
 			isConditionAlwaysTrue = staticResult == true
 			isConditionAlwaysFalse = staticResult == false

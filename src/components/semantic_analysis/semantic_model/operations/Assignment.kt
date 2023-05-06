@@ -24,12 +24,11 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		addUnits(targets)
 	}
 
-	override fun linkValues(linter: Linter) {
-		sourceExpression.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		for(target in targets) {
 			if(target is IndexAccess)
 				target.sourceExpression = sourceExpression
-			target.linkValues(linter)
 		}
 		for(target in targets) {
 			val targetType = target.type

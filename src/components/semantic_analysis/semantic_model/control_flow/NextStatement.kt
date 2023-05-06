@@ -11,14 +11,13 @@ class NextStatement(override val source: NextStatementSyntaxTree, scope: Scope):
 	private var targetLoop: LoopStatement? = null
 	override val isInterruptingExecution = true
 
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		val surroundingLoop = scope.getSurroundingLoop()
-		if(surroundingLoop == null) {
+		if(surroundingLoop == null)
 			linter.addIssue(NextStatementOutsideOfLoop(source))
-			return
-		}
-		targetLoop = surroundingLoop
+		else
+			targetLoop = surroundingLoop
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

@@ -8,7 +8,7 @@ import components.syntax_parser.syntax_tree.general.Element
 class BooleanLiteral(override val source: Element, scope: Scope, val value: Boolean): LiteralValue(source, scope) {
 
 	constructor(source: Element, scope: Scope, value: Boolean, linter: Linter): this(source, scope, value) {
-		(type as? LiteralType)?.linkTypes(linter)
+		(type as? LiteralType)?.determineTypes(linter)
 	}
 
 	init {

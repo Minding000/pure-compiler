@@ -13,7 +13,7 @@ class NumberLiteral(override val source: Element, scope: Scope, val value: BigDe
 	var isInteger = value.isRepresentedAsAnInteger()
 
 	constructor(source: Element, scope: Scope, value: BigDecimal, linter: Linter): this(source, scope, value) {
-		(type as? LiteralType)?.linkTypes(linter)
+		(type as? LiteralType)?.determineTypes(linter)
 	}
 
 	init {

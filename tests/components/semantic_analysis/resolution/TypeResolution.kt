@@ -11,6 +11,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class TypeResolution {
+	//TODO write file reference test
 
 	@Test
 	fun `emits error for undeclared types`() {

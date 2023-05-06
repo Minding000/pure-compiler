@@ -7,8 +7,8 @@ import components.syntax_parser.syntax_tree.general.Element
 
 abstract class LiteralValue(source: Element, scope: Scope): Value(source, scope) {
 
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		staticValue = this
 	}
 

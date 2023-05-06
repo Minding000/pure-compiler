@@ -79,10 +79,9 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		interfaceScope.addInitializer(initializer)
 	}
 
-	override fun linkTypes(linter: Linter) {
-		super.linkTypes(linter)
+	override fun resolveDefinitions(linter: Linter) {
+		super.resolveDefinitions(linter)
 		if(definition == null) {
-			enclosingType?.resolveGenerics(linter)
 			val sourceScope = enclosingType?.interfaceScope ?: scope
 			definition = sourceScope.resolveType(name)
 			if(definition == null)
@@ -90,18 +89,18 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 			if(definition?.isBound != true)
 				enclosingType?.setIsNonSpecificContext()
 		}
-	}
-
-	override fun resolveGenerics(linter: Linter) {
-		for(unit in units)
-			if(unit !== enclosingType)
-				unit.resolveGenerics(linter)
 		if(typeParameters.isNotEmpty()) {
 			definition?.withTypeParameters(linter, typeParameters) { specificDefinition ->
 				definition = specificDefinition
 			}
 		}
+		//TODO ask the definition to resolve all its member signatures
 		definition?.scope?.subscribe(this)
+		val definition = definition
+		if(definition is TypeAlias) {
+			isAlias = true
+			effectiveType = definition.getEffectiveType(linter)
+		}
 	}
 
 	override fun validate(linter: Linter) {
@@ -170,20 +169,18 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 	override fun equals(other: Any?): Boolean {
 		if(other !is Type)
 			return false
-		val otherType = resolveTypeAlias(other)
-		(definition as? TypeAlias)?.let { typeAlias ->
-			return typeAlias.referenceType == otherType
-		}
-		if(otherType !is ObjectType)
+		if(isAlias || other.isAlias)
+			return effectiveType == other.effectiveType
+		if(other !is ObjectType)
 			return false
-		if(definition != otherType.definition)
+		if(definition != other.definition)
 			return false
-		if(definition == null && name != otherType.name)
+		if(definition == null && name != other.name)
 			return false
-		if(typeParameters.size != otherType.typeParameters.size)
+		if(typeParameters.size != other.typeParameters.size)
 			return false
 		for(genericParameterIndex in typeParameters.indices)
-			if(typeParameters[genericParameterIndex] != otherType.typeParameters[genericParameterIndex])
+			if(typeParameters[genericParameterIndex] != other.typeParameters[genericParameterIndex])
 				return false
 		return true
 	}

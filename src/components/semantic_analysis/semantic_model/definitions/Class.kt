@@ -32,14 +32,10 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 	}
 
 	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Class {
-		preLinkValues(linter)
+		determineTypes(linter)
 		val superType = superType?.withTypeSubstitutions(linter, typeSubstitutions)
 		return Class(source, name, scope.withTypeSubstitutions(linter, typeSubstitutions, superType?.interfaceScope), explicitParentType,
 			superType, members, isAbstract, isBound, isNative, isMutable, true)
-	}
-
-	private fun preLinkValues(linter: Linter) {
-		linkValues(linter)
 	}
 
 	override fun validate(linter: Linter) {

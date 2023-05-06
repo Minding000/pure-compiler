@@ -17,7 +17,8 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 		addUnits(specifier)
 	}
 
-	override fun linkValues(linter: Linter) {
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		val surroundingDefinition = scope.getSurroundingDefinition()
 		if(surroundingDefinition == null) {
 			linter.addIssue(SuperReferenceOutsideOfTypeDefinition(source))

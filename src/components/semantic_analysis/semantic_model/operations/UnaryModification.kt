@@ -26,8 +26,8 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 		addUnits(target)
 	}
 
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		target.type?.let { valueType ->
 			try {
 				val operatorDefinition = valueType.interfaceScope.resolveOperator(linter, kind)

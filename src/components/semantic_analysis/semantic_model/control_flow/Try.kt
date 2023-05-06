@@ -12,8 +12,8 @@ class Try(override val source: TrySyntaxTree, scope: Scope, val expression: Valu
 		addUnits(expression)
 	}
 
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		expression.type?.let { expressionType ->
 			type = if(isOptional)
 				OptionalType(source, scope, expressionType)

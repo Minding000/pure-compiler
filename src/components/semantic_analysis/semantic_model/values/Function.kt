@@ -35,13 +35,9 @@ open class Function(source: Element, scope: Scope, val name: String = "<anonymou
 		return null
 	}
 
-	override fun linkTypes(linter: Linter) {
-		super.linkTypes(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		ensureUniqueSignatures(linter)
-	}
-
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
 		staticValue = this
 	}
 

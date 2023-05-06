@@ -87,7 +87,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 					if(function == null) {
 						function = Function(source, typeScope, name)
 						functions[name] = function
-						members.add(PropertyDeclaration(source, typeScope, function.name, function.type, function, false,
+						members.add(PropertyDeclaration(source, typeScope, function.name, null, function, false,
 							function.isAbstract))
 					}
 					function.addImplementation(member)
@@ -97,7 +97,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 					if(operator == null) {
 						operator = Operator(source, typeScope, kind)
 						operators[kind] = operator
-						members.add(PropertyDeclaration(operator.source, typeScope, operator.name, operator.type, operator, false,
+						members.add(PropertyDeclaration(operator.source, typeScope, operator.name, null, operator, false,
 							operator.isAbstract))
 					}
 					operator.addImplementation(member)

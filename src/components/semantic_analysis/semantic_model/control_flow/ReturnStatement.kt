@@ -20,8 +20,8 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 		addUnits(value)
 	}
 
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		val surroundingFunction = scope.getSurroundingFunction()
 		if(surroundingFunction == null) {
 			linter.addIssue(ReturnStatementOutsideOfCallable(source))

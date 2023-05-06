@@ -27,14 +27,13 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 		addUnits(variableDeclarations)
 	}
 
-	override fun linkValues(linter: Linter) {
-		collection.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		val collectionType = collection.type
-		if(collectionType is PluralType) {
+		if(collectionType is PluralType)
 			setVariableTypes(linter, collectionType)
-		} else if(collectionType != null) {
+		else if(collectionType != null)
 			setVariableTypes(linter, collectionType)
-		}
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -51,7 +50,10 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 		if(variableDeclarations.size > 2) {
 			linter.addIssue(TooManyPluralTypeVariableDeclarations(source, variableDeclarations))
 		} else if(variableDeclarations.size == 2) {
-			variableDeclarations.firstOrNull()?.type = LiteralType(source, scope, Linter.SpecialType.INTEGER, linter)
+			val indexVariableType = LiteralType(source, scope, Linter.SpecialType.INTEGER)
+			indexVariableType.determineTypes(linter)
+			addUnits(indexVariableType)
+			variableDeclarations.firstOrNull()?.type = indexVariableType
 		}
 		variableDeclarations.lastOrNull()?.type = collectionType.baseType
 	}
@@ -70,18 +72,15 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 			val availableValueTypes = LinkedList<Type?>()
 			if(iteratorType.isInstanceOf(Linter.SpecialType.INDEX_ITERATOR)) {
 				val indexProperty = iteratorType.interfaceScope.resolveValue("currentIndex")
-				indexProperty?.preLinkValues(linter)
-				availableValueTypes.add(indexProperty?.type)
+				availableValueTypes.add(indexProperty?.getType(linter))
 			}
 			if(iteratorType.isInstanceOf(Linter.SpecialType.KEY_ITERATOR)) {
 				val keyProperty = iteratorType.interfaceScope.resolveValue("currentKey")
-				keyProperty?.preLinkValues(linter)
-				availableValueTypes.add(keyProperty?.type)
+				availableValueTypes.add(keyProperty?.getType(linter))
 			}
 			if(iteratorType.isInstanceOf(Linter.SpecialType.VALUE_ITERATOR)) {
 				val valueProperty = iteratorType.interfaceScope.resolveValue("currentValue")
-				valueProperty?.preLinkValues(linter)
-				availableValueTypes.add(valueProperty?.type)
+				availableValueTypes.add(valueProperty?.getType(linter))
 			}
 			if(variableDeclarations.size > availableValueTypes.size) {
 				linter.addIssue(TooManyIterableVariableDeclarations(source, variableDeclarations, availableValueTypes))

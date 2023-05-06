@@ -108,7 +108,7 @@ internal class ValueResolution {
 	}
 
 	@Test
-	fun `infers type of property parameter with unlinked initializer call as the value`() {
+	fun `infers type of property parameter with initializer call value`() {
 		val sourceCode =
 			"""
 				House class {
@@ -118,7 +118,8 @@ internal class ValueResolution {
 				Int class
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueNotDetected<NotFound>()
+		val propertyParameter = lintResult.find<Parameter>()
+		assertEquals("Int", propertyParameter?.type.toString())
 	}
 
 	@Test
@@ -175,6 +176,21 @@ internal class ValueResolution {
 			"'livingAreaInSquareMeters' has no value, because it's part of a circular assignment.", Severity.ERROR)
 		lintResult.assertIssueDetected<CircularAssignment>(
 			"'size' has no value, because it's part of a circular assignment.")
+	}
+
+	@Test
+	fun `allows assignment from same property if it is not circular`() {
+		val sourceCode =
+			"""
+				Int class
+				Tree class {
+					val length: Int
+					val parent: Tree?
+					val totalLength: Int = length + parent?.totalLength ?? 0
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<CircularAssignment>()
 	}
 
 	@Test

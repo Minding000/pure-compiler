@@ -17,8 +17,8 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, scope:
 		addUnits(typeParameters)
 	}
 
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		val baseType = baseValue.type
 		if(baseType !is StaticType) {
 			linter.addIssue(TypeSpecificationOutsideOfInitializerCall(source))

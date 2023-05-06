@@ -31,13 +31,9 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 	}
 
 	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Enum {
-		preLinkValues(linter)
+		determineTypes(linter)
 		val superType = superType?.withTypeSubstitutions(linter, typeSubstitutions)
 		return Enum(source, name, scope.withTypeSubstitutions(linter, typeSubstitutions, superType?.interfaceScope), explicitParentType,
 			superType, members, isBound, true)
-	}
-
-	private fun preLinkValues(linter: Linter) {
-		linkValues(linter)
 	}
 }

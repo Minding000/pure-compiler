@@ -1,11 +1,10 @@
 package components.semantic_analysis.types
 
-import components.semantic_analysis.semantic_model.definitions.TypeAlias
+import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
-import org.junit.jupiter.api.Disabled
+import logger.issues.definition.CircularTypeAlias
 import org.junit.jupiter.api.Test
 import util.TestUtil
-import kotlin.test.assertNotNull
 
 internal class TypeAliases {
 
@@ -49,19 +48,31 @@ internal class TypeAliases {
 		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
-	@Disabled
+	@Test
+	fun `allows recursive type aliases`() {
+		val sourceCode =
+			"""
+				Leaf class
+				List class {
+					containing Element
+				}
+				alias TreeNode = Leaf | List<TreeNode>
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<CircularTypeAlias>()
+	}
+
 	@Test
 	fun `disallows circular type aliases`() {
-		// Should this really be disallowed?
-		// e.g. alias TreeNode = Leaf | List<TreeNode>
 		val sourceCode =
 			"""
 				alias Handler = Processor
 				alias Processor = Handler
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		//lintResult.assertIssueDetected<>("'Handler' has no type, because it's part of a circular alias.", Severity.ERROR)
-		val typeAlias = lintResult.find<TypeAlias>()
-		assertNotNull(typeAlias?.referenceType)
+		lintResult.assertIssueDetected<CircularTypeAlias>("'Handler' has no type, because it's part of a circular assignment.",
+			Severity.ERROR)
+		lintResult.assertIssueDetected<CircularTypeAlias>(
+			"'Processor' has no type, because it's part of a circular assignment.", Severity.ERROR)
 	}
 }

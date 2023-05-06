@@ -51,24 +51,9 @@ abstract class Unit(open val source: Element, open val scope: Scope) {
 			unit.declare(linter)
 	}
 
-	open fun linkTypes(linter: Linter) {
+	open fun determineTypes(linter: Linter) {
 		for(unit in units)
-			unit.linkTypes(linter)
-	}
-
-	open fun resolveGenerics(linter: Linter) {
-		for(unit in units)
-			unit.resolveGenerics(linter)
-	}
-
-	open fun linkPropertyParameters(linter: Linter) {
-		for(unit in units)
-			unit.linkPropertyParameters(linter)
-	}
-
-	open fun linkValues(linter: Linter) {
-		for(unit in units)
-			unit.linkValues(linter)
+			unit.determineTypes(linter)
 	}
 
 	open fun analyseDataFlow(tracker: VariableTracker) {

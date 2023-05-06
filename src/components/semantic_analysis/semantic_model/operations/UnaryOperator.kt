@@ -19,8 +19,8 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		addUnits(value)
 	}
 
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		value.type?.let { valueType ->
 			try {
 				val operatorDefinition = valueType.interfaceScope.resolveOperator(linter, kind)

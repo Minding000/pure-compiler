@@ -17,8 +17,8 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		addUnits(left, right)
 	}
 
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		left.type?.let { leftType ->
 			try {
 				val operatorDefinition = leftType.interfaceScope.resolveOperator(linter, kind, right)

@@ -7,7 +7,6 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.Element
-import logger.issues.initialization.CircularAssignment
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
 import logger.issues.modifiers.VariablePropertyOverriddenByValue
@@ -22,15 +21,11 @@ open class PropertyDeclaration(source: Element, scope: MutableScope, name: Strin
 			isConstant, isMutable, isOverriding, true)
 	}
 
-	override fun linkValues(linter: Linter) {
-		if(linter.propertyDeclarationStack.contains(this)) {
-			for(propertyDeclaration in linter.propertyDeclarationStack)
-				linter.addIssue(CircularAssignment(propertyDeclaration))
+	override fun determineTypes(linter: Linter) {
+		if(!linter.declarationStack.push(this))
 			return
-		}
-		linter.propertyDeclarationStack.add(this)
-		super.linkValues(linter)
-		linter.propertyDeclarationStack.remove(this)
+		super.determineTypes(linter)
+		linter.declarationStack.pop(this)
 	}
 
 	override fun validate(linter: Linter) {

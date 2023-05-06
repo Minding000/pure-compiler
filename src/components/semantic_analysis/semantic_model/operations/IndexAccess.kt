@@ -14,16 +14,12 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	var sourceExpression: Value? = null
 
 	init {
-		addUnits(target)
 		addUnits(typeParameters, indices)
+		addUnits(target)
 	}
 
-	override fun linkValues(linter: Linter) {
-		for(unit in units) {
-			if(unit !== target)
-				unit.linkValues(linter)
-		}
-		target.linkValues(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		target.type?.let { targetType ->
 			try {
 				val definition = targetType.interfaceScope.resolveIndexOperator(linter, typeParameters, indices, sourceExpression)

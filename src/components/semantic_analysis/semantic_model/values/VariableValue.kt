@@ -19,9 +19,8 @@ open class VariableValue(override val source: Element, scope: Scope, val name: S
 
 	constructor(source: Identifier, scope: Scope): this(source, scope, source.getValue())
 
-	override fun linkValues(linter: Linter) {
-		if(definition != null)
-			return
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		val definition = scope.resolveValue(this)
 		if(definition == null) {
 			linter.addIssue(NotFound(source, "Value", name))
@@ -38,8 +37,7 @@ open class VariableValue(override val source: Element, scope: Scope, val name: S
 		}
 		definition.usages.add(this)
 		this.definition = definition
-		definition.preLinkValues(linter)
-		type = definition.type
+		type = definition.getType(linter)
 		if(definition.isConstant)
 			staticValue = definition.value?.staticValue
 	}

@@ -166,7 +166,7 @@ internal class SelfReference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<SelfReferenceSpecifierNotBound>(
-			"Specified type 'Wrapper' is not bound to surrounding type 'Main'.", Severity.ERROR)
+			"Specified type 'Wrapper' is not bound to type 'Main' surrounding the self reference.", Severity.ERROR)
 	}
 
 	@Test

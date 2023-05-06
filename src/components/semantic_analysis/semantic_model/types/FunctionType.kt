@@ -31,21 +31,14 @@ class FunctionType(override val source: Element, scope: Scope): ObjectType(sourc
 		addSignature(signature)
 	}
 
-	override fun linkTypes(linter: Linter) {
+	override fun resolveDefinitions(linter: Linter) {
 		interfaceScope.type = this
 		for(unit in units)
-			unit.linkTypes(linter)
+			unit.determineTypes(linter)
 		definition = Linter.SpecialType.FUNCTION.scope?.resolveType(name)
+		definition?.scope?.subscribe(this)
 		if(definition == null)
 			linter.addIssue(LiteralTypeNotFound(source, name))
-	}
-
-	fun hasSignatureOverriddenBy(subSignature: FunctionSignature): Boolean {
-		for(signature in signatures) {
-			if(subSignature.fulfillsInheritanceRequirementsOf(signature))
-				return true
-		}
-		return superFunctionType?.hasSignatureOverriddenBy(subSignature) ?: false
 	}
 
 	fun addSignature(signature: FunctionSignature) {

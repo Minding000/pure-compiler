@@ -33,13 +33,9 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		addUnits(type)
 	}
 
-	override fun linkTypes(linter: Linter) {
-		super.linkTypes(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		variableDeclaration?.type = referenceType
-	}
-
-	override fun linkValues(linter: Linter) {
-		super.linkValues(linter)
 		if(operator.returnsBoolean) {
 			if(isCastAlwaysSuccessful)
 				staticValue = BooleanLiteral(source, scope, operator == Operator.CAST_CONDITION, linter)

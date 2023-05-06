@@ -25,7 +25,8 @@ class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, n
 			scope.declareValue(linter, this)
 	}
 
-	override fun linkPropertyParameters(linter: Linter) {
+	override fun determineType(linter: Linter) {
+		super.determineType(linter)
 		if(isPropertySetter) {
 			val parent = parent
 			if(parent is InitializerDefinition) {
@@ -33,8 +34,7 @@ class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, n
 				if(propertyDeclaration == null) {
 					linter.addIssue(PropertyParameterMismatch(source))
 				} else {
-					propertyDeclaration?.preLinkValues(linter)
-					type = propertyDeclaration?.type
+					type = propertyDeclaration?.getType(linter)
 				}
 			} else {
 				linter.addIssue(PropertyParameterOutsideOfInitializer(source))

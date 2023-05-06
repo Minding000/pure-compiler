@@ -9,7 +9,8 @@ import components.syntax_parser.syntax_tree.literals.InitializerReference as Ini
 
 open class InitializerReference(override val source: InitializerReferenceSyntaxTree, scope: Scope): Value(source, scope) {
 
-	override fun linkValues(linter: Linter) {
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		val scope = scope
 		if(scope is InterfaceScope && scope.type is StaticType) {
 			type = scope.type
@@ -19,8 +20,8 @@ open class InitializerReference(override val source: InitializerReferenceSyntaxT
 				linter.addIssue(InitializerReferenceOutsideOfInitializer(source))
 			} else {
 				type = StaticType(surroundingDefinition)
+				type?.determineTypes(linter)
 				addUnits(type)
-				type?.linkValues(linter)
 			}
 		}
 	}

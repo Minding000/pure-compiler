@@ -8,7 +8,7 @@ import components.syntax_parser.syntax_tree.general.Element
 class NullLiteral(override val source: Element, scope: Scope): LiteralValue(source, scope) {
 
 	constructor(source: Element, scope: Scope, linter: Linter): this(source, scope) {
-		(type as? LiteralType)?.linkTypes(linter)
+		(type as? LiteralType)?.determineTypes(linter)
 	}
 
 	init {

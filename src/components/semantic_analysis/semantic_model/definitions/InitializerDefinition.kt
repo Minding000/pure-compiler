@@ -147,14 +147,10 @@ class InitializerDefinition(override val source: Element, override val scope: Bl
 		return isConverting && parameters.size == 1 && parameters.first().type?.accepts(sourceType) ?: false
 	}
 
-	override fun linkTypes(linter: Linter) {
-		super.linkTypes(linter)
+	override fun determineTypes(linter: Linter) {
 		parentDefinition = scope.getSurroundingDefinition()
 			?: throw CompilerError(source, "Initializer expected surrounding type definition.")
-	}
-
-	override fun linkPropertyParameters(linter: Linter) {
-		super.linkPropertyParameters(linter)
+		super.determineTypes(linter)
 		parentDefinition.scope.declareInitializer(linter, this)
 	}
 

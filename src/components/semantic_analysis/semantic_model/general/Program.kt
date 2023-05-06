@@ -32,35 +32,11 @@ class Program(val source: ProgramSyntaxTree) {
 	}
 
 	/**
-	 * Links type usages to their declaration.
+	 * Determines the type of values.
 	 */
-	fun linkTypes(linter: Linter) {
+	fun determineTypes(linter: Linter) {
 		for(file in files)
-			file.linkTypes(linter)
-	}
-
-	/**
-	 * Resolves generic types by copying their definitions with type substitutions.
-	 */
-	fun resolveGenerics(linter: Linter) {
-		for(file in files)
-			file.resolveGenerics(linter)
-	}
-
-	/**
-	 * Links properties in initializer parameters.
-	 */
-	fun linkPropertyParameters(linter: Linter) {
-		for(file in files)
-			file.linkPropertyParameters(linter)
-	}
-
-	/**
-	 * Links value usages to their declaration.
-	 */
-	fun linkValues(linter: Linter) {
-		for(file in files)
-			file.linkValues(linter)
+			file.determineTypes(linter)
 	}
 
 	/**

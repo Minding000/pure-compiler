@@ -46,8 +46,8 @@ class FunctionImplementation(override val source: Element, override val scope: B
 		parentFunction = function
 	}
 
-	override fun linkTypes(linter: Linter) {
-		super.linkTypes(linter)
+	override fun determineTypes(linter: Linter) {
+		super.determineTypes(linter)
 		parentDefinition = scope.getSurroundingDefinition()
 	}
 
