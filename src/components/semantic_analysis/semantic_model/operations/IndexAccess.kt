@@ -20,6 +20,9 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 
 	override fun determineTypes(linter: Linter) {
 		super.determineTypes(linter)
+		val parent = parent
+		if(parent is Assignment && parent.targets.contains(this))
+			sourceExpression = parent.sourceExpression
 		target.type?.let { targetType ->
 			try {
 				val definition = targetType.interfaceScope.resolveIndexOperator(linter, typeParameters, indices, sourceExpression)

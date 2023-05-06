@@ -27,10 +27,6 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 	override fun determineTypes(linter: Linter) {
 		super.determineTypes(linter)
 		for(target in targets) {
-			if(target is IndexAccess)
-				target.sourceExpression = sourceExpression
-		}
-		for(target in targets) {
 			val targetType = target.type
 			if(sourceExpression.isAssignableTo(targetType)) {
 				sourceExpression.setInferredType(targetType)
