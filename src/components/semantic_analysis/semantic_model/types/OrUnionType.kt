@@ -79,7 +79,7 @@ class OrUnionType(override val source: Element, scope: Scope, val types: List<Ty
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
-		val sourceType = resolveTypeAlias(unresolvedSourceType)
+		val sourceType = unresolvedSourceType.effectiveType
 		if(sourceType is OrUnionType)
 			return sourceType.isAssignableTo(this)
 		for(type in types)
@@ -89,7 +89,7 @@ class OrUnionType(override val source: Element, scope: Scope, val types: List<Ty
 	}
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
-		val targetType = resolveTypeAlias(unresolvedTargetType)
+		val targetType = unresolvedTargetType.effectiveType
 		for(type in types)
 			if(!type.isAssignableTo(targetType))
 				return false

@@ -20,14 +20,14 @@ class PluralType(override val source: Element, scope: Scope, val baseType: Type)
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
-		val sourceType = resolveTypeAlias(unresolvedSourceType)
+		val sourceType = unresolvedSourceType.effectiveType
 		if(sourceType !is PluralType)
 			return false
 		return baseType.accepts(sourceType.baseType)
 	}
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
-		val targetType = resolveTypeAlias(unresolvedTargetType)
+		val targetType = unresolvedTargetType.effectiveType
 		if(targetType !is PluralType)
 			return false
 		return baseType.isAssignableTo(targetType.baseType)

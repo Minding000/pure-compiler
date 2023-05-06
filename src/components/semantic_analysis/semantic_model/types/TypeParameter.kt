@@ -20,7 +20,7 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, 
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
-		val sourceType = resolveTypeAlias(unresolvedSourceType)
+		val sourceType = unresolvedSourceType.effectiveType
 		// If assigning object to collection (different logic applies when assigning a collection)
 		if(mode == Mode.PRODUCING)
 			return false
@@ -28,7 +28,7 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, 
 	}
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
-		val targetType = resolveTypeAlias(unresolvedTargetType)
+		val targetType = unresolvedTargetType.effectiveType
 		// If assigning collection to object (different logic applies when assigning to a collection)
 		if(mode == Mode.CONSUMING)
 			return Linter.SpecialType.ANY.matches(targetType)

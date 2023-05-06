@@ -2,7 +2,10 @@ package components.semantic_analysis.semantic_model.types
 
 //import org.bytedeco.llvm.LLVM.LLVMTypeRef
 import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.definitions.*
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
+import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
+import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
+import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -14,7 +17,6 @@ abstract class Type(source: Element, scope: Scope, isStatic: Boolean = false): U
 	//var llvmType: LLVMTypeRef? = null
 	val interfaceScope = InterfaceScope(isStatic)
 	private var hasResolvedDefinitions = false
-	var isAlias = false
 	var effectiveType = this
 
 	init {
@@ -57,15 +59,6 @@ abstract class Type(source: Element, scope: Scope, isStatic: Boolean = false): U
 	abstract fun accepts(unresolvedSourceType: Type): Boolean
 
 	abstract fun isAssignableTo(unresolvedTargetType: Type): Boolean
-
-	internal fun resolveTypeAlias(sourceType: Type): Type {
-		if(sourceType is ObjectType) {
-			(sourceType.definition as? TypeAlias)?.let { typeAlias ->
-				return resolveTypeAlias(typeAlias.referenceType)
-			}
-		}
-		return sourceType
-	}
 
 	open fun getAbstractMembers(): List<MemberDeclaration> =
 		throw CompilerError(source, "Tried to get abstract members of non-super type.")

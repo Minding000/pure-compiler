@@ -48,7 +48,7 @@ class AndUnionType(override val source: Element, scope: Scope, val types: List<T
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
-		val sourceType = resolveTypeAlias(unresolvedSourceType)
+		val sourceType = unresolvedSourceType.effectiveType
 		for(type in types)
 			if(!type.accepts(sourceType))
 				return false
@@ -56,7 +56,7 @@ class AndUnionType(override val source: Element, scope: Scope, val types: List<T
 	}
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
-		val targetType = resolveTypeAlias(unresolvedTargetType)
+		val targetType = unresolvedTargetType.effectiveType
 		if(targetType is AndUnionType)
 			targetType.accepts(this)
 		for(type in types)

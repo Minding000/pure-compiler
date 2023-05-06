@@ -49,7 +49,7 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 	}
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
-		val targetType = resolveTypeAlias(unresolvedTargetType)
+		val targetType = unresolvedTargetType.effectiveType
 		if(targetType is FunctionType)
 			return false
 		if(targetType !is StaticType)

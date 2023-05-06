@@ -97,10 +97,8 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		//TODO ask the definition to resolve all its member signatures
 		definition?.scope?.subscribe(this)
 		val definition = definition
-		if(definition is TypeAlias) {
-			isAlias = true
+		if(definition is TypeAlias)
 			effectiveType = definition.getEffectiveType(linter)
-		}
 	}
 
 	override fun validate(linter: Linter) {
@@ -132,19 +130,15 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
-		(definition as? TypeAlias)?.let { typeAlias ->
-			return unresolvedSourceType.isAssignableTo(typeAlias.referenceType)
-		}
 		if(unresolvedSourceType is StaticType)
 			return false
 		return unresolvedSourceType.isAssignableTo(this)
 	}
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
-		val targetType = resolveTypeAlias(unresolvedTargetType)
-		(definition as? TypeAlias)?.let { typeAlias ->
-			return typeAlias.referenceType.isAssignableTo(targetType)
-		}
+		val targetType = unresolvedTargetType.effectiveType
+		if(definition is TypeAlias)
+			return effectiveType.isAssignableTo(targetType)
 		if(targetType is StaticType || targetType is FunctionType)
 			return false
 		if(targetType !is ObjectType)
@@ -169,18 +163,19 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 	override fun equals(other: Any?): Boolean {
 		if(other !is Type)
 			return false
-		if(isAlias || other.isAlias)
-			return effectiveType == other.effectiveType
-		if(other !is ObjectType)
+		val otherType = other.effectiveType
+		if(definition is TypeAlias)
+			return effectiveType == otherType
+		if(otherType !is ObjectType)
 			return false
-		if(definition != other.definition)
+		if(definition != otherType.definition)
 			return false
-		if(definition == null && name != other.name)
+		if(definition == null && name != otherType.name)
 			return false
-		if(typeParameters.size != other.typeParameters.size)
+		if(typeParameters.size != otherType.typeParameters.size)
 			return false
 		for(genericParameterIndex in typeParameters.indices)
-			if(typeParameters[genericParameterIndex] != other.typeParameters[genericParameterIndex])
+			if(typeParameters[genericParameterIndex] != otherType.typeParameters[genericParameterIndex])
 				return false
 		return true
 	}

@@ -102,7 +102,7 @@ class FunctionType(override val source: Element, scope: Scope): ObjectType(sourc
 	}
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
-		val targetType = resolveTypeAlias(unresolvedTargetType)
+		val targetType = unresolvedTargetType.effectiveType
 		if(targetType !is FunctionType)
 			return Linter.SpecialType.ANY.matches(targetType)
 		signatureAssignabilityCheck@for(requiredSignature in targetType.signatures) {
