@@ -28,14 +28,14 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 
 	override fun determineTypes(linter: Linter) {
 		super.determineTypes(linter)
-		target.type?.let { valueType ->
+		target.type?.let { targetType ->
 			try {
-				val operatorDefinition = valueType.interfaceScope.resolveOperator(linter, kind)
+				val operatorDefinition = targetType.interfaceScope.resolveOperator(linter, kind)
 				if(operatorDefinition == null)
-					linter.addIssue(NotFound(source, "Operator", "$valueType$kind"))
+					linter.addIssue(NotFound(source, "Operator", "$targetType$kind"))
 			} catch(error: SignatureResolutionAmbiguityError) {
 				//TODO write test for this
-				error.log(linter, source, "operator", "$valueType$kind")
+				error.log(linter, source, "operator", "$targetType$kind")
 			}
 		}
 	}

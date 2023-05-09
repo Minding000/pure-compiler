@@ -28,7 +28,7 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 	}
 
 	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+		collection.determineTypes(linter)
 		val collectionType = collection.type
 		if(collectionType is PluralType)
 			setVariableTypes(linter, collectionType)

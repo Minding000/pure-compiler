@@ -40,6 +40,7 @@ internal class OperatorResolution {
 				-fraction
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "fraction" }
 		val operator = variableValue?.type?.interfaceScope?.resolveOperator(lintResult.linter, Operator.Kind.MINUS)
 		assertNotNull(operator)
@@ -74,6 +75,7 @@ internal class OperatorResolution {
 				var c = a + b
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "a" }
 		val operator = variableValue?.type?.interfaceScope?.resolveOperator(lintResult.linter, Operator.Kind.PLUS, variableValue)
 		assertNotNull(operator)
@@ -101,6 +103,7 @@ internal class OperatorResolution {
 				fraction--
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "fraction" }
 		val operator = variableValue?.type?.interfaceScope?.resolveOperator(lintResult.linter, Operator.Kind.DOUBLE_MINUS)
 		assertNotNull(operator)
@@ -135,6 +138,7 @@ internal class OperatorResolution {
 				a += b
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "a" }
 		val operator = variableValue?.type?.interfaceScope?.resolveOperator(lintResult.linter, Operator.Kind.PLUS_EQUALS, variableValue)
 		assertNotNull(operator)
@@ -179,6 +183,7 @@ internal class OperatorResolution {
 				ChessBoard[Position()]
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
 		val indexAccess = lintResult.find<IndexAccess>()
 		assertNotNull(indexAccess?.type)
 	}

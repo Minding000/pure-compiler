@@ -2,6 +2,7 @@ package components.semantic_analysis
 
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
+import logger.issues.definition.DeclarationMissingTypeOrValue
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertIs
@@ -18,6 +19,7 @@ internal class OverGeneratorLoops {
 				loop over listOfWords as index, word {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
 		val indexVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "index" }?.type
 		assertIs<ObjectType>(indexVariableType)
 		assertTrue(Linter.SpecialType.INTEGER.matches(indexVariableType))
@@ -32,6 +34,7 @@ internal class OverGeneratorLoops {
 				loop over mapFromWordToScore as word, score {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
 		val keyVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.type
 		assertIs<ObjectType>(keyVariableType)
 		assertTrue(Linter.SpecialType.STRING.matches(keyVariableType))
@@ -46,6 +49,7 @@ internal class OverGeneratorLoops {
 				loop over listOfWords as word {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
 		val valueVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.type
 		assertIs<ObjectType>(valueVariableType)
 		assertTrue(Linter.SpecialType.STRING.matches(valueVariableType))
@@ -60,6 +64,7 @@ internal class OverGeneratorLoops {
 				loop over listOfWords as index, word {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
 		val indexVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "index" }?.type
 		assertIs<ObjectType>(indexVariableType)
 		assertTrue(Linter.SpecialType.INTEGER.matches(indexVariableType))

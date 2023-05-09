@@ -52,7 +52,7 @@ abstract class Scope {
 		= resolveOperator(linter, kind, listOf(suppliedType))
 
 	open fun resolveOperator(linter: Linter, kind: Operator.Kind, suppliedValues: List<Value>): FunctionSignature? {
-		val operator = resolveValue(kind.stringRepresentation)?.type as? FunctionType
+		val operator = resolveValue(kind.stringRepresentation)?.getType(linter) as? FunctionType
 		return operator?.resolveSignature(linter, suppliedValues)
 	}
 

@@ -7,6 +7,7 @@ import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.definition.ComputedPropertyMissingType
+import logger.issues.definition.DeclarationMissingTypeOrValue
 import logger.issues.initialization.CircularAssignment
 import logger.issues.modifiers.*
 import logger.issues.resolution.NotCallable
@@ -87,6 +88,7 @@ internal class ValueResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
 		lintResult.assertIssueNotDetected<CircularAssignment>()
 		val parameter = lintResult.find<Parameter>()
 		assertEquals("Int", parameter?.type.toString())

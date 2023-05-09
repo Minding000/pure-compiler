@@ -69,9 +69,8 @@ class Linter {
 		// - Function.resolveSignatures() - before resolving functions in function call or operators
 
 		// Implementation differences:
-		// - removed 'type linking' stage
+		// - removed 'type linking' stage (because generic copies require values to be linked)
 		// - created 'getType()' function in ValueDeclaration instead, replacing 'preLinkValues()'
-		// - created enum in 'Value', but not really using it
 		// - using 'hasDeterminedTypes' properties instead
 		// - didn't create 'TypeDefinition.resolveInitializers()'
 		// - didn't create 'Function.resolveSignatures()'

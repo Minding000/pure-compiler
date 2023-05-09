@@ -26,7 +26,6 @@ class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, n
 	}
 
 	override fun determineType(linter: Linter) {
-		super.determineType(linter)
 		if(isPropertySetter) {
 			val parent = parent
 			if(parent is InitializerDefinition) {
@@ -40,6 +39,7 @@ class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, n
 				linter.addIssue(PropertyParameterOutsideOfInitializer(source))
 			}
 		}
+		super.determineType(linter)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
