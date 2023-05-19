@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.types
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.definitions.TypeParameter as TypeParameterSyntaxTree
@@ -11,8 +11,8 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, 
 		addUnits(baseType)
 	}
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): TypeParameter {
-		return TypeParameter(source, scope, mode, baseType.withTypeSubstitutions(linter, typeSubstitutions))
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeParameter {
+		return TypeParameter(source, scope, mode, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun simplified(): Type {
@@ -31,7 +31,7 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, 
 		val targetType = unresolvedTargetType.effectiveType
 		// If assigning collection to object (different logic applies when assigning to a collection)
 		if(mode == Mode.CONSUMING)
-			return Linter.SpecialType.ANY.matches(targetType)
+			return SpecialType.ANY.matches(targetType)
 		return baseType.isAssignableTo(targetType)
 	}
 

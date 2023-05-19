@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions.sections
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.FunctionDefinition
@@ -8,7 +7,6 @@ import components.tokenizer.Word
 import source_structure.Position
 import util.indent
 import util.toLines
-import java.lang.StringBuilder
 
 class FunctionSection(private val declarationType: Word, private val functions: List<FunctionDefinition>,
 					  end: Position): DeclarationSection(declarationType.start, end), ModifierSectionChild {
@@ -19,9 +17,9 @@ class FunctionSection(private val declarationType: Word, private val functions: 
 			function.parent = this
 	}
 
-	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
+	override fun concretize(scope: MutableScope, units: MutableList<Unit>) {
 		for(function in functions)
-			function.concretize(linter, scope, units)
+			function.concretize(scope, units)
 	}
 
 	override fun toString(): String {

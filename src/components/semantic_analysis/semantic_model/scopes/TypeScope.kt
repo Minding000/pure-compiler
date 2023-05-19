@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.scopes
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.StaticType
@@ -19,13 +18,13 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 	private val interfaceMembers = HashMap<String, InterfaceMember>()
 	val initializers = LinkedList<InitializerDefinition>()
 
-	fun withTypeSubstitutions(linter: Linter, typeSubstitution: Map<TypeDefinition, Type>, superScope: InterfaceScope?): TypeScope {
+	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>, superScope: InterfaceScope?): TypeScope {
 		val specificTypeScope = TypeScope(enclosingScope, superScope)
 		for((name, typeDefinition) in typeDefinitions) {
 			if(typeDefinition is GenericTypeDefinition)
 				continue
 			if(typeDefinition.isBound) {
-				typeDefinition.withTypeSubstitutions(linter, typeSubstitution) { specificDefinition ->
+				typeDefinition.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
 					specificTypeScope.typeDefinitions[name] = specificDefinition
 				}
 			} else {
@@ -36,10 +35,10 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 			specificTypeScope.interfaceMembers[name] = if(interfaceMember.isStatic)
 				interfaceMember
 			else
-				interfaceMember.withTypeSubstitutions(linter, typeSubstitution)
+				interfaceMember.withTypeSubstitutions(typeSubstitution)
 		}
 		for(initializer in initializers)
-			specificTypeScope.initializers.add(initializer.withTypeSubstitutions(linter, typeSubstitution))
+			specificTypeScope.initializers.add(initializer.withTypeSubstitutions(typeSubstitution))
 		return specificTypeScope
 	}
 
@@ -89,16 +88,16 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 		}
 	}
 
-	fun ensureTrivialInitializers(linter: Linter) {
+	fun ensureTrivialInitializers() {
 		for(initializer in initializers) {
 			if(initializer.typeParameters.isNotEmpty())
-				linter.addIssue(ObjectInitializerTakingTypeParameters(initializer.source))
+				initializer.context.addIssue(ObjectInitializerTakingTypeParameters(initializer.source))
 			if(initializer.parameters.isNotEmpty())
-				linter.addIssue(ObjectInitializerTakingParameters(initializer.source))
+				initializer.context.addIssue(ObjectInitializerTakingParameters(initializer.source))
 		}
 	}
 
-	fun ensureUniqueInitializerSignatures(linter: Linter) {
+	fun ensureUniqueInitializerSignatures() {
 		val redeclarations = LinkedList<InitializerDefinition>()
 		for(initializerIndex in 0 until initializers.size - 1) {
 			val initializer = initializers[initializerIndex]
@@ -113,20 +112,21 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 						continue@initializerIteration
 				}
 				redeclarations.add(otherInitializer)
-				linter.addIssue(Redeclaration(otherInitializer.source, "initializer", otherInitializer.toString(), initializer.source))
+				otherInitializer.context.addIssue(Redeclaration(otherInitializer.source, "initializer", otherInitializer.toString(),
+					initializer.source))
 			}
 		}
 		initializers.removeAll(redeclarations)
 	}
 
-	fun ensureNoAbstractMembers(linter: Linter) {
+	fun ensureNoAbstractMembers() {
 		for(memberDeclaration in memberDeclarations) {
 			if(memberDeclaration.isAbstract)
-				linter.addIssue(AbstractMemberInNonAbstractTypeDefinition(memberDeclaration, typeDefinition))
+				typeDefinition.context.addIssue(AbstractMemberInNonAbstractTypeDefinition(memberDeclaration, typeDefinition))
 		}
 	}
 
-	fun ensureAbstractSuperMembersImplemented(linter: Linter) {
+	fun ensureAbstractSuperMembersImplemented() {
 		val missingOverrides = LinkedHashMap<TypeDefinition, LinkedList<MemberDeclaration>>()
 		val abstractSuperMembers = superScope?.getAbstractMembers() ?: return
 		for(abstractSuperMember in abstractSuperMembers) {
@@ -141,40 +141,42 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 		}
 		if(missingOverrides.isEmpty())
 			return
-		linter.addIssue(MissingImplementations(typeDefinition, missingOverrides))
+		typeDefinition.context.addIssue(MissingImplementations(typeDefinition, missingOverrides))
 	}
 
-	override fun declareInitializer(linter: Linter, initializer: InitializerDefinition) {
+	override fun declareInitializer(initializer: InitializerDefinition) {
 		initializers.add(initializer)
 		onNewInitializer(initializer)
 		memberDeclarations.add(initializer)
 	}
 
-	override fun declareType(linter: Linter, typeDefinition: TypeDefinition) {
+	override fun declareType(typeDefinition: TypeDefinition) {
 		var previousDeclaration = enclosingScope.resolveType(typeDefinition.name)
 		if(previousDeclaration != null)
-			linter.addIssue(ShadowsElement(typeDefinition.source, "type", typeDefinition.name, previousDeclaration.source))
+			typeDefinition.context.addIssue(ShadowsElement(typeDefinition.source, "type", typeDefinition.name,
+				previousDeclaration.source))
 		previousDeclaration = superScope?.resolveType(typeDefinition.name)
 			?: typeDefinitions.putIfAbsent(typeDefinition.name, typeDefinition)
 		if(previousDeclaration != null) {
-			linter.addIssue(Redeclaration(typeDefinition.source, "type", "${this.typeDefinition.name}.${typeDefinition.name}",
-				previousDeclaration.source))
+			typeDefinition.context.addIssue(Redeclaration(typeDefinition.source, "type",
+				"${this.typeDefinition.name}.${typeDefinition.name}", previousDeclaration.source))
 			return
 		}
 		onNewType(typeDefinition)
 	}
 
-	override fun declareValue(linter: Linter, valueDeclaration: ValueDeclaration) {
+	override fun declareValue(valueDeclaration: ValueDeclaration) {
 		if(valueDeclaration !is InterfaceMember)
 			throw CompilerError(valueDeclaration.source,
 				"Tried to declare non-member of type '${valueDeclaration.javaClass.simpleName}' in type scope.")
 		var previousDeclaration = enclosingScope.resolveValue(valueDeclaration.name)
 		if(previousDeclaration != null)
-			linter.addIssue(ShadowsElement(valueDeclaration.source, "member", valueDeclaration.name, previousDeclaration.source))
+			valueDeclaration.context.addIssue(ShadowsElement(valueDeclaration.source, "member", valueDeclaration.name,
+				previousDeclaration.source))
 		previousDeclaration = superScope?.resolveValue(valueDeclaration.name) ?: interfaceMembers.putIfAbsent(valueDeclaration.name,
 			valueDeclaration)
 		if(previousDeclaration != null) {
-			linter.addIssue(Redeclaration(valueDeclaration.source, "member",
+			valueDeclaration.context.addIssue(Redeclaration(valueDeclaration.source, "member",
 				"${typeDefinition.name}.${valueDeclaration.name}", previousDeclaration.source))
 			return
 		}

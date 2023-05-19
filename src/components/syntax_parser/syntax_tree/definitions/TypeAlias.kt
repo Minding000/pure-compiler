@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSection
@@ -15,9 +14,9 @@ class TypeAlias(start: Position, private val modifierList: ModifierList?, privat
 				private val type: TypeElement): Element(start, type.end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticTypeAliasModel {
-		modifierList?.validate(linter)
-		val type = type.concretize(linter, scope)
+	override fun concretize(scope: MutableScope): SemanticTypeAliasModel {
+		modifierList?.validate(context)
+		val type = type.concretize(scope)
 		val typeScope = TypeScope(scope, null)
 		return SemanticTypeAliasModel(this, identifier.getValue(), type, typeScope)
 	}

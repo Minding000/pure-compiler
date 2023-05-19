@@ -1,4 +1,4 @@
-package components.semantic_analysis
+package components.semantic_analysis.semantic_model.context
 
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.types.Type

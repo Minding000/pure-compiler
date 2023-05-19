@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.Element
@@ -14,12 +13,11 @@ class GeneratorDefinition(start: Position, private val identifier: Identifier, p
 						  private var keyReturnType: TypeElement?, private var valueReturnType: TypeElement,
 						  private val body: StatementSection): Element(start, body.end) {
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticGeneratorDefinitionModel {
+	override fun concretize(scope: MutableScope): SemanticGeneratorDefinitionModel {
 		val generatorScope = BlockScope(scope)
-		val parameters = parameterList.concretizeParameters(linter, generatorScope)
+		val parameters = parameterList.concretizeParameters(generatorScope)
 		return SemanticGeneratorDefinitionModel(this, generatorScope, identifier.getValue(), parameters,
-			keyReturnType?.concretize(linter, generatorScope), valueReturnType.concretize(linter, generatorScope),
-			body.concretize(linter, generatorScope))
+			keyReturnType?.concretize(generatorScope), valueReturnType.concretize(generatorScope), body.concretize(generatorScope))
 	}
 
 	override fun toString(): String {

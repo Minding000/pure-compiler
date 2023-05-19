@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.types
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -12,8 +12,8 @@ class OptionalType(override val source: Element, scope: Scope, val baseType: Typ
 		addUnits(baseType)
 	}
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): OptionalType {
-		return OptionalType(source, scope, baseType.withTypeSubstitutions(linter, typeSubstitutions))
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): OptionalType {
+		return OptionalType(source, scope, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun simplified(): Type {
@@ -31,13 +31,13 @@ class OptionalType(override val source: Element, scope: Scope, val baseType: Typ
 		baseType.inferType(genericType, sourceBaseType, inferredTypes)
 	}
 
-	override fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> {
-		return baseType.getConversionsFrom(linter, sourceType)
+	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
+		return baseType.getConversionsFrom(sourceType)
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
 		var sourceType = unresolvedSourceType.effectiveType
-		if(Linter.SpecialType.NULL.matches(sourceType))
+		if(SpecialType.NULL.matches(sourceType))
 			return true
 		if(sourceType is OptionalType)
 			sourceType = sourceType.baseType

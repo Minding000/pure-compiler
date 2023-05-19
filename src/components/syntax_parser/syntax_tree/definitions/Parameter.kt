@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.GenericTypeDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.MutableScope
@@ -19,15 +19,15 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
         val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.MUTABLE, WordAtom.SPREAD)
     }
 
-    override fun concretize(linter: Linter, scope: MutableScope): SemanticParameterModel {
-        modifierList?.validate(linter, ALLOWED_MODIFIER_TYPES)
+    override fun concretize(scope: MutableScope): SemanticParameterModel {
+        modifierList?.validate(context, ALLOWED_MODIFIER_TYPES)
         val isMutable = modifierList?.containsModifier(WordAtom.MUTABLE) ?: false
         val hasDynamicSize = modifierList?.containsModifier(WordAtom.SPREAD) ?: false
-        return SemanticParameterModel(this, scope, identifier.getValue(), type?.concretize(linter, scope), isMutable, hasDynamicSize)
+        return SemanticParameterModel(this, scope, identifier.getValue(), type?.concretize(scope), isMutable, hasDynamicSize)
     }
 
-	fun concretizeAsGenericParameter(linter: Linter, scope: MutableScope): TypeDefinition {
-		val superType = type?.concretize(linter, scope) ?: LiteralType(this, scope, Linter.SpecialType.ANY)
+	fun concretizeAsGenericParameter(scope: MutableScope): TypeDefinition {
+		val superType = type?.concretize(scope) ?: LiteralType(this, scope, SpecialType.ANY)
 		val typeScope = TypeScope(scope, superType.interfaceScope)
 		return GenericTypeDefinition(this, identifier.getValue(), typeScope, superType)
 	}

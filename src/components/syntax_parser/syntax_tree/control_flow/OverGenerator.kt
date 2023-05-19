@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.control_flow
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
 import components.syntax_parser.syntax_tree.general.Element
@@ -15,8 +14,8 @@ class OverGenerator(start: Position, private val collection: ValueElement, priva
 					private val variableDeclarations: List<Identifier>):
 	Element(start, variableDeclarations.lastOrNull()?.end ?: collection.end) {
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticOverGeneratorModel {
-		return SemanticOverGeneratorModel(this, scope, collection.concretize(linter, scope),
+	override fun concretize(scope: MutableScope): SemanticOverGeneratorModel {
+		return SemanticOverGeneratorModel(this, scope, collection.concretize(scope),
 			iteratorVariableDeclaration?.let { variableDeclaration -> LocalVariableDeclaration(variableDeclaration, scope) },
 			variableDeclarations.map { variableDeclaration -> LocalVariableDeclaration(variableDeclaration, scope) })
 	}

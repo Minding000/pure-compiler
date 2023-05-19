@@ -1,18 +1,19 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
+import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.LiteralType
 import components.syntax_parser.syntax_tree.general.Element
 
 class BooleanLiteral(override val source: Element, scope: Scope, val value: Boolean): LiteralValue(source, scope) {
 
-	constructor(source: Element, scope: Scope, value: Boolean, linter: Linter): this(source, scope, value) {
-		(type as? LiteralType)?.determineTypes(linter)
+	constructor(parent: Unit, value: Boolean): this(parent.source, parent.scope, value) {
+		(type as? LiteralType)?.determineTypes()
 	}
 
 	init {
-		type = LiteralType(source, scope, Linter.SpecialType.BOOLEAN)
+		type = LiteralType(source, scope, SpecialType.BOOLEAN)
 		addUnits(type)
 	}
 

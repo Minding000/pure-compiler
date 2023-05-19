@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.types
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
@@ -26,7 +26,7 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		addUnits(typeParameters)
 	}
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Type {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type {
 		val substituteType = typeSubstitutions[definition]
 		if(substituteType != null)
 			return substituteType
@@ -34,12 +34,12 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		if(!isBound && typeParameters.isEmpty())
 			return this
 		val specificTypeParameters = typeParameters.map { typeParameter ->
-			typeParameter.withTypeSubstitutions(linter, typeSubstitutions) }
+			typeParameter.withTypeSubstitutions(typeSubstitutions) }
 		//TODO this might be nicer if it was written with a return in the callback
 		// -> withTypeParameter needs to have inline modifier
 		val specificType = ObjectType(source, scope, enclosingType, specificTypeParameters, name)
 		val typeSubstitutions = if(isBound) typeSubstitutions else mapOf()
-		definition?.withTypeParameters(linter, specificTypeParameters, typeSubstitutions) { specificDefinition ->
+		definition?.withTypeParameters(specificTypeParameters, typeSubstitutions) { specificDefinition ->
 			specificType.definition = specificDefinition
 			specificDefinition.scope.subscribe(specificType)
 		}
@@ -79,18 +79,18 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		interfaceScope.addInitializer(initializer)
 	}
 
-	override fun resolveDefinitions(linter: Linter) {
-		super.resolveDefinitions(linter)
+	override fun resolveDefinitions() {
+		super.resolveDefinitions()
 		if(definition == null) {
 			val sourceScope = enclosingType?.interfaceScope ?: scope
 			definition = sourceScope.resolveType(name)
 			if(definition == null)
-				linter.addIssue(NotFound(source, "Type", name))
+				context.addIssue(NotFound(source, "Type", name))
 			if(definition?.isBound != true)
 				enclosingType?.setIsNonSpecificContext()
 		}
 		if(typeParameters.isNotEmpty()) {
-			definition?.withTypeParameters(linter, typeParameters) { specificDefinition ->
+			definition?.withTypeParameters(typeParameters) { specificDefinition ->
 				definition = specificDefinition
 			}
 		}
@@ -98,32 +98,32 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		definition?.scope?.subscribe(this)
 		val definition = definition
 		if(definition is TypeAlias)
-			effectiveType = definition.getEffectiveType(linter)
+			effectiveType = definition.getEffectiveType()
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		if(isInSpecificContext)
-			ensureSpecificDefinition(linter)
+			ensureSpecificDefinition()
 	}
 
-	private fun ensureSpecificDefinition(linter: Linter) {
+	private fun ensureSpecificDefinition() {
 		(definition?.baseDefinition ?: definition)?.let { definition ->
 			val genericTypes = definition.scope.getGenericTypeDefinitions()
 			if(typeParameters.size != genericTypes.size)
-				linter.addIssue(TypeParameterCountMismatch(source, typeParameters, genericTypes))
+				context.addIssue(TypeParameterCountMismatch(source, typeParameters, genericTypes))
 			if(typeParameters.isEmpty())
 				return
 			for(parameterIndex in genericTypes.indices) {
 				val genericType = genericTypes[parameterIndex]
 				val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
 				if(!genericType.acceptsSubstituteType(typeParameter))
-					linter.addIssue(TypeParameterNotAssignable(source, typeParameter, genericType))
+					context.addIssue(TypeParameterNotAssignable(source, typeParameter, genericType))
 			}
 		}
 	}
 
-	override fun isInstanceOf(type: Linter.SpecialType): Boolean {
+	override fun isInstanceOf(type: SpecialType): Boolean {
 		if(type.matches(this))
 			return true
 		return definition?.superType?.isInstanceOf(type) ?: false
@@ -156,8 +156,8 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		return definition?.scope?.getPropertiesToBeInitialized() ?: listOf()
 	}
 
-	override fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> {
-		return definition?.getConversionsFrom(linter, sourceType) ?: listOf()
+	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
+		return definition?.getConversionsFrom(sourceType) ?: listOf()
 	}
 
 	override fun equals(other: Any?): Boolean {

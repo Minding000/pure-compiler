@@ -1,6 +1,6 @@
 package components.semantic_analysis.operations
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.control_flow.Try
 import components.semantic_analysis.semantic_model.definitions.Class
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
@@ -30,7 +30,7 @@ internal class Expressions {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val nullCheck = lintResult.find<NullCheck>()
-		assertTrue(Linter.SpecialType.BOOLEAN.matches(nullCheck?.type))
+		assertTrue(SpecialType.BOOLEAN.matches(nullCheck?.type))
 	}
 
 	@Test
@@ -141,8 +141,8 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		val positiveCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.CAST_CONDITION }
 		val negativeCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.NEGATED_CAST_CONDITION }
-		assertTrue(Linter.SpecialType.BOOLEAN.matches(positiveCast?.type))
-		assertTrue(Linter.SpecialType.BOOLEAN.matches(negativeCast?.type))
+		assertTrue(SpecialType.BOOLEAN.matches(positiveCast?.type))
+		assertTrue(SpecialType.BOOLEAN.matches(negativeCast?.type))
 	}
 
 	@Test

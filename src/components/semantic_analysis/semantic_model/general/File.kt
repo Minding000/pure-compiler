@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import logger.issues.resolution.ReferencedFileNotFound
 import java.util.*
@@ -17,23 +16,6 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 		addUnits(statements)
 	}
 
-	fun resolveFileReferences(linter: Linter, program: Program) {
-		for(statement in statements) {
-			val fileReference = statement as? FileReference ?: continue
-			var noFilesFound = true
-			for(file in program.files) {
-				if(file == this)
-					continue
-				if(file.matches(fileReference.parts)) {
-					referencedFiles.add(file)
-					noFilesFound = false
-				}
-			}
-			if(noFilesFound)
-				linter.addIssue(ReferencedFileNotFound(fileReference))
-		}
-	}
-
 	fun matches(parts: List<String>): Boolean {
 		if(parts.size > file.pathParts.size + 1)
 			return false
@@ -46,14 +28,31 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 		return true
 	}
 
-	override fun determineTypes(linter: Linter) {
+	fun resolveFileReferences(program: Program) {
+		for(statement in statements) {
+			val fileReference = statement as? FileReference ?: continue
+			var noFilesFound = true
+			for(file in program.files) {
+				if(file == this)
+					continue
+				if(file.matches(fileReference.parts)) {
+					referencedFiles.add(file)
+					noFilesFound = false
+				}
+			}
+			if(noFilesFound)
+				context.addIssue(ReferencedFileNotFound(fileReference))
+		}
 		for(referencedFile in referencedFiles)
 			scope.reference(referencedFile.scope)
-		super.determineTypes(linter)
 	}
 
-	fun analyseDataFlow(linter: Linter) {
-		variableTracker = VariableTracker(linter)
+	override fun determineTypes() {
+		super.determineTypes()
+	}
+
+	fun analyseDataFlow() {
+		variableTracker = VariableTracker(context)
 		analyseDataFlow(variableTracker)
 		variableTracker.calculateEndState()
 		variableTracker.validate()

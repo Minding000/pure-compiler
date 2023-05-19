@@ -1,4 +1,4 @@
-package components.semantic_analysis
+package components.semantic_analysis.semantic_model.context
 
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.general.Unit
@@ -10,7 +10,7 @@ import logger.issues.initialization.ConstantReassignment
 import util.combine
 import java.util.*
 
-class VariableTracker(val linter: Linter, val isInitializer: Boolean = false) {
+class VariableTracker(val context: Context, val isInitializer: Boolean = false) {
 	val childTrackers = HashMap<String, VariableTracker>()
 	val variables = HashMap<ValueDeclaration, MutableList<VariableUsage>>()
 	private val ends = HashMap<ValueDeclaration, VariableUsage>()
@@ -224,7 +224,7 @@ class VariableTracker(val linter: Linter, val isInitializer: Boolean = false) {
 			for(usage in usages) {
 				if(usage.kinds.contains(VariableUsage.Kind.WRITE) && declaration.isConstant) {
 					if((declaration is PropertyDeclaration && !isInitializer) || usage.isPreviouslyPossiblyInitialized())
-						linter.addIssue(ConstantReassignment(usage.unit.source, declaration.name))
+						context.addIssue(ConstantReassignment(usage.unit.source, declaration.name))
 				}
 			}
 		}

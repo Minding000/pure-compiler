@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.literals
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeElement
 import errors.internal.CompilerError
@@ -11,21 +10,21 @@ import components.semantic_analysis.semantic_model.types.Type as SemanticTypeMod
 
 class UnionType(private val left: TypeElement, private val right: TypeElement, private val mode: Mode): TypeElement(left.start, right.end) {
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticTypeModel {
+	override fun concretize(scope: MutableScope): SemanticTypeModel {
 		val types = LinkedList<SemanticTypeModel>()
-		addTypes(linter, scope, types, this)
+		addTypes(scope, types, this)
 		return if(mode == Mode.AND)
 			SemanticAndUnionTypeModel(this, scope, types)
 		else
 			SemanticOrUnionTypeModel(this, scope, types)
 	}
 
-	private fun addTypes(linter: Linter, scope: MutableScope, types: LinkedList<SemanticTypeModel>, type: TypeElement) {
+	private fun addTypes(scope: MutableScope, types: LinkedList<SemanticTypeModel>, type: TypeElement) {
 		if(type is UnionType && type.mode == mode) {
-			addTypes(linter, scope, types, type.left)
-			addTypes(linter, scope, types, type.right)
+			addTypes(scope, types, type.left)
+			addTypes(scope, types, type.right)
 		} else {
-			types.add(type.concretize(linter, scope))
+			types.add(type.concretize(scope))
 		}
 	}
 

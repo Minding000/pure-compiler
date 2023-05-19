@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.general
 
 import components.compiler.targets.llvm.BuildContext
-import components.semantic_analysis.Linter
 import java.util.*
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
@@ -16,43 +15,43 @@ class Program(val source: ProgramSyntaxTree) {
 	}
 
 	/**
-	 * Resolves file references by listing files providing types.
+	 * Declares types and values.
 	 */
-	fun resolveFileReferences(linter: Linter) {
+	fun declare() {
 		for(file in files)
-			file.resolveFileReferences(linter, this)
+			file.declare()
 	}
 
 	/**
-	 * Declares types and values.
+	 * Resolves file references by listing files providing types.
 	 */
-	fun declare(linter: Linter) {
+	fun resolveFileReferences() {
 		for(file in files)
-			file.declare(linter)
+			file.resolveFileReferences(this)
 	}
 
 	/**
 	 * Determines the type of values.
 	 */
-	fun determineTypes(linter: Linter) {
+	fun determineTypes() {
 		for(file in files)
-			file.determineTypes(linter)
+			file.determineTypes()
 	}
 
 	/**
 	 * Collects information about variable usage order.
 	 */
-	fun analyseDataFlow(linter: Linter) {
+	fun analyseDataFlow() {
 		for(file in files)
-			file.analyseDataFlow(linter)
+			file.analyseDataFlow()
 	}
 
 	/**
 	 * Validates various rules including type- and null-safety.
 	 */
-	fun validate(linter: Linter) {
+	fun validate() {
 		for(file in files)
-			file.validate(linter)
+			file.validate()
 	}
 
 	/**

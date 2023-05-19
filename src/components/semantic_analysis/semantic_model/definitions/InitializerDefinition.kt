@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.Type
@@ -31,16 +30,16 @@ class InitializerDefinition(override val source: Element, override val scope: Bl
 		addUnits(body)
 	}
 
-	fun withTypeSubstitutions(linter: Linter, typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {
+	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {
 		val specificTypeParameters = LinkedList<TypeDefinition>()
 		for(typeParameter in typeParameters) {
-			typeParameter.withTypeSubstitutions(linter, typeSubstitution) { specificDefinition ->
+			typeParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
 				specificTypeParameters.add(specificDefinition)
 			}
 		}
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
-			specificParameters.add(parameter.withTypeSubstitutions(linter, typeSubstitution))
+			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
 		val initializerDefinition = InitializerDefinition(source, scope, specificTypeParameters, specificParameters, body, isAbstract,
 			isConverting, isNative, isOverriding)
 		initializerDefinition.parentDefinition = parentDefinition
@@ -147,16 +146,16 @@ class InitializerDefinition(override val source: Element, override val scope: Bl
 		return isConverting && parameters.size == 1 && parameters.first().type?.accepts(sourceType) ?: false
 	}
 
-	override fun determineTypes(linter: Linter) {
+	override fun determineTypes() {
 		parentDefinition = scope.getSurroundingDefinition()
 			?: throw CompilerError(source, "Initializer expected surrounding type definition.")
-		super.determineTypes(linter)
-		parentDefinition.scope.declareInitializer(linter, this)
+		super.determineTypes()
+		parentDefinition.scope.declareInitializer(this)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		val propertiesToBeInitialized = parentDefinition.scope.getPropertiesToBeInitialized().toMutableList()
-		val initializerTracker = VariableTracker(tracker.linter, true)
+		val initializerTracker = VariableTracker(context, true)
 		for(member in parentDefinition.scope.memberDeclarations)
 			if(member is PropertyDeclaration)
 				initializerTracker.declare(member)
@@ -170,31 +169,31 @@ class InitializerDefinition(override val source: Element, override val scope: Bl
 		tracker.addChild("${parentDefinition.name}.${memberIdentifier}", initializerTracker)
 		propertiesToBeInitialized.removeAll(propertiesBeingInitialized)
 		if(propertiesToBeInitialized.isNotEmpty())
-			tracker.linter.addIssue(UninitializedProperties(source, propertiesToBeInitialized))
+			context.addIssue(UninitializedProperties(source, propertiesToBeInitialized))
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		if(isConverting) {
 			if(typeParameters.isNotEmpty())
-				linter.addIssue(ConvertingInitializerTakingTypeParameters(source))
+				context.addIssue(ConvertingInitializerTakingTypeParameters(source))
 			if(parameters.size != 1)
-				linter.addIssue(ConvertingInitializerWithInvalidParameterCount(source))
+				context.addIssue(ConvertingInitializerWithInvalidParameterCount(source))
 		} else {
 			if(superInitializer?.isConverting == true)
-				linter.addIssue(OverridingInitializerMissingConvertingKeyword(source))
+				context.addIssue(OverridingInitializerMissingConvertingKeyword(source))
 		}
 		val superInitializer = superInitializer
 		if(superInitializer == null) {
 			if(isOverriding)
-				linter.addIssue(OverriddenSuperInitializerMissing(source))
+				context.addIssue(OverriddenSuperInitializerMissing(source))
 		} else {
 			if(superInitializer.isAbstract) {
 				if(!isOverriding)
-					linter.addIssue(MissingOverridingKeyword(source, "Initializer", toString()))
+					context.addIssue(MissingOverridingKeyword(source, "Initializer", toString()))
 			} else {
 				if(isOverriding)
-					linter.addIssue(OverriddenSuperInitializerMissing(source))
+					context.addIssue(OverriddenSuperInitializerMissing(source))
 			}
 		}
 	}

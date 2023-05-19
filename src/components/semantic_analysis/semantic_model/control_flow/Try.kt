@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.values.Value
@@ -12,8 +11,8 @@ class Try(override val source: TrySyntaxTree, scope: Scope, val expression: Valu
 		addUnits(expression)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		expression.type?.let { expressionType ->
 			type = if(isOptional)
 				OptionalType(source, scope, expressionType)

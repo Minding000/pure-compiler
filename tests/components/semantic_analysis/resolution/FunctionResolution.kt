@@ -31,7 +31,7 @@ internal class FunctionResolution {
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "Door" }
 		val functionType = variableValue?.type?.interfaceScope?.resolveValue("open")?.type
 		assertIs<FunctionType>(functionType)
-		val signature = functionType.resolveSignature(lintResult.linter)
+		val signature = functionType.resolveSignature()
 		assertNotNull(signature)
 	}
 
@@ -55,7 +55,7 @@ internal class FunctionResolution {
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
 		val functionType = variableValue?.type?.interfaceScope?.resolveValue("open")?.type
 		assertIs<FunctionType>(functionType)
-		val signature = functionType.resolveSignature(lintResult.linter)
+		val signature = functionType.resolveSignature()
 		assertNotNull(signature)
 	}
 
@@ -76,7 +76,7 @@ internal class FunctionResolution {
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
 		val functionType = variableValue?.type?.interfaceScope?.resolveValue("open")?.type
 		assertIs<FunctionType>(functionType)
-		val signature = functionType.resolveSignature(lintResult.linter)
+		val signature = functionType.resolveSignature()
 		assertNotNull(signature)
 	}
 

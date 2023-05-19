@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.ReferenceAlias
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.literals.Identifier
@@ -13,14 +12,14 @@ import components.semantic_analysis.semantic_model.general.FileReference as Sema
 class FileReference(start: Position, private val parts: List<Identifier>, private val body: AliasBlock?):
 	Element(start, body?.end ?: parts.last().end) {
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticFileReferenceModel {
+	override fun concretize(scope: MutableScope): SemanticFileReferenceModel {
 		val parts = LinkedList<String>()
 		for(part in this.parts)
 			parts.add(part.getValue())
 		val aliases = LinkedList<ReferenceAlias>()
 		if(this.body != null) {
 			for(alias in this.body.referenceAliases)
-				aliases.add(alias.concretize(linter, scope))
+				aliases.add(alias.concretize(scope))
 		}
 		return SemanticFileReferenceModel(this, scope, parts.joinToString("."), parts, aliases)
 	}

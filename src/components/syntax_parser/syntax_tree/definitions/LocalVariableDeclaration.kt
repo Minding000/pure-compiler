@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.VariableSectionElement
 import components.syntax_parser.syntax_tree.general.TypeElement
@@ -16,11 +15,11 @@ class LocalVariableDeclaration(private val identifier: Identifier, private val t
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.IMMUTABLE)
 	}
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticLocalVariableDeclarationModel {
-		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
+	override fun concretize(scope: MutableScope): SemanticLocalVariableDeclarationModel {
+		parent.validate(ALLOWED_MODIFIER_TYPES)
 		val isMutable = !parent.containsModifier(WordAtom.IMMUTABLE)
-		val type = (type ?: parent.type)?.concretize(linter, scope)
-		val value = (value ?: parent.value)?.concretize(linter, scope)
+		val type = (type ?: parent.type)?.concretize(scope)
+		val value = (value ?: parent.value)?.concretize(scope)
 		return SemanticLocalVariableDeclarationModel(this, scope, identifier.getValue(), type, value, parent.isConstant, isMutable)
 	}
 

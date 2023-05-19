@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.scopes
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.control_flow.LoopStatement
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
@@ -14,10 +13,11 @@ class BlockScope(private val parentScope: MutableScope): MutableScope() {
 	val types = HashMap<String, TypeDefinition>()
 	val values = HashMap<String, ValueDeclaration>()
 
-	override fun declareType(linter: Linter, typeDefinition: TypeDefinition) {
+	override fun declareType(typeDefinition: TypeDefinition) {
 		val previousDeclaration = parentScope.resolveType(typeDefinition.name) ?: types.putIfAbsent(typeDefinition.name, typeDefinition)
 		if(previousDeclaration != null) {
-			linter.addIssue(Redeclaration(typeDefinition.source, "type", typeDefinition.name, previousDeclaration.source))
+			typeDefinition.context.addIssue(Redeclaration(typeDefinition.source, "type", typeDefinition.name,
+				previousDeclaration.source))
 			return
 		}
 		onNewType(typeDefinition)
@@ -39,10 +39,11 @@ class BlockScope(private val parentScope: MutableScope): MutableScope() {
 		return types[name] ?: parentScope.resolveType(name)
 	}
 
-	override fun declareValue(linter: Linter, valueDeclaration: ValueDeclaration) {
+	override fun declareValue(valueDeclaration: ValueDeclaration) {
 		val previousDeclaration = parentScope.resolveValue(valueDeclaration.name) ?: values.putIfAbsent(valueDeclaration.name, valueDeclaration)
 		if(previousDeclaration != null) {
-			linter.addIssue(Redeclaration(valueDeclaration.source, "value", valueDeclaration.name, previousDeclaration.source))
+			valueDeclaration.context.addIssue(Redeclaration(valueDeclaration.source, "value", valueDeclaration.name,
+				previousDeclaration.source))
 			return
 		}
 	}

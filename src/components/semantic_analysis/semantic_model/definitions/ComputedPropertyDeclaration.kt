@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.Type
@@ -19,19 +18,19 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		addUnits(getExpression, setStatement)
 	}
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): ComputedPropertyDeclaration {
-		return ComputedPropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(linter, typeSubstitutions), isConstant,
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ComputedPropertyDeclaration {
+		return ComputedPropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), isConstant,
 			isOverriding, getExpression, setStatement, true)
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		if(isConstant) {
 			if(setStatement != null)
-				linter.addIssue(SetterInComputedValue(setStatement.source))
+				context.addIssue(SetterInComputedValue(setStatement.source))
 		} else {
 			if(setStatement == null)
-				linter.addIssue(ComputedVariableWithoutSetter(source))
+				context.addIssue(ComputedVariableWithoutSetter(source))
 		}
 	}
 }

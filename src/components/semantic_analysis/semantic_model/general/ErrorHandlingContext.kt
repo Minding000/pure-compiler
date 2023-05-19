@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.semantic_analysis.VariableTracker
-import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.context.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.StatementSection

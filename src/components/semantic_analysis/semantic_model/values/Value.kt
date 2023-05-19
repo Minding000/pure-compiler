@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.OptionalType
@@ -33,10 +32,10 @@ abstract class Value(override val source: Element, override var scope: Scope, va
 		setEndStates(tracker)
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		if(type == null)
-			linter.addIssue(MissingType(source))
+			context.addIssue(MissingType(source))
 	}
 
 	fun setEndStates(tracker: VariableTracker) {

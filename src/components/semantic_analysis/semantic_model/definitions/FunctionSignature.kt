@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.LiteralType
@@ -14,7 +14,7 @@ import java.util.*
 
 class FunctionSignature(override val source: Element, override val scope: BlockScope, val genericParameters: List<TypeDefinition>,
 						val parameterTypes: List<Type?>, returnType: Type?, isPartOfImplementation: Boolean = false): Unit(source, scope) {
-	val returnType = returnType ?: LiteralType(source, scope, Linter.SpecialType.NOTHING)
+	val returnType = returnType ?: LiteralType(source, scope, SpecialType.NOTHING)
 	var superFunctionSignature: FunctionSignature? = null
 
 	init {
@@ -24,18 +24,18 @@ class FunctionSignature(override val source: Element, override val scope: BlockS
 			addUnits(parameterTypes)
 	}
 
-	fun withTypeSubstitutions(linter: Linter, typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {
+	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {
 		val specificGenericParameters = LinkedList<TypeDefinition>()
 		for(genericParameter in genericParameters) {
-			genericParameter.withTypeSubstitutions(linter, typeSubstitution) { specificDefinition ->
+			genericParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
 				specificGenericParameters.add(specificDefinition)
 			}
 		}
 		val specificParametersTypes = LinkedList<Type?>()
 		for(parameterType in parameterTypes)
-			specificParametersTypes.add(parameterType?.withTypeSubstitutions(linter, typeSubstitution))
+			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitution))
 		return FunctionSignature(source, scope, specificGenericParameters, specificParametersTypes,
-			returnType.withTypeSubstitutions(linter, typeSubstitution))
+			returnType.withTypeSubstitutions(typeSubstitution))
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -166,7 +166,7 @@ class FunctionSignature(override val source: Element, override val scope: BlockS
 						stringRepresentation += " "
 				}
 				stringRepresentation += "${parameterTypes.joinToString()}]"
-				if(!Linter.SpecialType.NOTHING.matches(returnType))
+				if(!SpecialType.NOTHING.matches(returnType))
 					stringRepresentation += ": $returnType"
 				stringRepresentation
 			}
@@ -185,7 +185,7 @@ class FunctionSignature(override val source: Element, override val scope: BlockS
 				}
 				stringRepresentation += "]"
 				stringRepresentation += "(${parameterTypes.lastOrNull()})"
-				if(!Linter.SpecialType.NOTHING.matches(returnType))
+				if(!SpecialType.NOTHING.matches(returnType))
 					stringRepresentation += ": $returnType"
 				stringRepresentation
 			}
@@ -205,9 +205,9 @@ class FunctionSignature(override val source: Element, override val scope: BlockS
 					if(stringRepresentation.isNotEmpty())
 						stringRepresentation += " "
 					stringRepresentation += "=>"
-					stringRepresentation += if(Linter.SpecialType.NOTHING.matches(returnType)) "|" else " $returnType"
+					stringRepresentation += if(SpecialType.NOTHING.matches(returnType)) "|" else " $returnType"
 				} else {
-					if(!Linter.SpecialType.NOTHING.matches(returnType))
+					if(!SpecialType.NOTHING.matches(returnType))
 						stringRepresentation += ": $returnType"
 				}
 				stringRepresentation

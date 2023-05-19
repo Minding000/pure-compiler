@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.literals
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.ValueElement
 import components.tokenizer.Word
@@ -9,8 +8,8 @@ import components.semantic_analysis.semantic_model.values.SelfReference as Seman
 
 class SelfReference(word: Word, private val specifier: ObjectType?, end: Position): ValueElement(word.start, end) {
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticSelfReferenceModel {
-		return SemanticSelfReferenceModel(this, scope, specifier?.concretize(linter, scope))
+	override fun concretize(scope: MutableScope): SemanticSelfReferenceModel {
+		return SemanticSelfReferenceModel(this, scope, specifier?.concretize(scope))
 	}
 
 	override fun toString(): String {

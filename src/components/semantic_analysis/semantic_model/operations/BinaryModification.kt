@@ -1,8 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
-import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.context.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.NumberLiteral
@@ -21,17 +20,17 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		addUnits(target, modifier)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		target.type?.let { valueType ->
 			try {
-				val operatorDefinition = valueType.interfaceScope.resolveOperator(linter, kind, listOf(modifier))
+				val operatorDefinition = valueType.interfaceScope.resolveOperator(kind, listOf(modifier))
 				if(operatorDefinition == null) {
-					linter.addIssue(NotFound(source, "Operator", "$valueType $kind ${modifier.type}"))
+					context.addIssue(NotFound(source, "Operator", "$valueType $kind ${modifier.type}"))
 				}
 			} catch(error: SignatureResolutionAmbiguityError) {
 				//TODO write test for this
-				error.log(linter, source, "operator", "$valueType $kind ${modifier.type}")
+				error.log(source, "operator", "$valueType $kind ${modifier.type}")
 			}
 		}
 	}
@@ -56,6 +55,6 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 			Operator.Kind.SLASH_EQUALS -> targetValue / modifierValue
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
-		return NumberLiteral(source, scope, resultingValue, tracker.linter)
+		return NumberLiteral(this, resultingValue)
 	}
 }

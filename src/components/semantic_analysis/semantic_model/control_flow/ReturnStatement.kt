@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.SpecialType
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -20,26 +20,26 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 		addUnits(value)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		val surroundingFunction = scope.getSurroundingFunction()
 		if(surroundingFunction == null) {
-			linter.addIssue(ReturnStatementOutsideOfCallable(source))
+			context.addIssue(ReturnStatementOutsideOfCallable(source))
 			return
 		}
 		targetFunction = surroundingFunction
 		surroundingFunction.mightReturnValue = true
 		val returnType = surroundingFunction.signature.returnType
 		if(value == null) {
-			if(!Linter.SpecialType.NOTHING.matches(returnType))
-				linter.addIssue(ReturnStatementMissingValue(source))
+			if(!SpecialType.NOTHING.matches(returnType))
+				context.addIssue(ReturnStatementMissingValue(source))
 		} else {
-			if(Linter.SpecialType.NOTHING.matches(returnType)) {
-				linter.addIssue(RedundantReturnValue(source))
+			if(SpecialType.NOTHING.matches(returnType)) {
+				context.addIssue(RedundantReturnValue(source))
 			} else if(value.isAssignableTo(returnType)) {
 				value.setInferredType(returnType)
 			} else {
-				linter.addIssue(ReturnValueTypeMismatch(source))
+				context.addIssue(ReturnValueTypeMismatch(source))
 			}
 		}
 	}

@@ -1,8 +1,8 @@
 package components.semantic_analysis.semantic_model.operations
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
-import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.context.SpecialType
+import components.semantic_analysis.semantic_model.context.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.*
 import errors.internal.CompilerError
@@ -17,25 +17,25 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		addUnits(left, right)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		left.type?.let { leftType ->
 			try {
-				val operatorDefinition = leftType.interfaceScope.resolveOperator(linter, kind, right)
+				val operatorDefinition = leftType.interfaceScope.resolveOperator(kind, right)
 				if(operatorDefinition == null) {
-					linter.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.type}"))
+					context.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.type}"))
 					return@let
 				}
 				type = operatorDefinition.returnType
 			} catch(error: SignatureResolutionAmbiguityError) {
 				//TODO write test for this
-				error.log(linter, source, "operator", "$leftType $kind ${right.type}")
+				error.log(source, "operator", "$leftType $kind ${right.type}")
 			}
 		}
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
-		val isConditional = Linter.SpecialType.BOOLEAN.matches(left.type) && (kind == Operator.Kind.AND || kind == Operator.Kind.PIPE)
+		val isConditional = SpecialType.BOOLEAN.matches(left.type) && (kind == Operator.Kind.AND || kind == Operator.Kind.PIPE)
 		val isComparison = kind == Operator.Kind.EQUAL_TO || kind == Operator.Kind.NOT_EQUAL_TO
 		left.analyseDataFlow(tracker)
 		if(isConditional) {
@@ -44,7 +44,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			val variableValue = left as? VariableValue
 			val declaration = variableValue?.definition
 			if(declaration != null) {
-				val booleanLiteral = BooleanLiteral(source, scope, isAnd, tracker.linter)
+				val booleanLiteral = BooleanLiteral(this, isAnd)
 				tracker.add(VariableUsage.Kind.HINT, declaration, this, booleanLiteral.type, booleanLiteral)
 			}
 			right.analyseDataFlow(tracker)
@@ -75,7 +75,6 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 	}
 
 	override fun getComputedValue(tracker: VariableTracker): Value? {
-		val linter = tracker.linter
 		return when(kind) {
 			Operator.Kind.DOUBLE_QUESTION_MARK -> {
 				val leftValue = left.staticValue ?: return null
@@ -87,62 +86,62 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			Operator.Kind.AND -> {
 				val leftValue = left.staticValue as? BooleanLiteral ?: return null
 				val rightValue = right.staticValue as? BooleanLiteral ?: return null
-				BooleanLiteral(source, scope, leftValue.value && rightValue.value, linter)
+				BooleanLiteral(this, leftValue.value && rightValue.value)
 			}
 			Operator.Kind.PIPE -> {
 				val leftValue = left.staticValue as? BooleanLiteral ?: return null
 				val rightValue = right.staticValue as? BooleanLiteral ?: return null
-				BooleanLiteral(source, scope, leftValue.value || rightValue.value, linter)
+				BooleanLiteral(this, leftValue.value || rightValue.value)
 			}
 			Operator.Kind.PLUS -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				NumberLiteral(source, scope, leftValue.value + rightValue.value, linter)
+				NumberLiteral(this, leftValue.value + rightValue.value)
 			}
 			Operator.Kind.MINUS -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				NumberLiteral(source, scope, leftValue.value - rightValue.value, linter)
+				NumberLiteral(this, leftValue.value - rightValue.value)
 			}
 			Operator.Kind.STAR -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				NumberLiteral(source, scope, leftValue.value * rightValue.value, linter)
+				NumberLiteral(this, leftValue.value * rightValue.value)
 			}
 			Operator.Kind.SLASH -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				NumberLiteral(source, scope, leftValue.value / rightValue.value, linter)
+				NumberLiteral(this, leftValue.value / rightValue.value)
 			}
 			Operator.Kind.SMALLER_THAN -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				BooleanLiteral(source, scope, leftValue.value < rightValue.value, linter)
+				BooleanLiteral(this, leftValue.value < rightValue.value)
 			}
 			Operator.Kind.GREATER_THAN -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				BooleanLiteral(source, scope, leftValue.value > rightValue.value, linter)
+				BooleanLiteral(this, leftValue.value > rightValue.value)
 			}
 			Operator.Kind.SMALLER_THAN_OR_EQUAL_TO -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				BooleanLiteral(source, scope, leftValue.value <= rightValue.value, linter)
+				BooleanLiteral(this, leftValue.value <= rightValue.value)
 			}
 			Operator.Kind.GREATER_THAN_OR_EQUAL_TO -> {
 				val leftValue = left.staticValue as? NumberLiteral ?: return null
 				val rightValue = right.staticValue as? NumberLiteral ?: return null
-				BooleanLiteral(source, scope, leftValue.value >= rightValue.value, linter)
+				BooleanLiteral(this, leftValue.value >= rightValue.value)
 			}
 			Operator.Kind.EQUAL_TO -> {
 				val leftValue = left.staticValue ?: return null
 				val rightValue = right.staticValue ?: return null
-				BooleanLiteral(source, scope, leftValue == rightValue, linter)
+				BooleanLiteral(this, leftValue == rightValue)
 			}
 			Operator.Kind.NOT_EQUAL_TO -> {
 				val leftValue = left.staticValue ?: return null
 				val rightValue = right.staticValue ?: return null
-				BooleanLiteral(source, scope, leftValue != rightValue, linter)
+				BooleanLiteral(this, leftValue != rightValue)
 			}
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}

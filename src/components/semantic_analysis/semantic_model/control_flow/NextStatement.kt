@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import logger.issues.loops.NextStatementOutsideOfLoop
@@ -11,11 +10,11 @@ class NextStatement(override val source: NextStatementSyntaxTree, scope: Scope):
 	private var targetLoop: LoopStatement? = null
 	override val isInterruptingExecution = true
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		val surroundingLoop = scope.getSurroundingLoop()
 		if(surroundingLoop == null)
-			linter.addIssue(NextStatementOutsideOfLoop(source))
+			context.addIssue(NextStatementOutsideOfLoop(source))
 		else
 			targetLoop = surroundingLoop
 	}

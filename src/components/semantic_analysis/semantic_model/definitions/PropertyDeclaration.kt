@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.Type
@@ -16,37 +15,37 @@ open class PropertyDeclaration(source: Element, scope: MutableScope, name: Strin
 							   isMutable: Boolean = false, isOverriding: Boolean = false, isSpecificCopy: Boolean = false):
 	InterfaceMember(source, scope, name, type, value, isStatic, isAbstract, isConstant, isMutable, isOverriding, isSpecificCopy) {
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): PropertyDeclaration {
-		return PropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(linter, typeSubstitutions), value, isStatic, isAbstract,
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): PropertyDeclaration {
+		return PropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), value, isStatic, isAbstract,
 			isConstant, isMutable, isOverriding, true)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		if(!linter.declarationStack.push(this))
+	override fun determineTypes() {
+		if(!context.declarationStack.push(this))
 			return
-		super.determineTypes(linter)
-		linter.declarationStack.pop(this)
+		super.determineTypes()
+		context.declarationStack.pop(this)
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
-		validateSuperMember(linter)
+	override fun validate() {
+		super.validate()
+		validateSuperMember()
 	}
 
-	private fun validateSuperMember(linter: Linter) {
+	private fun validateSuperMember() {
 		val superMember = superMember ?: return
 		if(!superMember.isConstant && isConstant)
-			linter.addIssue(VariablePropertyOverriddenByValue(this))
+			context.addIssue(VariablePropertyOverriddenByValue(this))
 		val type = type ?: return
 		val superType = superMember.type ?: return
 		if(type is FunctionType && superType is FunctionType)
 			return
 		if(isConstant) {
 			if(!type.isAssignableTo(superType))
-				linter.addIssue(OverridingPropertyTypeNotAssignable(type, superType))
+				context.addIssue(OverridingPropertyTypeNotAssignable(type, superType))
 		} else {
 			if(type != superType)
-				linter.addIssue(OverridingPropertyTypeMismatch(type, superType))
+				context.addIssue(OverridingPropertyTypeMismatch(type, superType))
 		}
 	}
 }

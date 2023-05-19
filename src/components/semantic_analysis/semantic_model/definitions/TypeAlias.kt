@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
@@ -18,33 +17,33 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val refe
 		addUnits(referenceType)
 	}
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): TypeAlias {
-		return TypeAlias(source, name, referenceType.withTypeSubstitutions(linter, typeSubstitutions),
-			scope.withTypeSubstitutions(linter, typeSubstitutions, null), true)
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeAlias {
+		return TypeAlias(source, name, referenceType.withTypeSubstitutions(typeSubstitutions),
+			scope.withTypeSubstitutions(typeSubstitutions, null), true)
 	}
 
-	fun getEffectiveType(linter: Linter): Type {
-		if(!linter.declarationStack.push(this))
+	fun getEffectiveType(): Type {
+		if(!context.declarationStack.push(this))
 			return effectiveType
 		if(hasDeterminedEffectiveType)
 			return effectiveType
 		hasDeterminedEffectiveType = true
-		referenceType.determineTypes(linter)
+		referenceType.determineTypes()
 		if(referenceType is ObjectType) {
 			val referenceDefinition = referenceType.definition
 			if(referenceDefinition is TypeAlias)
-				effectiveType = referenceDefinition.getEffectiveType(linter)
+				effectiveType = referenceDefinition.getEffectiveType()
 		}
-		linter.declarationStack.pop(this)
+		context.declarationStack.pop(this)
 		return effectiveType
 	}
 
-	override fun declare(linter: Linter) {
-		super.declare(linter)
-		scope.enclosingScope.declareType(linter, this)
+	override fun declare() {
+		super.declare()
+		scope.enclosingScope.declareType(this)
 	}
 
-	override fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> {
-		return referenceType.getConversionsFrom(linter, sourceType)
+	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
+		return referenceType.getConversionsFrom(sourceType)
 	}
 }

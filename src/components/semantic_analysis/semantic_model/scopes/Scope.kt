@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.scopes
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.control_flow.LoopStatement
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.FunctionSignature
@@ -45,27 +44,27 @@ abstract class Scope {
 
 	abstract fun resolveValue(name: String): ValueDeclaration?
 
-	fun resolveOperator(linter: Linter, kind: Operator.Kind): FunctionSignature?
-		= resolveOperator(linter, kind, listOf())
+	fun resolveOperator(kind: Operator.Kind): FunctionSignature?
+		= resolveOperator(kind, listOf())
 
-	fun resolveOperator(linter: Linter, kind: Operator.Kind, suppliedType: Value): FunctionSignature?
-		= resolveOperator(linter, kind, listOf(suppliedType))
+	fun resolveOperator(kind: Operator.Kind, suppliedType: Value): FunctionSignature?
+		= resolveOperator(kind, listOf(suppliedType))
 
-	open fun resolveOperator(linter: Linter, kind: Operator.Kind, suppliedValues: List<Value>): FunctionSignature? {
-		val operator = resolveValue(kind.stringRepresentation)?.getType(linter) as? FunctionType
-		return operator?.resolveSignature(linter, suppliedValues)
+	open fun resolveOperator(kind: Operator.Kind, suppliedValues: List<Value>): FunctionSignature? {
+		val operator = resolveValue(kind.stringRepresentation)?.getComputedType() as? FunctionType
+		return operator?.resolveSignature(suppliedValues)
 	}
 
-	fun resolveIndexOperator(linter: Linter, suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
+	fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
 							 suppliedParameterValue: Value?): FunctionSignature?
-		= resolveIndexOperator(linter, suppliedTypes, suppliedIndexValues, listOfNotNull(suppliedParameterValue))
+		= resolveIndexOperator(suppliedTypes, suppliedIndexValues, listOfNotNull(suppliedParameterValue))
 
-	open fun resolveIndexOperator(linter: Linter, suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
+	open fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
 								  suppliedParameterValues: List<Value>): FunctionSignature? {
 		val kind = if(suppliedParameterValues.isEmpty())
 			Operator.Kind.BRACKETS_GET
 		else
 			Operator.Kind.BRACKETS_SET
-		return resolveOperator(linter, kind, suppliedIndexValues)
+		return resolveOperator(kind, suppliedIndexValues)
 	}
 }

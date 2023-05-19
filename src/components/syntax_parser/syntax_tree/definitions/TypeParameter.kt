@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeElement
 import components.tokenizer.Word
@@ -9,12 +8,12 @@ import components.semantic_analysis.semantic_model.types.TypeParameter as Semant
 
 class TypeParameter(val type: TypeElement, val modifier: Word): TypeElement(type.start, modifier.end) {
 
-    override fun concretize(linter: Linter, scope: MutableScope): SemanticTypeParameterModel {
+    override fun concretize(scope: MutableScope): SemanticTypeParameterModel {
         val mode = if(modifier.type == WordAtom.CONSUMING)
             SemanticTypeParameterModel.Mode.CONSUMING
         else
             SemanticTypeParameterModel.Mode.PRODUCING
-        return SemanticTypeParameterModel(this, scope, mode, type.concretize(linter, scope))
+        return SemanticTypeParameterModel(this, scope, mode, type.concretize(scope))
     }
 
     override fun toString(): String {

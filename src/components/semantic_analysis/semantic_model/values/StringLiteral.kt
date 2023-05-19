@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.LiteralType
 import components.syntax_parser.syntax_tree.literals.StringLiteral as StringLiteralSyntaxTree
@@ -8,7 +8,7 @@ import components.syntax_parser.syntax_tree.literals.StringLiteral as StringLite
 class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, val value: String): LiteralValue(source, scope) {
 
 	init {
-		type = LiteralType(source, scope, Linter.SpecialType.STRING)
+		type = LiteralType(source, scope, SpecialType.STRING)
 		addUnits(type)
 	}
 

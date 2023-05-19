@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.SpecialType
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.*
@@ -21,14 +21,14 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		addUnits(target, member)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		target.determineTypes(linter)
+	override fun determineTypes() {
+		target.determineTypes()
 		var targetType = target.type
 		if(targetType != null) {
 			if(targetType is OptionalType)
 				targetType = targetType.baseType
 			member.scope = targetType.interfaceScope
-			member.determineTypes(linter)
+			member.determineTypes()
 			member.type?.let { memberType ->
 				type = if(isOptional && memberType !is OptionalType)
 					OptionalType(source, scope, memberType)
@@ -49,26 +49,26 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		if(targetType != null) {
 			if(isTypePotentiallyNull(targetType)) {
 				if(!isOptional)
-					tracker.linter.addIssue(OptionalAccessWithoutNullCheck(source, targetType))
+					context.addIssue(OptionalAccessWithoutNullCheck(source, targetType))
 			} else {
 				if(isOptional)
-					tracker.linter.addIssue(GuaranteedAccessWithNullCheck(source, targetType))
+					context.addIssue(GuaranteedAccessWithNullCheck(source, targetType))
 			}
 		}
 	}
 
 	private fun isTypePotentiallyNull(type: Type): Boolean {
-		return type is OptionalType || Linter.SpecialType.NULL.matches(type)
+		return type is OptionalType || SpecialType.NULL.matches(type)
 	}
 
-	fun filterForPossibleTargetTypes(linter: Linter, availableTypes: List<ObjectType>): List<Type> {
+	fun filterForPossibleTargetTypes(availableTypes: List<ObjectType>): List<Type> {
 		val possibleTargetTypes = LinkedList<Type>()
 		for(availableType in availableTypes) {
 			when(member) {
 				is InitializerReference -> {
 					val staticType = StaticType(availableType.definition ?: continue)
 					val functionCall = parent as? FunctionCall ?: continue
-					if(staticType.resolveInitializer(linter, listOf(), listOf(), functionCall.typeParameters, functionCall.valueParameters)
+					if(staticType.resolveInitializer(listOf(), listOf(), functionCall.typeParameters, functionCall.valueParameters)
 						== null)
 						continue
 					possibleTargetTypes.add(staticType)
@@ -78,7 +78,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 					if(parent is FunctionCall) {
 						val functionType = availableType.interfaceScope.resolveValue(member)?.type as? FunctionType? ?: continue
 						val functionCall = parent as? FunctionCall ?: continue
-						if(functionType.resolveSignature(linter, functionCall.typeParameters, functionCall.valueParameters) == null)
+						if(functionType.resolveSignature(functionCall.typeParameters, functionCall.valueParameters) == null)
 							continue
 					} else {
 						if(!availableType.interfaceScope.hasValue(member.name))

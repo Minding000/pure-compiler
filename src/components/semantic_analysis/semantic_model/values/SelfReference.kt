@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
@@ -17,11 +16,11 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 		specifier?.setIsNonSpecificContext()
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		val surroundingDefinition = scope.getSurroundingDefinition()
 		if(surroundingDefinition == null) {
-			linter.addIssue(SelfReferenceOutsideOfTypeDefinition(source))
+			context.addIssue(SelfReferenceOutsideOfTypeDefinition(source))
 			return
 		}
 		if(specifier == null) {
@@ -32,13 +31,13 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 				if(isBoundTo(surroundingDefinition, specifierDefinition))
 					definition = specifierDefinition
 				else
-					linter.addIssue(SelfReferenceSpecifierNotBound(source, surroundingDefinition, specifierDefinition))
+					context.addIssue(SelfReferenceSpecifierNotBound(source, surroundingDefinition, specifierDefinition))
 			}
 		}
 		definition?.let { definition ->
 			val typeParameters = definition.scope.getGenericTypeDefinitions().map { ObjectType(it) }
 			type = ObjectType(typeParameters, definition)
-			type?.determineTypes(linter)
+			type?.determineTypes()
 			addUnits(type)
 		}
 	}

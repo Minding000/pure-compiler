@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.types
 
 //import org.bytedeco.llvm.LLVM.LLVMTypeRef
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
@@ -23,7 +23,7 @@ abstract class Type(source: Element, scope: Scope, isStatic: Boolean = false): U
 		interfaceScope.type = this
 	}
 
-	abstract fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Type
+	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type
 
 	abstract fun simplified(): Type
 
@@ -35,26 +35,26 @@ abstract class Type(source: Element, scope: Scope, isStatic: Boolean = false): U
 
 	open fun onNewInitializer(initializer: InitializerDefinition) {}
 
-	final override fun determineTypes(linter: Linter) {
+	final override fun determineTypes() {
 		if(hasResolvedDefinitions)
 			return
 		hasResolvedDefinitions = true
-		resolveDefinitions(linter)
+		resolveDefinitions()
 	}
 
-	protected open fun resolveDefinitions(linter: Linter) {
-		super.determineTypes(linter)
+	protected open fun resolveDefinitions() {
+		super.determineTypes()
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		//TODO warn if type could be simplified
 		// suggestion
 		//  - Type could be simplified
 		//  -> Simplify to '...'
 	}
 
-	open fun isInstanceOf(type: Linter.SpecialType): Boolean = false
+	open fun isInstanceOf(type: SpecialType): Boolean = false
 
 	abstract fun accepts(unresolvedSourceType: Type): Boolean
 
@@ -65,7 +65,7 @@ abstract class Type(source: Element, scope: Scope, isStatic: Boolean = false): U
 	open fun getPropertiesToBeInitialized(): List<PropertyDeclaration> =
 		throw CompilerError(source, "Tried to get properties to be initialized of non-super type.")
 
-	open fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> = listOf()
+	open fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> = listOf()
 
 //	abstract override fun compile(context: BuildContext): LLVMTypeRef
 }

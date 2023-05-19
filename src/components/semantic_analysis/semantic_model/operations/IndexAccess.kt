@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.operations
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
@@ -18,22 +17,22 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		addUnits(target)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		val parent = parent
 		if(parent is Assignment && parent.targets.contains(this))
 			sourceExpression = parent.sourceExpression
 		target.type?.let { targetType ->
 			try {
-				val definition = targetType.interfaceScope.resolveIndexOperator(linter, typeParameters, indices, sourceExpression)
+				val definition = targetType.interfaceScope.resolveIndexOperator(typeParameters, indices, sourceExpression)
 				if(definition == null) {
 					val name = "${target.type}[${indices.joinToString { index -> index.type.toString() }}]"
-					linter.addIssue(NotFound(source, "Operator", "$name(${sourceExpression?.type ?: ""})"))
+					context.addIssue(NotFound(source, "Operator", "$name(${sourceExpression?.type ?: ""})"))
 					return@let
 				}
 				type = definition.returnType
 			} catch(error: SignatureResolutionAmbiguityError) {
-				error.log(linter, source, "operator", getSignature(targetType))
+				error.log(source, "operator", getSignature(targetType))
 			}
 		}
 	}
@@ -54,9 +53,9 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		return signature
 	}
 
-	fun filterForPossibleTargetTypes(linter: Linter, availableTypes: List<ObjectType>): List<ObjectType> {
+	fun filterForPossibleTargetTypes(availableTypes: List<ObjectType>): List<ObjectType> {
 		return availableTypes.filter { availableType ->
-			availableType.interfaceScope.resolveIndexOperator(linter, typeParameters, indices, sourceExpression) != null
+			availableType.interfaceScope.resolveIndexOperator(typeParameters, indices, sourceExpression) != null
 		}
 	}
 }

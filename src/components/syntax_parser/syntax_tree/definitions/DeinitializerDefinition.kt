@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSection
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSectionChild
@@ -18,10 +17,10 @@ class DeinitializerDefinition(start: Position, end: Position, private val body: 
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE)
 	}
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticDeinitializerDefinitionModel {
-		parent?.validate(linter, ALLOWED_MODIFIER_TYPES)
+	override fun concretize(scope: MutableScope): SemanticDeinitializerDefinitionModel {
+		parent?.validate(ALLOWED_MODIFIER_TYPES)
 		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
-		return SemanticDeinitializerDefinitionModel(this, scope, body?.concretize(linter, scope), isNative)
+		return SemanticDeinitializerDefinitionModel(this, scope, body?.concretize(scope), isNative)
 	}
 
 	override fun toString(): String {

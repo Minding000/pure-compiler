@@ -1,5 +1,6 @@
 package components.semantic_analysis
 
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
 import logger.issues.definition.DeclarationMissingTypeOrValue
@@ -22,7 +23,7 @@ internal class OverGeneratorLoops {
 		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
 		val indexVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "index" }?.type
 		assertIs<ObjectType>(indexVariableType)
-		assertTrue(Linter.SpecialType.INTEGER.matches(indexVariableType))
+		assertTrue(SpecialType.INTEGER.matches(indexVariableType))
 	}
 
 	@Test
@@ -37,7 +38,7 @@ internal class OverGeneratorLoops {
 		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
 		val keyVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.type
 		assertIs<ObjectType>(keyVariableType)
-		assertTrue(Linter.SpecialType.STRING.matches(keyVariableType))
+		assertTrue(SpecialType.STRING.matches(keyVariableType))
 	}
 
 	@Test
@@ -52,7 +53,7 @@ internal class OverGeneratorLoops {
 		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
 		val valueVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.type
 		assertIs<ObjectType>(valueVariableType)
-		assertTrue(Linter.SpecialType.STRING.matches(valueVariableType))
+		assertTrue(SpecialType.STRING.matches(valueVariableType))
 	}
 
 	@Test
@@ -67,9 +68,9 @@ internal class OverGeneratorLoops {
 		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
 		val indexVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "index" }?.type
 		assertIs<ObjectType>(indexVariableType)
-		assertTrue(Linter.SpecialType.INTEGER.matches(indexVariableType))
+		assertTrue(SpecialType.INTEGER.matches(indexVariableType))
 		val valueVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.type
 		assertIs<ObjectType>(valueVariableType)
-		assertTrue(Linter.SpecialType.STRING.matches(valueVariableType))
+		assertTrue(SpecialType.STRING.matches(valueVariableType))
 	}
 }

@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.operations.IndexAccess
 import components.semantic_analysis.semantic_model.operations.MemberAccess
@@ -17,18 +16,18 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 		addUnits(specifier)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		val surroundingDefinition = scope.getSurroundingDefinition()
 		if(surroundingDefinition == null) {
-			linter.addIssue(SuperReferenceOutsideOfTypeDefinition(source))
+			context.addIssue(SuperReferenceOutsideOfTypeDefinition(source))
 			return
 		}
 		var superTypes = surroundingDefinition.getAllSuperTypes()
 		specifier?.definition?.let { specifierDefinition ->
 			superTypes = superTypes.filter { superType -> matchesSpecifier(superType, specifierDefinition) }
 			if(superTypes.isEmpty()) {
-				linter.addIssue(SuperReferenceSpecifierNotInherited(source, surroundingDefinition, specifier))
+				context.addIssue(SuperReferenceSpecifierNotInherited(source, surroundingDefinition, specifier))
 				return
 			}
 		}
@@ -36,24 +35,24 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 			is MemberAccess -> {
 				if(parent.member is InitializerReference) {
 					if(!isInInitializer()) {
-						linter.addIssue(SuperInitializerCallOutsideOfInitializer(source))
+						context.addIssue(SuperInitializerCallOutsideOfInitializer(source))
 						return
 					}
 				}
-				parent.filterForPossibleTargetTypes(linter, superTypes)
+				parent.filterForPossibleTargetTypes(superTypes)
 			}
 			is IndexAccess -> {
-				parent.filterForPossibleTargetTypes(linter, superTypes)
+				parent.filterForPossibleTargetTypes(superTypes)
 			}
 			else -> {
-				linter.addIssue(SuperReferenceOutsideOfAccess(source))
+				context.addIssue(SuperReferenceOutsideOfAccess(source))
 				return
 			}
 		}
 		if(possibleTargetTypes.isEmpty()) {
-			linter.addIssue(SuperMemberNotFound(source))
+			context.addIssue(SuperMemberNotFound(source))
 		} else if(possibleTargetTypes.size > 1) {
-			linter.addIssue(SuperReferenceAmbiguity(source, possibleTargetTypes))
+			context.addIssue(SuperReferenceAmbiguity(source, possibleTargetTypes))
 		} else {
 			val intendedType = possibleTargetTypes.first()
 			type = intendedType

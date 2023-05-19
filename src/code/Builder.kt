@@ -1,7 +1,7 @@
 package code
 
 import components.compiler.targets.llvm.LLVMIRCompiler
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.Linter
 import components.syntax_parser.element_generator.ElementGenerator
 import errors.internal.CompilerError
 import errors.user.UserError
@@ -31,9 +31,9 @@ object Builder {
 				println(program)
 			}
 			println("----- Linter messages: -----")
-			val linter = Linter()
+			val linter = Linter(project.context)
 			val lintedProgram = linter.lint(program)
-			linter.logger.printReport()
+			project.context.logger.printReport()
 			println("----- JIT example: -----")
 			LLVMIRCompiler.runExampleProgram()
 			println("----- JIT output: -----")
@@ -71,7 +71,7 @@ object Builder {
 		try {
 			val source = File(path)
 			val project = Project(source.nameWithoutExtension)
-			val mainModule = Module("Main")
+			val mainModule = Module(project, "Main")
 			if(source.isFile) {
 				project.targetPath = source.parent
 				addFile(mainModule, LinkedList(), source)
@@ -87,7 +87,7 @@ object Builder {
 	}
 
 	fun loadRequiredModules(project: Project) {
-		val langModule = Module("Pure")
+		val langModule = Module(project, "Pure")
 		val path = System.getenv("BASE_MODULE_PATH") ?: LANG_MODULE_PATH
 		addDirectory(langModule, LinkedList(), File(path))
 		project.addModule(langModule)

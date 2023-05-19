@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.SpecialType
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
@@ -44,9 +44,9 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 		}
 	}
 
-	protected abstract fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): TypeDefinition
+	protected abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeDefinition
 
-	fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>, onCompletion: (TypeDefinition) -> kotlin.Unit) {
+	fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>, onCompletion: (TypeDefinition) -> kotlin.Unit) {
 		var definition = specificDefinitions[typeSubstitutions]
 		if(definition != null) {
 			onCompletion(definition)
@@ -59,20 +59,20 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 		}
 		pendingTypeSubstitution = linkedListOf(onCompletion)
 		pendingTypeSubstitutions[typeSubstitutions] = pendingTypeSubstitution
-		definition = withTypeSubstitutions(linter, typeSubstitutions)
+		definition = withTypeSubstitutions(typeSubstitutions)
 		specificDefinitions[typeSubstitutions] = definition
 		for(onTypeSubstitution in pendingTypeSubstitution)
 			onTypeSubstitution(definition)
 		pendingTypeSubstitutions.remove(typeSubstitutions)
 	}
 
-	fun withTypeParameters(linter: Linter, typeParameters: List<Type>, onCompletion: (TypeDefinition) -> kotlin.Unit) =
-		withTypeParameters(linter, typeParameters, HashMap<TypeDefinition, Type>(), onCompletion)
+	fun withTypeParameters(typeParameters: List<Type>, onCompletion: (TypeDefinition) -> kotlin.Unit) =
+		withTypeParameters(typeParameters, HashMap<TypeDefinition, Type>(), onCompletion)
 
-	fun withTypeParameters(linter: Linter, typeParameters: List<Type>, typeSubstitutions: Map<TypeDefinition, Type>,
+	fun withTypeParameters(typeParameters: List<Type>, typeSubstitutions: Map<TypeDefinition, Type>,
 						   onCompletion: (TypeDefinition) -> kotlin.Unit) {
 		baseDefinition?.let { baseDefinition ->
-			return baseDefinition.withTypeParameters(linter, typeParameters, typeSubstitutions, onCompletion)
+			return baseDefinition.withTypeParameters(typeParameters, typeSubstitutions, onCompletion)
 		}
 		val typeSubstitutions = typeSubstitutions.toMutableMap()
 		val placeholders = scope.getGenericTypeDefinitions()
@@ -81,34 +81,34 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 			val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
 			typeSubstitutions[placeholder] = typeParameter
 		}
-		withTypeSubstitutions(linter, typeSubstitutions) { specificTypeDefinition ->
+		withTypeSubstitutions(typeSubstitutions) { specificTypeDefinition ->
 			specificTypeDefinition.baseDefinition = this
 			onCompletion(specificTypeDefinition)
 		}
 	}
 
-	override fun determineTypes(linter: Linter) {
+	override fun determineTypes() {
 		if(hasDeterminedTypes)
 			return
 		hasDeterminedTypes = true
-		explicitParentType?.determineTypes(linter)
+		explicitParentType?.determineTypes()
 		if(explicitParentType != null) {
 			if(parentTypeDefinition == null) {
 				parentTypeDefinition = explicitParentType.definition
 			} else {
-				linter.addIssue(ExplicitParentOnScopedTypeDefinition(explicitParentType.source))
+				context.addIssue(ExplicitParentOnScopedTypeDefinition(explicitParentType.source))
 			}
 		}
 		for(unit in units)
 			if(unit !== explicitParentType)
-				unit.determineTypes(linter)
+				unit.determineTypes()
 		if(isDefinition && scope.initializers.isEmpty())
-			addDefaultInitializer(linter)
-		scope.ensureUniqueInitializerSignatures(linter)
+			addDefaultInitializer()
+		scope.ensureUniqueInitializerSignatures()
 		scope.inheritSignatures()
-		if(superType != null && inheritsFrom(linter, this)) {
+		if(superType != null && inheritsFrom(this)) {
 			hasCircularInheritance = true
-			linter.addIssue(CircularInheritance(superType.source))
+			context.addIssue(CircularInheritance(superType.source))
 		}
 	}
 
@@ -123,26 +123,26 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 		}
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		if(isBound && parentTypeDefinition == null)
-			linter.addIssue(NoParentToBindTo(source))
+			context.addIssue(NoParentToBindTo(source))
 		if(isDefinition && (this as? Class)?.isAbstract != true && !hasCircularInheritance)
-			scope.ensureAbstractSuperMembersImplemented(linter)
+			scope.ensureAbstractSuperMembersImplemented()
 	}
 
-	private fun addDefaultInitializer(linter: Linter) {
+	private fun addDefaultInitializer() {
 		val defaultInitializer = InitializerDefinition(source, BlockScope(scope))
-		defaultInitializer.determineTypes(linter)
+		defaultInitializer.determineTypes()
 		addUnits(defaultInitializer)
 	}
 
-	private fun inheritsFrom(linter: Linter, definition: TypeDefinition): Boolean {
+	private fun inheritsFrom(definition: TypeDefinition): Boolean {
 		for(superType in getDirectSuperTypes()) {
-			superType.determineTypes(linter)
+			superType.determineTypes()
 			if(superType.definition == definition)
 				return true
-			if(superType.definition?.inheritsFrom(linter, definition) == true)
+			if(superType.definition?.inheritsFrom(definition) == true)
 				return true
 		}
 		return false
@@ -165,13 +165,13 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 		}
 	}
 
-	open fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> {
-		determineTypes(linter)
+	open fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
+		determineTypes()
 		return scope.getConversionsFrom(sourceType)
 	}
 
 	fun acceptsSubstituteType(substituteType: Type): Boolean {
-		if(Linter.SpecialType.ANY.matches(superType))
+		if(SpecialType.ANY.matches(superType))
 			return true
 		return superType?.accepts(substituteType) ?: false
 	}
@@ -187,7 +187,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 	}
 
 	override fun toString(): String {
-		if(superType == null || Linter.SpecialType.ANY.matches(superType))
+		if(superType == null || SpecialType.ANY.matches(superType))
 			return name
 		return "$name: $superType"
 	}

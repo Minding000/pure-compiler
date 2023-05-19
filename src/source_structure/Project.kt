@@ -1,10 +1,12 @@
 package source_structure
 
+import components.semantic_analysis.semantic_model.context.Context
 import util.indent
 import util.toLines
 import java.util.*
 
 class Project(val name: String) {
+	val context = Context()
     lateinit var targetPath: String
     val modules = LinkedList<Module>()
 

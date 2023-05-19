@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.VariableSectionElement
 import components.syntax_parser.syntax_tree.general.Element
@@ -19,12 +18,12 @@ class ComputedPropertyDeclaration(private val identifier: Identifier, private va
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.OVERRIDING)
 	}
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticComputedPropertyDeclarationModel {
-		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
+	override fun concretize(scope: MutableScope): SemanticComputedPropertyDeclarationModel {
+		parent.validate(ALLOWED_MODIFIER_TYPES)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val type = type ?: parent.type
-		return SemanticComputedPropertyDeclarationModel(this, scope, identifier.getValue(), type?.concretize(linter, scope),
-			parent.isConstant, isOverriding, getExpression?.concretize(linter, scope), setStatement?.concretize(linter, scope))
+		return SemanticComputedPropertyDeclarationModel(this, scope, identifier.getValue(), type?.concretize(scope),
+			parent.isConstant, isOverriding, getExpression?.concretize(scope), setStatement?.concretize(scope))
 	}
 
 	override fun toString(): String {

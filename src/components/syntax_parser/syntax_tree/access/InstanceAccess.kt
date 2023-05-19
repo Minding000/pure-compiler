@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.access
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.ValueElement
 import components.syntax_parser.syntax_tree.literals.Identifier
@@ -9,7 +8,7 @@ import components.semantic_analysis.semantic_model.operations.InstanceAccess as 
 
 class InstanceAccess(start: Position, val identifier: Identifier): ValueElement(start, identifier.end) {
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticInstanceAccessModel {
+	override fun concretize(scope: MutableScope): SemanticInstanceAccessModel {
 		return SemanticInstanceAccessModel(this, scope, identifier.getValue())
 	}
 

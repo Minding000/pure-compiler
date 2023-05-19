@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.VariableSectionElement
 import components.syntax_parser.syntax_tree.general.TypeElement
@@ -16,13 +15,13 @@ class PropertyDeclaration(private val identifier: Identifier, private val type: 
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.IMMUTABLE, WordAtom.OVERRIDING)
 	}
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticPropertyDeclarationModel {
-		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
+	override fun concretize(scope: MutableScope): SemanticPropertyDeclarationModel {
+		parent.validate(ALLOWED_MODIFIER_TYPES)
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isMutable = !parent.containsModifier(WordAtom.IMMUTABLE)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
-		val type = (type ?: parent.type)?.concretize(linter, scope)
-		val value = (value ?: parent.value)?.concretize(linter, scope)
+		val type = (type ?: parent.type)?.concretize(scope)
+		val value = (value ?: parent.value)?.concretize(scope)
 		//TODO 'isStatic' should be 'true' for 'const'
 		return SemanticPropertyDeclarationModel(this, scope, identifier.getValue(), type, value, false, isAbstract,
 			parent.isConstant, isMutable, isOverriding)

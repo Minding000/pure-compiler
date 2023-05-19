@@ -1,8 +1,7 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
-import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.context.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
@@ -16,30 +15,30 @@ class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, n
 	val isPropertySetter = type == null
 	var propertyDeclaration: ValueDeclaration? = null
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Parameter {
-		return Parameter(source, scope, name, type?.withTypeSubstitutions(linter, typeSubstitutions), isMutable, hasDynamicSize)
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Parameter {
+		return Parameter(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), isMutable, hasDynamicSize)
 	}
 
-	override fun declare(linter: Linter) {
+	override fun declare() {
 		if(type != null)
-			scope.declareValue(linter, this)
+			scope.declareValue(this)
 	}
 
-	override fun determineType(linter: Linter) {
+	override fun determineType() {
 		if(isPropertySetter) {
 			val parent = parent
 			if(parent is InitializerDefinition) {
 				propertyDeclaration = parent.parentDefinition.scope.resolveValue(name)
 				if(propertyDeclaration == null) {
-					linter.addIssue(PropertyParameterMismatch(source))
+					context.addIssue(PropertyParameterMismatch(source))
 				} else {
-					type = propertyDeclaration?.getType(linter)
+					type = propertyDeclaration?.getComputedType()
 				}
 			} else {
-				linter.addIssue(PropertyParameterOutsideOfInitializer(source))
+				context.addIssue(PropertyParameterOutsideOfInitializer(source))
 			}
 		}
-		super.determineType(linter)
+		super.determineType()
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
@@ -22,8 +21,8 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.MUTATING, WordAtom.NATIVE, WordAtom.OVERRIDING)
 	}
 
-	override fun concretize(linter: Linter, scope: MutableScope): FunctionImplementation {
-		parent.validate(linter, ALLOWED_MODIFIER_TYPES)
+	override fun concretize(scope: MutableScope): FunctionImplementation {
+		parent.validate(ALLOWED_MODIFIER_TYPES)
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isMutating = parent.containsModifier(WordAtom.MUTATING)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
@@ -31,17 +30,17 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 		val operatorScope = BlockScope(scope)
 		if(parameterList?.containsGenericParameterList == true) {
 			if(operator is IndexOperator) {
-				linter.addIssue(TypeParametersOutsideOfIndexParameterList(parameterList))
+				context.addIssue(TypeParametersOutsideOfIndexParameterList(parameterList))
 			} else {
-				linter.addIssue(GenericOperator(parameterList))
+				context.addIssue(GenericOperator(parameterList))
 			}
 		}
-		var parameters = parameterList?.concretizeParameters(linter, operatorScope) ?: listOf()
-		val body = body?.concretize(linter, operatorScope)
-		val returnType = returnType?.concretize(linter, operatorScope)
-		val genericParameters = (operator as? IndexOperator)?.concretizeGenerics(linter, operatorScope) ?: listOf()
+		var parameters = parameterList?.concretizeParameters(operatorScope) ?: listOf()
+		val body = body?.concretize(operatorScope)
+		val returnType = returnType?.concretize(operatorScope)
+		val genericParameters = (operator as? IndexOperator)?.concretizeGenerics(operatorScope) ?: listOf()
 		if(operator is IndexOperator)
-			parameters = operator.concretizeIndices(linter, operatorScope) + parameters
+			parameters = operator.concretizeIndices(operatorScope) + parameters
 		return FunctionImplementation(this, operatorScope, genericParameters, parameters, body, returnType, isAbstract,
 			isMutating, isNative, isOverriding)
 	}

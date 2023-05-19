@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.Context
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -9,6 +9,8 @@ import components.syntax_parser.syntax_tree.general.Element
 import java.util.*
 
 abstract class Unit(open val source: Element, open val scope: Scope) {
+	val context: Context
+		get() = source.context
 	open var parent: Unit? = null
 	val units = LinkedList<Unit>()
 	open val isInterruptingExecution = false
@@ -46,14 +48,14 @@ abstract class Unit(open val source: Element, open val scope: Scope) {
 		return other.source.end < source.start
 	}
 
-	open fun declare(linter: Linter) {
+	open fun declare() {
 		for(unit in units)
-			unit.declare(linter)
+			unit.declare()
 	}
 
-	open fun determineTypes(linter: Linter) {
+	open fun determineTypes() {
 		for(unit in units)
-			unit.determineTypes(linter)
+			unit.determineTypes()
 	}
 
 	open fun analyseDataFlow(tracker: VariableTracker) {
@@ -61,9 +63,9 @@ abstract class Unit(open val source: Element, open val scope: Scope) {
 			unit.analyseDataFlow(tracker)
 	}
 
-	open fun validate(linter: Linter) {
+	open fun validate() {
 		for(unit in units)
-			unit.validate(linter)
+			unit.validate()
 	}
 
 	fun isInInitializer(): Boolean {

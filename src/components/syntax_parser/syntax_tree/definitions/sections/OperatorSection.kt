@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions.sections
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.OperatorDefinition
@@ -18,9 +17,9 @@ class OperatorSection(declarationType: Word, private val operators: List<Operato
 			operator.parent = this
 	}
 
-	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
+	override fun concretize(scope: MutableScope, units: MutableList<Unit>) {
 		for(operator in operators)
-			operator.concretize(linter, scope, units)
+			operator.concretize(scope, units)
 	}
 
 	override fun toString(): String {

@@ -4,7 +4,7 @@ import util.indent
 import util.toLines
 import java.util.*
 
-class Module(val localName: String) {
+class Module(val project: Project, val localName: String) {
 	val files = LinkedList<File>()
 	val publisher = "unknown"
 	val remoteName = "unknown"

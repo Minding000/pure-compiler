@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
@@ -46,8 +45,8 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		tracker.breakStatementStates.clear()
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		if(!(hasFiniteGenerator || mightGetBrokenOutOf))
 			isInterruptingExecution = true
 	}

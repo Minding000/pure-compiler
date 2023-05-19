@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.ObjectType
@@ -16,25 +15,25 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 		scope.typeDefinition = this
 	}
 
-	override fun declare(linter: Linter) {
-		super.declare(linter)
+	override fun declare() {
+		super.declare()
 		val targetScope = parentTypeDefinition?.scope ?: scope.enclosingScope
-		targetScope.declareType(linter, this)
+		targetScope.declareType(this)
 		val type = ObjectType(this)
 		val valueDeclaration = if(targetScope is TypeScope)
 			PropertyDeclaration(source, targetScope, name, type, null, !isBound)
 		else
 			LocalVariableDeclaration(source, targetScope, name, type)
 		addUnits(valueDeclaration)
-		valueDeclaration.declare(linter)
+		valueDeclaration.declare()
 	}
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Object {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Object {
 		return this //TODO What about bound objects?
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
-		scope.ensureTrivialInitializers(linter)
+	override fun validate() {
+		super.validate()
+		scope.ensureTrivialInitializers()
 	}
 }

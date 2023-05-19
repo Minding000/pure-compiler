@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.Context
 import components.tokenizer.WordAtom
 import logger.issues.modifiers.DisallowedModifier
 import logger.issues.modifiers.DuplicateModifier
@@ -9,16 +9,16 @@ interface ModifierSpecification {
 
 	fun getModifiers(): List<Modifier>
 
-	fun validate(linter: Linter, allowedModifiers: List<WordAtom> = listOf()) {
+	fun validate(context: Context, allowedModifiers: List<WordAtom> = listOf()) {
 		val uniqueModifiers = HashSet<String>()
 		for(modifier in getModifiers()) {
 			val name = modifier.getValue()
 			if(!allowedModifiers.contains(modifier.type)) {
-				linter.addIssue(DisallowedModifier(modifier))
+				context.addIssue(DisallowedModifier(modifier))
 				continue
 			}
 			if(uniqueModifiers.contains(name)) {
-				linter.addIssue(DuplicateModifier(modifier))
+				context.addIssue(DuplicateModifier(modifier))
 				continue
 			}
 			uniqueModifiers.add(name)

@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions.sections
 
-import components.semantic_analysis.Linter
 import components.syntax_parser.syntax_tree.definitions.Modifier
 import components.syntax_parser.syntax_tree.general.MetaElement
 import components.tokenizer.WordAtom
@@ -9,8 +8,8 @@ import source_structure.Position
 abstract class DeclarationSection(start: Position, end: Position): MetaElement(start, end) {
 	open var parent: ModifierSection? = null
 
-	open fun validate(linter: Linter, allowedModifiers: List<WordAtom>) {
-		parent?.validate(linter, allowedModifiers)
+	open fun validate(allowedModifiers: List<WordAtom>) {
+		parent?.validate(allowedModifiers)
 	}
 
 	open fun containsModifier(modifier: WordAtom): Boolean {

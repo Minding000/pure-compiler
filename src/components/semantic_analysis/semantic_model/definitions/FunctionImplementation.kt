@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.SpecialType
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.BlockScope
@@ -46,15 +46,15 @@ class FunctionImplementation(override val source: Element, override val scope: B
 		parentFunction = function
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		parentDefinition = scope.getSurroundingDefinition()
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		if(body == null)
 			return
-		val functionTracker = VariableTracker(tracker.linter)
+		val functionTracker = VariableTracker(context)
 		super.analyseDataFlow(functionTracker)
 		functionTracker.calculateEndState()
 		functionTracker.validate()
@@ -68,16 +68,16 @@ class FunctionImplementation(override val source: Element, override val scope: B
 		tracker.addChild(trackerName, functionTracker)
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		if(signature.superFunctionSignature != null) {
 			if(!isOverriding)
-				linter.addIssue(MissingOverridingKeyword(source, parentFunction.memberType.replaceFirstChar { it.titlecase() }, toString()))
+				context.addIssue(MissingOverridingKeyword(source, parentFunction.memberType.replaceFirstChar { it.titlecase() }, toString()))
 		} else {
 			if(isOverriding)
-				linter.addIssue(OverriddenSuperMissing(source, parentFunction.memberType))
+				context.addIssue(OverriddenSuperMissing(source, parentFunction.memberType))
 		}
-		if(!Linter.SpecialType.NOTHING.matches(signature.returnType)) {
+		if(!SpecialType.NOTHING.matches(signature.returnType)) {
 			if(body != null) {
 				var someBlocksCompleteWithoutReturning = false
 				var mainBlockCompletesWithoutReturning = true
@@ -104,12 +104,12 @@ class FunctionImplementation(override val source: Element, override val scope: B
 						}
 					}
 				}
-				if(Linter.SpecialType.NEVER.matches(signature.returnType)) {
+				if(SpecialType.NEVER.matches(signature.returnType)) {
 					if(someBlocksCompleteWithoutReturning || mightReturnValue)
-						linter.addIssue(FunctionCompletesDespiteNever(source))
+						context.addIssue(FunctionCompletesDespiteNever(source))
 				} else {
 					if(someBlocksCompleteWithoutReturning)
-						linter.addIssue(FunctionCompletesWithoutReturning(source))
+						context.addIssue(FunctionCompletesWithoutReturning(source))
 
 				}
 			}

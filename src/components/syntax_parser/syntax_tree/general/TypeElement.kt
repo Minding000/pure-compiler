@@ -1,8 +1,7 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_analysis.semantic_model.types.Type
 import source_structure.Position
 
 /**
@@ -10,5 +9,5 @@ import source_structure.Position
  */
 abstract class TypeElement(start: Position, end: Position): Element(start, end) {
 
-	abstract override fun concretize(linter: Linter, scope: MutableScope): Type
+	abstract override fun concretize(scope: MutableScope): Type
 }

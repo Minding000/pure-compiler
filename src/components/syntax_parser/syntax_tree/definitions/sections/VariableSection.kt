@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions.sections
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeElement
@@ -10,7 +9,6 @@ import components.tokenizer.WordAtom
 import source_structure.Position
 import util.indent
 import util.toLines
-import java.lang.StringBuilder
 
 class VariableSection(val declarationType: Word, val type: TypeElement?, val value: ValueElement?,
 					  val variables: List<VariableSectionElement>, end: Position):
@@ -24,9 +22,9 @@ class VariableSection(val declarationType: Word, val type: TypeElement?, val val
 			variable.parent = this
 	}
 
-	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
+	override fun concretize(scope: MutableScope, units: MutableList<Unit>) {
 		for(variable in variables)
-			variable.concretize(linter, scope, units)
+			variable.concretize(scope, units)
 	}
 
 	override fun toString(): String {

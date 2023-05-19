@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.types
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -16,10 +16,10 @@ class OrUnionType(override val source: Element, scope: Scope, val types: List<Ty
 			type.interfaceScope.subscribe(this)
 	}
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): OrUnionType {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): OrUnionType {
 		val specificTypes = LinkedList<Type>()
 		for(type in types)
-			specificTypes.add(type.withTypeSubstitutions(linter, typeSubstitutions))
+			specificTypes.add(type.withTypeSubstitutions(typeSubstitutions))
 		return OrUnionType(source, scope, specificTypes)
 	}
 
@@ -46,7 +46,7 @@ class OrUnionType(override val source: Element, scope: Scope, val types: List<Ty
 		}
 		if(simplifiedUniqueTypes.size == 1)
 			return simplifiedUniqueTypes.first()
-		val isOptional = simplifiedUniqueTypes.removeIf { type -> Linter.SpecialType.NULL.matches(type) }
+		val isOptional = simplifiedUniqueTypes.removeIf { type -> SpecialType.NULL.matches(type) }
 		var simplifiedType = if(simplifiedUniqueTypes.size == 1)
 			simplifiedUniqueTypes.first()
 		else
@@ -70,12 +70,12 @@ class OrUnionType(override val source: Element, scope: Scope, val types: List<Ty
 		this.interfaceScope.addValue(value)
 	}
 
-	override fun isInstanceOf(type: Linter.SpecialType): Boolean {
+	override fun isInstanceOf(type: SpecialType): Boolean {
 		return types.all { part -> part.isInstanceOf(type) }
 	}
 
-	override fun getConversionsFrom(linter: Linter, sourceType: Type): List<InitializerDefinition> {
-		return types.flatMap { type -> type.getConversionsFrom(linter, sourceType) }
+	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
+		return types.flatMap { type -> type.getConversionsFrom(sourceType) }
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

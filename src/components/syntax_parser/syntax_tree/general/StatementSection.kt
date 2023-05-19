@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import java.util.*
@@ -10,12 +9,11 @@ class StatementSection(private val mainBlock: StatementBlock, val handleBlocks: 
 					   private val alwaysBlock: StatementBlock? = null):
 	Element(mainBlock.start, (alwaysBlock ?: handleBlocks.lastOrNull() ?: mainBlock).end) {
 
-	override fun concretize(linter: Linter, scope: MutableScope): ErrorHandlingContext {
+	override fun concretize(scope: MutableScope): ErrorHandlingContext {
 		val handleBlocks = LinkedList<SemanticHandleBlockModel>()
 		for(handleBlock in this.handleBlocks)
-			handleBlocks.add(handleBlock.concretize(linter, scope))
-		return ErrorHandlingContext(this, scope, mainBlock.concretize(linter, scope), handleBlocks,
-			alwaysBlock?.concretize(linter, scope))
+			handleBlocks.add(handleBlock.concretize(scope))
+		return ErrorHandlingContext(this, scope, mainBlock.concretize(scope), handleBlocks, alwaysBlock?.concretize(scope))
 	}
 
 	override fun toString(): String {

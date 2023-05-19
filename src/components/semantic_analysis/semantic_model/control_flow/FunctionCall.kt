@@ -1,8 +1,7 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
-import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.context.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -32,13 +31,13 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 		addUnits(function)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		when(val targetType = function.type) {
-			is StaticType -> resolveInitializerCall(linter, targetType)
-			is FunctionType -> resolveFunctionCall(linter, targetType)
+			is StaticType -> resolveInitializerCall(targetType)
+			is FunctionType -> resolveFunctionCall(targetType)
 			null -> {}
-			else -> linter.addIssue(NotCallable(function))
+			else -> context.addIssue(NotCallable(function))
 		}
 	}
 
@@ -56,43 +55,43 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 		for(propertyBeingInitialized in targetImplementation.propertiesBeingInitialized)
 			tracker.add(VariableUsage.Kind.WRITE, propertyBeingInitialized, this)
 		if(tracker.isInitializer && requiredButUninitializedProperties.isNotEmpty())
-			tracker.linter.addIssue(ReliesOnUninitializedProperties(source, getSignature(), requiredButUninitializedProperties))
+			context.addIssue(ReliesOnUninitializedProperties(source, getSignature(), requiredButUninitializedProperties))
 	}
 
 	override fun getComputedType(tracker: VariableTracker): Type? {
 		return type
 	}
 
-	private fun resolveInitializerCall(linter: Linter, targetType: StaticType) {
+	private fun resolveInitializerCall(targetType: StaticType) {
 		(targetType.definition as? Class)?.let { `class` ->
 			if(`class`.isAbstract)
-				linter.addIssue(AbstractClassInstantiation(source, `class`))
+				context.addIssue(AbstractClassInstantiation(source, `class`))
 		}
 		val baseDefinition = targetType.getBaseDefinition()
 		val genericDefinitionTypes = baseDefinition.scope.getGenericTypeDefinitions()
 		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
 		try {
-			val match = targetType.resolveInitializer(linter, genericDefinitionTypes, definitionTypeParameters, typeParameters,
+			val match = targetType.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters,
 				valueParameters)
 			if(match == null) {
-				linter.addIssue(NotFound(source, "Initializer", getSignature()))
+				context.addIssue(NotFound(source, "Initializer", getSignature()))
 				return
 			}
 			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value }, baseDefinition)
-			type.determineTypes(linter)
+			type.determineTypes()
 			addUnits(type)
 			this.type = type
 			targetImplementation = match.signature
 		} catch(error: SignatureResolutionAmbiguityError) {
-			error.log(linter, source, "initializer", getSignature())
+			error.log(source, "initializer", getSignature())
 		}
 	}
 
-	private fun resolveFunctionCall(linter: Linter, functionType: FunctionType) {
+	private fun resolveFunctionCall(functionType: FunctionType) {
 		try {
-			val signature = functionType.resolveSignature(linter, typeParameters, valueParameters)
+			val signature = functionType.resolveSignature(typeParameters, valueParameters)
 			if(signature == null) {
-				linter.addIssue(SignatureMismatch(function, typeParameters, valueParameters))
+				context.addIssue(SignatureMismatch(function, typeParameters, valueParameters))
 				return
 			}
 			type = signature.returnType
@@ -101,7 +100,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 			val function = property?.value as? Function
 			targetImplementation = function?.getImplementationBySignature(signature)
 		} catch(error: SignatureResolutionAmbiguityError) {
-			error.log(linter, source, "function", getSignature())
+			error.log(source, "function", getSignature())
 		}
 	}
 

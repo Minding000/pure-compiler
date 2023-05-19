@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.Type
@@ -18,11 +17,11 @@ class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, ov
 		addUnits(parameters)
 	}
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): GeneratorDefinition {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): GeneratorDefinition {
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
-			specificParameters.add(parameter.withTypeSubstitutions(linter, typeSubstitutions))
-		return GeneratorDefinition(source, scope, name, specificParameters, keyReturnType?.withTypeSubstitutions(linter, typeSubstitutions),
-			valueReturnType.withTypeSubstitutions(linter, typeSubstitutions), body)
+			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitutions))
+		return GeneratorDefinition(source, scope, name, specificParameters, keyReturnType?.withTypeSubstitutions(typeSubstitutions),
+			valueReturnType.withTypeSubstitutions(typeSubstitutions), body)
 	}
 }

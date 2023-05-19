@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.StatementSection
@@ -13,12 +12,12 @@ import components.semantic_analysis.semantic_model.values.Function as SemanticFu
 class LambdaFunctionDefinition(start: Position, private val parameterList: ParameterList?, private val body: StatementSection,
 							   private val returnType: TypeElement?): ValueElement(start, body.end) {
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticFunctionModel {
+	override fun concretize(scope: MutableScope): SemanticFunctionModel {
 		val functionScope = BlockScope(scope)
-		val parameters = parameterList?.concretizeParameters(linter, functionScope) ?: emptyList()
-		val returnType = returnType?.concretize(linter, functionScope)
+		val parameters = parameterList?.concretizeParameters(functionScope) ?: emptyList()
+		val returnType = returnType?.concretize(functionScope)
 		val implementation = SemanticFunctionImplementationModel(this, functionScope, emptyList(), parameters,
-			body.concretize(linter, functionScope), returnType)
+			body.concretize(functionScope), returnType)
 		val function = SemanticFunctionModel(this, scope)
 		function.addImplementation(implementation)
 		return function

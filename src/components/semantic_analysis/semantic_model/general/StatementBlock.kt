@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import logger.issues.constant_conditions.UnreachableStatement
 import components.syntax_parser.syntax_tree.general.StatementBlock as StatementBlockSyntaxTree
@@ -13,12 +12,12 @@ class StatementBlock(override val source: StatementBlockSyntaxTree, public overr
 		addUnits(statements)
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		var isCodeReachable = true
 		for(statement in statements) {
 			if(!isCodeReachable) {
-				linter.addIssue(UnreachableStatement(statement.source))
+				context.addIssue(UnreachableStatement(statement.source))
 				continue
 			}
 			if(statement.isInterruptingExecution)

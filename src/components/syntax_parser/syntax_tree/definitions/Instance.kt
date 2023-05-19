@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.general.ValueElement
@@ -13,8 +12,8 @@ import components.semantic_analysis.semantic_model.values.Instance as SemanticIn
 
 class Instance(val identifier: Identifier, val parameters: List<ValueElement>, end: Position): Element(identifier.start, end) {
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticInstanceModel {
-		return SemanticInstanceModel(this, scope, identifier.concretize(linter, scope), parameters.concretizeValues(linter, scope))
+	override fun concretize(scope: MutableScope): SemanticInstanceModel {
+		return SemanticInstanceModel(this, scope, identifier.concretize(scope), parameters.concretizeValues(scope))
 	}
 
 	override fun toString(): String {

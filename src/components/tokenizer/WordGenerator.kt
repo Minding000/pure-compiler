@@ -1,6 +1,5 @@
 package components.tokenizer
 
-import logger.Logger
 import logger.issues.tokenization.UnknownWord
 import source_structure.*
 import java.util.regex.Pattern
@@ -89,7 +88,7 @@ class WordGenerator(private val project: Project) {
 		return file.content[matcher.start()]
 	}
 
-	fun getNextWord(logger: Logger): Word? {
+	fun getNextWord(): Word? {
 		if(file.content.length == position)
 			return null
 		matcher.region(position, file.content.length)
@@ -103,7 +102,7 @@ class WordGenerator(private val project: Project) {
 			val wordStartColumn = characterIndex
 			characterIndex += rawWord.length
 			val word = if(wordType.ignore)
-				getNextWord(logger)
+				getNextWord()
 			else
 				Word(Position(wordStartIndex, line, wordStartColumn),
 					Position(position, line, characterIndex), wordType)
@@ -119,9 +118,9 @@ class WordGenerator(private val project: Project) {
 			}
 			return word
 		}
-		logger.add(UnknownWord(getCurrentPosition()))
+		project.context.logger.add(UnknownWord(getCurrentPosition()))
 		position++
 		characterIndex++
-		return getNextWord(logger)
+		return getNextWord()
 	}
 }

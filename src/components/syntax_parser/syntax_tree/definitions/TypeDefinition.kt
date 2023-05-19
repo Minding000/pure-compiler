@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.definitions.Enum
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
@@ -36,32 +36,32 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		val ALLOWED_ENUM_MODIFIERS = listOf(WordAtom.BOUND)
 	}
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticTypeDefinitionModel {
+	override fun concretize(scope: MutableScope): SemanticTypeDefinitionModel {
 		val name = identifier.getValue()
 		val definitionType = type.type
-		var superType = superType?.concretize(linter, scope)
-		if(!(definitionType == WordAtom.CLASS && Linter.SpecialType.isRootType(name)))
-			superType = superType ?: LiteralType(this, scope, Linter.SpecialType.ANY)
+		var superType = superType?.concretize(scope)
+		if(!(definitionType == WordAtom.CLASS && SpecialType.isRootType(name)))
+			superType = superType ?: LiteralType(this, scope, SpecialType.ANY)
 		val typeScope = TypeScope(scope, superType?.interfaceScope)
-		val explicitParentType = explicitParentType?.concretize(linter, scope)
-		val members = concretizeMembers(linter, typeScope, definitionType).toMutableList()
+		val explicitParentType = explicitParentType?.concretize(scope)
+		val members = concretizeMembers(typeScope, definitionType).toMutableList()
 		val isBound = parent?.containsModifier(WordAtom.BOUND) ?: false
 		val typeDefinition = when(definitionType) {
 			WordAtom.CLASS -> {
 				val isAbstract = parent?.containsModifier(WordAtom.ABSTRACT) ?: false
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
-				parent?.validate(linter, ALLOWED_CLASS_MODIFIERS)
+				parent?.validate(ALLOWED_CLASS_MODIFIERS)
 				Class(this, name, typeScope, explicitParentType, superType, members, isAbstract, isBound, isNative, isMutable)
 			}
 			WordAtom.OBJECT -> {
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
-				parent?.validate(linter, ALLOWED_OBJECT_MODIFIERS)
+				parent?.validate(ALLOWED_OBJECT_MODIFIERS)
 				Object(this, name, typeScope, explicitParentType, superType, members, isBound, isNative, isMutable)
 			}
 			WordAtom.ENUM -> {
-				parent?.validate(linter, ALLOWED_ENUM_MODIFIERS)
+				parent?.validate(ALLOWED_ENUM_MODIFIERS)
 				Enum(this, name, typeScope, explicitParentType, superType, members, isBound)
 			}
 			else -> throw CompilerError(this, "Encountered unknown type definition type: $definitionType")
@@ -69,8 +69,8 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		return typeDefinition
 	}
 
-	private fun concretizeMembers(linter: Linter, typeScope: TypeScope, definitionType: WordAtom): List<Unit> {
-		val explicitMembers = concretizeExplicitlyDeclaredMembers(linter, typeScope, definitionType)
+	private fun concretizeMembers(typeScope: TypeScope, definitionType: WordAtom): List<Unit> {
+		val explicitMembers = concretizeExplicitlyDeclaredMembers(typeScope, definitionType)
 		val members = LinkedList<Unit>()
 		val functions = HashMap<String, Function>()
 		val operators = HashMap<Operator.Kind, Operator>()
@@ -109,7 +109,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		return members
 	}
 
-	private fun concretizeExplicitlyDeclaredMembers(linter: Linter, typeScope: TypeScope, definitionType: WordAtom): List<Unit> {
+	private fun concretizeExplicitlyDeclaredMembers(typeScope: TypeScope, definitionType: WordAtom): List<Unit> {
 		if(body == null)
 			return emptyList()
 		var instanceList: InstanceList? = null
@@ -117,21 +117,21 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		for(member in body.members) {
 			if(member is InstanceList) {
 				if(!(definitionType == WordAtom.CLASS || definitionType == WordAtom.ENUM)) {
-					linter.addIssue(InvalidInstanceLocation(member))
+					context.addIssue(InvalidInstanceLocation(member))
 					continue
 				}
 				if(instanceList == null) {
 					instanceList = member
 				} else {
-					linter.addIssue(MultipleInstanceLists(member))
+					context.addIssue(MultipleInstanceLists(member))
 				}
 			} else if(member is GenericsDeclaration) {
 				if(definitionType == WordAtom.OBJECT) {
-					linter.addIssue(GenericTypeDeclarationInObject(member))
+					context.addIssue(GenericTypeDeclarationInObject(member))
 					continue
 				}
 			}
-			member.concretize(linter, typeScope, members)
+			member.concretize(typeScope, members)
 		}
 		return members
 	}

@@ -1,8 +1,7 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
-import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.context.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -19,25 +18,25 @@ open class VariableValue(override val source: Element, scope: Scope, val name: S
 
 	constructor(source: Identifier, scope: Scope): this(source, scope, source.getValue())
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		val definition = scope.resolveValue(this)
 		if(definition == null) {
-			linter.addIssue(NotFound(source, "Value", name))
+			context.addIssue(NotFound(source, "Value", name))
 			return
 		}
 		val scope = scope
 		if(scope is InterfaceScope && definition is InterfaceMember) {
 			if(scope.isStatic && !definition.isStatic) {
-				linter.addIssue(InstanceAccessFromStaticContext(source, name))
+				context.addIssue(InstanceAccessFromStaticContext(source, name))
 				return
 			}
 			if(!scope.isStatic && definition.isStatic)
-				linter.addIssue(StaticAccessFromInstanceContext(source, name))
+				context.addIssue(StaticAccessFromInstanceContext(source, name))
 		}
 		definition.usages.add(this)
 		this.definition = definition
-		type = definition.getType(linter)
+		type = definition.getComputedType()
 		if(definition.isConstant)
 			staticValue = definition.value?.staticValue
 	}
@@ -50,10 +49,10 @@ open class VariableValue(override val source: Element, scope: Scope, val name: S
 		val declaration = definition
 		if(declaration is LocalVariableDeclaration) {
 			if(declaration.type !is StaticType && !usage.isPreviouslyInitialized())
-				tracker.linter.addIssue(NotInitialized(source, "Local variable", name))
+				context.addIssue(NotInitialized(source, "Local variable", name))
 		} else if(declaration is PropertyDeclaration) {
 			if(tracker.isInitializer && !declaration.isStatic && declaration.value == null && !usage.isPreviouslyInitialized())
-				tracker.linter.addIssue(NotInitialized(source, "Property", name))
+				context.addIssue(NotInitialized(source, "Property", name))
 		}
 	}
 

@@ -8,24 +8,21 @@ import components.tokenizer.WordDescriptor
 import components.tokenizer.WordGenerator
 import errors.user.UnexpectedWordError
 import logger.Issue
-import logger.Logger
-import logger.Severity
 import source_structure.Position
 import source_structure.Project
 import java.util.*
 
-class ElementGenerator(project: Project): Generator() {
+class ElementGenerator(val project: Project): Generator() {
 	val wordGenerator = WordGenerator(project)
 	override var currentWord: Word? = null
 	override var nextWord: Word? = null
 	override var parseForeignLanguageLiteralNext = false
-	val logger = Logger("parser", Severity.INFO)
 	val statementParser = StatementParser(this)
 	val expressionParser = ExpressionParser(this)
 	val typeParser = TypeParser(this)
 	val literalParser = LiteralParser(this)
 
-	fun addIssue(issue: Issue) = logger.add(issue)
+	fun addIssue(issue: Issue) = project.context.logger.add(issue)
 
 	override fun getCurrentPosition(): Position = wordGenerator.getCurrentPosition()
 
@@ -42,22 +39,22 @@ class ElementGenerator(project: Project): Generator() {
 				return consumedWord
 			}
 		}
-		nextWord = wordGenerator.getNextWord(logger)
+		nextWord = wordGenerator.getNextWord()
 		return consumedWord
 	}
 
 	fun skipLine(invalidWord: Word) {
 		wordGenerator.skipLine(invalidWord)
-		currentWord = wordGenerator.getNextWord(logger)
-		nextWord = wordGenerator.getNextWord(logger)
+		currentWord = wordGenerator.getNextWord()
+		nextWord = wordGenerator.getNextWord()
 	}
 
 	fun parseProgram(): Program {
-		logger.addPhase("Parsing program")
+		project.context.logger.addPhase("Parsing program")
 		val files = LinkedList<File>()
 		while(!wordGenerator.done) {
-			currentWord = wordGenerator.getNextWord(logger)
-			nextWord = wordGenerator.getNextWord(logger)
+			currentWord = wordGenerator.getNextWord()
+			nextWord = wordGenerator.getNextWord()
 			files.add(parseFile())
 			wordGenerator.loadNextFile()
 		}

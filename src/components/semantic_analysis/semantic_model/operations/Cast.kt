@@ -1,8 +1,8 @@
 package components.semantic_analysis.semantic_model.operations
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
-import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.context.SpecialType
+import components.semantic_analysis.semantic_model.context.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.control_flow.IfStatement
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.LiteralType
@@ -24,7 +24,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		addUnits(value, variableDeclaration)
 		type = if(operator.returnsBoolean) {
 			addUnits(referenceType)
-			LiteralType(source, scope, Linter.SpecialType.BOOLEAN)
+			LiteralType(source, scope, SpecialType.BOOLEAN)
 		} else if(operator == Operator.OPTIONAL_CAST) {
 			OptionalType(source, scope, referenceType)
 		} else {
@@ -33,14 +33,14 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		addUnits(type)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		variableDeclaration?.type = referenceType
 		if(operator.returnsBoolean) {
 			if(isCastAlwaysSuccessful)
-				staticValue = BooleanLiteral(source, scope, operator == Operator.CAST_CONDITION, linter)
+				staticValue = BooleanLiteral(this, operator == Operator.CAST_CONDITION)
 			else if(isCastNeverSuccessful)
-				staticValue = BooleanLiteral(source, scope, operator == Operator.NEGATED_CAST_CONDITION, linter)
+				staticValue = BooleanLiteral(this, operator == Operator.NEGATED_CAST_CONDITION)
 		} else if(operator == Operator.SAFE_CAST) {
 			staticValue = value.staticValue
 		} else if(operator == Operator.THROWING_CAST) {
@@ -50,7 +50,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 			if(isCastAlwaysSuccessful)
 				staticValue = value.staticValue
 			else if(isCastNeverSuccessful)
-				staticValue = NullLiteral(source, scope, linter)
+				staticValue = NullLiteral(this)
 		}
 	}
 
@@ -67,7 +67,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 				val variableType = variableValue.type as? OptionalType
 				val baseType = variableType?.baseType
 				if(baseType == referenceType) {
-					val nullLiteral = NullLiteral(source, scope, tracker.linter)
+					val nullLiteral = NullLiteral(this)
 					tracker.add(VariableUsage.Kind.HINT, declaration, this, nullLiteral.type, nullLiteral)
 					setEndState(tracker, operator == Operator.NEGATED_CAST_CONDITION)
 				}
@@ -76,30 +76,30 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		}
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		value.type?.let { valueType ->
 			if(valueType.isAssignableTo(referenceType)) {
 				if(operator.isConditional)
-					linter.addIssue(ConditionalCastIsSafe(source, valueType, referenceType))
+					context.addIssue(ConditionalCastIsSafe(source, valueType, referenceType))
 			} else {
 				if(!operator.isConditional)
-					linter.addIssue(UnsafeSafeCast(source, valueType, referenceType))
+					context.addIssue(UnsafeSafeCast(source, valueType, referenceType))
 			}
 		}
-		validateVariableDeclaration(linter)
+		validateVariableDeclaration()
 	}
 
-	private fun validateVariableDeclaration(linter: Linter) {
+	private fun validateVariableDeclaration() {
 		if(variableDeclaration == null)
 			return
 		if(!operator.returnsBoolean) {
-			linter.addIssue(CastVariableWithoutIs(source))
+			context.addIssue(CastVariableWithoutIs(source))
 			return
 		}
 		val ifStatement = parent as? IfStatement
 		if(ifStatement == null) {
-			linter.addIssue(CastVariableOutsideOfIfStatement(source))
+			context.addIssue(CastVariableOutsideOfIfStatement(source))
 			return
 		}
 		//TODO handle this using data-flow instead
@@ -109,13 +109,13 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		for(usage in variableDeclaration.usages) {
 			if(ifStatement.positiveBranch.contains(usage)) {
 				if(operator == Operator.NEGATED_CAST_CONDITION)
-					linter.addIssue(NegatedCastVariableAccessInPositiveBranch(usage.source))
+					context.addIssue(NegatedCastVariableAccessInPositiveBranch(usage.source))
 			} else if(ifStatement.negativeBranch?.contains(usage) == true) {
 				if(operator == Operator.CAST_CONDITION)
-					linter.addIssue(CastVariableAccessInNegativeBranch(usage.source))
+					context.addIssue(CastVariableAccessInNegativeBranch(usage.source))
 			} else {
 				if(!isVariableAccessibleAfterIfStatement)
-					linter.addIssue(CastVariableAccessAfterIfStatement(usage.source))
+					context.addIssue(CastVariableAccessAfterIfStatement(usage.source))
 			}
 		}
 	}

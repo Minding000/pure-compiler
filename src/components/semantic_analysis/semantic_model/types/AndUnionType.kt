@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.types
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
@@ -18,10 +18,10 @@ class AndUnionType(override val source: Element, scope: Scope, val types: List<T
 			type.interfaceScope.subscribe(this)
 	}
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): AndUnionType {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): AndUnionType {
 		val specificTypes = LinkedList<Type>()
 		for(type in types)
-			specificTypes.add(type.withTypeSubstitutions(linter, typeSubstitutions))
+			specificTypes.add(type.withTypeSubstitutions(typeSubstitutions))
 		return AndUnionType(source, scope, specificTypes)
 	}
 
@@ -43,7 +43,7 @@ class AndUnionType(override val source: Element, scope: Scope, val types: List<T
 		interfaceScope.addInitializer(initializer)
 	}
 
-	override fun isInstanceOf(type: Linter.SpecialType): Boolean {
+	override fun isInstanceOf(type: SpecialType): Boolean {
 		return types.any { part -> part.isInstanceOf(type) }
 	}
 

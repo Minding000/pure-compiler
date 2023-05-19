@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.Unit
@@ -24,36 +23,36 @@ abstract class ValueDeclaration(override val source: Element, override val scope
 		addUnits(type, value)
 	}
 
-	abstract fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): ValueDeclaration
+	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ValueDeclaration
 
-	override fun declare(linter: Linter) {
-		super.declare(linter)
-		scope.declareValue(linter, this)
+	override fun declare() {
+		super.declare()
+		scope.declareValue(this)
 	}
 
-	open fun getType(linter: Linter): Type? {
+	open fun getComputedType(): Type? {
 		val type = type
 		if(type != null) {
-			type.determineTypes(linter)
+			type.determineTypes()
 			return type
 		}
-		determineTypes(linter)
+		determineTypes()
 		return this.type
 	}
 
-	override fun determineTypes(linter: Linter) {
+	override fun determineTypes() {
 		if(hasDeterminedTypes)
 			return
 		hasDeterminedTypes = true
-		determineType(linter)
+		determineType()
 	}
 
-	protected open fun determineType(linter: Linter) {
-		super.determineTypes(linter)
+	protected open fun determineType() {
+		super.determineTypes()
 		val value = value
 		if(value == null) {
 			if(type == null)
-				linter.addIssue(DeclarationMissingTypeOrValue(source))
+				context.addIssue(DeclarationMissingTypeOrValue(source))
 			return
 		}
 		val targetType = type
@@ -66,15 +65,15 @@ abstract class ValueDeclaration(override val source: Element, override val scope
 			type = sourceType
 			return
 		}
-		val conversions = targetType.getConversionsFrom(linter, sourceType)
+		val conversions = targetType.getConversionsFrom(sourceType)
 		if(conversions.isNotEmpty()) {
 			if(conversions.size > 1) {
-				linter.addIssue(ConversionAmbiguity(source, sourceType, targetType, conversions))
+				context.addIssue(ConversionAmbiguity(source, sourceType, targetType, conversions))
 				return
 			}
 			conversion = conversions.first()
 			return
 		}
-		linter.addIssue(TypeNotAssignable(source, sourceType, targetType))
+		context.addIssue(TypeNotAssignable(source, sourceType, targetType))
 	}
 }

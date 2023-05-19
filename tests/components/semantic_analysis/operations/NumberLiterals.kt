@@ -1,6 +1,6 @@
 package components.semantic_analysis.operations
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.values.NumberLiteral
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -20,7 +20,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.SpecialType.INTEGER.matches(variableType))
+		assertTrue(SpecialType.INTEGER.matches(variableType))
 	}
 
 	@Test
@@ -31,7 +31,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.SpecialType.INTEGER.matches(variableType))
+		assertTrue(SpecialType.INTEGER.matches(variableType))
 	}
 
 	@Disabled
@@ -43,7 +43,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.SpecialType.INTEGER.matches(variableType))
+		assertTrue(SpecialType.INTEGER.matches(variableType))
 	}
 
 	@Test
@@ -54,7 +54,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.SpecialType.FLOAT.matches(variableType))
+		assertTrue(SpecialType.FLOAT.matches(variableType))
 	}
 
 	@Test
@@ -65,7 +65,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.SpecialType.FLOAT.matches(variableType))
+		assertTrue(SpecialType.FLOAT.matches(variableType))
 	}
 
 	@Disabled
@@ -77,7 +77,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.SpecialType.FLOAT.matches(variableType))
+		assertTrue(SpecialType.FLOAT.matches(variableType))
 	}
 
 	@Test
@@ -89,7 +89,7 @@ internal class NumberLiterals {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(Linter.SpecialType.FLOAT.matches(variableType))
+		assertTrue(SpecialType.FLOAT.matches(variableType))
 	}
 
 	@Test

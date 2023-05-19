@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.ObjectType
@@ -18,29 +17,29 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 		scope.typeDefinition = this
 	}
 
-	override fun declare(linter: Linter) {
-		super.declare(linter)
+	override fun declare() {
+		super.declare()
 		val targetScope = parentTypeDefinition?.scope ?: scope.enclosingScope
-		targetScope.declareType(linter, this)
+		targetScope.declareType(this)
 		val staticType = StaticType(this)
 		val valueDeclaration = if(targetScope is TypeScope)
 			PropertyDeclaration(source, targetScope, name, staticType, null, !isBound, isAbstract)
 		else
 			LocalVariableDeclaration(source, targetScope, name, staticType)
 		addUnits(valueDeclaration)
-		valueDeclaration.declare(linter)
+		valueDeclaration.declare()
 	}
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Class {
-		determineTypes(linter)
-		val superType = superType?.withTypeSubstitutions(linter, typeSubstitutions)
-		return Class(source, name, scope.withTypeSubstitutions(linter, typeSubstitutions, superType?.interfaceScope), explicitParentType,
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Class {
+		determineTypes()
+		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
+		return Class(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.interfaceScope), explicitParentType,
 			superType, members, isAbstract, isBound, isNative, isMutable, true)
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		if(!isAbstract)
-			scope.ensureNoAbstractMembers(linter) //TODO what about abstract members in objects and enums?
+			scope.ensureNoAbstractMembers() //TODO what about abstract members in objects and enums?
 	}
 }

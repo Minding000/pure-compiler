@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.SpecialType
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.FunctionType
@@ -27,13 +27,13 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 		addUnits(variableDeclarations)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		collection.determineTypes(linter)
+	override fun determineTypes() {
+		collection.determineTypes()
 		val collectionType = collection.type
 		if(collectionType is PluralType)
-			setVariableTypes(linter, collectionType)
+			setVariableTypes(collectionType)
 		else if(collectionType != null)
-			setVariableTypes(linter, collectionType)
+			setVariableTypes(collectionType)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -44,46 +44,46 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 			tracker.declare(variableDeclaration, true)
 	}
 
-	private fun setVariableTypes(linter: Linter, collectionType: PluralType) {
+	private fun setVariableTypes(collectionType: PluralType) {
 		if(iteratorVariableDeclaration != null)
-			linter.addIssue(PluralTypeIteratorDeclaration(iteratorVariableDeclaration.source))
+			context.addIssue(PluralTypeIteratorDeclaration(iteratorVariableDeclaration.source))
 		if(variableDeclarations.size > 2) {
-			linter.addIssue(TooManyPluralTypeVariableDeclarations(source, variableDeclarations))
+			context.addIssue(TooManyPluralTypeVariableDeclarations(source, variableDeclarations))
 		} else if(variableDeclarations.size == 2) {
-			val indexVariableType = LiteralType(source, scope, Linter.SpecialType.INTEGER)
-			indexVariableType.determineTypes(linter)
+			val indexVariableType = LiteralType(source, scope, SpecialType.INTEGER)
+			indexVariableType.determineTypes()
 			addUnits(indexVariableType)
 			variableDeclarations.firstOrNull()?.type = indexVariableType
 		}
 		variableDeclarations.lastOrNull()?.type = collectionType.baseType
 	}
 
-	private fun setVariableTypes(linter: Linter, collectionType: Type) {
-		if(!collectionType.isInstanceOf(Linter.SpecialType.ITERABLE)) {
-			linter.addIssue(NotIterable(collection.source))
+	private fun setVariableTypes(collectionType: Type) {
+		if(!collectionType.isInstanceOf(SpecialType.ITERABLE)) {
+			context.addIssue(NotIterable(collection.source))
 			return
 		}
 		try {
 			val iteratorCreationProperty = collectionType.interfaceScope.resolveValue("createIterator")
 			val iteratorCreationFunctionType = iteratorCreationProperty?.type as? FunctionType
-			val iteratorCreationSignature = iteratorCreationFunctionType?.resolveSignature(linter)
+			val iteratorCreationSignature = iteratorCreationFunctionType?.resolveSignature()
 			val iteratorType = iteratorCreationSignature?.returnType ?: return
 			iteratorVariableDeclaration?.type = iteratorType
 			val availableValueTypes = LinkedList<Type?>()
-			if(iteratorType.isInstanceOf(Linter.SpecialType.INDEX_ITERATOR)) {
+			if(iteratorType.isInstanceOf(SpecialType.INDEX_ITERATOR)) {
 				val indexProperty = iteratorType.interfaceScope.resolveValue("currentIndex")
-				availableValueTypes.add(indexProperty?.getType(linter))
+				availableValueTypes.add(indexProperty?.getComputedType())
 			}
-			if(iteratorType.isInstanceOf(Linter.SpecialType.KEY_ITERATOR)) {
+			if(iteratorType.isInstanceOf(SpecialType.KEY_ITERATOR)) {
 				val keyProperty = iteratorType.interfaceScope.resolveValue("currentKey")
-				availableValueTypes.add(keyProperty?.getType(linter))
+				availableValueTypes.add(keyProperty?.getComputedType())
 			}
-			if(iteratorType.isInstanceOf(Linter.SpecialType.VALUE_ITERATOR)) {
+			if(iteratorType.isInstanceOf(SpecialType.VALUE_ITERATOR)) {
 				val valueProperty = iteratorType.interfaceScope.resolveValue("currentValue")
-				availableValueTypes.add(valueProperty?.getType(linter))
+				availableValueTypes.add(valueProperty?.getComputedType())
 			}
 			if(variableDeclarations.size > availableValueTypes.size) {
-				linter.addIssue(TooManyIterableVariableDeclarations(source, variableDeclarations, availableValueTypes))
+				context.addIssue(TooManyIterableVariableDeclarations(source, variableDeclarations, availableValueTypes))
 				return
 			}
 			for(index in variableDeclarations.indices) {
@@ -91,7 +91,7 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 				variableDeclarations[index].type = availableValueTypes[sourceValueIndex]
 			}
 		} catch(error: SignatureResolutionAmbiguityError) {
-			error.log(linter, source, "function", "createIterator()")
+			error.log(source, "function", "createIterator()")
 		}
 	}
 }

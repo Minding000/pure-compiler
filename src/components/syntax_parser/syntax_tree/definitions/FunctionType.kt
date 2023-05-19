@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
@@ -11,10 +10,10 @@ import components.semantic_analysis.semantic_model.types.FunctionType as Semanti
 class FunctionType(start: Position, private val parameterList: ParameterTypeList?, private val returnType: TypeElement?, end: Position):
 	TypeElement(start, end) {
 
-	override fun concretize(linter: Linter, scope: MutableScope): SemanticFunctionTypeModel {
+	override fun concretize(scope: MutableScope): SemanticFunctionTypeModel {
 		val functionScope = BlockScope(scope)
-		val parameters = parameterList?.concretizeTypes(linter, functionScope) ?: listOf()
-		val signature = FunctionSignature(this, functionScope, listOf(), parameters, returnType?.concretize(linter, functionScope))
+		val parameters = parameterList?.concretizeTypes(functionScope) ?: listOf()
+		val signature = FunctionSignature(this, functionScope, listOf(), parameters, returnType?.concretize(functionScope))
 		return SemanticFunctionTypeModel(this, scope, signature)
 	}
 

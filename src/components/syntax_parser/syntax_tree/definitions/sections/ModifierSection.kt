@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions.sections
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.Modifier
@@ -24,17 +23,17 @@ class ModifierSection(private val modifierList: ModifierList, private val sectio
 		}
 	}
 
-	override fun concretize(linter: Linter, scope: MutableScope, units: MutableList<Unit>) {
+	override fun concretize(scope: MutableScope, units: MutableList<Unit>) {
 		for(section in sections)
-			section.concretize(linter, scope, units)
+			section.concretize(scope, units)
 	}
 
 	override fun getOwnModifiers(): List<Modifier> {
 		return modifierList.getModifiers()
 	}
 
-	override fun validate(linter: Linter, allowedModifiers: List<WordAtom>) {
-		super<ModifierSpecification>.validate(linter, allowedModifiers)
+	override fun validate(allowedModifiers: List<WordAtom>) {
+		super<ModifierSpecification>.validate(context, allowedModifiers)
 	}
 
 	override fun containsModifier(modifier: WordAtom): Boolean {

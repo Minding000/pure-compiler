@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
@@ -18,8 +17,8 @@ class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val 
 		addUnits(condition, positiveBranch, negativeBranch)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		(condition.staticValue as? BooleanLiteral)?.value.let { staticResult ->
 			isConditionAlwaysTrue = staticResult == true
 			isConditionAlwaysFalse = staticResult == false
@@ -40,8 +39,8 @@ class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val 
 		}
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		isInterruptingExecution = (isConditionAlwaysTrue && positiveBranch.isInterruptingExecution) ||
 			(isConditionAlwaysFalse && negativeBranch?.isInterruptingExecution == true) ||
 			(positiveBranch.isInterruptingExecution && negativeBranch?.isInterruptingExecution == true)

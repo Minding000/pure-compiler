@@ -1,13 +1,11 @@
 package util
 
 import code.Builder
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
+import components.semantic_analysis.semantic_model.context.Linter
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.syntax_parser.element_generator.ElementGenerator
 import components.tokenizer.WordAtom
 import components.tokenizer.WordGenerator
-import logger.Logger
-import logger.Severity
 import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream
@@ -35,7 +33,7 @@ object TestUtil {
 
 	private fun createTestProject(sourceCode: String, includeRequiredModules: Boolean = false): Project {
 		val project = Project("Test")
-		val testModule = Module("Test")
+		val testModule = Module(project, "Test")
 		testModule.addFile(LinkedList(), TEST_FILE_NAME, sourceCode)
 		project.addModule(testModule)
 		if(includeRequiredModules)
@@ -43,25 +41,28 @@ object TestUtil {
 		return project
 	}
 
-    fun parse(sourceCode: String, includeRequiredModules: Boolean = false): ParseResult {
+    fun parse(sourceCode: String, includeRequiredModules: Boolean = false, printReport: Boolean = true): ParseResult {
 		val project = createTestProject(sourceCode, includeRequiredModules)
         val elementGenerator = ElementGenerator(project)
         val program = elementGenerator.parseProgram()
-        elementGenerator.logger.printReport()
+		if(printReport)
+        	elementGenerator.project.context.logger.printReport()
         return ParseResult(elementGenerator, program)
     }
 
     fun lint(sourceCode: String, includeRequiredModules: Boolean = false): LintResult {
-        val parseResult = parse(sourceCode, includeRequiredModules)
-        val linter = Linter()
+        val parseResult = parse(sourceCode, includeRequiredModules, false)
+		val context = parseResult.elementGenerator.project.context
+        val linter = Linter(context)
         val program = linter.lint(parseResult.program)
-        linter.logger.printReport()
-        return LintResult(linter, program)
+        context.logger.printReport()
+        return LintResult(context, program)
     }
 
 	fun analyseDataFlow(sourceCode: String): VariableTracker {
-		val parseResult = parse(sourceCode)
-		val linter = Linter()
+		val parseResult = parse(sourceCode, includeRequiredModules = false, printReport = false)
+		val context = parseResult.elementGenerator.project.context
+		val linter = Linter(context)
 		val program = linter.lint(parseResult.program)
 		val testFile = program.files.find { file -> file.file.name == TEST_FILE_NAME }
 		assertNotNull(testFile, "Missing test file")
@@ -71,16 +72,14 @@ object TestUtil {
 	fun assertTokenIsIgnored(sourceCode: String) {
 		val project = createTestProject(sourceCode)
 		val wordGenerator = WordGenerator(project)
-		val logger = Logger("Tokenizer test", Severity.DEBUG)
-		val word = wordGenerator.getNextWord(logger)
+		val word = wordGenerator.getNextWord()
 		assertNull(word?.getValue(), "Token is not ignored")
 	}
 
 	fun assertTokenType(sourceCode: String, type: WordAtom) {
 		val project = createTestProject(sourceCode)
 		val wordGenerator = WordGenerator(project)
-		val logger = Logger("Tokenizer test", Severity.DEBUG)
-		val word = wordGenerator.getNextWord(logger)
+		val word = wordGenerator.getNextWord()
 		assertNotNull(word, "No token found")
 		assertEquals(sourceCode, word.getValue(), "The generated token doesn't match the entire input")
 		assertEquals(type, word.type, "The generated token doesn't match the expected type")

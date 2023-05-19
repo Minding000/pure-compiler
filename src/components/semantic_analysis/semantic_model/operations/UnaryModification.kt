@@ -1,8 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
-import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.context.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.NumberLiteral
@@ -26,16 +25,16 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 		addUnits(target)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		target.type?.let { targetType ->
 			try {
-				val operatorDefinition = targetType.interfaceScope.resolveOperator(linter, kind)
+				val operatorDefinition = targetType.interfaceScope.resolveOperator(kind)
 				if(operatorDefinition == null)
-					linter.addIssue(NotFound(source, "Operator", "$targetType$kind"))
+					context.addIssue(NotFound(source, "Operator", "$targetType$kind"))
 			} catch(error: SignatureResolutionAmbiguityError) {
 				//TODO write test for this
-				error.log(linter, source, "operator", "$targetType$kind")
+				error.log(source, "operator", "$targetType$kind")
 			}
 		}
 	}
@@ -56,6 +55,6 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 			Operator.Kind.DOUBLE_MINUS -> targetValue - STEP
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
-		return NumberLiteral(source, scope, resultingValue, tracker.linter)
+		return NumberLiteral(this, resultingValue)
 	}
 }

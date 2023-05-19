@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.Linter
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.Element
 import logger.issues.definition.*
@@ -8,27 +8,27 @@ import logger.issues.definition.*
 class Operator(source: Element, scope: Scope, val kind: Kind): Function(source, scope, kind.stringRepresentation) {
 	override val memberType = "operator"
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		for(implementation in implementations) {
 			if(kind == Kind.BRACKETS_SET) {
-				if(!Linter.SpecialType.NOTHING.matches(implementation.signature.returnType))
-					linter.addIssue(ReadWriteIndexOperator(source))
+				if(!SpecialType.NOTHING.matches(implementation.signature.returnType))
+					context.addIssue(ReadWriteIndexOperator(source))
 			} else if(kind != Kind.BRACKETS_GET) {
-				if(Linter.SpecialType.NOTHING.matches(implementation.signature.returnType)) {
+				if(SpecialType.NOTHING.matches(implementation.signature.returnType)) {
 					if(kind.returnsValue)
-						linter.addIssue(OperatorExpectedToReturn(source))
+						context.addIssue(OperatorExpectedToReturn(source))
 				} else {
 					if(!kind.returnsValue)
-						linter.addIssue(OperatorExpectedToNotReturn(source))
+						context.addIssue(OperatorExpectedToNotReturn(source))
 				}
 				if(kind.isUnary) {
 					if(implementation.parameters.size > 1 || !kind.isBinary && implementation.parameters.isNotEmpty())
-						linter.addIssue(ParameterInUnaryOperator(source))
+						context.addIssue(ParameterInUnaryOperator(source))
 				}
 				if(kind.isBinary) {
 					if(implementation.parameters.size > 1 || !kind.isUnary && implementation.parameters.isEmpty())
-						linter.addIssue(BinaryOperatorWithInvalidParameterCount(source))
+						context.addIssue(BinaryOperatorWithInvalidParameterCount(source))
 				}
 			}
 		}

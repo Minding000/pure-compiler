@@ -1,6 +1,5 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.MetaElement
@@ -17,19 +16,19 @@ class ParameterList(start: Position, end: Position, private val genericParameter
 	val containsParameters: Boolean
 		get() = parameters.isNotEmpty()
 
-	fun concretizeGenerics(linter: Linter, scope: MutableScope): List<TypeDefinition>? {
+	fun concretizeGenerics(scope: MutableScope): List<TypeDefinition>? {
 		if(genericParameters == null)
 			return null
 		val generics = LinkedList<TypeDefinition>()
 		for(genericParameter in genericParameters)
-			generics.add(genericParameter.concretizeAsGenericParameter(linter, scope))
+			generics.add(genericParameter.concretizeAsGenericParameter(scope))
 		return generics
 	}
 
-	fun concretizeParameters(linter: Linter, scope: MutableScope): List<SemanticParameterModel> {
+	fun concretizeParameters(scope: MutableScope): List<SemanticParameterModel> {
 		val parameters = LinkedList<SemanticParameterModel>()
 		for(parameter in this.parameters)
-			parameters.add(parameter.concretize(linter, scope))
+			parameters.add(parameter.concretize(scope))
 		return parameters
 	}
 

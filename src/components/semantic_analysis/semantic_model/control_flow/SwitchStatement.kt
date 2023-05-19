@@ -1,8 +1,7 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import components.semantic_analysis.Linter
-import components.semantic_analysis.VariableTracker
-import components.semantic_analysis.VariableUsage
+import components.semantic_analysis.semantic_model.context.VariableTracker
+import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.general.Unit
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
@@ -24,8 +23,8 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 		addUnits(cases)
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
+	override fun determineTypes() {
+		super.determineTypes()
 		val subjectType = subject.type
 		for(case in cases) {
 			if(case.condition.isAssignableTo(subjectType)) {
@@ -33,7 +32,7 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 			} else {
 				val conditionType = case.condition.type
 				if(subjectType != null && conditionType != null)
-					linter.addIssue(CaseTypeMismatch(source, conditionType, subjectType))
+					context.addIssue(CaseTypeMismatch(source, conditionType, subjectType))
 			}
 		}
 	}
@@ -58,11 +57,11 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 		tracker.addVariableStates(*caseStates.toTypedArray())
 	}
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		var areAllBranchesInterruptingExecution = elseBranch?.isInterruptingExecution ?: true
 		if(cases.isEmpty()) {
-			linter.addIssue(NoCases(source))
+			context.addIssue(NoCases(source))
 		} else {
 			val casesWithUniqueConditions = LinkedList<Case>()
 			for(case in cases) {
@@ -71,14 +70,14 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 				val caseWithUniqueCondition = casesWithUniqueConditions.find {
 						caseWithUniqueCondition -> caseWithUniqueCondition.condition == case.condition }
 				if(caseWithUniqueCondition != null) {
-					linter.addIssue(DuplicateCase(caseWithUniqueCondition, case))
+					context.addIssue(DuplicateCase(caseWithUniqueCondition, case))
 					continue
 				}
 				casesWithUniqueConditions.add(case)
 			}
 		}
 		if(elseBranch != null && isExhaustiveWithoutElseBranch())
-			linter.addIssue(RedundantElse(elseBranch.source))
+			context.addIssue(RedundantElse(elseBranch.source))
 		isInterruptingExecution = (getBranchForValue(subject.staticValue)?.isInterruptingExecution ?: false)
 			|| (isExhaustive() && areAllBranchesInterruptingExecution)
 	}

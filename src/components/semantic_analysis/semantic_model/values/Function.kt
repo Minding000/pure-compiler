@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -35,13 +34,13 @@ open class Function(source: Element, scope: Scope, val name: String = "<anonymou
 		return null
 	}
 
-	override fun determineTypes(linter: Linter) {
-		super.determineTypes(linter)
-		ensureUniqueSignatures(linter)
+	override fun determineTypes() {
+		super.determineTypes()
+		ensureUniqueSignatures()
 		staticValue = this
 	}
 
-	private fun ensureUniqueSignatures(linter: Linter) {
+	private fun ensureUniqueSignatures() {
 		val redeclarations = LinkedList<FunctionImplementation>()
 		for(initializerIndex in 0 until implementations.size - 1) {
 			val implementation = implementations[initializerIndex]
@@ -52,7 +51,7 @@ open class Function(source: Element, scope: Scope, val name: String = "<anonymou
 				if(!otherImplementation.signature.hasSameParameterTypesAs(implementation.signature))
 					continue
 				redeclarations.add(otherImplementation)
-				linter.addIssue(Redeclaration(otherImplementation.source, memberType, otherImplementation.toString(),
+				context.addIssue(Redeclaration(otherImplementation.source, memberType, otherImplementation.toString(),
 					implementation.source))
 			}
 		}

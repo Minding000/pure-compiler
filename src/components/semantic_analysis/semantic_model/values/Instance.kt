@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.ObjectType
@@ -20,11 +19,11 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, ove
 		addUnits(valueParameters)
 	}
 
-	override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): Instance {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Instance {
 		return Instance(source, scope, value, valueParameters, true)
 	}
 
-	override fun determineType(linter: Linter) {
+	override fun determineType() {
 		this.typeDefinition = scope.getSurroundingDefinition()
 			?: throw CompilerError(source, "Instance outside of type definition.")
 		val type = ObjectType(typeDefinition)
@@ -35,14 +34,14 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, ove
 		value.staticValue = value
 		val staticType = StaticType(typeDefinition)
 		addUnits(staticType)
-		super.determineType(linter)
+		super.determineType()
 		try {
-			val initializer = staticType.resolveInitializer(linter, valueParameters)
+			val initializer = staticType.resolveInitializer(valueParameters)
 			if(initializer == null)
-				linter.addIssue(NotFound(source, "Initializer", getSignature()))
+				context.addIssue(NotFound(source, "Initializer", getSignature()))
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
-			error.log(linter, source, "initializer", getSignature())
+			error.log(source, "initializer", getSignature())
 		}
 	}
 

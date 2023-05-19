@@ -1,6 +1,5 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.Linter
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.MutableScope
@@ -18,17 +17,17 @@ abstract class InterfaceMember(source: Element, scope: MutableScope, name: Strin
 		get() = "$name${if(type == null) "" else ": $type"}"
 	var superMember: InterfaceMember? = null
 
-	abstract override fun withTypeSubstitutions(linter: Linter, typeSubstitutions: Map<TypeDefinition, Type>): InterfaceMember
+	abstract override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): InterfaceMember
 
-	override fun validate(linter: Linter) {
-		super.validate(linter)
+	override fun validate() {
+		super.validate()
 		if(value !is Function) {
 			if(superMember == null) {
 				if(isOverriding)
-					linter.addIssue(OverriddenSuperMissing(source, "property"))
+					context.addIssue(OverriddenSuperMissing(source, "property"))
 			} else {
 				if(!isOverriding)
-					linter.addIssue(MissingOverridingKeyword(source, "Property", memberIdentifier))
+					context.addIssue(MissingOverridingKeyword(source, "Property", memberIdentifier))
 			}
 		}
 	}
