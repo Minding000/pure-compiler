@@ -8,7 +8,7 @@ import components.semantic_analysis.semantic_model.values.NumberLiteral as Seman
 
 class NumberLiteral(word: Word): ValueElement(word) {
 
-	override fun concretize(scope: MutableScope): SemanticNumberLiteralModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticNumberLiteralModel {
 		val value = BigDecimal(getValue().replace("_", ""))
 		return SemanticNumberLiteralModel(this, scope, value)
 	}

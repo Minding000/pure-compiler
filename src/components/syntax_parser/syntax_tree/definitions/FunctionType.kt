@@ -10,10 +10,10 @@ import components.semantic_analysis.semantic_model.types.FunctionType as Semanti
 class FunctionType(start: Position, private val parameterList: ParameterTypeList?, private val returnType: TypeElement?, end: Position):
 	TypeElement(start, end) {
 
-	override fun concretize(scope: MutableScope): SemanticFunctionTypeModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticFunctionTypeModel {
 		val functionScope = BlockScope(scope)
-		val parameters = parameterList?.concretizeTypes(functionScope) ?: listOf()
-		val signature = FunctionSignature(this, functionScope, listOf(), parameters, returnType?.concretize(functionScope))
+		val parameters = parameterList?.toSemanticModels(functionScope) ?: listOf()
+		val signature = FunctionSignature(this, functionScope, listOf(), parameters, returnType?.toSemanticModel(functionScope))
 		return SemanticFunctionTypeModel(this, scope, signature)
 	}
 

@@ -7,7 +7,7 @@ import components.semantic_analysis.semantic_model.values.StringLiteral as Seman
 
 class StringLiteral(word: Word): ValueElement(word) {
 
-	override fun concretize(scope: MutableScope): SemanticStringLiteralModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticStringLiteralModel {
 		return SemanticStringLiteralModel(this, scope, getValue())
 	}
 

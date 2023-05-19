@@ -72,7 +72,8 @@ class FunctionImplementation(override val source: Element, override val scope: B
 		super.validate()
 		if(signature.superFunctionSignature != null) {
 			if(!isOverriding)
-				context.addIssue(MissingOverridingKeyword(source, parentFunction.memberType.replaceFirstChar { it.titlecase() }, toString()))
+				context.addIssue(MissingOverridingKeyword(source, parentFunction.memberType.replaceFirstChar { it.titlecase() },
+					toString()))
 		} else {
 			if(isOverriding)
 				context.addIssue(OverriddenSuperMissing(source, parentFunction.memberType))

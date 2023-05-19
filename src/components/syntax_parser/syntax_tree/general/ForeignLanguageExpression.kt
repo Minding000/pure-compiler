@@ -8,8 +8,8 @@ import components.semantic_analysis.semantic_model.general.ForeignLanguageExpres
 class ForeignLanguageExpression(private val foreignParser: Identifier, private val content: ForeignLanguageLiteral):
 	ValueElement(foreignParser.start, content.end) {
 
-	override fun concretize(scope: MutableScope): SemanticForeignLanguageExpressionModel {
-		return SemanticForeignLanguageExpressionModel(this, scope, foreignParser.concretize(scope), content.getValue())
+	override fun toSemanticModel(scope: MutableScope): SemanticForeignLanguageExpressionModel {
+		return SemanticForeignLanguageExpressionModel(this, scope, foreignParser.toSemanticModel(scope), content.getValue())
 	}
 
 	override fun toString(): String {

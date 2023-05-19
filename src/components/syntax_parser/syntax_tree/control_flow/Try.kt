@@ -7,8 +7,8 @@ import components.semantic_analysis.semantic_model.control_flow.Try as SemanticT
 
 class Try(private val expression: ValueElement, private val isOptional: Boolean, start: Position): ValueElement(start, expression.end) {
 
-	override fun concretize(scope: MutableScope): SemanticTryModel {
-		return SemanticTryModel(this, scope, expression.concretize(scope), isOptional)
+	override fun toSemanticModel(scope: MutableScope): SemanticTryModel {
+		return SemanticTryModel(this, scope, expression.toSemanticModel(scope), isOptional)
 	}
 
 	override fun toString(): String {

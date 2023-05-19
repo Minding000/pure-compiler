@@ -8,8 +8,8 @@ import components.semantic_analysis.semantic_model.operations.UnaryModification 
 
 class UnaryModification(val target: ValueElement, val operator: Operator): Element(target.start, operator.end) {
 
-	override fun concretize(scope: MutableScope): SemanticUnaryModificationModel {
-		return SemanticUnaryModificationModel(this, scope, target.concretize(scope), operator.getKind())
+	override fun toSemanticModel(scope: MutableScope): SemanticUnaryModificationModel {
+		return SemanticUnaryModificationModel(this, scope, target.toSemanticModel(scope), operator.getKind())
 	}
 
 	override fun toString(): String {

@@ -8,8 +8,8 @@ import components.semantic_analysis.semantic_model.control_flow.Case as Semantic
 
 class Case(private val condition: ValueElement, private val result: Element): Element(condition.start, result.end) {
 
-	override fun concretize(scope: MutableScope): SemanticCaseModel {
-		return SemanticCaseModel(this, scope, condition.concretize(scope), result.concretize(scope))
+	override fun toSemanticModel(scope: MutableScope): SemanticCaseModel {
+		return SemanticCaseModel(this, scope, condition.toSemanticModel(scope), result.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

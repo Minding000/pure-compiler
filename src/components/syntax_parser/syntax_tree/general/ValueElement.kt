@@ -12,5 +12,5 @@ abstract class ValueElement(start: Position, end: Position): Element(start, end)
 
 	constructor(word: Word): this(word.start, word.end)
 
-	abstract override fun concretize(scope: MutableScope): Value
+	abstract override fun toSemanticModel(scope: MutableScope): Value
 }

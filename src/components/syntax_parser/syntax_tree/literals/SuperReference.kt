@@ -8,8 +8,8 @@ import components.semantic_analysis.semantic_model.values.SuperReference as Sema
 
 class SuperReference(word: Word, private val specifier: ObjectType?, end: Position): ValueElement(word.start, end) {
 
-	override fun concretize(scope: MutableScope): SemanticSuperReferenceModel {
-		return SemanticSuperReferenceModel(this, scope, specifier?.concretize(scope))
+	override fun toSemanticModel(scope: MutableScope): SemanticSuperReferenceModel {
+		return SemanticSuperReferenceModel(this, scope, specifier?.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

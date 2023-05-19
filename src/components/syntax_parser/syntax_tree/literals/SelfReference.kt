@@ -8,8 +8,8 @@ import components.semantic_analysis.semantic_model.values.SelfReference as Seman
 
 class SelfReference(word: Word, private val specifier: ObjectType?, end: Position): ValueElement(word.start, end) {
 
-	override fun concretize(scope: MutableScope): SemanticSelfReferenceModel {
-		return SemanticSelfReferenceModel(this, scope, specifier?.concretize(scope))
+	override fun toSemanticModel(scope: MutableScope): SemanticSelfReferenceModel {
+		return SemanticSelfReferenceModel(this, scope, specifier?.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

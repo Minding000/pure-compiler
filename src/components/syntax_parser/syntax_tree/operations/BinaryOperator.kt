@@ -9,8 +9,8 @@ import components.semantic_analysis.semantic_model.operations.BinaryOperator as 
 class BinaryOperator(private val left: ValueElement, private val right: ValueElement, private val operator: Operator):
 	ValueElement(left.start, right.end) {
 
-	override fun concretize(scope: MutableScope): SemanticBinaryOperatorModel {
-		return SemanticBinaryOperatorModel(this, scope, left.concretize(scope), right.concretize(scope),
+	override fun toSemanticModel(scope: MutableScope): SemanticBinaryOperatorModel {
+		return SemanticBinaryOperatorModel(this, scope, left.toSemanticModel(scope), right.toSemanticModel(scope),
 			operator.getKind())
 	}
 

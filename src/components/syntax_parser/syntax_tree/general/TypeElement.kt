@@ -9,5 +9,5 @@ import source_structure.Position
  */
 abstract class TypeElement(start: Position, end: Position): Element(start, end) {
 
-	abstract override fun concretize(scope: MutableScope): Type
+	abstract override fun toSemanticModel(scope: MutableScope): Type
 }

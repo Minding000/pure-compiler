@@ -17,9 +17,9 @@ class FunctionSection(private val declarationType: Word, private val functions: 
 			function.parent = this
 	}
 
-	override fun concretize(scope: MutableScope, units: MutableList<Unit>) {
+	override fun toSemanticModel(scope: MutableScope, units: MutableList<Unit>) {
 		for(function in functions)
-			function.concretize(scope, units)
+			function.toSemanticModel(scope, units)
 	}
 
 	override fun toString(): String {

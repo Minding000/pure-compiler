@@ -15,13 +15,13 @@ class PropertyDeclaration(private val identifier: Identifier, private val type: 
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.IMMUTABLE, WordAtom.OVERRIDING)
 	}
 
-	override fun concretize(scope: MutableScope): SemanticPropertyDeclarationModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticPropertyDeclarationModel {
 		parent.validate(ALLOWED_MODIFIER_TYPES)
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isMutable = !parent.containsModifier(WordAtom.IMMUTABLE)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
-		val type = (type ?: parent.type)?.concretize(scope)
-		val value = (value ?: parent.value)?.concretize(scope)
+		val type = (type ?: parent.type)?.toSemanticModel(scope)
+		val value = (value ?: parent.value)?.toSemanticModel(scope)
 		//TODO 'isStatic' should be 'true' for 'const'
 		return SemanticPropertyDeclarationModel(this, scope, identifier.getValue(), type, value, false, isAbstract,
 			parent.isConstant, isMutable, isOverriding)

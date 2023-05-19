@@ -9,9 +9,9 @@ import components.semantic_analysis.semantic_model.general.HandleBlock as Semant
 class HandleBlock(start: Position, private val type: TypeElement, private val identifier: Identifier?, private val block: StatementBlock):
 	Element(start, block.end) {
 
-	override fun concretize(scope: MutableScope): SemanticHandleBlockModel {
-		val statementBlock = block.concretize(scope)
-		val eventType = type.concretize(scope)
+	override fun toSemanticModel(scope: MutableScope): SemanticHandleBlockModel {
+		val statementBlock = block.toSemanticModel(scope)
+		val eventType = type.toSemanticModel(scope)
 		val variableValueDeclaration = if(identifier == null)
 			null
 		else

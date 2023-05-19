@@ -9,9 +9,9 @@ import util.toLines
 
 class InstanceList(start: Position, private val instances: List<Instance>): MetaElement(start, instances.last().end) {
 
-	override fun concretize(scope: MutableScope, units: MutableList<Unit>) {
+	override fun toSemanticModel(scope: MutableScope, units: MutableList<Unit>) {
 		for(instance in instances)
-			instance.concretize(scope, units)
+			instance.toSemanticModel(scope, units)
 	}
 
 	override fun toString(): String {

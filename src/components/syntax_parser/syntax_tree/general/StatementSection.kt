@@ -9,11 +9,11 @@ class StatementSection(private val mainBlock: StatementBlock, val handleBlocks: 
 					   private val alwaysBlock: StatementBlock? = null):
 	Element(mainBlock.start, (alwaysBlock ?: handleBlocks.lastOrNull() ?: mainBlock).end) {
 
-	override fun concretize(scope: MutableScope): ErrorHandlingContext {
+	override fun toSemanticModel(scope: MutableScope): ErrorHandlingContext {
 		val handleBlocks = LinkedList<SemanticHandleBlockModel>()
 		for(handleBlock in this.handleBlocks)
-			handleBlocks.add(handleBlock.concretize(scope))
-		return ErrorHandlingContext(this, scope, mainBlock.concretize(scope), handleBlocks, alwaysBlock?.concretize(scope))
+			handleBlocks.add(handleBlock.toSemanticModel(scope))
+		return ErrorHandlingContext(this, scope, mainBlock.toSemanticModel(scope), handleBlocks, alwaysBlock?.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

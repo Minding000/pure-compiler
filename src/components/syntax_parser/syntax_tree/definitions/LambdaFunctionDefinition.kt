@@ -12,12 +12,12 @@ import components.semantic_analysis.semantic_model.values.Function as SemanticFu
 class LambdaFunctionDefinition(start: Position, private val parameterList: ParameterList?, private val body: StatementSection,
 							   private val returnType: TypeElement?): ValueElement(start, body.end) {
 
-	override fun concretize(scope: MutableScope): SemanticFunctionModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticFunctionModel {
 		val functionScope = BlockScope(scope)
-		val parameters = parameterList?.concretizeParameters(functionScope) ?: emptyList()
-		val returnType = returnType?.concretize(functionScope)
+		val parameters = parameterList?.getSemanticParameterModels(functionScope) ?: emptyList()
+		val returnType = returnType?.toSemanticModel(functionScope)
 		val implementation = SemanticFunctionImplementationModel(this, functionScope, emptyList(), parameters,
-			body.concretize(functionScope), returnType)
+			body.toSemanticModel(functionScope), returnType)
 		val function = SemanticFunctionModel(this, scope)
 		function.addImplementation(implementation)
 		return function

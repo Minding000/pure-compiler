@@ -22,9 +22,9 @@ class VariableSection(val declarationType: Word, val type: TypeElement?, val val
 			variable.parent = this
 	}
 
-	override fun concretize(scope: MutableScope, units: MutableList<Unit>) {
+	override fun toSemanticModel(scope: MutableScope, units: MutableList<Unit>) {
 		for(variable in variables)
-			variable.concretize(scope, units)
+			variable.toSemanticModel(scope, units)
 	}
 
 	override fun toString(): String {

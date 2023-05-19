@@ -7,7 +7,7 @@ import components.semantic_analysis.semantic_model.control_flow.NextStatement as
 
 class NextStatement(word: Word): Element(word) {
 
-	override fun concretize(scope: MutableScope): SemanticNextStatementModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticNextStatementModel {
 		return SemanticNextStatementModel(this, scope)
 	}
 

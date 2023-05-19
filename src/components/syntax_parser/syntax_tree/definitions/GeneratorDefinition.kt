@@ -13,11 +13,11 @@ class GeneratorDefinition(start: Position, private val identifier: Identifier, p
 						  private var keyReturnType: TypeElement?, private var valueReturnType: TypeElement,
 						  private val body: StatementSection): Element(start, body.end) {
 
-	override fun concretize(scope: MutableScope): SemanticGeneratorDefinitionModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticGeneratorDefinitionModel {
 		val generatorScope = BlockScope(scope)
-		val parameters = parameterList.concretizeParameters(generatorScope)
+		val parameters = parameterList.getSemanticParameterModels(generatorScope)
 		return SemanticGeneratorDefinitionModel(this, generatorScope, identifier.getValue(), parameters,
-			keyReturnType?.concretize(generatorScope), valueReturnType.concretize(generatorScope), body.concretize(generatorScope))
+			keyReturnType?.toSemanticModel(generatorScope), valueReturnType.toSemanticModel(generatorScope), body.toSemanticModel(generatorScope))
 	}
 
 	override fun toString(): String {

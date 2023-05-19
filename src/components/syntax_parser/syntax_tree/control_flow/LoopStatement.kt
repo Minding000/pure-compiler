@@ -10,10 +10,10 @@ import components.semantic_analysis.semantic_model.control_flow.LoopStatement as
 class LoopStatement(start: Position, private val generator: Element?, private val body: StatementSection):
 	Element(start, body.end) {
 
-	override fun concretize(scope: MutableScope): SemanticLoopStatementModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticLoopStatementModel {
 		val loopScope = BlockScope(scope)
-		return SemanticLoopStatementModel(this, loopScope, generator?.concretize(loopScope),
-			body.concretize(loopScope))
+		return SemanticLoopStatementModel(this, loopScope, generator?.toSemanticModel(loopScope),
+			body.toSemanticModel(loopScope))
 	}
 
 	override fun toString(): String {

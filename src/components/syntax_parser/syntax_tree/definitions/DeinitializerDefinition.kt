@@ -17,10 +17,10 @@ class DeinitializerDefinition(start: Position, end: Position, private val body: 
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.NATIVE)
 	}
 
-	override fun concretize(scope: MutableScope): SemanticDeinitializerDefinitionModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticDeinitializerDefinitionModel {
 		parent?.validate(ALLOWED_MODIFIER_TYPES)
 		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
-		return SemanticDeinitializerDefinitionModel(this, scope, body?.concretize(scope), isNative)
+		return SemanticDeinitializerDefinitionModel(this, scope, body?.toSemanticModel(scope), isNative)
 	}
 
 	override fun toString(): String {

@@ -7,8 +7,8 @@ import components.semantic_analysis.semantic_model.control_flow.YieldStatement a
 
 class YieldStatement(start: Position, private val key: ValueElement?, private val value: ValueElement): ValueElement(start, value.end) {
 
-	override fun concretize(scope: MutableScope): SemanticYieldStatementModel {
-		return SemanticYieldStatementModel(this, scope, key?.concretize(scope), value.concretize(scope))
+	override fun toSemanticModel(scope: MutableScope): SemanticYieldStatementModel {
+		return SemanticYieldStatementModel(this, scope, key?.toSemanticModel(scope), value.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

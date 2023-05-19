@@ -7,8 +7,8 @@ import components.semantic_analysis.semantic_model.operations.UnaryOperator as S
 
 class UnaryOperator(val target: ValueElement, val operator: Operator): ValueElement(operator.start, target.end) {
 
-	override fun concretize(scope: MutableScope): SemanticUnaryOperatorModel {
-		return SemanticUnaryOperatorModel(this, scope, target.concretize(scope), operator.getKind())
+	override fun toSemanticModel(scope: MutableScope): SemanticUnaryOperatorModel {
+		return SemanticUnaryOperatorModel(this, scope, target.toSemanticModel(scope), operator.getKind())
 	}
 
 	override fun toString(): String {

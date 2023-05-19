@@ -16,19 +16,19 @@ class ParameterList(start: Position, end: Position, private val genericParameter
 	val containsParameters: Boolean
 		get() = parameters.isNotEmpty()
 
-	fun concretizeGenerics(scope: MutableScope): List<TypeDefinition>? {
+	fun getSemanticGenericParameterModels(scope: MutableScope): List<TypeDefinition>? {
 		if(genericParameters == null)
 			return null
 		val generics = LinkedList<TypeDefinition>()
 		for(genericParameter in genericParameters)
-			generics.add(genericParameter.concretizeAsGenericParameter(scope))
+			generics.add(genericParameter.toSemanticGenericParameterModel(scope))
 		return generics
 	}
 
-	fun concretizeParameters(scope: MutableScope): List<SemanticParameterModel> {
+	fun getSemanticParameterModels(scope: MutableScope): List<SemanticParameterModel> {
 		val parameters = LinkedList<SemanticParameterModel>()
 		for(parameter in this.parameters)
-			parameters.add(parameter.concretize(scope))
+			parameters.add(parameter.toSemanticModel(scope))
 		return parameters
 	}
 

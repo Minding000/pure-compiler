@@ -7,7 +7,7 @@ import components.semantic_analysis.semantic_model.control_flow.BreakStatement a
 
 class BreakStatement(word: Word): Element(word) {
 
-	override fun concretize(scope: MutableScope): SemanticBreakStatementModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticBreakStatementModel {
 		return SemanticBreakStatementModel(this, scope)
 	}
 

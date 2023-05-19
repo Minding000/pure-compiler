@@ -1,7 +1,7 @@
 package util
 
 import code.Builder
-import components.semantic_analysis.semantic_model.context.Linter
+import components.semantic_analysis.semantic_model.context.SemanticModelGenerator
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.syntax_parser.element_generator.ElementGenerator
 import components.tokenizer.WordAtom
@@ -53,8 +53,8 @@ object TestUtil {
     fun lint(sourceCode: String, includeRequiredModules: Boolean = false): LintResult {
         val parseResult = parse(sourceCode, includeRequiredModules, false)
 		val context = parseResult.elementGenerator.project.context
-        val linter = Linter(context)
-        val program = linter.lint(parseResult.program)
+        val semanticModelGenerator = SemanticModelGenerator(context)
+        val program = semanticModelGenerator.lint(parseResult.program)
         context.logger.printReport()
         return LintResult(context, program)
     }
@@ -62,8 +62,8 @@ object TestUtil {
 	fun analyseDataFlow(sourceCode: String): VariableTracker {
 		val parseResult = parse(sourceCode, includeRequiredModules = false, printReport = false)
 		val context = parseResult.elementGenerator.project.context
-		val linter = Linter(context)
-		val program = linter.lint(parseResult.program)
+		val semanticModelGenerator = SemanticModelGenerator(context)
+		val program = semanticModelGenerator.lint(parseResult.program)
 		val testFile = program.files.find { file -> file.file.name == TEST_FILE_NAME }
 		assertNotNull(testFile, "Missing test file")
 		return testFile.variableTracker

@@ -18,17 +18,17 @@ class InitializerDefinition(start: Position, private val parameterList: Paramete
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.CONVERTING, WordAtom.NATIVE, WordAtom.OVERRIDING)
 	}
 
-	override fun concretize(scope: MutableScope): SemanticInitializerDefinitionModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticInitializerDefinitionModel {
 		parent?.validate(ALLOWED_MODIFIER_TYPES)
 		val isAbstract = parent?.containsModifier(WordAtom.ABSTRACT) ?: false
 		val isConverting = parent?.containsModifier(WordAtom.CONVERTING) ?: false
 		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 		val isOverriding = parent?.containsModifier(WordAtom.OVERRIDING) ?: false
 		val initializerScope = BlockScope(scope)
-		val genericParameters = parameterList?.concretizeGenerics(initializerScope) ?: listOf()
-		val parameters = parameterList?.concretizeParameters(initializerScope) ?: listOf()
+		val genericParameters = parameterList?.getSemanticGenericParameterModels(initializerScope) ?: listOf()
+		val parameters = parameterList?.getSemanticParameterModels(initializerScope) ?: listOf()
 		return SemanticInitializerDefinitionModel(this, initializerScope, genericParameters, parameters,
-			body?.concretize(initializerScope), isAbstract, isConverting, isNative, isOverriding)
+			body?.toSemanticModel(initializerScope), isAbstract, isConverting, isNative, isOverriding)
 	}
 
 	override fun toString(): String {

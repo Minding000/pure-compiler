@@ -5,14 +5,14 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.MetaElement
 import components.syntax_parser.syntax_tree.general.TypeElement
 import source_structure.Position
-import util.concretizeTypes
 import util.indent
 import util.toLines
+import util.toSemanticTypeModels
 
 class ParameterTypeList(start: Position, val parameters: List<TypeElement>, end: Position): MetaElement(start, end) {
 
-	fun concretizeTypes(scope: MutableScope): List<Type> {
-		return parameters.concretizeTypes(scope)
+	fun toSemanticModels(scope: MutableScope): List<Type> {
+		return parameters.toSemanticTypeModels(scope)
 	}
 
 	override fun toString(): String {

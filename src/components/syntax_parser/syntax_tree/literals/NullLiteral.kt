@@ -7,7 +7,7 @@ import components.semantic_analysis.semantic_model.values.NullLiteral as Semanti
 
 class NullLiteral(word: Word): ValueElement(word) {
 
-	override fun concretize(scope: MutableScope): SemanticNullLiteralModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticNullLiteralModel {
 		return SemanticNullLiteralModel(this, scope)
 	}
 

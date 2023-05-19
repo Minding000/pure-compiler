@@ -7,7 +7,7 @@ import components.tokenizer.Word
 
 open class Identifier(word: Word): ValueElement(word) {
 
-	override fun concretize(scope: MutableScope): VariableValue {
+	override fun toSemanticModel(scope: MutableScope): VariableValue {
 		return VariableValue(this, scope)
 	}
 

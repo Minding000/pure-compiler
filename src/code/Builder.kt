@@ -1,7 +1,7 @@
 package code
 
 import components.compiler.targets.llvm.LLVMIRCompiler
-import components.semantic_analysis.semantic_model.context.Linter
+import components.semantic_analysis.semantic_model.context.SemanticModelGenerator
 import components.syntax_parser.element_generator.ElementGenerator
 import errors.internal.CompilerError
 import errors.user.UserError
@@ -31,8 +31,8 @@ object Builder {
 				println(program)
 			}
 			println("----- Linter messages: -----")
-			val linter = Linter(project.context)
-			val lintedProgram = linter.lint(program)
+			val semanticModelGenerator = SemanticModelGenerator(project.context)
+			val lintedProgram = semanticModelGenerator.lint(program)
 			project.context.logger.printReport()
 			println("----- JIT example: -----")
 			LLVMIRCompiler.runExampleProgram()

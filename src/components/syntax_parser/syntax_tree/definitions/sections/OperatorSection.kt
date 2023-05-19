@@ -17,9 +17,9 @@ class OperatorSection(declarationType: Word, private val operators: List<Operato
 			operator.parent = this
 	}
 
-	override fun concretize(scope: MutableScope, units: MutableList<Unit>) {
+	override fun toSemanticModel(scope: MutableScope, units: MutableList<Unit>) {
 		for(operator in operators)
-			operator.concretize(scope, units)
+			operator.toSemanticModel(scope, units)
 	}
 
 	override fun toString(): String {

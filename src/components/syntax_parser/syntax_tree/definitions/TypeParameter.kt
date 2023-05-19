@@ -8,12 +8,12 @@ import components.semantic_analysis.semantic_model.types.TypeParameter as Semant
 
 class TypeParameter(val type: TypeElement, val modifier: Word): TypeElement(type.start, modifier.end) {
 
-    override fun concretize(scope: MutableScope): SemanticTypeParameterModel {
+    override fun toSemanticModel(scope: MutableScope): SemanticTypeParameterModel {
         val mode = if(modifier.type == WordAtom.CONSUMING)
             SemanticTypeParameterModel.Mode.CONSUMING
         else
             SemanticTypeParameterModel.Mode.PRODUCING
-        return SemanticTypeParameterModel(this, scope, mode, type.concretize(scope))
+        return SemanticTypeParameterModel(this, scope, mode, type.toSemanticModel(scope))
     }
 
     override fun toString(): String {

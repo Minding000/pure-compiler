@@ -18,12 +18,12 @@ class ComputedPropertyDeclaration(private val identifier: Identifier, private va
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.OVERRIDING)
 	}
 
-	override fun concretize(scope: MutableScope): SemanticComputedPropertyDeclarationModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticComputedPropertyDeclarationModel {
 		parent.validate(ALLOWED_MODIFIER_TYPES)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val type = type ?: parent.type
-		return SemanticComputedPropertyDeclarationModel(this, scope, identifier.getValue(), type?.concretize(scope),
-			parent.isConstant, isOverriding, getExpression?.concretize(scope), setStatement?.concretize(scope))
+		return SemanticComputedPropertyDeclarationModel(this, scope, identifier.getValue(), type?.toSemanticModel(scope),
+			parent.isConstant, isOverriding, getExpression?.toSemanticModel(scope), setStatement?.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

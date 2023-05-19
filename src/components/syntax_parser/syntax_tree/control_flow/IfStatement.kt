@@ -10,9 +10,9 @@ import components.semantic_analysis.semantic_model.control_flow.IfStatement as S
 class IfStatement(private val condition: ValueElement, private val positiveBranch: Element,
 				  private val negativeBranch: Element?, start: Position, end: Position): Element(start, end) {
 
-	override fun concretize(scope: MutableScope): SemanticIfStatementModel {
-		return SemanticIfStatementModel(this, scope, condition.concretize(scope),
-			positiveBranch.concretize(scope), negativeBranch?.concretize(scope))
+	override fun toSemanticModel(scope: MutableScope): SemanticIfStatementModel {
+		return SemanticIfStatementModel(this, scope, condition.toSemanticModel(scope),
+			positiveBranch.toSemanticModel(scope), negativeBranch?.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

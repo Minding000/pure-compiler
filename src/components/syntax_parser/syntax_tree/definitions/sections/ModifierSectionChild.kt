@@ -6,5 +6,5 @@ import components.semantic_analysis.semantic_model.scopes.MutableScope
 interface ModifierSectionChild {
 	var parent: ModifierSection?
 
-	fun concretize(scope: MutableScope, units: MutableList<Unit>)
+	fun toSemanticModel(scope: MutableScope, units: MutableList<Unit>)
 }

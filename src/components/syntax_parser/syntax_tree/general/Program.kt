@@ -7,10 +7,10 @@ import components.semantic_analysis.semantic_model.general.Program as SemanticPr
 
 class Program(private val files: List<File>) {
 
-    fun concretize(): SemanticProgramModel {
+    fun toSemanticModel(): SemanticProgramModel {
         val program = SemanticProgramModel(this)
         for(file in files)
-            program.files.add(file.concretize(FileScope()))
+            program.files.add(file.toSemanticModel(FileScope()))
         return program
     }
 

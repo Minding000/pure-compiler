@@ -3,18 +3,18 @@ package components.syntax_parser.syntax_tree.general
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import source_structure.Position
-import util.concretize
 import util.indent
 import util.toLines
+import util.toSemanticModels
 import components.semantic_analysis.semantic_model.general.StatementBlock as SemanticStatementBlockModel
 
 class StatementBlock(start: Position, end: Position, private val statements: List<Element>): Element(start, end) {
 
 	constructor(statement: Element): this(statement.start, statement.end, listOf(statement))
 
-	override fun concretize(scope: MutableScope): SemanticStatementBlockModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticStatementBlockModel {
 		val blockScope = BlockScope(scope)
-		return SemanticStatementBlockModel(this, blockScope, statements.concretize(blockScope))
+		return SemanticStatementBlockModel(this, blockScope, statements.toSemanticModels(blockScope))
 	}
 
 	override fun toString(): String {

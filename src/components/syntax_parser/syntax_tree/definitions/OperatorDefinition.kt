@@ -21,7 +21,7 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.MUTATING, WordAtom.NATIVE, WordAtom.OVERRIDING)
 	}
 
-	override fun concretize(scope: MutableScope): FunctionImplementation {
+	override fun toSemanticModel(scope: MutableScope): FunctionImplementation {
 		parent.validate(ALLOWED_MODIFIER_TYPES)
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isMutating = parent.containsModifier(WordAtom.MUTATING)
@@ -35,12 +35,12 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 				context.addIssue(GenericOperator(parameterList))
 			}
 		}
-		var parameters = parameterList?.concretizeParameters(operatorScope) ?: listOf()
-		val body = body?.concretize(operatorScope)
-		val returnType = returnType?.concretize(operatorScope)
-		val genericParameters = (operator as? IndexOperator)?.concretizeGenerics(operatorScope) ?: listOf()
+		var parameters = parameterList?.getSemanticParameterModels(operatorScope) ?: listOf()
+		val body = body?.toSemanticModel(operatorScope)
+		val returnType = returnType?.toSemanticModel(operatorScope)
+		val genericParameters = (operator as? IndexOperator)?.getSemanticGenericParameterModels(operatorScope) ?: listOf()
 		if(operator is IndexOperator)
-			parameters = operator.concretizeIndices(operatorScope) + parameters
+			parameters = operator.getSemanticIndexParameterModels(operatorScope) + parameters
 		return FunctionImplementation(this, operatorScope, genericParameters, parameters, body, returnType, isAbstract,
 			isMutating, isNative, isOverriding)
 	}

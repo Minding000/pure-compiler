@@ -23,9 +23,9 @@ class ModifierSection(private val modifierList: ModifierList, private val sectio
 		}
 	}
 
-	override fun concretize(scope: MutableScope, units: MutableList<Unit>) {
+	override fun toSemanticModel(scope: MutableScope, units: MutableList<Unit>) {
 		for(section in sections)
-			section.concretize(scope, units)
+			section.toSemanticModel(scope, units)
 	}
 
 	override fun getOwnModifiers(): List<Modifier> {

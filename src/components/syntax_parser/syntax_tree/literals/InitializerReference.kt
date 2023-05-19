@@ -7,7 +7,7 @@ import components.semantic_analysis.semantic_model.values.InitializerReference a
 
 class InitializerReference(word: Word): ValueElement(word) {
 
-	override fun concretize(scope: MutableScope): SemanticInitializerReferenceModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticInitializerReferenceModel {
 		return SemanticInitializerReferenceModel(this, scope)
 	}
 

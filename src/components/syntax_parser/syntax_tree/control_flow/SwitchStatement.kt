@@ -13,12 +13,12 @@ import components.semantic_analysis.semantic_model.control_flow.SwitchStatement 
 class SwitchStatement(private val subject: ValueElement, private val cases: LinkedList<Case>, private val elseBranch: Element?,
 					  start: Position, end: Position): Element(start, end) {
 
-	override fun concretize(scope: MutableScope): SemanticSwitchStatementModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticSwitchStatementModel {
 		val cases = LinkedList<SemanticCaseModel>()
 		for(case in this.cases)
-			cases.add(case.concretize(scope))
-		return SemanticSwitchStatementModel(this, scope, subject.concretize(scope), cases,
-			elseBranch?.concretize(scope))
+			cases.add(case.toSemanticModel(scope))
+		return SemanticSwitchStatementModel(this, scope, subject.toSemanticModel(scope), cases,
+			elseBranch?.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

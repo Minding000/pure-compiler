@@ -14,9 +14,9 @@ abstract class Element(start: Position, end: Position): Section(start, end) {
 
 	constructor(word: Word): this(word.start, word.end)
 
-	open fun concretize(scope: MutableScope, units: MutableList<Unit>) {
-		units.add(concretize(scope))
+	open fun toSemanticModel(scope: MutableScope, units: MutableList<Unit>) {
+		units.add(toSemanticModel(scope))
 	}
 
-	abstract fun concretize(scope: MutableScope): Unit
+	abstract fun toSemanticModel(scope: MutableScope): Unit
 }

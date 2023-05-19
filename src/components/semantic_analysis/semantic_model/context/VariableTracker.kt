@@ -10,6 +10,10 @@ import logger.issues.initialization.ConstantReassignment
 import util.combine
 import java.util.*
 
+//TODO also consider value ranges
+// - or unions (a is 2 or 10, b is "hi" or "hello")
+// - number ranges (a is between 0 and 26, b is lower than zero)
+// - other attributes (a is divisible by 2, b is a whole number, etc.)
 class VariableTracker(val context: Context, val isInitializer: Boolean = false) {
 	val childTrackers = HashMap<String, VariableTracker>()
 	val variables = HashMap<ValueDeclaration, MutableList<VariableUsage>>()
@@ -149,17 +153,6 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 				for(lastUsage in lastUsages) {
 					firstUsage.previousUsages.addFirst(lastUsage)
 					lastUsage.nextUsages.addFirst(firstUsage)
-				}
-			}
-		}
-	}
-
-	fun linkToStartFrom(variableUsages: HashMap<ValueDeclaration, MutableSet<VariableUsage>>) {
-		for((declaration, usages) in variableUsages) {
-			for(firstUsage in currentState.firstVariableUsages[declaration] ?: continue) {
-				for(usage in usages) {
-					usage.nextUsages.add(firstUsage)
-					firstUsage.previousUsages.add(usage)
 				}
 			}
 		}

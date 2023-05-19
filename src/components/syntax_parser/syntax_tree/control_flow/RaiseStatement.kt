@@ -8,8 +8,8 @@ import components.semantic_analysis.semantic_model.control_flow.RaiseStatement a
 
 class RaiseStatement(private val value: ValueElement, start: Position): Element(start, value.end) {
 
-	override fun concretize(scope: MutableScope): SemanticRaiseStatementModel {
-		return SemanticRaiseStatementModel(this, scope, value.concretize(scope))
+	override fun toSemanticModel(scope: MutableScope): SemanticRaiseStatementModel {
+		return SemanticRaiseStatementModel(this, scope, value.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

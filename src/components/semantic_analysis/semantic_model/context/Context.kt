@@ -4,8 +4,6 @@ import logger.Issue
 import logger.Logger
 import logger.Severity
 
-//TODO rename Linter to SemanticModelGenerator
-//TODO rename concretize to toSemanticModel
 //TODO rename Unit to SemanticModel
 //TODO rename Element to SyntaxTreeNode
 //TODO rename ValueElement to SyntaxTreeValueElement (same for TypeElement, etc.)

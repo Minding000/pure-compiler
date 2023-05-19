@@ -4,7 +4,7 @@ import components.semantic_analysis.semantic_model.scopes.BlockScope
 import logger.issues.constant_conditions.UnreachableStatement
 import components.syntax_parser.syntax_tree.general.StatementBlock as StatementBlockSyntaxTree
 
-class StatementBlock(override val source: StatementBlockSyntaxTree, public override val scope: BlockScope, val statements: List<Unit>):
+class StatementBlock(override val source: StatementBlockSyntaxTree, override val scope: BlockScope, val statements: List<Unit>):
 	Unit(source, scope) {
 	override var isInterruptingExecution = false
 

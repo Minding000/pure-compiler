@@ -14,9 +14,9 @@ class TypeAlias(start: Position, private val modifierList: ModifierList?, privat
 				private val type: TypeElement): Element(start, type.end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
 
-	override fun concretize(scope: MutableScope): SemanticTypeAliasModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticTypeAliasModel {
 		modifierList?.validate(context)
-		val type = type.concretize(scope)
+		val type = type.toSemanticModel(scope)
 		val typeScope = TypeScope(scope, null)
 		return SemanticTypeAliasModel(this, identifier.getValue(), type, typeScope)
 	}

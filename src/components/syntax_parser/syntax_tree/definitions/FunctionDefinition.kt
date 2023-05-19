@@ -19,18 +19,18 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 		val ALLOWED_MODIFIERS = listOf(WordAtom.ABSTRACT, WordAtom.MUTATING, WordAtom.NATIVE, WordAtom.OVERRIDING)
 	}
 
-	override fun concretize(scope: MutableScope): SemanticFunctionImplementationModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticFunctionImplementationModel {
 		parent.validate(ALLOWED_MODIFIERS)
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isMutating = parent.containsModifier(WordAtom.MUTATING)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val functionScope = BlockScope(scope)
-		val genericParameters = parameterList.concretizeGenerics(functionScope) ?: listOf()
-		val parameters = parameterList.concretizeParameters(functionScope)
-		val returnType = returnType?.concretize(functionScope)
+		val genericParameters = parameterList.getSemanticGenericParameterModels(functionScope) ?: listOf()
+		val parameters = parameterList.getSemanticParameterModels(functionScope)
+		val returnType = returnType?.toSemanticModel(functionScope)
 		return SemanticFunctionImplementationModel(this, functionScope, genericParameters, parameters,
-			body?.concretize(functionScope), returnType, isAbstract, isMutating, isNative, isOverriding)
+			body?.toSemanticModel(functionScope), returnType, isAbstract, isMutating, isNative, isOverriding)
 	}
 
 	fun getName(): String = identifier.getValue()

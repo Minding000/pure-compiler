@@ -10,7 +10,7 @@ import components.semantic_analysis.semantic_model.types.Type as SemanticTypeMod
 
 class UnionType(private val left: TypeElement, private val right: TypeElement, private val mode: Mode): TypeElement(left.start, right.end) {
 
-	override fun concretize(scope: MutableScope): SemanticTypeModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticTypeModel {
 		val types = LinkedList<SemanticTypeModel>()
 		addTypes(scope, types, this)
 		return if(mode == Mode.AND)
@@ -24,7 +24,7 @@ class UnionType(private val left: TypeElement, private val right: TypeElement, p
 			addTypes(scope, types, type.left)
 			addTypes(scope, types, type.right)
 		} else {
-			types.add(type.concretize(scope))
+			types.add(type.toSemanticModel(scope))
 		}
 	}
 

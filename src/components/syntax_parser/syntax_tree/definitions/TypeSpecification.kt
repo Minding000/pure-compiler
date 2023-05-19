@@ -8,8 +8,8 @@ import components.semantic_analysis.semantic_model.definitions.TypeSpecification
 
 class TypeSpecification(private val typeList: TypeList, private val identifier: Identifier): ValueElement(typeList.start, identifier.end) {
 
-	override fun concretize(scope: MutableScope): SemanticTypeSpecificationModel {
-		return SemanticTypeSpecificationModel(this, scope, typeList.concretizeTypes(scope), identifier.concretize(scope))
+	override fun toSemanticModel(scope: MutableScope): SemanticTypeSpecificationModel {
+		return SemanticTypeSpecificationModel(this, scope, typeList.toSemanticModels(scope), identifier.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

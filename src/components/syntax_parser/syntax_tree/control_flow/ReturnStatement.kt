@@ -8,8 +8,8 @@ import components.semantic_analysis.semantic_model.control_flow.ReturnStatement 
 
 class ReturnStatement(start: Position, private val value: ValueElement?, end: Position): Element(start, end) {
 
-	override fun concretize(scope: MutableScope): SemanticReturnStatementModel {
-		return SemanticReturnStatementModel(this, scope, value?.concretize(scope))
+	override fun toSemanticModel(scope: MutableScope): SemanticReturnStatementModel {
+		return SemanticReturnStatementModel(this, scope, value?.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

@@ -8,9 +8,9 @@ import components.semantic_analysis.semantic_model.types.ObjectType as SemanticO
 class ObjectType(private val enclosingType: ObjectType?, private val typeList: TypeList?, private val identifier: Identifier):
 	TypeElement(typeList?.start ?: identifier.start, identifier.end) {
 
-	override fun concretize(scope: MutableScope): SemanticObjectTypeModel {
-		val typeList = typeList?.concretizeTypes(scope) ?: listOf()
-		return SemanticObjectTypeModel(this, scope, enclosingType?.concretize(scope), typeList, identifier.getValue())
+	override fun toSemanticModel(scope: MutableScope): SemanticObjectTypeModel {
+		val typeList = typeList?.toSemanticModels(scope) ?: listOf()
+		return SemanticObjectTypeModel(this, scope, enclosingType?.toSemanticModel(scope), typeList, identifier.getValue())
 	}
 
 	override fun toString(): String {

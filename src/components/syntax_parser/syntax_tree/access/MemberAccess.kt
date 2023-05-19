@@ -8,8 +8,8 @@ import components.semantic_analysis.semantic_model.operations.MemberAccess as Se
 class MemberAccess(val target: ValueElement, val member: ValueElement, private val isOptional: Boolean):
 	ValueElement(target.start, member.end) {
 
-	override fun concretize(scope: MutableScope): SemanticMemberAccessModel {
-		return SemanticMemberAccessModel(this, scope, target.concretize(scope), member.concretize(scope), isOptional)
+	override fun toSemanticModel(scope: MutableScope): SemanticMemberAccessModel {
+		return SemanticMemberAccessModel(this, scope, target.toSemanticModel(scope), member.toSemanticModel(scope), isOptional)
 	}
 
 	override fun toString(): String {

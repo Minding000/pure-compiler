@@ -36,15 +36,15 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		val ALLOWED_ENUM_MODIFIERS = listOf(WordAtom.BOUND)
 	}
 
-	override fun concretize(scope: MutableScope): SemanticTypeDefinitionModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticTypeDefinitionModel {
 		val name = identifier.getValue()
 		val definitionType = type.type
-		var superType = superType?.concretize(scope)
+		var superType = superType?.toSemanticModel(scope)
 		if(!(definitionType == WordAtom.CLASS && SpecialType.isRootType(name)))
 			superType = superType ?: LiteralType(this, scope, SpecialType.ANY)
 		val typeScope = TypeScope(scope, superType?.interfaceScope)
-		val explicitParentType = explicitParentType?.concretize(scope)
-		val members = concretizeMembers(typeScope, definitionType).toMutableList()
+		val explicitParentType = explicitParentType?.toSemanticModel(scope)
+		val members = getSemanticMemberModels(typeScope, definitionType).toMutableList()
 		val isBound = parent?.containsModifier(WordAtom.BOUND) ?: false
 		val typeDefinition = when(definitionType) {
 			WordAtom.CLASS -> {
@@ -69,8 +69,8 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		return typeDefinition
 	}
 
-	private fun concretizeMembers(typeScope: TypeScope, definitionType: WordAtom): List<Unit> {
-		val explicitMembers = concretizeExplicitlyDeclaredMembers(typeScope, definitionType)
+	private fun getSemanticMemberModels(typeScope: TypeScope, definitionType: WordAtom): List<Unit> {
+		val explicitMembers = getSemanticModelsOfExplicitlyDeclaredMembers(typeScope, definitionType)
 		val members = LinkedList<Unit>()
 		val functions = HashMap<String, Function>()
 		val operators = HashMap<Operator.Kind, Operator>()
@@ -109,7 +109,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		return members
 	}
 
-	private fun concretizeExplicitlyDeclaredMembers(typeScope: TypeScope, definitionType: WordAtom): List<Unit> {
+	private fun getSemanticModelsOfExplicitlyDeclaredMembers(typeScope: TypeScope, definitionType: WordAtom): List<Unit> {
 		if(body == null)
 			return emptyList()
 		var instanceList: InstanceList? = null
@@ -131,7 +131,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 					continue
 				}
 			}
-			member.concretize(typeScope, members)
+			member.toSemanticModel(typeScope, members)
 		}
 		return members
 	}

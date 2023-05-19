@@ -12,15 +12,15 @@ import components.semantic_analysis.semantic_model.operations.Cast as SemanticCa
 class Cast(val value: ValueElement, val operator: String, val identifier: Identifier?, val type: TypeElement):
 	ValueElement(value.start, type.end) {
 
-	override fun concretize(scope: MutableScope): SemanticCastModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticCastModel {
 		val operator = SemanticCastModel.Operator.values().find { castType ->
 			castType.stringRepresentation == operator } ?: throw CompilerError(this, "Unknown cast operator '$operator'.")
 		val variableDeclaration = if(identifier == null)
 			null
 		else
 			LocalVariableDeclaration(identifier, scope)
-		return SemanticCastModel(this, scope, value.concretize(scope), variableDeclaration,
-			type.concretize(scope), operator)
+		return SemanticCastModel(this, scope, value.toSemanticModel(scope), variableDeclaration,
+			type.toSemanticModel(scope), operator)
 	}
 
 	override fun toString(): String {

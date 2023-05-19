@@ -9,8 +9,8 @@ import components.semantic_analysis.semantic_model.types.Type as SemanticTypeMod
 class QuantifiedType(private val baseType: TypeElement, private val hasDynamicQuantity: Boolean, private val isOptional: Boolean):
 	TypeElement(baseType.start, baseType.end) {
 
-	override fun concretize(scope: MutableScope): SemanticTypeModel {
-		var type = baseType.concretize(scope)
+	override fun toSemanticModel(scope: MutableScope): SemanticTypeModel {
+		var type = baseType.toSemanticModel(scope)
 		if(isOptional)
 			type = SemanticOptionalTypeModel(this, scope, type)
 		if(hasDynamicQuantity)

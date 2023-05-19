@@ -19,15 +19,15 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
         val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.MUTABLE, WordAtom.SPREAD)
     }
 
-    override fun concretize(scope: MutableScope): SemanticParameterModel {
+    override fun toSemanticModel(scope: MutableScope): SemanticParameterModel {
         modifierList?.validate(context, ALLOWED_MODIFIER_TYPES)
         val isMutable = modifierList?.containsModifier(WordAtom.MUTABLE) ?: false
         val hasDynamicSize = modifierList?.containsModifier(WordAtom.SPREAD) ?: false
-        return SemanticParameterModel(this, scope, identifier.getValue(), type?.concretize(scope), isMutable, hasDynamicSize)
+        return SemanticParameterModel(this, scope, identifier.getValue(), type?.toSemanticModel(scope), isMutable, hasDynamicSize)
     }
 
-	fun concretizeAsGenericParameter(scope: MutableScope): TypeDefinition {
-		val superType = type?.concretize(scope) ?: LiteralType(this, scope, SpecialType.ANY)
+	fun toSemanticGenericParameterModel(scope: MutableScope): TypeDefinition {
+		val superType = type?.toSemanticModel(scope) ?: LiteralType(this, scope, SpecialType.ANY)
 		val typeScope = TypeScope(scope, superType.interfaceScope)
 		return GenericTypeDefinition(this, identifier.getValue(), typeScope, superType)
 	}

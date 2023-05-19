@@ -5,14 +5,14 @@ import logger.issues.resolution.LiteralFileNotFound
 import components.semantic_analysis.semantic_model.general.Program as SemanticProgramModel
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
-class Linter(val context: Context) {
+class SemanticModelGenerator(val context: Context) {
 	private var activePhase = Phase.PENDING //TODO consider removing this property if it is not needed
 
 	fun lint(programSyntaxTree: ProgramSyntaxTree): SemanticProgramModel {
 		val logger = context.logger
-		logger.addPhase("Concretization")
-		activePhase = Phase.CONCRETIZATION
-		val semanticProgramModel = programSyntaxTree.concretize()
+		logger.addPhase("Semantic model creation")
+		activePhase = Phase.SEMANTIC_MODEL_CREATION
+		val semanticProgramModel = programSyntaxTree.toSemanticModel()
 		logger.addPhase("Literal scope resolution")
 		activePhase = Phase.LITERAL_SCOPE_RESOLUTION
 		for(literalType in SpecialType.values())
@@ -46,7 +46,7 @@ class Linter(val context: Context) {
 
 	enum class Phase {
 		PENDING,
-		CONCRETIZATION,					// Create semantic model from abstract syntax tree
+		SEMANTIC_MODEL_CREATION,					// Create semantic model from abstract syntax tree
 		LITERAL_SCOPE_RESOLUTION,		// Create references to literal type definitions
 		DECLARATION,					// Declare types and values in scopes (except for initializers)
 		FILE_REFERENCE_RESOLUTION,		// Resolves references between file by collecting the declared types and values

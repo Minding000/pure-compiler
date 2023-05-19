@@ -7,8 +7,8 @@ import components.semantic_analysis.semantic_model.operations.NullCheck as Seman
 
 class NullCheck(val identifier: Identifier): ValueElement(identifier.start, identifier.end) {
 
-	override fun concretize(scope: MutableScope): SemanticNullCheckModel {
-		return SemanticNullCheckModel(this, scope, identifier.concretize(scope))
+	override fun toSemanticModel(scope: MutableScope): SemanticNullCheckModel {
+		return SemanticNullCheckModel(this, scope, identifier.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

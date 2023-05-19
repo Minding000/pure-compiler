@@ -13,8 +13,8 @@ abstract class MetaElement(start: Position, end: Position): Element(start, end) 
 
 	constructor(word: Word): this(word.start, word.end)
 
-	override fun concretize(scope: MutableScope): Unit {
+	override fun toSemanticModel(scope: MutableScope): Unit {
 		throw CompilerError(this,
-			"Tried to concretize meta element '${javaClass.canonicalName}' at ${getStartString()}:\n$this")
+			"Tried to create semantic model of meta element '${javaClass.canonicalName}' at ${getStartString()}:\n$this")
 	}
 }

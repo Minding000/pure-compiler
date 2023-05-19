@@ -15,11 +15,11 @@ class LocalVariableDeclaration(private val identifier: Identifier, private val t
 		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.IMMUTABLE)
 	}
 
-	override fun concretize(scope: MutableScope): SemanticLocalVariableDeclarationModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticLocalVariableDeclarationModel {
 		parent.validate(ALLOWED_MODIFIER_TYPES)
 		val isMutable = !parent.containsModifier(WordAtom.IMMUTABLE)
-		val type = (type ?: parent.type)?.concretize(scope)
-		val value = (value ?: parent.value)?.concretize(scope)
+		val type = (type ?: parent.type)?.toSemanticModel(scope)
+		val value = (value ?: parent.value)?.toSemanticModel(scope)
 		return SemanticLocalVariableDeclarationModel(this, scope, identifier.getValue(), type, value, parent.isConstant, isMutable)
 	}
 

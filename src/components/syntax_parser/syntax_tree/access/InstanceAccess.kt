@@ -8,7 +8,7 @@ import components.semantic_analysis.semantic_model.operations.InstanceAccess as 
 
 class InstanceAccess(start: Position, val identifier: Identifier): ValueElement(start, identifier.end) {
 
-	override fun concretize(scope: MutableScope): SemanticInstanceAccessModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticInstanceAccessModel {
 		return SemanticInstanceAccessModel(this, scope, identifier.getValue())
 	}
 

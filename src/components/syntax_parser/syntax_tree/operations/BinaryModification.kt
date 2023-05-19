@@ -10,8 +10,8 @@ import components.semantic_analysis.semantic_model.operations.BinaryModification
 class BinaryModification(val target: ValueElement, val modifier: ValueElement, val operator: Operator):
 	Element(target.start, modifier.end) {
 
-	override fun concretize(scope: MutableScope): SemanticBinaryModificationModel {
-		return SemanticBinaryModificationModel(this, scope, target.concretize(scope), modifier.concretize(scope),
+	override fun toSemanticModel(scope: MutableScope): SemanticBinaryModificationModel {
+		return SemanticBinaryModificationModel(this, scope, target.toSemanticModel(scope), modifier.toSemanticModel(scope),
 			operator.getKind())
 	}
 
