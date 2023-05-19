@@ -9,7 +9,7 @@ import source_structure.Position
 /**
  * Doesn't impact semantic model directly
  */
-abstract class MetaElement(start: Position, end: Position): Element(start, end) {
+abstract class MetaSyntaxTreeNode(start: Position, end: Position): SyntaxTreeNode(start, end) {
 
 	constructor(word: Word): this(word.start, word.end)
 

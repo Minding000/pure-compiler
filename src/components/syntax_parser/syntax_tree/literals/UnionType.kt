@@ -1,14 +1,14 @@
 package components.syntax_parser.syntax_tree.literals
 
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.syntax_parser.syntax_tree.general.TypeElement
+import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import errors.internal.CompilerError
 import java.util.*
 import components.semantic_analysis.semantic_model.types.AndUnionType as SemanticAndUnionTypeModel
 import components.semantic_analysis.semantic_model.types.OrUnionType as SemanticOrUnionTypeModel
 import components.semantic_analysis.semantic_model.types.Type as SemanticTypeModel
 
-class UnionType(private val left: TypeElement, private val right: TypeElement, private val mode: Mode): TypeElement(left.start, right.end) {
+class UnionType(private val left: TypeSyntaxTreeNode, private val right: TypeSyntaxTreeNode, private val mode: Mode): TypeSyntaxTreeNode(left.start, right.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticTypeModel {
 		val types = LinkedList<SemanticTypeModel>()
@@ -19,7 +19,7 @@ class UnionType(private val left: TypeElement, private val right: TypeElement, p
 			SemanticOrUnionTypeModel(this, scope, types)
 	}
 
-	private fun addTypes(scope: MutableScope, types: LinkedList<SemanticTypeModel>, type: TypeElement) {
+	private fun addTypes(scope: MutableScope, types: LinkedList<SemanticTypeModel>, type: TypeSyntaxTreeNode) {
 		if(type is UnionType && type.mode == mode) {
 			addTypes(scope, types, type.left)
 			addTypes(scope, types, type.right)

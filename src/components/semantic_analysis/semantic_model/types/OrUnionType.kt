@@ -5,10 +5,10 @@ import components.semantic_analysis.semantic_model.definitions.InitializerDefini
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
 
-class OrUnionType(override val source: Element, scope: Scope, val types: List<Type>): Type(source, scope) {
+class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: List<Type>): Type(source, scope) {
 
 	init {
 		addSemanticModels(types)

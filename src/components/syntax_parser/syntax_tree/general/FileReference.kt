@@ -10,7 +10,7 @@ import java.util.*
 import components.semantic_analysis.semantic_model.general.FileReference as SemanticFileReferenceModel
 
 class FileReference(start: Position, private val parts: List<Identifier>, private val body: AliasBlock?):
-	Element(start, body?.end ?: parts.last().end) {
+	SyntaxTreeNode(start, body?.end ?: parts.last().end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticFileReferenceModel {
 		val parts = LinkedList<String>()

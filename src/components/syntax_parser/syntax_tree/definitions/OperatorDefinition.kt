@@ -4,17 +4,17 @@ import components.semantic_analysis.semantic_model.definitions.FunctionImplement
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.OperatorSection
-import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.general.StatementSection
-import components.syntax_parser.syntax_tree.general.TypeElement
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.tokenizer.WordAtom
 import logger.issues.definition.GenericOperator
 import logger.issues.definition.TypeParametersOutsideOfIndexParameterList
 import components.semantic_analysis.semantic_model.values.Operator.Kind as OperatorKind
 
 class OperatorDefinition(private val operator: Operator, private val parameterList: ParameterList?, private val body: StatementSection?,
-						 private var returnType: TypeElement?):
-	Element(operator.start, body?.end ?: returnType?.end ?: parameterList?.end ?: operator.end) {
+						 private var returnType: TypeSyntaxTreeNode?):
+	SyntaxTreeNode(operator.start, body?.end ?: returnType?.end ?: parameterList?.end ?: operator.end) {
 	lateinit var parent: OperatorSection
 
 	companion object {

@@ -3,10 +3,10 @@ package components.semantic_analysis.semantic_model.types
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.resolution.LiteralTypeNotFound
 
-class LiteralType(override val source: Element, scope: Scope, val literalType: SpecialType):
+class LiteralType(override val source: SyntaxTreeNode, scope: Scope, val literalType: SpecialType):
 	ObjectType(source, scope, literalType.className) {
 
 	override fun resolveDefinitions() {

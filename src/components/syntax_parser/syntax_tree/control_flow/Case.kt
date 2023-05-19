@@ -1,12 +1,12 @@
 package components.syntax_parser.syntax_tree.control_flow
 
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.syntax_parser.syntax_tree.general.Element
-import components.syntax_parser.syntax_tree.general.ValueElement
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import util.indent
 import components.semantic_analysis.semantic_model.control_flow.Case as SemanticCaseModel
 
-class Case(private val condition: ValueElement, private val result: Element): Element(condition.start, result.end) {
+class Case(private val condition: ValueSyntaxTreeNode, private val result: SyntaxTreeNode): SyntaxTreeNode(condition.start, result.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticCaseModel {
 		return SemanticCaseModel(this, scope, condition.toSemanticModel(scope), result.toSemanticModel(scope))

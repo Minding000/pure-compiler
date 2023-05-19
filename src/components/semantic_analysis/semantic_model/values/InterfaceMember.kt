@@ -4,11 +4,11 @@ import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.Type
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 
-abstract class InterfaceMember(source: Element, scope: MutableScope, name: String, type: Type? = null, value: Value? = null,
+abstract class InterfaceMember(source: SyntaxTreeNode, scope: MutableScope, name: String, type: Type? = null, value: Value? = null,
 							   val isStatic: Boolean = false, override val isAbstract: Boolean = false, isConstant: Boolean = true,
 							   isMutable: Boolean = false, val isOverriding: Boolean = false, isSpecificCopy: Boolean = false):
 	ValueDeclaration(source, scope, name, type, value, isConstant, isMutable, isSpecificCopy), MemberDeclaration {

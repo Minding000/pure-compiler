@@ -1,11 +1,11 @@
 package logger.issues.initialization
 
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.Issue
 import logger.Severity
 
-class UninitializedProperties(source: Element, propertiesToBeInitialized: List<PropertyDeclaration>): Issue(Severity.ERROR, source) {
+class UninitializedProperties(source: SyntaxTreeNode, propertiesToBeInitialized: List<PropertyDeclaration>): Issue(Severity.ERROR, source) {
 	override val text = "The following properties have not been initialized by this initializer:" +
 		propertiesToBeInitialized.joinToString("") { "\n - ${it.memberIdentifier}" }
 	override val description = "Initializers have to initialize all properties."

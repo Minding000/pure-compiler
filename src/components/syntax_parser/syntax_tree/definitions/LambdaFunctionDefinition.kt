@@ -3,14 +3,14 @@ package components.syntax_parser.syntax_tree.definitions
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.StatementSection
-import components.syntax_parser.syntax_tree.general.TypeElement
-import components.syntax_parser.syntax_tree.general.ValueElement
+import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
+import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import source_structure.Position
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation as SemanticFunctionImplementationModel
 import components.semantic_analysis.semantic_model.values.Function as SemanticFunctionModel
 
 class LambdaFunctionDefinition(start: Position, private val parameterList: ParameterList?, private val body: StatementSection,
-							   private val returnType: TypeElement?): ValueElement(start, body.end) {
+							   private val returnType: TypeSyntaxTreeNode?): ValueSyntaxTreeNode(start, body.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticFunctionModel {
 		val functionScope = BlockScope(scope)

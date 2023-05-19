@@ -3,16 +3,16 @@ package components.syntax_parser.syntax_tree.definitions
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.FunctionSection
-import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.general.StatementSection
-import components.syntax_parser.syntax_tree.general.TypeElement
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import components.tokenizer.WordAtom
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation as SemanticFunctionImplementationModel
 
 class FunctionDefinition(private val identifier: Identifier, private val parameterList: ParameterList,
-						 private val body: StatementSection?, private var returnType: TypeElement?):
-	Element(identifier.start, body?.end ?: returnType?.end ?: parameterList.end) {
+						 private val body: StatementSection?, private var returnType: TypeSyntaxTreeNode?):
+	SyntaxTreeNode(identifier.start, body?.end ?: returnType?.end ?: parameterList.end) {
 	lateinit var parent: FunctionSection
 
 	companion object {

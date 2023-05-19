@@ -5,10 +5,10 @@ import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
 
-abstract class SemanticModel(open val source: Element, open val scope: Scope) {
+abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Scope) {
 	val context: Context
 		get() = source.context
 	open var parent: SemanticModel? = null

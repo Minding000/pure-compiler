@@ -2,7 +2,7 @@ package code
 
 import components.compiler.targets.llvm.LLVMIRCompiler
 import components.semantic_analysis.semantic_model.context.SemanticModelGenerator
-import components.syntax_parser.element_generator.ElementGenerator
+import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import errors.internal.CompilerError
 import errors.user.UserError
 import source_structure.Module
@@ -25,7 +25,7 @@ object Builder {
 				println("----- Source code: -----")
 				println(project)
 			}
-			val program = ElementGenerator(project).parseProgram()
+			val program = SyntaxTreeGenerator(project).parseProgram()
 			if(PRINT_AST) {
 				println("----- Abstract syntax tree: -----")
 				println(program)

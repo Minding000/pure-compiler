@@ -12,8 +12,8 @@ import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.Operator
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSection
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSectionChild
-import components.syntax_parser.syntax_tree.general.Element
-import components.syntax_parser.syntax_tree.general.TypeElement
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import components.syntax_parser.syntax_tree.literals.ObjectType
 import components.tokenizer.Word
@@ -26,8 +26,8 @@ import java.util.*
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition as SemanticTypeDefinitionModel
 
 class TypeDefinition(private val identifier: Identifier, private val type: Word, private val explicitParentType: ObjectType?,
-					 private val superType: TypeElement?, private val body: TypeBody?):
-	Element(type.start, (body ?: superType ?: type).end), ModifierSectionChild {
+					 private val superType: TypeSyntaxTreeNode?, private val body: TypeBody?):
+	SyntaxTreeNode(type.start, (body ?: superType ?: type).end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
 
 	companion object {

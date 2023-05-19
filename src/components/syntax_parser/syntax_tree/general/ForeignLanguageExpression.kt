@@ -6,7 +6,7 @@ import components.syntax_parser.syntax_tree.literals.Identifier
 import components.semantic_analysis.semantic_model.general.ForeignLanguageExpression as SemanticForeignLanguageExpressionModel
 
 class ForeignLanguageExpression(private val foreignParser: Identifier, private val content: ForeignLanguageLiteral):
-	ValueElement(foreignParser.start, content.end) {
+	ValueSyntaxTreeNode(foreignParser.start, content.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticForeignLanguageExpressionModel {
 		return SemanticForeignLanguageExpressionModel(this, scope, foreignParser.toSemanticModel(scope), content.getValue())

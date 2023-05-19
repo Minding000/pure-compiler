@@ -5,14 +5,14 @@ import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.Modifier
 import components.syntax_parser.syntax_tree.definitions.ModifierList
 import components.syntax_parser.syntax_tree.definitions.ModifierSpecification
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.tokenizer.WordAtom
 import errors.internal.CompilerError
 import source_structure.Position
 import util.indent
 import util.toLines
 
-class ModifierSection(private val modifierList: ModifierList, private val sections: List<Element>,
+class ModifierSection(private val modifierList: ModifierList, private val sections: List<SyntaxTreeNode>,
 					  end: Position): DeclarationSection(modifierList.start, end), ModifierSpecification {
 
 	init {

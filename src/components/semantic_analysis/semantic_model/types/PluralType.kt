@@ -2,9 +2,9 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
-class PluralType(override val source: Element, scope: Scope, val baseType: Type): Type(source, scope) {
+class PluralType(override val source: SyntaxTreeNode, scope: Scope, val baseType: Type): Type(source, scope) {
 
 	init {
 		addSemanticModels(baseType)

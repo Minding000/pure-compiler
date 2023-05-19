@@ -4,10 +4,10 @@ import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.Type
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 
-class LocalVariableDeclaration(source: Element, scope: MutableScope, name: String, type: Type? = null, value: Value? = null,
+class LocalVariableDeclaration(source: SyntaxTreeNode, scope: MutableScope, name: String, type: Type? = null, value: Value? = null,
 							   isConstant: Boolean = true, isMutable: Boolean = false, isSpecificCopy: Boolean = false):
 	ValueDeclaration(source, scope, name, type, value, isConstant, isMutable, isSpecificCopy) {
 

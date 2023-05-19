@@ -5,11 +5,11 @@ import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.resolution.MissingType
 
-abstract class Value(override val source: Element, override var scope: Scope, var type: Type? = null): SemanticModel(source, scope) {
+abstract class Value(override val source: SyntaxTreeNode, override var scope: Scope, var type: Type? = null): SemanticModel(source, scope) {
 	open var staticValue: Value? = null
 	protected var positiveState: VariableTracker.VariableState? = null
 	protected var negativeState: VariableTracker.VariableState? = null

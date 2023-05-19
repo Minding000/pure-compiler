@@ -5,12 +5,12 @@ import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.Value
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
 import logger.issues.modifiers.VariablePropertyOverriddenByValue
 
-open class PropertyDeclaration(source: Element, scope: MutableScope, name: String, type: Type? = null, value: Value? = null,
+open class PropertyDeclaration(source: SyntaxTreeNode, scope: MutableScope, name: String, type: Type? = null, value: Value? = null,
 							   isStatic: Boolean = false, isAbstract: Boolean = false, isConstant: Boolean = true,
 							   isMutable: Boolean = false, isOverriding: Boolean = false, isSpecificCopy: Boolean = false):
 	InterfaceMember(source, scope, name, type, value, isStatic, isAbstract, isConstant, isMutable, isOverriding, isSpecificCopy) {

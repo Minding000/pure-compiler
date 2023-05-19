@@ -3,7 +3,7 @@ package components.syntax_parser.element_generator
 import components.syntax_parser.syntax_tree.definitions.FunctionType
 import components.syntax_parser.syntax_tree.definitions.ParameterTypeList
 import components.syntax_parser.syntax_tree.definitions.TypeParameter
-import components.syntax_parser.syntax_tree.general.TypeElement
+import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.*
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
@@ -12,22 +12,22 @@ import components.tokenizer.WordType
 import source_structure.Position
 import java.util.*
 
-class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
+class TypeParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Generator() {
 	override val currentWord: Word?
-		get() = elementGenerator.currentWord
+		get() = syntaxTreeGenerator.currentWord
 	override val nextWord: Word?
-		get() = elementGenerator.nextWord
+		get() = syntaxTreeGenerator.nextWord
 	override var parseForeignLanguageLiteralNext: Boolean
-		get() = elementGenerator.parseForeignLanguageLiteralNext
-		set(value) { elementGenerator.parseForeignLanguageLiteralNext = value }
+		get() = syntaxTreeGenerator.parseForeignLanguageLiteralNext
+		set(value) { syntaxTreeGenerator.parseForeignLanguageLiteralNext = value }
 
 	private val literalParser
-		get() = elementGenerator.literalParser
+		get() = syntaxTreeGenerator.literalParser
 
-	override fun getCurrentPosition(): Position = elementGenerator.getCurrentPosition()
+	override fun getCurrentPosition(): Position = syntaxTreeGenerator.getCurrentPosition()
 
 	override fun consume(type: WordDescriptor): Word {
-		return elementGenerator.consume(type)
+		return syntaxTreeGenerator.consume(type)
 	}
 
 	private fun parseIdentifier(): Identifier {
@@ -38,7 +38,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 * Type:
 	 *   [...]<UnionType>[?]
 	 */
-	fun parseType(optionalAllowed: Boolean = true): TypeElement {
+	fun parseType(optionalAllowed: Boolean = true): TypeSyntaxTreeNode {
 		var hasDynamicQuantity = false
 		if(currentWord?.type == WordAtom.SPREAD) {
 			consume(WordAtom.SPREAD)
@@ -61,7 +61,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 *   <ObjectType> & <ObjectType>
 	 *   <ObjectType> | <ObjectType>
 	 */
-	fun parseUnionType(): TypeElement {
+	fun parseUnionType(): TypeSyntaxTreeNode {
 		var element = parseTypeAtom()
 		while(WordType.UNION_OPERATOR.includes(currentWord?.type)) {
 			val operator = consume(WordType.UNION_OPERATOR)
@@ -75,7 +75,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 *   <ObjectType>
 	 *   <FunctionType>
 	 */
-	private fun parseTypeAtom(): TypeElement {
+	private fun parseTypeAtom(): TypeSyntaxTreeNode {
 		if(currentWord?.type == WordAtom.OPENING_PARENTHESIS || WordType.LAMBDA_FUNCTION.includes(currentWord?.type))
 			return parseFunctionType()
 		return parseObjectType()
@@ -112,7 +112,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 			parseLambdaParameterList()
 		val lambdaType = consume(WordType.LAMBDA_FUNCTION)
 		val start = parameterList?.start ?: lambdaType.start
-		var returnType: TypeElement? = null
+		var returnType: TypeSyntaxTreeNode? = null
 		val end = if(lambdaType.type == WordAtom.CAPPED_ARROW) {
 			lambdaType.end
 		} else {
@@ -128,7 +128,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 */
 	private fun parseLambdaParameterList(): ParameterTypeList {
 		val start = consume(WordAtom.OPENING_PARENTHESIS).start
-		val types = LinkedList<TypeElement>()
+		val types = LinkedList<TypeSyntaxTreeNode>()
 		types.add(parseType())
 		while(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
@@ -143,7 +143,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 *   <<TypeParameter>[, <TypeParameter>]...>
 	 */
 	fun parseTypeList(): TypeList {
-		val types = LinkedList<TypeElement>()
+		val types = LinkedList<TypeSyntaxTreeNode>()
 		val start = consume(WordType.GENERICS_START).start
 		types.add(parseTypeParameter())
 		while(currentWord?.type == WordAtom.COMMA) {
@@ -168,7 +168,7 @@ class TypeParser(private val elementGenerator: ElementGenerator): Generator() {
 	 * TypeParameter:
 	 *   <Type>[ <generics-modifier>]
 	 */
-	private fun parseTypeParameter(): TypeElement {
+	private fun parseTypeParameter(): TypeSyntaxTreeNode {
 		val type = parseType()
 		if(WordType.GENERICS_MODIFIER.includes(currentWord?.type)) {
 			val genericsModifier = consume(WordType.GENERICS_MODIFIER)

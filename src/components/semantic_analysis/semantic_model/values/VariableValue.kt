@@ -6,14 +6,14 @@ import components.semantic_analysis.semantic_model.definitions.PropertyDeclarati
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.StaticType
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import logger.issues.access.InstanceAccessFromStaticContext
 import logger.issues.access.StaticAccessFromInstanceContext
 import logger.issues.initialization.NotInitialized
 import logger.issues.resolution.NotFound
 
-open class VariableValue(override val source: Element, scope: Scope, val name: String): Value(source, scope) {
+open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val name: String): Value(source, scope) {
 	var definition: ValueDeclaration? = null
 
 	constructor(source: Identifier, scope: Scope): this(source, scope, source.getValue())

@@ -4,14 +4,14 @@ import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSection
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSectionChild
-import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.general.StatementSection
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.tokenizer.WordAtom
 import source_structure.Position
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition as SemanticInitializerDefinitionModel
 
 class InitializerDefinition(start: Position, private val parameterList: ParameterList?, private val body: StatementSection?, end: Position):
-	Element(start, end), ModifierSectionChild {
+	SyntaxTreeNode(start, end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
 
 	companion object {

@@ -4,9 +4,9 @@ import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
-class OptionalType(override val source: Element, scope: Scope, val baseType: Type): Type(source, scope) {
+class OptionalType(override val source: SyntaxTreeNode, scope: Scope, val baseType: Type): Type(source, scope) {
 
 	init {
 		addSemanticModels(baseType)

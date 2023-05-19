@@ -1,12 +1,12 @@
 package components.syntax_parser.syntax_tree.literals
 
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.syntax_parser.syntax_tree.general.TypeElement
+import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import util.indent
 import components.semantic_analysis.semantic_model.types.ObjectType as SemanticObjectTypeModel
 
 class ObjectType(private val enclosingType: ObjectType?, private val typeList: TypeList?, private val identifier: Identifier):
-	TypeElement(typeList?.start ?: identifier.start, identifier.end) {
+	TypeSyntaxTreeNode(typeList?.start ?: identifier.start, identifier.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticObjectTypeModel {
 		val typeList = typeList?.toSemanticModels(scope) ?: listOf()

@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.control_flow
 
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.syntax_parser.syntax_tree.general.Element
-import components.syntax_parser.syntax_tree.general.ValueElement
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import source_structure.Position
 import util.indent
 import util.toLines
@@ -10,8 +10,8 @@ import java.util.*
 import components.semantic_analysis.semantic_model.control_flow.Case as SemanticCaseModel
 import components.semantic_analysis.semantic_model.control_flow.SwitchStatement as SemanticSwitchStatementModel
 
-class SwitchStatement(private val subject: ValueElement, private val cases: LinkedList<Case>, private val elseBranch: Element?,
-					  start: Position, end: Position): Element(start, end) {
+class SwitchStatement(private val subject: ValueSyntaxTreeNode, private val cases: LinkedList<Case>, private val elseBranch: SyntaxTreeNode?,
+					  start: Position, end: Position): SyntaxTreeNode(start, end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticSwitchStatementModel {
 		val cases = LinkedList<SemanticCaseModel>()

@@ -6,11 +6,11 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.LiteralType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import util.isRepresentedAsAnInteger
 import java.math.BigDecimal
 
-class NumberLiteral(override val source: Element, scope: Scope, val value: BigDecimal): LiteralValue(source, scope) {
+class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value: BigDecimal): LiteralValue(source, scope) {
 	var isInteger = value.isRepresentedAsAnInteger()
 
 	constructor(parent: SemanticModel, value: BigDecimal): this(parent.source, parent.scope, value) {

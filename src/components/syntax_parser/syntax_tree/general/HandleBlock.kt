@@ -6,8 +6,8 @@ import components.syntax_parser.syntax_tree.literals.Identifier
 import source_structure.Position
 import components.semantic_analysis.semantic_model.general.HandleBlock as SemanticHandleBlockModel
 
-class HandleBlock(start: Position, private val type: TypeElement, private val identifier: Identifier?, private val block: StatementBlock):
-	Element(start, block.end) {
+class HandleBlock(start: Position, private val type: TypeSyntaxTreeNode, private val identifier: Identifier?, private val block: StatementBlock):
+	SyntaxTreeNode(start, block.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticHandleBlockModel {
 		val statementBlock = block.toSemanticModel(scope)

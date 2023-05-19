@@ -1,12 +1,12 @@
 package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.syntax_parser.syntax_tree.general.TypeElement
+import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
 import components.semantic_analysis.semantic_model.types.TypeParameter as SemanticTypeParameterModel
 
-class TypeParameter(val type: TypeElement, val modifier: Word): TypeElement(type.start, modifier.end) {
+class TypeParameter(val type: TypeSyntaxTreeNode, val modifier: Word): TypeSyntaxTreeNode(type.start, modifier.end) {
 
     override fun toSemanticModel(scope: MutableScope): SemanticTypeParameterModel {
         val mode = if(modifier.type == WordAtom.CONSUMING)

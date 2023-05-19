@@ -4,9 +4,9 @@ import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.LiteralType
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
-class BooleanLiteral(override val source: Element, scope: Scope, val value: Boolean): LiteralValue(source, scope) {
+class BooleanLiteral(override val source: SyntaxTreeNode, scope: Scope, val value: Boolean): LiteralValue(source, scope) {
 
 	constructor(parent: SemanticModel, value: Boolean): this(parent.source, parent.scope, value) {
 		(type as? LiteralType)?.determineTypes()

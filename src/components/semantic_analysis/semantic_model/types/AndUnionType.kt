@@ -7,10 +7,10 @@ import components.semantic_analysis.semantic_model.definitions.PropertyDeclarati
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
 
-class AndUnionType(override val source: Element, scope: Scope, val types: List<Type>): Type(source, scope) {
+class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: List<Type>): Type(source, scope) {
 
 	init {
 		addSemanticModels(types)

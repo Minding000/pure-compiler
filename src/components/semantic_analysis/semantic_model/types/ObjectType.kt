@@ -4,16 +4,16 @@ import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.definition.TypeParameterCountMismatch
 import logger.issues.definition.TypeParameterNotAssignable
 import logger.issues.resolution.NotFound
 
-open class ObjectType(override val source: Element, scope: Scope, val enclosingType: ObjectType?, val typeParameters: List<Type>,
+open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enclosingType: ObjectType?, val typeParameters: List<Type>,
 					  val name: String, var definition: TypeDefinition? = null): Type(source, scope) {
 	private var isInSpecificContext = true
 
-	constructor(source: Element, surroundingScope: Scope, name: String): this(source, surroundingScope, null, listOf(), name)
+	constructor(source: SyntaxTreeNode, surroundingScope: Scope, name: String): this(source, surroundingScope, null, listOf(), name)
 
 	constructor(definition: TypeDefinition):
 		this(definition.source, definition.scope, null, listOf(), definition.name, definition)

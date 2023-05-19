@@ -1,11 +1,11 @@
 package components.syntax_parser.syntax_tree.definitions.sections
 
 import components.syntax_parser.syntax_tree.definitions.Modifier
-import components.syntax_parser.syntax_tree.general.MetaElement
+import components.syntax_parser.syntax_tree.general.MetaSyntaxTreeNode
 import components.tokenizer.WordAtom
 import source_structure.Position
 
-abstract class DeclarationSection(start: Position, end: Position): MetaElement(start, end) {
+abstract class DeclarationSection(start: Position, end: Position): MetaSyntaxTreeNode(start, end) {
 	open var parent: ModifierSection? = null
 
 	open fun validate(allowedModifiers: List<WordAtom>) {

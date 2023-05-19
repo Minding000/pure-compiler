@@ -9,7 +9,7 @@ import source_structure.Section
 /**
  * Impacts semantic model directly and doesn't return
  */
-abstract class Element(start: Position, end: Position): Section(start, end) {
+abstract class SyntaxTreeNode(start: Position, end: Position): Section(start, end) {
 	val context = start.line.file.module.project.context
 
 	constructor(word: Word): this(word.start, word.end)

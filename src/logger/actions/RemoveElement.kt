@@ -1,6 +1,6 @@
 package logger.actions
 
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.Action
 
-class RemoveElement(element: Element): Action()
+class RemoveElement(syntaxTreeNode: SyntaxTreeNode): Action()

@@ -8,9 +8,9 @@ import util.toLines
 import util.toSemanticModels
 import components.semantic_analysis.semantic_model.general.StatementBlock as SemanticStatementBlockModel
 
-class StatementBlock(start: Position, end: Position, private val statements: List<Element>): Element(start, end) {
+class StatementBlock(start: Position, end: Position, private val statements: List<SyntaxTreeNode>): SyntaxTreeNode(start, end) {
 
-	constructor(statement: Element): this(statement.start, statement.end, listOf(statement))
+	constructor(statement: SyntaxTreeNode): this(statement.start, statement.end, listOf(statement))
 
 	override fun toSemanticModel(scope: MutableScope): SemanticStatementBlockModel {
 		val blockScope = BlockScope(scope)

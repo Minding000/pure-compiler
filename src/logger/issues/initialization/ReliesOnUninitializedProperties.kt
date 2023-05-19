@@ -1,11 +1,11 @@
 package logger.issues.initialization
 
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.Issue
 import logger.Severity
 
-class ReliesOnUninitializedProperties(source: Element, signature: String, requiredButUninitializedProperties: List<PropertyDeclaration>):
+class ReliesOnUninitializedProperties(source: SyntaxTreeNode, signature: String, requiredButUninitializedProperties: List<PropertyDeclaration>):
 	Issue(Severity.ERROR, source) {
 	override val text = "The callable '$signature' relies on the following uninitialized properties:" +
 		requiredButUninitializedProperties.joinToString("") { "\n - ${it.memberIdentifier}" }

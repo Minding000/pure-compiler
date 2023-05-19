@@ -8,14 +8,14 @@ import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.Operator
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.constant_conditions.FunctionCompletesDespiteNever
 import logger.issues.constant_conditions.FunctionCompletesWithoutReturning
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 import java.util.*
 
-class FunctionImplementation(override val source: Element, override val scope: BlockScope, genericParameters: List<TypeDefinition>,
+class FunctionImplementation(override val source: SyntaxTreeNode, override val scope: BlockScope, genericParameters: List<TypeDefinition>,
 							 val parameters: List<Parameter>, val body: ErrorHandlingContext?, returnType: Type?,
 							 override val isAbstract: Boolean = false, val isMutating: Boolean = false, val isNative: Boolean = false,
 							 val isOverriding: Boolean = false): SemanticModel(source, scope), MemberDeclaration, Callable {

@@ -2,12 +2,12 @@ package components.syntax_parser.syntax_tree.operations
 
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.Operator
-import components.syntax_parser.syntax_tree.general.ValueElement
+import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import util.indent
 import components.semantic_analysis.semantic_model.operations.BinaryOperator as SemanticBinaryOperatorModel
 
-class BinaryOperator(private val left: ValueElement, private val right: ValueElement, private val operator: Operator):
-	ValueElement(left.start, right.end) {
+class BinaryOperator(private val left: ValueSyntaxTreeNode, private val right: ValueSyntaxTreeNode, private val operator: Operator):
+	ValueSyntaxTreeNode(left.start, right.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticBinaryOperatorModel {
 		return SemanticBinaryOperatorModel(this, scope, left.toSemanticModel(scope), right.toSemanticModel(scope),

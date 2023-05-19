@@ -1,14 +1,14 @@
 package components.syntax_parser.syntax_tree.control_flow
 
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.syntax_parser.syntax_tree.general.Element
-import components.syntax_parser.syntax_tree.general.ValueElement
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import source_structure.Position
 import util.indent
 import components.semantic_analysis.semantic_model.control_flow.IfStatement as SemanticIfStatementModel
 
-class IfStatement(private val condition: ValueElement, private val positiveBranch: Element,
-				  private val negativeBranch: Element?, start: Position, end: Position): Element(start, end) {
+class IfStatement(private val condition: ValueSyntaxTreeNode, private val positiveBranch: SyntaxTreeNode,
+				  private val negativeBranch: SyntaxTreeNode?, start: Position, end: Position): SyntaxTreeNode(start, end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticIfStatementModel {
 		return SemanticIfStatementModel(this, scope, condition.toSemanticModel(scope),

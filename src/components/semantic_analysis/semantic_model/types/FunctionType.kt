@@ -5,12 +5,12 @@ import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Value
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.LiteralTypeNotFound
 import java.util.*
 
-class FunctionType(override val source: Element, scope: Scope): ObjectType(source, scope, SpecialType.FUNCTION.className) {
+class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectType(source, scope, SpecialType.FUNCTION.className) {
 	private val signatures = LinkedList<FunctionSignature>()
 	var superFunctionType: FunctionType? = null
 		set(value) {
@@ -27,7 +27,7 @@ class FunctionType(override val source: Element, scope: Scope): ObjectType(sourc
 			}
 		}
 
-	constructor(source: Element, scope: Scope, signature: FunctionSignature): this(source, scope) {
+	constructor(source: SyntaxTreeNode, scope: Scope, signature: FunctionSignature): this(source, scope) {
 		addSignature(signature)
 	}
 

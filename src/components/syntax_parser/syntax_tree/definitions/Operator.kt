@@ -1,12 +1,12 @@
 package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.semantic_model.values.Operator
-import components.syntax_parser.syntax_tree.general.MetaElement
+import components.syntax_parser.syntax_tree.general.MetaSyntaxTreeNode
 import components.tokenizer.Word
 import errors.internal.CompilerError
 import source_structure.Position
 
-open class Operator(start: Position, end: Position): MetaElement(start, end) {
+open class Operator(start: Position, end: Position): MetaSyntaxTreeNode(start, end) {
 
 	constructor(word: Word): this(word.start, word.end)
 

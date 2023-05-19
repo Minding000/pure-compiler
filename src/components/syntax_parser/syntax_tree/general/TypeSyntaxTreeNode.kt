@@ -7,7 +7,7 @@ import source_structure.Position
 /**
  * Impacts semantic model directly and returns a type
  */
-abstract class TypeElement(start: Position, end: Position): Element(start, end) {
+abstract class TypeSyntaxTreeNode(start: Position, end: Position): SyntaxTreeNode(start, end) {
 
 	abstract override fun toSemanticModel(scope: MutableScope): Type
 }

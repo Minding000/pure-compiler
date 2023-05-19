@@ -6,19 +6,19 @@ import components.tokenizer.WordAtom
 import components.tokenizer.WordDescriptor
 import source_structure.Position
 
-class LiteralParser(private val elementGenerator: ElementGenerator): Generator() {
+class LiteralParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Generator() {
 	override val currentWord: Word?
-		get() = elementGenerator.currentWord
+		get() = syntaxTreeGenerator.currentWord
 	override val nextWord: Word?
-		get() = elementGenerator.nextWord
+		get() = syntaxTreeGenerator.nextWord
 	override var parseForeignLanguageLiteralNext: Boolean
-		get() = elementGenerator.parseForeignLanguageLiteralNext
-		set(value) { elementGenerator.parseForeignLanguageLiteralNext = value }
+		get() = syntaxTreeGenerator.parseForeignLanguageLiteralNext
+		set(value) { syntaxTreeGenerator.parseForeignLanguageLiteralNext = value }
 
-	override fun getCurrentPosition(): Position = elementGenerator.getCurrentPosition()
+	override fun getCurrentPosition(): Position = syntaxTreeGenerator.getCurrentPosition()
 
 	override fun consume(type: WordDescriptor): Word {
-		return elementGenerator.consume(type)
+		return syntaxTreeGenerator.consume(type)
 	}
 
 	/**

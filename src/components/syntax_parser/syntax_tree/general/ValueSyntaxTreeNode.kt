@@ -8,7 +8,7 @@ import source_structure.Position
 /**
  * Impacts code flow directly and returns a value
  */
-abstract class ValueElement(start: Position, end: Position): Element(start, end) {
+abstract class ValueSyntaxTreeNode(start: Position, end: Position): SyntaxTreeNode(start, end) {
 
 	constructor(word: Word): this(word.start, word.end)
 

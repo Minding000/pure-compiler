@@ -2,16 +2,16 @@ package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.syntax_parser.syntax_tree.general.Element
 import components.syntax_parser.syntax_tree.general.StatementSection
-import components.syntax_parser.syntax_tree.general.TypeElement
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import source_structure.Position
 import components.semantic_analysis.semantic_model.definitions.GeneratorDefinition as SemanticGeneratorDefinitionModel
 
 class GeneratorDefinition(start: Position, private val identifier: Identifier, private val parameterList: ParameterList,
-						  private var keyReturnType: TypeElement?, private var valueReturnType: TypeElement,
-						  private val body: StatementSection): Element(start, body.end) {
+						  private var keyReturnType: TypeSyntaxTreeNode?, private var valueReturnType: TypeSyntaxTreeNode,
+						  private val body: StatementSection): SyntaxTreeNode(start, body.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticGeneratorDefinitionModel {
 		val generatorScope = BlockScope(scope)

@@ -1,9 +1,9 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.syntax_parser.syntax_tree.general.MetaElement
+import components.syntax_parser.syntax_tree.general.MetaSyntaxTreeNode
 
 class ModifierList(private val modifiers: List<Modifier>):
-	MetaElement(modifiers.first().start, modifiers.last().end), ModifierSpecification {
+	MetaSyntaxTreeNode(modifiers.first().start, modifiers.last().end), ModifierSpecification {
 
 	override fun getModifiers(): List<Modifier> {
 		return modifiers

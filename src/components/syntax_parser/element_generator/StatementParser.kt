@@ -23,33 +23,33 @@ import logger.issues.parsing.UnexpectedWord
 import source_structure.Position
 import java.util.*
 
-class StatementParser(private val elementGenerator: ElementGenerator): Generator() {
+class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Generator() {
 	override val currentWord: Word?
-		get() = elementGenerator.currentWord
+		get() = syntaxTreeGenerator.currentWord
 	override val nextWord: Word?
-		get() = elementGenerator.nextWord
+		get() = syntaxTreeGenerator.nextWord
 	override var parseForeignLanguageLiteralNext: Boolean
-		get() = elementGenerator.parseForeignLanguageLiteralNext
-		set(value) { elementGenerator.parseForeignLanguageLiteralNext = value }
+		get() = syntaxTreeGenerator.parseForeignLanguageLiteralNext
+		set(value) { syntaxTreeGenerator.parseForeignLanguageLiteralNext = value }
 
 	private val expressionParser
-		get() = elementGenerator.expressionParser
+		get() = syntaxTreeGenerator.expressionParser
 	private val typeParser
-		get() = elementGenerator.typeParser
+		get() = syntaxTreeGenerator.typeParser
 	private val literalParser
-		get() = elementGenerator.literalParser
+		get() = syntaxTreeGenerator.literalParser
 
-	override fun getCurrentPosition(): Position = elementGenerator.getCurrentPosition()
+	override fun getCurrentPosition(): Position = syntaxTreeGenerator.getCurrentPosition()
 
 	override fun consume(type: WordDescriptor): Word {
-		return elementGenerator.consume(type)
+		return syntaxTreeGenerator.consume(type)
 	}
 
-	private fun isExpressionAssignable(expression: Element): Boolean {
+	private fun isExpressionAssignable(expression: SyntaxTreeNode): Boolean {
 		return expression is Identifier || expression is MemberAccess || expression is IndexAccess
 	}
 
-	private fun parseExpression(): ValueElement {
+	private fun parseExpression(): ValueSyntaxTreeNode {
 		return expressionParser.parseExpression()
 	}
 
@@ -57,8 +57,8 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		return literalParser.parseIdentifier()
 	}
 
-	fun parseStatements(endWord: WordAtom? = null): List<Element> {
-		val statements = LinkedList<Element>()
+	fun parseStatements(endWord: WordAtom? = null): List<SyntaxTreeNode> {
+		val statements = LinkedList<SyntaxTreeNode>()
 		while(currentWord?.type != endWord) {
 			consumeLineBreaks()
 			if(currentWord?.type == endWord)
@@ -66,13 +66,13 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			try {
 				statements.add(parseStatement())
 			} catch(error: UserError) {
-				elementGenerator.addIssue(when(error) {
+				syntaxTreeGenerator.addIssue(when(error) {
 					is UnexpectedEndOfFileError -> UnexpectedEndOfFile(error.message, error.section)
 					is UnexpectedWordError -> UnexpectedWord(error.message, error.section)
 					else -> InvalidSyntax(error.message)
 				})
 				currentWord?.let { invalidWord ->
-					elementGenerator.skipLine(invalidWord)
+					syntaxTreeGenerator.skipLine(invalidWord)
 				}
 			}
 		}
@@ -100,7 +100,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   <Expression> = <Expression>[ = <Expression>]...
 	 *   <Expression> <binary-modification> <Expression>
 	 */
-	private fun parseStatement(): Element {
+	private fun parseStatement(): SyntaxTreeNode {
 		if(currentWord?.type == WordAtom.OPENING_BRACE)
 			return parseStatementSection()
 		if(currentWord?.type == WordAtom.REFERENCING)
@@ -135,7 +135,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		val expression = expressionParser.parseExpression()
 		if(isExpressionAssignable(expression)) {
 			if(currentWord?.type == WordAtom.ASSIGNMENT) {
-				val targets = LinkedList<ValueElement>()
+				val targets = LinkedList<ValueSyntaxTreeNode>()
 				var lastExpression = expression
 				do {
 					consume(WordAtom.ASSIGNMENT)
@@ -216,7 +216,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		consumeLineBreaks()
 		val positiveBranch = parseStatement()
 		consumeLineBreaks()
-		var negativeBranch: Element? = null
+		var negativeBranch: SyntaxTreeNode? = null
 		if(currentWord?.type == WordAtom.ELSE) {
 			consume(WordAtom.ELSE)
 			consumeLineBreaks()
@@ -239,7 +239,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		consume(WordAtom.OPENING_BRACE)
 		consumeLineBreaks()
 		val cases = LinkedList<Case>()
-		var elseResult: Element? = null
+		var elseResult: SyntaxTreeNode? = null
 		while(currentWord?.type !== WordAtom.CLOSING_BRACE) {
 			consumeLineBreaks()
 			if(currentWord?.type == WordAtom.ELSE) {
@@ -275,9 +275,9 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   return <Expression>
 	 *   return <YieldStatement>
 	 */
-	private fun parseReturnStatement(): Element {
+	private fun parseReturnStatement(): SyntaxTreeNode {
 		val word = consume(WordAtom.RETURN)
-		var value: ValueElement? = null
+		var value: ValueSyntaxTreeNode? = null
 		if(currentWord != null) {
 			if(currentWord?.type == WordAtom.YIELD)
 				value = parseYieldStatement()
@@ -293,7 +293,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 */
 	private fun parseYieldStatement(): YieldStatement {
 		val start = consume(WordAtom.YIELD).start
-		var key: ValueElement? = null
+		var key: ValueSyntaxTreeNode? = null
 		var value = parseExpression()
 		if(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
@@ -506,7 +506,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		if(currentWord?.type != WordAtom.OPENING_BRACE)
 			return null
 		val start = consume(WordAtom.OPENING_BRACE).start
-		val members = LinkedList<Element>()
+		val members = LinkedList<SyntaxTreeNode>()
 		while(currentWord?.type != WordAtom.CLOSING_BRACE) {
 			consumeLineBreaks()
 			if(currentWord?.type == WordAtom.CLOSING_BRACE)
@@ -523,7 +523,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   <InstanceList>
 	 *   <DeclarationSection>
 	 */
-	private fun parseMemberDeclaration(): Element {
+	private fun parseMemberDeclaration(): SyntaxTreeNode {
 		if(currentWord?.type == WordAtom.CONTAINING)
 			return parseGenericsDeclaration()
 		if(currentWord?.type == WordAtom.INSTANCES)
@@ -567,7 +567,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 */
 	private fun parseInstance(): Instance {
 		val identifier = parseIdentifier()
-		val parameters = LinkedList<ValueElement>()
+		val parameters = LinkedList<ValueSyntaxTreeNode>()
 		var end = identifier.end
 		if(currentWord?.type == WordAtom.OPENING_PARENTHESIS) {
 			consume(WordAtom.OPENING_PARENTHESIS)
@@ -587,7 +587,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 * InitializerDeclaration:
 	 *   init[<ParameterList>] [<StatementSection>]
 	 */
-	private fun parseInitializerDefinition(): Element {
+	private fun parseInitializerDefinition(): SyntaxTreeNode {
 		val declarationWord = consume(WordAtom.INITIALIZER)
 		val parameterList = if(currentWord?.type == WordAtom.OPENING_PARENTHESIS) parseParameterList() else null
 		val body = if(currentWord?.type == WordAtom.OPENING_BRACE) parseStatementSection() else null
@@ -599,7 +599,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 * DeinitializerDeclaration:
 	 *   deinit [<StatementSection>]
 	 */
-	private fun parseDeinitializerDefinition(): Element {
+	private fun parseDeinitializerDefinition(): SyntaxTreeNode {
 		val keyword = consume(WordAtom.DEINITIALIZER)
 		val body = if(currentWord?.type == WordAtom.OPENING_BRACE) parseStatementSection() else null
 		val end = body?.end ?: keyword.end
@@ -708,7 +708,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   <TypeAlias>
 	 *   <ModifierSection>
 	 */
-	private fun parseDeclarationSection(context: DeclarationContext): Element {
+	private fun parseDeclarationSection(context: DeclarationContext): SyntaxTreeNode {
 		if(WordType.VARIABLE_DECLARATION.includes(currentWord?.type))
 			return parseVariableSection(context)
 		if(context == DeclarationContext.CLASS) {
@@ -728,7 +728,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		if(WordType.MODIFIER.includes(currentWord?.type))
 			return parseModifierSection(context)
 		val expectation = "declaration"
-		throw UnexpectedWordError(elementGenerator.getCurrentWord(expectation), expectation)
+		throw UnexpectedWordError(syntaxTreeGenerator.getCurrentWord(expectation), expectation)
 	}
 
 	/**
@@ -741,7 +741,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	private fun parseModifierSection(context: DeclarationContext): ModifierSection {
 		val modifierList = parseModifierList()
 				?: throw UnexpectedWordError(getCurrentWord(WordType.MODIFIER), WordType.MODIFIER)
-		val sections = LinkedList<Element>()
+		val sections = LinkedList<SyntaxTreeNode>()
 		val end = if(currentWord?.type == WordAtom.OPENING_BRACE) {
 			consume(WordAtom.OPENING_BRACE)
 			while(currentWord?.type != WordAtom.CLOSING_BRACE) {
@@ -775,7 +775,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			consume(WordAtom.ASSIGNMENT)
 			parseExpression()
 		} else null
-		val variables = LinkedList<VariableSectionElement>()
+		val variables = LinkedList<VariableSectionSyntaxTreeNode>()
 		val end = if(currentWord?.type == WordAtom.OPENING_BRACE) {
 			consume(WordAtom.OPENING_BRACE)
 			while(currentWord?.type != WordAtom.CLOSING_BRACE) {
@@ -797,7 +797,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   <LocalVariableDeclaration>
 	 *   <PropertyDeclaration>
 	 */
-	private fun parseVariableSectionPart(context: DeclarationContext): VariableSectionElement {
+	private fun parseVariableSectionPart(context: DeclarationContext): VariableSectionSyntaxTreeNode {
 		return if(context == DeclarationContext.CLASS)
 			parseProperty()
 		else
@@ -815,7 +815,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 			typeParser.parseType()
 		} else null
 		consumeLineBreaks()
-		var value: ValueElement? = null
+		var value: ValueSyntaxTreeNode? = null
 		if(currentWord?.type == WordAtom.ASSIGNMENT) {
 			consume(WordAtom.ASSIGNMENT)
 			value = parseExpression()
@@ -828,7 +828,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 *   <Identifier>[: <Type>] [get <Expression>] [set <Statement>]
 	 *   <Identifier>[: <Type>] [= <Expression>]
 	 */
-	private fun parseProperty(): VariableSectionElement {
+	private fun parseProperty(): VariableSectionSyntaxTreeNode {
 		val identifier = parseIdentifier()
 		val type = if(currentWord?.type == WordAtom.COLON) {
 			consume(WordAtom.COLON)
@@ -846,7 +846,7 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 		} else null
 		if(getExpression != null || setStatement != null)
 			return ComputedPropertyDeclaration(identifier, type, getExpression, setStatement)
-		var value: ValueElement? = null
+		var value: ValueSyntaxTreeNode? = null
 		if(currentWord?.type == WordAtom.ASSIGNMENT) {
 			consume(WordAtom.ASSIGNMENT)
 			value = parseExpression()
@@ -910,12 +910,12 @@ class StatementParser(private val elementGenerator: ElementGenerator): Generator
 	 * GeneratorDefinition:
 	 *   generate <Identifier><ParameterList>: <Type>[, <Type>] <StatementSection>
 	 */
-	private fun parseGeneratorDefinition(): Element {
+	private fun parseGeneratorDefinition(): SyntaxTreeNode {
 		val start = consume(WordAtom.GENERATOR).start
 		val identifier = parseIdentifier()
 		val parameterList = parseParameterList()
 		consume(WordAtom.COLON)
-		var keyReturnType: TypeElement? = null
+		var keyReturnType: TypeSyntaxTreeNode? = null
 		var valueReturnType = typeParser.parseType()
 		if(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)

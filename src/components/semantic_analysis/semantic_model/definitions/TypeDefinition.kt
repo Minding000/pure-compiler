@@ -9,14 +9,14 @@ import components.semantic_analysis.semantic_model.types.AndUnionType
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.InterfaceMember
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.definition.CircularInheritance
 import logger.issues.definition.ExplicitParentOnScopedTypeDefinition
 import logger.issues.modifiers.NoParentToBindTo
 import util.linkedListOf
 import java.util.*
 
-abstract class TypeDefinition(override val source: Element, val name: String, override val scope: TypeScope,
+abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: String, override val scope: TypeScope,
 							  val explicitParentType: ObjectType? = null, val superType: Type? = null, val members: List<SemanticModel> = listOf(),
 							  val isBound: Boolean = false, val isSpecificCopy: Boolean = false): SemanticModel(source, scope) {
 	protected open val isDefinition = true

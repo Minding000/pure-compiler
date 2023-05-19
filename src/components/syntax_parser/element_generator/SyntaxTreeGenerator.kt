@@ -12,7 +12,7 @@ import source_structure.Position
 import source_structure.Project
 import java.util.*
 
-class ElementGenerator(val project: Project): Generator() {
+class SyntaxTreeGenerator(val project: Project): Generator() {
 	val wordGenerator = WordGenerator(project)
 	override var currentWord: Word? = null
 	override var nextWord: Word? = null

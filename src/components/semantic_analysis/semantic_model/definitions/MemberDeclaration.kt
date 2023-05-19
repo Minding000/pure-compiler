@@ -1,9 +1,9 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
 interface MemberDeclaration {
-	val source: Element
+	val source: SyntaxTreeNode
 	val parentDefinition: TypeDefinition?
 	val memberIdentifier: String
 	val isAbstract: Boolean

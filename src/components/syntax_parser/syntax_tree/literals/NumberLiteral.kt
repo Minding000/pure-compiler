@@ -1,12 +1,12 @@
 package components.syntax_parser.syntax_tree.literals
 
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.syntax_parser.syntax_tree.general.ValueElement
+import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import components.tokenizer.Word
 import java.math.BigDecimal
 import components.semantic_analysis.semantic_model.values.NumberLiteral as SemanticNumberLiteralModel
 
-class NumberLiteral(word: Word): ValueElement(word) {
+class NumberLiteral(word: Word): ValueSyntaxTreeNode(word) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticNumberLiteralModel {
 		val value = BigDecimal(getValue().replace("_", ""))

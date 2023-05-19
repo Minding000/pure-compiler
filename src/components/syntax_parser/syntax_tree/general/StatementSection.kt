@@ -7,7 +7,7 @@ import components.semantic_analysis.semantic_model.general.HandleBlock as Semant
 
 class StatementSection(private val mainBlock: StatementBlock, val handleBlocks: List<HandleBlock> = LinkedList(),
 					   private val alwaysBlock: StatementBlock? = null):
-	Element(mainBlock.start, (alwaysBlock ?: handleBlocks.lastOrNull() ?: mainBlock).end) {
+	SyntaxTreeNode(mainBlock.start, (alwaysBlock ?: handleBlocks.lastOrNull() ?: mainBlock).end) {
 
 	override fun toSemanticModel(scope: MutableScope): ErrorHandlingContext {
 		val handleBlocks = LinkedList<SemanticHandleBlockModel>()

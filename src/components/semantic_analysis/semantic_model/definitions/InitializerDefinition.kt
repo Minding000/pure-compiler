@@ -5,7 +5,7 @@ import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.initialization.UninitializedProperties
 import logger.issues.modifiers.*
@@ -13,7 +13,7 @@ import util.combine
 import util.stringifyTypes
 import java.util.*
 
-class InitializerDefinition(override val source: Element, override val scope: BlockScope,
+class InitializerDefinition(override val source: SyntaxTreeNode, override val scope: BlockScope,
 							val typeParameters: List<TypeDefinition> = emptyList(), val parameters: List<Parameter> = emptyList(),
 							val body: SemanticModel? = null, override val isAbstract: Boolean = false, val isConverting: Boolean = false,
 							val isNative: Boolean = false, val isOverriding: Boolean = false):

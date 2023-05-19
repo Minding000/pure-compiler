@@ -7,12 +7,12 @@ import components.semantic_analysis.semantic_model.types.LiteralType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.Value
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import util.combine
 import java.util.*
 
-class FunctionSignature(override val source: Element, override val scope: BlockScope, val genericParameters: List<TypeDefinition>,
+class FunctionSignature(override val source: SyntaxTreeNode, override val scope: BlockScope, val genericParameters: List<TypeDefinition>,
 						val parameterTypes: List<Type?>, returnType: Type?, isPartOfImplementation: Boolean = false): SemanticModel(source, scope) {
 	val returnType = returnType ?: LiteralType(source, scope, SpecialType.NOTHING)
 	var superFunctionSignature: FunctionSignature? = null

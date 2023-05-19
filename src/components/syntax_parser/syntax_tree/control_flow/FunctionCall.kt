@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.control_flow
 
 import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.syntax_parser.syntax_tree.general.TypeElement
-import components.syntax_parser.syntax_tree.general.ValueElement
+import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
+import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import source_structure.Position
 import util.indent
 import util.toLines
@@ -10,8 +10,8 @@ import util.toSemanticTypeModels
 import util.toSemanticValueModels
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall as SemanticFunctionCallModel
 
-class FunctionCall(private val functionReference: ValueElement, private val typeParameters: List<TypeElement>?,
-				   private val valueParameters: List<ValueElement>, end: Position): ValueElement(functionReference.start, end) {
+class FunctionCall(private val functionReference: ValueSyntaxTreeNode, private val typeParameters: List<TypeSyntaxTreeNode>?,
+				   private val valueParameters: List<ValueSyntaxTreeNode>, end: Position): ValueSyntaxTreeNode(functionReference.start, end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticFunctionCallModel {
 		return SemanticFunctionCallModel(this, scope, functionReference.toSemanticModel(scope),

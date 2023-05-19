@@ -3,7 +3,7 @@ package util
 import code.Builder
 import components.semantic_analysis.semantic_model.context.SemanticModelGenerator
 import components.semantic_analysis.semantic_model.context.VariableTracker
-import components.syntax_parser.element_generator.ElementGenerator
+import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import components.tokenizer.WordAtom
 import components.tokenizer.WordGenerator
 import source_structure.Module
@@ -43,16 +43,16 @@ object TestUtil {
 
     fun parse(sourceCode: String, includeRequiredModules: Boolean = false, printReport: Boolean = true): ParseResult {
 		val project = createTestProject(sourceCode, includeRequiredModules)
-        val elementGenerator = ElementGenerator(project)
-        val program = elementGenerator.parseProgram()
+        val syntaxTreeGenerator = SyntaxTreeGenerator(project)
+        val program = syntaxTreeGenerator.parseProgram()
 		if(printReport)
-        	elementGenerator.project.context.logger.printReport()
-        return ParseResult(elementGenerator, program)
+        	syntaxTreeGenerator.project.context.logger.printReport()
+        return ParseResult(syntaxTreeGenerator, program)
     }
 
     fun lint(sourceCode: String, includeRequiredModules: Boolean = false): LintResult {
         val parseResult = parse(sourceCode, includeRequiredModules, false)
-		val context = parseResult.elementGenerator.project.context
+		val context = parseResult.syntaxTreeGenerator.project.context
         val semanticModelGenerator = SemanticModelGenerator(context)
         val program = semanticModelGenerator.lint(parseResult.program)
         context.logger.printReport()
@@ -61,7 +61,7 @@ object TestUtil {
 
 	fun analyseDataFlow(sourceCode: String): VariableTracker {
 		val parseResult = parse(sourceCode, includeRequiredModules = false, printReport = false)
-		val context = parseResult.elementGenerator.project.context
+		val context = parseResult.syntaxTreeGenerator.project.context
 		val semanticModelGenerator = SemanticModelGenerator(context)
 		val program = semanticModelGenerator.lint(parseResult.program)
 		val testFile = program.files.find { file -> file.file.name == TEST_FILE_NAME }

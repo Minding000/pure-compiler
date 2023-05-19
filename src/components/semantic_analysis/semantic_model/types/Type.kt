@@ -10,10 +10,10 @@ import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 
-abstract class Type(source: Element, scope: Scope, isStatic: Boolean = false): SemanticModel(source, scope) {
+abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = false): SemanticModel(source, scope) {
 	//var llvmType: LLVMTypeRef? = null
 	val interfaceScope = InterfaceScope(isStatic)
 	private var hasResolvedDefinitions = false

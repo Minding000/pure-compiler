@@ -4,11 +4,11 @@ import components.semantic_analysis.semantic_model.definitions.FunctionImplement
 import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.FunctionType
-import components.syntax_parser.syntax_tree.general.Element
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.definition.Redeclaration
 import java.util.*
 
-open class Function(source: Element, scope: Scope, val name: String = "<anonymous function>",
+open class Function(source: SyntaxTreeNode, scope: Scope, val name: String = "<anonymous function>",
 					val functionType: FunctionType = FunctionType(source, scope)): Value(source, scope, functionType) {
 	open val memberType = "function"
 	val implementations = LinkedList<FunctionImplementation>()
