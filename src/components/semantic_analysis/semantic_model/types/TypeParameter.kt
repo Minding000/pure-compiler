@@ -8,7 +8,7 @@ import components.syntax_parser.syntax_tree.definitions.TypeParameter as TypePar
 class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, val mode: Mode, val baseType: Type): Type(source, scope) {
 
 	init {
-		addUnits(baseType)
+		addSemanticModels(baseType)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeParameter {

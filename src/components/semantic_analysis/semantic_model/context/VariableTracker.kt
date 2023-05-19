@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.context
 
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
@@ -96,22 +96,22 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 	fun add(kind: VariableUsage.Kind, variable: VariableValue, resultingType: Type? = getCurrentTypeOf(variable.definition),
 			resultingValue: Value? = getCurrentValueOf(variable.definition)): VariableUsage? =
 		add(listOf(kind), variable, resultingType, resultingValue)
-	fun add(kind: VariableUsage.Kind, declaration: ValueDeclaration, unit: Unit, resultingType: Type? = getCurrentTypeOf(declaration),
+	fun add(kind: VariableUsage.Kind, declaration: ValueDeclaration, semanticModel: SemanticModel, resultingType: Type? = getCurrentTypeOf(declaration),
 			resultingValue: Value? = getCurrentValueOf(declaration)): VariableUsage =
-		add(listOf(kind), declaration, unit, resultingType, resultingValue)
+		add(listOf(kind), declaration, semanticModel, resultingType, resultingValue)
 
 	fun add(kinds: List<VariableUsage.Kind>, variable: VariableValue, resultingType: Type? = getCurrentTypeOf(variable.definition),
 			resultingValue: Value? = getCurrentValueOf(variable.definition)): VariableUsage? {
 		return add(kinds, variable.definition ?: return null, variable, resultingType, resultingValue)
 	}
 
-	fun add(kinds: List<VariableUsage.Kind>, declaration: ValueDeclaration, unit: Unit,
+	fun add(kinds: List<VariableUsage.Kind>, declaration: ValueDeclaration, semanticModel: SemanticModel,
 			resultingType: Type? = getCurrentTypeOf(declaration),
 			resultingValue: Value? = getCurrentValueOf(declaration)): VariableUsage {
 		val usages = variables.getOrPut(declaration) { LinkedList() }
 		val firstUsages = currentState.firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
 		val lastUsages = getLastVariableUsagesOf(declaration)
-		val usage = VariableUsage(kinds, unit, resultingType, resultingValue)
+		val usage = VariableUsage(kinds, semanticModel, resultingType, resultingValue)
 		for(lastUsage in lastUsages) {
 			usage.previousUsages.add(lastUsage)
 			lastUsage.nextUsages.add(usage)
@@ -217,7 +217,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 			for(usage in usages) {
 				if(usage.kinds.contains(VariableUsage.Kind.WRITE) && declaration.isConstant) {
 					if((declaration is PropertyDeclaration && !isInitializer) || usage.isPreviouslyPossiblyInitialized())
-						context.addIssue(ConstantReassignment(usage.unit.source, declaration.name))
+						context.addIssue(ConstantReassignment(usage.semanticModel.source, declaration.name))
 				}
 			}
 		}
@@ -249,7 +249,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		for((declaration, usages) in variables) {
 			if(variableName != declaration.name)
 				continue
-			var report = "start -> ${usages.first().unit.source.start.line.number}"
+			var report = "start -> ${usages.first().semanticModel.source.start.line.number}"
 			for(usage in usages) {
 				val typeString = usage.kinds.joinToString(" & ").lowercase()
 				var targetString = usage.nextUsages.joinToString()

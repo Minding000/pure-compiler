@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.AndUnionType
@@ -17,10 +17,10 @@ import util.linkedListOf
 import java.util.*
 
 abstract class TypeDefinition(override val source: Element, val name: String, override val scope: TypeScope,
-							  val explicitParentType: ObjectType? = null, val superType: Type? = null, val members: List<Unit> = listOf(),
-							  val isBound: Boolean = false, val isSpecificCopy: Boolean = false): Unit(source, scope) {
+							  val explicitParentType: ObjectType? = null, val superType: Type? = null, val members: List<SemanticModel> = listOf(),
+							  val isBound: Boolean = false, val isSpecificCopy: Boolean = false): SemanticModel(source, scope) {
 	protected open val isDefinition = true
-	override var parent: Unit?
+	override var parent: SemanticModel?
 		get() = super.parent
 		set(value) {
 			super.parent = value
@@ -31,13 +31,13 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 	var hasDeterminedTypes = isSpecificCopy
 	// Only used in base definition
 	private val specificDefinitions = HashMap<Map<TypeDefinition, Type>, TypeDefinition>()
-	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>, LinkedList<(TypeDefinition) -> kotlin.Unit>>()
+	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>, LinkedList<(TypeDefinition) -> Unit>>()
 	// Only used in specific definition
 	var baseDefinition: TypeDefinition? = null
 
 	init {
-		addUnits(explicitParentType, superType)
-		addUnits(members)
+		addSemanticModels(explicitParentType, superType)
+		addSemanticModels(members)
 		for(member in members) {
 			if(member is InterfaceMember)
 				member.parentDefinition = this
@@ -46,7 +46,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 
 	protected abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeDefinition
 
-	fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>, onCompletion: (TypeDefinition) -> kotlin.Unit) {
+	fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>, onCompletion: (TypeDefinition) -> Unit) {
 		var definition = specificDefinitions[typeSubstitutions]
 		if(definition != null) {
 			onCompletion(definition)
@@ -66,11 +66,11 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 		pendingTypeSubstitutions.remove(typeSubstitutions)
 	}
 
-	fun withTypeParameters(typeParameters: List<Type>, onCompletion: (TypeDefinition) -> kotlin.Unit) =
+	fun withTypeParameters(typeParameters: List<Type>, onCompletion: (TypeDefinition) -> Unit) =
 		withTypeParameters(typeParameters, HashMap<TypeDefinition, Type>(), onCompletion)
 
 	fun withTypeParameters(typeParameters: List<Type>, typeSubstitutions: Map<TypeDefinition, Type>,
-						   onCompletion: (TypeDefinition) -> kotlin.Unit) {
+						   onCompletion: (TypeDefinition) -> Unit) {
 		baseDefinition?.let { baseDefinition ->
 			return baseDefinition.withTypeParameters(typeParameters, typeSubstitutions, onCompletion)
 		}
@@ -99,9 +99,9 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 				context.addIssue(ExplicitParentOnScopedTypeDefinition(explicitParentType.source))
 			}
 		}
-		for(unit in units)
-			if(unit !== explicitParentType)
-				unit.determineTypes()
+		for(semanticModel in semanticModels)
+			if(semanticModel !== explicitParentType)
+				semanticModel.determineTypes()
 		if(isDefinition && scope.initializers.isEmpty())
 			addDefaultInitializer()
 		scope.ensureUniqueInitializerSignatures()
@@ -134,7 +134,7 @@ abstract class TypeDefinition(override val source: Element, val name: String, ov
 	private fun addDefaultInitializer() {
 		val defaultInitializer = InitializerDefinition(source, BlockScope(scope))
 		defaultInitializer.determineTypes()
-		addUnits(defaultInitializer)
+		addSemanticModels(defaultInitializer)
 	}
 
 	private fun inheritsFrom(definition: TypeDefinition): Boolean {

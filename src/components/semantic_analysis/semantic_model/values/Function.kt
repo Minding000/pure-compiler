@@ -16,11 +16,11 @@ open class Function(source: Element, scope: Scope, val name: String = "<anonymou
 		get() = implementations.any { implementation -> implementation.isAbstract }
 
 	init {
-		addUnits(functionType)
+		addSemanticModels(functionType)
 	}
 
 	fun addImplementation(implementation: FunctionImplementation) {
-		addUnits(implementation)
+		addSemanticModels(implementation)
 		implementations.add(implementation)
 		functionType.addSignature(implementation.signature)
 		implementation.setParent(this)

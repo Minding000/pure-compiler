@@ -4,7 +4,7 @@ import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.definitions.Enum
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.LiteralType
@@ -69,9 +69,9 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		return typeDefinition
 	}
 
-	private fun getSemanticMemberModels(typeScope: TypeScope, definitionType: WordAtom): List<Unit> {
+	private fun getSemanticMemberModels(typeScope: TypeScope, definitionType: WordAtom): List<SemanticModel> {
 		val explicitMembers = getSemanticModelsOfExplicitlyDeclaredMembers(typeScope, definitionType)
-		val members = LinkedList<Unit>()
+		val members = LinkedList<SemanticModel>()
 		val functions = HashMap<String, Function>()
 		val operators = HashMap<Operator.Kind, Operator>()
 		for(member in explicitMembers) {
@@ -109,11 +109,11 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		return members
 	}
 
-	private fun getSemanticModelsOfExplicitlyDeclaredMembers(typeScope: TypeScope, definitionType: WordAtom): List<Unit> {
+	private fun getSemanticModelsOfExplicitlyDeclaredMembers(typeScope: TypeScope, definitionType: WordAtom): List<SemanticModel> {
 		if(body == null)
 			return emptyList()
 		var instanceList: InstanceList? = null
-		val members = LinkedList<Unit>()
+		val members = LinkedList<SemanticModel>()
 		for(member in body.members) {
 			if(member is InstanceList) {
 				if(!(definitionType == WordAtom.CLASS || definitionType == WordAtom.ENUM)) {

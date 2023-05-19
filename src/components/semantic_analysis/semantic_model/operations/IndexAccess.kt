@@ -13,8 +13,8 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	var sourceExpression: Value? = null
 
 	init {
-		addUnits(typeParameters, indices)
-		addUnits(target)
+		addSemanticModels(typeParameters, indices)
+		addSemanticModels(target)
 	}
 
 	override fun determineTypes() {

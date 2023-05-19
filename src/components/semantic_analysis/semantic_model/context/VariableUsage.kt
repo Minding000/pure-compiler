@@ -1,11 +1,11 @@
 package components.semantic_analysis.semantic_model.context
 
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import java.util.*
 
-class VariableUsage(val kinds: List<Kind>, val unit: Unit, var resultingType: Type? = null, var resultingValue: Value? = null) {
+class VariableUsage(val kinds: List<Kind>, val semanticModel: SemanticModel, var resultingType: Type? = null, var resultingValue: Value? = null) {
 	private var isRequiredToBeInitializedCache: Boolean? = null
 	private var isInitializedCache: Boolean? = null
 	private var isPossiblyInitializedCache: Boolean? = null
@@ -64,9 +64,9 @@ class VariableUsage(val kinds: List<Kind>, val unit: Unit, var resultingType: Ty
 	override fun toString(): String {
 		if(kinds.contains(Kind.END))
 			return "end"
-		var stringRepresentation = unit.source.start.line.number.toString()
+		var stringRepresentation = semanticModel.source.start.line.number.toString()
 //		stringRepresentation += "-"
-//		stringRepresentation += unit.source.start.column
+//		stringRepresentation += semanticModel.source.start.column
 		if(willExit)
 			stringRepresentation += "e"
 		return stringRepresentation

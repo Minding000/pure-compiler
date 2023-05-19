@@ -4,7 +4,6 @@ import logger.Issue
 import logger.Logger
 import logger.Severity
 
-//TODO rename Unit to SemanticModel
 //TODO rename Element to SyntaxTreeNode
 //TODO rename ValueElement to SyntaxTreeValueElement (same for TypeElement, etc.)
 class Context {

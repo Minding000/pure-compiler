@@ -33,8 +33,8 @@ class FunctionType(override val source: Element, scope: Scope): ObjectType(sourc
 
 	override fun resolveDefinitions() {
 		interfaceScope.type = this
-		for(unit in units)
-			unit.determineTypes()
+		for(semanticModel in semanticModels)
+			semanticModel.determineTypes()
 		definition = SpecialType.FUNCTION.scope?.resolveType(name)
 		definition?.scope?.subscribe(this)
 		if(definition == null)
@@ -42,7 +42,7 @@ class FunctionType(override val source: Element, scope: Scope): ObjectType(sourc
 	}
 
 	fun addSignature(signature: FunctionSignature) {
-		addUnits(signature)
+		addSemanticModels(signature)
 		signatures.add(signature)
 	}
 

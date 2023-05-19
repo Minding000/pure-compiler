@@ -12,8 +12,8 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, scope:
 						val baseValue: VariableValue): Value(source, scope) {
 
 	init {
-		addUnits(baseValue)
-		addUnits(typeParameters)
+		addSemanticModels(baseValue)
+		addSemanticModels(typeParameters)
 	}
 
 	override fun determineTypes() {

@@ -9,7 +9,7 @@ import components.syntax_parser.syntax_tree.general.Element
 class OptionalType(override val source: Element, scope: Scope, val baseType: Type): Type(source, scope) {
 
 	init {
-		addUnits(baseType)
+		addSemanticModels(baseType)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): OptionalType {

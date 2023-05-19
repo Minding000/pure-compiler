@@ -8,7 +8,7 @@ import components.syntax_parser.syntax_tree.control_flow.Try as TrySyntaxTree
 class Try(override val source: TrySyntaxTree, scope: Scope, val expression: Value, val isOptional: Boolean): Value(source, scope) {
 
 	init {
-		addUnits(expression)
+		addSemanticModels(expression)
 	}
 
 	override fun determineTypes() {

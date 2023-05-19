@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.operations
 
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.NumberLiteral
 import components.semantic_analysis.semantic_model.values.Operator
@@ -14,10 +14,10 @@ import logger.issues.resolution.NotFound
 import components.syntax_parser.syntax_tree.operations.BinaryModification as BinaryModificationSyntaxTree
 
 class BinaryModification(override val source: BinaryModificationSyntaxTree, scope: Scope, val target: Value, val modifier: Value,
-						 val kind: Operator.Kind): Unit(source, scope) {
+						 val kind: Operator.Kind): SemanticModel(source, scope) {
 
 	init {
-		addUnits(target, modifier)
+		addSemanticModels(target, modifier)
 	}
 
 	override fun determineTypes() {

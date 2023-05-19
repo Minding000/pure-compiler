@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.tokenizer.Word
 import source_structure.Position
@@ -14,9 +14,9 @@ abstract class Element(start: Position, end: Position): Section(start, end) {
 
 	constructor(word: Word): this(word.start, word.end)
 
-	open fun toSemanticModel(scope: MutableScope, units: MutableList<Unit>) {
-		units.add(toSemanticModel(scope))
+	open fun toSemanticModel(scope: MutableScope, semanticModels: MutableList<SemanticModel>) {
+		semanticModels.add(toSemanticModel(scope))
 	}
 
-	abstract fun toSemanticModel(scope: MutableScope): Unit
+	abstract fun toSemanticModel(scope: MutableScope): SemanticModel
 }

@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.StaticType
@@ -9,7 +9,7 @@ import components.semantic_analysis.semantic_model.values.LocalVariableDeclarati
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?, superType: Type?,
-		   members: List<Unit>, isBound: Boolean, isSpecificCopy: Boolean = false):
+		   members: List<SemanticModel>, isBound: Boolean, isSpecificCopy: Boolean = false):
 	TypeDefinition(source, name, scope, explicitParentType, superType, members, isBound, isSpecificCopy) {
 
 	init {
@@ -25,7 +25,7 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 			PropertyDeclaration(source, targetScope, name, staticType, null, !isBound)
 		else
 			LocalVariableDeclaration(source, targetScope, name, staticType)
-		addUnits(valueDeclaration)
+		addSemanticModels(valueDeclaration)
 		valueDeclaration.declare()
 	}
 

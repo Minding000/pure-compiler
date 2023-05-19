@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.semantic_model.context.VariableTracker
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
@@ -15,9 +15,9 @@ import java.util.*
 
 class InitializerDefinition(override val source: Element, override val scope: BlockScope,
 							val typeParameters: List<TypeDefinition> = emptyList(), val parameters: List<Parameter> = emptyList(),
-							val body: Unit? = null, override val isAbstract: Boolean = false, val isConverting: Boolean = false,
+							val body: SemanticModel? = null, override val isAbstract: Boolean = false, val isConverting: Boolean = false,
 							val isNative: Boolean = false, val isOverriding: Boolean = false):
-	Unit(source, scope), MemberDeclaration, Callable {
+	SemanticModel(source, scope), MemberDeclaration, Callable {
 	override lateinit var parentDefinition: TypeDefinition
 	override val memberIdentifier
 		get() = toString(true)
@@ -26,8 +26,8 @@ class InitializerDefinition(override val source: Element, override val scope: Bl
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 
 	init {
-		addUnits(typeParameters, parameters)
-		addUnits(body)
+		addSemanticModels(typeParameters, parameters)
+		addSemanticModels(body)
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {

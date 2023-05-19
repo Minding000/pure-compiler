@@ -3,7 +3,7 @@ package components.semantic_analysis.semantic_model.control_flow
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Value
 import logger.issues.returns.RedundantReturnValue
@@ -12,12 +12,12 @@ import logger.issues.returns.ReturnStatementOutsideOfCallable
 import logger.issues.returns.ReturnValueTypeMismatch
 import components.syntax_parser.syntax_tree.control_flow.ReturnStatement as ReturnStatementSyntaxTree
 
-class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Scope, val value: Value?): Unit(source, scope) {
+class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Scope, val value: Value?): SemanticModel(source, scope) {
 	var targetFunction: FunctionImplementation? = null
 	override val isInterruptingExecution = true
 
 	init {
-		addUnits(value)
+		addSemanticModels(value)
 	}
 
 	override fun determineTypes() {

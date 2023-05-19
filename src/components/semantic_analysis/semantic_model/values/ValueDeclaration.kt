@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.Element
@@ -13,14 +13,14 @@ import java.util.*
 
 abstract class ValueDeclaration(override val source: Element, override val scope: MutableScope, val name: String, var type: Type? = null,
 								value: Value? = null, val isConstant: Boolean = true, val isMutable: Boolean = false,
-								val isSpecificCopy: Boolean = false): Unit(source, scope) {
+								val isSpecificCopy: Boolean = false): SemanticModel(source, scope) {
 	private var hasDeterminedTypes = isSpecificCopy
 	open val value = value
 	val usages = LinkedList<VariableValue>()
 	var conversion: InitializerDefinition? = null
 
 	init {
-		addUnits(type, value)
+		addSemanticModels(type, value)
 	}
 
 	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ValueDeclaration

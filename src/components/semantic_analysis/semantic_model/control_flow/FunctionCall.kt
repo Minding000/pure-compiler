@@ -27,8 +27,8 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 
 	init {
 		staticValue = this
-		addUnits(typeParameters, valueParameters)
-		addUnits(function)
+		addSemanticModels(typeParameters, valueParameters)
+		addSemanticModels(function)
 	}
 
 	override fun determineTypes() {
@@ -79,7 +79,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 			}
 			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value }, baseDefinition)
 			type.determineTypes()
-			addUnits(type)
+			addSemanticModels(type)
 			this.type = type
 			targetImplementation = match.signature
 		} catch(error: SignatureResolutionAmbiguityError) {

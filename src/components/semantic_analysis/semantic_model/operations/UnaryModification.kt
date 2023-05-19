@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.operations
 
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.NumberLiteral
 import components.semantic_analysis.semantic_model.values.Operator
@@ -15,14 +15,14 @@ import java.math.BigDecimal
 import components.syntax_parser.syntax_tree.operations.UnaryModification as UnaryModificationSyntaxTree
 
 class UnaryModification(override val source: UnaryModificationSyntaxTree, scope: Scope, val target: Value, val kind: Operator.Kind):
-	Unit(source, scope) {
+	SemanticModel(source, scope) {
 
 	companion object {
 		private val STEP = BigDecimal(1)
 	}
 
 	init {
-		addUnits(target)
+		addSemanticModels(target)
 	}
 
 	override fun determineTypes() {

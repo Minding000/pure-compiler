@@ -16,7 +16,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 	Value(source, scope) {
 
 	init {
-		addUnits(value)
+		addSemanticModels(value)
 	}
 
 	override fun determineTypes() {

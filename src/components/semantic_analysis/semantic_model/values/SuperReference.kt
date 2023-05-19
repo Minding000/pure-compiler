@@ -13,7 +13,7 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 	Value(source, scope) {
 
 	init {
-		addUnits(specifier)
+		addSemanticModels(specifier)
 	}
 
 	override fun determineTypes() {

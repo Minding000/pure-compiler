@@ -9,6 +9,6 @@ class ForeignLanguageExpression(override val source: ForeignLanguageExpressionSy
 								val content: String): Value(source, scope) {
 
 	init {
-		addUnits(foreignParser)
+		addSemanticModels(foreignParser)
 	}
 }

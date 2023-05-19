@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.semantic_model.context.SpecialType
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.LiteralType
 import components.semantic_analysis.semantic_model.types.OptionalType
@@ -13,13 +13,13 @@ import java.math.BigDecimal
 class NumberLiteral(override val source: Element, scope: Scope, val value: BigDecimal): LiteralValue(source, scope) {
 	var isInteger = value.isRepresentedAsAnInteger()
 
-	constructor(parent: Unit, value: BigDecimal): this(parent.source, parent.scope, value) {
+	constructor(parent: SemanticModel, value: BigDecimal): this(parent.source, parent.scope, value) {
 		(type as? LiteralType)?.determineTypes()
 	}
 
 	init {
 		type = LiteralType(source, scope, if(isInteger) SpecialType.INTEGER else SpecialType.FLOAT)
-		addUnits(type)
+		addSemanticModels(type)
 	}
 
 	override fun isAssignableTo(targetType: Type?): Boolean {

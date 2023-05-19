@@ -7,10 +7,10 @@ import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.HandleBlock as HandleBlockSyntaxTree
 
 class HandleBlock(override val source: HandleBlockSyntaxTree, scope: Scope, val eventType: Type, val eventVariable: ValueDeclaration?,
-				  val block: StatementBlock): Unit(source, scope) {
+				  val block: StatementBlock): SemanticModel(source, scope) {
 
 	init {
-		addUnits(eventType, eventVariable, block)
+		addSemanticModels(eventType, eventVariable, block)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

@@ -1,6 +1,6 @@
 package util
 
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
@@ -9,11 +9,11 @@ import components.syntax_parser.syntax_tree.general.TypeElement
 import components.syntax_parser.syntax_tree.general.ValueElement
 import java.util.*
 
-fun List<Element>.toSemanticModels(scope: MutableScope): List<Unit> {
-	val units = LinkedList<Unit>()
+fun List<Element>.toSemanticModels(scope: MutableScope): List<SemanticModel> {
+	val semanticModels = LinkedList<SemanticModel>()
 	for(element in this)
-		element.toSemanticModel(scope, units)
-	return units
+		element.toSemanticModel(scope, semanticModels)
+	return semanticModels
 }
 
 fun List<TypeElement>?.toSemanticTypeModels(scope: MutableScope): List<Type> {

@@ -9,7 +9,7 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 
 	init {
 		type = LiteralType(source, scope, SpecialType.STRING)
-		addUnits(type)
+		addSemanticModels(type)
 	}
 
 	override fun hashCode(): Int {

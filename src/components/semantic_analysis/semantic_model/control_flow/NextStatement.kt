@@ -1,12 +1,12 @@
 package components.semantic_analysis.semantic_model.control_flow
 
 import components.semantic_analysis.semantic_model.context.VariableTracker
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import logger.issues.loops.NextStatementOutsideOfLoop
 import components.syntax_parser.syntax_tree.control_flow.NextStatement as NextStatementSyntaxTree
 
-class NextStatement(override val source: NextStatementSyntaxTree, scope: Scope): Unit(source, scope) {
+class NextStatement(override val source: NextStatementSyntaxTree, scope: Scope): SemanticModel(source, scope) {
 	private var targetLoop: LoopStatement? = null
 	override val isInterruptingExecution = true
 

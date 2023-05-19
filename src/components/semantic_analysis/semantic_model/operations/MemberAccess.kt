@@ -18,7 +18,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 				   private val isOptional: Boolean): Value(source, scope) {
 
 	init {
-		addUnits(target, member)
+		addSemanticModels(target, member)
 	}
 
 	override fun determineTypes() {

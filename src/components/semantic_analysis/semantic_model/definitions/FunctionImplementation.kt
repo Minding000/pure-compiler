@@ -3,7 +3,7 @@ package components.semantic_analysis.semantic_model.definitions
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Function
@@ -18,7 +18,7 @@ import java.util.*
 class FunctionImplementation(override val source: Element, override val scope: BlockScope, genericParameters: List<TypeDefinition>,
 							 val parameters: List<Parameter>, val body: ErrorHandlingContext?, returnType: Type?,
 							 override val isAbstract: Boolean = false, val isMutating: Boolean = false, val isNative: Boolean = false,
-							 val isOverriding: Boolean = false): Unit(source, scope), MemberDeclaration, Callable {
+							 val isOverriding: Boolean = false): SemanticModel(source, scope), MemberDeclaration, Callable {
 	override var parentDefinition: TypeDefinition? = null
 	private lateinit var parentFunction: Function
 	override val memberIdentifier: String
@@ -37,9 +37,9 @@ class FunctionImplementation(override val source: Element, override val scope: B
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 
 	init {
-		scope.unit = this
-		addUnits(parameters)
-		addUnits(body)
+		scope.semanticModel = this
+		addSemanticModels(parameters)
+		addSemanticModels(body)
 	}
 
 	fun setParent(function: Function) {

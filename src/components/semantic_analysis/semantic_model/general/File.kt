@@ -7,13 +7,13 @@ import java.util.*
 import components.syntax_parser.syntax_tree.general.File as FileSyntaxTree
 import source_structure.File as SourceFile
 
-class File(override val source: FileSyntaxTree, val file: SourceFile, override val scope: FileScope, val statements: List<Unit>):
-	Unit(source, scope) {
+class File(override val source: FileSyntaxTree, val file: SourceFile, override val scope: FileScope, val statements: List<SemanticModel>):
+	SemanticModel(source, scope) {
 	private val referencedFiles = LinkedList<File>()
 	lateinit var variableTracker: VariableTracker
 
 	init {
-		addUnits(statements)
+		addSemanticModels(statements)
 	}
 
 	fun matches(parts: List<String>): Boolean {

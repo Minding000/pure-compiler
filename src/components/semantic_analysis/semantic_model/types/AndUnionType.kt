@@ -13,7 +13,7 @@ import java.util.*
 class AndUnionType(override val source: Element, scope: Scope, val types: List<Type>): Type(source, scope) {
 
 	init {
-		addUnits(types)
+		addSemanticModels(types)
 		for(type in types)
 			type.interfaceScope.subscribe(this)
 	}

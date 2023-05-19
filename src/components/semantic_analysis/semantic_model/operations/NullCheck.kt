@@ -17,7 +17,7 @@ class NullCheck(override val source: NullCheckSyntaxTree, scope: Scope, val valu
 
 	init {
 		type = LiteralType(source, scope, SpecialType.BOOLEAN)
-		addUnits(value, type)
+		addSemanticModels(value, type)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

@@ -3,13 +3,13 @@ package components.semantic_analysis.semantic_model.scopes
 import components.semantic_analysis.semantic_model.control_flow.LoopStatement
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.issues.definition.Redeclaration
 
 class BlockScope(private val parentScope: MutableScope): MutableScope() {
-	var unit: Unit? = null
+	var semanticModel: SemanticModel? = null
 	val types = HashMap<String, TypeDefinition>()
 	val values = HashMap<String, ValueDeclaration>()
 
@@ -28,11 +28,11 @@ class BlockScope(private val parentScope: MutableScope): MutableScope() {
 	}
 
 	override fun getSurroundingFunction(): FunctionImplementation? {
-		return (unit as? FunctionImplementation) ?: parentScope.getSurroundingFunction()
+		return (semanticModel as? FunctionImplementation) ?: parentScope.getSurroundingFunction()
 	}
 
 	override fun getSurroundingLoop(): LoopStatement? {
-		return (unit as? LoopStatement) ?: parentScope.getSurroundingLoop()
+		return (semanticModel as? LoopStatement) ?: parentScope.getSurroundingLoop()
 	}
 
 	override fun resolveType(name: String): TypeDefinition? {

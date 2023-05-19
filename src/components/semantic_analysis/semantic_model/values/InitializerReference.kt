@@ -20,7 +20,7 @@ open class InitializerReference(override val source: InitializerReferenceSyntaxT
 			} else {
 				type = StaticType(surroundingDefinition)
 				type?.determineTypes()
-				addUnits(type)
+				addSemanticModels(type)
 			}
 		}
 	}

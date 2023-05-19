@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.tokenizer.Word
 import errors.internal.CompilerError
@@ -13,7 +13,7 @@ abstract class MetaElement(start: Position, end: Position): Element(start, end) 
 
 	constructor(word: Word): this(word.start, word.end)
 
-	override fun toSemanticModel(scope: MutableScope): Unit {
+	override fun toSemanticModel(scope: MutableScope): SemanticModel {
 		throw CompilerError(this,
 			"Tried to create semantic model of meta element '${javaClass.canonicalName}' at ${getStartString()}:\n$this")
 	}

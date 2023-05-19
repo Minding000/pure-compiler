@@ -2,13 +2,13 @@ package components.semantic_analysis.semantic_model.control_flow
 
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.syntax_parser.syntax_tree.control_flow.LoopStatement as LoopStatementSyntaxTree
 
-class LoopStatement(override val source: LoopStatementSyntaxTree, override val scope: BlockScope, val generator: Unit?,
-					val body: ErrorHandlingContext): Unit(source, scope) {
+class LoopStatement(override val source: LoopStatementSyntaxTree, override val scope: BlockScope, val generator: SemanticModel?,
+					val body: ErrorHandlingContext): SemanticModel(source, scope) {
 	override var isInterruptingExecution = false
 	var mightGetBrokenOutOf = false
 	private val hasFiniteGenerator: Boolean
@@ -24,8 +24,8 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		}
 
 	init {
-		scope.unit = this
-		addUnits(generator, body)
+		scope.semanticModel = this
+		addSemanticModels(generator, body)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

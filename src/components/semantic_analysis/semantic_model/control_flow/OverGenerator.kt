@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.control_flow
 
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.LiteralType
@@ -20,11 +20,11 @@ import components.syntax_parser.syntax_tree.control_flow.OverGenerator as OverGe
 
 class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, val collection: Value,
 					val iteratorVariableDeclaration: LocalVariableDeclaration?, val variableDeclarations: List<LocalVariableDeclaration>):
-	Unit(source, scope) {
+	SemanticModel(source, scope) {
 
 	init {
-		addUnits(collection, iteratorVariableDeclaration)
-		addUnits(variableDeclarations)
+		addSemanticModels(collection, iteratorVariableDeclaration)
+		addSemanticModels(variableDeclarations)
 	}
 
 	override fun determineTypes() {
@@ -52,7 +52,7 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 		} else if(variableDeclarations.size == 2) {
 			val indexVariableType = LiteralType(source, scope, SpecialType.INTEGER)
 			indexVariableType.determineTypes()
-			addUnits(indexVariableType)
+			addSemanticModels(indexVariableType)
 			variableDeclarations.firstOrNull()?.type = indexVariableType
 		}
 		variableDeclarations.lastOrNull()?.type = collectionType.baseType

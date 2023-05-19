@@ -21,16 +21,16 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		get() = value.staticValue is NullLiteral
 
 	init {
-		addUnits(value, variableDeclaration)
+		addSemanticModels(value, variableDeclaration)
 		type = if(operator.returnsBoolean) {
-			addUnits(referenceType)
+			addSemanticModels(referenceType)
 			LiteralType(source, scope, SpecialType.BOOLEAN)
 		} else if(operator == Operator.OPTIONAL_CAST) {
 			OptionalType(source, scope, referenceType)
 		} else {
 			referenceType
 		}
-		addUnits(type)
+		addSemanticModels(type)
 	}
 
 	override fun determineTypes() {
@@ -45,7 +45,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 			staticValue = value.staticValue
 		} else if(operator == Operator.THROWING_CAST) {
 			staticValue = value.staticValue
-			isInterruptingExecution = isCastNeverSuccessful //TODO propagate 'isInterruptingExecution' property from expressions to statements in the 'Unit' class
+			isInterruptingExecution = isCastNeverSuccessful //TODO propagate 'isInterruptingExecution' property from expressions to statements in the 'SemanticModel' class
 		} else if(operator == Operator.OPTIONAL_CAST) {
 			if(isCastAlwaysSuccessful)
 				staticValue = value.staticValue

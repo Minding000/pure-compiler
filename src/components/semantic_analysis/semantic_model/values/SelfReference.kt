@@ -12,7 +12,7 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 	var definition: TypeDefinition? = null
 
 	init {
-		addUnits(specifier)
+		addSemanticModels(specifier)
 		specifier?.setIsNonSpecificContext()
 	}
 
@@ -38,7 +38,7 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 			val typeParameters = definition.scope.getGenericTypeDefinitions().map { ObjectType(it) }
 			type = ObjectType(typeParameters, definition)
 			type?.determineTypes()
-			addUnits(type)
+			addSemanticModels(type)
 		}
 	}
 

@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions.sections
 
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.Modifier
 import components.syntax_parser.syntax_tree.definitions.ModifierList
@@ -23,9 +23,9 @@ class ModifierSection(private val modifierList: ModifierList, private val sectio
 		}
 	}
 
-	override fun toSemanticModel(scope: MutableScope, units: MutableList<Unit>) {
+	override fun toSemanticModel(scope: MutableScope, semanticModels: MutableList<SemanticModel>) {
 		for(section in sections)
-			section.toSemanticModel(scope, units)
+			section.toSemanticModel(scope, semanticModels)
 	}
 
 	override fun getOwnModifiers(): List<Modifier> {

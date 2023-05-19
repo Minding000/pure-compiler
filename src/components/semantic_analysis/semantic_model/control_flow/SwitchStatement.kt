@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.control_flow
 
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.semantic_analysis.semantic_model.values.Value
@@ -15,12 +15,12 @@ import java.util.*
 import components.syntax_parser.syntax_tree.control_flow.SwitchStatement as SwitchStatementSyntaxTree
 
 class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Scope, val subject: Value, val cases: List<Case>,
-					  val elseBranch: Unit?): Unit(source, scope) {
+					  val elseBranch: SemanticModel?): SemanticModel(source, scope) {
 	override var isInterruptingExecution = false
 
 	init {
-		addUnits(subject, elseBranch)
-		addUnits(cases)
+		addSemanticModels(subject, elseBranch)
+		addSemanticModels(cases)
 	}
 
 	override fun determineTypes() {
@@ -82,7 +82,7 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 			|| (isExhaustive() && areAllBranchesInterruptingExecution)
 	}
 
-	private fun getBranchForValue(value: Value?): Unit? {
+	private fun getBranchForValue(value: Value?): SemanticModel? {
 		for(case in cases) {
 			if(case.condition.staticValue == value)
 				return case.result

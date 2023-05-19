@@ -22,8 +22,8 @@ open class ObjectType(override val source: Element, scope: Scope, val enclosingT
 		this(definition.source, definition.scope, null, typeParameters, definition.name, definition)
 
 	init {
-		addUnits(enclosingType)
-		addUnits(typeParameters)
+		addSemanticModels(enclosingType)
+		addSemanticModels(typeParameters)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type {

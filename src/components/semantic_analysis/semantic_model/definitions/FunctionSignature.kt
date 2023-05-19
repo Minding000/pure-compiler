@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.definitions
 
 import components.semantic_analysis.semantic_model.context.SpecialType
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.LiteralType
 import components.semantic_analysis.semantic_model.types.Type
@@ -13,15 +13,15 @@ import util.combine
 import java.util.*
 
 class FunctionSignature(override val source: Element, override val scope: BlockScope, val genericParameters: List<TypeDefinition>,
-						val parameterTypes: List<Type?>, returnType: Type?, isPartOfImplementation: Boolean = false): Unit(source, scope) {
+						val parameterTypes: List<Type?>, returnType: Type?, isPartOfImplementation: Boolean = false): SemanticModel(source, scope) {
 	val returnType = returnType ?: LiteralType(source, scope, SpecialType.NOTHING)
 	var superFunctionSignature: FunctionSignature? = null
 
 	init {
-		addUnits(genericParameters)
-		addUnits(this.returnType)
+		addSemanticModels(genericParameters)
+		addSemanticModels(this.returnType)
 		if(!isPartOfImplementation)
-			addUnits(parameterTypes)
+			addSemanticModels(parameterTypes)
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {

@@ -14,7 +14,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 					 val kind: Operator.Kind): Value(source, scope) {
 
 	init {
-		addUnits(left, right)
+		addSemanticModels(left, right)
 	}
 
 	override fun determineTypes() {

@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
@@ -9,13 +9,13 @@ import logger.issues.definition.SetterInComputedValue
 import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclaration as ComputedPropertySyntaxTree
 
 class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, scope: MutableScope, name: String, type: Type?,
-								  isConstant: Boolean, isOverriding: Boolean, val getExpression: Value?, val setStatement: Unit?,
+								  isConstant: Boolean, isOverriding: Boolean, val getExpression: Value?, val setStatement: SemanticModel?,
 								  isSpecificCopy: Boolean = false):
 	PropertyDeclaration(source, scope, name, type, getExpression, false, false, isConstant, false, isOverriding,
 		isSpecificCopy) {
 
 	init {
-		addUnits(getExpression, setStatement)
+		addSemanticModels(getExpression, setStatement)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ComputedPropertyDeclaration {

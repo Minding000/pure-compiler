@@ -13,8 +13,8 @@ class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, ov
 	ValueDeclaration(source, scope, name, isSpecificCopy = isSpecificCopy) {
 
 	init {
-		addUnits(keyReturnType, valueReturnType, body)
-		addUnits(parameters)
+		addSemanticModels(keyReturnType, valueReturnType, body)
+		addSemanticModels(parameters)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): GeneratorDefinition {

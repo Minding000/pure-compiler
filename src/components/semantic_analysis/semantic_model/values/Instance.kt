@@ -16,7 +16,7 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, ove
 	lateinit var typeDefinition: TypeDefinition
 
 	init {
-		addUnits(valueParameters)
+		addSemanticModels(valueParameters)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Instance {
@@ -27,13 +27,13 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, ove
 		this.typeDefinition = scope.getSurroundingDefinition()
 			?: throw CompilerError(source, "Instance outside of type definition.")
 		val type = ObjectType(typeDefinition)
-		addUnits(type)
+		addSemanticModels(type)
 		this.type = type
 		value.definition = this
 		value.type = type
 		value.staticValue = value
 		val staticType = StaticType(typeDefinition)
-		addUnits(staticType)
+		addSemanticModels(staticType)
 		super.determineType()
 		try {
 			val initializer = staticType.resolveInitializer(valueParameters)

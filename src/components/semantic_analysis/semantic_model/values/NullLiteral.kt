@@ -1,20 +1,20 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.semantic_model.context.SpecialType
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.LiteralType
 import components.syntax_parser.syntax_tree.general.Element
 
 class NullLiteral(override val source: Element, scope: Scope): LiteralValue(source, scope) {
 
-	constructor(parent: Unit): this(parent.source, parent.scope) {
+	constructor(parent: SemanticModel): this(parent.source, parent.scope) {
 		(type as? LiteralType)?.determineTypes()
 	}
 
 	init {
 		type = LiteralType(source, scope, SpecialType.NULL)
-		addUnits(type)
+		addSemanticModels(type)
 	}
 
 	override fun hashCode(): Int {

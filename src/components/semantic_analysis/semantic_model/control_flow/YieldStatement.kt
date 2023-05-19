@@ -7,6 +7,6 @@ import components.syntax_parser.syntax_tree.control_flow.YieldStatement as Yield
 class YieldStatement(override val source: YieldStatementSyntaxTree, scope: Scope, val key: Value?, val value: Value): Value(source, scope) {
 
 	init {
-		addUnits(key, value)
+		addSemanticModels(key, value)
 	}
 }

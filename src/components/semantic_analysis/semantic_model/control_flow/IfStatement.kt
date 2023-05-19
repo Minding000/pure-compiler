@@ -1,20 +1,20 @@
 package components.semantic_analysis.semantic_model.control_flow
 
 import components.semantic_analysis.semantic_model.context.VariableTracker
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.control_flow.IfStatement as IfStatementSyntaxTree
 
-class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val condition: Value, val positiveBranch: Unit,
-				  val negativeBranch: Unit?): Unit(source, scope) {
+class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val condition: Value, val positiveBranch: SemanticModel,
+				  val negativeBranch: SemanticModel?): SemanticModel(source, scope) {
 	override var isInterruptingExecution = false
 	private var isConditionAlwaysTrue = false
 	private var isConditionAlwaysFalse = false
 
 	init {
-		addUnits(condition, positiveBranch, negativeBranch)
+		addSemanticModels(condition, positiveBranch, negativeBranch)
 	}
 
 	override fun determineTypes() {

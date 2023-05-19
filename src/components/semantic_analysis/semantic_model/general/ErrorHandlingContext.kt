@@ -8,11 +8,11 @@ import components.syntax_parser.syntax_tree.general.StatementSection
 import java.util.*
 
 class ErrorHandlingContext(override val source: StatementSection, scope: Scope, val mainBlock: StatementBlock,
-						   val handleBlocks: List<HandleBlock>, val alwaysBlock: StatementBlock?): Unit(source, scope) {
+						   val handleBlocks: List<HandleBlock>, val alwaysBlock: StatementBlock?): SemanticModel(source, scope) {
 
 	init {
-		addUnits(mainBlock, alwaysBlock)
-		addUnits(handleBlocks)
+		addSemanticModels(mainBlock, alwaysBlock)
+		addSemanticModels(handleBlocks)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

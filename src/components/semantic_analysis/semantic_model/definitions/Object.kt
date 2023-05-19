@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
@@ -8,7 +8,7 @@ import components.semantic_analysis.semantic_model.values.LocalVariableDeclarati
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?,
-			 superType: Type?, members: List<Unit>, isBound: Boolean, val isNative: Boolean, val isMutable: Boolean):
+			 superType: Type?, members: List<SemanticModel>, isBound: Boolean, val isNative: Boolean, val isMutable: Boolean):
 	TypeDefinition(source, name, scope, explicitParentType, superType, members, isBound) {
 
 	init {
@@ -24,7 +24,7 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 			PropertyDeclaration(source, targetScope, name, type, null, !isBound)
 		else
 			LocalVariableDeclaration(source, targetScope, name, type)
-		addUnits(valueDeclaration)
+		addSemanticModels(valueDeclaration)
 		valueDeclaration.declare()
 	}
 

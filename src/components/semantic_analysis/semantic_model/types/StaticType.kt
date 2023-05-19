@@ -89,10 +89,10 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 			val definitionTypeSubstitutions = initializer.getDefinitionTypeSubstitutions(genericDefinitionTypes, suppliedDefinitionTypes,
 				suppliedValues) ?: continue
 			if(definitionTypeSubstitutions.isNotEmpty())
-				specificInitializer = specificInitializer.withTypeSubstitutions(definitionTypeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
+				specificInitializer = specificInitializer.withTypeSubstitutions(definitionTypeSubstitutions) //TODO the copied semanticModel should be added to semanticModels (same for functions and operators)
 			val typeSubstitutions = specificInitializer.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
 			if(typeSubstitutions.isNotEmpty())
-				specificInitializer = specificInitializer.withTypeSubstitutions(typeSubstitutions) //TODO the copied unit should be added to units (same for functions and operators)
+				specificInitializer = specificInitializer.withTypeSubstitutions(typeSubstitutions) //TODO the copied semanticModel should be added to semanticModels (same for functions and operators)
 			if(specificInitializer.accepts(suppliedValues))
 				validSignatures.add(MatchResult(specificInitializer, definitionTypeSubstitutions))
 		}

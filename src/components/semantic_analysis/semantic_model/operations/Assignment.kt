@@ -3,7 +3,7 @@ package components.semantic_analysis.semantic_model.operations
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.general.Unit
+import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.SelfReference
 import components.semantic_analysis.semantic_model.values.Value
@@ -15,12 +15,12 @@ import logger.issues.resolution.ConversionAmbiguity
 import components.syntax_parser.syntax_tree.operations.Assignment as AssignmentSyntaxTree
 
 class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val targets: List<Value>, val sourceExpression: Value):
-	Unit(source, scope) {
+	SemanticModel(source, scope) {
 	var conversion: InitializerDefinition? = null
 
 	init {
-		addUnits(sourceExpression)
-		addUnits(targets)
+		addSemanticModels(sourceExpression)
+		addSemanticModels(targets)
 	}
 
 	override fun determineTypes() {
