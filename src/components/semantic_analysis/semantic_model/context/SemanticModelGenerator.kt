@@ -8,7 +8,7 @@ import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 class SemanticModelGenerator(val context: Context) {
 	private var activePhase = Phase.PENDING //TODO consider removing this property if it is not needed
 
-	fun lint(programSyntaxTree: ProgramSyntaxTree): SemanticProgramModel {
+	fun createSemanticModel(programSyntaxTree: ProgramSyntaxTree): SemanticProgramModel {
 		val logger = context.logger
 		logger.addPhase("Semantic model creation")
 		activePhase = Phase.SEMANTIC_MODEL_CREATION
@@ -46,7 +46,7 @@ class SemanticModelGenerator(val context: Context) {
 
 	enum class Phase {
 		PENDING,
-		SEMANTIC_MODEL_CREATION,					// Create semantic model from abstract syntax tree
+		SEMANTIC_MODEL_CREATION,		// Create semantic model from abstract syntax tree
 		LITERAL_SCOPE_RESOLUTION,		// Create references to literal type definitions
 		DECLARATION,					// Declare types and values in scopes (except for initializers)
 		FILE_REFERENCE_RESOLUTION,		// Resolves references between file by collecting the declared types and values
@@ -56,12 +56,12 @@ class SemanticModelGenerator(val context: Context) {
 		// - Function.resolveSignatures() - before resolving functions in function call or operators
 
 		// Implementation differences:
-		// - removed 'type linking' stage (because generic copies require values to be linked)
-		// - created 'getType()' function in ValueDeclaration instead, replacing 'preLinkValues()'
-		// - using 'hasDeterminedTypes' properties instead
-		// - didn't create 'TypeDefinition.resolveInitializers()'
-		// - didn't create 'Function.resolveSignatures()'
-		// - called 'determineTypes()' manually in some places
+		// - removed 'type linking' stage (because generic copies require values to be linked)		GOOD
+		// - using 'hasDeterminedTypes' properties instead											GOOD
+		// - didn't create 'TypeDefinition.resolveInitializers()'									BAD
+		// - didn't create 'Function.resolveSignatures()'											BAD
+		// - created 'getType()' function in ValueDeclaration instead, replacing 'preLinkValues()'	BAD
+		// - called 'determineTypes()' manually in some places										BAD
 
 		DETERMINE_TYPES,				// Determine types of values that don't have explicit types
 		DATA_FLOW_ANALYSIS,				// Run dataflow analysis to detect constant conditions and similar issues

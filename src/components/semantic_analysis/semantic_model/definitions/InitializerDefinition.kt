@@ -77,7 +77,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		val typeSubstitutions = LinkedHashMap<TypeDefinition, Type>()
 		for(parameterIndex in genericDefinitionTypes.indices) {
 			val genericParameter = genericDefinitionTypes[parameterIndex]
-			val requiredType = genericParameter.superType
+			val requiredType = genericParameter.getComputedSuperType()
 			val suppliedType = suppliedDefinitionTypes.getOrNull(parameterIndex)
 				?: inferTypeParameter(genericParameter, suppliedValues)
 				?: return null
@@ -96,7 +96,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		val typeSubstitutions = HashMap<TypeDefinition, Type>()
 		for(parameterIndex in typeParameters.indices) {
 			val typeParameter = typeParameters[parameterIndex]
-			val requiredType = typeParameter.superType
+			val requiredType = typeParameter.getComputedSuperType()
 			val suppliedType = suppliedTypes.getOrNull(parameterIndex)
 				?: inferTypeParameter(typeParameter, suppliedValues)
 				?: return null

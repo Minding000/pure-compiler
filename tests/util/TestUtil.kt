@@ -54,7 +54,7 @@ object TestUtil {
         val parseResult = parse(sourceCode, includeRequiredModules, false)
 		val context = parseResult.syntaxTreeGenerator.project.context
         val semanticModelGenerator = SemanticModelGenerator(context)
-        val program = semanticModelGenerator.lint(parseResult.program)
+        val program = semanticModelGenerator.createSemanticModel(parseResult.program)
         context.logger.printReport()
         return LintResult(context, program)
     }
@@ -63,7 +63,7 @@ object TestUtil {
 		val parseResult = parse(sourceCode, includeRequiredModules = false, printReport = false)
 		val context = parseResult.syntaxTreeGenerator.project.context
 		val semanticModelGenerator = SemanticModelGenerator(context)
-		val program = semanticModelGenerator.lint(parseResult.program)
+		val program = semanticModelGenerator.createSemanticModel(parseResult.program)
 		val testFile = program.files.find { file -> file.file.name == TEST_FILE_NAME }
 		assertNotNull(testFile, "Missing test file")
 		return testFile.variableTracker

@@ -55,7 +55,7 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 			return targetType.accepts(this)
 		if(equals(targetType))
 			return true
-		return definition.superType?.isAssignableTo(targetType) ?: false
+		return definition.getComputedSuperType()?.isAssignableTo(targetType) ?: false
 	}
 
 	fun resolveInitializer(suppliedValues: List<Value>): MatchResult? =

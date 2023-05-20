@@ -55,7 +55,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		val typeSubstitutions = HashMap<TypeDefinition, Type>()
 		for(parameterIndex in genericParameters.indices) {
 			val genericParameter = genericParameters[parameterIndex]
-			val requiredType = genericParameter.superType
+			val requiredType = genericParameter.getComputedSuperType()
 			val suppliedType = suppliedTypes.getOrNull(parameterIndex)
 				?: inferTypeParameter(genericParameter, suppliedValues)
 				?: return null

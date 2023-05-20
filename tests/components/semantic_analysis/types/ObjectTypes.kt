@@ -21,7 +21,8 @@ internal class ObjectTypes {
 	fun `object types can be assigned to their super types`() {
 		val sourceCode =
 			"""
-				val vehicle: Vehicle = Car()
+				val car: Car
+				val vehicle: Vehicle = car
 				Car class: Vehicle
 				Vehicle class
             """.trimIndent()

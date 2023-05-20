@@ -87,6 +87,11 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 		}
 	}
 
+	fun getComputedSuperType(): Type? {
+		superType?.determineTypes()
+		return superType
+	}
+
 	override fun determineTypes() {
 		if(hasDeterminedTypes)
 			return

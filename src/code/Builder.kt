@@ -32,7 +32,7 @@ object Builder {
 			}
 			println("----- Linter messages: -----")
 			val semanticModelGenerator = SemanticModelGenerator(project.context)
-			val lintedProgram = semanticModelGenerator.lint(program)
+			val lintedProgram = semanticModelGenerator.createSemanticModel(program)
 			project.context.logger.printReport()
 			println("----- JIT example: -----")
 			LLVMIRCompiler.runExampleProgram()

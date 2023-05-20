@@ -24,6 +24,6 @@ class GenericTypeDefinition(override val source: ParameterSyntaxTree, name: Stri
 	}
 
 	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
-		return superType?.getConversionsFrom(sourceType) ?: listOf()
+		return getComputedSuperType()?.getConversionsFrom(sourceType) ?: listOf()
 	}
 }
