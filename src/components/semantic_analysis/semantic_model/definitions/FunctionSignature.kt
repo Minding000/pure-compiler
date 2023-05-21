@@ -22,6 +22,11 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		addSemanticModels(this.returnType)
 	}
 
+	fun getComputedReturnType(): Type {
+		returnType.determineTypes()
+		return returnType
+	}
+
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {
 		val specificGenericParameters = LinkedList<TypeDefinition>()
 		for(genericParameter in genericParameters) {

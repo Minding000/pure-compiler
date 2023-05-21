@@ -67,7 +67,7 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 			val iteratorCreationProperty = collectionType.interfaceScope.resolveValue("createIterator")
 			val iteratorCreationFunctionType = iteratorCreationProperty?.type as? FunctionType
 			val iteratorCreationSignature = iteratorCreationFunctionType?.resolveSignature()
-			val iteratorType = iteratorCreationSignature?.returnType ?: return
+			val iteratorType = iteratorCreationSignature?.getComputedReturnType() ?: return
 			iteratorVariableDeclaration?.type = iteratorType
 			val availableValueTypes = LinkedList<Type?>()
 			if(iteratorType.isInstanceOf(SpecialType.INDEX_ITERATOR)) {
