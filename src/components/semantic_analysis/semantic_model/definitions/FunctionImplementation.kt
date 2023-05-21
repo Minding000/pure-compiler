@@ -30,8 +30,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 				signature.toString(false, parentOperator.kind)
 			}
 		}
-	val signature: FunctionSignature = FunctionSignature(source, scope, genericParameters,
-		parameters.map { parameter -> parameter.type }, returnType, true)
+	val signature = FunctionSignature(source, scope, genericParameters, parameters.map { parameter -> parameter.type }, returnType)
 	var mightReturnValue = false
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()

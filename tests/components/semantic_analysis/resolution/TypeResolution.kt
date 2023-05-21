@@ -1,5 +1,6 @@
 package components.semantic_analysis.resolution
 
+import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
@@ -131,5 +132,33 @@ internal class TypeResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val memberAccess = lintResult.find<MemberAccess> { memberAccess -> memberAccess.member.toString() == "add" }
 		assertEquals("(Country) =>|", memberAccess?.type.toString())
+	}
+
+	@Test
+	fun `resolves implicit type of self referencing property`() {
+		val sourceCode =
+			"""
+				List class {
+					containing Element
+					val interface = this
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val propertyDeclaration = lintResult.find<PropertyDeclaration>()
+		assertEquals("<Element>List", propertyDeclaration?.type.toString())
+	}
+
+	@Test
+	fun `resolves implicit type of property referencing following property`() {
+		val sourceCode =
+			"""
+				List class {
+					val size = this.length
+					val length: Int
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val propertyDeclaration = lintResult.find<PropertyDeclaration> { propertyDeclaration -> propertyDeclaration.name == "size" }
+		assertEquals("Int", propertyDeclaration?.type.toString())
 	}
 }

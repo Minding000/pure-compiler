@@ -13,15 +13,13 @@ import util.combine
 import java.util.*
 
 class FunctionSignature(override val source: SyntaxTreeNode, override val scope: BlockScope, val genericParameters: List<TypeDefinition>,
-						val parameterTypes: List<Type?>, returnType: Type?, isPartOfImplementation: Boolean = false): SemanticModel(source, scope) {
+						val parameterTypes: List<Type?>, returnType: Type?): SemanticModel(source, scope) {
 	val returnType = returnType ?: LiteralType(source, scope, SpecialType.NOTHING)
 	var superFunctionSignature: FunctionSignature? = null
 
 	init {
-		addSemanticModels(genericParameters)
+		addSemanticModels(genericParameters, parameterTypes)
 		addSemanticModels(this.returnType)
-		if(!isPartOfImplementation)
-			addSemanticModels(parameterTypes)
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {

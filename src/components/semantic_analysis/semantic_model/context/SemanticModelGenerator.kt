@@ -56,12 +56,12 @@ class SemanticModelGenerator(val context: Context) {
 		// - Function.resolveSignatures() - before resolving functions in function call or operators
 
 		// Implementation differences:
-		// - removed 'type linking' stage (because generic copies require values to be linked)		GOOD
-		// - using 'hasDeterminedTypes' properties instead											GOOD
-		// - didn't create 'TypeDefinition.resolveInitializers()'									BAD
-		// - didn't create 'Function.resolveSignatures()'											BAD
-		// - created 'getType()' function in ValueDeclaration instead, replacing 'preLinkValues()'	BAD
-		// - called 'determineTypes()' manually in some places										BAD
+		// - removed 'type linking' stage (because generic copies require values to be linked)				GOOD
+		// - using 'hasDeterminedTypes' properties instead													GOOD
+		// - created 'getComputedType()' function in ValueDeclaration instead, replacing 'preLinkValues()'	IMPROVE
+		// - called 'determineTypes()' manually in some places												IMPROVE
+		// - didn't create 'TypeDefinition.resolveInitializers()'											IMPROVE
+		// - didn't create 'Function.resolveSignatures()'													IMPROVE - DO THIS NEXT
 
 		DETERMINE_TYPES,				// Determine types of values that don't have explicit types
 		DATA_FLOW_ANALYSIS,				// Run dataflow analysis to detect constant conditions and similar issues
