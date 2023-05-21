@@ -6,6 +6,7 @@ import components.semantic_analysis.semantic_model.definitions.FunctionImplement
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import logger.issues.definition.DuplicateChildModel
 import java.util.*
 
 abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Scope) {
@@ -16,9 +17,15 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 	open val isInterruptingExecution = false
 
 	fun addSemanticModels(vararg newSemanticModels: SemanticModel?) {
-		for(newSemanticModel in newSemanticModels) {
+		newModel@for(newSemanticModel in newSemanticModels) {
 			if(newSemanticModel != null) {
 				newSemanticModel.parent = this
+				for(existingSemanticModel in semanticModels) {
+					if(existingSemanticModel === newSemanticModel) {
+						context.addIssue(DuplicateChildModel(newSemanticModel))
+						continue@newModel
+					}
+				}
 				semanticModels.add(newSemanticModel)
 			}
 		}
