@@ -5,6 +5,7 @@ import components.semantic_analysis.semantic_model.operations.IndexAccess
 import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
+import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
@@ -172,7 +173,7 @@ internal class OperatorResolution {
 	}
 
 	@Test
-	fun `resolves index operators`() {
+	fun `resolves get index operators`() {
 		val sourceCode =
 			"""
 				Position class
@@ -184,6 +185,24 @@ internal class OperatorResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
+		val indexAccess = lintResult.find<IndexAccess>()
+		assertNotNull(indexAccess?.type)
+	}
+
+	@Test
+	fun `resolves set index operators`() {
+		val sourceCode =
+			"""
+				Position class
+				Field class
+				ChessBoard object {
+					native operator[position: Position](field: Field)
+				}
+				ChessBoard[Position()] = Field()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 		val indexAccess = lintResult.find<IndexAccess>()
 		assertNotNull(indexAccess?.type)
 	}

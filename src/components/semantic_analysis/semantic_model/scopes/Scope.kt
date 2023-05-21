@@ -44,11 +44,9 @@ abstract class Scope {
 
 	abstract fun resolveValue(name: String): ValueDeclaration?
 
-	fun resolveOperator(kind: Operator.Kind): FunctionSignature?
-		= resolveOperator(kind, listOf())
+	fun resolveOperator(kind: Operator.Kind): FunctionSignature? = resolveOperator(kind, listOf())
 
-	fun resolveOperator(kind: Operator.Kind, suppliedType: Value): FunctionSignature?
-		= resolveOperator(kind, listOf(suppliedType))
+	fun resolveOperator(kind: Operator.Kind, suppliedType: Value): FunctionSignature? = resolveOperator(kind, listOf(suppliedType))
 
 	open fun resolveOperator(kind: Operator.Kind, suppliedValues: List<Value>): FunctionSignature? {
 		val operator = resolveValue(kind.stringRepresentation)?.getComputedType() as? FunctionType
@@ -65,6 +63,6 @@ abstract class Scope {
 			Operator.Kind.BRACKETS_GET
 		else
 			Operator.Kind.BRACKETS_SET
-		return resolveOperator(kind, suppliedIndexValues)
+		return resolveOperator(kind, listOf(*suppliedIndexValues.toTypedArray(), *suppliedParameterValues.toTypedArray()))
 	}
 }

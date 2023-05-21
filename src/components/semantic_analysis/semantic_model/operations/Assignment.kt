@@ -26,6 +26,8 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 	override fun determineTypes() {
 		super.determineTypes()
 		for(target in targets) {
+			if(target is IndexAccess)
+				continue
 			val targetType = target.type
 			if(sourceExpression.isAssignableTo(targetType)) {
 				sourceExpression.setInferredType(targetType)
