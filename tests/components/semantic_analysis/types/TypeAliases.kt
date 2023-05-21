@@ -3,6 +3,7 @@ package components.semantic_analysis.types
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.definition.CircularTypeAlias
+import logger.issues.resolution.NotCallable
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -47,6 +48,18 @@ internal class TypeAliases {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<TypeNotAssignable>()
+	}
+
+	@Test
+	fun `resolves calls to values with aliased function type`() {
+		val sourceCode =
+			"""
+				alias ClickHandler = =>|
+				val handler: ClickHandler
+				handler()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotCallable>()
 	}
 
 	@Test

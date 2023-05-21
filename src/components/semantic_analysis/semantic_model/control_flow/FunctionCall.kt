@@ -33,7 +33,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 
 	override fun determineTypes() {
 		super.determineTypes()
-		when(val targetType = function.type) {
+		when(val targetType = function.type?.effectiveType) {
 			is StaticType -> resolveInitializerCall(targetType)
 			is FunctionType -> resolveFunctionCall(targetType)
 			null -> {}
