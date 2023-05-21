@@ -19,6 +19,7 @@ internal class TypeAliases {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<TypeNotAssignable>()
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 	}
 
 	@Test

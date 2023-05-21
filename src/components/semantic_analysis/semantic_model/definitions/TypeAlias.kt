@@ -25,14 +25,14 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val refe
 	fun getEffectiveType(): Type {
 		if(!context.declarationStack.push(this))
 			return effectiveType
-		if(hasDeterminedEffectiveType)
-			return effectiveType
-		hasDeterminedEffectiveType = true
-		referenceType.determineTypes()
-		if(referenceType is ObjectType) {
-			val referenceDefinition = referenceType.definition
-			if(referenceDefinition is TypeAlias)
-				effectiveType = referenceDefinition.getEffectiveType()
+		if(!hasDeterminedEffectiveType) {
+			hasDeterminedEffectiveType = true
+			referenceType.determineTypes()
+			if(referenceType is ObjectType) {
+				val referenceDefinition = referenceType.definition
+				if(referenceDefinition is TypeAlias)
+					effectiveType = referenceDefinition.getEffectiveType()
+			}
 		}
 		context.declarationStack.pop(this)
 		return effectiveType
