@@ -15,7 +15,7 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		isSpecificCopy) {
 
 	init {
-		addSemanticModels(getExpression, setStatement)
+		addSemanticModels(setStatement)
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ComputedPropertyDeclaration {
