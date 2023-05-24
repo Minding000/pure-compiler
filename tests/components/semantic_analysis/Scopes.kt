@@ -1,6 +1,5 @@
 package components.semantic_analysis
 
-import components.semantic_analysis.semantic_model.context.Context
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.general.Program
 import components.semantic_analysis.semantic_model.scopes.BlockScope
@@ -16,12 +15,12 @@ import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 internal class Scopes {
 
 	private inline fun <reified I: Issue> assertIssueDetected(message: String, setup: (Position) -> Unit) {
-		val context = Context()
-		context.logger.addPhase("Test")
-		val line = Line(File(Module(Project("Test"), "Test"), emptyList(), "Test", ""), 0, 0, 1)
+		val project = Project("Test")
+		project.context.logger.addPhase("Test")
+		val line = Line(File(Module(project, "Test"), emptyList(), "Test", ""), 0, 0, 1)
 		val position = Position(0, line, 0)
 		setup(position)
-		val lintResult = LintResult(context, Program(ProgramSyntaxTree(emptyList())))
+		val lintResult = LintResult(project.context, Program(ProgramSyntaxTree(emptyList())))
 		lintResult.assertIssueDetected<I>(message)
 	}
 
