@@ -72,15 +72,15 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 			val availableValueTypes = LinkedList<Type?>()
 			if(iteratorType.isInstanceOf(SpecialType.INDEX_ITERATOR)) {
 				val indexProperty = iteratorType.interfaceScope.resolveValue("currentIndex")
-				availableValueTypes.add(indexProperty?.getComputedType())
+				availableValueTypes.add(indexProperty?.getLinkedType())
 			}
 			if(iteratorType.isInstanceOf(SpecialType.KEY_ITERATOR)) {
 				val keyProperty = iteratorType.interfaceScope.resolveValue("currentKey")
-				availableValueTypes.add(keyProperty?.getComputedType())
+				availableValueTypes.add(keyProperty?.getLinkedType())
 			}
 			if(iteratorType.isInstanceOf(SpecialType.VALUE_ITERATOR)) {
 				val valueProperty = iteratorType.interfaceScope.resolveValue("currentValue")
-				availableValueTypes.add(valueProperty?.getComputedType())
+				availableValueTypes.add(valueProperty?.getLinkedType())
 			}
 			if(variableDeclarations.size > availableValueTypes.size) {
 				context.addIssue(TooManyIterableVariableDeclarations(source, variableDeclarations, availableValueTypes))

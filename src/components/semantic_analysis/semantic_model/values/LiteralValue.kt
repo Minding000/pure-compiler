@@ -6,12 +6,8 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
 abstract class LiteralValue(source: SyntaxTreeNode, scope: Scope): Value(source, scope) {
 
-	override fun determineTypes() {
-		super.determineTypes()
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		super.analyseDataFlow(tracker)
 		staticValue = this
-	}
-
-	override fun getComputedValue(tracker: VariableTracker): Value? {
-		return this
 	}
 }

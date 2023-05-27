@@ -38,14 +38,10 @@ class NullCheck(override val source: NullCheckSyntaxTree, scope: Scope, val valu
 			}
 			tracker.setVariableStates(commonState)
 		}
-		staticValue = getComputedValue(tracker)
-	}
-
-	override fun getComputedValue(tracker: VariableTracker): Value? {
-		val valueType = value.getComputedType(tracker)
-		return if(valueType == null)
+		val valueType = value.getComputedType()
+		staticValue = if(valueType == null) {
 			null
-		else if(SpecialType.NULL.matches(valueType)) {
+		} else if(SpecialType.NULL.matches(valueType)) {
 			context.addIssue(StaticNullCheckValue(source, "no"))
 			BooleanLiteral(this, false)
 		} else if(valueType !is OptionalType) {

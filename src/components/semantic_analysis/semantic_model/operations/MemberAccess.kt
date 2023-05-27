@@ -5,10 +5,7 @@ import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.*
-import components.semantic_analysis.semantic_model.values.InitializerReference
-import components.semantic_analysis.semantic_model.values.SelfReference
-import components.semantic_analysis.semantic_model.values.Value
-import components.semantic_analysis.semantic_model.values.VariableValue
+import components.semantic_analysis.semantic_model.values.*
 import logger.issues.access.GuaranteedAccessWithNullCheck
 import logger.issues.access.OptionalAccessWithoutNullCheck
 import java.util.*
@@ -34,18 +31,19 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 					OptionalType(source, scope, memberType)
 				else
 					memberType
-				if(!isOptional)
-					staticValue = member.staticValue
 			}
 		}
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
-		if(target is SelfReference)
+		if(target is SelfReference) {
 			member.analyseDataFlow(tracker)
-		else
+		} else {
 			target.analyseDataFlow(tracker)
-		val targetType = target.getComputedType(tracker)
+			//TODO write test to make sure this is fine
+			(member as? VariableValue)?.computeValue(tracker)
+		}
+		val targetType = target.getComputedType()
 		if(targetType != null) {
 			if(isTypePotentiallyNull(targetType)) {
 				if(!isOptional)
@@ -54,6 +52,13 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 				if(isOptional)
 					context.addIssue(GuaranteedAccessWithNullCheck(source, targetType))
 			}
+		}
+		val computedTargetType = target.getComputedType()
+		val computedMemberType = member.getComputedType()
+		if(SpecialType.NULL.matches(computedTargetType) || SpecialType.NULL.matches(computedMemberType)) {
+			staticValue = NullLiteral(this)
+		} else if(computedTargetType !is OptionalType) {
+			staticValue = member.getComputedValue()
 		}
 	}
 

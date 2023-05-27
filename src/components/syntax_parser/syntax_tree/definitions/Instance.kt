@@ -13,7 +13,7 @@ import components.semantic_analysis.semantic_model.values.Instance as SemanticIn
 class Instance(val identifier: Identifier, val parameters: List<ValueSyntaxTreeNode>, end: Position): SyntaxTreeNode(identifier.start, end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticInstanceModel {
-		return SemanticInstanceModel(this, scope, identifier.toSemanticModel(scope), parameters.toSemanticValueModels(scope))
+		return SemanticInstanceModel(this, scope, identifier.getValue(), parameters.toSemanticValueModels(scope))
 	}
 
 	override fun toString(): String {

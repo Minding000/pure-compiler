@@ -17,14 +17,6 @@ class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val 
 		addSemanticModels(condition, positiveBranch, negativeBranch)
 	}
 
-	override fun determineTypes() {
-		super.determineTypes()
-		(condition.staticValue as? BooleanLiteral)?.value.let { staticResult ->
-			isConditionAlwaysTrue = staticResult == true
-			isConditionAlwaysFalse = staticResult == false
-		}
-	}
-
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		condition.analyseDataFlow(tracker)
 		tracker.setVariableStates(condition.getPositiveEndState())
@@ -36,6 +28,10 @@ class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val 
 			tracker.setVariableStates(condition.getNegativeEndState())
 			negativeBranch.analyseDataFlow(tracker)
 			tracker.addVariableStates(positiveBranchState)
+		}
+		(condition.getComputedValue() as? BooleanLiteral)?.value.let { staticResult ->
+			isConditionAlwaysTrue = staticResult == true
+			isConditionAlwaysFalse = staticResult == false
 		}
 	}
 

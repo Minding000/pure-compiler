@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.operations
 
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.types.Type
@@ -22,7 +23,11 @@ class InstanceAccess(override val source: InstanceAccessSyntaxTree, scope: Scope
 				?: throw CompilerError(source, "Inferred type doesn't contain instance value.")
 			definition.usages.add(this)
 			this.definition = definition
-			staticValue = definition.value
 		}
+	}
+
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		super.analyseDataFlow(tracker)
+		staticValue = definition?.value
 	}
 }

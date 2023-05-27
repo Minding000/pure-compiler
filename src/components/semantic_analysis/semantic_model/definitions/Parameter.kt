@@ -32,7 +32,7 @@ class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, n
 				if(propertyDeclaration == null) {
 					context.addIssue(PropertyParameterMismatch(source))
 				} else {
-					type = propertyDeclaration?.getComputedType()
+					type = propertyDeclaration?.getLinkedType()
 				}
 			} else {
 				context.addIssue(PropertyParameterOutsideOfInitializer(source))

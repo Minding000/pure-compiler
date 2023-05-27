@@ -193,6 +193,6 @@ internal class ExecutionFlowAnalysis {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "result" }
-		assertIs<ObjectType>(variableValue?.staticValue?.type)
+		assertIs<ObjectType>(variableValue?.getComputedType())
 	}
 }

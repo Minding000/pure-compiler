@@ -16,9 +16,9 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		   val referenceType: Type, val operator: Operator): Value(source, scope) {
 	override var isInterruptingExecution = false
 	private val isCastAlwaysSuccessful: Boolean
-		get() = (value.staticValue?.type ?: value.type)?.isAssignableTo(referenceType) ?: false
+		get() = value.getComputedType()?.isAssignableTo(referenceType) ?: false
 	private val isCastNeverSuccessful: Boolean
-		get() = value.staticValue is NullLiteral
+		get() = value.getComputedValue() is NullLiteral
 
 	init {
 		addSemanticModels(value, variableDeclaration)
@@ -36,22 +36,6 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 	override fun determineTypes() {
 		super.determineTypes()
 		variableDeclaration?.type = referenceType
-		if(operator.returnsBoolean) {
-			if(isCastAlwaysSuccessful)
-				staticValue = BooleanLiteral(this, operator == Operator.CAST_CONDITION)
-			else if(isCastNeverSuccessful)
-				staticValue = BooleanLiteral(this, operator == Operator.NEGATED_CAST_CONDITION)
-		} else if(operator == Operator.SAFE_CAST) {
-			staticValue = value.staticValue
-		} else if(operator == Operator.THROWING_CAST) {
-			staticValue = value.staticValue
-			isInterruptingExecution = isCastNeverSuccessful //TODO propagate 'isInterruptingExecution' property from expressions to statements in the 'SemanticModel' class
-		} else if(operator == Operator.OPTIONAL_CAST) {
-			if(isCastAlwaysSuccessful)
-				staticValue = value.staticValue
-			else if(isCastNeverSuccessful)
-				staticValue = NullLiteral(this)
-		}
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -73,6 +57,22 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 				}
 				tracker.setVariableStates(commonState)
 			}
+		}
+		if(operator.returnsBoolean) {
+			if(isCastAlwaysSuccessful)
+				staticValue = BooleanLiteral(this, operator == Operator.CAST_CONDITION)
+			else if(isCastNeverSuccessful)
+				staticValue = BooleanLiteral(this, operator == Operator.NEGATED_CAST_CONDITION)
+		} else if(operator == Operator.SAFE_CAST) {
+			staticValue = value.getComputedValue()
+		} else if(operator == Operator.THROWING_CAST) {
+			staticValue = value.getComputedValue()
+			isInterruptingExecution = isCastNeverSuccessful //TODO propagate 'isInterruptingExecution' property from expressions to statements in the 'SemanticModel' class
+		} else if(operator == Operator.OPTIONAL_CAST) {
+			if(isCastAlwaysSuccessful)
+				staticValue = value.getComputedValue()
+			else if(isCastNeverSuccessful)
+				staticValue = NullLiteral(this)
 		}
 	}
 

@@ -13,6 +13,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	var sourceExpression: Value? = null
 
 	init {
+		//TODO set static value to this
 		addSemanticModels(typeParameters, indices)
 		addSemanticModels(target)
 	}

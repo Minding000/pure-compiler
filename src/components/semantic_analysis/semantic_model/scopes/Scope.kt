@@ -49,7 +49,7 @@ abstract class Scope {
 	fun resolveOperator(kind: Operator.Kind, suppliedType: Value): FunctionSignature? = resolveOperator(kind, listOf(suppliedType))
 
 	open fun resolveOperator(kind: Operator.Kind, suppliedValues: List<Value>): FunctionSignature? {
-		val operator = resolveValue(kind.stringRepresentation)?.getComputedType() as? FunctionType
+		val operator = resolveValue(kind.stringRepresentation)?.getLinkedType() as? FunctionType
 		return operator?.resolveSignature(suppliedValues)
 	}
 

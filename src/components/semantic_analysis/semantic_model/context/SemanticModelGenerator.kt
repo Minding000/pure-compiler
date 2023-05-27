@@ -58,7 +58,7 @@ class SemanticModelGenerator(val context: Context) {
 		// Implementation differences:
 		// - removed 'type linking' stage (because generic copies require values to be linked)				GOOD
 		// - using 'hasDeterminedTypes' properties instead													GOOD
-		// - created 'getComputedType()' function in ValueDeclaration instead, replacing 'preLinkValues()'	IMPROVE
+		// - created 'getLinkedType()' function in ValueDeclaration instead, replacing 'preLinkValues()'	IMPROVE
 		// - called 'determineTypes()' manually in some places												IMPROVE
 		// - didn't create 'TypeDefinition.resolveInitializers()'											IMPROVE
 		// - didn't create 'Function.resolveSignatures()'													IMPROVE - DO THIS NEXT

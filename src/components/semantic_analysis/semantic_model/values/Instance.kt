@@ -10,9 +10,9 @@ import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
 import components.syntax_parser.syntax_tree.definitions.Instance as InstanceSyntaxTree
 
-class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, override val value: VariableValue,
-			   val valueParameters: List<Value>, isSpecificCopy: Boolean = false):
-	InterfaceMember(source, scope, value.name, null, value, true, isSpecificCopy = isSpecificCopy) {
+class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, name: String, val valueParameters: List<Value>,
+			   isSpecificCopy: Boolean = false):
+	InterfaceMember(source, scope, name, null, null, true, isSpecificCopy = isSpecificCopy) {
 	lateinit var typeDefinition: TypeDefinition
 
 	init {
@@ -20,7 +20,7 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, ove
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Instance {
-		return Instance(source, scope, value, valueParameters, true)
+		return Instance(source, scope, name, valueParameters, true)
 	}
 
 	override fun determineType() {
@@ -29,9 +29,6 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, ove
 		val type = ObjectType(typeDefinition)
 		addSemanticModels(type)
 		this.type = type
-		value.definition = this
-		value.type = type
-		value.staticValue = value
 		val staticType = StaticType(typeDefinition)
 		addSemanticModels(staticType)
 		super.determineType()

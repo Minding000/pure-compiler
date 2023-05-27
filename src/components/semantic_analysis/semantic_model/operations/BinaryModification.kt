@@ -38,16 +38,17 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		modifier.analyseDataFlow(tracker)
 		if(target is VariableValue) {
+			target.computeValue(tracker)
 			tracker.add(listOf(VariableUsage.Kind.READ, VariableUsage.Kind.MUTATION), target, tracker.getCurrentTypeOf(target.definition),
-				getComputedTargetValue(tracker))
+				getComputedTargetValue())
 		} else {
 			target.analyseDataFlow(tracker)
 		}
 	}
 
-	private fun getComputedTargetValue(tracker: VariableTracker): Value? {
-		val targetValue = (target.getComputedValue(tracker) as? NumberLiteral ?: return null).value
-		val modifierValue = (modifier.getComputedValue(tracker) as? NumberLiteral ?: return null).value
+	private fun getComputedTargetValue(): Value? {
+		val targetValue = (target.getComputedValue() as? NumberLiteral ?: return null).value
+		val modifierValue = (modifier.getComputedValue() as? NumberLiteral ?: return null).value
 		val resultingValue = when(kind) {
 			Operator.Kind.PLUS_EQUALS -> targetValue + modifierValue
 			Operator.Kind.MINUS_EQUALS -> targetValue - modifierValue

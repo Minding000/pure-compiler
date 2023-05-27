@@ -109,7 +109,7 @@ internal class DataFlowAnalysis {
 	}
 
 	@Test
-	fun `works with loops with generator`() {
+	fun `works with loops with over generator`() {
 		val sourceCode = """
 			var a = 0
 			loop over Range(0, 5) as number {
@@ -125,6 +125,31 @@ internal class DataFlowAnalysis {
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertEquals(report, tracker.getReportFor("a"))
+	}
+
+	@Test
+	fun `works with loops with while generator`() {
+		val sourceCode = """
+			Int class
+			var result: Int? = null
+			loop while result? {
+				result
+				result = Int()
+			}
+			result
+		""".trimIndent()
+		val report = """
+			start -> 2
+			2: declaration & write -> 3 (Null, null)
+			3: read -> 3, 3 (Int?, null)
+			3: hint -> 4 (Null, null)
+			3: hint -> 7 (Int, null)
+			4: read -> 5 (Null, null)
+			5: write -> 3 (Int, null)
+			7: read -> end (Int null)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertEquals(report, tracker.getReportFor("result"))
 	}
 
 	@Test

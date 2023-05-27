@@ -42,19 +42,15 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 			positiveState = value.getNegativeEndState()
 			negativeState = value.getPositiveEndState()
 		}
-		staticValue = getComputedValue(tracker)
-	}
-
-	override fun getComputedValue(tracker: VariableTracker): Value? {
-		return when(kind) {
+		staticValue = when(kind) {
 			Operator.Kind.BRACKETS_GET -> null
 			Operator.Kind.EXCLAMATION_MARK -> {
-				val booleanValue = value.staticValue as? BooleanLiteral ?: return null
+				val booleanValue = value.getComputedValue() as? BooleanLiteral ?: return
 				BooleanLiteral(this, !booleanValue.value)
 			}
 			Operator.Kind.TRIPLE_DOT -> null
 			Operator.Kind.MINUS -> {
-				val numberValue = value.staticValue as? NumberLiteral ?: return null
+				val numberValue = value.getComputedValue() as? NumberLiteral ?: return
 				NumberLiteral(this, -numberValue.value)
 			}
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")

@@ -41,15 +41,16 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		if(target is VariableValue) {
+			target.computeValue(tracker)
 			tracker.add(listOf(VariableUsage.Kind.READ, VariableUsage.Kind.MUTATION), target, tracker.getCurrentTypeOf(target.definition),
-				getComputedTargetValue(tracker))
+				getComputedTargetValue())
 		} else {
 			target.analyseDataFlow(tracker)
 		}
 	}
 
-	private fun getComputedTargetValue(tracker: VariableTracker): Value? {
-		val targetValue = (target.getComputedValue(tracker) as? NumberLiteral ?: return null).value
+	private fun getComputedTargetValue(): Value? {
+		val targetValue = (target.getComputedValue() as? NumberLiteral ?: return null).value
 		val resultingValue = when(kind) {
 			Operator.Kind.DOUBLE_PLUS -> targetValue + STEP
 			Operator.Kind.DOUBLE_MINUS -> targetValue - STEP

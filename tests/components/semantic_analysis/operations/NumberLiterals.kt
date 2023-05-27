@@ -99,7 +99,7 @@ internal class NumberLiterals {
 				0
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<NumberLiteral>()?.staticValue
+		val variableValue = lintResult.find<NumberLiteral>()?.getComputedValue()
 		assertIs<NumberLiteral>(variableValue)
 		assertEquals(BigDecimal("0"), variableValue.value)
 	}
@@ -111,7 +111,7 @@ internal class NumberLiterals {
 				14
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<NumberLiteral>()?.staticValue
+		val variableValue = lintResult.find<NumberLiteral>()?.getComputedValue()
 		assertIs<NumberLiteral>(variableValue)
 		assertEquals(BigDecimal("14"), variableValue.value)
 	}
@@ -123,7 +123,7 @@ internal class NumberLiterals {
 				6.546
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<NumberLiteral>()?.staticValue
+		val variableValue = lintResult.find<NumberLiteral>()?.getComputedValue()
 		assertIs<NumberLiteral>(variableValue)
 		assertEquals(BigDecimal("6.546"), variableValue.value)
 	}
@@ -135,7 +135,7 @@ internal class NumberLiterals {
 				1_000_000
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<NumberLiteral>()?.staticValue
+		val variableValue = lintResult.find<NumberLiteral>()?.getComputedValue()
 		assertIs<NumberLiteral>(variableValue)
 		assertEquals(BigDecimal("1000000"), variableValue.value)
 	}
@@ -147,7 +147,7 @@ internal class NumberLiterals {
 				0.00_000_1
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<NumberLiteral>()?.staticValue
+		val variableValue = lintResult.find<NumberLiteral>()?.getComputedValue()
 		assertIs<NumberLiteral>(variableValue)
 		assertEquals(BigDecimal("0.000001"), variableValue.value)
 	}
@@ -159,7 +159,7 @@ internal class NumberLiterals {
 				1.2e7
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<NumberLiteral>()?.staticValue
+		val variableValue = lintResult.find<NumberLiteral>()?.getComputedValue()
 		assertIs<NumberLiteral>(variableValue)
 		assertEquals(BigDecimal("1.2e7"), variableValue.value)
 	}

@@ -58,10 +58,6 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 			context.addIssue(ReliesOnUninitializedProperties(source, getSignature(), requiredButUninitializedProperties))
 	}
 
-	override fun getComputedType(tracker: VariableTracker): Type? {
-		return type
-	}
-
 	private fun resolveInitializerCall(targetType: StaticType) {
 		(targetType.definition as? Class)?.let { `class` ->
 			if(`class`.isAbstract)

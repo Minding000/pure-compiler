@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -37,6 +38,10 @@ open class Function(source: SyntaxTreeNode, scope: Scope, val name: String = "<a
 	override fun determineTypes() {
 		super.determineTypes()
 		ensureUniqueSignatures()
+	}
+
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		super.analyseDataFlow(tracker)
 		staticValue = this
 	}
 

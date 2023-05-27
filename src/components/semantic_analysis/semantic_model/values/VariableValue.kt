@@ -36,9 +36,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		}
 		definition.usages.add(this)
 		this.definition = definition
-		type = definition.getComputedType()
-		if(definition.isConstant)
-			staticValue = definition.value?.staticValue
+		type = definition.getLinkedType()
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -54,10 +52,11 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 			if(tracker.isInitializer && !declaration.isStatic && declaration.value == null && !usage.isPreviouslyInitialized())
 				context.addIssue(NotInitialized(source, "Property", name))
 		}
+		computeValue(tracker)
 	}
 
-	override fun getComputedValue(tracker: VariableTracker): Value? {
-		return tracker.getCurrentValueOf(definition)
+	fun computeValue(tracker: VariableTracker) {
+		staticValue = tracker.getCurrentValueOf(definition) ?: this
 	}
 
 	override fun hashCode(): Int {

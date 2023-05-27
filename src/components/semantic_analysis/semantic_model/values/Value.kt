@@ -10,7 +10,7 @@ import errors.internal.CompilerError
 import logger.issues.resolution.MissingType
 
 abstract class Value(override val source: SyntaxTreeNode, override var scope: Scope, var type: Type? = null): SemanticModel(source, scope) {
-	open var staticValue: Value? = null
+	protected open var staticValue: Value? = null
 	protected var positiveState: VariableTracker.VariableState? = null
 	protected var negativeState: VariableTracker.VariableState? = null
 
@@ -65,8 +65,8 @@ abstract class Value(override val source: SyntaxTreeNode, override var scope: Sc
 		return negativeState ?: throw CompilerError(source, "Tried to access missing negative state.")
 	}
 
-	open fun getComputedValue(tracker: VariableTracker): Value? = staticValue //TODO get this from dataflow
-	open fun getComputedType(tracker: VariableTracker): Type? = getComputedValue(tracker)?.type
+	fun getComputedValue(): Value? = staticValue
+	fun getComputedType(): Type? = getComputedValue()?.type ?: type
 
 	override fun hashCode(): Int {
 		return type.hashCode()

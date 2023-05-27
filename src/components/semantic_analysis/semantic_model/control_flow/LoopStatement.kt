@@ -16,7 +16,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			if(generator == null) {
 				return false
 			} else if(generator is WhileGenerator) {
-				val condition = generator.condition.staticValue
+				val condition = generator.condition.getComputedValue()
 				if(condition is BooleanLiteral && condition.value)
 					return false
 			}
@@ -28,20 +28,31 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		addSemanticModels(generator, body)
 	}
 
-	override fun analyseDataFlow(tracker: VariableTracker) {
-		val initialState = tracker.currentState.copy()
-		generator?.analyseDataFlow(tracker)
-		tracker.currentState.firstVariableUsages.clear()
+	override fun analyseDataFlow(tracker: VariableTracker) { //TODO test nested loops (with break etc.)
+		val postConditionState = if(generator is WhileGenerator) {
+			tracker.currentState.firstVariableUsages.clear() //TODO first usages should be stored in reference points that are added and removed
+			generator.analyseDataFlow(tracker)
+			tracker.setVariableStates(generator.condition.getPositiveEndState())
+			generator.condition.getNegativeEndState()
+		} else {
+			generator?.analyseDataFlow(tracker)
+			tracker.currentState.firstVariableUsages.clear()
+			tracker.currentState.copy()
+		}
 		body.analyseDataFlow(tracker)
 		tracker.linkBackToStart()
 		for(variableState in tracker.nextStatementStates)
 			tracker.linkBackToStartFrom(variableState)
 		tracker.nextStatementStates.clear()
-		if(hasFiniteGenerator)
-			tracker.addVariableStates(initialState)
-		else
+		if(hasFiniteGenerator) {
+			if(generator is WhileGenerator)
+				tracker.setVariableStates(postConditionState)
+			else
+				tracker.addVariableStates(postConditionState)
+		} else {
 			tracker.currentState.lastVariableUsages.clear()
-		tracker.addVariableStates(*tracker.breakStatementStates.toTypedArray())
+		}
+		tracker.addVariableStates(*tracker.breakStatementStates.toTypedArray()) //TODO refactor: accept collection as parameter
 		tracker.breakStatementStates.clear()
 	}
 

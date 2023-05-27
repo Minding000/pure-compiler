@@ -56,16 +56,14 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		for(target in targets) {
 			when(target) {
 				is VariableValue -> {
-					tracker.add(VariableUsage.Kind.WRITE, target, sourceExpression.type, sourceExpression.getComputedValue(tracker))
+					tracker.add(VariableUsage.Kind.WRITE, target, sourceExpression.type, sourceExpression.getComputedValue())
 					continue
 				}
 				is MemberAccess -> {
 					if(target.member !is VariableValue || target.member.definition?.isConstant == true)
 						context.addIssue(ConstantReassignment(source, target.member.toString()))
 					if(target.target is SelfReference && target.member is VariableValue) {
-						tracker.add(
-							VariableUsage.Kind.WRITE, target.member, sourceExpression.type,
-							sourceExpression.getComputedValue(tracker))
+						tracker.add(VariableUsage.Kind.WRITE, target.member, sourceExpression.type, sourceExpression.getComputedValue())
 						continue
 					}
 				}

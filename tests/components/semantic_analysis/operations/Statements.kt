@@ -91,7 +91,8 @@ internal class Statements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<MultipleInstanceLists>("Instance declarations can be merged.", Severity.WARNING)
+		lintResult.assertIssueDetected<MultipleInstanceLists>("Instance declarations can be merged.", Severity.WARNING, 3)
+		lintResult.assertIssueDetected<MultipleInstanceLists>("Instance declarations can be merged.", Severity.WARNING, 4)
 	}
 
 	@Test

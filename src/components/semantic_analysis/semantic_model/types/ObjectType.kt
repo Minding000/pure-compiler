@@ -126,7 +126,7 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 	override fun isInstanceOf(type: SpecialType): Boolean {
 		if(type.matches(this))
 			return true
-		return definition?.getComputedSuperType()?.isInstanceOf(type) ?: false
+		return definition?.getLinkedSuperType()?.isInstanceOf(type) ?: false
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
@@ -145,7 +145,7 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 			return targetType.accepts(this)
 		if(equals(targetType))
 			return true
-		return definition?.getComputedSuperType()?.isAssignableTo(targetType) ?: false
+		return definition?.getLinkedSuperType()?.isAssignableTo(targetType) ?: false
 	}
 
 	override fun getAbstractMembers(): List<MemberDeclaration> {

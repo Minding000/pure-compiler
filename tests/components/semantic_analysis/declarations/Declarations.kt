@@ -290,7 +290,8 @@ internal class Declarations {
 				Chicken class: Egg
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<CircularInheritance>()
+		lintResult.assertIssueDetected<CircularInheritance>(null, null, 1)
+		lintResult.assertIssueDetected<CircularInheritance>(null, null, 2)
 	}
 
 	@Test

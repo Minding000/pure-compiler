@@ -46,8 +46,8 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 			case.condition.analyseDataFlow(tracker)
 			val negativeState = tracker.currentState.copy()
 			if(subjectDeclaration != null) {
-				val computedValue = case.condition.getComputedValue(tracker)
-				tracker.add(VariableUsage.Kind.HINT, subjectDeclaration, case, computedValue?.type, computedValue)
+				tracker.add(VariableUsage.Kind.HINT, subjectDeclaration, case, case.condition.getComputedType(),
+					case.condition.getComputedValue())
 			}
 			case.result.analyseDataFlow(tracker)
 			caseStates.add(tracker.currentState.copy())
@@ -78,13 +78,13 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 		}
 		if(elseBranch != null && isExhaustiveWithoutElseBranch())
 			context.addIssue(RedundantElse(elseBranch.source))
-		isInterruptingExecution = (getBranchForValue(subject.staticValue)?.isInterruptingExecution ?: false)
+		isInterruptingExecution = (getBranchForValue(subject.getComputedValue())?.isInterruptingExecution ?: false)
 			|| (isExhaustive() && areAllBranchesInterruptingExecution)
 	}
 
 	private fun getBranchForValue(value: Value?): SemanticModel? {
 		for(case in cases) {
-			if(case.condition.staticValue == value)
+			if(case.condition.getComputedValue() == value)
 				return case.result
 		}
 		return null
@@ -99,7 +99,7 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 	}
 
 	private fun isExhaustiveWithoutElseBranch(): Boolean {
-		if(subject.staticValue is BooleanLiteral) {
+		if(subject.getComputedValue() is BooleanLiteral) {
 			var containsYes = false
 			var containsNo = false
 			for(case in cases) {
