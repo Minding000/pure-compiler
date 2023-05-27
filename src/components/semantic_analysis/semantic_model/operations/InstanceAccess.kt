@@ -26,8 +26,8 @@ class InstanceAccess(override val source: InstanceAccessSyntaxTree, scope: Scope
 		}
 	}
 
-	override fun analyseDataFlow(tracker: VariableTracker) {
-		super.analyseDataFlow(tracker)
+	override fun computeValue(tracker: VariableTracker) {
+		super.computeValue(tracker)
 		staticValue = definition?.value
 	}
 }

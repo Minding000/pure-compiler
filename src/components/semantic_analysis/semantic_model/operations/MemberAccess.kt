@@ -43,17 +43,16 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			//TODO write test to make sure this is fine
 			(member as? VariableValue)?.computeValue(tracker)
 		}
-		val targetType = target.getComputedType()
-		if(targetType != null) {
-			if(isTypePotentiallyNull(targetType)) {
+		val computedTargetType = target.getComputedType() //TODO use dataflow analysis result here instead of static type
+		if(computedTargetType != null) {
+			if(isTypePotentiallyNull(computedTargetType)) {
 				if(!isOptional)
-					context.addIssue(OptionalAccessWithoutNullCheck(source, targetType))
+					context.addIssue(OptionalAccessWithoutNullCheck(source, computedTargetType))
 			} else {
 				if(isOptional)
-					context.addIssue(GuaranteedAccessWithNullCheck(source, targetType))
+					context.addIssue(GuaranteedAccessWithNullCheck(source, computedTargetType))
 			}
 		}
-		val computedTargetType = target.getComputedType()
 		val computedMemberType = member.getComputedType()
 		if(SpecialType.NULL.matches(computedTargetType) || SpecialType.NULL.matches(computedMemberType)) {
 			staticValue = NullLiteral(this)

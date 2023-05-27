@@ -6,6 +6,7 @@ import components.semantic_analysis.semantic_model.definitions.PropertyDeclarati
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.StaticType
+import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import logger.issues.access.InstanceAccessFromStaticContext
@@ -15,6 +16,7 @@ import logger.issues.resolution.NotFound
 
 open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val name: String): Value(source, scope) {
 	var definition: ValueDeclaration? = null
+	protected open var staticType: Type? = null
 
 	constructor(source: Identifier, scope: Scope): this(source, scope, source.getValue())
 
@@ -55,9 +57,12 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		computeValue(tracker)
 	}
 
-	fun computeValue(tracker: VariableTracker) {
+	open fun computeValue(tracker: VariableTracker) {
 		staticValue = tracker.getCurrentValueOf(definition) ?: this
+		staticType = tracker.getCurrentTypeOf(definition)
 	}
+
+	override fun getComputedType(): Type? = staticType
 
 	override fun hashCode(): Int {
 		var result = super.hashCode()

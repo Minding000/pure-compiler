@@ -66,7 +66,7 @@ abstract class Value(override val source: SyntaxTreeNode, override var scope: Sc
 	}
 
 	fun getComputedValue(): Value? = staticValue
-	fun getComputedType(): Type? = getComputedValue()?.type ?: type
+	open fun getComputedType(): Type? = getComputedValue()?.type ?: type
 
 	override fun hashCode(): Int {
 		return type.hashCode()
