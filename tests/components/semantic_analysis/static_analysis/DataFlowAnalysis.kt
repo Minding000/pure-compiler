@@ -2,7 +2,7 @@ package components.semantic_analysis.static_analysis
 
 import org.junit.jupiter.api.Test
 import util.TestUtil
-import kotlin.test.assertEquals
+import util.TestUtil.assertStringEquals
 import kotlin.test.assertTrue
 
 internal class DataFlowAnalysis {
@@ -23,7 +23,7 @@ internal class DataFlowAnalysis {
 			1: declaration & write -> end (Int, 0)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -38,7 +38,7 @@ internal class DataFlowAnalysis {
 			2: read -> end (Int, 0)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("b"))
+		assertStringEquals(report, tracker.getReportFor("b"))
 	}
 
 	@Test
@@ -59,8 +59,8 @@ internal class DataFlowAnalysis {
 			4: read -> end (Int, 0)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(reportForA, tracker.getReportFor("a"))
-		assertEquals(reportForB, tracker.getReportFor("b"))
+		assertStringEquals(reportForA, tracker.getReportFor("a"))
+		assertStringEquals(reportForB, tracker.getReportFor("b"))
 	}
 
 	@Test
@@ -82,7 +82,7 @@ internal class DataFlowAnalysis {
 			7: read -> end (Int, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -105,7 +105,7 @@ internal class DataFlowAnalysis {
 			8: read -> 3 (Int, 1)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -124,7 +124,7 @@ internal class DataFlowAnalysis {
 			5: read -> end (Int, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -145,11 +145,34 @@ internal class DataFlowAnalysis {
 			3: hint -> 4 (Null, null)
 			3: hint -> 7 (Int, null)
 			4: read -> 5 (Null, null)
-			5: write -> 3 (Int, null)
-			7: read -> end (Int null)
+			5: write -> 3 (Int, Expression)
+			7: read -> end (Int, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("result"))
+		assertStringEquals(report, tracker.getReportFor("result"))
+	}
+
+	@Test
+	fun `works with nested loops`() {
+		val sourceCode = """
+			var a = 0
+			loop {
+				a++
+				loop over Range(0, 3) as modifier {
+					a *= modifier
+				}
+				a
+			}
+		""".trimIndent()
+		val report = """
+			start -> 1
+			1: declaration & write -> 3 (Int, 0)
+			3: read & mutation -> 5, 7 (Int, null)
+			5: read & mutation -> 5, 7 (Int, null)
+			7: read -> 3 (Int, null)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -171,7 +194,7 @@ internal class DataFlowAnalysis {
 			7: read -> end (Int, 0)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.childTrackers["DataProvider.getNumber(): Int"]?.getReportFor("a"))
+		assertStringEquals(report, tracker.childTrackers["DataProvider.getNumber(): Int"]?.getReportFor("a"))
 	}
 
 	@Test
@@ -199,7 +222,7 @@ internal class DataFlowAnalysis {
 			10: write -> end (Int, 2)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -224,7 +247,7 @@ internal class DataFlowAnalysis {
 			5: read -> end (Int, -1)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("d"))
+		assertStringEquals(report, tracker.getReportFor("d"))
 	}
 
 	@Test
@@ -247,7 +270,7 @@ internal class DataFlowAnalysis {
 			4: read -> end (Int, -1)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("d"))
+		assertStringEquals(report, tracker.getReportFor("d"))
 	}
 
 	@Test
@@ -263,7 +286,7 @@ internal class DataFlowAnalysis {
 			3: read -> end (Int, 0)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("c"))
+		assertStringEquals(report, tracker.getReportFor("c"))
 	}
 
 	@Test
@@ -278,7 +301,7 @@ internal class DataFlowAnalysis {
 			2: declaration & write -> end (Int, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("value"))
+		assertStringEquals(report, tracker.getReportFor("value"))
 	}
 
 	@Test
@@ -294,7 +317,7 @@ internal class DataFlowAnalysis {
 			3: declaration & write -> end (Error, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("e"))
+		assertStringEquals(report, tracker.getReportFor("e"))
 	}
 
 	@Test
@@ -309,7 +332,7 @@ internal class DataFlowAnalysis {
 			2: read -> end (Int, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -328,7 +351,7 @@ internal class DataFlowAnalysis {
 			4: read -> end (Int, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.childTrackers["A.init()"]?.getReportFor("a"))
+		assertStringEquals(report, tracker.childTrackers["A.init()"]?.getReportFor("a"))
 	}
 
 	@Test
@@ -347,7 +370,7 @@ internal class DataFlowAnalysis {
 			4: write -> end (Int, 3)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.childTrackers["A.init()"]?.getReportFor("a"))
+		assertStringEquals(report, tracker.childTrackers["A.init()"]?.getReportFor("a"))
 	}
 
 	//TODO add warning on expected division by zero
@@ -366,7 +389,7 @@ internal class DataFlowAnalysis {
 			2: read -> end (Bool, yes)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -383,7 +406,7 @@ internal class DataFlowAnalysis {
 			2: read -> end (Bool, no)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -401,7 +424,7 @@ internal class DataFlowAnalysis {
 			2: read -> end (Null, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -416,7 +439,7 @@ internal class DataFlowAnalysis {
 			2: write -> end (Float, 2.1)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -431,7 +454,7 @@ internal class DataFlowAnalysis {
 			2: read & mutation -> end (Int, 2)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -446,7 +469,7 @@ internal class DataFlowAnalysis {
 			2: read & mutation -> end (Int, 3)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -459,7 +482,7 @@ internal class DataFlowAnalysis {
 			1: declaration & write -> end (Bool, no)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -472,7 +495,7 @@ internal class DataFlowAnalysis {
 			1: declaration & write -> end (Int, 2)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -487,7 +510,7 @@ internal class DataFlowAnalysis {
 			2: read -> end (Int, 1)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -509,7 +532,7 @@ internal class DataFlowAnalysis {
 			5: read -> end (Int, 1)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -531,7 +554,7 @@ internal class DataFlowAnalysis {
 			5: read -> end (Int, 2)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -554,7 +577,7 @@ internal class DataFlowAnalysis {
 			5: read -> end (Int, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -577,7 +600,7 @@ internal class DataFlowAnalysis {
 			5: read -> end (Null, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -600,7 +623,7 @@ internal class DataFlowAnalysis {
 			5: read -> end (Int, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -625,7 +648,7 @@ internal class DataFlowAnalysis {
 			5: read -> end (Int?, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -650,7 +673,7 @@ internal class DataFlowAnalysis {
 			5: read -> end (Null, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 
 	@Test
@@ -673,6 +696,6 @@ internal class DataFlowAnalysis {
 			5: read -> end (Int, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
-		assertEquals(report, tracker.getReportFor("a"))
+		assertStringEquals(report, tracker.getReportFor("a"))
 	}
 }

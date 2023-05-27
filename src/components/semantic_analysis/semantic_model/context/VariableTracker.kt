@@ -3,12 +3,15 @@ package components.semantic_analysis.semantic_model.context
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.types.Type
+import components.semantic_analysis.semantic_model.values.LiteralValue
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.issues.initialization.ConstantReassignment
 import util.combine
 import java.util.*
+
+typealias UsagesByVariable = HashMap<ValueDeclaration, MutableSet<VariableUsage>>
 
 //TODO also consider value ranges
 // - or unions (a is 2 or 10, b is "hi" or "hello")
@@ -28,10 +31,15 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		addVariableStates(*variableStates)
 	}
 
+	fun addVariableStates(variableStates: Collection<VariableState>) = addVariableStates(*variableStates.toTypedArray())
+
 	fun addVariableStates(vararg variableStates: VariableState) {
 		for(variableState in variableStates) {
-			for((declaration, firstUsages) in variableState.firstVariableUsages)
-				getFirstVariableUsagesOf(declaration).addAll(firstUsages)
+			for((referencePoint, firstUsages) in variableState.firstVariableUsages) {
+				val targetFirstUsages = currentState.firstVariableUsages.getOrPut(referencePoint) { UsagesByVariable() }
+				for((declaration, usages) in firstUsages)
+					targetFirstUsages.getOrPut(declaration) { LinkedHashSet() }.addAll(usages)
+			}
 			for((declaration, lastUsages) in variableState.lastVariableUsages)
 				getLastVariableUsagesOf(declaration).addAll(lastUsages)
 		}
@@ -43,31 +51,33 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		}
 	}
 
-	private fun getFirstVariableUsagesOf(declaration: ValueDeclaration): MutableSet<VariableUsage> {
-		return currentState.firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
-	}
-
 	private fun getLastVariableUsagesOf(declaration: ValueDeclaration): MutableSet<VariableUsage> {
 		return currentState.lastVariableUsages.getOrPut(declaration) { LinkedHashSet() }
 	}
 
 	fun getCurrentTypeOf(declaration: ValueDeclaration?): Type? {
-		if(declaration == null)
-			return null
+		return getCommonType(currentState.lastVariableUsages[declaration ?: return null] ?: return null, declaration)
+	}
+
+	fun getCommonType(usages: Collection<VariableUsage>, semanticModel: SemanticModel): Type? {
 		var type: Type? = null
-		for(usage in currentState.lastVariableUsages[declaration] ?: return null) {
+		for(usage in usages) {
 			val usageType = usage.resultingType ?: return null
 			if(type == null)
 				type = usageType
 			else if(!type.accepts(usageType))
-				type = listOf(type, usageType).combine(declaration)
+				type = listOf(type, usageType).combine(semanticModel)
 		}
 		return type
 	}
 
 	fun getCurrentValueOf(declaration: ValueDeclaration?): Value? {
+		return getCommonValue(currentState.lastVariableUsages[declaration] ?: return null)
+	}
+
+	fun getCommonValue(usages: Collection<VariableUsage>): Value? {
 		var value: Value? = null
-		for(usage in currentState.lastVariableUsages[declaration] ?: return null) {
+		for(usage in usages) {
 			if(value == null)
 				value = usage.resultingValue ?: return null
 			else if(value != usage.resultingValue)
@@ -78,17 +88,19 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 
 	fun declare(declaration: ValueDeclaration, isInitialized: Boolean = false) {
 		val usages = variables.getOrPut(declaration) { LinkedList() }
-		val firstUsages = currentState.firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
 		val types = mutableListOf(VariableUsage.Kind.DECLARATION)
 		if(isInitialized || declaration.value != null)
 			types.add(VariableUsage.Kind.WRITE)
-		val computedType = declaration.value?.getComputedType(this) ?: declaration.type
-		val computedValue = declaration.value?.getComputedValue(this)
+		val computedType = declaration.value?.getComputedType() ?: declaration.type
+		val computedValue = declaration.value?.getComputedValue()
 		val usage = VariableUsage(types, declaration, computedType, computedValue)
 		val lastUsages = getLastVariableUsagesOf(declaration)
 		usages.add(usage)
-		if(firstUsages.isEmpty())
-			firstUsages.add(usage)
+		for((_, firstVariableUsages) in currentState.firstVariableUsages) {
+			val firstUsages = firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
+			if(firstUsages.isEmpty())
+				firstUsages.add(usage)
+		}
 		lastUsages.clear()
 		lastUsages.add(usage)
 	}
@@ -109,7 +121,6 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 			resultingType: Type? = getCurrentTypeOf(declaration),
 			resultingValue: Value? = getCurrentValueOf(declaration)): VariableUsage {
 		val usages = variables.getOrPut(declaration) { LinkedList() }
-		val firstUsages = currentState.firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
 		val lastUsages = getLastVariableUsagesOf(declaration)
 		val usage = VariableUsage(kinds, semanticModel, resultingType, resultingValue)
 		for(lastUsage in lastUsages) {
@@ -117,8 +128,11 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 			lastUsage.nextUsages.add(usage)
 		}
 		usages.add(usage)
-		if(firstUsages.isEmpty())
-			firstUsages.add(usage)
+		for((_, firstVariableUsages) in currentState.firstVariableUsages) {
+			val firstUsages = firstVariableUsages.getOrPut(declaration) { LinkedHashSet() }
+			if(firstUsages.isEmpty())
+				firstUsages.add(usage)
+		}
 		lastUsages.clear()
 		lastUsages.add(usage)
 		return usage
@@ -139,19 +153,20 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		currentState.lastVariableUsages.clear()
 	}
 
-	fun linkBackToStart() {
-		link(currentState, currentState)
+	fun linkBackTo(referencePoint: VariableState.ReferencePoint) {
+		link(currentState, referencePoint)
 	}
 
-	fun linkBackToStartFrom(referenceState: VariableState) {
-		link(referenceState, currentState)
-	}
-
-	fun link(originState: VariableState, targetState: VariableState) {
+	fun link(originState: VariableState, referencePoint: VariableState.ReferencePoint) {
+		val firstVariableUsages = currentState.firstVariableUsages[referencePoint] ?: return
 		for((declaration, lastUsages) in originState.lastVariableUsages) {
-			for(firstUsage in targetState.firstVariableUsages[declaration] ?: continue) {
+			for(firstUsage in firstVariableUsages[declaration] ?: continue) {
 				for(lastUsage in lastUsages) {
 					firstUsage.previousUsages.addFirst(lastUsage)
+					if(!firstUsage.kinds.contains(VariableUsage.Kind.WRITE)) {
+						firstUsage.resultingType = getCommonType(firstUsage.previousUsages, firstUsage.semanticModel)
+						firstUsage.resultingValue = getCommonValue(firstUsage.previousUsages)
+					}
 					lastUsage.nextUsages.addFirst(firstUsage)
 				}
 			}
@@ -159,7 +174,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 	}
 
 	fun calculateEndState() {
-		addVariableStates(*returnStatementStates.toTypedArray())
+		addVariableStates(returnStatementStates)
 		for((declaration, usages) in currentState.lastVariableUsages) {
 			val end = VariableUsage(listOf(VariableUsage.Kind.END), declaration)
 			ends[declaration] = end
@@ -169,11 +184,11 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		}
 	}
 
-	fun markAllUsagesAsExiting() {
-		var currentUsages = currentState.firstVariableUsages
+	fun markAllUsagesAsExiting(referencePoint: VariableState.ReferencePoint) {
+		var currentUsages = currentState.firstVariableUsages[referencePoint] ?: return
 		while(true) {
 			var hasNextUsages = false
-			val nextVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
+			val nextVariableUsages = UsagesByVariable()
 			usagesToBeLinked@for((declaration, usages) in currentUsages) {
 				val nextUsages = nextVariableUsages.getOrPut(declaration) { HashSet() }
 				for(usage in usages) {
@@ -188,11 +203,11 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		}
 	}
 
-	fun collectAllUsagesInto(variableUsages: HashMap<ValueDeclaration, MutableSet<VariableUsage>>) {
-		var currentUsages = currentState.firstVariableUsages
+	fun collectAllUsagesInto(referencePoint: VariableState.ReferencePoint, variableUsages: UsagesByVariable) {
+		var currentUsages = currentState.firstVariableUsages[referencePoint] ?: return
 		while(true) {
 			var hasNextUsages = false
-			val nextVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
+			val nextVariableUsages = UsagesByVariable()
 			for((declaration, usages) in currentUsages) {
 				val cumulatedUsages = variableUsages.getOrPut(declaration) { HashSet() }
 				cumulatedUsages.addAll(usages)
@@ -255,7 +270,12 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 				var targetString = usage.nextUsages.joinToString()
 				if(targetString.isEmpty())
 					targetString = "continues raise"
-				report += "\n$usage: $typeString -> $targetString (${usage.resultingType}, ${usage.resultingValue})"
+				val value = usage.resultingValue
+				val valueStringRepresentation = if(value is LiteralValue || value == null)
+					value.toString()
+				else
+					"Expression"
+				report += "\n$usage: $typeString -> $targetString (${usage.resultingType}, $valueStringRepresentation)"
 			}
 			return report
 		}
@@ -263,16 +283,32 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 	}
 
 	class VariableState {
-		val firstVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
-		val lastVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
+		val firstVariableUsages = HashMap<ReferencePoint, UsagesByVariable>()
+		val lastVariableUsages = UsagesByVariable()
 
 		fun copy(): VariableState {
 			val copy = VariableState()
-			for((declaration, usages) in firstVariableUsages)
-				copy.firstVariableUsages[declaration] = HashSet(usages)
+			for((referencePoint, firstUsages) in firstVariableUsages) {
+				val firstUsagesCopy = UsagesByVariable()
+				for((declaration, usages) in firstUsages)
+					firstUsagesCopy[declaration] = HashSet(usages)
+				copy.firstVariableUsages[referencePoint] = firstUsagesCopy
+			}
 			for((declaration, usages) in lastVariableUsages)
 				copy.lastVariableUsages[declaration] = HashSet(usages)
 			return copy
 		}
+
+		fun createReferencePoint(): ReferencePoint {
+			val referencePoint = ReferencePoint()
+			firstVariableUsages[referencePoint] = UsagesByVariable()
+			return referencePoint
+		}
+
+		fun removeReferencePoint(referencePoint: ReferencePoint) {
+			firstVariableUsages.remove(referencePoint)
+		}
+
+		class ReferencePoint
 	}
 }

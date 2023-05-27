@@ -28,32 +28,32 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		addSemanticModels(generator, body)
 	}
 
-	override fun analyseDataFlow(tracker: VariableTracker) { //TODO test nested loops (with break etc.)
-		val postConditionState = if(generator is WhileGenerator) {
-			tracker.currentState.firstVariableUsages.clear() //TODO first usages should be stored in reference points that are added and removed
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		val (loopReferencePoint, loopEndState) = if(generator is WhileGenerator) {
+			val referencePoint = tracker.currentState.createReferencePoint()
 			generator.analyseDataFlow(tracker)
 			tracker.setVariableStates(generator.condition.getPositiveEndState())
-			generator.condition.getNegativeEndState()
+			Pair(referencePoint, generator.condition.getNegativeEndState())
 		} else {
 			generator?.analyseDataFlow(tracker)
-			tracker.currentState.firstVariableUsages.clear()
-			tracker.currentState.copy()
+			Pair(tracker.currentState.createReferencePoint(), tracker.currentState.copy())
 		}
 		body.analyseDataFlow(tracker)
-		tracker.linkBackToStart()
+		tracker.linkBackTo(loopReferencePoint)
 		for(variableState in tracker.nextStatementStates)
-			tracker.linkBackToStartFrom(variableState)
+			tracker.link(variableState, loopReferencePoint)
 		tracker.nextStatementStates.clear()
 		if(hasFiniteGenerator) {
 			if(generator is WhileGenerator)
-				tracker.setVariableStates(postConditionState)
+				tracker.setVariableStates(loopEndState)
 			else
-				tracker.addVariableStates(postConditionState)
+				tracker.addVariableStates(loopEndState)
 		} else {
 			tracker.currentState.lastVariableUsages.clear()
 		}
-		tracker.addVariableStates(*tracker.breakStatementStates.toTypedArray()) //TODO refactor: accept collection as parameter
+		tracker.addVariableStates(tracker.breakStatementStates)
 		tracker.breakStatementStates.clear()
+		tracker.currentState.removeReferencePoint(loopReferencePoint)
 	}
 
 	override fun validate() {

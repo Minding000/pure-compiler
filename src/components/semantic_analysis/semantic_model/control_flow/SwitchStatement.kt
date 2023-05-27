@@ -54,7 +54,7 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 			tracker.setVariableStates(negativeState)
 		}
 		elseBranch?.analyseDataFlow(tracker)
-		tracker.addVariableStates(*caseStates.toTypedArray())
+		tracker.addVariableStates(caseStates)
 	}
 
 	override fun validate() {

@@ -18,12 +18,13 @@ class ErrorHandlingContext(override val source: StatementSection, scope: Scope, 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		val initialState = tracker.currentState.copy()
 		// Analyse main block
-		tracker.currentState.firstVariableUsages.clear()
+		val mainBlockReferencePoint = tracker.currentState.createReferencePoint()
 		mainBlock.analyseDataFlow(tracker)
 		// Collect usages that should link to the handle blocks
 		val potentiallyLastVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>() // This is done to avoid creating a state for each variable usage in an error handling context
 		if(handleBlocks.isNotEmpty() || alwaysBlock != null)
-			tracker.collectAllUsagesInto(potentiallyLastVariableUsages)
+			tracker.collectAllUsagesInto(mainBlockReferencePoint, potentiallyLastVariableUsages)
+		tracker.currentState.removeReferencePoint(mainBlockReferencePoint)
 		if(handleBlocks.isNotEmpty()) {
 			// Analyse handle blocks
 			val mainBlockState = tracker.currentState.copy()
@@ -31,10 +32,11 @@ class ErrorHandlingContext(override val source: StatementSection, scope: Scope, 
 			for(handleBlock in handleBlocks) {
 				tracker.setVariableStates(initialState)
 				tracker.addLastVariableUsages(potentiallyLastVariableUsages)
-				tracker.currentState.firstVariableUsages.clear()
+				val handleBlockReferencePoint = tracker.currentState.createReferencePoint()
 				handleBlock.analyseDataFlow(tracker)
+				tracker.collectAllUsagesInto(handleBlockReferencePoint, potentiallyLastVariableUsages)
+				tracker.currentState.removeReferencePoint(handleBlockReferencePoint)
 				handleBlockStates.add(tracker.currentState.copy())
-				tracker.collectAllUsagesInto(potentiallyLastVariableUsages)
 			}
 			tracker.setVariableStates(mainBlockState, *handleBlockStates.toTypedArray())
 		}
@@ -46,9 +48,10 @@ class ErrorHandlingContext(override val source: StatementSection, scope: Scope, 
 			// Then analyse for failure case
 			tracker.setVariableStates(initialState)
 			tracker.addLastVariableUsages(potentiallyLastVariableUsages)
-			tracker.currentState.firstVariableUsages.clear()
+			val alwaysBlockReferencePoint = tracker.currentState.createReferencePoint()
 			alwaysBlock.analyseDataFlow(tracker)
-			tracker.markAllUsagesAsExiting()
+			tracker.markAllUsagesAsExiting(alwaysBlockReferencePoint)
+			tracker.currentState.removeReferencePoint(alwaysBlockReferencePoint)
 			tracker.setVariableStates(completeExecutionState)
 		}
 	}

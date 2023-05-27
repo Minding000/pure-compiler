@@ -89,9 +89,14 @@ object TestUtil {
         val actualSyntaxTree = parse(sourceCode).program.toString()
         val expectedSyntaxTree = "Program {\n\tFile {${if(expectedFileSyntaxTree == "") ""
             else "\n$expectedFileSyntaxTree".indent().indent()}\n\t}\n}"
-        printDiffPosition(expectedSyntaxTree, actualSyntaxTree)
-        assertEquals(expectedSyntaxTree, actualSyntaxTree)
+		assertStringEquals(expectedSyntaxTree, actualSyntaxTree)
     }
+
+	fun assertStringEquals(expected: String, actual: String?) {
+		if(actual != null && actual != expected)
+			printDiffPosition(expected, actual)
+		assertEquals(expected, actual)
+	}
 
     private fun printDiffPosition(expected: String, actual: String) {
         var position = 0
