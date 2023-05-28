@@ -154,6 +154,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
+		if(isNative)
+			return
 		val propertiesToBeInitialized = parentDefinition.scope.getPropertiesToBeInitialized().toMutableList()
 		val initializerTracker = VariableTracker(context, true)
 		for(member in parentDefinition.scope.memberDeclarations)

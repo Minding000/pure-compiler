@@ -253,6 +253,19 @@ internal class Initialization {
 	}
 
 	@Test
+	fun `allows for properties to be initialized by native initializer`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					native init
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<UninitializedProperties>()
+	}
+
+	@Test
 	fun `ignores static properties`() {
 		val sourceCode =
 			"""
