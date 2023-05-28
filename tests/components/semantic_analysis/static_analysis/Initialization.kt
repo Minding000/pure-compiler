@@ -285,6 +285,18 @@ internal class Initialization {
 	}
 
 	@Test
+	fun `ignores abstract properties`() {
+		val sourceCode =
+			"""
+				abstract Device class {
+					abstract val inputVoltage: Int
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<UninitializedProperties>()
+	}
+
+	@Test
 	fun `disallows initializers that don't always initialize all properties`() {
 		val sourceCode =
 			"""
