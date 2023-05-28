@@ -3,6 +3,7 @@ package components.semantic_analysis.semantic_model.values
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
@@ -20,6 +21,6 @@ class LocalVariableDeclaration(source: SyntaxTreeNode, scope: MutableScope, name
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
-		tracker.declare(this)
+		tracker.declare(this, type is StaticType)
 	}
 }

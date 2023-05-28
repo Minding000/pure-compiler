@@ -3,6 +3,7 @@ package components.semantic_analysis.semantic_model.definitions
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
+import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -160,7 +161,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		val initializerTracker = VariableTracker(context, true)
 		for(member in parentDefinition.scope.memberDeclarations)
 			if(member is PropertyDeclaration)
-				initializerTracker.declare(member)
+				initializerTracker.declare(member, member.type is StaticType)
 		for(parameter in parameters)
 			parameter.analyseDataFlow(initializerTracker)
 		body?.analyseDataFlow(initializerTracker)

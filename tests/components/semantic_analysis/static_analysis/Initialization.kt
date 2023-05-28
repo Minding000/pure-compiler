@@ -271,10 +271,17 @@ internal class Initialization {
 			"""
 				Human class {
 					Arm class
+					init {
+						createArm()
+					}
+					to createArm(): Arm {
+						return Arm()
+					}
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<UninitializedProperties>()
+		lintResult.assertIssueNotDetected<ReliesOnUninitializedProperties>()
 	}
 
 	@Test
