@@ -9,6 +9,7 @@ import components.semantic_analysis.semantic_model.types.AndUnionType
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.InterfaceMember
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.definition.CircularInheritance
 import logger.issues.definition.ExplicitParentOnScopedTypeDefinition
@@ -91,6 +92,8 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 		superType?.determineTypes()
 		return superType
 	}
+
+	open fun getValueDeclaration(): ValueDeclaration? = null
 
 	override fun determineTypes() {
 		if(hasDeterminedTypes)

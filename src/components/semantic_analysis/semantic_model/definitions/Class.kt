@@ -6,6 +6,7 @@ import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?,
@@ -17,17 +18,19 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 		scope.typeDefinition = this
 	}
 
+	override fun getValueDeclaration(): ValueDeclaration {
+		val targetScope = parentTypeDefinition?.scope ?: scope.enclosingScope
+		val staticType = StaticType(this)
+		return if(targetScope is TypeScope)
+			PropertyDeclaration(source, targetScope, name, staticType, null, !isBound, isAbstract)
+		else
+			LocalVariableDeclaration(source, targetScope, name, staticType)
+	}
+
 	override fun declare() {
 		super.declare()
 		val targetScope = parentTypeDefinition?.scope ?: scope.enclosingScope
 		targetScope.declareType(this)
-		val staticType = StaticType(this)
-		val valueDeclaration = if(targetScope is TypeScope)
-			PropertyDeclaration(source, targetScope, name, staticType, null, !isBound, isAbstract)
-		else
-			LocalVariableDeclaration(source, targetScope, name, staticType)
-		addSemanticModels(valueDeclaration)
-		valueDeclaration.declare()
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Class {

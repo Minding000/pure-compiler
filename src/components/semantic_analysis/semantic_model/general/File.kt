@@ -47,10 +47,6 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 			scope.reference(referencedFile.scope)
 	}
 
-	override fun determineTypes() {
-		super.determineTypes()
-	}
-
 	fun analyseDataFlow() {
 		variableTracker = VariableTracker(context)
 		analyseDataFlow(variableTracker)
