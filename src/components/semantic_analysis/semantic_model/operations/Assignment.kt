@@ -60,12 +60,12 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 					continue
 				}
 				is MemberAccess -> {
-					if(target.member !is VariableValue || target.member.definition?.isConstant == true)
-						context.addIssue(ConstantReassignment(source, target.member.toString()))
 					if(target.target is SelfReference && target.member is VariableValue) {
 						tracker.add(VariableUsage.Kind.WRITE, target.member, sourceExpression.type, sourceExpression.getComputedValue())
 						continue
 					}
+					if(target.member !is VariableValue || target.member.definition?.isConstant == true)
+						context.addIssue(ConstantReassignment(source, target.member.toString()))
 				}
 				is IndexAccess -> { //TODO is this tested?
 					target.target.type?.interfaceScope?.resolveIndexOperator(target.typeParameters, target.indices, sourceExpression)
