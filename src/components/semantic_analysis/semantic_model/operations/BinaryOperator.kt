@@ -132,12 +132,20 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			Operator.Kind.EQUAL_TO -> {
 				val leftValue = left.getComputedValue() ?: return
 				val rightValue = right.getComputedValue() ?: return
-				BooleanLiteral(this, leftValue == rightValue)
+				val areValuesEqual = leftValue == rightValue
+				val isIdentityComparison = leftValue !is LiteralValue || rightValue !is LiteralValue
+				if(!areValuesEqual && isIdentityComparison)
+					return
+				BooleanLiteral(this, areValuesEqual)
 			}
 			Operator.Kind.NOT_EQUAL_TO -> {
 				val leftValue = left.getComputedValue() ?: return
 				val rightValue = right.getComputedValue() ?: return
-				BooleanLiteral(this, leftValue != rightValue)
+				val areValuesEqual = leftValue == rightValue
+				val isIdentityComparison = leftValue !is LiteralValue || rightValue !is LiteralValue
+				if(!areValuesEqual && isIdentityComparison)
+					return
+				BooleanLiteral(this, !areValuesEqual)
 			}
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}

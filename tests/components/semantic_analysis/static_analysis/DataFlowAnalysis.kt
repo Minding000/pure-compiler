@@ -698,4 +698,38 @@ internal class DataFlowAnalysis {
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertStringEquals(report, tracker.getReportFor("a"))
 	}
+
+	@Test
+	fun `can compare identity without value`() {
+		val sourceCode = """
+			var a = random()
+			val b = a
+			val c = a == b
+		""".trimIndent()
+		val report = """
+			start -> 3
+			3: declaration & write -> end (Bool, yes)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertStringEquals(report, tracker.getReportFor("c"))
+	}
+
+	@Test
+	fun `invalidates identity on jump`() { //TODO make sure declarations in loop don't cause redeclaration errors (using test)
+		val sourceCode = """
+			var a: Int
+			var b: Int
+			loop {
+				a = random()
+				val c = a == b
+				b = a
+			}
+		""".trimIndent()
+		val report = """
+			start -> 5
+			5: declaration & write -> 5 (null, null)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertStringEquals(report, tracker.getReportFor("c"))
+	}
 }
