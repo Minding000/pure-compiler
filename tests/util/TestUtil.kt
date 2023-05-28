@@ -6,6 +6,7 @@ import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import components.tokenizer.WordAtom
 import components.tokenizer.WordGenerator
+import logger.Severity
 import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream
@@ -46,7 +47,7 @@ object TestUtil {
         val syntaxTreeGenerator = SyntaxTreeGenerator(project)
         val program = syntaxTreeGenerator.parseProgram()
 		if(printReport)
-        	syntaxTreeGenerator.project.context.logger.printReport()
+        	syntaxTreeGenerator.project.context.logger.printReport(Severity.INFO)
         return ParseResult(syntaxTreeGenerator, program)
     }
 
@@ -55,7 +56,7 @@ object TestUtil {
 		val context = parseResult.syntaxTreeGenerator.project.context
         val semanticModelGenerator = SemanticModelGenerator(context)
         val program = semanticModelGenerator.createSemanticModel(parseResult.program)
-        context.logger.printReport()
+        context.logger.printReport(Severity.INFO)
         return LintResult(context, program)
     }
 
@@ -64,6 +65,7 @@ object TestUtil {
 		val context = parseResult.syntaxTreeGenerator.project.context
 		val semanticModelGenerator = SemanticModelGenerator(context)
 		val program = semanticModelGenerator.createSemanticModel(parseResult.program)
+		context.logger.printReport(Severity.WARNING)
 		val testFile = program.files.find { file -> file.file.name == TEST_FILE_NAME }
 		assertNotNull(testFile, "Missing test file")
 		return testFile.variableTracker

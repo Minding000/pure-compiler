@@ -3,7 +3,7 @@ package logger
 import errors.internal.CompilerError
 import java.util.*
 
-class Logger(private val systemName: String, private val verbosity: Severity) {
+class Logger(private val systemName: String) {
 	private val phases = LinkedList<Phase>()
 	private var activePhase: Phase? = null
 
@@ -18,11 +18,11 @@ class Logger(private val systemName: String, private val verbosity: Severity) {
 		phase.add(issue)
 	}
 
-	fun printReport() {
+	fun printReport(verbosity: Severity) {
 		val capitalizedSystemName = systemName.replaceFirstChar { char -> char.uppercase() }
 		val totalIssueTypeCounts = Array(Severity.values().size) { 0 }
 		for(phase in phases) {
-			if(!phase.containsVisibleIssues())
+			if(!phase.containsVisibleIssues(verbosity))
 				continue
 			if(verbosity <= Severity.INFO) {
 				println()
@@ -56,7 +56,7 @@ class Logger(private val systemName: String, private val verbosity: Severity) {
 			issueTypeCounts[issue.severity.ordinal]++
 		}
 
-		fun containsVisibleIssues(): Boolean {
+		fun containsVisibleIssues(verbosity: Severity): Boolean {
 			for(issueType in Severity.values()) {
 				if(issueType >= verbosity) {
 					if(issueTypeCounts[issueType.ordinal] > 0)

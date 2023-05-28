@@ -26,7 +26,6 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 	private var targetImplementation: MemberDeclaration? = null
 
 	init {
-		staticValue = this
 		addSemanticModels(typeParameters, valueParameters)
 		addSemanticModels(function)
 	}
@@ -43,6 +42,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
+		staticValue = this
 		val targetImplementation = targetImplementation
 		if(targetImplementation !is Callable)
 			return

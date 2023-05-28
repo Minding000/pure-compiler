@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.operations
 
+import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
@@ -13,7 +14,6 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	var sourceExpression: Value? = null
 
 	init {
-		//TODO set static value to this
 		addSemanticModels(typeParameters, indices)
 		addSemanticModels(target)
 	}
@@ -36,6 +36,11 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 				error.log(source, "operator", getSignature(targetType))
 			}
 		}
+	}
+
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		super.analyseDataFlow(tracker)
+		staticValue = this
 	}
 
 	private fun getSignature(targetType: Type): String {

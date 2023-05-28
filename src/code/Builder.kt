@@ -5,6 +5,7 @@ import components.semantic_analysis.semantic_model.context.SemanticModelGenerato
 import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import errors.internal.CompilerError
 import errors.user.UserError
+import logger.Severity
 import source_structure.Module
 import source_structure.Project
 import java.io.File
@@ -33,7 +34,7 @@ object Builder {
 			println("----- Linter messages: -----")
 			val semanticModelGenerator = SemanticModelGenerator(project.context)
 			val lintedProgram = semanticModelGenerator.createSemanticModel(program)
-			project.context.logger.printReport()
+			project.context.logger.printReport(Severity.INFO)
 			println("----- JIT example: -----")
 			LLVMIRCompiler.runExampleProgram()
 			println("----- JIT output: -----")
