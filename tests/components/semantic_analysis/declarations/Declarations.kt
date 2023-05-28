@@ -66,6 +66,19 @@ internal class Declarations {
 	}
 
 	@Test
+	fun `allows variable declarations in loops`() {
+		val sourceCode =
+			"""
+				Car class
+				loop {
+					var car: Car
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<Redeclaration>()
+	}
+
+	@Test
 	fun `detects variable redeclarations`() {
 		val sourceCode =
 			"""

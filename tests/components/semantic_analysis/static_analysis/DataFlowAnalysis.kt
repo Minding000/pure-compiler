@@ -715,7 +715,7 @@ internal class DataFlowAnalysis {
 	}
 
 	@Test
-	fun `invalidates identity on jump`() { //TODO make sure declarations in loop don't cause redeclaration errors (using test)
+	fun `invalidates identity on jump`() {
 		val sourceCode = """
 			var a: Int
 			var b: Int
