@@ -44,7 +44,7 @@ class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, n
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		if(isPropertySetter) {
 			propertyDeclaration?.let { propertyDeclaration ->
-				tracker.add(VariableUsage.Kind.WRITE, propertyDeclaration, propertyDeclaration)
+				tracker.add(VariableUsage.Kind.WRITE, propertyDeclaration, this)
 			}
 		} else {
 			tracker.declare(this, true)
