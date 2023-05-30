@@ -11,9 +11,6 @@ import source_structure.Project
  * @see: https://github.com/bytedeco/javacpp-presets/tree/master/llvm
  */
 object LlvmCompiler {
-	const val LLVM_NO = 0
-	const val LLVM_YES = 1
-	const val LLVM_OK = 0
 
 	fun buildAndRun(project: Project, program: Program) {
 		val context = LlvmContext(project.name)
@@ -24,7 +21,7 @@ object LlvmCompiler {
 		context.run { engine ->
 			val arguments = PointerPointer<Pointer>(0)
 			val result = LLVMRunFunction(engine, context.entrypoint, 0, arguments)
-			val intResult = LLVMGenericValueToInt(result, LLVM_NO)
+			val intResult = LLVMGenericValueToInt(result, Llvm.NO)
 			println()
 			println("Running program...")
 			println("Result: '${intResult}'")

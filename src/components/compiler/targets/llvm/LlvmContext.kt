@@ -26,7 +26,7 @@ class LlvmContext(name: String) {
 
 	fun verify() {
 		val error = BytePointer()
-		if(LLVMVerifyModule(module, LLVMPrintMessageAction, error) != LlvmCompiler.LLVM_OK) {
+		if(LLVMVerifyModule(module, LLVMPrintMessageAction, error) != Llvm.OK) {
 			LLVMDisposeMessage(error)
 			return
 		}
