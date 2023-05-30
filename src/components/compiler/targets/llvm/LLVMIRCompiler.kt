@@ -1,11 +1,11 @@
 package components.compiler.targets.llvm
 
 import components.semantic_analysis.semantic_model.general.Program
-import org.bytedeco.javacpp.*
-import org.bytedeco.llvm.LLVM.LLVMExecutionEngineRef
-import org.bytedeco.llvm.LLVM.LLVMMCJITCompilerOptions
-import org.bytedeco.llvm.LLVM.LLVMModuleRef
-import org.bytedeco.llvm.global.LLVM.*
+import org.bytedeco.javacpp.Pointer
+import org.bytedeco.javacpp.PointerPointer
+import org.bytedeco.llvm.global.LLVM.LLVMGenericValueToInt
+import org.bytedeco.llvm.global.LLVM.LLVMRunFunction
+import source_structure.Project
 
 /**
  * @see: https://github.com/bytedeco/javacpp-presets/tree/master/llvm
@@ -15,85 +15,24 @@ object LLVMIRCompiler {
 	const val LLVM_YES = 1
 	const val LLVM_OK = 0
 
-	fun compile(program: Program) {
-		initialize()
-		build(program)
-	}
-
-	private fun initialize() {
-		LLVMInitializeCore(LLVMGetGlobalPassRegistry())
-		LLVMLinkInMCJIT()
-		LLVMInitializeNativeAsmPrinter()
-		LLVMInitializeNativeAsmParser()
-		LLVMInitializeNativeTarget()
-	}
-
-	private fun build(program: Program) {
-		// Compile program
-		val context = BuildContext("test")
-		program.compile(context)
-		/*
-		// Create function signature
-		val argumentTypes = PointerPointer<Pointer>(0)
-		val functionType = LLVMFunctionType(i32Type, argumentTypes, 0, LLVM_NO) // FunctionDefinition
-		val function = LLVMAddFunction(module, "getFive", functionType)
-		LLVMSetFunctionCallConv(function, LLVMCCallConv)
-		// Get values
-		val five = LLVMConstInt(i32Type, 5, LLVM_NO) // NumberLiteral
-		// Define block
-		val body = LLVMAppendBasicBlockInContext(context, function, "body") // FunctionDefinition
-		LLVMPositionBuilderAtEnd(builder, body)
-		LLVMBuildRet(builder, five) // ReturnStatement
-		*/
-		// Verify module
-		verifyModule(context.module)
-		// Create and run pass pipeline
-		runPassPipeline(context.module)
-		// Print LLVM IR code
-		LLVMDumpModule(context.module)
-		// Create JIT compiler
-		run(context.module) { engine ->
-			// Run code
+	fun buildAndRun(project: Project, program: Program) {
+		val context = BuildContext(project.name)
+		context.loadSemanticModel(program)
+		context.verify()
+		context.compile()
+		context.printIntermediateRepresentation()
+		context.run { engine ->
 			val arguments = PointerPointer<Pointer>(0)
 			val result = LLVMRunFunction(engine, context.entrypoint, 0, arguments)
 			val intResult = LLVMGenericValueToInt(result, LLVM_NO)
 			println()
-			println("Running 'getFive()'...")
+			println("Running program...")
 			println("Result: '${intResult}'")
 		}
 		context.close()
 	}
 
-	private fun verifyModule(module: LLVMModuleRef) {
-		val error = BytePointer()
-		if(LLVMVerifyModule(module, LLVMPrintMessageAction, error) != LLVM_OK) {
-			LLVMDisposeMessage(error)
-			return
-		}
-	}
-
-	private fun runPassPipeline(module: LLVMModuleRef) {
-		val passManager = LLVMCreatePassManager()
-		LLVMAddAggressiveInstCombinerPass(passManager)
-		LLVMAddNewGVNPass(passManager)
-		LLVMAddCFGSimplificationPass(passManager)
-		LLVMRunPassManager(passManager, module)
-		LLVMDisposePassManager(passManager)
-	}
-
-	private fun run(module: LLVMModuleRef, runner: (engine: LLVMExecutionEngineRef) -> Unit) {
-		val engine = LLVMExecutionEngineRef()
-		val options = LLVMMCJITCompilerOptions()
-		val error = BytePointer()
-		if(LLVMCreateMCJITCompilerForModule(engine, module, options, 3, error) != LLVM_OK) {
-			System.err.println("Failed to create JIT compiler: $error")
-			LLVMDisposeMessage(error)
-			return
-		}
-		runner(engine)
-		LLVMDisposeExecutionEngine(engine)
-	}
-
+	/*
 	fun runExampleProgram() {
 		initialize()
 		// Create context
@@ -154,4 +93,5 @@ object LLVMIRCompiler {
 		// Dispose of resources
 		LLVMContextDispose(context)
 	}
+	*/
 }

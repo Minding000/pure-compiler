@@ -26,19 +26,17 @@ object Builder {
 				println("----- Source code: -----")
 				println(project)
 			}
-			val program = SyntaxTreeGenerator(project).parseProgram()
+			val abstractSyntaxTree = SyntaxTreeGenerator(project).parseProgram()
 			if(PRINT_AST) {
 				println("----- Abstract syntax tree: -----")
-				println(program)
+				println(abstractSyntaxTree)
 			}
-			println("----- Linter messages: -----")
+			println("----- Messages: -----")
 			val semanticModelGenerator = SemanticModelGenerator(project.context)
-			val lintedProgram = semanticModelGenerator.createSemanticModel(program)
+			val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree)
 			project.context.logger.printReport(Severity.INFO)
-			println("----- JIT example: -----")
-			LLVMIRCompiler.runExampleProgram()
 			println("----- JIT output: -----")
-			LLVMIRCompiler.compile(lintedProgram)
+			LLVMIRCompiler.buildAndRun(project, semanticModel)
 			/*
 			if(Main.DEBUG) {
 				println("----- Intermediate code: -----")

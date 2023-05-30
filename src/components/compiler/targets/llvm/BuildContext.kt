@@ -1,14 +1,16 @@
 package components.compiler.targets.llvm
 
+import components.semantic_analysis.semantic_model.general.Program
 import errors.internal.CompilerError
+import org.bytedeco.javacpp.BytePointer
 import org.bytedeco.llvm.LLVM.*
-import org.bytedeco.llvm.global.LLVM
+import org.bytedeco.llvm.global.LLVM.*
 
 class BuildContext(name: String) {
-	val context: LLVMContextRef = LLVM.LLVMContextCreate()
-	val module: LLVMModuleRef = LLVM.LLVMModuleCreateWithNameInContext(name, context)
-	val builder: LLVMBuilderRef = LLVM.LLVMCreateBuilderInContext(context)
-	val i32Type: LLVMTypeRef = LLVM.LLVMInt32TypeInContext(context)
+	val context: LLVMContextRef = LLVMContextCreate()
+	val module: LLVMModuleRef = LLVMModuleCreateWithNameInContext(name, context)
+	val builder: LLVMBuilderRef = LLVMCreateBuilderInContext(context)
+	val i32Type: LLVMTypeRef = LLVMInt32TypeInContext(context)
 
 	private var _entrypoint: LLVMValueRef? = null
 
@@ -18,8 +20,37 @@ class BuildContext(name: String) {
 			_entrypoint = value
 		}
 
+	fun loadSemanticModel(program: Program) {
+		program.compile(this)
+	}
+
+	fun verify() {
+		val error = BytePointer()
+		if(LLVMVerifyModule(module, LLVMPrintMessageAction, error) != LLVMIRCompiler.LLVM_OK) {
+			LLVMDisposeMessage(error)
+			return
+		}
+	}
+
+	fun compile() {
+		val passManager = LLVMCreatePassManager()
+		LLVMAddAggressiveInstCombinerPass(passManager)
+		LLVMAddNewGVNPass(passManager)
+		LLVMAddCFGSimplificationPass(passManager)
+		LLVMRunPassManager(passManager, module)
+		LLVMDisposePassManager(passManager)
+	}
+
+	fun printIntermediateRepresentation() {
+		LLVMDumpModule(module)
+	}
+
+	fun run(runner: (engine: LLVMExecutionEngineRef) -> Unit) {
+		LlvmEngine.run(module, runner)
+	}
+
 	fun close() {
-		LLVM.LLVMDisposeBuilder(builder)
-		LLVM.LLVMContextDispose(context)
+		LLVMDisposeBuilder(builder)
+		LLVMContextDispose(context)
 	}
 }
