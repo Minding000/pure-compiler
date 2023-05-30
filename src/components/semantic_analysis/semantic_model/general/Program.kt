@@ -57,8 +57,8 @@ class Program(val source: ProgramSyntaxTree) {
 	/**
 	 * Compiles code to LLVM IR.
 	 */
-	fun compile(context: LlvmContext) {
-//		for(file in files)
-//			file.compile(context)
+	fun compile(llvmContext: LlvmContext) {
+		for(file in files)
+			file.compile(llvmContext)
 	}
 }

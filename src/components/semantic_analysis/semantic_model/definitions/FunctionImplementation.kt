@@ -1,5 +1,7 @@
 package components.semantic_analysis.semantic_model.definitions
 
+import components.compiler.targets.llvm.Llvm
+import components.compiler.targets.llvm.LlvmContext
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
@@ -116,6 +118,15 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		}
 	}
 
+	override fun compile(llvmContext: LlvmContext) {
+		if(memberIdentifier != "getFive(): Int")
+			return
+		val function = Llvm.buildFunction(llvmContext, memberIdentifier, signature.getLlvmReference(llvmContext))
+		llvmContext.entrypoint = function
+		Llvm.createBlock(llvmContext, function, "body")
+		super.compile(llvmContext)
+	}
+
 	override fun toString(): String {
 		var stringRepresentation = ""
 		val parentDefinition = parentDefinition
@@ -127,15 +138,4 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		stringRepresentation += memberIdentifier
 		return stringRepresentation
 	}
-
-//	override fun compile(context: BuildContext): LLVMValueRef {
-//		val argumentTypes = PointerPointer<Pointer>(parameters.size.toLong())
-//		for(parameter in parameters)
-//			argumentTypes.put(parameter.compile(context))
-//		val returnType = returnType?.compile(context) ?: LLVMVoidType()
-//		val functionType = LLVMFunctionType(returnType, argumentTypes, parameters.size, LLVMIRCompiler.LLVM_NO)
-//		val function = LLVMAddFunction(context.module, name, functionType)
-//		LLVMSetFunctionCallConv(function, LLVMCCallConv)
-//		return function
-//	}
 }

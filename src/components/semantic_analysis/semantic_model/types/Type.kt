@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.types
 
-//import org.bytedeco.llvm.LLVM.LLVMTypeRef
+import components.compiler.targets.llvm.LlvmContext
+import components.compiler.targets.llvm.LlvmTypeReference
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
@@ -65,7 +66,9 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 	open fun getPropertiesToBeInitialized(): List<PropertyDeclaration> =
 		throw CompilerError(source, "Tried to get properties to be initialized of non-super type.")
 
-	open fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> = listOf()
+	open fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> = emptyList()
 
-//	abstract override fun compile(context: BuildContext): LLVMTypeRef
+	open fun getLlvmReference(llvmContext: LlvmContext): LlvmTypeReference {
+		TODO("'${javaClass.simpleName}.getLlvmReference' is not implemented here.")
+	}
 }

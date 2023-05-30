@@ -21,10 +21,10 @@ internal class Compiler {
 		val function = LLVM.LLVMAddFunction(context.module, "getNumber", functionType)
 		context.entrypoint = function
 		LLVM.LLVMSetFunctionCallConv(function, LLVM.LLVMCCallConv)
-		val five = LLVM.LLVMConstInt(context.i32Type, expectedResult, Llvm.NO)
 		val body = LLVM.LLVMAppendBasicBlockInContext(context.context, function, "body")
 		LLVM.LLVMPositionBuilderAtEnd(context.builder, body)
-		LLVM.LLVMBuildRet(context.builder, five)
+		val number = LLVM.LLVMConstInt(context.i32Type, expectedResult, Llvm.NO)
+		LLVM.LLVMBuildRet(context.builder, number)
 		context.verify()
 		context.compile()
 		context.run { engine ->
