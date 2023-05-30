@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.compiler.targets.llvm.BuildContext
+import components.compiler.targets.llvm.LlvmContext
 import java.util.*
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
@@ -55,9 +55,9 @@ class Program(val source: ProgramSyntaxTree) {
 	}
 
 	/**
-	 * Compiles code to LLVM IR
+	 * Compiles code to LLVM IR.
 	 */
-	fun compile(context: BuildContext) {
+	fun compile(context: LlvmContext) {
 //		for(file in files)
 //			file.compile(context)
 	}

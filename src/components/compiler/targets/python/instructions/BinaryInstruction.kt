@@ -1,7 +1,7 @@
-package components.compiler.instructions
+package components.compiler.targets.python.instructions
 
-import components.compiler.value_analysis.DynamicValue
-import components.compiler.value_analysis.ValueSource
+import components.compiler.targets.python.value_analysis.DynamicValue
+import components.compiler.targets.python.value_analysis.ValueSource
 import java.util.*
 
 /**

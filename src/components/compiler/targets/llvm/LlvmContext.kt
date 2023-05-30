@@ -6,7 +6,7 @@ import org.bytedeco.javacpp.BytePointer
 import org.bytedeco.llvm.LLVM.*
 import org.bytedeco.llvm.global.LLVM.*
 
-class BuildContext(name: String) {
+class LlvmContext(name: String) {
 	val context: LLVMContextRef = LLVMContextCreate()
 	val module: LLVMModuleRef = LLVMModuleCreateWithNameInContext(name, context)
 	val builder: LLVMBuilderRef = LLVMCreateBuilderInContext(context)
@@ -26,7 +26,7 @@ class BuildContext(name: String) {
 
 	fun verify() {
 		val error = BytePointer()
-		if(LLVMVerifyModule(module, LLVMPrintMessageAction, error) != LLVMIRCompiler.LLVM_OK) {
+		if(LLVMVerifyModule(module, LLVMPrintMessageAction, error) != LlvmCompiler.LLVM_OK) {
 			LLVMDisposeMessage(error)
 			return
 		}

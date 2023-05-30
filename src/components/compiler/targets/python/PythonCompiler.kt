@@ -1,8 +1,7 @@
-package components.compiler.targets
+package components.compiler.targets.python
 
+import components.compiler.targets.python.instructions.*
 import errors.internal.CompilerError
-import components.compiler.instructions.*
-import components.compiler.instructions.Instruction
 
 object PythonCompiler {
 

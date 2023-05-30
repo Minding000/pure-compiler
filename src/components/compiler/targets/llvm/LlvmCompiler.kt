@@ -10,13 +10,13 @@ import source_structure.Project
 /**
  * @see: https://github.com/bytedeco/javacpp-presets/tree/master/llvm
  */
-object LLVMIRCompiler {
+object LlvmCompiler {
 	const val LLVM_NO = 0
 	const val LLVM_YES = 1
 	const val LLVM_OK = 0
 
 	fun buildAndRun(project: Project, program: Program) {
-		val context = BuildContext(project.name)
+		val context = LlvmContext(project.name)
 		context.loadSemanticModel(program)
 		context.verify()
 		context.compile()

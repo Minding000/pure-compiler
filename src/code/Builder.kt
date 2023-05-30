@@ -1,6 +1,6 @@
 package code
 
-import components.compiler.targets.llvm.LLVMIRCompiler
+import components.compiler.targets.llvm.LlvmCompiler
 import components.semantic_analysis.semantic_model.context.SemanticModelGenerator
 import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import errors.internal.CompilerError
@@ -36,7 +36,7 @@ object Builder {
 			val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree)
 			project.context.logger.printReport(Severity.INFO)
 			println("----- JIT output: -----")
-			LLVMIRCompiler.buildAndRun(project, semanticModel)
+			LlvmCompiler.buildAndRun(project, semanticModel)
 			/*
 			if(Main.DEBUG) {
 				println("----- Intermediate code: -----")

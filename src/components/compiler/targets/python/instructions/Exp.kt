@@ -1,7 +1,7 @@
-package components.compiler.instructions
+package components.compiler.targets.python.instructions
 
-import components.compiler.value_analysis.StaticValue
-import components.compiler.value_analysis.ValueSource
+import components.compiler.targets.python.value_analysis.StaticValue
+import components.compiler.targets.python.value_analysis.ValueSource
 
 class Exp(leftDynamicValue: ValueSource, rightDynamicValue: ValueSource):
 	BinaryInstruction(leftDynamicValue, rightDynamicValue) {

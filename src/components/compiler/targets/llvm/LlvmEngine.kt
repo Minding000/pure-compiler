@@ -25,7 +25,7 @@ object LlvmEngine {
 		val engine = LLVMExecutionEngineRef()
 		val options = LLVMMCJITCompilerOptions()
 		val error = BytePointer()
-		if(LLVMCreateMCJITCompilerForModule(engine, module, options, 3, error) != LLVMIRCompiler.LLVM_OK) {
+		if(LLVMCreateMCJITCompilerForModule(engine, module, options, 3, error) != LlvmCompiler.LLVM_OK) {
 			System.err.println("Failed to create JIT compiler: $error")
 			LLVMDisposeMessage(error)
 			return

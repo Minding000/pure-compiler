@@ -1,11 +1,11 @@
-package components.compiler
+package components.compiler.targets.python
 
-import components.compiler.instructions.Copy
-import components.compiler.instructions.Instruction
-import components.compiler.instructions.Prt
-import components.compiler.value_analysis.*
+import components.compiler.targets.python.instructions.Copy
+import components.compiler.targets.python.instructions.Instruction
+import components.compiler.targets.python.instructions.Prt
+import components.compiler.targets.python.value_analysis.DynamicValue
+import components.compiler.targets.python.value_analysis.Register
 import java.util.*
-import kotlin.collections.LinkedHashSet
 
 class InstructionOptimizer(private val instructionList: MutableList<Instruction>) {
 	private val complexInstructions = LinkedList<Instruction>()

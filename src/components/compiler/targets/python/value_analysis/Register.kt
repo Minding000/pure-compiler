@@ -1,4 +1,4 @@
-package components.compiler.value_analysis
+package components.compiler.targets.python.value_analysis
 
 open class Register(var index: Int) {
 

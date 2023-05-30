@@ -1,9 +1,9 @@
-package components.compiler.instructions
+package components.compiler.targets.python.instructions
 
+import components.compiler.targets.python.value_analysis.DynamicValue
+import components.compiler.targets.python.value_analysis.HeapValue
+import components.compiler.targets.python.value_analysis.ValueSource
 import errors.internal.CompilerError
-import components.compiler.value_analysis.DynamicValue
-import components.compiler.value_analysis.HeapValue
-import components.compiler.value_analysis.ValueSource
 
 class Load(targetDynamicValue: DynamicValue, val heapValue: HeapValue): WriteInstruction(targetDynamicValue) {
 
