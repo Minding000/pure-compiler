@@ -40,7 +40,6 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val expectedResult = 5L
 		val context = LlvmCompilerContext("Test")
 		context.loadSemanticModel(lintResult.program, "Test:SimplestApp.getFive")
 		context.verify()
@@ -48,6 +47,6 @@ internal class Compiler {
 		val result = context.run()
 		val intResult = Llvm.castToInt(result)
 		context.close()
-		assertEquals(expectedResult, intResult)
+		assertEquals(5, intResult)
 	}
 }

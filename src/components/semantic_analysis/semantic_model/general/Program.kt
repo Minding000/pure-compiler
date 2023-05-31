@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.general
 
 import components.compiler.targets.llvm.LlvmCompilerContext
-import components.compiler.targets.llvm.LlvmValue
+import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.Object
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Function
@@ -67,8 +67,11 @@ class Program(val source: ProgramSyntaxTree) {
 			file.compile(llvmCompilerContext)
 	}
 
-	fun getEntryPoint(entryPointPath: String): LlvmValue {
-		val (filePath, functionPath) = entryPointPath.split(":")
+	fun getEntryPoint(entryPointPath: String): FunctionImplementation {
+		val pathSections = entryPointPath.split(":")
+		if(pathSections.size != 2)
+			throw UserError("Malformed entry point path '$entryPointPath'.")
+		val (filePath, functionPath) = pathSections
 		val file = getFile(filePath.split(".")) ?: throw UserError("File '$filePath' not found.")
 		val functionPathParts = functionPath.split(".").toMutableList()
 		val functionName = functionPathParts.removeLast()
@@ -83,6 +86,6 @@ class Program(val source: ProgramSyntaxTree) {
 		val function = functionVariable.value as? Function ?: throw UserError("Variable '$functionName' is not a function.")
 		val functionImplementation = function.implementations.find { functionImplementation ->
 			functionImplementation.signature.takesNoParameters() } ?: throw UserError("Function '$functionName' has no overload without parameters.")
-		return functionImplementation.llvmReference
+		return functionImplementation
 	}
 }

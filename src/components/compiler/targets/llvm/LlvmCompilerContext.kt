@@ -23,7 +23,7 @@ class LlvmCompilerContext(name: String) {
 
 	fun loadSemanticModel(program: Program, entryPointPath: String) {
 		program.compile(this)
-		entrypoint = program.getEntryPoint(entryPointPath)
+		entrypoint = program.getEntryPoint(entryPointPath).llvmReference
 	}
 
 	fun verify() {
