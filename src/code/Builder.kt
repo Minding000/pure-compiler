@@ -18,7 +18,7 @@ object Builder {
 	private const val PRINT_SOURCE_CODE = false
 	private const val PRINT_AST = false
 
-	fun build(path: String) {
+	fun build(path: String, entryPointPath: String) {
 		try {
 			val project = loadProject(path)
 			loadRequiredModules(project)
@@ -36,7 +36,7 @@ object Builder {
 			val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree)
 			project.context.logger.printReport(Severity.INFO)
 			println("----- JIT output: -----")
-			LlvmCompiler.buildAndRun(project, semanticModel)
+			LlvmCompiler.buildAndRun(project, semanticModel, entryPointPath)
 			/*
 			if(Main.DEBUG) {
 				println("----- Intermediate code: -----")

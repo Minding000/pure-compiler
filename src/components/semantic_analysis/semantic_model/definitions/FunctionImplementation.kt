@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.compiler.targets.llvm.Llvm
 import components.compiler.targets.llvm.LlvmContext
+import components.compiler.targets.llvm.LlvmValueReference
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.ErrorHandlingContext
@@ -36,6 +37,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	var mightReturnValue = false
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
+	lateinit var llvmReference: LlvmValueReference
 
 	init {
 		scope.semanticModel = this
@@ -121,9 +123,8 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	override fun compile(llvmContext: LlvmContext) {
 		if(memberIdentifier != "getFive(): Int")
 			return
-		val function = Llvm.buildFunction(llvmContext, memberIdentifier, signature.getLlvmReference(llvmContext))
-		llvmContext.entrypoint = function
-		Llvm.createBlock(llvmContext, function, "body")
+		llvmReference = Llvm.buildFunction(llvmContext, memberIdentifier, signature.getLlvmReference(llvmContext))
+		Llvm.createBlock(llvmContext, llvmReference, "body")
 		super.compile(llvmContext)
 	}
 

@@ -22,8 +22,9 @@ class LlvmContext(name: String) {
 			_entrypoint = value
 		}
 
-	fun loadSemanticModel(program: Program) {
+	fun loadSemanticModel(program: Program, entryPointPath: String) {
 		program.compile(this)
+		entrypoint = program.getEntryPoint(entryPointPath)
 	}
 
 	fun verify() {

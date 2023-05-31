@@ -237,6 +237,8 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		}
 	}
 
+	fun takesNoParameters() = genericParameters.isEmpty() && parameterTypes.isEmpty()
+
 	fun getLlvmReference(llvmContext: LlvmContext): LlvmTypeReference {
 		val argumentTypes = LlvmList<LlvmTypeReference>(parameterTypes.size.toLong())
 		for(parameterType in parameterTypes)

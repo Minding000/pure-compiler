@@ -1,6 +1,11 @@
 package components.semantic_analysis.semantic_model.general
 
 import components.compiler.targets.llvm.LlvmContext
+import components.compiler.targets.llvm.LlvmValueReference
+import components.semantic_analysis.semantic_model.definitions.Object
+import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.values.Function
+import errors.user.UserError
 import java.util.*
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
@@ -60,5 +65,24 @@ class Program(val source: ProgramSyntaxTree) {
 	fun compile(llvmContext: LlvmContext) {
 		for(file in files)
 			file.compile(llvmContext)
+	}
+
+	fun getEntryPoint(entryPointPath: String): LlvmValueReference {
+		val (filePath, functionPath) = entryPointPath.split(":")
+		val file = getFile(filePath.split(".")) ?: throw UserError("File '$filePath' not found.")
+		val functionPathParts = functionPath.split(".").toMutableList()
+		val functionName = functionPathParts.removeLast()
+		var scope: Scope = file.scope
+		for(objectName in functionPathParts) {
+			val objectDefinition = scope.resolveType(objectName) as? Object ?: throw UserError("Object '$objectName' not found.")
+			if(objectDefinition.isBound)
+				throw UserError("Object '$objectName' is bound.")
+			scope = objectDefinition.scope
+		}
+		val functionVariable = scope.resolveValue(functionName) ?: throw UserError("Function '$functionName' not found.")
+		val function = functionVariable.value as? Function ?: throw UserError("Variable '$functionName' is not a function.")
+		val functionImplementation = function.implementations.find { functionImplementation ->
+			functionImplementation.signature.takesNoParameters() } ?: throw UserError("Function '$functionName' has no overload without parameters.")
+		return functionImplementation.llvmReference
 	}
 }

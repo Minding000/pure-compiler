@@ -12,9 +12,9 @@ import source_structure.Project
  */
 object LlvmCompiler {
 
-	fun buildAndRun(project: Project, program: Program) {
+	fun buildAndRun(project: Project, program: Program, entryPointPath: String) {
 		val context = LlvmContext(project.name)
-		context.loadSemanticModel(program)
+		context.loadSemanticModel(program, entryPointPath)
 		context.verify()
 		context.compile()
 		context.printIntermediateRepresentation()

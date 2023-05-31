@@ -204,6 +204,8 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 			return llvmContext.i32Type
 		if(SpecialType.NOTHING.matches(this))
 			return llvmContext.voidType
+		if(SpecialType.NEVER.matches(this))
+			return llvmContext.voidType
 		return super.getLlvmReference(llvmContext)
 	}
 }

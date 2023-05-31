@@ -47,6 +47,7 @@ object Llvm {
 }
 
 typealias LlvmValueReference = LLVMValueRef
+typealias LlvmGenericValueReference = LLVMGenericValueRef
 typealias LlvmContextReference = LLVMContextRef
 typealias LlvmModuleReference = LLVMModuleRef
 typealias LlvmBuilderReference = LLVMBuilderRef

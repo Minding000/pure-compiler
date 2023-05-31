@@ -2,6 +2,8 @@ package components.compiler
 
 import components.compiler.targets.llvm.Llvm
 import components.compiler.targets.llvm.LlvmContext
+import components.compiler.targets.llvm.LlvmGenericValueReference
+import components.compiler.targets.llvm.LlvmList
 import org.bytedeco.javacpp.Pointer
 import org.bytedeco.javacpp.PointerPointer
 import org.bytedeco.llvm.global.LLVM
@@ -50,11 +52,11 @@ internal class Compiler {
 		val expectedResult = 5L
 		var actualResult: Long? = null
 		val context = LlvmContext("Test")
-		context.loadSemanticModel(lintResult.program)
+		context.loadSemanticModel(lintResult.program, "Test:SimplestApp.getFive")
 		context.verify()
 		context.compile()
 		context.run { engine ->
-			val arguments = PointerPointer<Pointer>(0)
+			val arguments = LlvmList<LlvmGenericValueReference>(0)
 			val result = LLVM.LLVMRunFunction(engine, context.entrypoint, 0, arguments)
 			actualResult = LLVM.LLVMGenericValueToInt(result, Llvm.NO)
 		}

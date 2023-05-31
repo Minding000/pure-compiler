@@ -11,17 +11,17 @@ object Main {
 		}
 		when(val subCommand = args.first()) {
 			"build" -> {
-				if(args.size < 2) {
-					println("Please provide a file or directory to build.")
+				if(args.size < 3) {
+					System.err.println("Too few arguments.")
 					Helper.help("build")
 					return
 				}
-				if(args.size > 2) {
-					println("Too many arguments.")
+				if(args.size > 3) {
+					System.err.println("Too many arguments.")
 					Helper.help("build")
 					return
 				}
-				Builder.build(args[1])
+				Builder.build(args[1], args[2])
 			}
 			"?",
 			"help" -> {
