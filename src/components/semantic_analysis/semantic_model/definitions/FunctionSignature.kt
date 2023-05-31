@@ -1,9 +1,9 @@
 package components.semantic_analysis.semantic_model.definitions
 
 import components.compiler.targets.llvm.Llvm
-import components.compiler.targets.llvm.LlvmContext
+import components.compiler.targets.llvm.LlvmCompilerContext
 import components.compiler.targets.llvm.LlvmList
-import components.compiler.targets.llvm.LlvmTypeReference
+import components.compiler.targets.llvm.LlvmType
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
@@ -239,10 +239,10 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 
 	fun takesNoParameters() = genericParameters.isEmpty() && parameterTypes.isEmpty()
 
-	fun getLlvmReference(llvmContext: LlvmContext): LlvmTypeReference {
-		val argumentTypes = LlvmList<LlvmTypeReference>(parameterTypes.size.toLong())
+	fun getLlvmReference(llvmCompilerContext: LlvmCompilerContext): LlvmType {
+		val argumentTypes = LlvmList<LlvmType>(parameterTypes.size.toLong())
 		for(parameterType in parameterTypes)
-			argumentTypes.put(parameterType?.getLlvmReference(llvmContext))
-		return Llvm.buildFunctionType(argumentTypes, parameterTypes.size, returnType.getLlvmReference(llvmContext))
+			argumentTypes.put(parameterType?.getLlvmReference(llvmCompilerContext))
+		return Llvm.buildFunctionType(argumentTypes, parameterTypes.size, returnType.getLlvmReference(llvmCompilerContext))
 	}
 }

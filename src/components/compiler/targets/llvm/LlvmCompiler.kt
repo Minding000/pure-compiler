@@ -1,10 +1,6 @@
 package components.compiler.targets.llvm
 
 import components.semantic_analysis.semantic_model.general.Program
-import org.bytedeco.javacpp.Pointer
-import org.bytedeco.javacpp.PointerPointer
-import org.bytedeco.llvm.global.LLVM.LLVMGenericValueToInt
-import org.bytedeco.llvm.global.LLVM.LLVMRunFunction
 import source_structure.Project
 
 /**
@@ -13,19 +9,16 @@ import source_structure.Project
 object LlvmCompiler {
 
 	fun buildAndRun(project: Project, program: Program, entryPointPath: String) {
-		val context = LlvmContext(project.name)
+		val context = LlvmCompilerContext(project.name)
 		context.loadSemanticModel(program, entryPointPath)
 		context.verify()
 		context.compile()
 		context.printIntermediateRepresentation()
-		context.run { engine ->
-			val arguments = PointerPointer<Pointer>(0)
-			val result = LLVMRunFunction(engine, context.entrypoint, 0, arguments)
-			val intResult = LLVMGenericValueToInt(result, Llvm.NO)
-			println()
-			println("Running program...")
-			println("Result: '${intResult}'")
-		}
+		val result = context.run()
+		val intResult = Llvm.castToInt(result)
+		println()
+		println("Running program...")
+		println("Result: '${intResult}'")
 		context.close()
 	}
 
@@ -42,6 +35,9 @@ object LlvmCompiler {
 		val factorialFunctionType = LLVMFunctionType(i32Type, i32Type, 1, LLVM_NO)
 		val factorialFunction = LLVMAddFunction(module, "factorial", factorialFunctionType)
 		LLVMSetFunctionCallConv(factorialFunction, LLVMCCallConv)
+
+
+
 		// Get values
 		val n = LLVMGetParam(factorialFunction, 0)
 		val zero = LLVMConstInt(i32Type, 0, LLVM_NO)
@@ -71,6 +67,9 @@ object LlvmCompiler {
 		LLVMAddIncoming(phi, phiValues, phiBlocks, 2)
 		LLVMBuildRet(builder, phi)
 		LLVMDisposeBuilder(builder)
+
+
+
 		// Verify module
 		verifyModule(module)
 		// Create and run pass pipeline

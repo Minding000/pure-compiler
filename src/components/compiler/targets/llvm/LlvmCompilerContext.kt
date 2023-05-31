@@ -3,11 +3,10 @@ package components.compiler.targets.llvm
 import components.semantic_analysis.semantic_model.general.Program
 import errors.internal.CompilerError
 import org.bytedeco.javacpp.BytePointer
-import org.bytedeco.llvm.LLVM.LLVMExecutionEngineRef
 import org.bytedeco.llvm.LLVM.LLVMValueRef
 import org.bytedeco.llvm.global.LLVM.*
 
-class LlvmContext(name: String) {
+class LlvmCompilerContext(name: String) {
 	val context = Llvm.createContext()
 	val module = Llvm.createModule(context, name)
 	val builder = Llvm.createBuilder(context)
@@ -31,7 +30,7 @@ class LlvmContext(name: String) {
 		val error = BytePointer()
 		if(LLVMVerifyModule(module, LLVMPrintMessageAction, error) != Llvm.OK) {
 			LLVMDisposeMessage(error)
-			return
+			throw CompilerError("Failed to compile to LLVM target.")
 		}
 	}
 
@@ -48,8 +47,12 @@ class LlvmContext(name: String) {
 		LLVMDumpModule(module)
 	}
 
-	fun run(runner: (engine: LLVMExecutionEngineRef) -> Unit) {
-		LlvmEngine.run(module, runner)
+	fun run(): LlvmGenericValue {
+		var result: LlvmGenericValue
+		LlvmEngine.run(module) { engine ->
+			result = Llvm.runFunction(engine, entrypoint)
+		}
+		return result
 	}
 
 	fun close() {

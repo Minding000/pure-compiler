@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.compiler.targets.llvm.LlvmContext
+import components.compiler.targets.llvm.LlvmCompilerContext
 import components.semantic_analysis.semantic_model.context.Context
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
@@ -76,9 +76,9 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 			semanticModel.validate()
 	}
 
-	open fun compile(llvmContext: LlvmContext) {
+	open fun compile(llvmCompilerContext: LlvmCompilerContext) {
 		for(semanticModel in semanticModels)
-			semanticModel.compile(llvmContext)
+			semanticModel.compile(llvmCompilerContext)
 	}
 
 	fun isInInitializer(): Boolean {

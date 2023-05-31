@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.control_flow
 
 import components.compiler.targets.llvm.Llvm
-import components.compiler.targets.llvm.LlvmContext
+import components.compiler.targets.llvm.LlvmCompilerContext
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
@@ -51,7 +51,7 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 		tracker.registerReturnStatement()
 	}
 
-	override fun compile(llvmContext: LlvmContext) {
-		Llvm.buildReturn(llvmContext, value?.getLlvmReference(llvmContext))
+	override fun compile(llvmCompilerContext: LlvmCompilerContext) {
+		Llvm.buildReturn(llvmCompilerContext, value?.getLlvmReference(llvmCompilerContext))
 	}
 }

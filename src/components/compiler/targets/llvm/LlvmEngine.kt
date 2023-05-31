@@ -5,6 +5,9 @@ import org.bytedeco.llvm.LLVM.LLVMExecutionEngineRef
 import org.bytedeco.llvm.LLVM.LLVMMCJITCompilerOptions
 import org.bytedeco.llvm.LLVM.LLVMModuleRef
 import org.bytedeco.llvm.global.LLVM.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 object LlvmEngine {
 	private var isInitialized = false
@@ -20,7 +23,11 @@ object LlvmEngine {
 		isInitialized = true
 	}
 
+	@OptIn(ExperimentalContracts::class)
 	fun run(module: LLVMModuleRef, runner: (engine: LLVMExecutionEngineRef) -> Unit) {
+		contract {
+			callsInPlace(runner, InvocationKind.EXACTLY_ONCE)
+		}
 		initialize()
 		val engine = LLVMExecutionEngineRef()
 		val options = LLVMMCJITCompilerOptions()

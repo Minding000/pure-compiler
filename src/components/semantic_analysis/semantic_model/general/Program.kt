@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.compiler.targets.llvm.LlvmContext
-import components.compiler.targets.llvm.LlvmValueReference
+import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.definitions.Object
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Function
@@ -62,12 +62,12 @@ class Program(val source: ProgramSyntaxTree) {
 	/**
 	 * Compiles code to LLVM IR.
 	 */
-	fun compile(llvmContext: LlvmContext) {
+	fun compile(llvmCompilerContext: LlvmCompilerContext) {
 		for(file in files)
-			file.compile(llvmContext)
+			file.compile(llvmCompilerContext)
 	}
 
-	fun getEntryPoint(entryPointPath: String): LlvmValueReference {
+	fun getEntryPoint(entryPointPath: String): LlvmValue {
 		val (filePath, functionPath) = entryPointPath.split(":")
 		val file = getFile(filePath.split(".")) ?: throw UserError("File '$filePath' not found.")
 		val functionPathParts = functionPath.split(".").toMutableList()

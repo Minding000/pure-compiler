@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.types
 
-import components.compiler.targets.llvm.LlvmContext
-import components.compiler.targets.llvm.LlvmTypeReference
+import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmType
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -199,13 +199,13 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 		return stringRepresentation
 	}
 
-	override fun getLlvmReference(llvmContext: LlvmContext): LlvmTypeReference {
+	override fun getLlvmReference(llvmCompilerContext: LlvmCompilerContext): LlvmType {
 		if(SpecialType.INTEGER.matches(this))
-			return llvmContext.i32Type
+			return llvmCompilerContext.i32Type
 		if(SpecialType.NOTHING.matches(this))
-			return llvmContext.voidType
+			return llvmCompilerContext.voidType
 		if(SpecialType.NEVER.matches(this))
-			return llvmContext.voidType
-		return super.getLlvmReference(llvmContext)
+			return llvmCompilerContext.voidType
+		return super.getLlvmReference(llvmCompilerContext)
 	}
 }

@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.types
 
-import components.compiler.targets.llvm.LlvmContext
-import components.compiler.targets.llvm.LlvmTypeReference
+import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmType
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
@@ -15,7 +15,6 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 
 abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = false): SemanticModel(source, scope) {
-	//var llvmType: LLVMTypeRef? = null
 	val interfaceScope = InterfaceScope(isStatic)
 	private var hasResolvedDefinitions = false
 	var effectiveType = this
@@ -68,7 +67,7 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 
 	open fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> = emptyList()
 
-	open fun getLlvmReference(llvmContext: LlvmContext): LlvmTypeReference {
+	open fun getLlvmReference(llvmCompilerContext: LlvmCompilerContext): LlvmType {
 		TODO("'${javaClass.simpleName}.getLlvmReference' is not implemented here.")
 	}
 }
