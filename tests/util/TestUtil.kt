@@ -1,6 +1,8 @@
 package util
 
 import code.Builder
+import components.compiler.targets.llvm.LlvmGenericValue
+import components.compiler.targets.llvm.LlvmProgram
 import components.semantic_analysis.semantic_model.context.SemanticModelGenerator
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.syntax_parser.element_generator.SyntaxTreeGenerator
@@ -58,6 +60,24 @@ object TestUtil {
         val program = semanticModelGenerator.createSemanticModel(parseResult.program)
         context.logger.printReport(Severity.INFO)
         return LintResult(context, program)
+    }
+
+    fun run(sourceCode: String, entryPointPath: String): LlvmGenericValue {
+		val lintResult = lint(sourceCode)
+		val program = LlvmProgram("Test")
+		val result: LlvmGenericValue
+		try {
+			program.loadSemanticModel(lintResult.program, entryPointPath)
+			program.verify()
+			program.compile()
+			result = program.run()
+		} catch(exception: Exception) {
+			program.printIntermediateRepresentation()
+			throw exception
+		} finally {
+			program.dispose()
+		}
+		return result
     }
 
 	fun analyseDataFlow(sourceCode: String): VariableTracker {
