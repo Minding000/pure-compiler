@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.compiler.targets.llvm.Llvm
-import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.general.SemanticModel
@@ -32,8 +31,8 @@ class BooleanLiteral(override val source: SyntaxTreeNode, scope: Scope, val valu
 		return value == other.value
 	}
 
-	override fun getLlvmReference(llvmCompilerContext: LlvmCompilerContext): LlvmValue {
-		return Llvm.buildBoolean(llvmCompilerContext, if(value) 1 else 0)
+	override fun getLlvmReference(llvmConstructor: LlvmConstructor): LlvmValue {
+		return llvmConstructor.buildBoolean(value)
 	}
 
 	override fun toString(): String {

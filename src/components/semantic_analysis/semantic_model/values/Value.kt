@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.SemanticModel
@@ -80,7 +80,7 @@ abstract class Value(override val source: SyntaxTreeNode, override var scope: Sc
 		return type == other.type
 	}
 
-	open fun getLlvmReference(llvmCompilerContext: LlvmCompilerContext): LlvmValue {
+	open fun getLlvmReference(llvmConstructor: LlvmConstructor): LlvmValue {
 		TODO("'${javaClass.simpleName}.getLlvmReference' is not implemented here.") //TODO make this function abstract
 	}
 

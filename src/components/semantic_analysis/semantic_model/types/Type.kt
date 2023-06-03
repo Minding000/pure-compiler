@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.types
 
-import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmType
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
@@ -67,7 +67,7 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 
 	open fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> = emptyList()
 
-	open fun getLlvmReference(llvmCompilerContext: LlvmCompilerContext): LlvmType {
+	open fun getLlvmReference(llvmConstructor: LlvmConstructor): LlvmType {
 		TODO("'${javaClass.simpleName}.getLlvmReference' is not implemented here.")
 	}
 }

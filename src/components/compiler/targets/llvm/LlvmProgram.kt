@@ -6,13 +6,8 @@ import org.bytedeco.javacpp.BytePointer
 import org.bytedeco.llvm.LLVM.LLVMValueRef
 import org.bytedeco.llvm.global.LLVM.*
 
-class LlvmCompilerContext(name: String) {
-	val context = Llvm.createContext()
-	val module = Llvm.createModule(context, name)
-	val builder = Llvm.createBuilder(context)
-	val booleanType = Llvm.create1BitIntegerType(context)
-	val i32Type = Llvm.create32BitIntegerType(context)
-	val voidType = Llvm.createVoidType(context)
+class LlvmProgram(name: String) {
+	val constructor = LlvmConstructor(name)
 
 	private var _entrypoint: LLVMValueRef? = null
 
@@ -23,13 +18,13 @@ class LlvmCompilerContext(name: String) {
 		}
 
 	fun loadSemanticModel(program: Program, entryPointPath: String) {
-		program.compile(this)
+		program.compile(constructor)
 		entrypoint = program.getEntryPoint(entryPointPath).llvmReference
 	}
 
 	fun verify() {
 		val error = BytePointer()
-		if(LLVMVerifyModule(module, LLVMPrintMessageAction, error) != Llvm.OK) {
+		if(LLVMVerifyModule(constructor.module, LLVMPrintMessageAction, error) != Llvm.OK) {
 			LLVMDisposeMessage(error)
 			throw CompilerError("Failed to compile to LLVM target.")
 		}
@@ -40,24 +35,23 @@ class LlvmCompilerContext(name: String) {
 		LLVMAddAggressiveInstCombinerPass(passManager)
 		LLVMAddNewGVNPass(passManager)
 		LLVMAddCFGSimplificationPass(passManager)
-		LLVMRunPassManager(passManager, module)
+		LLVMRunPassManager(passManager, constructor.module)
 		LLVMDisposePassManager(passManager)
 	}
 
 	fun printIntermediateRepresentation() {
-		LLVMDumpModule(module)
+		LLVMDumpModule(constructor.module)
 	}
 
 	fun run(): LlvmGenericValue {
 		var result: LlvmGenericValue
-		LlvmEngine.run(module) { engine ->
+		LlvmEngine.run(constructor.module) { engine ->
 			result = Llvm.runFunction(engine, entrypoint)
 		}
 		return result
 	}
 
-	fun close() {
-		LLVMDisposeBuilder(builder)
-		LLVMContextDispose(context)
+	fun dispose() {
+		constructor.dispose()
 	}
 }

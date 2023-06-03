@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.compiler.targets.llvm.Llvm
-import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.SemanticModel
@@ -83,18 +82,18 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		context.addIssue(TypeNotAssignable(source, sourceType, targetType))
 	}
 
-	override fun compile(llvmCompilerContext: LlvmCompilerContext) {
-		super.compile(llvmCompilerContext)
+	override fun compile(llvmConstructor: LlvmConstructor) {
+		super.compile(llvmConstructor)
 		if(scope is FileScope || scope is TypeScope)
 			return
-		val currentBlock = Llvm.getCurrentBlock(llvmCompilerContext)
-		val function = Llvm.getParentFunction(currentBlock)
-		val entryBlock = Llvm.getEntryBlock(function)
-		Llvm.appendTo(llvmCompilerContext, entryBlock)
-		llvmLocation = Llvm.buildAllocation(llvmCompilerContext, type?.getLlvmReference(llvmCompilerContext), name)
-		Llvm.appendTo(llvmCompilerContext, currentBlock)
+		val currentBlock = llvmConstructor.getCurrentBlock()
+		val function = llvmConstructor.getParentFunction(currentBlock)
+		val entryBlock = llvmConstructor.getEntryBlock(function)
+		llvmConstructor.select(entryBlock)
+		llvmLocation = llvmConstructor.buildAllocation(type?.getLlvmReference(llvmConstructor), name)
+		llvmConstructor.select(currentBlock)
 		val value = value
 		if(value != null)
-			Llvm.buildStore(llvmCompilerContext, value.getLlvmReference(llvmCompilerContext), llvmLocation)
+			llvmConstructor.buildStore(value.getLlvmReference(llvmConstructor), llvmLocation)
 	}
 }

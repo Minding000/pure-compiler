@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.definitions
 
-import components.compiler.targets.llvm.Llvm
-import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
@@ -119,12 +118,12 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		}
 	}
 
-	override fun compile(llvmCompilerContext: LlvmCompilerContext) {
-		llvmReference = Llvm.buildFunction(llvmCompilerContext, memberIdentifier, signature.getLlvmReference(llvmCompilerContext))
-		Llvm.createBlockAndPositionBuilder(llvmCompilerContext, llvmReference, "body")
-		body?.compile(llvmCompilerContext)
+	override fun compile(llvmConstructor: LlvmConstructor) {
+		llvmReference = llvmConstructor.buildFunction(memberIdentifier, signature.getLlvmReference(llvmConstructor))
+		llvmConstructor.createAndSelectBlock(llvmReference, "body")
+		body?.compile(llvmConstructor)
 		if(body?.isInterruptingExecution != true)
-			Llvm.buildReturn(llvmCompilerContext)
+			llvmConstructor.buildReturn()
 	}
 
 	override fun toString(): String {

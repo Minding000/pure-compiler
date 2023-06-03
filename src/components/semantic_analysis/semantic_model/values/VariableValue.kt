@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.compiler.targets.llvm.Llvm
-import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
@@ -81,9 +80,9 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		return definition == other.definition
 	}
 
-	override fun getLlvmReference(llvmCompilerContext: LlvmCompilerContext): LlvmValue {
+	override fun getLlvmReference(llvmConstructor: LlvmConstructor): LlvmValue {
 		val location = definition?.llvmLocation
-		return Llvm.buildLoad(llvmCompilerContext, location, name)
+		return llvmConstructor.buildLoad(location, name)
 	}
 
 	override fun toString(): String = name

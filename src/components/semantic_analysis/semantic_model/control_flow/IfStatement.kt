@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.control_flow
 
-import components.compiler.targets.llvm.Llvm
-import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -44,25 +43,25 @@ class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val 
 			(positiveBranch.isInterruptingExecution && negativeBranch?.isInterruptingExecution == true)
 	}
 
-	override fun compile(llvmCompilerContext: LlvmCompilerContext) {
-		val conditionBlock = Llvm.getCurrentBlock(llvmCompilerContext)
-		val function = Llvm.getParentFunction(conditionBlock)
-		val condition = condition.getLlvmReference(llvmCompilerContext)
-		val trueBlock = Llvm.createBlock(llvmCompilerContext, function, "if_true")
-		val falseBlock = Llvm.createBlock(llvmCompilerContext, function, "if_false")
-		val exitBlock = Llvm.createBlock(llvmCompilerContext, "exit")
-		Llvm.buildJump(llvmCompilerContext, condition, trueBlock, falseBlock)
-		Llvm.appendTo(llvmCompilerContext, trueBlock)
-		positiveBranch.compile(llvmCompilerContext)
+	override fun compile(llvmConstructor: LlvmConstructor) {
+		val conditionBlock = llvmConstructor.getCurrentBlock()
+		val function = llvmConstructor.getParentFunction(conditionBlock)
+		val condition = condition.getLlvmReference(llvmConstructor)
+		val trueBlock = llvmConstructor.createBlock(function, "if_true")
+		val falseBlock = llvmConstructor.createBlock(function, "if_false")
+		val exitBlock = llvmConstructor.createBlock("exit")
+		llvmConstructor.buildJump(condition, trueBlock, falseBlock)
+		llvmConstructor.select(trueBlock)
+		positiveBranch.compile(llvmConstructor)
 		if(!positiveBranch.isInterruptingExecution)
-			Llvm.buildJump(llvmCompilerContext, exitBlock)
-		Llvm.appendTo(llvmCompilerContext, falseBlock)
-		negativeBranch?.compile(llvmCompilerContext)
+			llvmConstructor.buildJump(exitBlock)
+		llvmConstructor.select(falseBlock)
+		negativeBranch?.compile(llvmConstructor)
 		if(negativeBranch?.isInterruptingExecution != true)
-			Llvm.buildJump(llvmCompilerContext, exitBlock)
+			llvmConstructor.buildJump(exitBlock)
 		if(!(positiveBranch.isInterruptingExecution && negativeBranch?.isInterruptingExecution == true)) {
-			Llvm.addBlockToFunction(function, exitBlock)
-			Llvm.appendTo(llvmCompilerContext, exitBlock)
+			llvmConstructor.addBlockToFunction(function, exitBlock)
+			llvmConstructor.select(exitBlock)
 		}
 	}
 }

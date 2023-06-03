@@ -9,7 +9,7 @@ import source_structure.Project
 object LlvmCompiler {
 
 	fun buildAndRun(project: Project, program: Program, entryPointPath: String) {
-		val context = LlvmCompilerContext(project.name)
+		val context = LlvmProgram(project.name)
 		context.loadSemanticModel(program, entryPointPath)
 		context.verify()
 		context.compile()
@@ -19,7 +19,7 @@ object LlvmCompiler {
 		println()
 		println("Running program...")
 		println("Result: '${intResult}'")
-		context.close()
+		context.dispose()
 	}
 
 	/*

@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.compiler.targets.llvm.Llvm
-import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.general.SemanticModel
@@ -54,8 +53,8 @@ class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value
 		return value == other.value
 	}
 
-	override fun getLlvmReference(llvmCompilerContext: LlvmCompilerContext): LlvmValue {
-		return Llvm.buildInt32(llvmCompilerContext, value.longValueExact())
+	override fun getLlvmReference(llvmConstructor: LlvmConstructor): LlvmValue {
+		return llvmConstructor.buildInt32(value.longValueExact())
 	}
 
 	override fun toString(): String {

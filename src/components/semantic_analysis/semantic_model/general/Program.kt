@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.general
 
-import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.Object
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -62,9 +62,9 @@ class Program(val source: ProgramSyntaxTree) {
 	/**
 	 * Compiles code to LLVM IR.
 	 */
-	fun compile(llvmCompilerContext: LlvmCompilerContext) {
+	fun compile(llvmConstructor: LlvmConstructor) {
 		for(file in files)
-			file.compile(llvmCompilerContext)
+			file.compile(llvmConstructor)
 	}
 
 	fun getEntryPoint(entryPointPath: String): FunctionImplementation {
