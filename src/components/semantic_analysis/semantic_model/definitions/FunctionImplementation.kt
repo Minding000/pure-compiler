@@ -114,18 +114,17 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 				} else {
 					if(someBlocksCompleteWithoutReturning)
 						context.addIssue(FunctionCompletesWithoutReturning(source))
-
 				}
 			}
 		}
 	}
 
 	override fun compile(llvmCompilerContext: LlvmCompilerContext) {
-		if(memberIdentifier != "getFive(): Int")
-			return
 		llvmReference = Llvm.buildFunction(llvmCompilerContext, memberIdentifier, signature.getLlvmReference(llvmCompilerContext))
 		Llvm.createBlock(llvmCompilerContext, llvmReference, "body")
-		super.compile(llvmCompilerContext)
+		body?.compile(llvmCompilerContext)
+		if(body?.isInterruptingExecution != true)
+			Llvm.buildReturn(llvmCompilerContext)
 	}
 
 	override fun toString(): String {

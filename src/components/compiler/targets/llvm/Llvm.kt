@@ -16,6 +16,8 @@ object Llvm {
 
 	fun createBuilder(context: LlvmContext): LlvmBuilder = LLVMCreateBuilderInContext(context)
 
+	fun create1BitIntegerType(context: LlvmContext): LlvmType = LLVMInt1TypeInContext(context)
+
 	fun create32BitIntegerType(context: LlvmContext): LlvmType = LLVMInt32TypeInContext(context)
 
 	fun createVoidType(context: LlvmContext): LlvmType = LLVMVoidTypeInContext(context)
@@ -24,6 +26,10 @@ object Llvm {
 		if(value == null)
 			return LLVMBuildRetVoid(context.builder)
 		return LLVMBuildRet(context.builder, value)
+	}
+
+	fun buildBoolean(context: LlvmCompilerContext, value: Long): LlvmValue {
+		return LLVMConstInt(context.booleanType, value, NO)
 	}
 
 	fun buildInt32(context: LlvmCompilerContext, value: Long): LlvmValue {

@@ -10,6 +10,7 @@ class LlvmCompilerContext(name: String) {
 	val context = Llvm.createContext()
 	val module = Llvm.createModule(context, name)
 	val builder = Llvm.createBuilder(context)
+	val booleanType = Llvm.create1BitIntegerType(context)
 	val i32Type = Llvm.create32BitIntegerType(context)
 	val voidType = Llvm.createVoidType(context)
 

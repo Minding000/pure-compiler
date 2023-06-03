@@ -9,6 +9,7 @@ import java.util.*
 
 class ErrorHandlingContext(override val source: StatementSection, scope: Scope, val mainBlock: StatementBlock,
 						   val handleBlocks: List<HandleBlock>, val alwaysBlock: StatementBlock?): SemanticModel(source, scope) {
+	override var isInterruptingExecution = false
 
 	init {
 		addSemanticModels(mainBlock, alwaysBlock)
@@ -53,6 +54,23 @@ class ErrorHandlingContext(override val source: StatementSection, scope: Scope, 
 			tracker.markAllUsagesAsExiting(alwaysBlockReferencePoint)
 			tracker.currentState.removeReferencePoint(alwaysBlockReferencePoint)
 			tracker.setVariableStates(completeExecutionState)
+		}
+	}
+
+	override fun validate() {
+		super.validate()
+		isInterruptingExecution = mainBlock.isInterruptingExecution
+		if(isInterruptingExecution) {
+			for(handleBlock in handleBlocks) {
+				if(!handleBlock.isInterruptingExecution) {
+					isInterruptingExecution = false
+					break
+				}
+			}
+		}
+		if(alwaysBlock != null) {
+			if(alwaysBlock.isInterruptingExecution)
+				isInterruptingExecution = true
 		}
 	}
 }

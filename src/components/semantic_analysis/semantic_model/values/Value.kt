@@ -81,7 +81,7 @@ abstract class Value(override val source: SyntaxTreeNode, override var scope: Sc
 	}
 
 	open fun getLlvmReference(llvmCompilerContext: LlvmCompilerContext): LlvmValue {
-		TODO("'${javaClass.simpleName}.getLlvmReference' is not implemented here.")
+		TODO("'${javaClass.simpleName}.getLlvmReference' is not implemented here.") //TODO make this function abstract
 	}
 
 	override fun toString(): String {

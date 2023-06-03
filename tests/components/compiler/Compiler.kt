@@ -5,6 +5,7 @@ import components.compiler.targets.llvm.LlvmCompilerContext
 import components.compiler.targets.llvm.LlvmList
 import components.compiler.targets.llvm.LlvmType
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import util.TestUtil
 import kotlin.test.assertEquals
 
@@ -30,16 +31,15 @@ internal class Compiler {
 	}
 
 	@Test
-	fun `is able run source code`() {
+	fun `compiles functions`() {
 		val sourceCode = """
-			referencing Pure
 			SimplestApp object {
 				to getFive(): Int {
 					return 5
 				}
 			}
 		""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, true)
+		val lintResult = TestUtil.lint(sourceCode)
 		val context = LlvmCompilerContext("Test")
 		context.loadSemanticModel(lintResult.program, "Test:SimplestApp.getFive")
 		context.verify()
@@ -48,5 +48,92 @@ internal class Compiler {
 		val intResult = Llvm.castToInt(result)
 		context.close()
 		assertEquals(5, intResult)
+	}
+
+	@Test
+	fun `compiles if statements without negative branch`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFiveOrTen(): Int {
+					if yes
+						return 10
+					return 5
+				}
+			}
+		""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val context = LlvmCompilerContext("Test")
+		context.loadSemanticModel(lintResult.program, "Test:SimplestApp.getFiveOrTen")
+		context.verify()
+		context.compile()
+		val result = context.run()
+		val intResult = Llvm.castToInt(result)
+		context.close()
+		assertEquals(10, intResult)
+	}
+
+	@Test
+	fun `compiles if statements with negative branch`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getTenOrTwelve(): Int {
+					if no
+						return 10
+					else
+						return 12
+				}
+			}
+		""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val context = LlvmCompilerContext("Test")
+		context.loadSemanticModel(lintResult.program, "Test:SimplestApp.getTenOrTwelve")
+		context.verify()
+		context.compile()
+		val result = context.run()
+		val intResult = Llvm.castToInt(result)
+		context.close()
+		assertEquals(12, intResult)
+	}
+
+	@Test
+	fun `compiles function with implicit return`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+				}
+			}
+		""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val context = LlvmCompilerContext("Test")
+		assertDoesNotThrow {
+			context.loadSemanticModel(lintResult.program, "Test:SimplestApp.run")
+			context.verify()
+			context.compile()
+			context.run()
+			context.close()
+		}
+	}
+
+	@Test
+	fun `compiles function with variable`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Int {
+					val five = 5
+					return five
+				}
+			}
+		""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val context = LlvmCompilerContext("Test")
+		assertDoesNotThrow {
+			context.loadSemanticModel(lintResult.program, "Test:SimplestApp.getFive")
+			context.verify()
+			context.compile()
+			val result = context.run()
+			val intResult = Llvm.castToInt(result)
+			context.close()
+			assertEquals(5, intResult)
+		}
 	}
 }
