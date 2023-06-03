@@ -43,25 +43,25 @@ class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val 
 			(positiveBranch.isInterruptingExecution && negativeBranch?.isInterruptingExecution == true)
 	}
 
-	override fun compile(llvmConstructor: LlvmConstructor) {
-		val conditionBlock = llvmConstructor.getCurrentBlock()
-		val function = llvmConstructor.getParentFunction(conditionBlock)
-		val condition = condition.getLlvmReference(llvmConstructor)
-		val trueBlock = llvmConstructor.createBlock(function, "if_true")
-		val falseBlock = llvmConstructor.createBlock(function, "if_false")
-		val exitBlock = llvmConstructor.createBlock("exit")
-		llvmConstructor.buildJump(condition, trueBlock, falseBlock)
-		llvmConstructor.select(trueBlock)
-		positiveBranch.compile(llvmConstructor)
+	override fun compile(constructor: LlvmConstructor) {
+		val conditionBlock = constructor.getCurrentBlock()
+		val function = constructor.getParentFunction(conditionBlock)
+		val condition = condition.getLlvmReference(constructor)
+		val trueBlock = constructor.createBlock(function, "if_true")
+		val falseBlock = constructor.createBlock(function, "if_false")
+		val exitBlock = constructor.createBlock("exit")
+		constructor.buildJump(condition, trueBlock, falseBlock)
+		constructor.select(trueBlock)
+		positiveBranch.compile(constructor)
 		if(!positiveBranch.isInterruptingExecution)
-			llvmConstructor.buildJump(exitBlock)
-		llvmConstructor.select(falseBlock)
-		negativeBranch?.compile(llvmConstructor)
+			constructor.buildJump(exitBlock)
+		constructor.select(falseBlock)
+		negativeBranch?.compile(constructor)
 		if(negativeBranch?.isInterruptingExecution != true)
-			llvmConstructor.buildJump(exitBlock)
+			constructor.buildJump(exitBlock)
 		if(!(positiveBranch.isInterruptingExecution && negativeBranch?.isInterruptingExecution == true)) {
-			llvmConstructor.addBlockToFunction(function, exitBlock)
-			llvmConstructor.select(exitBlock)
+			constructor.addBlockToFunction(function, exitBlock)
+			constructor.select(exitBlock)
 		}
 	}
 }

@@ -50,7 +50,7 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 		tracker.registerReturnStatement()
 	}
 
-	override fun compile(llvmConstructor: LlvmConstructor) {
-		llvmConstructor.buildReturn(value?.getLlvmReference(llvmConstructor))
+	override fun compile(constructor: LlvmConstructor) {
+		constructor.buildReturn(value?.getLlvmReference(constructor))
 	}
 }

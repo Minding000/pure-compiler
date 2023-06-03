@@ -53,8 +53,8 @@ class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value
 		return value == other.value
 	}
 
-	override fun getLlvmReference(llvmConstructor: LlvmConstructor): LlvmValue {
-		return llvmConstructor.buildInt32(value.longValueExact())
+	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
+		return constructor.buildInt32(value.longValueExact())
 	}
 
 	override fun toString(): String {

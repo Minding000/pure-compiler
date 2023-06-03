@@ -76,9 +76,9 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 			semanticModel.validate()
 	}
 
-	open fun compile(llvmConstructor: LlvmConstructor) {
+	open fun compile(constructor: LlvmConstructor) {
 		for(semanticModel in semanticModels)
-			semanticModel.compile(llvmConstructor)
+			semanticModel.compile(constructor)
 	}
 
 	fun isInInitializer(): Boolean {

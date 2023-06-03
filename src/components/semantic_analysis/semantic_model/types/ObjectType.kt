@@ -199,13 +199,13 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 		return stringRepresentation
 	}
 
-	override fun getLlvmReference(llvmConstructor: LlvmConstructor): LlvmType {
+	override fun getLlvmReference(constructor: LlvmConstructor): LlvmType {
 		if(SpecialType.INTEGER.matches(this))
-			return llvmConstructor.i32Type
+			return constructor.i32Type
 		if(SpecialType.NOTHING.matches(this))
-			return llvmConstructor.voidType
+			return constructor.voidType
 		if(SpecialType.NEVER.matches(this))
-			return llvmConstructor.voidType
-		return super.getLlvmReference(llvmConstructor)
+			return constructor.voidType
+		return super.getLlvmReference(constructor)
 	}
 }

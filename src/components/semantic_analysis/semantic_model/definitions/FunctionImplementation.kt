@@ -118,12 +118,12 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		}
 	}
 
-	override fun compile(llvmConstructor: LlvmConstructor) {
-		llvmReference = llvmConstructor.buildFunction(memberIdentifier, signature.getLlvmReference(llvmConstructor))
-		llvmConstructor.createAndSelectBlock(llvmReference, "body")
-		body?.compile(llvmConstructor)
+	override fun compile(constructor: LlvmConstructor) {
+		llvmReference = constructor.buildFunction(memberIdentifier, signature.getLlvmReference(constructor))
+		constructor.createAndSelectBlock(llvmReference, "body")
+		body?.compile(constructor)
 		if(body?.isInterruptingExecution != true)
-			llvmConstructor.buildReturn()
+			constructor.buildReturn()
 	}
 
 	override fun toString(): String {

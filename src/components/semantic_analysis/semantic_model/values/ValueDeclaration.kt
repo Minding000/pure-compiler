@@ -82,18 +82,18 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		context.addIssue(TypeNotAssignable(source, sourceType, targetType))
 	}
 
-	override fun compile(llvmConstructor: LlvmConstructor) {
-		super.compile(llvmConstructor)
+	override fun compile(constructor: LlvmConstructor) {
+		super.compile(constructor)
 		if(scope is FileScope || scope is TypeScope)
 			return
-		val currentBlock = llvmConstructor.getCurrentBlock()
-		val function = llvmConstructor.getParentFunction(currentBlock)
-		val entryBlock = llvmConstructor.getEntryBlock(function)
-		llvmConstructor.select(entryBlock)
-		llvmLocation = llvmConstructor.buildAllocation(type?.getLlvmReference(llvmConstructor), name)
-		llvmConstructor.select(currentBlock)
+		val currentBlock = constructor.getCurrentBlock()
+		val function = constructor.getParentFunction(currentBlock)
+		val entryBlock = constructor.getEntryBlock(function)
+		constructor.select(entryBlock)
+		llvmLocation = constructor.buildAllocation(type?.getLlvmReference(constructor), name)
+		constructor.select(currentBlock)
 		val value = value
 		if(value != null)
-			llvmConstructor.buildStore(value.getLlvmReference(llvmConstructor), llvmLocation)
+			constructor.buildStore(value.getLlvmReference(constructor), llvmLocation)
 	}
 }
