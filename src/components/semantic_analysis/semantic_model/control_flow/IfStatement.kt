@@ -44,8 +44,7 @@ class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val 
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		val conditionBlock = constructor.getCurrentBlock()
-		val function = constructor.getParentFunction(conditionBlock)
+		val function = constructor.getParentFunction()
 		val condition = condition.getLlvmReference(constructor)
 		val trueBlock = constructor.createBlock(function, "if_true")
 		val falseBlock = constructor.createBlock(function, "if_false")

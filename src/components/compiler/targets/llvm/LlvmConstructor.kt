@@ -11,6 +11,14 @@ class LlvmConstructor(name: String) {
 	val i32Type = Llvm.create32BitIntegerType(context)
 	val voidType = Llvm.createVoidType(context)
 
+	fun getParameter(function: LlvmValue, index: Int): LlvmValue {
+		return LLVMGetParam(function, index)
+	}
+
+	fun getParentFunction(): LlvmValue {
+		return LLVMGetBasicBlockParent(getCurrentBlock())
+	}
+
 	fun getParentFunction(block: LlvmBlock): LlvmValue {
 		return LLVMGetBasicBlockParent(block)
 	}

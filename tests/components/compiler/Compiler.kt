@@ -131,4 +131,20 @@ internal class Compiler {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
 		assertEquals(5, Llvm.castToInt(result))
 	}
+
+	@Test
+	fun `compiles function calls with parameters`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Int {
+					return pipe(5)
+				}
+				to pipe(integer: Int): Int {
+					return integer
+				}
+			}
+		""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, Llvm.castToInt(result))
+	}
 }
