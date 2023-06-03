@@ -1,12 +1,12 @@
 package components.semantic_analysis.semantic_model.control_flow
 
+import components.compiler.targets.llvm.Llvm
 import components.compiler.targets.llvm.LlvmCompilerContext
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.semantic_analysis.semantic_model.values.Value
-import org.bytedeco.llvm.global.LLVM
 import components.syntax_parser.syntax_tree.control_flow.IfStatement as IfStatementSyntaxTree
 
 class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val condition: Value, val positiveBranch: SemanticModel,
@@ -45,24 +45,24 @@ class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val 
 	}
 
 	override fun compile(llvmCompilerContext: LlvmCompilerContext) {
-		val conditionBlock = LLVM.LLVMGetInsertBlock(llvmCompilerContext.builder)
-		val functionReference = LLVM.LLVMGetBasicBlockParent(conditionBlock)
+		val conditionBlock = Llvm.getCurrentBlock(llvmCompilerContext)
+		val function = Llvm.getParentFunction(conditionBlock)
 		val condition = condition.getLlvmReference(llvmCompilerContext)
-		val trueBlock = LLVM.LLVMAppendBasicBlockInContext(llvmCompilerContext.context, functionReference, "if_true")
-		val falseBlock = LLVM.LLVMAppendBasicBlockInContext(llvmCompilerContext.context, functionReference, "if_false")
-		val exitBlock = LLVM.LLVMCreateBasicBlockInContext(llvmCompilerContext.context, "exit")
-		LLVM.LLVMBuildCondBr(llvmCompilerContext.builder, condition, trueBlock, falseBlock)
-		LLVM.LLVMPositionBuilderAtEnd(llvmCompilerContext.builder, trueBlock)
+		val trueBlock = Llvm.createBlock(llvmCompilerContext, function, "if_true")
+		val falseBlock = Llvm.createBlock(llvmCompilerContext, function, "if_false")
+		val exitBlock = Llvm.createBlock(llvmCompilerContext, "exit")
+		Llvm.buildJump(llvmCompilerContext, condition, trueBlock, falseBlock)
+		Llvm.appendTo(llvmCompilerContext, trueBlock)
 		positiveBranch.compile(llvmCompilerContext)
 		if(!positiveBranch.isInterruptingExecution)
-			LLVM.LLVMBuildBr(llvmCompilerContext.builder, exitBlock)
-		LLVM.LLVMPositionBuilderAtEnd(llvmCompilerContext.builder, falseBlock)
+			Llvm.buildJump(llvmCompilerContext, exitBlock)
+		Llvm.appendTo(llvmCompilerContext, falseBlock)
 		negativeBranch?.compile(llvmCompilerContext)
 		if(negativeBranch?.isInterruptingExecution != true)
-			LLVM.LLVMBuildBr(llvmCompilerContext.builder, exitBlock)
+			Llvm.buildJump(llvmCompilerContext, exitBlock)
 		if(!(positiveBranch.isInterruptingExecution && negativeBranch?.isInterruptingExecution == true)) {
-			LLVM.LLVMAppendExistingBasicBlock(functionReference, exitBlock)
-			LLVM.LLVMPositionBuilderAtEnd(llvmCompilerContext.builder, exitBlock)
+			Llvm.addBlockToFunction(function, exitBlock)
+			Llvm.appendTo(llvmCompilerContext, exitBlock)
 		}
 	}
 }

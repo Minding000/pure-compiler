@@ -1,5 +1,6 @@
 package components.compiler.targets.llvm
 
+import errors.internal.CompilerError
 import org.bytedeco.javacpp.PointerPointer
 import org.bytedeco.llvm.LLVM.*
 import org.bytedeco.llvm.global.LLVM.*
@@ -22,12 +23,6 @@ object Llvm {
 
 	fun createVoidType(context: LlvmContext): LlvmType = LLVMVoidTypeInContext(context)
 
-	fun buildReturn(context: LlvmCompilerContext, value: LlvmValue? = null): LlvmValue {
-		if(value == null)
-			return LLVMBuildRetVoid(context.builder)
-		return LLVMBuildRet(context.builder, value)
-	}
-
 	fun buildBoolean(context: LlvmCompilerContext, value: Long): LlvmValue {
 		return LLVMConstInt(context.booleanType, value, NO)
 	}
@@ -47,9 +42,68 @@ object Llvm {
 		return function
 	}
 
-	fun createBlock(context: LlvmCompilerContext, value: LlvmValue, name: String) {
-		val block = LLVMAppendBasicBlockInContext(context.context, value, name)
+	fun getParentFunction(block: LlvmBlock): LlvmValue {
+		return LLVMGetBasicBlockParent(block)
+	}
+
+	fun getEntryBlock(function: LlvmValue): LlvmBlock {
+		return LLVMGetEntryBasicBlock(function)
+	}
+
+	fun getCurrentBlock(context: LlvmCompilerContext): LlvmBlock {
+		return LLVMGetInsertBlock(context.builder)
+	}
+
+	fun createBlock(context: LlvmCompilerContext, name: String): LlvmBlock {
+		return LLVMCreateBasicBlockInContext(context.context, name)
+	}
+
+	fun createBlock(context: LlvmCompilerContext, function: LlvmValue, name: String): LlvmBlock {
+		return LLVMAppendBasicBlockInContext(context.context, function, name)
+	}
+
+	fun createBlockAndPositionBuilder(context: LlvmCompilerContext, function: LlvmValue, name: String): LlvmBlock {
+		val block = createBlock(context, function, name)
 		LLVMPositionBuilderAtEnd(context.builder, block)
+		return block
+	}
+
+	fun appendTo(context: LlvmCompilerContext, block: LlvmBlock) {
+		LLVMPositionBuilderAtEnd(context.builder, block)
+	}
+
+	fun addBlockToFunction(function: LlvmValue, block: LlvmBlock) {
+		LLVMAppendExistingBasicBlock(function, block)
+	}
+
+	fun buildAllocation(context: LlvmCompilerContext, type: LlvmType?, name: String): LlvmValue {
+		if(type == null)
+			throw CompilerError("Missing type in allocation '$name'.")
+		return LLVMBuildAlloca(context.builder, type, name)
+	}
+
+	fun buildStore(context: LlvmCompilerContext, value: LlvmValue, location: LlvmValue) {
+		LLVMBuildStore(context.builder, value, location)
+	}
+
+	fun buildLoad(context: LlvmCompilerContext, location: LlvmValue?, name: String): LlvmValue {
+		if(location == null)
+			throw CompilerError("Missing location in load '$name'.")
+		return LLVMBuildLoad(context.builder, location, name)
+	}
+
+	fun buildJump(context: LlvmCompilerContext, targetBlock: LlvmBlock) {
+		LLVMBuildBr(context.builder, targetBlock)
+	}
+
+	fun buildJump(context: LlvmCompilerContext, condition: LlvmValue, positiveBlock: LlvmBlock, negativeBlock: LlvmBlock) {
+		LLVMBuildCondBr(context.builder, condition, positiveBlock, negativeBlock)
+	}
+
+	fun buildReturn(context: LlvmCompilerContext, value: LlvmValue? = null): LlvmValue {
+		if(value == null)
+			return LLVMBuildRetVoid(context.builder)
+		return LLVMBuildRet(context.builder, value)
 	}
 
 	fun runFunction(engine: LlvmExecutionEngine, function: LlvmValue): LlvmGenericValue {
@@ -65,11 +119,12 @@ object Llvm {
 	}
 }
 
-typealias LlvmValue = LLVMValueRef
-typealias LlvmGenericValue = LLVMGenericValueRef
 typealias LlvmContext = LLVMContextRef
 typealias LlvmModule = LLVMModuleRef
 typealias LlvmBuilder = LLVMBuilderRef
+typealias LlvmBlock = LLVMBasicBlockRef
+typealias LlvmValue = LLVMValueRef
+typealias LlvmGenericValue = LLVMGenericValueRef
 typealias LlvmType = LLVMTypeRef
 typealias LlvmExecutionEngine = LLVMExecutionEngineRef
 typealias LlvmList<T> = PointerPointer<T>

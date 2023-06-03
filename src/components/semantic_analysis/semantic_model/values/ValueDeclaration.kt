@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
+import components.compiler.targets.llvm.Llvm
 import components.compiler.targets.llvm.LlvmCompilerContext
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
@@ -13,7 +14,6 @@ import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.definition.DeclarationMissingTypeOrValue
 import logger.issues.resolution.ConversionAmbiguity
 import org.bytedeco.llvm.LLVM.LLVMValueRef
-import org.bytedeco.llvm.global.LLVM
 import java.util.*
 
 abstract class ValueDeclaration(override val source: SyntaxTreeNode, override val scope: MutableScope, val name: String, var type: Type? = null,
@@ -87,15 +87,14 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		super.compile(llvmCompilerContext)
 		if(scope is FileScope || scope is TypeScope)
 			return
-		val currentBlock = LLVM.LLVMGetInsertBlock(llvmCompilerContext.builder)
-		val functionReference = LLVM.LLVMGetBasicBlockParent(currentBlock)
-		val entryBlock = LLVM.LLVMGetEntryBasicBlock(functionReference)
-		val builder = LLVM.LLVMCreateBuilderInContext(llvmCompilerContext.context)
-		LLVM.LLVMPositionBuilderAtEnd(builder, entryBlock)
-		llvmLocation = LLVM.LLVMBuildAlloca(llvmCompilerContext.builder, type?.getLlvmReference(llvmCompilerContext), name)
-		LLVM.LLVMPositionBuilderAtEnd(builder, currentBlock)
+		val currentBlock = Llvm.getCurrentBlock(llvmCompilerContext)
+		val function = Llvm.getParentFunction(currentBlock)
+		val entryBlock = Llvm.getEntryBlock(function)
+		Llvm.appendTo(llvmCompilerContext, entryBlock)
+		llvmLocation = Llvm.buildAllocation(llvmCompilerContext, type?.getLlvmReference(llvmCompilerContext), name)
+		Llvm.appendTo(llvmCompilerContext, currentBlock)
 		val value = value
 		if(value != null)
-			LLVM.LLVMBuildStore(llvmCompilerContext.builder, value.getLlvmReference(llvmCompilerContext), llvmLocation)
+			Llvm.buildStore(llvmCompilerContext, value.getLlvmReference(llvmCompilerContext), llvmLocation)
 	}
 }

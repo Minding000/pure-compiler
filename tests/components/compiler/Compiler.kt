@@ -18,7 +18,7 @@ internal class Compiler {
 		val argumentTypes = LlvmList<LlvmType>(0)
 		val functionType = Llvm.buildFunctionType(argumentTypes, 0, context.i32Type)
 		val function = Llvm.buildFunction(context, "getNumber", functionType)
-		Llvm.createBlock(context, function, "body")
+		Llvm.createBlockAndPositionBuilder(context, function, "body")
 		val number = Llvm.buildInt32(context, expectedResult)
 		Llvm.buildReturn(context, number)
 		context.entrypoint = function

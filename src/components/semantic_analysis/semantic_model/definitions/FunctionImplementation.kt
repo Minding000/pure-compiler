@@ -121,7 +121,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 
 	override fun compile(llvmCompilerContext: LlvmCompilerContext) {
 		llvmReference = Llvm.buildFunction(llvmCompilerContext, memberIdentifier, signature.getLlvmReference(llvmCompilerContext))
-		Llvm.createBlock(llvmCompilerContext, llvmReference, "body")
+		Llvm.createBlockAndPositionBuilder(llvmCompilerContext, llvmReference, "body")
 		body?.compile(llvmCompilerContext)
 		if(body?.isInterruptingExecution != true)
 			Llvm.buildReturn(llvmCompilerContext)
