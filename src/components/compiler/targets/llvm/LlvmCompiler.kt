@@ -8,18 +8,18 @@ import source_structure.Project
  */
 object LlvmCompiler {
 
-	fun buildAndRun(project: Project, program: Program, entryPointPath: String) {
-		val context = LlvmProgram(project.name)
-		context.loadSemanticModel(program, entryPointPath)
-		context.verify()
-		context.compile()
-		context.printIntermediateRepresentation()
-		val result = context.run()
+	fun buildAndRun(project: Project, semanticModel: Program, entryPointPath: String) {
+		val program = LlvmProgram(project.name)
+		program.loadSemanticModel(semanticModel, entryPointPath)
+		program.verify()
+		program.compile()
+		program.printIntermediateRepresentation()
+		val result = program.run()
 		val intResult = Llvm.castToInt(result)
 		println()
 		println("Running program...")
 		println("Result: '${intResult}'")
-		context.dispose()
+		program.dispose()
 	}
 
 	/*

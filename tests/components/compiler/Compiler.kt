@@ -14,20 +14,20 @@ internal class Compiler {
 	@Test
 	fun `is able to assemble and run test program`() {
 		val expectedResult = 5L
-		val context = LlvmProgram("Test")
-		val constructor = context.constructor
+		val program = LlvmProgram("Test")
+		val constructor = program.constructor
 		val argumentTypes = LlvmList<LlvmType>(0)
 		val functionType = constructor.buildFunctionType(argumentTypes, 0, constructor.i32Type)
 		val function = constructor.buildFunction("getNumber", functionType)
 		constructor.createAndSelectBlock(function, "body")
 		val number = constructor.buildInt32(expectedResult)
 		constructor.buildReturn(number)
-		context.entrypoint = function
-		context.verify()
-		context.compile()
-		val result = context.run()
+		program.entrypoint = function
+		program.verify()
+		program.compile()
+		val result = program.run()
 		val intResult = Llvm.castToInt(result)
-		context.dispose()
+		program.dispose()
 		assertEquals(expectedResult, intResult)
 	}
 
@@ -41,13 +41,13 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val context = LlvmProgram("Test")
-		context.loadSemanticModel(lintResult.program, "Test:SimplestApp.getFive")
-		context.verify()
-		context.compile()
-		val result = context.run()
+		val program = LlvmProgram("Test")
+		program.loadSemanticModel(lintResult.program, "Test:SimplestApp.getFive")
+		program.verify()
+		program.compile()
+		val result = program.run()
 		val intResult = Llvm.castToInt(result)
-		context.dispose()
+		program.dispose()
 		assertEquals(5, intResult)
 	}
 
@@ -63,13 +63,13 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val context = LlvmProgram("Test")
-		context.loadSemanticModel(lintResult.program, "Test:SimplestApp.getFiveOrTen")
-		context.verify()
-		context.compile()
-		val result = context.run()
+		val program = LlvmProgram("Test")
+		program.loadSemanticModel(lintResult.program, "Test:SimplestApp.getFiveOrTen")
+		program.verify()
+		program.compile()
+		val result = program.run()
 		val intResult = Llvm.castToInt(result)
-		context.dispose()
+		program.dispose()
 		assertEquals(10, intResult)
 	}
 
@@ -86,13 +86,13 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val context = LlvmProgram("Test")
-		context.loadSemanticModel(lintResult.program, "Test:SimplestApp.getTenOrTwelve")
-		context.verify()
-		context.compile()
-		val result = context.run()
+		val program = LlvmProgram("Test")
+		program.loadSemanticModel(lintResult.program, "Test:SimplestApp.getTenOrTwelve")
+		program.verify()
+		program.compile()
+		val result = program.run()
 		val intResult = Llvm.castToInt(result)
-		context.dispose()
+		program.dispose()
 		assertEquals(12, intResult)
 	}
 
@@ -105,18 +105,18 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val context = LlvmProgram("Test")
+		val program = LlvmProgram("Test")
 		assertDoesNotThrow {
-			context.loadSemanticModel(lintResult.program, "Test:SimplestApp.run")
-			context.verify()
-			context.compile()
-			context.run()
-			context.dispose()
+			program.loadSemanticModel(lintResult.program, "Test:SimplestApp.run")
+			program.verify()
+			program.compile()
+			program.run()
+			program.dispose()
 		}
 	}
 
 	@Test
-	fun `compiles function with variable`() {
+	fun `compiles variables`() {
 		val sourceCode = """
 			SimplestApp object {
 				to getFive(): Int {
@@ -126,14 +126,38 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val context = LlvmProgram("Test")
+		val program = LlvmProgram("Test")
 		assertDoesNotThrow {
-			context.loadSemanticModel(lintResult.program, "Test:SimplestApp.getFive")
-			context.verify()
-			context.compile()
-			val result = context.run()
+			program.loadSemanticModel(lintResult.program, "Test:SimplestApp.getFive")
+			program.verify()
+			program.compile()
+			val result = program.run()
 			val intResult = Llvm.castToInt(result)
-			context.dispose()
+			program.dispose()
+			assertEquals(5, intResult)
+		}
+	}
+
+	@Test
+	fun `compiles assignments`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Int {
+					val five: Int
+					five = 5
+					return five
+				}
+			}
+		""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val program = LlvmProgram("Test")
+		assertDoesNotThrow {
+			program.loadSemanticModel(lintResult.program, "Test:SimplestApp.getFive")
+			program.verify()
+			program.compile()
+			val result = program.run()
+			val intResult = Llvm.castToInt(result)
+			program.dispose()
 			assertEquals(5, intResult)
 		}
 	}

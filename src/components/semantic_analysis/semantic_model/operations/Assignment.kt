@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.operations
 
+import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
@@ -75,6 +76,24 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 				}
 			}
 			target.analyseDataFlow(tracker)
+		}
+	}
+
+	override fun compile(constructor: LlvmConstructor) {
+		super.compile(constructor)
+		val value = sourceExpression.getLlvmReference(constructor)
+		for(target in targets) {
+			when(target) {
+				is VariableValue -> {
+					constructor.buildStore(value, target.definition?.llvmLocation)
+				}
+				is MemberAccess -> {
+					TODO("Assignments to member accesses are not implemented yet.")
+				}
+				is IndexAccess -> {
+					TODO("Assignments to index accesses are not implemented yet.")
+				}
+			}
 		}
 	}
 }

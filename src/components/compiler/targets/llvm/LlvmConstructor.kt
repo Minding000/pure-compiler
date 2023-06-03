@@ -71,7 +71,9 @@ class LlvmConstructor(name: String) {
 		return LLVMBuildAlloca(builder, type, name)
 	}
 
-	fun buildStore(value: LlvmValue, location: LlvmValue) {
+	fun buildStore(value: LlvmValue, location: LlvmValue?) {
+		if(location == null)
+			throw CompilerError("Missing location in store.")
 		LLVMBuildStore(builder, value, location)
 	}
 
