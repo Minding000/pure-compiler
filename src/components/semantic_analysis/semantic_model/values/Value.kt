@@ -87,6 +87,4 @@ abstract class Value(override val source: SyntaxTreeNode, override var scope: Sc
 	override fun toString(): String {
 		return "${javaClass.simpleName}#${hashCode()}"
 	}
-
-//	abstract override fun compile(context: BuildContext): LLVMValueRef
 }

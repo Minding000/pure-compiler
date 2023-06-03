@@ -1,14 +1,19 @@
 package components.semantic_analysis.semantic_model.values
 
+import components.compiler.targets.llvm.LlvmCompilerContext
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.SemanticModel
+import components.semantic_analysis.semantic_model.scopes.FileScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.definition.DeclarationMissingTypeOrValue
 import logger.issues.resolution.ConversionAmbiguity
+import org.bytedeco.llvm.LLVM.LLVMValueRef
+import org.bytedeco.llvm.global.LLVM
 import java.util.*
 
 abstract class ValueDeclaration(override val source: SyntaxTreeNode, override val scope: MutableScope, val name: String, var type: Type? = null,
@@ -18,6 +23,7 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 	open val value = value
 	val usages = LinkedList<VariableValue>()
 	var conversion: InitializerDefinition? = null
+	lateinit var llvmLocation: LLVMValueRef
 
 	init {
 		addSemanticModels(type, value)
@@ -75,5 +81,21 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 			return
 		}
 		context.addIssue(TypeNotAssignable(source, sourceType, targetType))
+	}
+
+	override fun compile(llvmCompilerContext: LlvmCompilerContext) {
+		super.compile(llvmCompilerContext)
+		if(scope is FileScope || scope is TypeScope)
+			return
+		val currentBlock = LLVM.LLVMGetInsertBlock(llvmCompilerContext.builder)
+		val functionReference = LLVM.LLVMGetBasicBlockParent(currentBlock)
+		val entryBlock = LLVM.LLVMGetEntryBasicBlock(functionReference)
+		val builder = LLVM.LLVMCreateBuilderInContext(llvmCompilerContext.context)
+		LLVM.LLVMPositionBuilderAtEnd(builder, entryBlock)
+		llvmLocation = LLVM.LLVMBuildAlloca(llvmCompilerContext.builder, type?.getLlvmReference(llvmCompilerContext), name)
+		LLVM.LLVMPositionBuilderAtEnd(builder, currentBlock)
+		val value = value
+		if(value != null)
+			LLVM.LLVMBuildStore(llvmCompilerContext.builder, value.getLlvmReference(llvmCompilerContext), llvmLocation)
 	}
 }

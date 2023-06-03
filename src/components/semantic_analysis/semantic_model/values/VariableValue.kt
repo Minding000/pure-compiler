@@ -1,5 +1,7 @@
 package components.semantic_analysis.semantic_model.values
 
+import components.compiler.targets.llvm.LlvmCompilerContext
+import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
@@ -13,6 +15,7 @@ import logger.issues.access.InstanceAccessFromStaticContext
 import logger.issues.access.StaticAccessFromInstanceContext
 import logger.issues.initialization.NotInitialized
 import logger.issues.resolution.NotFound
+import org.bytedeco.llvm.global.LLVM
 
 open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val name: String): Value(source, scope) {
 	var definition: ValueDeclaration? = null
@@ -76,6 +79,11 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		if(definition == null)
 			return false
 		return definition == other.definition
+	}
+
+	override fun getLlvmReference(llvmCompilerContext: LlvmCompilerContext): LlvmValue {
+		val location = definition?.llvmLocation
+		return LLVM.LLVMBuildLoad(llvmCompilerContext.builder, location, name)
 	}
 
 	override fun toString(): String = name
