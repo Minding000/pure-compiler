@@ -118,8 +118,12 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		}
 	}
 
-	override fun compile(constructor: LlvmConstructor) {
+	override fun declare(constructor: LlvmConstructor) {
+		super.declare(constructor)
 		llvmReference = constructor.buildFunction(memberIdentifier, signature.getLlvmReference(constructor))
+	}
+
+	override fun compile(constructor: LlvmConstructor) {
 		constructor.createAndSelectBlock(llvmReference, "body")
 		body?.compile(constructor)
 		if(body?.isInterruptingExecution != true)

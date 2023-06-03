@@ -1,5 +1,8 @@
 package components.semantic_analysis.semantic_model.control_flow
 
+import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmList
+import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.definitions.*
@@ -12,6 +15,7 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
+import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.initialization.ReliesOnUninitializedProperties
 import logger.issues.modifiers.AbstractClassInstantiation
@@ -97,6 +101,21 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 			targetImplementation = function?.getImplementationBySignature(signature)
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "function", getSignature())
+		}
+	}
+
+	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
+		val parameters = LlvmList<LlvmValue>(valueParameters.size.toLong())
+		for(parameter in valueParameters)
+			parameters.put(parameter.getLlvmReference(constructor))
+		when(val target = targetImplementation) {
+			is FunctionImplementation -> {
+				return constructor.buildFunctionCall(target.llvmReference, parameters, valueParameters.size, getSignature())
+			}
+			is InitializerDefinition -> {
+				TODO("Initializer calls are not implemented yet.")
+			}
+			else -> throw CompilerError(source, "Target is not callable.")
 		}
 	}
 

@@ -115,4 +115,20 @@ internal class Compiler {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
 		assertEquals(5, Llvm.castToInt(result))
 	}
+
+	@Test
+	fun `compiles function calls`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Int {
+					return createFive()
+				}
+				to createFive(): Int {
+					return 5
+				}
+			}
+		""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, Llvm.castToInt(result))
+	}
 }

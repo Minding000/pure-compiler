@@ -64,6 +64,8 @@ class Program(val source: ProgramSyntaxTree) {
 	 */
 	fun compile(llvmConstructor: LlvmConstructor) {
 		for(file in files)
+			file.declare(llvmConstructor)
+		for(file in files)
 			file.compile(llvmConstructor)
 	}
 

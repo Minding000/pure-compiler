@@ -31,16 +31,20 @@ class LlvmConstructor(name: String) {
 		return LLVMConstInt(i32Type, value, Llvm.NO)
 	}
 
-	fun buildFunctionType(argumentTypes: LlvmList<LlvmType>, argumentCount: Int, returnType: LlvmType?): LlvmType {
+	fun buildFunctionType(parameterTypes: LlvmList<LlvmType>, parameterCount: Int, returnType: LlvmType?): LlvmType {
 		if(returnType == null)
 			throw CompilerError("Missing return type in function.")
-		return LLVMFunctionType(returnType, argumentTypes, argumentCount, Llvm.NO)
+		return LLVMFunctionType(returnType, parameterTypes, parameterCount, Llvm.NO)
 	}
 
 	fun buildFunction(name: String, type: LlvmType): LlvmValue {
 		val function = LLVMAddFunction(module, name, type)
 		LLVMSetFunctionCallConv(function, LLVMCCallConv)
 		return function
+	}
+
+	fun buildFunctionCall(function: LlvmValue, parameters: LlvmList<LlvmValue>, parameterCount: Int, name: String): LlvmValue {
+		return LLVMBuildCall(builder, function, parameters, parameterCount, name)
 	}
 
 	fun createBlock(name: String): LlvmBlock {

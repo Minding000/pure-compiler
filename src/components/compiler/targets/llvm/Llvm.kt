@@ -4,7 +4,7 @@ import org.bytedeco.javacpp.PointerPointer
 import org.bytedeco.llvm.LLVM.*
 import org.bytedeco.llvm.global.LLVM.*
 
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 object Llvm {
 	const val NO = 0
 	const val YES = 1

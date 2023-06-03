@@ -68,6 +68,6 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 	open fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> = emptyList()
 
 	open fun getLlvmReference(constructor: LlvmConstructor): LlvmType {
-		TODO("'${javaClass.simpleName}.getLlvmReference' is not implemented here.")
+		TODO("'${javaClass.simpleName}.getLlvmReference' is not implemented yet.") //TODO make this function abstract
 	}
 }
