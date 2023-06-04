@@ -9,6 +9,12 @@ object Llvm {
 	const val NO = 0
 	const val YES = 1
 	const val OK = 0
+	const val LESS_THAN_SIGNED = LLVMIntSLT
+	const val GREATER_THAN_SIGNED = LLVMIntSGT
+	const val LESS_THAN_OR_EQUAL_TO_SIGNED = LLVMIntSLE
+	const val GREATER_THAN_OR_EQUAL_TO_SIGNED = LLVMIntSGE
+	const val EQUAL_TO = LLVMIntEQ
+	const val NOT_EQUAL_TO = LLVMIntNE
 
 	fun createContext(): LlvmContext = LLVMContextCreate()
 
@@ -31,6 +37,7 @@ object Llvm {
 	}
 
 	fun castToInt(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue, NO)
+	fun castToBool(genericValue: LlvmGenericValue): Boolean = castToInt(genericValue) == 1L
 }
 
 typealias LlvmContext = LLVMContextRef

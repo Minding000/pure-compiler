@@ -1,5 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
+import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
@@ -149,5 +151,52 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			}
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
+	}
+
+	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
+		val leftValue = left.getLlvmReference(constructor)
+		val rightValue = right.getLlvmReference(constructor)
+		if(SpecialType.BOOLEAN.matches(left.type) && SpecialType.BOOLEAN.matches(left.type)) {
+			if(kind == Operator.Kind.AND) {
+				return constructor.buildAnd(leftValue, rightValue, "and")
+			} else if(kind == Operator.Kind.PIPE) {
+				return constructor.buildOr(leftValue, rightValue, "or")
+			}
+		}
+		if(SpecialType.INTEGER.matches(left.type) && SpecialType.INTEGER.matches(left.type)) {
+			when(kind) {
+				Operator.Kind.PLUS -> {
+					return constructor.buildIntegerAddition(leftValue, rightValue, "addition")
+				}
+				Operator.Kind.MINUS -> {
+					return constructor.buildIntegerSubtraction(leftValue, rightValue, "subtraction")
+				}
+				Operator.Kind.STAR -> {
+					return constructor.buildIntegerMultiplication(leftValue, rightValue, "multiplication")
+				}
+				Operator.Kind.SLASH -> {
+					return constructor.buildIntegerDivision(leftValue, rightValue, "division")
+				}
+				Operator.Kind.SMALLER_THAN -> {
+					return constructor.buildLessThan(leftValue, rightValue, "smaller_than")
+				}
+				Operator.Kind.GREATER_THAN -> {
+					return constructor.buildGreaterThan(leftValue, rightValue, "greater_than")
+				}
+				Operator.Kind.SMALLER_THAN_OR_EQUAL_TO -> {
+					return constructor.buildLessThanOrEqualTo(leftValue, rightValue, "smaller_than_or_equal_to")
+				}
+				Operator.Kind.GREATER_THAN_OR_EQUAL_TO -> {
+					return constructor.buildGreaterThanOrEqualTo(leftValue, rightValue, "greater_than_or_equal_to")
+				}
+				else -> {}
+			}
+		}
+		if(kind == Operator.Kind.EQUAL_TO) {
+			return constructor.buildEqualTo(leftValue, rightValue, "equal_to")
+		} else if(kind == Operator.Kind.NOT_EQUAL_TO) {
+			return constructor.buildNotEqualTo(leftValue, rightValue, "not_equal_to")
+		}
+		TODO("Binary '${left.type} $kind ${right.type}' operator is not implemented yet.")
 	}
 }
