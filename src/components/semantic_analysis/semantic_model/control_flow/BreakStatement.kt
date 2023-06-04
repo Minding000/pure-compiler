@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.control_flow
 
+import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -23,5 +24,9 @@ class BreakStatement(override val source: BreakStatementSyntaxTree, scope: Scope
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		tracker.registerBreakStatement()
+	}
+
+	override fun compile(constructor: LlvmConstructor) {
+		targetLoop?.jumpOut(constructor)
 	}
 }

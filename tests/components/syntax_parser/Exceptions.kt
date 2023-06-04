@@ -1,8 +1,8 @@
 package components.syntax_parser
 
 import org.junit.jupiter.api.Disabled
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class Exceptions {
 
@@ -16,7 +16,7 @@ internal class Exceptions {
 				Raise { FunctionCall [ Identifier { Error } ] {
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -32,7 +32,7 @@ internal class Exceptions {
 				} Handle [ ObjectType { Identifier { NoWordsException } } Identifier { error } ] { StatementBlock {
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -48,7 +48,7 @@ internal class Exceptions {
 				} Handle [ ObjectType { Identifier { NoWordsException } } ] { StatementBlock {
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Disabled
@@ -68,7 +68,7 @@ internal class Exceptions {
 				} ] { StatementBlock {
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -84,7 +84,7 @@ internal class Exceptions {
 				} Handle [ UnionType { ObjectType { Identifier { NoWordsException } } | ObjectType { Identifier { OverthinkException } } } Identifier { error } ] { StatementBlock {
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -108,7 +108,7 @@ internal class Exceptions {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -124,7 +124,7 @@ internal class Exceptions {
 				} StatementBlock {
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -137,7 +137,7 @@ internal class Exceptions {
 				Try [ null ] { FunctionCall [ Identifier { splitApple } ] {
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -151,6 +151,6 @@ internal class Exceptions {
 				} }
             """.trimIndent()
 
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

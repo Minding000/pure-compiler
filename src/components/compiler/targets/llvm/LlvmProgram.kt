@@ -17,9 +17,10 @@ class LlvmProgram(name: String) {
 			_entrypoint = value
 		}
 
-	fun loadSemanticModel(program: Program, entryPointPath: String) {
+	fun loadSemanticModel(program: Program, entryPointPath: String? = null) {
 		program.compile(constructor)
-		entrypoint = program.getEntryPoint(entryPointPath).llvmReference
+		if(entryPointPath != null)
+			entrypoint = program.getEntryPoint(entryPointPath).llvmReference
 	}
 
 	fun verify() {
@@ -39,8 +40,11 @@ class LlvmProgram(name: String) {
 		LLVMDisposePassManager(passManager)
 	}
 
-	fun printIntermediateRepresentation() {
-		LLVMDumpModule(constructor.module)
+	fun getIntermediateRepresentation(): String {
+		val bytes = LLVMPrintModuleToString(constructor.module)
+		val message = bytes.string
+		LLVMDisposeMessage(bytes)
+		return message
 	}
 
 	fun run(): LlvmGenericValue {

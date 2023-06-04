@@ -27,6 +27,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 
 	override fun determineTypes() {
 		super.determineTypes()
+		context.registerWrite(target)
 		target.type?.let { targetType ->
 			try {
 				val operatorDefinition = targetType.interfaceScope.resolveOperator(kind)

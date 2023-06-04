@@ -27,7 +27,7 @@ internal class Generics {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -50,7 +50,7 @@ internal class Generics {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -74,7 +74,7 @@ internal class Generics {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -114,7 +114,7 @@ internal class Generics {
 					} }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -132,7 +132,7 @@ internal class Generics {
 					NumberLiteral { 2 }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -148,7 +148,7 @@ internal class Generics {
 					NumberLiteral { 1 }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -171,7 +171,7 @@ internal class Generics {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -194,6 +194,6 @@ internal class Generics {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

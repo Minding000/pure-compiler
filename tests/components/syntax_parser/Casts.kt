@@ -1,7 +1,7 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class Casts {
 
@@ -14,7 +14,7 @@ internal class Casts {
 					NumberLiteral { 10 } as ObjectType { Identifier { Float } }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -26,7 +26,7 @@ internal class Casts {
 					Identifier { quoteSource } as? ObjectType { Identifier { Book } }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -38,7 +38,7 @@ internal class Casts {
 					Identifier { food } as! ObjectType { Identifier { Fruit } }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -57,7 +57,7 @@ internal class Casts {
 					} }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -76,6 +76,6 @@ internal class Casts {
 					} }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

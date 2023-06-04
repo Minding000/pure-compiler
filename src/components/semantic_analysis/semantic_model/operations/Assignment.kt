@@ -29,6 +29,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		for(target in targets) {
 			if(target is IndexAccess)
 				continue
+			context.registerWrite(target)
 			val targetType = target.type
 			if(sourceExpression.isAssignableTo(targetType)) {
 				sourceExpression.setInferredType(targetType)

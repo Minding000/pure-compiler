@@ -22,7 +22,7 @@ internal class FunctionDefinitions {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -42,7 +42,7 @@ internal class FunctionDefinitions {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -70,7 +70,7 @@ internal class FunctionDefinitions {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -93,7 +93,7 @@ internal class FunctionDefinitions {
 					} ]
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -109,7 +109,7 @@ internal class FunctionDefinitions {
 					Initializer
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -133,7 +133,7 @@ internal class FunctionDefinitions {
 					} } }
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -150,7 +150,7 @@ internal class FunctionDefinitions {
 					} } }
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -214,7 +214,7 @@ internal class FunctionDefinitions {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -246,7 +246,7 @@ internal class FunctionDefinitions {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -266,7 +266,7 @@ internal class FunctionDefinitions {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -287,6 +287,6 @@ internal class FunctionDefinitions {
 					} } } }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

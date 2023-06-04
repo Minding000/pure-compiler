@@ -5,14 +5,14 @@ import components.semantic_analysis.semantic_model.control_flow.Try
 import components.semantic_analysis.semantic_model.definitions.Class
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.operations.Cast
+import components.semantic_analysis.semantic_model.operations.HasValueCheck
 import components.semantic_analysis.semantic_model.operations.MemberAccess
-import components.semantic_analysis.semantic_model.operations.NullCheck
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.OptionalType
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
-import logger.issues.access.GuaranteedAccessWithNullCheck
-import logger.issues.access.OptionalAccessWithoutNullCheck
+import logger.issues.access.GuaranteedAccessWithHasValueCheck
+import logger.issues.access.OptionalAccessWithoutHasValueCheck
 import logger.issues.constant_conditions.*
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -21,7 +21,7 @@ import kotlin.test.*
 internal class Expressions {
 
 	@Test
-	fun `returns boolean from null checks`() {
+	fun `returns boolean from has-value checks`() {
 		val sourceCode =
 			"""
 				referencing Pure
@@ -29,8 +29,8 @@ internal class Expressions {
 				val b = a?
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val nullCheck = lintResult.find<NullCheck>()
-		assertTrue(SpecialType.BOOLEAN.matches(nullCheck?.type))
+		val hasValueCheck = lintResult.find<HasValueCheck>()
+		assertTrue(SpecialType.BOOLEAN.matches(hasValueCheck?.type))
 	}
 
 	@Test
@@ -78,8 +78,8 @@ internal class Expressions {
 				sun.shine()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<OptionalAccessWithoutNullCheck>(
-			"Cannot access member of optional type 'Null' without null check.", Severity.ERROR)
+		lintResult.assertIssueDetected<OptionalAccessWithoutHasValueCheck>(
+			"Cannot access member of optional type 'Null' without has-value check.", Severity.ERROR)
 	}
 
 	@Test
@@ -93,7 +93,7 @@ internal class Expressions {
 				sun.shine()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueNotDetected<OptionalAccessWithoutNullCheck>()
+		lintResult.assertIssueNotDetected<OptionalAccessWithoutHasValueCheck>()
 	}
 
 	@Test
@@ -107,7 +107,7 @@ internal class Expressions {
 				sun?.shine()
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<GuaranteedAccessWithNullCheck>(
+		lintResult.assertIssueDetected<GuaranteedAccessWithHasValueCheck>(
 			"Optional member access on guaranteed type 'Star' is unnecessary.", Severity.WARNING)
 	}
 
@@ -389,7 +389,7 @@ internal class Expressions {
 	}
 
 	@Test
-	fun `detects null checks that always return yes`() {
+	fun `detects has-value checks that always return yes`() {
 		val sourceCode =
 			"""
 				Cable class
@@ -398,11 +398,11 @@ internal class Expressions {
 				if cable? {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<StaticNullCheckValue>("Null check always returns 'yes'.", Severity.WARNING)
+		lintResult.assertIssueDetected<StaticHasValueCheckResult>("Has-value check always returns 'yes'.", Severity.WARNING)
 	}
 
 	@Test
-	fun `detects null checks that always return no`() {
+	fun `detects has-value checks that always return no`() {
 		val sourceCode =
 			"""
 				Cable class
@@ -411,7 +411,7 @@ internal class Expressions {
 				if noCable? {}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<StaticNullCheckValue>("Null check always returns 'no'.", Severity.WARNING)
+		lintResult.assertIssueDetected<StaticHasValueCheckResult>("Has-value check always returns 'no'.", Severity.WARNING)
 	}
 
 	@Test

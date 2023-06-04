@@ -28,7 +28,7 @@ internal class Members {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -171,7 +171,7 @@ internal class Members {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test

@@ -17,6 +17,6 @@ internal class Extensions {
 				Extension [ Identifier { String } ] {
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

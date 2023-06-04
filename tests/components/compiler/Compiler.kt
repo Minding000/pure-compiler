@@ -147,4 +147,56 @@ internal class Compiler {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
 		assertEquals(5, Llvm.castToInt(result))
 	}
+
+	@Test
+	fun `compiles infinite loops`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					loop {
+						if no
+							next
+						break
+					}
+				}
+			}
+		""".trimIndent()
+		assertDoesNotThrow {
+			TestUtil.run(sourceCode, "Test:SimplestApp.run")
+		}
+	}
+
+	@Test
+	fun `compiles while loops`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					var x = yes
+					loop while x {
+						x = no
+					}
+				}
+			}
+			""".trimIndent()
+		val intermediateRepresentation = """
+			define void @"run()"() {
+			function_entry:
+			  %x = alloca i1, align 1
+			  store i1 true, i1* %x, align 1
+			  br label %loop_entry
+
+			loop_entry:                                       ; preds = %loop_body, %function_entry
+			  %x1 = load i1, i1* %x, align 1
+			  br i1 %x1, label %loop_body, label %loop_exit
+
+			loop_body:                                        ; preds = %loop_entry
+			  store i1 false, i1* %x, align 1
+			  br label %loop_entry
+
+			loop_exit:                                        ; preds = %loop_entry
+			  ret void
+			}
+			""".trimIndent()
+		TestUtil.assertIntermediateRepresentationEquals(sourceCode, intermediateRepresentation)
+	}
 }

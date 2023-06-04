@@ -100,7 +100,8 @@ internal class DataFlowAnalysis {
 		""".trimIndent()
 		val report = """
 			start -> 1
-			1: declaration & write -> 3 (Int, 0)
+			1: declaration & write -> 2 (Int, 0)
+			2: hint -> 3 (Int, null)
 			3: write -> 3, 8, end (Int, 1)
 			8: read -> 3 (Int, 1)
 		""".trimIndent()
@@ -119,7 +120,8 @@ internal class DataFlowAnalysis {
 		""".trimIndent()
 		val report = """
 			start -> 1
-			1: declaration & write -> 3, 5 (Int, 0)
+			1: declaration & write -> 2 (Int, 0)
+			2: hint -> 3, 5 (Int, null)
 			3: read & mutation -> 3, 5 (Int, null)
 			5: read -> end (Int, null)
 		""".trimIndent()
@@ -131,22 +133,23 @@ internal class DataFlowAnalysis {
 	fun `works with loops with while generator`() {
 		val sourceCode = """
 			Int class
-			var result: Int? = null
+			var result: Int? = Int()
 			loop while result? {
 				result
-				result = Int()
+				result = null
 			}
 			result
 		""".trimIndent()
 		val report = """
 			start -> 2
-			2: declaration & write -> 3 (Null, null)
+			2: declaration & write -> 3 (Int, Expression)
+			3: hint -> 3 (Int?, null)
 			3: read -> 3, 3 (Int?, null)
-			3: hint -> 4 (Null, null)
-			3: hint -> 7 (Int, null)
-			4: read -> 5 (Null, null)
-			5: write -> 3 (Int, Expression)
-			7: read -> end (Int, null)
+			3: hint -> 4 (Int, null)
+			3: hint -> 7 (Null, null)
+			4: read -> 5 (Int, null)
+			5: write -> 3 (Null, null)
+			7: read -> end (Null, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertStringEquals(report, tracker.getReportFor("result"))
@@ -166,8 +169,10 @@ internal class DataFlowAnalysis {
 		""".trimIndent()
 		val report = """
 			start -> 1
-			1: declaration & write -> 3 (Int, 0)
-			3: read & mutation -> 5, 7 (Int, null)
+			1: declaration & write -> 2 (Int, 0)
+			2: hint -> 3 (Int, null)
+			3: read & mutation -> 4 (Int, null)
+			4: hint -> 5, 7 (Int, null)
 			5: read & mutation -> 5, 7 (Int, null)
 			7: read -> 3 (Int, null)
 		""".trimIndent()
@@ -558,7 +563,7 @@ internal class DataFlowAnalysis {
 	}
 
 	@Test
-	fun `changes type on null check`() {
+	fun `changes type on has-value check`() {
 		val sourceCode = """
 			val a: Int?
 			if a? {
@@ -571,10 +576,10 @@ internal class DataFlowAnalysis {
 			start -> 1
 			1: declaration -> 2 (Int?, null)
 			2: read -> 2, 2 (Int?, null)
-			2: hint -> 3 (Null, null)
-			2: hint -> 5 (Int, null)
-			3: read -> end (Null, null)
-			5: read -> end (Int, null)
+			2: hint -> 3 (Int, null)
+			2: hint -> 5 (Null, null)
+			3: read -> end (Int, null)
+			5: read -> end (Null, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertStringEquals(report, tracker.getReportFor("a"))

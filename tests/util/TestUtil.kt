@@ -62,22 +62,33 @@ object TestUtil {
         return LintResult(context, program)
     }
 
+    fun assertIntermediateRepresentationEquals(sourceCode: String, expectedIntermediateRepresentation: String) {
+		val intermediateRepresentation = "; ModuleID = 'Test'\nsource_filename = \"Test\"\n\n$expectedIntermediateRepresentation\n"
+		val lintResult = lint(sourceCode)
+		val program = LlvmProgram("Test")
+		try {
+			program.loadSemanticModel(lintResult.program)
+			program.verify()
+			assertStringEquals(intermediateRepresentation, program.getIntermediateRepresentation())
+		} finally {
+			program.dispose()
+		}
+    }
+
     fun run(sourceCode: String, entryPointPath: String): LlvmGenericValue {
 		val lintResult = lint(sourceCode)
 		val program = LlvmProgram("Test")
-		val result: LlvmGenericValue
 		try {
 			program.loadSemanticModel(lintResult.program, entryPointPath)
 			program.verify()
 			program.compile()
-			result = program.run()
+			return program.run()
 		} catch(exception: Exception) {
-			program.printIntermediateRepresentation()
+			println(program.getIntermediateRepresentation())
 			throw exception
 		} finally {
 			program.dispose()
 		}
-		return result
     }
 
 	fun analyseDataFlow(sourceCode: String): VariableTracker {
@@ -107,7 +118,7 @@ object TestUtil {
 		assertEquals(type, word.type, "The generated token doesn't match the expected type")
 	}
 
-    fun assertSameSyntaxTree(expectedFileSyntaxTree: String, sourceCode: String) {
+    fun assertSyntaxTreeEquals(expectedFileSyntaxTree: String, sourceCode: String) {
         val actualSyntaxTree = parse(sourceCode).program.toString()
         val expectedSyntaxTree = "Program {\n\tFile {${if(expectedFileSyntaxTree == "") ""
             else "\n$expectedFileSyntaxTree".indent().indent()}\n\t}\n}"

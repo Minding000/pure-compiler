@@ -1,7 +1,7 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class ModificationOperators {
 
@@ -21,7 +21,7 @@ internal class ModificationOperators {
 				UnaryModification { Identifier { x } Operator { ++ } }
 				UnaryModification { Identifier { x } Operator { -- } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -52,6 +52,6 @@ internal class ModificationOperators {
 					Identifier { x } Operator { /= } NumberLiteral { 2 }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

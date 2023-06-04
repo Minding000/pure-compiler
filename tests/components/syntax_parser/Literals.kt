@@ -1,7 +1,7 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class Literals {
 
@@ -12,7 +12,7 @@ internal class Literals {
 			"""
 				NullLiteral
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -26,7 +26,7 @@ internal class Literals {
 				BooleanLiteral { yes }
 				BooleanLiteral { no }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -36,7 +36,7 @@ internal class Literals {
 			"""
 				NumberLiteral { 345 }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -46,7 +46,7 @@ internal class Literals {
 			"""
 				NumberLiteral { 6.5 }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -56,7 +56,7 @@ internal class Literals {
 			"""
 				NumberLiteral { 456_345 }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -66,7 +66,7 @@ internal class Literals {
 			"""
 				NumberLiteral { 10.4e-18 }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -76,7 +76,7 @@ internal class Literals {
 			"""
 				StringLiteral { "hello world!" }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -86,7 +86,7 @@ internal class Literals {
 			"""
 				StringLiteral { "Hello!\nDo you know the \"prue\" programming language?" }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -96,7 +96,7 @@ internal class Literals {
 			"""
 				StringLiteral { "Hello ${'$'}{user.salutation} ${'$'}username!" }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -117,6 +117,6 @@ internal class Literals {
 					:)
 				" }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

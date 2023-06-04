@@ -14,7 +14,7 @@ import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.*
 import components.syntax_parser.syntax_tree.operations.BinaryOperator
 import components.syntax_parser.syntax_tree.operations.Cast
-import components.syntax_parser.syntax_tree.operations.NullCheck
+import components.syntax_parser.syntax_tree.operations.HasValueCheck
 import components.syntax_parser.syntax_tree.operations.UnaryOperator
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
@@ -341,7 +341,7 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 	 *   <SuperReference>
 	 *   <InitializerReference>
 	 *   <ForeignLanguageExpression>
-	 *   <NullCheck>
+	 *   <HasValueCheck>
 	 *   <Identifier>
 	 *   <InstanceAccess>
 	 *   <TypeSpecification>
@@ -359,7 +359,7 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 			WordAtom.IDENTIFIER -> {
 				when(nextWord?.type) {
 					WordAtom.FOREIGN_EXPRESSION -> parseForeignLanguageExpression()
-					WordAtom.QUESTION_MARK -> parseNullCheck()
+					WordAtom.QUESTION_MARK -> parseHasValueCheck()
 					else -> literalParser.parseIdentifier()
 				}
 			}
@@ -434,13 +434,13 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 	}
 
 	/**
-	 * NullCheck:
+	 * HasValueCheck:
 	 *   <Identifier>?
 	 */
-	private fun parseNullCheck(): NullCheck {
+	private fun parseHasValueCheck(): HasValueCheck {
 		val identifier = literalParser.parseIdentifier()
 		consume(WordAtom.QUESTION_MARK)
-		return NullCheck(identifier)
+		return HasValueCheck(identifier)
 	}
 
 	/**

@@ -126,7 +126,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	override fun compile(constructor: LlvmConstructor) {
 		for(index in parameters.indices)
 			parameters[index].index = index
-		constructor.createAndSelectBlock(llvmReference, "body")
+		constructor.createAndSelectBlock(llvmReference, "function_entry")
 		super.compile(constructor)
 		if(body?.isInterruptingExecution != true)
 			constructor.buildReturn()

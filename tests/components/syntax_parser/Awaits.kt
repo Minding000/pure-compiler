@@ -1,8 +1,8 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class Awaits {
 
@@ -15,7 +15,7 @@ internal class Awaits {
 		val expected =
 			"""
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Disabled
@@ -30,7 +30,7 @@ internal class Awaits {
 		val expected =
 			"""
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Disabled
@@ -45,7 +45,7 @@ internal class Awaits {
 		val expected =
 			"""
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Disabled
@@ -60,7 +60,7 @@ internal class Awaits {
 		val expected =
 			"""
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Disabled
@@ -75,6 +75,6 @@ internal class Awaits {
 		val expected =
 			"""
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

@@ -12,7 +12,7 @@ internal class TypeDefinitions {
 			"""
 				TypeDefinition [ Identifier { Animal } class ]
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -23,7 +23,7 @@ internal class TypeDefinitions {
 				TypeDefinition [ Identifier { Animal } class ] { TypeBody {
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -33,7 +33,7 @@ internal class TypeDefinitions {
 			"""
 				TypeDefinition [ Identifier { Dog } object ]
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -44,7 +44,7 @@ internal class TypeDefinitions {
 				TypeDefinition [ Identifier { Dog } object ] { TypeBody {
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -68,7 +68,7 @@ internal class TypeDefinitions {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -101,7 +101,7 @@ internal class TypeDefinitions {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -116,7 +116,7 @@ internal class TypeDefinitions {
 					ObjectType { Identifier { Event } }
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -126,7 +126,7 @@ internal class TypeDefinitions {
 			"""
 				TypeDefinition [ Identifier { Dog } class: UnionType { ObjectType { Identifier { Animal } } & ObjectType { Identifier { Soulmate } } } ]
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -143,7 +143,7 @@ internal class TypeDefinitions {
 					TypeDefinition [ Identifier { Index } class ]
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -153,7 +153,7 @@ internal class TypeDefinitions {
 			"""
 				TypeDefinition [ Identifier { ArmRest } class in ObjectType { Identifier { Couch } } ]
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -165,7 +165,7 @@ internal class TypeDefinitions {
 					TypeDefinition [ Identifier { Goldfish } class ]
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -177,7 +177,7 @@ internal class TypeDefinitions {
 					TypeDefinition [ Identifier { ArmRest } class ]
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -195,7 +195,7 @@ internal class TypeDefinitions {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -207,6 +207,6 @@ internal class TypeDefinitions {
 					TypeDefinition [ Identifier { Goldfish } class ]
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

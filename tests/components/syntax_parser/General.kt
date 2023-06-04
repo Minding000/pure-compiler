@@ -10,7 +10,7 @@ internal class General {
 
 	@Test
 	fun `ignores empty files`() {
-		TestUtil.assertSameSyntaxTree("", "")
+		TestUtil.assertSyntaxTreeEquals("", "")
 	}
 
 	@Test
@@ -48,7 +48,7 @@ internal class General {
 					Identifier { player }.Identifier { name }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -63,7 +63,7 @@ internal class General {
 					Identifier { player }.Identifier { name }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -82,6 +82,6 @@ internal class General {
 					}
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

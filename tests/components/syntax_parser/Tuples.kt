@@ -1,8 +1,8 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class Tuples {
 
@@ -32,7 +32,7 @@ internal class Tuples {
 					} } }
 				} }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Disabled
@@ -56,6 +56,6 @@ internal class Tuples {
 					}
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

@@ -202,6 +202,8 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 	override fun getLlvmReference(constructor: LlvmConstructor): LlvmType {
 		if(SpecialType.INTEGER.matches(this))
 			return constructor.i32Type
+		if(SpecialType.BOOLEAN.matches(this))
+			return constructor.booleanType
 		if(SpecialType.NOTHING.matches(this))
 			return constructor.voidType
 		if(SpecialType.NEVER.matches(this))

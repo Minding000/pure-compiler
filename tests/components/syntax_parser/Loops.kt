@@ -15,7 +15,7 @@ internal class Loops {
 				Loop { StatementSection { StatementBlock {
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -31,7 +31,7 @@ internal class Loops {
 					Break
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -47,7 +47,7 @@ internal class Loops {
 					Next
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -67,7 +67,7 @@ internal class Loops {
 					UnaryModification { Identifier { x } Operator { ++ } }
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -87,7 +87,7 @@ internal class Loops {
 					UnaryModification { Identifier { x } Operator { -- } }
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -101,7 +101,7 @@ internal class Loops {
 				} ] { StatementSection { StatementBlock {
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -115,7 +115,7 @@ internal class Loops {
 				} ] { StatementSection { StatementBlock {
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -130,7 +130,7 @@ internal class Loops {
 				} ] { StatementSection { StatementBlock {
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -146,7 +146,7 @@ internal class Loops {
 				} ] { StatementSection { StatementBlock {
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -164,6 +164,6 @@ internal class Loops {
 				} ] { StatementSection { StatementBlock {
 				} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

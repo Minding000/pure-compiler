@@ -1,7 +1,7 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class VariableDeclarations {
 
@@ -14,7 +14,7 @@ internal class VariableDeclarations {
 					LocalVariableDeclaration { Identifier { car }: ObjectType { Identifier { Int } } }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -32,7 +32,7 @@ internal class VariableDeclarations {
 					LocalVariableDeclaration { Identifier { y } }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -44,7 +44,7 @@ internal class VariableDeclarations {
 					LocalVariableDeclaration { Identifier { car } = NumberLiteral { 5 } }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -64,7 +64,7 @@ internal class VariableDeclarations {
 					= NumberLiteral { 5 }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -84,7 +84,7 @@ internal class VariableDeclarations {
 					= NumberLiteral { 9 }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -99,7 +99,7 @@ internal class VariableDeclarations {
 					LocalVariableDeclaration { Identifier { car }: UnionType { ObjectType { Identifier { Int } } | ObjectType { Identifier { Float } } } }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -114,6 +114,6 @@ internal class VariableDeclarations {
 					LocalVariableDeclaration { Identifier { refuge }: UnionType { ObjectType { Identifier { Park } } & ObjectType { Identifier { NatureReserve } } } }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

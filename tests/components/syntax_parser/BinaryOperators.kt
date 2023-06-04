@@ -1,7 +1,7 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class BinaryOperators {
 
@@ -14,7 +14,7 @@ internal class BinaryOperators {
 					NumberLiteral { 345 } Operator { + } NumberLiteral { 1 }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -26,7 +26,7 @@ internal class BinaryOperators {
 					NumberLiteral { 345 } Operator { - } NumberLiteral { 3 }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -38,7 +38,7 @@ internal class BinaryOperators {
 					NumberLiteral { 345 } Operator { * } NumberLiteral { 2 }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -50,7 +50,7 @@ internal class BinaryOperators {
 					NumberLiteral { 345 } Operator { / } NumberLiteral { 5 }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -62,7 +62,7 @@ internal class BinaryOperators {
 					Identifier { repetitions } Operator { ?? } NumberLiteral { 1 }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -76,7 +76,7 @@ internal class BinaryOperators {
 					} Operator { | } BooleanLiteral { yes }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -94,7 +94,7 @@ internal class BinaryOperators {
 					}
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -114,6 +114,6 @@ internal class BinaryOperators {
 					}
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

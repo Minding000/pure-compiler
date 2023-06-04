@@ -14,7 +14,7 @@ internal class UnaryOperators {
 			"""
 				UnaryOperator { Operator { ! } BooleanLiteral { yes } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -24,7 +24,7 @@ internal class UnaryOperators {
 			"""
 				UnaryOperator { Operator { + } NumberLiteral { 2 } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -34,7 +34,7 @@ internal class UnaryOperators {
 			"""
 				UnaryOperator { Operator { - } NumberLiteral { 6 } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -49,17 +49,17 @@ internal class UnaryOperators {
 					UnaryOperator { Operator { ... } Identifier { numbers } }
 				}
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
-	fun `parses null checks`() {
+	fun `parses has-value checks`() {
 		val sourceCode = "x?"
 		val expected =
 			"""
-				NullCheck { Identifier { x } }
+				HasValueCheck { Identifier { x } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test

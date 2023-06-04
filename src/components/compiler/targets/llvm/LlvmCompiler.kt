@@ -13,7 +13,6 @@ object LlvmCompiler {
 		program.loadSemanticModel(semanticModel, entryPointPath)
 		program.verify()
 		program.compile()
-		program.printIntermediateRepresentation()
 		val result = program.run()
 		val intResult = Llvm.castToInt(result)
 		println()

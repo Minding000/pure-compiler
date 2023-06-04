@@ -163,10 +163,6 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 			for(firstUsage in firstVariableUsages[declaration] ?: continue) {
 				for(lastUsage in lastUsages) {
 					firstUsage.previousUsages.addFirst(lastUsage)
-					if(!firstUsage.kinds.contains(VariableUsage.Kind.WRITE)) {
-						firstUsage.resultingType = getCommonType(firstUsage.previousUsages, firstUsage.semanticModel)
-						firstUsage.resultingValue = getCommonValue(firstUsage.previousUsages)
-					}
 					lastUsage.nextUsages.addFirst(firstUsage)
 				}
 			}

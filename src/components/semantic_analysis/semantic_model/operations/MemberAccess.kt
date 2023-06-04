@@ -6,8 +6,8 @@ import components.semantic_analysis.semantic_model.control_flow.FunctionCall
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.*
 import components.semantic_analysis.semantic_model.values.*
-import logger.issues.access.GuaranteedAccessWithNullCheck
-import logger.issues.access.OptionalAccessWithoutNullCheck
+import logger.issues.access.GuaranteedAccessWithHasValueCheck
+import logger.issues.access.OptionalAccessWithoutHasValueCheck
 import java.util.*
 import components.syntax_parser.syntax_tree.access.MemberAccess as MemberAccessSyntaxTree
 
@@ -47,10 +47,10 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		if(computedTargetType != null) {
 			if(isTypePotentiallyNull(computedTargetType)) {
 				if(!isOptional)
-					context.addIssue(OptionalAccessWithoutNullCheck(source, computedTargetType))
+					context.addIssue(OptionalAccessWithoutHasValueCheck(source, computedTargetType))
 			} else {
 				if(isOptional)
-					context.addIssue(GuaranteedAccessWithNullCheck(source, computedTargetType))
+					context.addIssue(GuaranteedAccessWithHasValueCheck(source, computedTargetType))
 			}
 		}
 		val computedMemberType = member.getComputedType()

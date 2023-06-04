@@ -1,7 +1,7 @@
 package components.syntax_parser
 
-import util.TestUtil
 import org.junit.jupiter.api.Test
+import util.TestUtil
 
 internal class ForeignLanguageExpressions {
 	//TODO: parse foreign language expression using external parser which dictates the expression end
@@ -15,7 +15,7 @@ internal class ForeignLanguageExpressions {
 			"""
 				ForeignLanguageExpression [ Identifier { RegExp } ] { ForeignLanguageLiteral { /^hello .*!/ } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -27,7 +27,7 @@ internal class ForeignLanguageExpressions {
 			"""
 				ForeignLanguageExpression [ Identifier { Json } ] { ForeignLanguageLiteral { {status: "GREAT"} } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -43,7 +43,7 @@ internal class ForeignLanguageExpressions {
 				ForeignLanguageExpression [ Identifier { Color } ] { ForeignLanguageLiteral { rgba(99, 3, 4) } }
 				ForeignLanguageExpression [ Identifier { Color } ] { ForeignLanguageLiteral { hsl(45, 123, 233) } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
@@ -55,6 +55,6 @@ internal class ForeignLanguageExpressions {
 			"""
 				ForeignLanguageExpression [ Identifier { Html } ] { ForeignLanguageLiteral { <div></div> } }
             """.trimIndent()
-		TestUtil.assertSameSyntaxTree(expected, sourceCode)
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 }

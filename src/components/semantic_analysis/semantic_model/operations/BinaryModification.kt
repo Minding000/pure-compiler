@@ -22,6 +22,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 
 	override fun determineTypes() {
 		super.determineTypes()
+		context.registerWrite(target)
 		target.type?.let { valueType ->
 			try {
 				val operatorDefinition = valueType.interfaceScope.resolveOperator(kind, listOf(modifier))
