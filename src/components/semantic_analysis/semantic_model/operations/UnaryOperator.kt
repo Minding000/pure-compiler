@@ -1,5 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
+import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -55,5 +57,19 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 			}
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
+	}
+
+	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
+		val llvmValue = value.getLlvmReference(constructor)
+		if(SpecialType.BOOLEAN.matches(value.type)) {
+			if(kind == Operator.Kind.EXCLAMATION_MARK) {
+				return constructor.buildNot(llvmValue, "not")
+			}
+		} else if(SpecialType.INTEGER.matches(value.type)) {
+			if(kind == Operator.Kind.MINUS) {
+				return constructor.buildNegate(llvmValue, "negate")
+			}
+		}
+		TODO("Unary '$kind${value.type}' operator is not implemented yet.")
 	}
 }

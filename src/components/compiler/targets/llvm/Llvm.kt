@@ -36,8 +36,8 @@ object Llvm {
 		return LLVMRunFunction(engine, function, argumentCount, arguments)
 	}
 
-	fun castToInt(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue, NO)
-	fun castToBool(genericValue: LlvmGenericValue): Boolean = castToInt(genericValue) == 1L
+	fun castToSignedInt(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue, YES)
+	fun castToBool(genericValue: LlvmGenericValue): Boolean = castToSignedInt(genericValue) == 1L
 }
 
 typealias LlvmContext = LLVMContextRef

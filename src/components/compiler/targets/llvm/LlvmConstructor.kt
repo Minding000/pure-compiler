@@ -116,6 +116,8 @@ class LlvmConstructor(name: String) {
 	fun buildEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildICmp(builder, Llvm.EQUAL_TO, left, right, name)
 	fun buildNotEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.NOT_EQUAL_TO, left, right, name)
+	fun buildNot(value: LlvmValue, name: String): LlvmValue = LLVMBuildNot(builder, value, name)
+	fun buildNegate(value: LlvmValue, name: String): LlvmValue = LLVMBuildNeg(builder, value, name)
 
 	fun buildJump(targetBlock: LlvmBlock) {
 		LLVMBuildBr(builder, targetBlock)

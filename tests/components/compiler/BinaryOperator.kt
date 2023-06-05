@@ -43,7 +43,7 @@ internal class BinaryOperator {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToInt(result))
+		assertEquals(5, Llvm.castToSignedInt(result))
 	}
 
 	@Test
@@ -56,7 +56,7 @@ internal class BinaryOperator {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToInt(result))
+		assertEquals(5, Llvm.castToSignedInt(result))
 	}
 
 	@Test
@@ -69,7 +69,7 @@ internal class BinaryOperator {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTen")
-		assertEquals(10, Llvm.castToInt(result))
+		assertEquals(10, Llvm.castToSignedInt(result))
 	}
 
 	@Test
@@ -82,7 +82,7 @@ internal class BinaryOperator {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToInt(result))
+		assertEquals(5, Llvm.castToSignedInt(result))
 	}
 
 	@Test
