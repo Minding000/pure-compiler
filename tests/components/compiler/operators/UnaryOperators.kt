@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 
-internal class UnaryOperator {
+internal class UnaryOperators {
 
 	@Test
 	fun `compiles boolean not`() {

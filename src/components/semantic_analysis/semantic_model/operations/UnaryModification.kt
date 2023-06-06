@@ -1,5 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
+import components.compiler.targets.llvm.LlvmConstructor
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.general.SemanticModel
@@ -58,5 +60,21 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
 		return NumberLiteral(this, resultingValue)
+	}
+
+	override fun compile(constructor: LlvmConstructor) {
+		super.compile(constructor)
+		if(target is VariableValue) {
+			if(SpecialType.INTEGER.matches(target.type)) {
+				val targetValue = target.getLlvmReference(constructor)
+				val modifierValue = constructor.buildInt32(1)
+				val operation = when(kind) {
+					Operator.Kind.DOUBLE_PLUS -> constructor.buildIntegerAddition(targetValue, modifierValue, "increment")
+					Operator.Kind.DOUBLE_MINUS -> constructor.buildIntegerSubtraction(targetValue, modifierValue, "decrement")
+					else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
+				}
+				constructor.buildStore(operation, target.definition?.llvmLocation)
+			}
+		}
 	}
 }

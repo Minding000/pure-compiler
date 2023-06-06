@@ -1,5 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
+import components.compiler.targets.llvm.LlvmConstructor
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.general.SemanticModel
@@ -26,9 +28,8 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		target.type?.let { valueType ->
 			try {
 				val operatorDefinition = valueType.interfaceScope.resolveOperator(kind, listOf(modifier))
-				if(operatorDefinition == null) {
+				if(operatorDefinition == null)
 					context.addIssue(NotFound(source, "Operator", "$valueType $kind ${modifier.type}"))
-				}
 			} catch(error: SignatureResolutionAmbiguityError) {
 				//TODO write test for this
 				error.log(source, "operator", "$valueType $kind ${modifier.type}")
@@ -58,5 +59,54 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
 		return NumberLiteral(this, resultingValue)
+	}
+
+	override fun compile(constructor: LlvmConstructor) {
+		super.compile(constructor)
+		if(target is VariableValue) {
+			val isTargetInteger = SpecialType.INTEGER.matches(target.type)
+			val isTargetPrimitiveNumber = isTargetInteger || SpecialType.FLOAT.matches(target.type)
+			val isModifierInteger = SpecialType.INTEGER.matches(modifier.type)
+			val isModifierPrimitiveNumber = isModifierInteger || SpecialType.FLOAT.matches(modifier.type)
+			if(isTargetPrimitiveNumber && isModifierPrimitiveNumber) {
+				val targetValue = target.getLlvmReference(constructor)
+				var modifierValue = modifier.getLlvmReference(constructor)
+				val isIntegerOperation = isTargetInteger && isModifierInteger
+				if(!isIntegerOperation) {
+					if(isTargetInteger)
+						throw CompilerError(source, "Integer target with float modifier in binary modification.")
+					else if(isModifierInteger)
+						modifierValue = constructor.buildCastFromSignedIntegerToFloat(modifierValue, "cast operand to match operation")
+				}
+				val operation = when(kind) {
+					Operator.Kind.PLUS_EQUALS -> {
+						if(isIntegerOperation)
+							constructor.buildIntegerAddition(targetValue, modifierValue, "integer addition assignment")
+						else
+							constructor.buildFloatAddition(targetValue, modifierValue, "float addition assignment")
+					}
+					Operator.Kind.MINUS_EQUALS -> {
+						if(isIntegerOperation)
+							constructor.buildIntegerSubtraction(targetValue, modifierValue, "integer subtraction assignment")
+						else
+							constructor.buildFloatSubtraction(targetValue, modifierValue, "float subtraction assignment")
+					}
+					Operator.Kind.STAR_EQUALS -> {
+						if(isIntegerOperation)
+							constructor.buildIntegerMultiplication(targetValue, modifierValue, "integer multiplication assignment")
+						else
+							constructor.buildFloatMultiplication(targetValue, modifierValue, "float multiplication assignment")
+					}
+					Operator.Kind.SLASH_EQUALS -> {
+						if(isIntegerOperation)
+							constructor.buildSignedIntegerDivision(targetValue, modifierValue, "integer division assignment")
+						else
+							constructor.buildFloatDivision(targetValue, modifierValue, "float division assignment")
+					}
+					else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
+				}
+				constructor.buildStore(operation, target.definition?.llvmLocation)
+			}
+		}
 	}
 }
