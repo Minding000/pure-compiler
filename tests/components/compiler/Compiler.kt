@@ -27,7 +27,7 @@ internal class Compiler {
 		program.compile()
 		val result = program.run()
 		program.dispose()
-		assertEquals(expectedResult, Llvm.castToSignedInt(result))
+		assertEquals(expectedResult, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
@@ -40,7 +40,7 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInt(result))
+		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
@@ -55,7 +55,7 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiveOrTen")
-		assertEquals(10, Llvm.castToSignedInt(result))
+		assertEquals(10, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
@@ -71,7 +71,7 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTenOrTwelve")
-		assertEquals(12, Llvm.castToSignedInt(result))
+		assertEquals(12, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
@@ -98,7 +98,7 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInt(result))
+		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
@@ -113,7 +113,7 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInt(result))
+		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
@@ -129,7 +129,7 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInt(result))
+		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
@@ -145,7 +145,7 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInt(result))
+		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
 
 	@Test

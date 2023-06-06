@@ -14,7 +14,7 @@ object LlvmCompiler {
 		program.verify()
 		program.compile()
 		val result = program.run()
-		val intResult = Llvm.castToSignedInt(result)
+		val intResult = Llvm.castToSignedInteger(result)
 		println()
 		println("Running program...")
 		println("Result: '${intResult}'")

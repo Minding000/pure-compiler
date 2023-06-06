@@ -17,7 +17,7 @@ internal class UnaryOperator {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
-		assertEquals(false, Llvm.castToBool(result))
+		assertEquals(false, Llvm.castToBoolean(result))
 	}
 
 	@Test
@@ -30,6 +30,6 @@ internal class UnaryOperator {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNegativeOne")
-		assertEquals(-1, Llvm.castToSignedInt(result))
+		assertEquals(-1, Llvm.castToSignedInteger(result))
 	}
 }

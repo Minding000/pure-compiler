@@ -18,7 +18,7 @@ internal class BinaryIntegerOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInt(result))
+		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
@@ -31,7 +31,7 @@ internal class BinaryIntegerOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInt(result))
+		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
@@ -44,7 +44,7 @@ internal class BinaryIntegerOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTen")
-		assertEquals(10, Llvm.castToSignedInt(result))
+		assertEquals(10, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
@@ -57,7 +57,7 @@ internal class BinaryIntegerOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInt(result))
+		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
@@ -70,7 +70,7 @@ internal class BinaryIntegerOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
-		assertEquals(false, Llvm.castToBool(result))
+		assertEquals(false, Llvm.castToBoolean(result))
 	}
 
 	@Test
@@ -83,7 +83,7 @@ internal class BinaryIntegerOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
-		assertEquals(false, Llvm.castToBool(result))
+		assertEquals(false, Llvm.castToBoolean(result))
 	}
 
 	@Test
@@ -96,7 +96,7 @@ internal class BinaryIntegerOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
-		assertEquals(true, Llvm.castToBool(result))
+		assertEquals(true, Llvm.castToBoolean(result))
 	}
 
 	@Test
@@ -109,7 +109,7 @@ internal class BinaryIntegerOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
-		assertEquals(true, Llvm.castToBool(result))
+		assertEquals(true, Llvm.castToBoolean(result))
 	}
 
 	@Test
@@ -122,7 +122,7 @@ internal class BinaryIntegerOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
-		assertEquals(true, Llvm.castToBool(result))
+		assertEquals(true, Llvm.castToBoolean(result))
 	}
 
 	@Test
@@ -135,6 +135,6 @@ internal class BinaryIntegerOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
-		assertEquals(false, Llvm.castToBool(result))
+		assertEquals(false, Llvm.castToBoolean(result))
 	}
 }

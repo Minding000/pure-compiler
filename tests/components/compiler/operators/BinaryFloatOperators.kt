@@ -69,7 +69,7 @@ internal class BinaryFloatOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
-		assertEquals(false, Llvm.castToBool(result))
+		assertEquals(false, Llvm.castToBoolean(result))
 	}
 
 	@Test
@@ -82,7 +82,7 @@ internal class BinaryFloatOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
-		assertEquals(false, Llvm.castToBool(result))
+		assertEquals(false, Llvm.castToBoolean(result))
 	}
 
 	@Test
@@ -95,7 +95,7 @@ internal class BinaryFloatOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
-		assertEquals(true, Llvm.castToBool(result))
+		assertEquals(true, Llvm.castToBoolean(result))
 	}
 
 	@Test
@@ -108,7 +108,7 @@ internal class BinaryFloatOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
-		assertEquals(true, Llvm.castToBool(result))
+		assertEquals(true, Llvm.castToBoolean(result))
 	}
 
 	@Test
@@ -121,7 +121,7 @@ internal class BinaryFloatOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
-		assertEquals(true, Llvm.castToBool(result))
+		assertEquals(true, Llvm.castToBoolean(result))
 	}
 
 	@Test
@@ -134,6 +134,6 @@ internal class BinaryFloatOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
-		assertEquals(false, Llvm.castToBool(result))
+		assertEquals(false, Llvm.castToBoolean(result))
 	}
 }

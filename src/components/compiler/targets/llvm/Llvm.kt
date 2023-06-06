@@ -39,9 +39,9 @@ object Llvm {
 	}
 
 	fun castToFloat(genericValue: LlvmGenericValue): Double = LLVMGenericValueToFloat(LLVMFloatType(), genericValue)
-	fun castToSignedInt(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue, YES)
-	fun castToUnsignedInt(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue, NO)
-	fun castToBool(genericValue: LlvmGenericValue): Boolean = castToUnsignedInt(genericValue) == 1L
+	fun castToSignedInteger(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue, YES)
+	fun castToUnsignedInteger(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue, NO)
+	fun castToBoolean(genericValue: LlvmGenericValue): Boolean = castToUnsignedInteger(genericValue) == 1L
 }
 
 typealias LlvmContext = LLVMContextRef
