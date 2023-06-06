@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 
-internal class BinaryModifications { //TODO write tests for cases requiring casts (same for other operators)
+internal class BinaryModifications {
 
 	@Test
 	fun `compiles integer addition assignments`() {
@@ -119,6 +119,66 @@ internal class BinaryModifications { //TODO write tests for cases requiring cast
 				to getFive(): Float {
 					var a = 7.5
 					a /= 1.5
+					return a
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, Llvm.castToFloat(result))
+	}
+
+	@Test
+	fun `compiles addition assignments with float target and integer modifier`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Float {
+					var a = 2.0
+					a += 3
+					return a
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, Llvm.castToFloat(result))
+	}
+
+	@Test
+	fun `compiles subtraction assignments with float target and integer modifier`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Float {
+					var a = 7.0
+					a -= 2
+					return a
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, Llvm.castToFloat(result))
+	}
+
+	@Test
+	fun `compiles multiplication assignments with float target and integer modifier`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Float {
+					var a = 2.5
+					a *= 2
+					return a
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, Llvm.castToFloat(result))
+	}
+
+	@Test
+	fun `compiles division assignments with float target and integer modifier`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Float {
+					var a = 10.0
+					a /= 2
 					return a
 				}
 			}
