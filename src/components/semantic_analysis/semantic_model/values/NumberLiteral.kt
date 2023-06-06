@@ -54,7 +54,10 @@ class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value
 	}
 
 	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
-		return constructor.buildInt32(value.longValueExact())
+		return if(isInteger)
+			constructor.buildInt32(value.longValueExact())
+		else
+			constructor.buildFloat(value.toDouble())
 	}
 
 	override fun toString(): String {

@@ -200,6 +200,8 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 	}
 
 	override fun getLlvmReference(constructor: LlvmConstructor): LlvmType {
+		if(SpecialType.FLOAT.matches(this))
+			return constructor.floatType
 		if(SpecialType.INTEGER.matches(this))
 			return constructor.i32Type
 		if(SpecialType.BOOLEAN.matches(this))

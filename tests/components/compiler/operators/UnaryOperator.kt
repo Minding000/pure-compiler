@@ -1,4 +1,4 @@
-package components.compiler
+package components.compiler.operators
 
 import components.compiler.targets.llvm.Llvm
 import org.junit.jupiter.api.Test

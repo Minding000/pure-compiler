@@ -67,7 +67,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 			}
 		} else if(SpecialType.INTEGER.matches(value.type)) {
 			if(kind == Operator.Kind.MINUS) {
-				return constructor.buildNegate(llvmValue, "negate")
+				return constructor.buildIntegerNegation(llvmValue, "negation")
 			}
 		}
 		TODO("Unary '$kind${value.type}' operator is not implemented yet.")

@@ -154,48 +154,92 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 	}
 
 	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
-		val leftValue = left.getLlvmReference(constructor)
-		val rightValue = right.getLlvmReference(constructor)
-		if(SpecialType.BOOLEAN.matches(left.type) && SpecialType.BOOLEAN.matches(left.type)) {
-			if(kind == Operator.Kind.AND) {
-				return constructor.buildAnd(leftValue, rightValue, "and")
-			} else if(kind == Operator.Kind.PIPE) {
-				return constructor.buildOr(leftValue, rightValue, "or")
-			}
-		}
-		if(SpecialType.INTEGER.matches(left.type) && SpecialType.INTEGER.matches(left.type)) {
+		var leftValue = left.getLlvmReference(constructor)
+		var rightValue = right.getLlvmReference(constructor)
+		if(SpecialType.BOOLEAN.matches(left.type) && SpecialType.BOOLEAN.matches(right.type)) {
 			when(kind) {
-				Operator.Kind.PLUS -> {
-					return constructor.buildIntegerAddition(leftValue, rightValue, "addition")
-				}
-				Operator.Kind.MINUS -> {
-					return constructor.buildIntegerSubtraction(leftValue, rightValue, "subtraction")
-				}
-				Operator.Kind.STAR -> {
-					return constructor.buildIntegerMultiplication(leftValue, rightValue, "multiplication")
-				}
-				Operator.Kind.SLASH -> {
-					return constructor.buildIntegerDivision(leftValue, rightValue, "division")
-				}
-				Operator.Kind.SMALLER_THAN -> {
-					return constructor.buildLessThan(leftValue, rightValue, "smaller_than")
-				}
-				Operator.Kind.GREATER_THAN -> {
-					return constructor.buildGreaterThan(leftValue, rightValue, "greater_than")
-				}
-				Operator.Kind.SMALLER_THAN_OR_EQUAL_TO -> {
-					return constructor.buildLessThanOrEqualTo(leftValue, rightValue, "smaller_than_or_equal_to")
-				}
-				Operator.Kind.GREATER_THAN_OR_EQUAL_TO -> {
-					return constructor.buildGreaterThanOrEqualTo(leftValue, rightValue, "greater_than_or_equal_to")
-				}
+				Operator.Kind.AND -> return constructor.buildAnd(leftValue, rightValue, "and")
+				Operator.Kind.PIPE -> return constructor.buildOr(leftValue, rightValue, "or")
+				Operator.Kind.EQUAL_TO -> return constructor.buildBooleanEqualTo(leftValue, rightValue, "boolean equal_to")
+				Operator.Kind.NOT_EQUAL_TO -> return constructor.buildBooleanNotEqualTo(leftValue, rightValue, "boolean not_equal_to")
 				else -> {}
 			}
 		}
-		if(kind == Operator.Kind.EQUAL_TO) {
-			return constructor.buildEqualTo(leftValue, rightValue, "equal_to")
-		} else if(kind == Operator.Kind.NOT_EQUAL_TO) {
-			return constructor.buildNotEqualTo(leftValue, rightValue, "not_equal_to")
+		val isLeftInteger = SpecialType.INTEGER.matches(left.type)
+		val isLeftPrimitiveNumber = isLeftInteger || SpecialType.FLOAT.matches(left.type)
+		val isRightInteger = SpecialType.INTEGER.matches(right.type)
+		val isRightPrimitiveNumber = isRightInteger || SpecialType.FLOAT.matches(right.type)
+		if(isLeftPrimitiveNumber && isRightPrimitiveNumber) {
+			val isIntegerOperation = isLeftInteger && isRightInteger
+			if(!isIntegerOperation) {
+				if(isLeftInteger)
+					leftValue = constructor.buildCastFromSignedIntegerToFloat(leftValue, "cast operand to match operation")
+				else if(isRightInteger)
+					rightValue = constructor.buildCastFromSignedIntegerToFloat(rightValue, "cast operand to match operation")
+			}
+			when(kind) {
+				Operator.Kind.PLUS -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerAddition(leftValue, rightValue, "integer addition")
+					else
+						constructor.buildFloatAddition(leftValue, rightValue, "float addition")
+				}
+				Operator.Kind.MINUS -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerSubtraction(leftValue, rightValue, "integer subtraction")
+					else
+						constructor.buildFloatSubtraction(leftValue, rightValue, "float subtraction")
+				}
+				Operator.Kind.STAR -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerMultiplication(leftValue, rightValue, "integer multiplication")
+					else
+						constructor.buildFloatMultiplication(leftValue, rightValue, "float multiplication")
+				}
+				Operator.Kind.SLASH -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerDivision(leftValue, rightValue, "integer division")
+					else
+						constructor.buildFloatDivision(leftValue, rightValue, "float division")
+				}
+				Operator.Kind.SMALLER_THAN -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerLessThan(leftValue, rightValue, "integer smaller_than")
+					else
+						constructor.buildFloatLessThan(leftValue, rightValue, "float smaller_than")
+				}
+				Operator.Kind.GREATER_THAN -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerGreaterThan(leftValue, rightValue, "integer greater_than")
+					else
+						constructor.buildFloatGreaterThan(leftValue, rightValue, "float greater_than")
+				}
+				Operator.Kind.SMALLER_THAN_OR_EQUAL_TO -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerLessThanOrEqualTo(leftValue, rightValue, "integer smaller_than_or_equal_to")
+					else
+						constructor.buildFloatLessThanOrEqualTo(leftValue, rightValue, "float smaller_than_or_equal_to")
+				}
+				Operator.Kind.GREATER_THAN_OR_EQUAL_TO -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerGreaterThanOrEqualTo(leftValue, rightValue, "integer greater_than_or_equal_to")
+					else
+						constructor.buildFloatGreaterThanOrEqualTo(leftValue, rightValue, "float greater_than_or_equal_to")
+				}
+				Operator.Kind.EQUAL_TO -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerEqualTo(leftValue, rightValue, "integer equal_to")
+					else
+						constructor.buildFloatEqualTo(leftValue, rightValue, "float equal_to")
+				}
+				Operator.Kind.NOT_EQUAL_TO -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerNotEqualTo(leftValue, rightValue, "integer not_equal_to")
+					else
+						constructor.buildFloatNotEqualTo(leftValue, rightValue, "float not_equal_to")
+				}
+				else -> {}
+			}
 		}
 		TODO("Binary '${left.type} $kind ${right.type}' operator is not implemented yet.")
 	}
