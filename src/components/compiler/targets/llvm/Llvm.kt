@@ -9,12 +9,36 @@ object Llvm {
 	const val NO = 0
 	const val YES = 1
 	const val OK = 0
-	const val LESS_THAN_SIGNED = LLVMIntSLT
-	const val GREATER_THAN_SIGNED = LLVMIntSGT
-	const val LESS_THAN_OR_EQUAL_TO_SIGNED = LLVMIntSLE
-	const val GREATER_THAN_OR_EQUAL_TO_SIGNED = LLVMIntSGE
-	const val EQUAL_TO = LLVMIntEQ
-	const val NOT_EQUAL_TO = LLVMIntNE
+	object BooleanOperation {
+		const val EQUAL_TO = LLVMIntEQ
+		const val NOT_EQUAL_TO = LLVMIntNE
+	}
+	object SignedIntegerOperation {
+		const val LESS_THAN = LLVMIntSLT
+		const val GREATER_THAN = LLVMIntSGT
+		const val LESS_THAN_OR_EQUAL_TO = LLVMIntSLE
+		const val GREATER_THAN_OR_EQUAL_TO = LLVMIntSGE
+		const val EQUAL_TO = LLVMIntEQ
+		const val NOT_EQUAL_TO = LLVMIntNE
+	}
+	object UnsignedIntegerOperation {
+		const val LESS_THAN = LLVMIntULT
+		const val GREATER_THAN = LLVMIntUGT
+		const val LESS_THAN_OR_EQUAL_TO = LLVMIntULE
+		const val GREATER_THAN_OR_EQUAL_TO = LLVMIntUGE
+		const val EQUAL_TO = LLVMIntEQ
+		const val NOT_EQUAL_TO = LLVMIntNE
+	}
+	object FloatOperation {
+		//TODO test NaN values
+		// see: https://stackoverflow.com/questions/40327806/what-are-ordered-and-unordered-llvm-cmpinst-compare-instructions
+		const val LESS_THAN = LLVMRealOLT
+		const val GREATER_THAN = LLVMRealOGT
+		const val LESS_THAN_OR_EQUAL_TO = LLVMRealOLE
+		const val GREATER_THAN_OR_EQUAL_TO = LLVMRealOGE
+		const val EQUAL_TO = LLVMRealOEQ
+		const val NOT_EQUAL_TO = LLVMRealONE
+	}
 
 	fun createContext(): LlvmContext = LLVMContextCreate()
 

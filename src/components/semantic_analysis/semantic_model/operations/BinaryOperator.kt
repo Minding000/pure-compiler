@@ -198,43 +198,43 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				}
 				Operator.Kind.SLASH -> {
 					return if(isIntegerOperation)
-						constructor.buildIntegerDivision(leftValue, rightValue, "integer division")
+						constructor.buildSignedIntegerDivision(leftValue, rightValue, "integer division")
 					else
 						constructor.buildFloatDivision(leftValue, rightValue, "float division")
 				}
 				Operator.Kind.SMALLER_THAN -> {
 					return if(isIntegerOperation)
-						constructor.buildIntegerLessThan(leftValue, rightValue, "integer smaller_than")
+						constructor.buildSignedIntegerLessThan(leftValue, rightValue, "integer smaller_than")
 					else
 						constructor.buildFloatLessThan(leftValue, rightValue, "float smaller_than")
 				}
 				Operator.Kind.GREATER_THAN -> {
 					return if(isIntegerOperation)
-						constructor.buildIntegerGreaterThan(leftValue, rightValue, "integer greater_than")
+						constructor.buildSignedIntegerGreaterThan(leftValue, rightValue, "integer greater_than")
 					else
 						constructor.buildFloatGreaterThan(leftValue, rightValue, "float greater_than")
 				}
 				Operator.Kind.SMALLER_THAN_OR_EQUAL_TO -> {
 					return if(isIntegerOperation)
-						constructor.buildIntegerLessThanOrEqualTo(leftValue, rightValue, "integer smaller_than_or_equal_to")
+						constructor.buildSignedIntegerLessThanOrEqualTo(leftValue, rightValue, "integer smaller_than_or_equal_to")
 					else
 						constructor.buildFloatLessThanOrEqualTo(leftValue, rightValue, "float smaller_than_or_equal_to")
 				}
 				Operator.Kind.GREATER_THAN_OR_EQUAL_TO -> {
 					return if(isIntegerOperation)
-						constructor.buildIntegerGreaterThanOrEqualTo(leftValue, rightValue, "integer greater_than_or_equal_to")
+						constructor.buildSignedIntegerGreaterThanOrEqualTo(leftValue, rightValue, "integer greater_than_or_equal_to")
 					else
 						constructor.buildFloatGreaterThanOrEqualTo(leftValue, rightValue, "float greater_than_or_equal_to")
 				}
 				Operator.Kind.EQUAL_TO -> {
 					return if(isIntegerOperation)
-						constructor.buildIntegerEqualTo(leftValue, rightValue, "integer equal_to")
+						constructor.buildSignedIntegerEqualTo(leftValue, rightValue, "integer equal_to")
 					else
 						constructor.buildFloatEqualTo(leftValue, rightValue, "float equal_to")
 				}
 				Operator.Kind.NOT_EQUAL_TO -> {
 					return if(isIntegerOperation)
-						constructor.buildIntegerNotEqualTo(leftValue, rightValue, "integer not_equal_to")
+						constructor.buildSignedIntegerNotEqualTo(leftValue, rightValue, "integer not_equal_to")
 					else
 						constructor.buildFloatNotEqualTo(leftValue, rightValue, "float not_equal_to")
 				}

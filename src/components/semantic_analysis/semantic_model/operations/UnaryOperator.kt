@@ -63,11 +63,15 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		val llvmValue = value.getLlvmReference(constructor)
 		if(SpecialType.BOOLEAN.matches(value.type)) {
 			if(kind == Operator.Kind.EXCLAMATION_MARK) {
-				return constructor.buildNot(llvmValue, "not")
+				return constructor.buildBooleanNegation(llvmValue, "boolean negation")
 			}
 		} else if(SpecialType.INTEGER.matches(value.type)) {
 			if(kind == Operator.Kind.MINUS) {
-				return constructor.buildIntegerNegation(llvmValue, "negation")
+				return constructor.buildIntegerNegation(llvmValue, "integer negation")
+			}
+		} else if(SpecialType.FLOAT.matches(value.type)) {
+			if(kind == Operator.Kind.MINUS) {
+				return constructor.buildFloatNegation(llvmValue, "float negation")
 			}
 		}
 		TODO("Unary '$kind${value.type}' operator is not implemented yet.")

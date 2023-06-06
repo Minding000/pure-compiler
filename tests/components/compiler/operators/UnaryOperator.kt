@@ -21,7 +21,7 @@ internal class UnaryOperator {
 	}
 
 	@Test
-	fun `compiles integer negate`() {
+	fun `compiles integer negation`() {
 		val sourceCode = """
 			SimplestApp object {
 				to getNegativeOne(): Int {
@@ -31,5 +31,18 @@ internal class UnaryOperator {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNegativeOne")
 		assertEquals(-1, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles float negation`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getNegativeOnePointFive(): Float {
+					return -1.5
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNegativeOnePointFive")
+		assertEquals(-1.5, Llvm.castToFloat(result))
 	}
 }
