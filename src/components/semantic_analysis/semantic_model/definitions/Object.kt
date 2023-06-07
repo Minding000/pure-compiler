@@ -1,11 +1,14 @@
 package components.semantic_analysis.semantic_model.definitions
 
+import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmType
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
+import java.util.*
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?,
@@ -38,5 +41,17 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 	override fun validate() {
 		super.validate()
 		scope.ensureTrivialInitializers()
+	}
+
+	override fun declare(constructor: LlvmConstructor) {
+		super.declare(constructor)
+		llvmType = constructor.declareStruct(name)
+	}
+
+	override fun compile(constructor: LlvmConstructor) {
+		super.compile(constructor)
+		val members = LinkedList<LlvmType>()
+		//TODO add members
+		constructor.defineStruct(llvmType, members)
 	}
 }

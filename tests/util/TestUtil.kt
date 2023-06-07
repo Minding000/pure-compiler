@@ -58,7 +58,7 @@ object TestUtil {
 		val context = parseResult.syntaxTreeGenerator.project.context
         val semanticModelGenerator = SemanticModelGenerator(context)
         val program = semanticModelGenerator.createSemanticModel(parseResult.program)
-        context.logger.printReport(Severity.INFO)
+        context.logger.printReport(Severity.INFO, !includeRequiredModules)
         return LintResult(context, program)
     }
 
@@ -96,7 +96,7 @@ object TestUtil {
 		val context = parseResult.syntaxTreeGenerator.project.context
 		val semanticModelGenerator = SemanticModelGenerator(context)
 		val program = semanticModelGenerator.createSemanticModel(parseResult.program)
-		context.logger.printReport(Severity.WARNING)
+		context.logger.printReport(Severity.WARNING, true)
 		val testFile = program.files.find { file -> file.file.name == TEST_FILE_NAME }
 		assertNotNull(testFile, "Missing test file")
 		return testFile.variableTracker

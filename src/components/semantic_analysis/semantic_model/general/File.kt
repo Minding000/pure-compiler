@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.general
 
+import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import logger.issues.resolution.ReferencedFileNotFound
@@ -54,9 +55,11 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 		variableTracker.validate()
 	}
 
-//	override fun compile(context: BuildContext): Pointer? {
-//		for(statement in statements)
-//			statement.compile(context)
-//		return null
-//	}
+	override fun compile(constructor: LlvmConstructor) {
+		val fileInitializerType = constructor.buildFunctionType(emptyList(), constructor.voidType)
+		val fileInitializer = constructor.buildFunction(file.name, fileInitializerType)
+		constructor.createAndSelectBlock(fileInitializer, "file")
+		super.compile(constructor)
+		constructor.buildReturn()
+	}
 }

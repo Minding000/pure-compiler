@@ -1,9 +1,7 @@
 package components.compiler
 
 import components.compiler.targets.llvm.Llvm
-import components.compiler.targets.llvm.LlvmList
 import components.compiler.targets.llvm.LlvmProgram
-import components.compiler.targets.llvm.LlvmType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import util.TestUtil
@@ -16,8 +14,7 @@ internal class Compiler {
 		val expectedResult = 5L
 		val program = LlvmProgram("Test")
 		val constructor = program.constructor
-		val argumentTypes = LlvmList<LlvmType>(0)
-		val functionType = constructor.buildFunctionType(argumentTypes, 0, constructor.i32Type)
+		val functionType = constructor.buildFunctionType(emptyList(), constructor.i32Type)
 		val function = constructor.buildFunction("getNumber", functionType)
 		constructor.createAndSelectBlock(function, "body")
 		val number = constructor.buildInt32(expectedResult)
@@ -179,6 +176,8 @@ internal class Compiler {
 			}
 			""".trimIndent()
 		val intermediateRepresentation = """
+			%SimplestApp = type {}
+
 			define void @"run()"() {
 			function_entry:
 			  %x = alloca i1, align 1
@@ -194,6 +193,12 @@ internal class Compiler {
 			  br label %loop_entry
 
 			loop_exit:                                        ; preds = %loop_entry
+			  ret void
+			}
+
+			define void @Test() {
+			file:
+			  %SimplestApp = alloca %SimplestApp, align 8
 			  ret void
 			}
 			""".trimIndent()

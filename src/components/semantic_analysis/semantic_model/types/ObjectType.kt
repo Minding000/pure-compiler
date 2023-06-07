@@ -7,6 +7,7 @@ import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import errors.internal.CompilerError
 import logger.issues.definition.TypeParameterCountMismatch
 import logger.issues.definition.TypeParameterNotAssignable
 import logger.issues.resolution.NotFound
@@ -210,6 +211,6 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 			return constructor.voidType
 		if(SpecialType.NEVER.matches(this))
 			return constructor.voidType
-		return super.getLlvmReference(constructor)
+		return definition?.llvmType ?: throw CompilerError(source, "Missing LLVM type definition.")
 	}
 }

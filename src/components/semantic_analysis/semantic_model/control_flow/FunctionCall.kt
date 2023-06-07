@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.control_flow
 
 import components.compiler.targets.llvm.LlvmConstructor
-import components.compiler.targets.llvm.LlvmList
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
@@ -105,12 +104,10 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 	}
 
 	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
-		val parameters = LlvmList<LlvmValue>(valueParameters.size.toLong())
-		for(parameter in valueParameters)
-			parameters.put(parameter.getLlvmReference(constructor))
+		val parameters = valueParameters.map { valueParameter -> valueParameter.getLlvmReference(constructor) }
 		when(val target = targetImplementation) {
 			is FunctionImplementation -> {
-				return constructor.buildFunctionCall(target.llvmReference, parameters, valueParameters.size, getSignature())
+				return constructor.buildFunctionCall(target.llvmReference, parameters, getSignature())
 			}
 			is InitializerDefinition -> {
 				TODO("Initializer calls are not implemented yet.")

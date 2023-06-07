@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.definitions
 
+import components.compiler.targets.llvm.LlvmType
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.SemanticModel
@@ -35,6 +36,7 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>, LinkedList<(TypeDefinition) -> Unit>>()
 	// Only used in specific definition
 	var baseDefinition: TypeDefinition? = null
+	lateinit var llvmType: LlvmType
 
 	init {
 		addSemanticModels(explicitParentType, superType)

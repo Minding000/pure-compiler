@@ -15,8 +15,7 @@ class LocalVariableDeclaration(source: SyntaxTreeNode, scope: MutableScope, name
 	constructor(source: Identifier, scope: MutableScope, type: Type? = null): this(source, scope, source.getValue(), type)
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): LocalVariableDeclaration {
-		return LocalVariableDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), value, isConstant,
-			isMutable)
+		return LocalVariableDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), value, isConstant, isMutable)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

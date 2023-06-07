@@ -4,7 +4,6 @@ import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.SemanticModel
-import components.semantic_analysis.semantic_model.scopes.FileScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.Type
@@ -84,7 +83,8 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
-		if(scope is FileScope || scope is TypeScope)
+		//TODO support member declarations
+		if(scope is TypeScope)
 			return
 		val currentBlock = constructor.getCurrentBlock()
 		val function = constructor.getParentFunction(currentBlock)

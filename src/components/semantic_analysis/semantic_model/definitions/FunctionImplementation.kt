@@ -126,10 +126,12 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	override fun compile(constructor: LlvmConstructor) {
 		for(index in parameters.indices)
 			parameters[index].index = index
+		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmReference, "function_entry")
 		super.compile(constructor)
 		if(body?.isInterruptingExecution != true)
 			constructor.buildReturn()
+		constructor.select(previousBlock)
 	}
 
 	override fun toString(): String {

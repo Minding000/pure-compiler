@@ -18,7 +18,7 @@ class Logger(private val systemName: String) {
 		phase.add(issue)
 	}
 
-	fun printReport(verbosity: Severity) {
+	fun printReport(verbosity: Severity, ignoreInternalIssues: Boolean = false) {
 		val capitalizedSystemName = systemName.replaceFirstChar { char -> char.uppercase() }
 		val totalIssueTypeCounts = Array(Severity.values().size) { 0 }
 		for(phase in phases) {
@@ -29,7 +29,7 @@ class Logger(private val systemName: String) {
 				println("----- $capitalizedSystemName phase: ${phase.name} (${phase.getTypeCountString()}) -----")
 			}
 			for(issue in phase.issues) {
-				if(issue.severity >= verbosity)
+				if(issue.severity >= verbosity && !(ignoreInternalIssues && issue.isInternal))
 					println("${issue.severity.name}: $issue")
 			}
 			for(issueTypeOrdinal in phase.issueTypeCounts.indices)

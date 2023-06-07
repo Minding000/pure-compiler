@@ -2,6 +2,7 @@ package components.compiler.targets.llvm
 
 import errors.internal.CompilerError
 import org.bytedeco.llvm.global.LLVM.*
+import util.toLlvmList
 
 class LlvmConstructor(name: String) {
 	val context = Llvm.createContext()
@@ -44,10 +45,18 @@ class LlvmConstructor(name: String) {
 		return LLVMConstReal(floatType, value)
 	}
 
-	fun buildFunctionType(parameterTypes: LlvmList<LlvmType>, parameterCount: Int, returnType: LlvmType?): LlvmType {
+	fun declareStruct(name: String): LlvmType {
+		return LLVMStructCreateNamed(context, name)
+	}
+
+	fun defineStruct(structType: LlvmType, memberTypes: List<LlvmType>) {
+		LLVMStructSetBody(structType, memberTypes.toLlvmList(), memberTypes.size, Llvm.NO)
+	}
+
+	fun buildFunctionType(parameterTypes: List<LlvmType?>, returnType: LlvmType?): LlvmType {
 		if(returnType == null)
 			throw CompilerError("Missing return type in function.")
-		return LLVMFunctionType(returnType, parameterTypes, parameterCount, Llvm.NO)
+		return LLVMFunctionType(returnType, parameterTypes.toLlvmList(), parameterTypes.size, Llvm.NO)
 	}
 
 	fun buildFunction(name: String, type: LlvmType): LlvmValue {
@@ -56,8 +65,8 @@ class LlvmConstructor(name: String) {
 		return function
 	}
 
-	fun buildFunctionCall(function: LlvmValue, parameters: LlvmList<LlvmValue>, parameterCount: Int, name: String): LlvmValue {
-		return LLVMBuildCall(builder, function, parameters, parameterCount, name)
+	fun buildFunctionCall(function: LlvmValue, parameters: List<LlvmValue>, name: String): LlvmValue {
+		return LLVMBuildCall(builder, function, parameters.toLlvmList(), parameters.size, name)
 	}
 
 	fun createBlock(name: String): LlvmBlock {

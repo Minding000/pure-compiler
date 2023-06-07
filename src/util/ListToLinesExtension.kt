@@ -1,7 +1,5 @@
 package util
 
-import java.lang.StringBuilder
-
 fun <E> List<E>.toLines(): String {
 	val builder = StringBuilder()
 	for(item in this)
