@@ -49,7 +49,7 @@ class LlvmConstructor(name: String) {
 		return LLVMStructCreateNamed(context, name)
 	}
 
-	fun defineStruct(structType: LlvmType, memberTypes: List<LlvmType>) {
+	fun defineStruct(structType: LlvmType, memberTypes: List<LlvmType?>) {
 		LLVMStructSetBody(structType, memberTypes.toLlvmList(), memberTypes.size, Llvm.NO)
 	}
 

@@ -50,8 +50,12 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
-		val members = LinkedList<LlvmType>()
-		//TODO add members
+		val members = LinkedList<LlvmType?>()
+		for(memberDeclaration in scope.memberDeclarations) {
+			if(memberDeclaration is ValueDeclaration) {
+				members.add(memberDeclaration.type?.getLlvmReference(constructor))
+			}
+		}
 		constructor.defineStruct(llvmType, members)
 	}
 }
