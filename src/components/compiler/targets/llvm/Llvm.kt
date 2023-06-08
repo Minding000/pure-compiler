@@ -9,6 +9,7 @@ object Llvm {
 	const val NO = 0
 	const val YES = 1
 	const val OK = 0
+	const val DEFAULT_ADDRESS_SPACE_INDEX = 0
 	object BooleanOperation {
 		const val EQUAL_TO = LLVMIntEQ
 		const val NOT_EQUAL_TO = LLVMIntNE

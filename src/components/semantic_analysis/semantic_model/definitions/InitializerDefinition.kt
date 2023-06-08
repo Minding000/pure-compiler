@@ -1,11 +1,14 @@
 package components.semantic_analysis.semantic_model.definitions
 
+import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.initialization.UninitializedProperties
@@ -25,6 +28,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	var superInitializer: InitializerDefinition? = null
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
+	lateinit var llvmReference: LlvmValue
 
 	init {
 		addSemanticModels(typeParameters, parameters)
@@ -199,6 +203,33 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 					context.addIssue(OverriddenSuperInitializerMissing(source))
 			}
 		}
+	}
+
+	override fun declare(constructor: LlvmConstructor) {
+		super.declare(constructor)
+		val parameterTypes = listOf(constructor.createPointerType(parentDefinition.llvmType))
+		val initializerType = constructor.buildFunctionType(parameterTypes)
+		llvmReference = constructor.buildFunction("initializer", initializerType)
+	}
+
+	override fun compile(constructor: LlvmConstructor) {
+		val previousBlock = constructor.getCurrentBlock()
+		constructor.createAndSelectBlock(llvmReference, "initializer_entry")
+		var propertyIndex = 0
+		val thisValue = constructor.getParameter(llvmReference, 0)
+		for(memberDeclaration in parentDefinition.scope.memberDeclarations) {
+			if(memberDeclaration is ValueDeclaration) {
+				val memberValue = memberDeclaration.value
+				if(memberValue != null) {
+					val propertyPointer = constructor.buildGetPropertyPointer(thisValue, propertyIndex, memberDeclaration.name)
+					constructor.buildStore(memberValue.getLlvmReference(constructor), propertyPointer)
+				}
+				propertyIndex++
+			}
+		}
+		super.compile(constructor)
+		constructor.buildReturn()
+		constructor.select(previousBlock)
 	}
 
 	override fun toString(): String {

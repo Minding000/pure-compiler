@@ -196,9 +196,18 @@ internal class Compiler {
 			  ret void
 			}
 
+			define void @initializer(%SimplestApp* %0) {
+			initializer_entry:
+			  ret void
+			}
+
 			define void @Test() {
 			file:
 			  %SimplestApp = alloca %SimplestApp, align 8
+			  %new_pointer = alloca %SimplestApp, align 8
+			  call void @initializer(%SimplestApp* %new_pointer)
+			  %new = load %SimplestApp, %SimplestApp* %new_pointer, align 1
+			  store %SimplestApp %new, %SimplestApp* %SimplestApp, align 1
 			  ret void
 			}
 			""".trimIndent()

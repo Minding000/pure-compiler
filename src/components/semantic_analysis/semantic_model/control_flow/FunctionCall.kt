@@ -14,6 +14,7 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.initialization.ReliesOnUninitializedProperties
@@ -22,10 +23,9 @@ import logger.issues.resolution.NotCallable
 import logger.issues.resolution.NotFound
 import logger.issues.resolution.SignatureMismatch
 import java.util.*
-import components.syntax_parser.syntax_tree.control_flow.FunctionCall as FunctionCallSyntaxTree
 
-class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, val function: Value, val typeParameters: List<Type>,
-				   val valueParameters: List<Value>): Value(source, scope) {
+class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val function: Value, val typeParameters: List<Type> = emptyList(),
+				   val valueParameters: List<Value> = emptyList()): Value(source, scope) {
 	private var targetImplementation: MemberDeclaration? = null
 
 	init {
@@ -68,7 +68,7 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 		}
 		val baseDefinition = targetType.getBaseDefinition()
 		val genericDefinitionTypes = baseDefinition.scope.getGenericTypeDefinitions()
-		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: listOf()
+		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: emptyList()
 		try {
 			val match = targetType.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters,
 				valueParameters)
@@ -104,13 +104,18 @@ class FunctionCall(override val source: FunctionCallSyntaxTree, scope: Scope, va
 	}
 
 	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
-		val parameters = valueParameters.map { valueParameter -> valueParameter.getLlvmReference(constructor) }
-		when(val target = targetImplementation) {
+		val parameters = LinkedList<LlvmValue>()
+		for(valueParameter in valueParameters)
+			parameters.add(valueParameter.getLlvmReference(constructor))
+		return when(val target = targetImplementation) {
 			is FunctionImplementation -> {
-				return constructor.buildFunctionCall(target.llvmReference, parameters, getSignature())
+				constructor.buildFunctionCall(target.llvmReference, parameters, getSignature())
 			}
 			is InitializerDefinition -> {
-				TODO("Initializer calls are not implemented yet.")
+				val location = constructor.buildAllocation(type?.getLlvmReference(constructor), "new_pointer")
+				parameters.addFirst(location)
+				constructor.buildFunctionCall(target.llvmReference, parameters)
+				constructor.buildLoad(location, "new")
 			}
 			else -> throw CompilerError(source, "Target is not callable.")
 		}

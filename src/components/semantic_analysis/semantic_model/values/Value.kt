@@ -11,7 +11,7 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.resolution.MissingType
 
-abstract class Value(override val source: SyntaxTreeNode, override var scope: Scope, var type: Type? = null): SemanticModel(source, scope) {
+open class Value(override val source: SyntaxTreeNode, override var scope: Scope, var type: Type? = null): SemanticModel(source, scope) {
 	protected open var staticValue: Value? = null
 	protected var positiveState: VariableTracker.VariableState? = null
 	protected var negativeState: VariableTracker.VariableState? = null

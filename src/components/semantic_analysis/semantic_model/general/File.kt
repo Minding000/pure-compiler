@@ -56,8 +56,7 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		val fileInitializerType = constructor.buildFunctionType(emptyList(), constructor.voidType)
-		val fileInitializer = constructor.buildFunction(file.name, fileInitializerType)
+		val fileInitializer = constructor.buildFunction(file.name)
 		constructor.createAndSelectBlock(fileInitializer, "file")
 		super.compile(constructor)
 		constructor.buildReturn()

@@ -53,19 +53,23 @@ class LlvmConstructor(name: String) {
 		LLVMStructSetBody(structType, memberTypes.toLlvmList(), memberTypes.size, Llvm.NO)
 	}
 
-	fun buildFunctionType(parameterTypes: List<LlvmType?>, returnType: LlvmType?): LlvmType {
+	fun createPointerType(baseType: LlvmType): LlvmType {
+		return LLVMPointerType(baseType, Llvm.DEFAULT_ADDRESS_SPACE_INDEX)
+	}
+
+	fun buildFunctionType(parameterTypes: List<LlvmType?> = emptyList(), returnType: LlvmType? = voidType): LlvmType {
 		if(returnType == null)
 			throw CompilerError("Missing return type in function.")
 		return LLVMFunctionType(returnType, parameterTypes.toLlvmList(), parameterTypes.size, Llvm.NO)
 	}
 
-	fun buildFunction(name: String, type: LlvmType): LlvmValue {
+	fun buildFunction(name: String, type: LlvmType = buildFunctionType()): LlvmValue {
 		val function = LLVMAddFunction(module, name, type)
 		LLVMSetFunctionCallConv(function, LLVMCCallConv)
 		return function
 	}
 
-	fun buildFunctionCall(function: LlvmValue, parameters: List<LlvmValue>, name: String): LlvmValue {
+	fun buildFunctionCall(function: LlvmValue, parameters: List<LlvmValue>, name: String = ""): LlvmValue {
 		return LLVMBuildCall(builder, function, parameters.toLlvmList(), parameters.size, name)
 	}
 
@@ -107,6 +111,10 @@ class LlvmConstructor(name: String) {
 		if(location == null)
 			throw CompilerError("Missing location in load '$name'.")
 		return LLVMBuildLoad(builder, location, name)
+	}
+
+	fun buildGetPropertyPointer(struct: LlvmValue, propertyIndex: Int, name: String): LlvmValue {
+		return LLVMBuildStructGEP(builder, struct, propertyIndex, name)
 	}
 
 	fun buildCastFromSignedIntegerToFloat(integer: LlvmValue, name: String): LlvmValue = LLVMBuildSIToFP(builder, integer, floatType, name)
