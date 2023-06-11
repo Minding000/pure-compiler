@@ -1,8 +1,11 @@
 package components.semantic_analysis.semantic_model.operations
 
+import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
+import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.*
 import components.semantic_analysis.semantic_model.values.*
@@ -91,8 +94,18 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 					possibleTargetTypes.add(availableType)
 				}
 			}
-
 		}
 		return possibleTargetTypes
+	}
+
+	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
+		if(member !is VariableValue)
+			return super.getLlvmReference(constructor)
+		val memberDeclaration = member.definition as? MemberDeclaration ?: return super.getLlvmReference(constructor)
+		val targetValue = target.getLlvmReference(constructor)
+		val targetLocation = constructor.buildAllocation(target.type?.getLlvmReference(constructor), "target")
+		constructor.buildStore(targetValue, targetLocation)
+		val location = constructor.buildGetPropertyPointer(targetLocation, memberDeclaration.memberIndex, "propertyPointer")
+		return constructor.buildLoad(location, "property")
 	}
 }

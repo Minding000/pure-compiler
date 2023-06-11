@@ -16,6 +16,7 @@ import logger.issues.modifiers.*
 import util.combine
 import util.stringifyTypes
 import java.util.*
+import kotlin.properties.Delegates
 
 class InitializerDefinition(override val source: SyntaxTreeNode, override val scope: BlockScope,
 							val typeParameters: List<TypeDefinition> = emptyList(), val parameters: List<Parameter> = emptyList(),
@@ -28,6 +29,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	var superInitializer: InitializerDefinition? = null
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
+	override var memberIndex by Delegates.notNull<Int>()
 	lateinit var llvmReference: LlvmValue
 
 	init {
@@ -209,7 +211,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		super.declare(constructor)
 		val parameterTypes = listOf(constructor.createPointerType(parentDefinition.llvmType))
 		val initializerType = constructor.buildFunctionType(parameterTypes)
-		llvmReference = constructor.buildFunction("initializer", initializerType)
+		llvmReference = constructor.buildFunction("${parentDefinition.name}_initializer", initializerType)
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
@@ -221,7 +223,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			if(memberDeclaration is ValueDeclaration) {
 				val memberValue = memberDeclaration.value
 				if(memberValue != null) {
-					val propertyPointer = constructor.buildGetPropertyPointer(thisValue, propertyIndex, memberDeclaration.name)
+					val propertyPointer = constructor.buildGetPropertyPointer(thisValue, propertyIndex, "${memberDeclaration.name}Pointer")
 					constructor.buildStore(memberValue.getLlvmReference(constructor), propertyPointer)
 				}
 				propertyIndex++

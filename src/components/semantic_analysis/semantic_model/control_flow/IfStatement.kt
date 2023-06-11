@@ -43,11 +43,11 @@ class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val 
 			(positiveBranch.isInterruptingExecution && negativeBranch?.isInterruptingExecution == true)
 	}
 
-	override fun compile(constructor: LlvmConstructor) {
+	override fun compile(constructor: LlvmConstructor) { //TODO implement CLI output
 		val function = constructor.getParentFunction()
 		val condition = condition.getLlvmReference(constructor)
 		val trueBlock = constructor.createBlock(function, "if_true")
-		val falseBlock = constructor.createBlock(function, "if_false")
+		val falseBlock = constructor.createBlock(function, "if_false") //TODO test nested if statements
 		val exitBlock = constructor.createBlock("if_exit")
 		constructor.buildJump(condition, trueBlock, falseBlock)
 		constructor.select(trueBlock)

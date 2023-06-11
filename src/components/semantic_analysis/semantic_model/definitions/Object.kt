@@ -49,11 +49,18 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 	}
 
 	override fun declare(constructor: LlvmConstructor) {
-		llvmType = constructor.declareStruct(name)
+		llvmType = constructor.declareStruct("${name}Struct")
+		var memberIndex = 0
+		for(memberDeclaration in scope.memberDeclarations) {
+			if(memberDeclaration is ValueDeclaration) {
+				memberDeclaration.memberIndex = memberIndex
+				memberIndex++
+			}
+		}
 		super.declare(constructor)
 	}
 
-	override fun compile(constructor: LlvmConstructor) {
+	override fun define(constructor: LlvmConstructor) {
 		val members = LinkedList<LlvmType?>()
 		for(memberDeclaration in scope.memberDeclarations) {
 			if(memberDeclaration is ValueDeclaration) {
@@ -61,6 +68,6 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 			}
 		}
 		constructor.defineStruct(llvmType, members)
-		super.compile(constructor)
+		super.define(constructor)
 	}
 }

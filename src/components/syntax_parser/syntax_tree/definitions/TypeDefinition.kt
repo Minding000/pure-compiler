@@ -38,10 +38,10 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 
 	override fun toSemanticModel(scope: MutableScope, semanticModels: MutableList<SemanticModel>) {
 		val typeDefinition = toSemanticModel(scope)
-		semanticModels.add(typeDefinition)
 		val valueDeclaration = typeDefinition.getValueDeclaration()
 		if(valueDeclaration != null)
 			semanticModels.add(valueDeclaration)
+		semanticModels.add(typeDefinition)
 	}
 
 	override fun toSemanticModel(scope: MutableScope): SemanticTypeDefinitionModel {

@@ -18,9 +18,7 @@ class LlvmProgram(name: String) {
 		}
 
 	fun loadSemanticModel(program: Program, entryPointPath: String? = null) {
-		program.compile(constructor)
-		if(entryPointPath != null)
-			entrypoint = program.getEntryPoint(entryPointPath).llvmReference
+		entrypoint = program.compile(constructor, entryPointPath)
 	}
 
 	fun verify() {

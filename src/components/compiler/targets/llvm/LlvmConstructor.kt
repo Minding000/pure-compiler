@@ -69,7 +69,7 @@ class LlvmConstructor(name: String) {
 		return function
 	}
 
-	fun buildFunctionCall(function: LlvmValue, parameters: List<LlvmValue>, name: String = ""): LlvmValue {
+	fun buildFunctionCall(function: LlvmValue, parameters: List<LlvmValue> = emptyList(), name: String = ""): LlvmValue {
 		return LLVMBuildCall(builder, function, parameters.toLlvmList(), parameters.size, name)
 	}
 
@@ -93,6 +93,14 @@ class LlvmConstructor(name: String) {
 
 	fun addBlockToFunction(function: LlvmValue, block: LlvmBlock) {
 		LLVMAppendExistingBasicBlock(function, block)
+	}
+
+	fun buildGlobal(name: String, type: LlvmType?, initialValue: LlvmValue): LlvmValue {
+		if(type == null)
+			throw CompilerError("Missing type in allocation '$name'.")
+		val global = LLVMAddGlobal(module, type, name)
+		LLVMSetInitializer(global, initialValue)
+		return global
 	}
 
 	fun buildAllocation(type: LlvmType?, name: String): LlvmValue {

@@ -81,6 +81,11 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 			semanticModel.declare(constructor)
 	}
 
+	open fun define(constructor: LlvmConstructor) {
+		for(semanticModel in semanticModels)
+			semanticModel.define(constructor)
+	}
+
 	open fun compile(constructor: LlvmConstructor) {
 		for(semanticModel in semanticModels)
 			semanticModel.compile(constructor)

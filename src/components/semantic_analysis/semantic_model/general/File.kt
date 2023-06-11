@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.general
 
 import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import logger.issues.resolution.ReferencedFileNotFound
@@ -12,6 +13,7 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 	SemanticModel(source, scope) {
 	private val referencedFiles = LinkedList<File>()
 	lateinit var variableTracker: VariableTracker
+	lateinit var llvmInitializer: LlvmValue
 
 	init {
 		addSemanticModels(statements)
@@ -56,8 +58,8 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		val fileInitializer = constructor.buildFunction(file.name)
-		constructor.createAndSelectBlock(fileInitializer, "file")
+		llvmInitializer = constructor.buildFunction(file.name)
+		constructor.createAndSelectBlock(llvmInitializer, "file")
 		super.compile(constructor)
 		constructor.buildReturn()
 	}

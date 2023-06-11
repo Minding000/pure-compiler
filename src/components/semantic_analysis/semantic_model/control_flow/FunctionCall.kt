@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.control_flow
 
 import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.definitions.*
@@ -26,7 +27,7 @@ import java.util.*
 
 class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val function: Value, val typeParameters: List<Type> = emptyList(),
 				   val valueParameters: List<Value> = emptyList()): Value(source, scope) {
-	private var targetImplementation: MemberDeclaration? = null
+	var targetImplementation: MemberDeclaration? = null
 
 	init {
 		addSemanticModels(typeParameters, valueParameters)
@@ -109,13 +110,14 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			parameters.add(valueParameter.getLlvmReference(constructor))
 		return when(val target = targetImplementation) {
 			is FunctionImplementation -> {
-				constructor.buildFunctionCall(target.llvmReference, parameters, getSignature())
+				val resultName = if(SpecialType.NOTHING.matches(target.signature.returnType)) "" else getSignature()
+				constructor.buildFunctionCall(target.llvmReference, parameters, resultName)
 			}
 			is InitializerDefinition -> {
-				val location = constructor.buildAllocation(type?.getLlvmReference(constructor), "new_pointer")
+				val location = constructor.buildAllocation(type?.getLlvmReference(constructor), "newObjectPointer")
 				parameters.addFirst(location)
 				constructor.buildFunctionCall(target.llvmReference, parameters)
-				constructor.buildLoad(location, "new")
+				constructor.buildLoad(location, "initializerResult")
 			}
 			else -> throw CompilerError(source, "Target is not callable.")
 		}

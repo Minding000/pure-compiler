@@ -1,6 +1,8 @@
 package components.semantic_analysis.semantic_model.general
 
 import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmValue
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.Object
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -62,11 +64,28 @@ class Program(val source: ProgramSyntaxTree) {
 	/**
 	 * Compiles code to LLVM IR.
 	 */
-	fun compile(llvmConstructor: LlvmConstructor) {
+	fun compile(constructor: LlvmConstructor, entryPointPath: String? = null): LlvmValue {
 		for(file in files)
-			file.declare(llvmConstructor)
+			file.declare(constructor)
 		for(file in files)
-			file.compile(llvmConstructor)
+			file.define(constructor)
+		for(file in files)
+			file.compile(constructor)
+		val userEntryPoint = if(entryPointPath != null) getEntryPoint(entryPointPath) else null
+		val entryPointType = userEntryPoint?.signature?.getLlvmReference(constructor) ?: constructor.buildFunctionType()
+		val globalEntryPoint = constructor.buildFunction("entrypoint", entryPointType)
+		constructor.createAndSelectBlock(globalEntryPoint, "entrypoint")
+		for(file in files)
+			constructor.buildFunctionCall(file.llvmInitializer)
+		var result: LlvmValue? = null
+		if(userEntryPoint != null) {
+			val returnsVoid = SpecialType.NOTHING.matches(userEntryPoint.signature.returnType)
+			result = constructor.buildFunctionCall(userEntryPoint.llvmReference, emptyList(), if(returnsVoid) "" else "programResult")
+			if(returnsVoid)
+				result = null
+		}
+		constructor.buildReturn(result)
+		return globalEntryPoint
 	}
 
 	fun getEntryPoint(entryPointPath: String): FunctionImplementation {

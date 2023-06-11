@@ -16,6 +16,7 @@ import logger.issues.constant_conditions.FunctionCompletesWithoutReturning
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 import java.util.*
+import kotlin.properties.Delegates
 
 class FunctionImplementation(override val source: SyntaxTreeNode, override val scope: BlockScope, genericParameters: List<TypeDefinition>,
 							 val parameters: List<Parameter>, val body: ErrorHandlingContext?, returnType: Type?,
@@ -36,6 +37,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	var mightReturnValue = false
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
+	override var memberIndex by Delegates.notNull<Int>()
 	lateinit var llvmReference: LlvmValue
 
 	init {

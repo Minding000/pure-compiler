@@ -176,38 +176,42 @@ internal class Compiler {
 			}
 			""".trimIndent()
 		val intermediateRepresentation = """
-			%SimplestApp = type {}
+			%SimplestAppStruct = type {}
+
+			@SimplestAppPointer = global %SimplestAppStruct zeroinitializer
 
 			define void @"run()"() {
 			function_entry:
-			  %x = alloca i1, align 1
-			  store i1 true, i1* %x, align 1
+			  %xPointer = alloca i1, align 1
+			  store i1 true, i1* %xPointer, align 1
 			  br label %loop_entry
 
 			loop_entry:                                       ; preds = %loop_body, %function_entry
-			  %x1 = load i1, i1* %x, align 1
-			  br i1 %x1, label %loop_body, label %loop_exit
+			  %x = load i1, i1* %xPointer, align 1
+			  br i1 %x, label %loop_body, label %loop_exit
 
 			loop_body:                                        ; preds = %loop_entry
-			  store i1 false, i1* %x, align 1
+			  store i1 false, i1* %xPointer, align 1
 			  br label %loop_entry
 
 			loop_exit:                                        ; preds = %loop_entry
 			  ret void
 			}
 
-			define void @initializer(%SimplestApp* %0) {
+			define void @SimplestApp_initializer(%SimplestAppStruct* %0) {
 			initializer_entry:
 			  ret void
 			}
 
 			define void @Test() {
 			file:
-			  %SimplestApp = alloca %SimplestApp, align 8
-			  %new_pointer = alloca %SimplestApp, align 8
-			  call void @initializer(%SimplestApp* %new_pointer)
-			  %new = load %SimplestApp, %SimplestApp* %new_pointer, align 1
-			  store %SimplestApp %new, %SimplestApp* %SimplestApp, align 1
+			  call void @SimplestApp_initializer(%SimplestAppStruct* @SimplestAppPointer)
+			  ret void
+			}
+
+			define void @entrypoint() {
+			entrypoint:
+			  call void @Test()
 			  ret void
 			}
 			""".trimIndent()
