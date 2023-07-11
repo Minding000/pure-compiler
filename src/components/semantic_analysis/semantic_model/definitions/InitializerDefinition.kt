@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.definitions
 
 import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmType
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.SemanticModel
@@ -30,7 +31,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 	override var memberIndex by Delegates.notNull<Int>()
-	lateinit var llvmReference: LlvmValue
+	lateinit var llvmValue: LlvmValue
+	lateinit var llvmType: LlvmType
 
 	init {
 		addSemanticModels(typeParameters, parameters)
@@ -210,21 +212,21 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)
 		val parameterTypes = listOf(constructor.createPointerType(parentDefinition.llvmType))
-		val initializerType = constructor.buildFunctionType(parameterTypes)
-		llvmReference = constructor.buildFunction("${parentDefinition.name}_initializer", initializerType)
+		llvmType = constructor.buildFunctionType(parameterTypes)
+		llvmValue = constructor.buildFunction("${parentDefinition.name}_initializer", llvmType)
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
 		val previousBlock = constructor.getCurrentBlock()
-		constructor.createAndSelectBlock(llvmReference, "initializer_entry")
+		constructor.createAndSelectBlock(llvmValue, "initializer_entry")
 		var propertyIndex = 0
-		val thisValue = constructor.getParameter(llvmReference, 0)
+		val thisValue = constructor.getParameter(llvmValue, 0)
 		for(memberDeclaration in parentDefinition.scope.memberDeclarations) {
 			if(memberDeclaration is ValueDeclaration) {
 				val memberValue = memberDeclaration.value
 				if(memberValue != null) {
-					val propertyPointer = constructor.buildGetPropertyPointer(thisValue, propertyIndex, "${memberDeclaration.name}Pointer")
-					constructor.buildStore(memberValue.getLlvmReference(constructor), propertyPointer)
+					val propertyPointer = constructor.buildGetPropertyPointer(parentDefinition.llvmType, thisValue, propertyIndex, "${memberDeclaration.name}Pointer")
+					constructor.buildStore(memberValue.getLlvmValue(constructor), propertyPointer)
 				}
 				propertyIndex++
 			}

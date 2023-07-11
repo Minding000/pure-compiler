@@ -153,9 +153,9 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		}
 	}
 
-	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
-		var leftValue = left.getLlvmReference(constructor)
-		var rightValue = right.getLlvmReference(constructor)
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		var leftValue = left.getLlvmValue(constructor)
+		var rightValue = right.getLlvmValue(constructor)
 		if(SpecialType.BOOLEAN.matches(left.type) && SpecialType.BOOLEAN.matches(right.type)) {
 			when(kind) {
 				Operator.Kind.AND -> return constructor.buildAnd(leftValue, rightValue, "and")

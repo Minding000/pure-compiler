@@ -37,6 +37,7 @@ class LlvmConstructor(name: String) {
 		return LLVMConstInt(booleanType, if(value) 1 else 0, Llvm.NO)
 	}
 
+	fun buildInt32(value: Int): LlvmValue = buildInt32(value.toLong())
 	fun buildInt32(value: Long): LlvmValue {
 		return LLVMConstInt(i32Type, value, Llvm.NO)
 	}
@@ -57,6 +58,10 @@ class LlvmConstructor(name: String) {
 		return LLVMPointerType(baseType, Llvm.DEFAULT_ADDRESS_SPACE_INDEX)
 	}
 
+	fun buildArray(type: LlvmType, size: LlvmValue, name: String): LlvmValue {
+		return LLVMBuildArrayMalloc(builder, type, size, name)
+	}
+
 	fun buildFunctionType(parameterTypes: List<LlvmType?> = emptyList(), returnType: LlvmType? = voidType): LlvmType {
 		if(returnType == null)
 			throw CompilerError("Missing return type in function.")
@@ -69,8 +74,8 @@ class LlvmConstructor(name: String) {
 		return function
 	}
 
-	fun buildFunctionCall(function: LlvmValue, parameters: List<LlvmValue> = emptyList(), name: String = ""): LlvmValue {
-		return LLVMBuildCall(builder, function, parameters.toLlvmList(), parameters.size, name)
+	fun buildFunctionCall(functionType: LlvmType, function: LlvmValue, parameters: List<LlvmValue> = emptyList(), name: String = ""): LlvmValue {
+		return LLVMBuildCall2(builder, functionType, function, parameters.toLlvmList(), parameters.size, name)
 	}
 
 	fun createBlock(name: String): LlvmBlock {
@@ -103,6 +108,12 @@ class LlvmConstructor(name: String) {
 		return global
 	}
 
+	fun buildConstantStruct(type: LlvmType?, values: List<LlvmValue>): LlvmValue {
+		if(type == null)
+			throw CompilerError("Missing type for constant struct.")
+		return LLVMConstNamedStruct(type, values.toLlvmList(), values.size)
+	}
+
 	fun buildAllocation(type: LlvmType?, name: String): LlvmValue {
 		if(type == null)
 			throw CompilerError("Missing type in allocation '$name'.")
@@ -115,14 +126,23 @@ class LlvmConstructor(name: String) {
 		LLVMBuildStore(builder, value, location)
 	}
 
-	fun buildLoad(location: LlvmValue?, name: String): LlvmValue {
+	fun buildLoad(type: LlvmType?, location: LlvmValue?, name: String): LlvmValue {
+		if(type == null)
+			throw CompilerError("Missing type in load '$name'.")
 		if(location == null)
 			throw CompilerError("Missing location in load '$name'.")
-		return LLVMBuildLoad(builder, location, name)
+		return LLVMBuildLoad2(builder, type, location, name)
 	}
 
-	fun buildGetPropertyPointer(struct: LlvmValue, propertyIndex: Int, name: String): LlvmValue {
-		return LLVMBuildStructGEP(builder, struct, propertyIndex, name)
+	fun buildGetPropertyPointer(structType: LlvmType?, structPointer: LlvmValue, propertyIndex: Int, name: String): LlvmValue {
+		if(structType == null)
+			throw CompilerError("Missing struct type in getelementptr '$name'.")
+		return LLVMBuildStructGEP2(builder, structType, structPointer, propertyIndex, name)
+	}
+
+	fun buildGetArrayElementPointer(arrayPointer: LlvmValue, elementIndex: LlvmValue, name: String): LlvmValue {
+		val indices = listOf(elementIndex)
+		return LLVMBuildGEP2(builder, LLVMTypeOf(arrayPointer), arrayPointer, indices.toLlvmList(), indices.size, name) //TODO replace LLVMTypeOf with type parameter
 	}
 
 	fun buildCastFromSignedIntegerToFloat(integer: LlvmValue, name: String): LlvmValue = LLVMBuildSIToFP(builder, integer, floatType, name)

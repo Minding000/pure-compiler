@@ -82,7 +82,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
-		val value = sourceExpression.getLlvmReference(constructor)
+		val value = sourceExpression.getLlvmValue(constructor)
 		for(target in targets) {
 			when(target) {
 				is VariableValue -> {

@@ -18,6 +18,7 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 	val interfaceScope = InterfaceScope(isStatic)
 	private var hasResolvedDefinitions = false
 	var effectiveType = this
+	private var llvmType: LlvmType? = null
 
 	init {
 		interfaceScope.type = this
@@ -67,7 +68,16 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 
 	open fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> = emptyList()
 
-	open fun getLlvmReference(constructor: LlvmConstructor): LlvmType {
-		TODO("${source.getStartString()}: '${javaClass.simpleName}.getLlvmReference' is not implemented yet.") //TODO make this function abstract
+	fun getLlvmType(constructor: LlvmConstructor): LlvmType {
+		var llvmType = llvmType
+		if(llvmType == null) {
+			llvmType = createLlvmType(constructor)
+			this.llvmType = llvmType
+		}
+		return llvmType
+	}
+
+	protected open fun createLlvmType(constructor: LlvmConstructor): LlvmType {
+		TODO("${source.getStartString()}: '${javaClass.simpleName}.createLlvmType' is not implemented yet.")
 	}
 }

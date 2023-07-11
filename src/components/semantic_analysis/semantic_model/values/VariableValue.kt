@@ -80,9 +80,9 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		return definition == other.definition
 	}
 
-	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val location = definition?.llvmLocation
-		return constructor.buildLoad(location, name)
+		return constructor.buildLoad(type?.getLlvmType(constructor), location, name)
 	}
 
 	override fun toString(): String = name

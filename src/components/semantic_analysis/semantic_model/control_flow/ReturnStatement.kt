@@ -51,6 +51,6 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		constructor.buildReturn(value?.getLlvmReference(constructor))
+		constructor.buildReturn(value?.getLlvmValue(constructor))
 	}
 }

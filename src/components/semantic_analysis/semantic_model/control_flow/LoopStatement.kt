@@ -85,7 +85,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		constructor.buildJump(entryBlock)
 		constructor.select(entryBlock)
 		if(generator is WhileGenerator) {
-			val condition = generator.condition.getLlvmReference(constructor)
+			val condition = generator.condition.getLlvmValue(constructor)
 			val bodyBlock = constructor.createBlock(function, "loop_body")
 			constructor.buildJump(condition, bodyBlock, exitBlock)
 			constructor.select(bodyBlock)

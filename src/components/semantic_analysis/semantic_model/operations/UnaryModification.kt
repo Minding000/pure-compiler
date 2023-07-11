@@ -66,7 +66,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 		super.compile(constructor)
 		if(target is VariableValue) {
 			if(SpecialType.INTEGER.matches(target.type)) {
-				val targetValue = target.getLlvmReference(constructor)
+				val targetValue = target.getLlvmValue(constructor)
 				val modifierValue = constructor.buildInt32(1)
 				val operation = when(kind) {
 					Operator.Kind.DOUBLE_PLUS -> constructor.buildIntegerAddition(targetValue, modifierValue, "increment")

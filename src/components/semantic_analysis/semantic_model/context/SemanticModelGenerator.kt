@@ -10,7 +10,7 @@ class SemanticModelGenerator(val context: Context) {
 	fun createSemanticModel(programSyntaxTree: ProgramSyntaxTree): SemanticProgramModel {
 		val logger = context.logger
 		logger.addPhase("Semantic model creation")
-		val semanticProgramModel = programSyntaxTree.toSemanticModel()
+		val semanticProgramModel = programSyntaxTree.toSemanticModel(context)
 		logger.addPhase("Literal scope resolution")
 		for(literalType in SpecialType.values())
 			literalType.scope = getLiteralScope(semanticProgramModel, literalType.pathParts)

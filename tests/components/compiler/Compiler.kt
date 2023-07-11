@@ -183,29 +183,29 @@ internal class Compiler {
 			define void @"run()"() {
 			function_entry:
 			  %xPointer = alloca i1, align 1
-			  store i1 true, i1* %xPointer, align 1
+			  store i1 true, ptr %xPointer, align 1
 			  br label %loop_entry
 
 			loop_entry:                                       ; preds = %loop_body, %function_entry
-			  %x = load i1, i1* %xPointer, align 1
+			  %x = load i1, ptr %xPointer, align 1
 			  br i1 %x, label %loop_body, label %loop_exit
 
 			loop_body:                                        ; preds = %loop_entry
-			  store i1 false, i1* %xPointer, align 1
+			  store i1 false, ptr %xPointer, align 1
 			  br label %loop_entry
 
 			loop_exit:                                        ; preds = %loop_entry
 			  ret void
 			}
 
-			define void @SimplestApp_initializer(%SimplestAppStruct* %0) {
+			define void @SimplestApp_initializer(ptr %0) {
 			initializer_entry:
 			  ret void
 			}
 
 			define void @Test() {
 			file:
-			  call void @SimplestApp_initializer(%SimplestAppStruct* @SimplestAppPointer)
+			  call void @SimplestApp_initializer(ptr @SimplestAppPointer)
 			  ret void
 			}
 

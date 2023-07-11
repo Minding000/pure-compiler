@@ -15,6 +15,7 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 	protected open var staticValue: Value? = null
 	protected var positiveState: VariableTracker.VariableState? = null
 	protected var negativeState: VariableTracker.VariableState? = null
+	private var llvmValue: LlvmValue? = null
 
 	open fun isAssignableTo(targetType: Type?): Boolean {
 		return type?.let { type -> targetType?.accepts(type) } ?: false
@@ -80,8 +81,17 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 		return type == other.type
 	}
 
-	open fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
-		TODO("${source.getStartString()}: '${javaClass.simpleName}.getLlvmReference' is not implemented yet.") //TODO make this function abstract
+	fun getLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		var llvmValue = llvmValue
+		if(llvmValue == null) {
+			llvmValue = createLlvmValue(constructor)
+			this.llvmValue = llvmValue
+		}
+		return llvmValue
+	}
+
+	protected open fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		TODO("${source.getStartString()}: '${javaClass.simpleName}.createLlvmValue' is not implemented yet.")
 	}
 
 	override fun toString(): String {

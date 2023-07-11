@@ -200,7 +200,7 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 		return stringRepresentation
 	}
 
-	override fun getLlvmReference(constructor: LlvmConstructor): LlvmType {
+	override fun createLlvmType(constructor: LlvmConstructor): LlvmType {
 		if(SpecialType.FLOAT.matches(this))
 			return constructor.floatType
 		if(SpecialType.INTEGER.matches(this))

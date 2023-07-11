@@ -98,14 +98,15 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		return possibleTargetTypes
 	}
 
-	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		if(member !is VariableValue)
-			return super.getLlvmReference(constructor)
-		val memberDeclaration = member.definition as? MemberDeclaration ?: return super.getLlvmReference(constructor)
-		val targetValue = target.getLlvmReference(constructor)
-		val targetLocation = constructor.buildAllocation(target.type?.getLlvmReference(constructor), "target")
+			return super.getLlvmValue(constructor)
+		val memberDeclaration = member.definition as? MemberDeclaration ?: return super.getLlvmValue(constructor)
+		val targetValue = target.getLlvmValue(constructor)
+		val targetType = target.type?.getLlvmType(constructor)
+		val targetLocation = constructor.buildAllocation(targetType, "target")
 		constructor.buildStore(targetValue, targetLocation)
-		val location = constructor.buildGetPropertyPointer(targetLocation, memberDeclaration.memberIndex, "propertyPointer")
-		return constructor.buildLoad(location, "property")
+		val location = constructor.buildGetPropertyPointer(targetType, targetLocation, memberDeclaration.memberIndex, "propertyPointer")
+		return constructor.buildLoad(member.type?.getLlvmType(constructor), location, "property")
 	}
 }

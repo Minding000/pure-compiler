@@ -38,7 +38,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 	override var memberIndex by Delegates.notNull<Int>()
-	lateinit var llvmReference: LlvmValue
+	lateinit var llvmValue: LlvmValue
 
 	init {
 		scope.semanticModel = this
@@ -122,14 +122,14 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)
-		llvmReference = constructor.buildFunction(memberIdentifier, signature.getLlvmReference(constructor))
+		llvmValue = constructor.buildFunction(memberIdentifier, signature.getLlvmType(constructor))
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
 		for(index in parameters.indices)
 			parameters[index].index = index
 		val previousBlock = constructor.getCurrentBlock()
-		constructor.createAndSelectBlock(llvmReference, "function_entry")
+		constructor.createAndSelectBlock(llvmValue, "function_entry")
 		super.compile(constructor)
 		if(body?.isInterruptingExecution != true)
 			constructor.buildReturn()

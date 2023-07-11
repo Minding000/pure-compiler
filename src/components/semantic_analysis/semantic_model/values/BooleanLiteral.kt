@@ -31,7 +31,7 @@ class BooleanLiteral(override val source: SyntaxTreeNode, scope: Scope, val valu
 		return value == other.value
 	}
 
-	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		return constructor.buildBoolean(value)
 	}
 

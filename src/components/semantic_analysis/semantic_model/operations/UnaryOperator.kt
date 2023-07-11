@@ -59,8 +59,8 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		}
 	}
 
-	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
-		val llvmValue = value.getLlvmReference(constructor)
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		val llvmValue = value.getLlvmValue(constructor)
 		if(SpecialType.BOOLEAN.matches(value.type)) {
 			if(kind == Operator.Kind.EXCLAMATION_MARK) {
 				return constructor.buildBooleanNegation(llvmValue, "boolean negation")

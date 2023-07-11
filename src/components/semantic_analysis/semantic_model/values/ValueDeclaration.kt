@@ -16,8 +16,6 @@ import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.definition.DeclarationMissingTypeOrValue
 import logger.issues.resolution.ConversionAmbiguity
 import org.bytedeco.llvm.LLVM.LLVMValueRef
-import org.bytedeco.llvm.global.LLVM.LLVMConstNamedStruct
-import util.toLlvmList
 import java.util.*
 
 abstract class ValueDeclaration(override val source: SyntaxTreeNode, override val scope: MutableScope, val name: String, var type: Type? = null,
@@ -92,7 +90,7 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		//TODO support member declarations
 		if(scope is TypeScope)
 			return
-		val type = type?.getLlvmReference(constructor)
+		val type = type?.getLlvmType(constructor)
 		val value = value
 		if(scope is FileScope) {
 			if(value is FunctionCall) {
@@ -102,14 +100,14 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 					val values = LinkedList<LlvmValue>()
 					for(member in members) {
 						if(member is PropertyDeclaration)
-							values.add(member.value?.getLlvmReference(constructor) ?: continue)
+							values.add(member.value?.getLlvmValue(constructor) ?: continue)
 					}
-					llvmLocation = constructor.buildGlobal("${name}Pointer", type, LLVMConstNamedStruct(type, values.toLlvmList(), values.size))
+					llvmLocation = constructor.buildGlobal("${name}Pointer", type, constructor.buildConstantStruct(type, values))
 					val parameters = LinkedList<LlvmValue>()
 					parameters.add(llvmLocation)
 					for(valueParameter in value.valueParameters)
-						parameters.add(valueParameter.getLlvmReference(constructor))
-					constructor.buildFunctionCall(function.llvmReference, parameters)
+						parameters.add(valueParameter.getLlvmValue(constructor))
+					constructor.buildFunctionCall(function.llvmType, function.llvmValue, parameters)
 				}
 			}
 		} else {
@@ -120,7 +118,7 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 			llvmLocation = constructor.buildAllocation(type, "${name}Pointer")
 			constructor.select(currentBlock)
 			if(value != null)
-				constructor.buildStore(value.getLlvmReference(constructor), llvmLocation)
+				constructor.buildStore(value.getLlvmValue(constructor), llvmLocation)
 		}
 	}
 }

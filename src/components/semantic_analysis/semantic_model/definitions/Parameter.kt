@@ -56,7 +56,7 @@ class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, n
 
 	override fun compile(constructor: LlvmConstructor) {
 		val function = constructor.getParentFunction()
-		llvmLocation = constructor.buildAllocation(type?.getLlvmReference(constructor), name)
+		llvmLocation = constructor.buildAllocation(type?.getLlvmType(constructor), name)
 		val value = constructor.getParameter(function, index)
 		constructor.buildStore(value, llvmLocation)
 	}

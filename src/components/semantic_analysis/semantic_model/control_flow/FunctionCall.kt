@@ -104,20 +104,21 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		}
 	}
 
-	override fun getLlvmReference(constructor: LlvmConstructor): LlvmValue {
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val parameters = LinkedList<LlvmValue>()
 		for(valueParameter in valueParameters)
-			parameters.add(valueParameter.getLlvmReference(constructor))
+			parameters.add(valueParameter.getLlvmValue(constructor))
 		return when(val target = targetImplementation) {
 			is FunctionImplementation -> {
 				val resultName = if(SpecialType.NOTHING.matches(target.signature.returnType)) "" else getSignature()
-				constructor.buildFunctionCall(target.llvmReference, parameters, resultName)
+				constructor.buildFunctionCall(target.signature.getLlvmType(constructor), target.llvmValue, parameters, resultName)
 			}
 			is InitializerDefinition -> {
-				val location = constructor.buildAllocation(type?.getLlvmReference(constructor), "newObjectPointer")
+				val llvmType = type?.getLlvmType(constructor)
+				val location = constructor.buildAllocation(llvmType, "newObjectPointer")
 				parameters.addFirst(location)
-				constructor.buildFunctionCall(target.llvmReference, parameters)
-				constructor.buildLoad(location, "initializerResult")
+				constructor.buildFunctionCall(target.llvmType, target.llvmValue, parameters)
+				constructor.buildLoad(llvmType, location, "initializerResult")
 			}
 			else -> throw CompilerError(source, "Target is not callable.")
 		}

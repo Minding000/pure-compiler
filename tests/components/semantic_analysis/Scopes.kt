@@ -20,7 +20,7 @@ internal class Scopes {
 		val line = Line(File(Module(project, "Test"), emptyList(), "Test", ""), 0, 0, 1)
 		val position = Position(0, line, 0)
 		setup(position)
-		val lintResult = LintResult(project.context, Program(ProgramSyntaxTree(emptyList())))
+		val lintResult = LintResult(project.context, Program(project.context, ProgramSyntaxTree(emptyList())))
 		lintResult.assertIssueDetected<I>(message)
 	}
 

@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.definitions
 
 import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmType
+import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.TypeScope
@@ -17,6 +18,7 @@ import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDe
 class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?,
 			 superType: Type?, members: List<SemanticModel>, isBound: Boolean, val isNative: Boolean, val isMutable: Boolean):
 	TypeDefinition(source, name, scope, explicitParentType, superType, members, isBound) {
+	lateinit var classDefinitionLocation: LlvmValue
 
 	init {
 		scope.typeDefinition = this
@@ -49,6 +51,18 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 	}
 
 	override fun declare(constructor: LlvmConstructor) {
+		//TODO These malloc calls need to be in a function
+//		val memberCount = constructor.buildInt32(members.size)
+//		val memberIdArrayLocation = constructor.buildArray(constructor.i32Type, memberCount, "memberIdArray")
+//		val memberLocationArrayLocation = constructor.buildArray(constructor.i32Type, memberCount, "memberLocationArray")
+//		val values = LinkedList<LlvmValue>()
+//		values.add(memberCount)
+//		values.add(memberIdArrayLocation)
+//		values.add(memberLocationArrayLocation)
+//		classDefinitionLocation = constructor.buildGlobal("${name}Definition", context.classStruct, constructor.buildConstantStruct(context.classStruct, values))
+
+		//TODO include super members in numbering
+		// - map from class to index in each member
 		llvmType = constructor.declareStruct("${name}Struct")
 		var memberIndex = 0
 		for(memberDeclaration in scope.memberDeclarations) {
@@ -62,9 +76,11 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 
 	override fun define(constructor: LlvmConstructor) {
 		val members = LinkedList<LlvmType?>()
+		//TODO reference class definition (classDefinitionLocation) when creating to object instance
+		//members.add(constructor.createPointerType(context.classStruct))
 		for(memberDeclaration in scope.memberDeclarations) {
 			if(memberDeclaration is ValueDeclaration) {
-				members.add(memberDeclaration.type?.getLlvmReference(constructor))
+				members.add(memberDeclaration.type?.getLlvmType(constructor))
 			}
 		}
 		constructor.defineStruct(llvmType, members)
