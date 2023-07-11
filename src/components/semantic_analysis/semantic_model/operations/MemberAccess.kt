@@ -98,7 +98,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		return possibleTargetTypes
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue { //TODO use member resolution function
 		if(member !is VariableValue)
 			return super.createLlvmValue(constructor)
 		val memberDeclaration = member.definition as? MemberDeclaration ?: return super.getLlvmValue(constructor)

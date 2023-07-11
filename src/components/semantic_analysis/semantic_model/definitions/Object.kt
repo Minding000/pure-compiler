@@ -51,7 +51,7 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 	}
 
 	override fun declare(constructor: LlvmConstructor) {
-		//TODO These malloc calls need to be in a function
+		//TODO These malloc calls need to be in a function (so the global needs a placeholder value)
 //		val memberCount = constructor.buildInt32(members.size)
 //		val memberIdArrayLocation = constructor.buildArray(constructor.i32Type, memberCount, "memberIdArray")
 //		val memberLocationArrayLocation = constructor.buildArray(constructor.i32Type, memberCount, "memberLocationArray")
@@ -62,9 +62,9 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 //		classDefinitionLocation = constructor.buildGlobal("${name}Definition", context.classStruct, constructor.buildConstantStruct(context.classStruct, values))
 
 		//TODO include super members in numbering
-		// - map from class to index in each member
+		// - map from class to index in each member (context.memberIdentifierIds)
 		llvmType = constructor.declareStruct("${name}Struct")
-		var memberIndex = 0
+		var memberIndex = 1
 		for(memberDeclaration in scope.memberDeclarations) {
 			if(memberDeclaration is ValueDeclaration) {
 				memberDeclaration.memberIndex = memberIndex
@@ -76,8 +76,7 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 
 	override fun define(constructor: LlvmConstructor) {
 		val members = LinkedList<LlvmType?>()
-		//TODO reference class definition (classDefinitionLocation) when creating to object instance
-		//members.add(constructor.createPointerType(context.classStruct))
+		members.add(constructor.createPointerType(context.classStruct))
 		for(memberDeclaration in scope.memberDeclarations) {
 			if(memberDeclaration is ValueDeclaration) {
 				members.add(memberDeclaration.type?.getLlvmType(constructor))

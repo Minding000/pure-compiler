@@ -15,6 +15,9 @@ import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
 class Program(val context: Context, val source: ProgramSyntaxTree) {
 	val files = LinkedList<File>()
+	private lateinit var llvmIndexType: LlvmType
+	private lateinit var llvmIdType: LlvmType
+	private lateinit var llvmAddressType: LlvmType
 
 	fun getFile(pathParts: List<String>): File? {
 		for(file in files)
@@ -67,7 +70,10 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	 * Compiles code to LLVM IR.
 	 */
 	fun compile(constructor: LlvmConstructor, entryPointPath: String? = null): LlvmValue {
-		//setUpSystemFunctions(constructor)
+		llvmIndexType = constructor.i32Type
+		llvmIdType = constructor.i32Type
+		llvmAddressType = constructor.createPointerType(constructor.voidType)
+		setUpSystemFunctions(constructor)
 		for(file in files)
 			file.declare(constructor)
 		for(file in files)
@@ -96,29 +102,29 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		// - mapping from signature to members
 		// resolve member locations by signature and class
 		// resolve function locations by signature and class
-		// ignore performance and global function for now
+		// ignore performance and global function for now, KISS!
 
 		// Question: How do function signatures look like?
+		//  -> For now they map one-to-one to Pure signatures
+		//  -> Later on intermediary signatures might get introduced
 		// Question: What if only one of multiple function overloads is overridden?
+		//  -> Just copy the other ones
 
 		context.classStruct = constructor.declareStruct("ClassStruct")
-		val memberIdArrayType = constructor.createPointerType(constructor.i32Type)
-		val memberLocationArrayType = constructor.createPointerType(constructor.i32Type)
-		constructor.defineStruct(context.classStruct, listOf(memberIdArrayType, memberLocationArrayType))
+		val memberIdArrayType = constructor.createPointerType(llvmIdType)
+		val memberAddressArrayType = constructor.createPointerType(llvmAddressType)
+		constructor.defineStruct(context.classStruct, listOf(memberIdArrayType, memberAddressArrayType))
 		context.functionStruct = constructor.declareStruct("FunctionStruct")
-		val implementationIdArrayType = constructor.createPointerType(constructor.i32Type)
-		val implementationLocationArrayType = constructor.createPointerType(constructor.i32Type)
-		constructor.defineStruct(context.functionStruct, listOf(implementationIdArrayType, implementationLocationArrayType))
-		setUpMemberResolutionFunction(constructor, context.classStruct)
-		setUpFunctionResolutionFunction(constructor, context.functionStruct)
+		val implementationIdArrayType = constructor.createPointerType(llvmIdType)
+		val implementationAddressArrayType = constructor.createPointerType(llvmAddressType)
+		constructor.defineStruct(context.functionStruct, listOf(implementationIdArrayType, implementationAddressArrayType))
+		setUpMemberResolutionFunction(constructor)
+		//setUpFunctionResolutionFunction(constructor)
 	}
 
-	private fun setUpMemberResolutionFunction(constructor: LlvmConstructor, classStruct: LlvmType) {
-		val indexType = constructor.i32Type
-		val idType = constructor.i32Type
-		val addressType = constructor.i32Type
-		val returnType = constructor.createPointerType(constructor.voidType)
-		val memberResolutionFunctionType = constructor.buildFunctionType(listOf(classStruct, idType), returnType)
+	private fun setUpMemberResolutionFunction(constructor: LlvmConstructor) {
+		val classPointerType = constructor.createPointerType(context.classStruct)
+		val memberResolutionFunctionType = constructor.buildFunctionType(listOf(classPointerType, llvmIdType), llvmAddressType)
 		val memberResolutionFunction = constructor.buildFunction("resolveMember", memberResolutionFunctionType)
 		constructor.createAndSelectBlock(memberResolutionFunction, "function_entry")
 		// get class parameter
@@ -134,13 +140,15 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		// store 0 in index
 		constructor.buildStore(constructor.buildInt32(0), indexVariableLocation)
 		// create loop block
-		val loopBlock = constructor.createAndSelectBlock(memberResolutionFunction, "loop")
+		val loopBlock = constructor.createBlock(memberResolutionFunction, "loop")
+		constructor.buildJump(loopBlock)
+		constructor.select(loopBlock)
 		// get current index
-		val currentIndexVariable = constructor.buildLoad(indexType, indexVariableLocation, "indexVariable")
+		val currentIndexVariable = constructor.buildLoad(llvmIndexType, indexVariableLocation, "indexVariable")
 		// get current ID location
 		val currentIdVariableLocation = constructor.buildGetArrayElementPointer(memberIdArrayLocation, currentIndexVariable, "currentIndexVariable")
 		// load current ID
-		val currentIdVariable = constructor.buildLoad(idType, currentIdVariableLocation, "currentId")
+		val currentIdVariable = constructor.buildLoad(llvmIdType, currentIdVariableLocation, "currentId")
 		// compare ID
 		val memberSearchHit = constructor.buildSignedIntegerEqualTo(currentIdVariable, targetMemberId, "idCheck")
 		// jump based on result
@@ -152,15 +160,14 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		// get member address location
 		val currentMemberAddressVariableLocation = constructor.buildGetArrayElementPointer(memberLocationArrayLocation, currentIndexVariable, "currentAddressVariable")
 		// load member address
-		val currentMemberAddressVariable = constructor.buildLoad(addressType, currentMemberAddressVariableLocation, "currentMemberAddress")
+		val currentMemberAddressVariable = constructor.buildLoad(llvmAddressType, currentMemberAddressVariableLocation, "currentMemberAddress")
 		// return address
 		constructor.buildReturn(currentMemberAddressVariable)
 	}
 
-	private fun setUpFunctionResolutionFunction(constructor: LlvmConstructor, functionStruct: LlvmType) {
+	private fun setUpFunctionResolutionFunction(constructor: LlvmConstructor) {
 		//TODO give each signature a unique ID (map parameters to ID in Context)
-		val returnType = constructor.createPointerType(constructor.voidType)
-		val functionResolutionFunctionType = constructor.buildFunctionType(listOf(functionStruct, constructor.i32Type), returnType)
+		val functionResolutionFunctionType = constructor.buildFunctionType(listOf(context.functionStruct, llvmIdType), llvmAddressType)
 		val functionResolutionFunction = constructor.buildFunction("resolveFunction", functionResolutionFunctionType)
 		constructor.createAndSelectBlock(functionResolutionFunction, "function_entry")
 		//TODO:

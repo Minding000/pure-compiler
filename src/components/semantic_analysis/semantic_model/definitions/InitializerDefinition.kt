@@ -219,16 +219,17 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	override fun compile(constructor: LlvmConstructor) {
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmValue, "initializer_entry")
-		var propertyIndex = 0
 		val thisValue = constructor.getParameter(llvmValue, 0)
+
+		//TODO store reference to class definition (classDefinitionLocation) as first member
+
 		for(memberDeclaration in parentDefinition.scope.memberDeclarations) {
 			if(memberDeclaration is ValueDeclaration) {
 				val memberValue = memberDeclaration.value
 				if(memberValue != null) {
-					val propertyPointer = constructor.buildGetPropertyPointer(parentDefinition.llvmType, thisValue, propertyIndex, "${memberDeclaration.name}Pointer")
+					val propertyPointer = constructor.buildGetPropertyPointer(parentDefinition.llvmType, thisValue, memberDeclaration.memberIndex, "${memberDeclaration.name}Pointer")
 					constructor.buildStore(memberValue.getLlvmValue(constructor), propertyPointer)
 				}
-				propertyIndex++
 			}
 		}
 		super.compile(constructor)
