@@ -134,9 +134,9 @@ internal class Compiler {
 		val sourceCode = """
 			SimplestApp object {
 				to getFive(): Int {
-					return pipe(5)
+					return pipe(5, 2)
 				}
-				to pipe(integer: Int): Int {
+				to pipe(integer: Int, unused: Int): Int {
 					return integer
 				}
 			}
