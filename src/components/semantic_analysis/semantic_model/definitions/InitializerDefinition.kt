@@ -3,6 +3,7 @@ package components.semantic_analysis.semantic_model.definitions
 import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmType
 import components.compiler.targets.llvm.LlvmValue
+import components.semantic_analysis.semantic_model.context.Context
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
@@ -17,7 +18,6 @@ import logger.issues.modifiers.*
 import util.combine
 import util.stringifyTypes
 import java.util.*
-import kotlin.properties.Delegates
 
 class InitializerDefinition(override val source: SyntaxTreeNode, override val scope: BlockScope,
 							val typeParameters: List<TypeDefinition> = emptyList(), val parameters: List<Parameter> = emptyList(),
@@ -30,7 +30,6 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	var superInitializer: InitializerDefinition? = null
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
-	override var memberIndex by Delegates.notNull<Int>()
 	lateinit var llvmValue: LlvmValue
 	lateinit var llvmType: LlvmType
 
@@ -211,29 +210,33 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)
-		val parameterTypes = listOf(constructor.createPointerType(parentDefinition.llvmType))
-		llvmType = constructor.buildFunctionType(parameterTypes)
-		llvmValue = constructor.buildFunction("${parentDefinition.name}_initializer", llvmType)
+		for(index in parameters.indices)
+			parameters[index].index = index
+		val parameterTypes = parameters.map { parameter -> parameter.type?.getLlvmType(constructor) }
+		llvmType = constructor.buildFunctionType(parameterTypes, constructor.createPointerType(parentDefinition.llvmType))
+		llvmValue = constructor.buildFunction("${parentDefinition.name}_Initializer", llvmType)
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
 		val previousBlock = constructor.getCurrentBlock()
-		constructor.createAndSelectBlock(llvmValue, "initializer_entry")
-		val thisValue = constructor.getParameter(llvmValue, 0)
-
-		//TODO store reference to class definition (classDefinitionLocation) as first member
-
+		constructor.createAndSelectBlock(llvmValue, "entrypoint")
+		val thisValue = constructor.buildHeapAllocation(parentDefinition.llvmType, "this")
+		val parentDefinition = parentDefinition
+		if(parentDefinition is Object) { //TODO generalize to TypeDefinition
+			val classDefinitionPointer = constructor.buildGetPropertyPointer(parentDefinition.llvmType, thisValue, Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
+			constructor.buildStore(parentDefinition.llvmClassDefinitionAddress, classDefinitionPointer)
+		}
 		for(memberDeclaration in parentDefinition.scope.memberDeclarations) {
 			if(memberDeclaration is ValueDeclaration) {
 				val memberValue = memberDeclaration.value
 				if(memberValue != null) {
-					val propertyPointer = constructor.buildGetPropertyPointer(parentDefinition.llvmType, thisValue, memberDeclaration.memberIndex, "${memberDeclaration.name}Pointer")
-					constructor.buildStore(memberValue.getLlvmValue(constructor), propertyPointer)
+					val memberAddress = context.resolveMember(constructor, parentDefinition.llvmType, thisValue, memberDeclaration.memberIdentifier)
+					constructor.buildStore(memberValue.getLlvmValue(constructor), memberAddress)
 				}
 			}
 		}
 		super.compile(constructor)
-		constructor.buildReturn()
+		constructor.buildReturn(thisValue)
 		constructor.select(previousBlock)
 	}
 

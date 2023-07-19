@@ -7,7 +7,6 @@ interface MemberDeclaration {
 	val parentDefinition: TypeDefinition?
 	val memberIdentifier: String
 	val isAbstract: Boolean
-	var memberIndex: Int
 
 	fun canBeOverriddenBy(other: MemberDeclaration?): Boolean {
 		if(other == null)

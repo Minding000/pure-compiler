@@ -4,6 +4,7 @@ import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmType
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.VariableTracker
+import components.semantic_analysis.semantic_model.definitions.Object
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import logger.issues.resolution.ReferencedFileNotFound
 import java.util.*
@@ -59,10 +60,19 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 		variableTracker.validate()
 	}
 
-	override fun compile(constructor: LlvmConstructor) {
+	override fun declare(constructor: LlvmConstructor) {
+		super.declare(constructor)
 		llvmInitializerType = constructor.buildFunctionType()
-		llvmInitializerValue = constructor.buildFunction(file.name, llvmInitializerType)
-		constructor.createAndSelectBlock(llvmInitializerValue, "file")
+		llvmInitializerValue = constructor.buildFunction("${file.name}_FileInitializer", llvmInitializerType)
+	}
+
+	override fun compile(constructor: LlvmConstructor) {
+		constructor.createAndSelectBlock(llvmInitializerValue, "entrypoint")
+		for(typeDefinition in scope.typeDefinitions.values) {
+			if(typeDefinition is Object) {
+				constructor.buildFunctionCall(typeDefinition.llvmClassInitializerType, typeDefinition.llvmClassInitializer)
+			}
+		}
 		super.compile(constructor)
 		constructor.buildReturn()
 	}

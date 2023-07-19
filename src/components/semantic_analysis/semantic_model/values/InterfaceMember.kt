@@ -7,7 +7,6 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
-import kotlin.properties.Delegates
 
 abstract class InterfaceMember(source: SyntaxTreeNode, scope: MutableScope, name: String, type: Type? = null, value: Value? = null,
 							   val isStatic: Boolean = false, override val isAbstract: Boolean = false, isConstant: Boolean = true,
@@ -17,7 +16,6 @@ abstract class InterfaceMember(source: SyntaxTreeNode, scope: MutableScope, name
 	override val memberIdentifier
 		get() = "$name${if(type == null) "" else ": $type"}"
 	var superMember: InterfaceMember? = null
-	override var memberIndex by Delegates.notNull<Int>()
 
 	abstract override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): InterfaceMember
 

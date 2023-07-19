@@ -16,7 +16,6 @@ import logger.issues.constant_conditions.FunctionCompletesWithoutReturning
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 import java.util.*
-import kotlin.properties.Delegates
 
 class FunctionImplementation(override val source: SyntaxTreeNode, override val scope: BlockScope, genericParameters: List<TypeDefinition>,
 							 val parameters: List<Parameter>, val body: ErrorHandlingContext?, returnType: Type?,
@@ -37,7 +36,6 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	var mightReturnValue = false
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
-	override var memberIndex by Delegates.notNull<Int>()
 	lateinit var llvmValue: LlvmValue
 
 	init {
@@ -122,14 +120,14 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)
+		for(index in parameters.indices)
+			parameters[index].index = index
 		llvmValue = constructor.buildFunction(memberIdentifier, signature.getLlvmType(constructor))
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		for(index in parameters.indices)
-			parameters[index].index = index
 		val previousBlock = constructor.getCurrentBlock()
-		constructor.createAndSelectBlock(llvmValue, "function_entry")
+		constructor.createAndSelectBlock(llvmValue, "entrypoint")
 		super.compile(constructor)
 		if(body?.isInterruptingExecution != true)
 			constructor.buildReturn()

@@ -9,6 +9,7 @@ import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.*
 import components.semantic_analysis.semantic_model.values.*
+import errors.internal.CompilerError
 import logger.issues.access.GuaranteedAccessWithHasValueCheck
 import logger.issues.access.OptionalAccessWithoutHasValueCheck
 import java.util.*
@@ -98,15 +99,13 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		return possibleTargetTypes
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue { //TODO use member resolution function
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		if(member !is VariableValue)
-			return super.createLlvmValue(constructor)
-		val memberDeclaration = member.definition as? MemberDeclaration ?: return super.getLlvmValue(constructor)
+			throw CompilerError("Member access references invalid member.")
+		val memberDeclaration = member.definition as? MemberDeclaration ?: throw CompilerError("Member access references invalid member definition.")
 		val targetValue = target.getLlvmValue(constructor)
-		val targetType = target.type?.getLlvmType(constructor)
-		val targetLocation = constructor.buildAllocation(targetType, "target")
-		constructor.buildStore(targetValue, targetLocation)
-		val location = constructor.buildGetPropertyPointer(targetType, targetLocation, memberDeclaration.memberIndex, "propertyPointer")
-		return constructor.buildLoad(member.type?.getLlvmType(constructor), location, "property")
+		val targetType = target.type as? ObjectType ?: throw CompilerError("Member access target is not an object.")
+		val memberAddress = context.resolveMember(constructor, targetType.definition?.llvmType, targetValue, memberDeclaration.memberIdentifier)
+		return constructor.buildLoad(member.type?.getLlvmType(constructor), memberAddress, "member")
 	}
 }

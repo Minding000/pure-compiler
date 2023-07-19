@@ -1,10 +1,7 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.compiler.targets.llvm.LlvmConstructor
-import components.compiler.targets.llvm.LlvmValue
-import components.semantic_analysis.semantic_model.control_flow.FunctionCall
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.FileScope
@@ -90,35 +87,18 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		//TODO support member declarations
 		if(scope is TypeScope)
 			return
-		val type = type?.getLlvmType(constructor)
+		val currentBlock = constructor.getCurrentBlock()
+		val function = constructor.getParentFunction(currentBlock)
+		val entryBlock = constructor.getEntryBlock(function)
+		constructor.select(entryBlock)
+		val llvmType = type?.getLlvmType(constructor)
+		llvmLocation = if(scope is FileScope)
+			constructor.buildGlobal("${name}_Global", llvmType, constructor.createNullPointer(llvmType))
+		else
+			constructor.buildStackAllocation(llvmType, "${name}_Variable")
+		constructor.select(currentBlock)
 		val value = value
-		if(scope is FileScope) {
-			if(value is FunctionCall) {
-				val function = value.targetImplementation
-				if(function is InitializerDefinition) {
-					val members = function.parentDefinition.scope.memberDeclarations
-					val values = LinkedList<LlvmValue>()
-					for(member in members) {
-						if(member is PropertyDeclaration)
-							values.add(member.value?.getLlvmValue(constructor) ?: continue)
-					}
-					llvmLocation = constructor.buildGlobal("${name}Pointer", type, constructor.buildConstantStruct(type, values))
-					val parameters = LinkedList<LlvmValue>()
-					parameters.add(llvmLocation)
-					for(valueParameter in value.valueParameters)
-						parameters.add(valueParameter.getLlvmValue(constructor))
-					constructor.buildFunctionCall(function.llvmType, function.llvmValue, parameters)
-				}
-			}
-		} else {
-			val currentBlock = constructor.getCurrentBlock()
-			val function = constructor.getParentFunction(currentBlock)
-			val entryBlock = constructor.getEntryBlock(function)
-			constructor.select(entryBlock)
-			llvmLocation = constructor.buildAllocation(type, "${name}Pointer")
-			constructor.select(currentBlock)
-			if(value != null)
-				constructor.buildStore(value.getLlvmValue(constructor), llvmLocation)
-		}
+		if(value != null)
+			constructor.buildStore(value.getLlvmValue(constructor), llvmLocation)
 	}
 }

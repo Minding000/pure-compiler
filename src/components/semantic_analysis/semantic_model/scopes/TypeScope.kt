@@ -13,7 +13,7 @@ import java.util.*
 
 class TypeScope(val enclosingScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
 	lateinit var typeDefinition: TypeDefinition
-	private val typeDefinitions = LinkedHashMap<String, TypeDefinition>()
+	val typeDefinitions = LinkedHashMap<String, TypeDefinition>()
 	val memberDeclarations = LinkedList<MemberDeclaration>()
 	private val interfaceMembers = HashMap<String, InterfaceMember>()
 	val initializers = LinkedList<InitializerDefinition>()

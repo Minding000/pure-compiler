@@ -114,11 +114,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				constructor.buildFunctionCall(target.signature.getLlvmType(constructor), target.llvmValue, parameters, resultName)
 			}
 			is InitializerDefinition -> {
-				val llvmType = type?.getLlvmType(constructor)
-				val location = constructor.buildAllocation(llvmType, "newObjectPointer")
-				parameters.addFirst(location)
-				constructor.buildFunctionCall(target.llvmType, target.llvmValue, parameters)
-				constructor.buildLoad(llvmType, location, "initializerResult")
+				constructor.buildFunctionCall(target.llvmType, target.llvmValue, parameters, "newObjectAddress")
 			}
 			else -> throw CompilerError(source, "Target is not callable.")
 		}

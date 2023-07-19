@@ -49,6 +49,8 @@ object Llvm {
 
 	fun create1BitIntegerType(context: LlvmContext): LlvmType = LLVMInt1TypeInContext(context)
 
+	fun create8BitIntegerType(context: LlvmContext): LlvmType = LLVMInt8TypeInContext(context)
+
 	fun create32BitIntegerType(context: LlvmContext): LlvmType = LLVMInt32TypeInContext(context)
 
 	fun createFloatType(context: LlvmContext): LlvmType = LLVMFloatTypeInContext(context)
@@ -67,6 +69,8 @@ object Llvm {
 	fun castToSignedInteger(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue, YES)
 	fun castToUnsignedInteger(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue, NO)
 	fun castToBoolean(genericValue: LlvmGenericValue): Boolean = castToUnsignedInteger(genericValue) == 1L
+
+	fun bool(value: Boolean): Int = if(value) YES else NO
 }
 
 typealias LlvmContext = LLVMContextRef
