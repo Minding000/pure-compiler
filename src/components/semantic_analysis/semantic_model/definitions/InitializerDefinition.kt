@@ -222,11 +222,9 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		constructor.createAndSelectBlock(llvmValue, "entrypoint")
 		val thisValue = constructor.buildHeapAllocation(parentDefinition.llvmType, "this")
 		val parentDefinition = parentDefinition
-		if(parentDefinition is Object) { //TODO generalize to TypeDefinition
-			val classDefinitionPointer = constructor.buildGetPropertyPointer(parentDefinition.llvmType, thisValue, Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
-			constructor.buildStore(parentDefinition.llvmClassDefinitionAddress, classDefinitionPointer)
-		}
-		for(memberDeclaration in parentDefinition.scope.memberDeclarations) {
+		val classDefinitionPointer = constructor.buildGetPropertyPointer(parentDefinition.llvmType, thisValue, Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
+		constructor.buildStore(parentDefinition.llvmClassDefinitionAddress, classDefinitionPointer)
+		for(memberDeclaration in parentDefinition.getFlattenedMembers()) {
 			if(memberDeclaration is ValueDeclaration) {
 				val memberValue = memberDeclaration.value
 				if(memberValue != null) {

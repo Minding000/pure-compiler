@@ -141,6 +141,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.createAndSelectBlock(context.llvmMemberOffsetFunction, "entrypoint")
 		val classDefinition = constructor.getParameter(context.llvmMemberOffsetFunction, 0)
 		val targetMemberId = constructor.getParameter(context.llvmMemberOffsetFunction, 1)
+		context.printDebugMessage(constructor, "Searching for member with ID '%i'.", targetMemberId)
 		val memberCountAddress = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition, Context.MEMBER_COUNT_PROPERTY_INDEX, "memberCountAddress")
 		val memberCount = constructor.buildLoad(context.llvmMemberIndexType, memberCountAddress, "memberCount")
 		val memberIdArrayLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition, Context.MEMBER_ID_ARRAY_PROPERTY_INDEX, "memberIdArrayAddress")
@@ -153,10 +154,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.buildJump(loopBlock)
 		constructor.select(loopBlock)
 		val currentIndex = constructor.buildLoad(context.llvmMemberIndexType, indexVariableLocation, "currentIndex")
-		val newIndex = constructor.buildIntegerAddition(currentIndex, constructor.buildInt32(1), "newIndex")
-		constructor.buildStore(newIndex, indexVariableLocation)
 		if(Main.DEBUG) {
-			val outOfBounds = constructor.buildSignedIntegerEqualTo(newIndex, memberCount, "boundsCheck")
+			val outOfBounds = constructor.buildSignedIntegerEqualTo(currentIndex, memberCount, "boundsCheck")
 			val panicBlock = constructor.createBlock(context.llvmMemberOffsetFunction, "panic")
 			val idCheckBlock = constructor.createBlock(context.llvmMemberOffsetFunction, "idCheck")
 			constructor.buildJump(outOfBounds, panicBlock, idCheckBlock)
@@ -167,6 +166,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			constructor.markAsUnreachable()
 			constructor.select(idCheckBlock)
 		}
+		val newIndex = constructor.buildIntegerAddition(currentIndex, constructor.buildInt32(1), "newIndex")
+		constructor.buildStore(newIndex, indexVariableLocation)
 		val currentIdLocation = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, memberIdArray, currentIndex, "currentIdLocation")
 		val currentId = constructor.buildLoad(context.llvmMemberIdType, currentIdLocation, "currentId")
 		val memberSearchHit = constructor.buildSignedIntegerEqualTo(currentId, targetMemberId, "idCheck")

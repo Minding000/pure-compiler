@@ -84,14 +84,14 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 		baseDefinition?.let { baseDefinition ->
 			return baseDefinition.withTypeParameters(typeParameters, typeSubstitutions, onCompletion)
 		}
-		val typeSubstitutions = typeSubstitutions.toMutableMap()
+		val resolvedTypeSubstitutions = typeSubstitutions.toMutableMap()
 		val placeholders = scope.getGenericTypeDefinitions()
 		for(parameterIndex in placeholders.indices) {
 			val placeholder = placeholders[parameterIndex]
 			val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
-			typeSubstitutions[placeholder] = typeParameter
+			resolvedTypeSubstitutions[placeholder] = typeParameter
 		}
-		withTypeSubstitutions(typeSubstitutions) { specificTypeDefinition ->
+		withTypeSubstitutions(resolvedTypeSubstitutions) { specificTypeDefinition ->
 			specificTypeDefinition.baseDefinition = this
 			onCompletion(specificTypeDefinition)
 		}
@@ -214,48 +214,60 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 
 	override fun define(constructor: LlvmConstructor) {
 		if(isDefinition) {
-			defineLlvmStruct(constructor)
-			defineLlvmClassInitializer(constructor)
+			val flattenedMembers = getFlattenedMembers()
+			defineLlvmStruct(constructor, flattenedMembers)
+			defineLlvmClassInitializer(constructor, flattenedMembers)
 		}
 		super.define(constructor)
 	}
 
-	private fun defineLlvmStruct(constructor: LlvmConstructor) {
+	fun getFlattenedMembers(): List<MemberDeclaration> {
+		val flattenedMembers = LinkedList(scope.memberDeclarations)
+		for(superType in getDirectSuperTypes())
+			flattenedMembers.addAll(superType.definition?.getFlattenedMembers() ?: emptyList())
+		return flattenedMembers
+	}
+
+	private fun defineLlvmStruct(constructor: LlvmConstructor, flattenedMembers: List<MemberDeclaration>) {
 		val members = LinkedList<LlvmType?>()
 		members.add(constructor.createPointerType(context.classDefinitionStruct))
-		for(memberDeclaration in scope.memberDeclarations) {
+		for(memberDeclaration in flattenedMembers) {
 			if(memberDeclaration is ValueDeclaration) {
 				members.add(memberDeclaration.type?.getLlvmType(constructor))
+			} else {
+				// Placeholder
+				members.add(constructor.createPointerType(constructor.voidType))
 			}
 		}
 		constructor.defineStruct(llvmType, members)
 	}
 
-	private fun defineLlvmClassInitializer(constructor: LlvmConstructor) {
+	private fun defineLlvmClassInitializer(constructor: LlvmConstructor, flattenedMembers: List<MemberDeclaration>) {
+		println("$name class initializer:")
 		constructor.createAndSelectBlock(llvmClassInitializer, "entrypoint")
 		for(typeDefinition in scope.typeDefinitions.values) {
 			if(typeDefinition is Object) {
 				constructor.buildFunctionCall(typeDefinition.llvmClassInitializerType, typeDefinition.llvmClassInitializer)
 			}
 		}
-		//TODO include super members in numbering
-		// - map from class to index in each member (context.memberIdentifierIds)
-		val memberCount = constructor.buildInt32(scope.memberDeclarations.size)
+		val memberCount = constructor.buildInt32(flattenedMembers.size)
 		val memberIdArrayAddress = constructor.buildHeapArrayAllocation(context.llvmMemberIdType, memberCount, "memberIdArray")
 		val memberOffsetArrayAddress = constructor.buildHeapArrayAllocation(context.llvmMemberIdType, memberCount, "memberOffsetArray")
-		for((memberIndex, memberDeclaration) in scope.memberDeclarations.withIndex()) {
+		for((memberIndex, memberDeclaration) in flattenedMembers.withIndex()) {
 			val memberIndexValue = constructor.buildInt32(memberIndex)
 			val idLocation = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, memberIdArrayAddress, memberIndexValue, "memberIdLocation")
 			if(memberDeclaration is ValueDeclaration) {
 				val memberId = context.memberIdentities.register(memberDeclaration.memberIdentifier)
 				val structMemberIndex = memberIndex + 1
 				val memberOffset = constructor.getMemberOffsetInBytes(llvmType, structMemberIndex)
+				println("Mapping member '${memberDeclaration.memberIdentifier}' to ID '$memberId' with offset '$memberOffset'.")
 				val offsetLocation = constructor.buildGetArrayElementPointer(context.llvmMemberOffsetType, memberOffsetArrayAddress, memberIndexValue, "memberOffsetLocation")
 				val memberIdValue = constructor.buildInt32(memberId)
 				val memberOffsetValue = constructor.buildInt32(memberOffset)
 				constructor.buildStore(memberIdValue, idLocation)
 				constructor.buildStore(memberOffsetValue, offsetLocation)
 			} else {
+				println("Hiding member '${memberDeclaration.memberIdentifier}' for now.")
 				val memberIdValue = constructor.buildInt32(IdentityMap.NULL_ID)
 				constructor.buildStore(memberIdValue, idLocation)
 			}

@@ -81,6 +81,7 @@ object TestUtil {
 			program.loadSemanticModel(lintResult.program, entryPointPath)
 			program.verify()
 			program.compile()
+			println(program.getIntermediateRepresentation())
 			return program.run()
 		} catch(exception: Exception) {
 			println(program.getIntermediateRepresentation())
