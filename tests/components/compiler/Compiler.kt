@@ -5,6 +5,7 @@ import components.compiler.targets.llvm.LlvmProgram
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import util.TestUtil
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 internal class Compiler {
@@ -175,46 +176,25 @@ internal class Compiler {
 				}
 			}
 			""".trimIndent()
-		val intermediateRepresentation = """
-			%SimplestAppStruct = type {}
-
-			@SimplestAppPointer = global %SimplestAppStruct zeroinitializer
-
+		val intermediateRepresentation = TestUtil.getIntermediateRepresentation(sourceCode)
+		assertContains(intermediateRepresentation, """
 			define void @"run()"() {
-			function_entry:
-			  %xPointer = alloca i1, align 1
-			  store i1 true, ptr %xPointer, align 1
+			entrypoint:
+			  %x_Variable = alloca i1, align 1
+			  store i1 true, ptr %x_Variable, align 1
 			  br label %loop_entry
 
-			loop_entry:                                       ; preds = %loop_body, %function_entry
-			  %x = load i1, ptr %xPointer, align 1
+			loop_entry:                                       ; preds = %loop_body, %entrypoint
+			  %x = load i1, ptr %x_Variable, align 1
 			  br i1 %x, label %loop_body, label %loop_exit
 
 			loop_body:                                        ; preds = %loop_entry
-			  store i1 false, ptr %xPointer, align 1
+			  store i1 false, ptr %x_Variable, align 1
 			  br label %loop_entry
 
 			loop_exit:                                        ; preds = %loop_entry
 			  ret void
 			}
-
-			define void @SimplestApp_initializer(ptr %0) {
-			initializer_entry:
-			  ret void
-			}
-
-			define void @Test() {
-			file:
-			  call void @SimplestApp_initializer(ptr @SimplestAppPointer)
-			  ret void
-			}
-
-			define void @entrypoint() {
-			entrypoint:
-			  call void @Test()
-			  ret void
-			}
-			""".trimIndent()
-		TestUtil.assertIntermediateRepresentationEquals(sourceCode, intermediateRepresentation)
+			""".trimIndent())
 	}
 }

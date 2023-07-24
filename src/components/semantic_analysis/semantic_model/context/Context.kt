@@ -21,8 +21,10 @@ class Context {
 	lateinit var llvmMemberIndexType: LlvmType
 	lateinit var llvmMemberIdType: LlvmType
 	lateinit var llvmMemberOffsetType: LlvmType
-	lateinit var llvmTestPrintType: LlvmType
-	lateinit var llvmTestPrint: LlvmValue
+	lateinit var llvmPrintFunctionType: LlvmType
+	lateinit var llvmPrintFunction: LlvmValue
+	lateinit var llvmExitFunctionType: LlvmType
+	lateinit var llvmExitFunction: LlvmValue
 	val memberIdentities = IdentityMap<String>()
 	val functionSignatures = IdentityMap<String>()
 
@@ -63,6 +65,6 @@ class Context {
 
 	fun printDebugMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
 		val formatStringGlobal = constructor.buildGlobalCharArray("debugFormat", "$formatString\n")
-		constructor.buildFunctionCall(llvmTestPrintType, llvmTestPrint, listOf(formatStringGlobal, *values), "debugPrintCall")
+		constructor.buildFunctionCall(llvmPrintFunctionType, llvmPrintFunction, listOf(formatStringGlobal, *values), "debugPrintCall")
 	}
 }

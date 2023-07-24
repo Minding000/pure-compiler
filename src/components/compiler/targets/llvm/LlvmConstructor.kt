@@ -125,6 +125,10 @@ class LlvmConstructor(name: String) {
 		LLVMAppendExistingBasicBlock(function, block)
 	}
 
+	fun markAsUnreachable() {
+		LLVMBuildUnreachable(builder)
+	}
+
 	fun buildGlobal(name: String, type: LlvmType?, initialValue: LlvmValue): LlvmValue {
 		if(type == null)
 			throw CompilerError("Missing type in global allocation '$name'.")

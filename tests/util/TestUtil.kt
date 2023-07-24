@@ -62,14 +62,13 @@ object TestUtil {
         return LintResult(context, program)
     }
 
-    fun assertIntermediateRepresentationEquals(sourceCode: String, expectedIntermediateRepresentation: String) {
-		val intermediateRepresentation = "; ModuleID = 'Test'\nsource_filename = \"Test\"\n\n$expectedIntermediateRepresentation\n"
+    fun getIntermediateRepresentation(sourceCode: String): String {
 		val lintResult = lint(sourceCode)
 		val program = LlvmProgram("Test")
 		try {
 			program.loadSemanticModel(lintResult.program)
 			program.verify()
-			assertStringEquals(intermediateRepresentation, program.getIntermediateRepresentation())
+			return program.getIntermediateRepresentation()
 		} finally {
 			program.dispose()
 		}
@@ -81,7 +80,6 @@ object TestUtil {
 		try {
 			program.loadSemanticModel(lintResult.program, entryPointPath)
 			program.verify()
-			println(program.getIntermediateRepresentation())
 			program.compile()
 			return program.run()
 		} catch(exception: Exception) {

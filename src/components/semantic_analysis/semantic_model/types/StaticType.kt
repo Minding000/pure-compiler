@@ -1,5 +1,7 @@
 package components.semantic_analysis.semantic_model.types
 
+import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmType
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.values.InterfaceMember
@@ -115,6 +117,10 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 
 	override fun hashCode(): Int {
 		return definition.hashCode()
+	}
+
+	override fun createLlvmType(constructor: LlvmConstructor): LlvmType {
+		return constructor.createPointerType(definition.llvmType)
 	}
 
 	override fun toString(): String {

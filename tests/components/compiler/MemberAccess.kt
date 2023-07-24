@@ -20,4 +20,24 @@ internal class MemberAccess {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
 		assertEquals(62, Llvm.castToSignedInteger(result))
 	}
+
+	//TODO write enum declaration test
+	//TODO write function resolution test
+
+	@Test
+	fun `compiles member access to super class`() {
+		val sourceCode = """
+			Application class {
+				val id = 3
+			}
+			SimplestApp object: Application {
+				val a = 62
+				to getId(): Int {
+					return SimplestApp.id
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getId")
+		assertEquals(3, Llvm.castToSignedInteger(result))
+	}
 }

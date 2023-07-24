@@ -1,5 +1,6 @@
 package components.semantic_analysis.semantic_model.general
 
+import code.Main
 import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.Context
@@ -67,6 +68,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	 */
 	fun compile(constructor: LlvmConstructor, entryPointPath: String? = null): LlvmValue {
 		addPrintFunction(constructor)
+		addExitFunction(constructor)
 		context.llvmMemberIndexType = constructor.i32Type
 		context.llvmMemberIdType = constructor.i32Type
 		context.llvmMemberOffsetType = constructor.i32Type
@@ -96,8 +98,13 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 
 	private fun addPrintFunction(constructor: LlvmConstructor) {
 		val charArrayType = constructor.createPointerType(constructor.byteType)
-		context.llvmTestPrintType = constructor.buildFunctionType(listOf(charArrayType), constructor.i32Type, true)
-		context.llvmTestPrint = constructor.buildFunction("printf", context.llvmTestPrintType)
+		context.llvmPrintFunctionType = constructor.buildFunctionType(listOf(charArrayType), constructor.i32Type, true)
+		context.llvmPrintFunction = constructor.buildFunction("printf", context.llvmPrintFunctionType)
+	}
+
+	private fun addExitFunction(constructor: LlvmConstructor) {
+		context.llvmExitFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type), constructor.voidType)
+		context.llvmExitFunction = constructor.buildFunction("exit", context.llvmExitFunctionType)
 	}
 
 	private fun setUpSystemFunctions(constructor: LlvmConstructor) {
@@ -135,7 +142,6 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val classDefinition = constructor.getParameter(context.llvmMemberOffsetFunction, 0)
 		val targetMemberId = constructor.getParameter(context.llvmMemberOffsetFunction, 1)
 		val memberCountAddress = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition, Context.MEMBER_COUNT_PROPERTY_INDEX, "memberCountAddress")
-		//TODO panic if member is not found within
 		val memberCount = constructor.buildLoad(context.llvmMemberIndexType, memberCountAddress, "memberCount")
 		val memberIdArrayLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition, Context.MEMBER_ID_ARRAY_PROPERTY_INDEX, "memberIdArrayAddress")
 		val memberIdArray = constructor.buildLoad(constructor.createPointerType(context.llvmMemberIdType), memberIdArrayLocation, "memberIdArray")
@@ -149,6 +155,18 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val currentIndex = constructor.buildLoad(context.llvmMemberIndexType, indexVariableLocation, "currentIndex")
 		val newIndex = constructor.buildIntegerAddition(currentIndex, constructor.buildInt32(1), "newIndex")
 		constructor.buildStore(newIndex, indexVariableLocation)
+		if(Main.DEBUG) {
+			val outOfBounds = constructor.buildSignedIntegerEqualTo(newIndex, memberCount, "boundsCheck")
+			val panicBlock = constructor.createBlock(context.llvmMemberOffsetFunction, "panic")
+			val idCheckBlock = constructor.createBlock(context.llvmMemberOffsetFunction, "idCheck")
+			constructor.buildJump(outOfBounds, panicBlock, idCheckBlock)
+			constructor.select(panicBlock)
+			context.printDebugMessage(constructor, "Member with ID '%i' does not exist.", targetMemberId)
+			val exitCode = constructor.buildInt32(1)
+			constructor.buildFunctionCall(context.llvmExitFunctionType, context.llvmExitFunction, listOf(exitCode))
+			constructor.markAsUnreachable()
+			constructor.select(idCheckBlock)
+		}
 		val currentIdLocation = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, memberIdArray, currentIndex, "currentIdLocation")
 		val currentId = constructor.buildLoad(context.llvmMemberIdType, currentIdLocation, "currentId")
 		val memberSearchHit = constructor.buildSignedIntegerEqualTo(currentId, targetMemberId, "idCheck")
