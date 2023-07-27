@@ -16,8 +16,10 @@ class Context {
 	val surroundingLoops = LinkedList<LoopStatement>()
 	lateinit var classDefinitionStruct: LlvmType
 	lateinit var functionStruct: LlvmType
-	lateinit var llvmMemberOffsetFunction: LlvmValue
-	lateinit var llvmMemberOffsetFunctionType: LlvmType
+	lateinit var llvmStaticMemberOffsetFunction: LlvmValue
+	lateinit var llvmInstanceMemberOffsetFunction: LlvmValue
+	lateinit var llvmStaticMemberOffsetFunctionType: LlvmType
+	lateinit var llvmInstanceMemberOffsetFunctionType: LlvmType
 	lateinit var llvmMemberIndexType: LlvmType
 	lateinit var llvmMemberIdType: LlvmType
 	lateinit var llvmMemberOffsetType: LlvmType
@@ -26,14 +28,16 @@ class Context {
 	lateinit var llvmExitFunctionType: LlvmType
 	lateinit var llvmExitFunction: LlvmValue
 	val memberIdentities = IdentityMap<String>()
-	val functionSignatures = IdentityMap<String>()
 
 
 	companion object {
 		const val CLASS_DEFINITION_PROPERTY_INDEX = 0
-		const val MEMBER_COUNT_PROPERTY_INDEX = 0
-		const val MEMBER_ID_ARRAY_PROPERTY_INDEX = 1
-		const val MEMBER_OFFSET_ARRAY_PROPERTY_INDEX = 2
+		const val STATIC_MEMBER_COUNT_PROPERTY_INDEX = 0
+		const val STATIC_MEMBER_ID_ARRAY_PROPERTY_INDEX = 1
+		const val STATIC_MEMBER_OFFSET_ARRAY_PROPERTY_INDEX = 2
+		const val INSTANCE_MEMBER_COUNT_PROPERTY_INDEX = 3
+		const val INSTANCE_MEMBER_ID_ARRAY_PROPERTY_INDEX = 4
+		const val INSTANCE_MEMBER_OFFSET_ARRAY_PROPERTY_INDEX = 5
 	}
 
 	fun addIssue(issue: Issue) = logger.add(issue)
@@ -47,19 +51,14 @@ class Context {
 		}
 	}
 
-	fun resolveMember(constructor: LlvmConstructor, targetType: LlvmType?, targetLocation: LlvmValue, memberIdentifier: String): LlvmValue {
+	fun resolveMember(constructor: LlvmConstructor, targetType: LlvmType?, targetLocation: LlvmValue, memberIdentifier: String, isStaticMember: Boolean = false): LlvmValue {
 		val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(targetType, targetLocation, CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-		val classDefinitionAddress = constructor.buildLoad(
-			constructor.createPointerType(classDefinitionStruct),
-			classDefinitionAddressLocation,
-			"classDefinitionAddress"
-		)
-		val memberOffset = constructor.buildFunctionCall(
-			llvmMemberOffsetFunctionType, llvmMemberOffsetFunction, listOf(
-				classDefinitionAddress,
-				constructor.buildInt32(memberIdentities.getId(memberIdentifier))
-			), "memberIndex"
-		)
+		val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(classDefinitionStruct),
+			classDefinitionAddressLocation, "classDefinitionAddress")
+		val resolutionFunctionType = if(isStaticMember) llvmStaticMemberOffsetFunctionType else llvmInstanceMemberOffsetFunctionType
+		val resolutionFunction = if(isStaticMember) llvmStaticMemberOffsetFunction else llvmInstanceMemberOffsetFunction
+		val memberOffset = constructor.buildFunctionCall( resolutionFunctionType, resolutionFunction, listOf(
+				classDefinitionAddress, constructor.buildInt32(memberIdentities.getId(memberIdentifier))), "memberIndex")
 		return constructor.buildGetArrayElementPointer(constructor.byteType, targetLocation, memberOffset, "memberAddress")
 	}
 

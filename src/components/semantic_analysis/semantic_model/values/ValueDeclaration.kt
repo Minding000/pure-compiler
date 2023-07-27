@@ -7,6 +7,7 @@ import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
+import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.constant_conditions.TypeNotAssignable
@@ -84,19 +85,19 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
-		//TODO support member declarations
-		if(scope is TypeScope)
+		if(scope is TypeScope || type is StaticType)
 			return
-		val currentBlock = constructor.getCurrentBlock()
-		val function = constructor.getParentFunction(currentBlock)
-		val entryBlock = constructor.getEntryBlock(function)
-		constructor.select(entryBlock)
 		val llvmType = type?.getLlvmType(constructor)
-		llvmLocation = if(scope is FileScope)
-			constructor.buildGlobal("${name}_Global", llvmType, constructor.createNullPointer(llvmType))
-		else
-			constructor.buildStackAllocation(llvmType, "${name}_Variable")
-		constructor.select(currentBlock)
+		if(scope is FileScope) {
+			llvmLocation = constructor.buildGlobal("${name}_Global", llvmType, constructor.createNullPointer(llvmType))
+		} else {
+			val currentBlock = constructor.getCurrentBlock()
+			val function = constructor.getParentFunction(currentBlock)
+			val entryBlock = constructor.getEntryBlock(function)
+			constructor.select(entryBlock)
+			llvmLocation = constructor.buildStackAllocation(llvmType, "${name}_Variable")
+			constructor.select(currentBlock)
+		}
 		val value = value
 		if(value != null)
 			constructor.buildStore(value.getLlvmValue(constructor), llvmLocation)

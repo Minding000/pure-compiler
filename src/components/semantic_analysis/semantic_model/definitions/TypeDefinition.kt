@@ -40,10 +40,13 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>, LinkedList<(TypeDefinition) -> Unit>>()
 	// Only used in specific definition
 	var baseDefinition: TypeDefinition? = null
+	protected lateinit var staticValueDeclaration: ValueDeclaration
+	lateinit var instanceMembers: List<MemberDeclaration>
 	lateinit var llvmType: LlvmType
 	lateinit var llvmClassDefinitionAddress: LlvmValue
 	lateinit var llvmClassInitializer: LlvmValue
 	lateinit var llvmClassInitializerType: LlvmType
+	lateinit var llvmStaticType: LlvmType
 
 	init {
 		addSemanticModels(explicitParentType, superType)
@@ -207,6 +210,7 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 		if(isDefinition) {
 			llvmClassInitializerType = constructor.buildFunctionType()
 			llvmClassInitializer = constructor.buildFunction("${name}_ClassInitializer", llvmClassInitializerType)
+			llvmStaticType = constructor.declareStruct("${name}_StaticStruct")
 			llvmType = constructor.declareStruct("${name}_ClassStruct")
 		}
 		super.declare(constructor)
@@ -215,53 +219,87 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 	override fun define(constructor: LlvmConstructor) {
 		if(isDefinition) {
 			val flattenedMembers = getFlattenedMembers()
-			defineLlvmStruct(constructor, flattenedMembers)
-			defineLlvmClassInitializer(constructor, flattenedMembers)
+			val (staticMembers, instanceMembers) = flattenedMembers.partition { member -> member is InitializerDefinition || (member as? InterfaceMember)?.isStatic ?: false }
+			this.instanceMembers = instanceMembers
+			defineLlvmStruct(constructor, staticMembers, instanceMembers)
+			defineLlvmClassInitializer(constructor, staticMembers, instanceMembers)
 		}
 		super.define(constructor)
 	}
 
-	fun getFlattenedMembers(): List<MemberDeclaration> {
+	private fun getFlattenedMembers(): List<MemberDeclaration> {
 		val flattenedMembers = LinkedList(scope.memberDeclarations)
 		for(superType in getDirectSuperTypes())
 			flattenedMembers.addAll(superType.definition?.getFlattenedMembers() ?: emptyList())
 		return flattenedMembers
 	}
 
-	private fun defineLlvmStruct(constructor: LlvmConstructor, flattenedMembers: List<MemberDeclaration>) {
-		val members = LinkedList<LlvmType?>()
-		members.add(constructor.createPointerType(context.classDefinitionStruct))
-		for(memberDeclaration in flattenedMembers) {
+	private fun defineLlvmStruct(constructor: LlvmConstructor, flattenedStaticMembers: List<MemberDeclaration>, flattenedInstanceMembers: List<MemberDeclaration>) {
+		val staticMembers = LinkedList<LlvmType?>()
+		staticMembers.add(constructor.createPointerType(context.classDefinitionStruct))
+		for(memberDeclaration in flattenedStaticMembers) {
 			if(memberDeclaration is ValueDeclaration) {
-				members.add(memberDeclaration.type?.getLlvmType(constructor))
+				staticMembers.add(memberDeclaration.type?.getLlvmType(constructor))
 			} else {
 				// Placeholder
-				members.add(constructor.createPointerType(constructor.voidType))
+				staticMembers.add(constructor.createPointerType(constructor.voidType))
 			}
 		}
-		constructor.defineStruct(llvmType, members)
+		constructor.defineStruct(llvmStaticType, staticMembers)
+		val instanceMembers = LinkedList<LlvmType?>()
+		instanceMembers.add(constructor.createPointerType(context.classDefinitionStruct))
+		for(memberDeclaration in flattenedInstanceMembers) {
+			if(memberDeclaration is ValueDeclaration) {
+				instanceMembers.add(memberDeclaration.type?.getLlvmType(constructor))
+			} else {
+				// Placeholder
+				instanceMembers.add(constructor.createPointerType(constructor.voidType))
+			}
+		}
+		constructor.defineStruct(llvmType, instanceMembers)
 	}
 
-	private fun defineLlvmClassInitializer(constructor: LlvmConstructor, flattenedMembers: List<MemberDeclaration>) {
+	private fun defineLlvmClassInitializer(constructor: LlvmConstructor, flattenedStaticMembers: List<MemberDeclaration>, flattenedInstanceMembers: List<MemberDeclaration>) {
 		println("$name class initializer:")
 		constructor.createAndSelectBlock(llvmClassInitializer, "entrypoint")
-		for(typeDefinition in scope.typeDefinitions.values) {
-			if(typeDefinition is Object) {
-				constructor.buildFunctionCall(typeDefinition.llvmClassInitializerType, typeDefinition.llvmClassInitializer)
+		for(typeDefinition in scope.typeDefinitions.values)
+			constructor.buildFunctionCall(typeDefinition.llvmClassInitializerType, typeDefinition.llvmClassInitializer)
+		val staticMemberCount = constructor.buildInt32(flattenedStaticMembers.size)
+		val staticMemberIdArrayAddress = constructor.buildHeapArrayAllocation(context.llvmMemberIdType, staticMemberCount, "staticMemberIdArray")
+		val staticMemberOffsetArrayAddress = constructor.buildHeapArrayAllocation(context.llvmMemberOffsetType, staticMemberCount, "staticMemberOffsetArray")
+		val instanceMemberCount = constructor.buildInt32(flattenedInstanceMembers.size)
+		val instanceMemberIdArrayAddress = constructor.buildHeapArrayAllocation(context.llvmMemberIdType, instanceMemberCount, "instanceMemberIdArray")
+		val instanceMemberOffsetArrayAddress = constructor.buildHeapArrayAllocation(context.llvmMemberOffsetType, instanceMemberCount, "instanceMemberOffsetArray")
+		println("Static struct:")
+		for((memberIndex, memberDeclaration) in flattenedStaticMembers.withIndex()) {
+			val memberIndexValue = constructor.buildInt32(memberIndex)
+			val idLocation = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, staticMemberIdArrayAddress, memberIndexValue, "memberIdLocation")
+			if(memberDeclaration is ValueDeclaration) {
+				val memberId = context.memberIdentities.register(memberDeclaration.memberIdentifier)
+				val structMemberIndex = memberIndex + 1
+				val memberOffset = constructor.getMemberOffsetInBytes(llvmStaticType, structMemberIndex)
+				println("Mapping member '${memberDeclaration.memberIdentifier}' to ID '$memberId' with offset '$memberOffset'.")
+				val offsetLocation = constructor.buildGetArrayElementPointer(context.llvmMemberOffsetType, staticMemberOffsetArrayAddress, memberIndexValue, "memberOffsetLocation")
+				val memberIdValue = constructor.buildInt32(memberId)
+				val memberOffsetValue = constructor.buildInt32(memberOffset)
+				constructor.buildStore(memberIdValue, idLocation)
+				constructor.buildStore(memberOffsetValue, offsetLocation)
+			} else {
+				println("Hiding member '${memberDeclaration.memberIdentifier}' for now.")
+				val memberIdValue = constructor.buildInt32(IdentityMap.NULL_ID)
+				constructor.buildStore(memberIdValue, idLocation)
 			}
 		}
-		val memberCount = constructor.buildInt32(flattenedMembers.size)
-		val memberIdArrayAddress = constructor.buildHeapArrayAllocation(context.llvmMemberIdType, memberCount, "memberIdArray")
-		val memberOffsetArrayAddress = constructor.buildHeapArrayAllocation(context.llvmMemberIdType, memberCount, "memberOffsetArray")
-		for((memberIndex, memberDeclaration) in flattenedMembers.withIndex()) {
+		println("Instance struct:")
+		for((memberIndex, memberDeclaration) in flattenedInstanceMembers.withIndex()) {
 			val memberIndexValue = constructor.buildInt32(memberIndex)
-			val idLocation = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, memberIdArrayAddress, memberIndexValue, "memberIdLocation")
+			val idLocation = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, instanceMemberIdArrayAddress, memberIndexValue, "memberIdLocation")
 			if(memberDeclaration is ValueDeclaration) {
 				val memberId = context.memberIdentities.register(memberDeclaration.memberIdentifier)
 				val structMemberIndex = memberIndex + 1
 				val memberOffset = constructor.getMemberOffsetInBytes(llvmType, structMemberIndex)
 				println("Mapping member '${memberDeclaration.memberIdentifier}' to ID '$memberId' with offset '$memberOffset'.")
-				val offsetLocation = constructor.buildGetArrayElementPointer(context.llvmMemberOffsetType, memberOffsetArrayAddress, memberIndexValue, "memberOffsetLocation")
+				val offsetLocation = constructor.buildGetArrayElementPointer(context.llvmMemberOffsetType, instanceMemberOffsetArrayAddress, memberIndexValue, "memberOffsetLocation")
 				val memberIdValue = constructor.buildInt32(memberId)
 				val memberOffsetValue = constructor.buildInt32(memberOffset)
 				constructor.buildStore(memberIdValue, idLocation)
@@ -273,14 +311,30 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 			}
 		}
 		val initialStaticValues = LinkedList<LlvmValue>()
-		initialStaticValues.add(memberCount)
+		initialStaticValues.add(staticMemberCount)
+		initialStaticValues.add(constructor.createNullPointer(constructor.voidType))
+		initialStaticValues.add(constructor.createNullPointer(constructor.voidType))
+		initialStaticValues.add(instanceMemberCount)
 		initialStaticValues.add(constructor.createNullPointer(constructor.voidType))
 		initialStaticValues.add(constructor.createNullPointer(constructor.voidType))
 		llvmClassDefinitionAddress = constructor.buildGlobal("${name}_ClassDefinition", context.classDefinitionStruct, constructor.buildConstantStruct(context.classDefinitionStruct, initialStaticValues))
-		val memberIdArrayAddressLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, llvmClassDefinitionAddress, Context.MEMBER_ID_ARRAY_PROPERTY_INDEX, "memberIdArray")
-		val memberOffsetArrayAddressLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, llvmClassDefinitionAddress, Context.MEMBER_OFFSET_ARRAY_PROPERTY_INDEX, "memberOffsetArray")
-		constructor.buildStore(memberIdArrayAddress, memberIdArrayAddressLocation)
-		constructor.buildStore(memberOffsetArrayAddress, memberOffsetArrayAddressLocation)
+		val staticMemberIdArrayAddressLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, llvmClassDefinitionAddress, Context.STATIC_MEMBER_ID_ARRAY_PROPERTY_INDEX, "staticMemberIdArray")
+		val staticMemberOffsetArrayAddressLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, llvmClassDefinitionAddress, Context.STATIC_MEMBER_OFFSET_ARRAY_PROPERTY_INDEX, "staticMemberOffsetArray")
+		val instanceMemberIdArrayAddressLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, llvmClassDefinitionAddress, Context.INSTANCE_MEMBER_ID_ARRAY_PROPERTY_INDEX, "instanceMemberIdArray")
+		val instanceMemberOffsetArrayAddressLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, llvmClassDefinitionAddress, Context.INSTANCE_MEMBER_OFFSET_ARRAY_PROPERTY_INDEX, "instanceMemberOffsetArray")
+		constructor.buildStore(staticMemberIdArrayAddress, staticMemberIdArrayAddressLocation)
+		constructor.buildStore(staticMemberOffsetArrayAddress, staticMemberOffsetArrayAddressLocation)
+		constructor.buildStore(instanceMemberIdArrayAddress, instanceMemberIdArrayAddressLocation)
+		constructor.buildStore(instanceMemberOffsetArrayAddress, instanceMemberOffsetArrayAddressLocation)
+		if(this !is Object) {
+			val values = LinkedList<LlvmValue>()
+			values.add(llvmClassDefinitionAddress)
+			for(member in flattenedStaticMembers) {
+				val value = (member as? ValueDeclaration)?.value?.getLlvmValue(constructor)
+				values.add(value ?: constructor.createNullPointer(constructor.voidType))
+			}
+			staticValueDeclaration.llvmLocation = constructor.buildGlobal("${name}_StaticObject", llvmStaticType, constructor.buildConstantStruct(llvmStaticType, values))
+		}
 		constructor.buildReturn()
 	}
 

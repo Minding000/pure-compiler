@@ -76,8 +76,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 				is InitializerReference -> {
 					val staticType = StaticType(availableType.definition ?: continue)
 					val functionCall = parent as? FunctionCall ?: continue
-					if(staticType.resolveInitializer(listOf(), listOf(), functionCall.typeParameters, functionCall.valueParameters)
-						== null)
+					if(staticType.resolveInitializer(listOf(), listOf(), functionCall.typeParameters, functionCall.valueParameters) == null)
 						continue
 					possibleTargetTypes.add(staticType)
 				}
@@ -104,8 +103,12 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			throw CompilerError("Member access references invalid member.")
 		val memberDeclaration = member.definition as? MemberDeclaration ?: throw CompilerError("Member access references invalid member definition.")
 		val targetValue = target.getLlvmValue(constructor)
-		val targetType = target.type as? ObjectType ?: throw CompilerError("Member access target is not an object.")
-		val memberAddress = context.resolveMember(constructor, targetType.definition?.llvmType, targetValue, memberDeclaration.memberIdentifier)
+		val llvmTargetType = when(val targetType = target.type) {
+			is ObjectType -> targetType.definition?.llvmType
+			is StaticType -> targetType.definition.llvmStaticType
+			else -> throw CompilerError("Member access target is not an object or class.")
+		}
+		val memberAddress = context.resolveMember(constructor, llvmTargetType, targetValue, memberDeclaration.memberIdentifier, (member.definition as? InterfaceMember)?.isStatic ?: false)
 		return constructor.buildLoad(member.type?.getLlvmType(constructor), memberAddress, "member")
 	}
 }

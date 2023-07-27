@@ -21,10 +21,11 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 	override fun getValueDeclaration(): ValueDeclaration {
 		val targetScope = parentTypeDefinition?.scope ?: scope.enclosingScope
 		val staticType = StaticType(this)
-		return if(targetScope is TypeScope)
+		staticValueDeclaration = if(targetScope is TypeScope)
 			PropertyDeclaration(source, targetScope, name, staticType, null, !isBound, isAbstract)
 		else
 			LocalVariableDeclaration(source, targetScope, name, staticType)
+		return staticValueDeclaration
 	}
 
 	override fun declare() {

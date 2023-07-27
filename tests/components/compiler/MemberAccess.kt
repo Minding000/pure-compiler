@@ -1,6 +1,7 @@
 package components.compiler
 
 import components.compiler.targets.llvm.Llvm
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -21,11 +22,13 @@ internal class MemberAccess {
 		assertEquals(62, Llvm.castToSignedInteger(result))
 	}
 
-	//TODO write enum declaration test
+	//TODO write super initializer tests
+	// - default initializer
+	// - custom initializer
 	//TODO write function resolution test
 
 	@Test
-	fun `compiles member access to super class`() {
+	fun `compiles explicit member access to super class`() {
 		val sourceCode = """
 			Application class {
 				val id = 3
@@ -34,6 +37,24 @@ internal class MemberAccess {
 				val a = 62
 				to getId(): Int {
 					return SimplestApp.id
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getId")
+		assertEquals(3, Llvm.castToSignedInteger(result))
+	}
+
+	@Disabled
+	@Test
+	fun `compiles implicit member access to super class`() {
+		val sourceCode = """
+			Application class {
+				val id = 3
+			}
+			SimplestApp object: Application {
+				val a = 62
+				to getId(): Int {
+					return id
 				}
 			}
 			""".trimIndent()

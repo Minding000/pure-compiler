@@ -224,7 +224,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		val parentDefinition = parentDefinition
 		val classDefinitionPointer = constructor.buildGetPropertyPointer(parentDefinition.llvmType, thisValue, Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
 		constructor.buildStore(parentDefinition.llvmClassDefinitionAddress, classDefinitionPointer)
-		for(memberDeclaration in parentDefinition.getFlattenedMembers()) {
+		for(memberDeclaration in parentDefinition.instanceMembers) {
 			if(memberDeclaration is ValueDeclaration) {
 				val memberValue = memberDeclaration.value
 				if(memberValue != null) {
