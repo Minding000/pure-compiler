@@ -9,6 +9,7 @@ import components.semantic_analysis.semantic_model.definitions.FunctionImplement
 import components.semantic_analysis.semantic_model.definitions.Object
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Function
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import errors.user.UserError
 import java.util.*
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
@@ -66,7 +67,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	/**
 	 * Compiles code to LLVM IR.
 	 */
-	fun compile(constructor: LlvmConstructor, entryPointPath: String? = null): LlvmValue {
+	fun compile(constructor: LlvmConstructor, userEntryPointPath: String? = null): LlvmValue {
 		addPrintFunction(constructor)
 		addExitFunction(constructor)
 		context.llvmMemberIndexType = constructor.i32Type
@@ -79,8 +80,14 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			file.define(constructor)
 		for(file in files)
 			file.compile(constructor)
-		val userEntryPoint = if(entryPointPath != null) getEntryPoint(entryPointPath) else null
-		val entryPointType = userEntryPoint?.signature?.getLlvmType(constructor) ?: constructor.buildFunctionType()
+		var userEntryPointObject: ValueDeclaration? = null
+		var userEntryPointFunction: FunctionImplementation? = null
+		if(userEntryPointPath != null) {
+			val entryPointData = getEntryPoint(userEntryPointPath)
+			userEntryPointObject = entryPointData.first
+			userEntryPointFunction = entryPointData.second
+		}
+		val entryPointType = userEntryPointFunction?.signature?.getLlvmType(constructor) ?: constructor.buildFunctionType()
 		val globalEntryPoint = constructor.buildFunction("entrypoint", entryPointType)
 		constructor.createAndSelectBlock(globalEntryPoint, "entrypoint")
 		context.printDebugMessage(constructor, "Starting program...")
@@ -88,9 +95,14 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			constructor.buildFunctionCall(file.llvmInitializerType, file.llvmInitializerValue)
 		context.printDebugMessage(constructor, "File initializers completed.")
 		var result: LlvmValue? = null
-		if(userEntryPoint != null) {
-			val returnsVoid = SpecialType.NOTHING.matches(userEntryPoint.signature.returnType)
-			result = constructor.buildFunctionCall(userEntryPoint.signature.getLlvmType(constructor), userEntryPoint.llvmValue, emptyList(), if(returnsVoid) "" else "programResult")
+		if(userEntryPointFunction != null) {
+			val returnsVoid = SpecialType.NOTHING.matches(userEntryPointFunction.signature.returnType)
+			val parameters = LinkedList<LlvmValue>()
+			if(userEntryPointObject != null) {
+				val objectAddress = constructor.buildLoad(userEntryPointObject.type?.getLlvmType(constructor), userEntryPointObject.llvmLocation, "objectAddress")
+				parameters.add(objectAddress)
+			}
+			result = constructor.buildFunctionCall(userEntryPointFunction.signature.getLlvmType(constructor), userEntryPointFunction.llvmValue, parameters, if(returnsVoid) "" else "programResult")
 			if(returnsVoid)
 				result = null
 		}
@@ -214,7 +226,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		// - return address
 	}
 
-	fun getEntryPoint(entryPointPath: String): FunctionImplementation {
+	fun getEntryPoint(entryPointPath: String): Pair<ValueDeclaration?, FunctionImplementation> {
 		val pathSections = entryPointPath.split(":")
 		if(pathSections.size != 2)
 			throw UserError("Malformed entry point path '$entryPointPath'.")
@@ -223,8 +235,9 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val functionPathParts = functionPath.split(".").toMutableList()
 		val functionName = functionPathParts.removeLast()
 		var scope: Scope = file.scope
+		var objectDefinition: Object? = null
 		for(objectName in functionPathParts) {
-			val objectDefinition = scope.resolveType(objectName) as? Object ?: throw UserError("Object '$objectName' not found.")
+			objectDefinition = scope.resolveType(objectName) as? Object ?: throw UserError("Object '$objectName' not found.")
 			if(objectDefinition.isBound)
 				throw UserError("Object '$objectName' is bound.")
 			scope = objectDefinition.scope
@@ -233,6 +246,9 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val function = functionVariable.value as? Function ?: throw UserError("Variable '$functionName' is not a function.")
 		val functionImplementation = function.implementations.find { functionImplementation ->
 			functionImplementation.signature.takesNoParameters() } ?: throw UserError("Function '$functionName' has no overload without parameters.")
-		return functionImplementation
+		var objectValue: ValueDeclaration? = null
+		if(objectDefinition != null)
+			objectValue = (objectDefinition.parentTypeDefinition?.scope ?: objectDefinition.scope).resolveValue(objectDefinition.name)
+		return Pair(objectValue, functionImplementation)
 	}
 }

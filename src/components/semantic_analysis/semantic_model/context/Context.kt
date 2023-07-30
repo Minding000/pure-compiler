@@ -38,6 +38,7 @@ class Context {
 		const val INSTANCE_MEMBER_COUNT_PROPERTY_INDEX = 3
 		const val INSTANCE_MEMBER_ID_ARRAY_PROPERTY_INDEX = 4
 		const val INSTANCE_MEMBER_OFFSET_ARRAY_PROPERTY_INDEX = 5
+		const val THIS_PARAMETER_INDEX = 0
 	}
 
 	fun addIssue(issue: Issue) = logger.add(issue)
@@ -46,9 +47,8 @@ class Context {
 		if(variableDeclaration !is VariableValue)
 			return
 		val declaration = variableDeclaration.definition ?: return
-		for(surroundingLoop in surroundingLoops) {
+		for(surroundingLoop in surroundingLoops)
 			surroundingLoop.mutatedVariables.add(declaration)
-		}
 	}
 
 	fun resolveMember(constructor: LlvmConstructor, targetType: LlvmType?, targetLocation: LlvmValue, memberIdentifier: String, isStaticMember: Boolean = false): LlvmValue {
@@ -57,9 +57,13 @@ class Context {
 			classDefinitionAddressLocation, "classDefinitionAddress")
 		val resolutionFunctionType = if(isStaticMember) llvmStaticMemberOffsetFunctionType else llvmInstanceMemberOffsetFunctionType
 		val resolutionFunction = if(isStaticMember) llvmStaticMemberOffsetFunction else llvmInstanceMemberOffsetFunction
-		val memberOffset = constructor.buildFunctionCall( resolutionFunctionType, resolutionFunction, listOf(
-				classDefinitionAddress, constructor.buildInt32(memberIdentities.getId(memberIdentifier))), "memberIndex")
+		val memberOffset = constructor.buildFunctionCall(resolutionFunctionType, resolutionFunction, listOf(
+				classDefinitionAddress, constructor.buildInt32(memberIdentities.getId(memberIdentifier))), "memberOffset")
 		return constructor.buildGetArrayElementPointer(constructor.byteType, targetLocation, memberOffset, "memberAddress")
+	}
+
+	fun getThisParameter(constructor: LlvmConstructor): LlvmValue {
+		return constructor.getParameter(constructor.getParentFunction(), THIS_PARAMETER_INDEX)
 	}
 
 	fun printDebugMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {

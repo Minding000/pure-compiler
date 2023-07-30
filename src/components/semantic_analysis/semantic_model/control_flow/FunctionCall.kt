@@ -111,6 +111,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		return when(val target = targetImplementation) {
 			is FunctionImplementation -> {
 				val resultName = if(SpecialType.NOTHING.matches(target.signature.returnType)) "" else getSignature()
+				if(target.parentDefinition != null)
+					parameters.addFirst(if(function is MemberAccess) function.target.getLlvmValue(constructor) else context.getThisParameter(constructor))
 				constructor.buildFunctionCall(target.signature.getLlvmType(constructor), target.llvmValue, parameters, resultName)
 			}
 			is InitializerDefinition -> {
@@ -122,7 +124,6 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 
 	private fun getSignature(): String {
 		var signature = ""
-		val function = function
 		signature += when(function) {
 			is VariableValue -> function.name
 			is TypeSpecification -> function

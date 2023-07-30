@@ -1,7 +1,6 @@
 package components.compiler
 
 import components.compiler.targets.llvm.Llvm
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -44,7 +43,6 @@ internal class MemberAccess {
 		assertEquals(3, Llvm.castToSignedInteger(result))
 	}
 
-	@Disabled
 	@Test
 	fun `compiles implicit member access to super class`() {
 		val sourceCode = """

@@ -18,6 +18,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 						val parameterTypes: List<Type?>, returnType: Type?): SemanticModel(source, scope) {
 	val returnType = returnType ?: LiteralType(source, scope, SpecialType.NOTHING)
 	var superFunctionSignature: FunctionSignature? = null
+	var parentDefinition: TypeDefinition? = null
 	private var llvmType: LlvmType? = null
 
 	init {
@@ -241,7 +242,10 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	fun getLlvmType(constructor: LlvmConstructor): LlvmType {
 		var llvmType = llvmType
 		if(llvmType == null) {
-			val parameterTypes = parameterTypes.map { parameterType -> parameterType?.getLlvmType(constructor) }
+			val parameterTypes = LinkedList(parameterTypes.map { parameterType -> parameterType?.getLlvmType(constructor) })
+			val parentDefinition = parentDefinition
+			if(parentDefinition != null)
+				parameterTypes.addFirst(constructor.createPointerType(parentDefinition.llvmType))
 			llvmType = constructor.buildFunctionType(parameterTypes, returnType.getLlvmType(constructor))
 			this.llvmType = llvmType
 		}

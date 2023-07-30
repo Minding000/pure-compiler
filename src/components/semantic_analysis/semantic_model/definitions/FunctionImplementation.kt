@@ -51,6 +51,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	override fun determineTypes() {
 		super.determineTypes()
 		parentDefinition = scope.getSurroundingDefinition()
+		signature.parentDefinition = parentDefinition
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -121,7 +122,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)
 		for(index in parameters.indices)
-			parameters[index].index = index
+			parameters[index].index = index + 1
 		llvmValue = constructor.buildFunction(memberIdentifier, signature.getLlvmType(constructor))
 	}
 

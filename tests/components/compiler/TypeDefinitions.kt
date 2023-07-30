@@ -77,7 +77,7 @@ internal class TypeDefinitions {
 			  ret void
 			}
 
-			define void @"run()"() {
+			define void @"run()"(ptr %0) {
 			entrypoint:
 			  ret void
 			}
@@ -89,8 +89,8 @@ internal class TypeDefinitions {
 			  store ptr @SimplestApp_ClassDefinition, ptr %classDefinitionPointer, align 8
 			  %classDefinition = getelementptr inbounds %SimplestApp_ClassStruct, ptr %this, i32 0, i32 0
 			  %classDefinitionAddress = load ptr, ptr %classDefinition, align 8
-			  %memberIndex = call i32 @_getInstanceMemberOffset(ptr %classDefinitionAddress, i32 1)
-			  %memberAddress = getelementptr i8, ptr %this, i32 %memberIndex
+			  %memberOffset = call i32 @_getInstanceMemberOffset(ptr %classDefinitionAddress, i32 1)
+			  %memberAddress = getelementptr i8, ptr %this, i32 %memberOffset
 			  store i32 62, ptr %memberAddress, align 4
 			  ret ptr %this
 			}
@@ -141,8 +141,8 @@ internal class TypeDefinitions {
 			  store ptr @Application_ClassDefinition, ptr %classDefinitionPointer, align 8
 			  %classDefinition = getelementptr inbounds %Application_ClassStruct, ptr %this, i32 0, i32 0
 			  %classDefinitionAddress = load ptr, ptr %classDefinition, align 8
-			  %memberIndex = call i32 @_getInstanceMemberOffset(ptr %classDefinitionAddress, i32 1)
-			  %memberAddress = getelementptr i8, ptr %this, i32 %memberIndex
+			  %memberOffset = call i32 @_getInstanceMemberOffset(ptr %classDefinitionAddress, i32 1)
+			  %memberAddress = getelementptr i8, ptr %this, i32 %memberOffset
 			  store float 0x4058F999A0000000, ptr %memberAddress, align 4
 			  ret ptr %this
 			}
@@ -202,8 +202,8 @@ internal class TypeDefinitions {
 			  %InternetProtocol = load ptr, ptr @InternetProtocol_StaticObject, align 8
 			  %classDefinition = getelementptr inbounds %InternetProtocol_StaticStruct, ptr %InternetProtocol, i32 0, i32 0
 			  %classDefinitionAddress = load ptr, ptr %classDefinition, align 8
-			  %memberIndex = call i32 @_getStaticMemberOffset(ptr %classDefinitionAddress, i32 1)
-			  %memberAddress = getelementptr i8, ptr %InternetProtocol, i32 %memberIndex
+			  %memberOffset = call i32 @_getStaticMemberOffset(ptr %classDefinitionAddress, i32 1)
+			  %memberAddress = getelementptr i8, ptr %InternetProtocol, i32 %memberOffset
 			  %member = load ptr, ptr %memberAddress, align 8
 			  store ptr %member, ptr @protocol_Global, align 8
 			  ret void

@@ -178,7 +178,7 @@ internal class Compiler {
 			""".trimIndent()
 		val intermediateRepresentation = TestUtil.getIntermediateRepresentation(sourceCode)
 		assertContains(intermediateRepresentation, """
-			define void @"run()"() {
+			define void @"run()"(ptr %0) {
 			entrypoint:
 			  %x_Variable = alloca i1, align 1
 			  store i1 true, ptr %x_Variable, align 1
