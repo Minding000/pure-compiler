@@ -21,11 +21,6 @@ internal class MemberAccess {
 		assertEquals(62, Llvm.castToSignedInteger(result))
 	}
 
-	//TODO write super initializer tests
-	// - default initializer
-	// - custom initializer
-	//TODO write function resolution test
-
 	@Test
 	fun `compiles explicit member access to super class`() {
 		val sourceCode = """
@@ -59,4 +54,35 @@ internal class MemberAccess {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getId")
 		assertEquals(3, Llvm.castToSignedInteger(result))
 	}
+
+	//TODO resolve function to call correctly
+	// - only include overriding function as member (done)
+	// - super functions can be addressed statically
+	// - function overloads are resolved at compile-time
+	//   - except for functors, but they will store 'this' and enclosed values additionally anyways
+	//   - create them on a as-needed basis
+	@Test
+	fun `compiles calls to overridden functions`() {
+		val sourceCode = """
+			Application class {
+				to getId(): Int {
+					return 1
+				}
+				to getKey(): Int {
+					return getId()
+				}
+			}
+			SimplestApp object: Application {
+				overriding to getId(): Int {
+					return 2
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getKey")
+		assertEquals(2, Llvm.castToSignedInteger(result))
+	}
+
+	//TODO write super initializer tests
+	// - default initializer
+	// - custom initializer
 }

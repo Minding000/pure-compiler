@@ -83,8 +83,8 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val definition = definition
 		val location = if(definition is PropertyDeclaration) {
-			context.resolveMember(constructor, definition.parentDefinition.llvmType, context.getThisParameter(constructor),
-				definition.memberIdentifier, (definition as? InterfaceMember)?.isStatic ?: false)
+			context.resolveMember(constructor, definition.parentDefinition.llvmType, context.getThisParameter(constructor), name,
+				(definition as? InterfaceMember)?.isStatic ?: false)
 		} else {
 			definition?.llvmLocation
 		}

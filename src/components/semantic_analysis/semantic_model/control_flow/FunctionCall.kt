@@ -2,6 +2,7 @@ package components.semantic_analysis.semantic_model.control_flow
 
 import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
+import components.semantic_analysis.semantic_model.context.Context
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
@@ -111,9 +112,23 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		return when(val target = targetImplementation) {
 			is FunctionImplementation -> {
 				val resultName = if(SpecialType.NOTHING.matches(target.signature.returnType)) "" else getSignature()
+				val targetValue = if(function is MemberAccess) function.target.getLlvmValue(constructor) else context.getThisParameter(constructor)
 				if(target.parentDefinition != null)
-					parameters.addFirst(if(function is MemberAccess) function.target.getLlvmValue(constructor) else context.getThisParameter(constructor))
-				constructor.buildFunctionCall(target.signature.getLlvmType(constructor), target.llvmValue, parameters, resultName)
+					parameters.addFirst(targetValue)
+
+
+				//TODO cleanup (move code to MemberAccess and VariableValue?)
+				val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(target.parentDefinition?.llvmType, targetValue,
+					Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
+				val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(context.classDefinitionStruct),
+					classDefinitionAddressLocation, "classDefinitionAddress")
+				val functionAddress = constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType,
+					context.llvmFunctionAddressFunction,
+					listOf(classDefinitionAddress, constructor.buildInt32(context.memberIdentities.getId(target.memberIdentifier))),
+					"functionAddress")
+
+
+				constructor.buildFunctionCall(target.signature.getLlvmType(constructor), functionAddress, parameters, resultName)
 			}
 			is InitializerDefinition -> {
 				constructor.buildFunctionCall(target.llvmType, target.llvmValue, parameters, "newObjectAddress")

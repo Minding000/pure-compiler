@@ -5,7 +5,6 @@ import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
-import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.*
 import components.semantic_analysis.semantic_model.values.*
@@ -101,14 +100,13 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		if(member !is VariableValue)
 			throw CompilerError("Member access references invalid member.")
-		val memberDeclaration = member.definition as? MemberDeclaration ?: throw CompilerError("Member access references invalid member definition.")
 		val targetValue = target.getLlvmValue(constructor)
 		val llvmTargetType = when(val targetType = target.type) {
 			is ObjectType -> targetType.definition?.llvmType
 			is StaticType -> targetType.definition.llvmStaticType
 			else -> throw CompilerError("Member access target is not an object or class.")
 		}
-		val memberAddress = context.resolveMember(constructor, llvmTargetType, targetValue, memberDeclaration.memberIdentifier, (member.definition as? InterfaceMember)?.isStatic ?: false)
+		val memberAddress = context.resolveMember(constructor, llvmTargetType, targetValue, member.name, (member.definition as? InterfaceMember)?.isStatic ?: false)
 		return constructor.buildLoad(member.type?.getLlvmType(constructor), memberAddress, "member")
 	}
 }

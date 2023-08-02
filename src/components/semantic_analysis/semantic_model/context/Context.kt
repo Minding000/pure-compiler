@@ -15,14 +15,16 @@ class Context {
 	val declarationStack = DeclarationStack(logger)
 	val surroundingLoops = LinkedList<LoopStatement>()
 	lateinit var classDefinitionStruct: LlvmType
-	lateinit var functionStruct: LlvmType
-	lateinit var llvmStaticMemberOffsetFunction: LlvmValue
-	lateinit var llvmInstanceMemberOffsetFunction: LlvmValue
-	lateinit var llvmStaticMemberOffsetFunctionType: LlvmType
-	lateinit var llvmInstanceMemberOffsetFunctionType: LlvmType
+	lateinit var llvmConstantOffsetFunction: LlvmValue
+	lateinit var llvmPropertyOffsetFunction: LlvmValue
+	lateinit var llvmFunctionAddressFunction: LlvmValue
+	lateinit var llvmConstantOffsetFunctionType: LlvmType
+	lateinit var llvmPropertyOffsetFunctionType: LlvmType
+	lateinit var llvmFunctionAddressFunctionType: LlvmType
 	lateinit var llvmMemberIndexType: LlvmType
 	lateinit var llvmMemberIdType: LlvmType
 	lateinit var llvmMemberOffsetType: LlvmType
+	lateinit var llvmMemberAddressType: LlvmType
 	lateinit var llvmPrintFunctionType: LlvmType
 	lateinit var llvmPrintFunction: LlvmValue
 	lateinit var llvmExitFunctionType: LlvmType
@@ -32,12 +34,15 @@ class Context {
 
 	companion object {
 		const val CLASS_DEFINITION_PROPERTY_INDEX = 0
-		const val STATIC_MEMBER_COUNT_PROPERTY_INDEX = 0
-		const val STATIC_MEMBER_ID_ARRAY_PROPERTY_INDEX = 1
-		const val STATIC_MEMBER_OFFSET_ARRAY_PROPERTY_INDEX = 2
-		const val INSTANCE_MEMBER_COUNT_PROPERTY_INDEX = 3
-		const val INSTANCE_MEMBER_ID_ARRAY_PROPERTY_INDEX = 4
-		const val INSTANCE_MEMBER_OFFSET_ARRAY_PROPERTY_INDEX = 5
+		const val CONSTANT_COUNT_PROPERTY_INDEX = 0
+		const val CONSTANT_ID_ARRAY_PROPERTY_INDEX = 1
+		const val CONSTANT_OFFSET_ARRAY_PROPERTY_INDEX = 2
+		const val PROPERTY_COUNT_PROPERTY_INDEX = 3
+		const val PROPERTY_ID_ARRAY_PROPERTY_INDEX = 4
+		const val PROPERTY_OFFSET_ARRAY_PROPERTY_INDEX = 5
+		const val FUNCTION_COUNT_PROPERTY_INDEX = 6
+		const val FUNCTION_ID_ARRAY_PROPERTY_INDEX = 7
+		const val FUNCTION_ADDRESS_ARRAY_PROPERTY_INDEX = 8
 		const val THIS_PARAMETER_INDEX = 0
 	}
 
@@ -55,8 +60,8 @@ class Context {
 		val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(targetType, targetLocation, CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
 		val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(classDefinitionStruct),
 			classDefinitionAddressLocation, "classDefinitionAddress")
-		val resolutionFunctionType = if(isStaticMember) llvmStaticMemberOffsetFunctionType else llvmInstanceMemberOffsetFunctionType
-		val resolutionFunction = if(isStaticMember) llvmStaticMemberOffsetFunction else llvmInstanceMemberOffsetFunction
+		val resolutionFunctionType = if(isStaticMember) llvmConstantOffsetFunctionType else llvmPropertyOffsetFunctionType
+		val resolutionFunction = if(isStaticMember) llvmConstantOffsetFunction else llvmPropertyOffsetFunction
 		val memberOffset = constructor.buildFunctionCall(resolutionFunctionType, resolutionFunction, listOf(
 				classDefinitionAddress, constructor.buildInt32(memberIdentities.getId(memberIdentifier))), "memberOffset")
 		return constructor.buildGetArrayElementPointer(constructor.byteType, targetLocation, memberOffset, "memberAddress")

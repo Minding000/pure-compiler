@@ -10,7 +10,6 @@ import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
-import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.initialization.UninitializedProperties
@@ -224,13 +223,11 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		val parentDefinition = parentDefinition
 		val classDefinitionPointer = constructor.buildGetPropertyPointer(parentDefinition.llvmType, thisValue, Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
 		constructor.buildStore(parentDefinition.llvmClassDefinitionAddress, classDefinitionPointer)
-		for(memberDeclaration in parentDefinition.instanceMembers) {
-			if(memberDeclaration is ValueDeclaration) {
-				val memberValue = memberDeclaration.value
-				if(memberValue != null) {
-					val memberAddress = context.resolveMember(constructor, parentDefinition.llvmType, thisValue, memberDeclaration.memberIdentifier)
-					constructor.buildStore(memberValue.getLlvmValue(constructor), memberAddress)
-				}
+		for(memberDeclaration in parentDefinition.properties) {
+			val memberValue = memberDeclaration.value
+			if(memberValue != null) {
+				val memberAddress = context.resolveMember(constructor, parentDefinition.llvmType, thisValue, memberDeclaration.name)
+				constructor.buildStore(memberValue.getLlvmValue(constructor), memberAddress)
 			}
 		}
 		super.compile(constructor)
