@@ -87,17 +87,21 @@ internal class Assignment {
 		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
 
-	@Disabled
 	@Test
-	fun `compiles assignments to overridden index accesses`() { //TODO implement test
+	fun `compiles assignments to overridden index accesses`() {
 		val sourceCode = """
-			SimplestApp object {
+			Application class {
 				var b = 1
 				to getFive(): Int {
 					this[0] = 5
 					return b
 				}
 				operator[c: Int](a: Int) {
+					b = 2
+				}
+			}
+			SimplestApp object: Application {
+				overriding operator[c: Int](a: Int) {
 					b = a
 				}
 			}

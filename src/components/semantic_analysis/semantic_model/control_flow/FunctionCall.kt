@@ -114,22 +114,25 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		return when(val target = targetImplementation) {
 			is FunctionImplementation -> {
 				val resultName = if(SpecialType.NOTHING.matches(target.signature.returnType)) "" else getSignature()
-				val targetValue = if(function is MemberAccess && function.target !is SuperReference)
-					function.target.getLlvmValue(constructor)
-				else
-					context.getThisParameter(constructor)
-				if(target.parentDefinition != null)
-					parameters.addFirst(targetValue)
-				val functionAddress = if(function is MemberAccess && function.target is SuperReference) {
+				val functionAddress = if(target.parentDefinition == null) {
 					target.llvmValue
 				} else {
-					val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(target.parentDefinition?.llvmType, targetValue,
-						Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-					val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(context.classDefinitionStruct),
-						classDefinitionAddressLocation, "classDefinitionAddress")
-					constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType, context.llvmFunctionAddressFunction,
-						listOf(classDefinitionAddress, constructor.buildInt32(context.memberIdentities.getId(target.memberIdentifier))),
-						"functionAddress")
+					val targetValue = if(function is MemberAccess && function.target !is SuperReference)
+						function.target.getLlvmValue(constructor)
+					else
+						context.getThisParameter(constructor)
+					parameters.addFirst(targetValue)
+					if(function is MemberAccess && function.target is SuperReference) {
+						target.llvmValue
+					} else {
+						val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(target.parentDefinition?.llvmType,
+							targetValue, Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
+						val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(context.classDefinitionStruct),
+							classDefinitionAddressLocation, "classDefinitionAddress")
+						constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType, context.llvmFunctionAddressFunction,
+							listOf(classDefinitionAddress, constructor.buildInt32(context.memberIdentities.getId(target.memberIdentifier))),
+							"functionAddress")
+					}
 				}
 				constructor.buildFunctionCall(target.signature.getLlvmType(constructor), functionAddress, parameters, resultName)
 			}
