@@ -4,6 +4,7 @@ import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmType
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.Context
+import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
@@ -228,9 +229,23 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 				constructor.buildStore(memberValue.getLlvmValue(constructor), memberAddress)
 			}
 		}
-		super.compile(constructor)
+		if(body == null)
+			callTrivialSuperInitializers(constructor, thisValue)
+		else
+			super.compile(constructor)
 		constructor.buildReturn()
 		constructor.select(previousBlock)
+	}
+
+	private fun callTrivialSuperInitializers(constructor: LlvmConstructor, thisValue: LlvmValue) {
+		for(superType in parentDefinition.getDirectSuperTypes()) {
+			if(SpecialType.ANY.matches(superType))
+				continue
+			val trivialInitializer = (superType.definition?.staticValueDeclaration?.type as? StaticType)?.resolveInitializer()?.signature
+				?: throw CompilerError(source, "Default initializer in class '${parentDefinition.name}'" +
+					" with super class '${superType.definition?.name}' without trivial initializer.")
+			constructor.buildFunctionCall(trivialInitializer.llvmType, trivialInitializer.llvmValue, listOf(thisValue))
+		}
 	}
 
 	override fun toString(): String {

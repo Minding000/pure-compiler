@@ -71,8 +71,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		val genericDefinitionTypes = baseDefinition.scope.getGenericTypeDefinitions()
 		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: emptyList()
 		try {
-			val match = targetType.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters,
-				valueParameters)
+			val match = targetType.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters, valueParameters)
 			if(match == null) {
 				context.addIssue(NotFound(source, "Initializer", getSignature()))
 				return

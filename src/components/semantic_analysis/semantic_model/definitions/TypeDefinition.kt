@@ -39,7 +39,7 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>, LinkedList<(TypeDefinition) -> Unit>>()
 	// Only used in specific definition
 	var baseDefinition: TypeDefinition? = null
-	protected lateinit var staticValueDeclaration: ValueDeclaration
+	lateinit var staticValueDeclaration: ValueDeclaration
 	lateinit var properties: List<ValueDeclaration>
 	lateinit var llvmType: LlvmType
 	lateinit var llvmClassDefinitionAddress: LlvmValue
@@ -176,7 +176,7 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 		return superTypes
 	}
 
-	private fun getDirectSuperTypes(): List<ObjectType> {
+	fun getDirectSuperTypes(): List<ObjectType> {
 		return when(val superType = superType) {
 			is ObjectType -> listOf(superType)
 			is AndUnionType -> superType.types.filterIsInstance<ObjectType>()

@@ -60,11 +60,11 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 		return definition.getLinkedSuperType()?.isAssignableTo(targetType) ?: false
 	}
 
-	fun resolveInitializer(suppliedValues: List<Value>): MatchResult? =
-		resolveInitializer(listOf(), listOf(), listOf(), suppliedValues)
+	fun resolveInitializer(suppliedValues: List<Value> = emptyList()): MatchResult? =
+		resolveInitializer(emptyList(), emptyList(), emptyList(), suppliedValues)
 
-	fun resolveInitializer(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
-						   suppliedTypes: List<Type>, suppliedValues: List<Value>): MatchResult? {
+	fun resolveInitializer(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>, suppliedTypes: List<Type>,
+						   suppliedValues: List<Value>): MatchResult? {
 		definition.determineTypes()
 		val matches = getMatchingInitializers(genericDefinitionTypes, suppliedDefinitionTypes, suppliedTypes, suppliedValues)
 		if(matches.isEmpty())
