@@ -112,12 +112,12 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		return when(val target = targetImplementation) {
 			is FunctionImplementation -> {
 				val resultName = if(SpecialType.NOTHING.matches(target.signature.returnType)) "" else getSignature()
-				val targetValue = if(function is MemberAccess) function.target.getLlvmValue(constructor) else context.getThisParameter(constructor)
+				val targetValue = if(function is MemberAccess)
+					function.target.getLlvmValue(constructor)
+				else
+					context.getThisParameter(constructor)
 				if(target.parentDefinition != null)
 					parameters.addFirst(targetValue)
-
-
-				//TODO cleanup (move code to MemberAccess and VariableValue?)
 				val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(target.parentDefinition?.llvmType, targetValue,
 					Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
 				val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(context.classDefinitionStruct),
@@ -126,8 +126,6 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 					context.llvmFunctionAddressFunction,
 					listOf(classDefinitionAddress, constructor.buildInt32(context.memberIdentities.getId(target.memberIdentifier))),
 					"functionAddress")
-
-
 				constructor.buildFunctionCall(target.signature.getLlvmType(constructor), functionAddress, parameters, resultName)
 			}
 			is InitializerDefinition -> {
