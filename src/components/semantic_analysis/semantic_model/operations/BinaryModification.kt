@@ -105,7 +105,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 					}
 					else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
 				}
-				constructor.buildStore(operation, target.definition?.llvmLocation)
+				constructor.buildStore(operation, target.getLlvmLocation(constructor))
 			}
 		}
 	}

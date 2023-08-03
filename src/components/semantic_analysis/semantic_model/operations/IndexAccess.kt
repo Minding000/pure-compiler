@@ -24,10 +24,10 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	}
 
 	override fun determineTypes() {
-		super.determineTypes()
 		val parent = parent
 		if(parent is Assignment && parent.targets.contains(this))
 			sourceExpression = parent.sourceExpression
+		super.determineTypes()
 		target.type?.let { targetType ->
 			try {
 				val signature = targetType.interfaceScope.resolveIndexOperator(typeParameters, indices, sourceExpression)

@@ -73,7 +73,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 					Operator.Kind.DOUBLE_MINUS -> constructor.buildIntegerSubtraction(targetValue, modifierValue, "decrement")
 					else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
 				}
-				constructor.buildStore(operation, target.definition?.llvmLocation)
+				constructor.buildStore(operation, target.getLlvmLocation(constructor))
 			}
 		}
 	}

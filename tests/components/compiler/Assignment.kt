@@ -109,4 +109,28 @@ internal class Assignment {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
 		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
+
+	@Test
+	fun `compiles assignments to super index accesses`() {
+		val sourceCode = """
+			Application class {
+				var b = 1
+				to getFive(): Int {
+					this[0] = 5
+					return b
+				}
+				operator[c: Int](a: Int) {
+					b = 2
+				}
+			}
+			SimplestApp object: Application {
+				overriding operator[c: Int](a: Int) {
+					super[c] = a
+					b += 3
+				}
+			}
+		""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, Llvm.castToSignedInteger(result))
+	}
 }
