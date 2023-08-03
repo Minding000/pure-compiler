@@ -97,16 +97,21 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		return possibleTargetTypes
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue {
 		if(member !is VariableValue)
 			throw CompilerError(source, "Member access references invalid member of type '${member.javaClass.simpleName}'.")
 		val targetValue = target.getLlvmValue(constructor)
 		val llvmTargetType = when(val targetType = target.type) {
 			is ObjectType -> targetType.definition?.llvmType
 			is StaticType -> targetType.definition.llvmStaticType
-			else -> throw CompilerError(source, "Member access target is not an object or class.")
+			else -> throw CompilerError(source,
+				"Member access target of type '${targetType?.javaClass?.simpleName}' is not an object or class.")
 		}
-		val memberAddress = context.resolveMember(constructor, llvmTargetType, targetValue, member.name, (member.definition as? InterfaceMember)?.isStatic ?: false)
-		return constructor.buildLoad(member.type?.getLlvmType(constructor), memberAddress, "member")
+		return context.resolveMember(constructor, llvmTargetType, targetValue, member.name,
+			(member.definition as? InterfaceMember)?.isStatic ?: false)
+	}
+
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		return constructor.buildLoad(member.type?.getLlvmType(constructor), getLlvmLocation(constructor), "member")
 	}
 }

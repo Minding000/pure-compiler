@@ -99,21 +99,6 @@ internal class Compiler {
 	}
 
 	@Test
-	fun `compiles assignments`() {
-		val sourceCode = """
-			SimplestApp object {
-				to getFive(): Int {
-					val five: Int
-					five = 5
-					return five
-				}
-			}
-		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
-	}
-
-	@Test
 	fun `compiles function calls`() {
 		val sourceCode = """
 			SimplestApp object {

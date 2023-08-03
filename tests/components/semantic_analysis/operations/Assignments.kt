@@ -1,6 +1,7 @@
 package components.semantic_analysis.operations
 
 import logger.Severity
+import logger.issues.constant_conditions.ExpressionNotAssignable
 import logger.issues.constant_conditions.TypeNotAssignable
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -31,5 +32,6 @@ internal class Assignments {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		lintResult.assertIssueNotDetected<TypeNotAssignable>()
+		lintResult.assertIssueNotDetected<ExpressionNotAssignable>()
 	}
 }

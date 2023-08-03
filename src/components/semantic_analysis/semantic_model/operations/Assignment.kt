@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
 import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
@@ -9,15 +10,17 @@ import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.SelfReference
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
+import errors.internal.CompilerError
 import logger.issues.constant_conditions.ExpressionNotAssignable
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.initialization.ConstantReassignment
 import logger.issues.resolution.ConversionAmbiguity
+import java.util.*
 import components.syntax_parser.syntax_tree.operations.Assignment as AssignmentSyntaxTree
 
 class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val targets: List<Value>, val sourceExpression: Value):
 	SemanticModel(source, scope) {
-	var conversion: InitializerDefinition? = null
+	private var conversion: InitializerDefinition? = null
 
 	init {
 		addSemanticModels(sourceExpression)
@@ -69,12 +72,8 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 					if(target.member !is VariableValue || target.member.definition?.isConstant == true)
 						context.addIssue(ConstantReassignment(source, target.member.toString()))
 				}
-				is IndexAccess -> { //TODO is this tested?
-					target.target.type?.interfaceScope?.resolveIndexOperator(target.typeParameters, target.indices, sourceExpression)
-				}
-				else -> { //TODO write test for this
-					context.addIssue(ExpressionNotAssignable(target.source))
-				}
+				is IndexAccess -> {}
+				else -> context.addIssue(ExpressionNotAssignable(target.source))
 			}
 			target.analyseDataFlow(tracker)
 		}
@@ -85,15 +84,19 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		val value = sourceExpression.getLlvmValue(constructor)
 		for(target in targets) {
 			when(target) {
-				is VariableValue -> {
-					constructor.buildStore(value, target.getLlvmLocation(constructor))
-				}
-				is MemberAccess -> {
-					TODO("Assignments to member accesses are not implemented yet.")
-				}
+				is VariableValue -> constructor.buildStore(value, target.getLlvmLocation(constructor))
+				is MemberAccess -> constructor.buildStore(value, target.getLlvmLocation(constructor))
 				is IndexAccess -> {
-					TODO("Assignments to index accesses are not implemented yet.")
+					val indexOperator = target.implementation
+						?: throw CompilerError(source, "Missing index operator implementation.")
+					val parameters = LinkedList<LlvmValue>()
+					parameters.add(target.target.getLlvmValue(constructor))
+					for(index in target.indices)
+						parameters.add(index.getLlvmValue(constructor))
+					parameters.add(value)
+					constructor.buildFunctionCall(indexOperator.signature.getLlvmType(constructor), indexOperator.llvmValue, parameters)
 				}
+				else -> throw CompilerError(source, "Target of type '${target.javaClass.simpleName}' is not assignable.")
 			}
 		}
 	}
