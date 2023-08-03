@@ -14,6 +14,7 @@ import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Function
+import components.semantic_analysis.semantic_model.values.SuperReference
 import components.semantic_analysis.semantic_model.values.Value
 import components.semantic_analysis.semantic_model.values.VariableValue
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -96,7 +97,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				return
 			}
 			type = signature.returnType
-			val variable = function as? VariableValue
+			val variable = ((function as? MemberAccess)?.member ?: function) as? VariableValue
 			val property = variable?.definition as? PropertyDeclaration
 			val function = property?.value as? Function
 			targetImplementation = function?.getImplementationBySignature(signature)
@@ -112,26 +113,30 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		return when(val target = targetImplementation) {
 			is FunctionImplementation -> {
 				val resultName = if(SpecialType.NOTHING.matches(target.signature.returnType)) "" else getSignature()
-				val targetValue = if(function is MemberAccess)
+				val targetValue = if(function is MemberAccess && function.target !is SuperReference)
 					function.target.getLlvmValue(constructor)
 				else
 					context.getThisParameter(constructor)
 				if(target.parentDefinition != null)
 					parameters.addFirst(targetValue)
-				val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(target.parentDefinition?.llvmType, targetValue,
-					Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-				val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(context.classDefinitionStruct),
-					classDefinitionAddressLocation, "classDefinitionAddress")
-				val functionAddress = constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType,
-					context.llvmFunctionAddressFunction,
-					listOf(classDefinitionAddress, constructor.buildInt32(context.memberIdentities.getId(target.memberIdentifier))),
-					"functionAddress")
+				val functionAddress = if(function is MemberAccess && function.target is SuperReference) {
+					target.llvmValue
+				} else {
+					val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(target.parentDefinition?.llvmType, targetValue,
+						Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
+					val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(context.classDefinitionStruct),
+						classDefinitionAddressLocation, "classDefinitionAddress")
+					constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType,
+						context.llvmFunctionAddressFunction,
+						listOf(classDefinitionAddress, constructor.buildInt32(context.memberIdentities.getId(target.memberIdentifier))),
+						"functionAddress")
+				}
 				constructor.buildFunctionCall(target.signature.getLlvmType(constructor), functionAddress, parameters, resultName)
 			}
 			is InitializerDefinition -> {
 				constructor.buildFunctionCall(target.llvmType, target.llvmValue, parameters, "newObjectAddress")
 			}
-			else -> throw CompilerError(source, "Target is not callable.")
+			else -> throw CompilerError(source, "Target of type '${target?.javaClass?.simpleName}' is not callable.")
 		}
 	}
 
