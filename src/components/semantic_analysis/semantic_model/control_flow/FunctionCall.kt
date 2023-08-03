@@ -13,10 +13,8 @@ import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
+import components.semantic_analysis.semantic_model.values.*
 import components.semantic_analysis.semantic_model.values.Function
-import components.semantic_analysis.semantic_model.values.SuperReference
-import components.semantic_analysis.semantic_model.values.Value
-import components.semantic_analysis.semantic_model.values.VariableValue
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
@@ -106,6 +104,10 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		}
 	}
 
+	override fun compile(constructor: LlvmConstructor) {
+		createLlvmValue(constructor)
+	}
+
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val parameters = LinkedList<LlvmValue>()
 		for(valueParameter in valueParameters)
@@ -126,15 +128,27 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 						Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
 					val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(context.classDefinitionStruct),
 						classDefinitionAddressLocation, "classDefinitionAddress")
-					constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType,
-						context.llvmFunctionAddressFunction,
+					constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType, context.llvmFunctionAddressFunction,
 						listOf(classDefinitionAddress, constructor.buildInt32(context.memberIdentities.getId(target.memberIdentifier))),
 						"functionAddress")
 				}
 				constructor.buildFunctionCall(target.signature.getLlvmType(constructor), functionAddress, parameters, resultName)
 			}
 			is InitializerDefinition -> {
-				constructor.buildFunctionCall(target.llvmType, target.llvmValue, parameters, "newObjectAddress")
+				val isPrimaryCall = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
+				if(isPrimaryCall) {
+					val typeDefinition = target.parentDefinition
+					val newObjectAddress = constructor.buildHeapAllocation(typeDefinition.llvmType, "newObjectAddress")
+					val classDefinitionPointer = constructor.buildGetPropertyPointer(typeDefinition.llvmType, newObjectAddress,
+						Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
+					constructor.buildStore(typeDefinition.llvmClassDefinitionAddress, classDefinitionPointer)
+					parameters.addFirst(newObjectAddress)
+					constructor.buildFunctionCall(target.llvmType, target.llvmValue, parameters)
+					newObjectAddress
+				} else {
+					parameters.addFirst(context.getThisParameter(constructor))
+					constructor.buildFunctionCall(target.llvmType, target.llvmValue, parameters)
+				}
 			}
 			else -> throw CompilerError(source, "Target of type '${target?.javaClass?.simpleName}' is not callable.")
 		}

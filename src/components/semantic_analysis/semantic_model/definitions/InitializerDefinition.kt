@@ -211,18 +211,16 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		super.declare(constructor)
 		for(index in parameters.indices)
 			parameters[index].index = index
-		val parameterTypes = parameters.map { parameter -> parameter.type?.getLlvmType(constructor) }
-		llvmType = constructor.buildFunctionType(parameterTypes, constructor.createPointerType(parentDefinition.llvmType))
+		val parameterTypes = LinkedList(parameters.map { parameter -> parameter.type?.getLlvmType(constructor) })
+		parameterTypes.addFirst(constructor.createPointerType(parentDefinition.llvmType))
+		llvmType = constructor.buildFunctionType(parameterTypes)
 		llvmValue = constructor.buildFunction("${parentDefinition.name}_Initializer", llvmType)
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmValue, "entrypoint")
-		val thisValue = constructor.buildHeapAllocation(parentDefinition.llvmType, "this")
-		val parentDefinition = parentDefinition
-		val classDefinitionPointer = constructor.buildGetPropertyPointer(parentDefinition.llvmType, thisValue, Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
-		constructor.buildStore(parentDefinition.llvmClassDefinitionAddress, classDefinitionPointer)
+		val thisValue = constructor.getParameter(llvmValue, Context.THIS_PARAMETER_INDEX)
 		for(memberDeclaration in parentDefinition.properties) {
 			val memberValue = memberDeclaration.value
 			if(memberValue != null) {
@@ -231,7 +229,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			}
 		}
 		super.compile(constructor)
-		constructor.buildReturn(thisValue)
+		constructor.buildReturn()
 		constructor.select(previousBlock)
 	}
 

@@ -86,7 +86,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		for(target in targets) {
 			when(target) {
 				is VariableValue -> {
-					constructor.buildStore(value, target.definition?.llvmLocation)
+					constructor.buildStore(value, target.getLlvmLocation(constructor))
 				}
 				is MemberAccess -> {
 					TODO("Assignments to member accesses are not implemented yet.")

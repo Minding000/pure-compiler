@@ -84,9 +84,10 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		super.compile(constructor)
-		if(scope is TypeScope || type is StaticType)
+		if(scope is TypeScope || type is StaticType) {
+			super.compile(constructor)
 			return
+		}
 		val llvmType = type?.getLlvmType(constructor)
 		if(scope is FileScope) {
 			llvmLocation = constructor.buildGlobal("${name}_Global", llvmType, constructor.createNullPointer(llvmType))

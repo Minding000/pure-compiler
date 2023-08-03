@@ -96,8 +96,4 @@ internal class MemberAccess {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getKey")
 		assertEquals(3, Llvm.castToSignedInteger(result))
 	}
-
-	//TODO write super initializer tests
-	// - default initializer
-	// - custom initializer
 }
