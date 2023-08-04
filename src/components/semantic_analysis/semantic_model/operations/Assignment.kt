@@ -5,6 +5,7 @@ import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.Context
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
+import components.semantic_analysis.semantic_model.definitions.ComputedPropertyDeclaration
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -86,8 +87,20 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		val value = sourceExpression.getLlvmValue(constructor)
 		for(target in targets) {
 			when(target) {
-				is VariableValue -> constructor.buildStore(value, target.getLlvmLocation(constructor))
-				is MemberAccess -> constructor.buildStore(value, target.getLlvmLocation(constructor))
+				is VariableValue -> {
+					if(target.definition is ComputedPropertyDeclaration) {
+						TODO("Assignments to computed properties are not implemented yet.")
+					} else {
+						constructor.buildStore(value, target.getLlvmLocation(constructor))
+					}
+				}
+				is MemberAccess -> {
+					if((target.member as? VariableValue)?.definition is ComputedPropertyDeclaration) {
+						TODO("Assignments to computed properties are not implemented yet.")
+					} else {
+						constructor.buildStore(value, target.getLlvmLocation(constructor))
+					}
+				}
 				is IndexAccess -> {
 					val indexOperator = target.implementation
 						?: throw CompilerError(source, "Missing index operator implementation.")

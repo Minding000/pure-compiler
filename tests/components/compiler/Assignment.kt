@@ -40,12 +40,15 @@ internal class Assignment {
 
 	@Disabled
 	@Test
-	fun `compiles assignments to computed properties`() { //TODO implement test
+	fun `compiles assignments to computed properties`() {
 		val sourceCode = """
 			SimplestApp object {
-				var a = 11
+				var a = 12
+				var b: Int
+					gets a
+					sets a = b
 				to getFive(): Int {
-					a = 5
+					b = 5
 					return a
 				}
 			}
