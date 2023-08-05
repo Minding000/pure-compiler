@@ -1,9 +1,10 @@
 package components.compiler
 
+import components.compiler.targets.llvm.Llvm
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 import util.TestUtil
 import kotlin.test.assertContains
+import kotlin.test.assertEquals
 
 internal class Loop {
 
@@ -12,17 +13,66 @@ internal class Loop {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
+					var a = 1
 					loop {
-						if no
-							next
-						break
+						a = 2
 					}
 				}
 			}
 		""".trimIndent()
-		assertDoesNotThrow {
-			TestUtil.run(sourceCode, "Test:SimplestApp.run")
-		}
+		val intermediateRepresentation = TestUtil.getIntermediateRepresentation(sourceCode)
+		assertContains(intermediateRepresentation, """
+			define void @"run()"(ptr %0) {
+			entrypoint:
+			  %a_Variable = alloca i32, align 4
+			  store i32 1, ptr %a_Variable, align 4
+			  br label %loop_entry
+
+			loop_entry:                                       ; preds = %loop_entry, %entrypoint
+			  store i32 2, ptr %a_Variable, align 4
+			  br label %loop_entry
+			}
+			""".trimIndent())
+	}
+
+	@Test
+	fun `compiles break statements`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getTwo(): Int {
+					var a = 1
+					loop {
+						a = 2
+						break
+						a = 3
+					}
+					return a
+				}
+			}
+		""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo")
+		assertEquals(2, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles next statements`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getZero(): Int {
+					var a = 1
+					loop while a != 0 {
+						if a == 2 {
+							a = 0
+							next
+						}
+						a = 2
+					}
+					return a
+				}
+			}
+		""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getZero")
+		assertEquals(0, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
