@@ -78,10 +78,10 @@ class LlvmConstructor(name: String) {
 		return LLVMArrayType(baseType, size)
 	}
 
-	fun buildFunctionType(parameterTypes: List<LlvmType?> = emptyList(), returnType: LlvmType? = voidType, hasVariableParameterCount: Boolean = false): LlvmType {
+	fun buildFunctionType(parameterTypes: List<LlvmType?> = emptyList(), returnType: LlvmType? = voidType, isVariadic: Boolean = false): LlvmType {
 		if(returnType == null)
 			throw CompilerError("Missing return type in function.")
-		return LLVMFunctionType(returnType, parameterTypes.toLlvmList(), parameterTypes.size, Llvm.bool(hasVariableParameterCount))
+		return LLVMFunctionType(returnType, parameterTypes.toLlvmList(), parameterTypes.size, Llvm.bool(isVariadic))
 	}
 
 	fun buildFunction(name: String, type: LlvmType = buildFunctionType()): LlvmValue {

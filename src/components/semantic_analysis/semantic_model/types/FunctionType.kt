@@ -60,8 +60,13 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 				if(!signature.isMoreSpecificThan(otherSignature))
 					continue@specificityPrecedenceLoop
 			}
-			for(parameterIndex in suppliedValues.indices)
-				suppliedValues[parameterIndex].setInferredType(signature.parameterTypes[parameterIndex])
+			for(parameterIndex in suppliedValues.indices) {
+				val parameterType = if(parameterIndex < signature.fixedParameterTypes.size)
+					signature.fixedParameterTypes[parameterIndex]
+				else
+					signature.variadicParameterType
+				suppliedValues[parameterIndex].setInferredType(parameterType)
+			}
 			return signature
 		}
 		throw SignatureResolutionAmbiguityError(validSignatures)

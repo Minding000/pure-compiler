@@ -1,6 +1,7 @@
 package components.semantic_analysis.resolution
 
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
+import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
@@ -10,7 +11,6 @@ import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
 import logger.issues.resolution.SignatureAmbiguity
 import logger.issues.resolution.SignatureMismatch
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertIs
@@ -167,19 +167,48 @@ internal class FunctionResolution {
 		""".trimIndent(), Severity.ERROR)
 	}
 
-	@Disabled
 	@Test
-	fun `resolves function calls with a variable number of parameters`() {
+	fun `resolves variadic function calls without variadic parameters`() {
 		val sourceCode =
 			"""
 				Int class
 				IntegerList object {
-					to add(...integers: ...Int)
+					to add(capacity: Int, ...integers: ...Int)
 				}
 				IntegerList.add(Int())
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val initializerCall = lintResult.find<FunctionCall>()
-		assertNotNull(initializerCall?.type)
+		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
+		assertNotNull(functionCall?.type)
+	}
+
+	@Test
+	fun `resolves variadic function calls with one variadic parameter`() {
+		val sourceCode =
+			"""
+				Int class
+				IntegerList object {
+					to add(capacity: Int, ...integers: ...Int)
+				}
+				IntegerList.add(Int(), Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
+		assertNotNull(functionCall?.type)
+	}
+
+	@Test
+	fun `resolves variadic function calls with multiple variadic parameters`() {
+		val sourceCode =
+			"""
+				Int class
+				IntegerList object {
+					to add(capacity: Int, ...integers: ...Int)
+				}
+				IntegerList.add(Int(), Int(), Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
+		assertNotNull(functionCall?.type)
 	}
 }

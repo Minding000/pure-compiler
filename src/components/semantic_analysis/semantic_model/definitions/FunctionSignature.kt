@@ -6,6 +6,7 @@ import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.types.LiteralType
+import components.semantic_analysis.semantic_model.types.PluralType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.Value
@@ -16,12 +17,26 @@ import java.util.*
 
 class FunctionSignature(override val source: SyntaxTreeNode, override val scope: BlockScope, val genericParameters: List<TypeDefinition>,
 						val parameterTypes: List<Type?>, returnType: Type?): SemanticModel(source, scope) {
+	val fixedParameterTypes: List<Type?>
+	val variadicParameterType: PluralType?
 	val returnType = returnType ?: LiteralType(source, scope, SpecialType.NOTHING)
 	var superFunctionSignature: FunctionSignature? = null
 	var parentDefinition: TypeDefinition? = null
 	private var llvmType: LlvmType? = null
 
 	init {
+		//TODO this only works with one PluralType per function for now, so that restriction should be enforced by the linter
+		val fixedParameterTypes = LinkedList<Type?>()
+		var variadicParameterType: PluralType? = null
+		for(parameterType in parameterTypes) {
+			if(parameterType is PluralType) {
+				variadicParameterType = parameterType
+				continue
+			}
+			fixedParameterTypes.add(parameterType)
+		}
+		this.fixedParameterTypes = fixedParameterTypes
+		this.variadicParameterType = variadicParameterType
 		addSemanticModels(genericParameters, parameterTypes)
 		addSemanticModels(this.returnType)
 	}
@@ -45,20 +60,16 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 			returnType.withTypeSubstitutions(typeSubstitution))
 	}
 
-	fun accepts(suppliedValues: List<Value>): Boolean {
-		if(parameterTypes.size != suppliedValues.size)
-			return false
-		for(parameterIndex in parameterTypes.indices)
-			if(!suppliedValues[parameterIndex].isAssignableTo(parameterTypes[parameterIndex]))
-				return false
-		return true
-	}
-
 	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
-		if(genericParameters.size < suppliedTypes.size)
+		if(suppliedTypes.size > genericParameters.size)
 			return null
-		if(parameterTypes.size != suppliedValues.size)
-			return null
+		if(variadicParameterType == null) {
+			if(suppliedValues.size != fixedParameterTypes.size)
+				return null
+		} else {
+			if(suppliedValues.size < fixedParameterTypes.size)
+				return null
+		}
 		val typeSubstitutions = HashMap<TypeDefinition, Type>()
 		for(parameterIndex in genericParameters.indices) {
 			val genericParameter = genericParameters[parameterIndex]
@@ -74,15 +85,34 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	}
 
 	private fun inferTypeParameter(typeParameter: TypeDefinition, suppliedValues: List<Value>): Type? {
+		assert(suppliedValues.size >= fixedParameterTypes.size)
+
+		//TODO also infer types based on variadic parameters
+		// -> write test!
 		val inferredTypes = LinkedList<Type>()
-		for(parameterIndex in parameterTypes.indices) {
-			val valueParameterType = parameterTypes[parameterIndex]
+		for(parameterIndex in fixedParameterTypes.indices) {
+			val valueParameterType = fixedParameterTypes[parameterIndex]
 			val suppliedType = suppliedValues[parameterIndex].type ?: continue
 			valueParameterType?.inferType(typeParameter, suppliedType, inferredTypes)
 		}
 		if(inferredTypes.isEmpty())
 			return null
 		return inferredTypes.combine(this)
+	}
+
+	fun accepts(suppliedValues: List<Value>): Boolean { //TODO mind variadic parameters here and in functions below (write tests!)
+		assert(suppliedValues.size >= fixedParameterTypes.size)
+
+		for(parameterIndex in fixedParameterTypes.indices)
+			if(!suppliedValues[parameterIndex].isAssignableTo(fixedParameterTypes[parameterIndex]))
+				return false
+		if(variadicParameterType != null) {
+			for(parameterIndex in fixedParameterTypes.size until suppliedValues.size) {
+				if(!variadicParameterType.acceptsElement(suppliedValues[parameterIndex]))
+					return false
+			}
+		}
+		return true
 	}
 
 	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean {
@@ -242,11 +272,11 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	fun getLlvmType(constructor: LlvmConstructor): LlvmType {
 		var llvmType = llvmType
 		if(llvmType == null) {
-			val parameterTypes = LinkedList(parameterTypes.map { parameterType -> parameterType?.getLlvmType(constructor) })
+			val parameterTypes = LinkedList<LlvmType?>(fixedParameterTypes.map { parameterType -> parameterType?.getLlvmType(constructor) })
 			val parentDefinition = parentDefinition
 			if(parentDefinition != null)
 				parameterTypes.addFirst(constructor.createPointerType(parentDefinition.llvmType))
-			llvmType = constructor.buildFunctionType(parameterTypes, returnType.getLlvmType(constructor))
+			llvmType = constructor.buildFunctionType(parameterTypes, returnType.getLlvmType(constructor), variadicParameterType != null)
 			this.llvmType = llvmType
 		}
 		return llvmType
