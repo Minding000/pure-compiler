@@ -4,6 +4,7 @@ import components.semantic_analysis.semantic_model.control_flow.FunctionCall
 import components.semantic_analysis.semantic_model.operations.InstanceAccess
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.OptionalType
+import components.semantic_analysis.semantic_model.types.PluralType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import logger.issues.resolution.NotFound
@@ -84,17 +85,58 @@ internal class TypeInference {
 	}
 
 	@Test
+	fun `resolves instance accesses in variadic initializer calls`() {
+		val sourceCode =
+			"""
+				TransportLayerProtocol enum {
+					instances TCP, UDP
+				}
+				Stream class {
+					val protocols: ...TransportLayerProtocol
+
+					init(protocols)
+				}
+				val stream = Stream(.TCP)
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
+		assertNotNull(type)
+		val instanceAccess = lintResult.find<InstanceAccess>()
+		assertEquals(type, instanceAccess?.type)
+	}
+
+	@Test
 	fun `resolves instance accesses in function calls`() {
 		val sourceCode =
 			"""
 				TransportLayerProtocol enum {
 					instances TCP, UDP
 				}
-				Port class
+				Ports class
 				NetworkInterface object {
-					to getOpenPort(protocol: TransportLayerProtocol): Port {}
+					to getOpenPorts(protocol: TransportLayerProtocol): Ports
 				}
-				val openUdpPort = NetworkInterface.getOpenPort(.UDP)
+				val openUdpPort = NetworkInterface.getOpenPorts(.UDP)
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
+		assertNotNull(type)
+		val instanceAccess = lintResult.find<InstanceAccess>()
+		assertEquals(type, instanceAccess?.type)
+	}
+
+	@Test
+	fun `resolves instance accesses in variadic function calls`() {
+		val sourceCode =
+			"""
+				TransportLayerProtocol enum {
+					instances TCP, UDP
+				}
+				Ports class
+				NetworkInterface object {
+					to getOpenPorts(protocols: ...TransportLayerProtocol): Ports
+				}
+				val openUdpPort = NetworkInterface.getOpenPorts(.UDP)
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
@@ -112,7 +154,27 @@ internal class TypeInference {
 				}
 				Ports class
 				NetworkInterface object {
-					operator [protocol: TransportLayerProtocol](): Ports {}
+					operator [protocol: TransportLayerProtocol](): Ports
+				}
+				val udpPorts = NetworkInterface[.UDP]
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
+		assertNotNull(type)
+		val instanceAccess = lintResult.find<InstanceAccess>()
+		assertEquals(type, instanceAccess?.type)
+	}
+
+	@Test
+	fun `resolves instance accesses in variadic operator calls`() {
+		val sourceCode =
+			"""
+				TransportLayerProtocol enum {
+					instances TCP, UDP
+				}
+				Ports class
+				NetworkInterface object {
+					operator [protocols: ...TransportLayerProtocol](): Ports
 				}
 				val udpPorts = NetworkInterface[.UDP]
             """.trimIndent()
@@ -203,8 +265,7 @@ internal class TypeInference {
 				val plant = PackageOpener.unwrap(Package(Plant()))
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
-			variableValueDeclaration.name == "plant" }
+		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration -> variableValueDeclaration.name == "plant" }
 		assertNotNull(valueDeclaration?.type)
 	}
 
@@ -281,6 +342,43 @@ internal class TypeInference {
 	}
 
 	@Test
+	fun `infers generic type in variadic initializer call`() {
+		val sourceCode =
+			"""
+				List class {
+					containing Item
+					to add(item: Item) {}
+				}
+				Message class {
+					var actions: ...<Message>Action
+				}
+				NewsletterMessage class: Message
+				Action class {
+					containing M: Message
+				}
+				Account class {
+					val incomingMessages = <Message>List()
+				}
+				MailFolder class {
+					val messages: <Message>List
+					init(MessageType: Message; account: Account, availableActions: ...<MessageType>Action) {
+						loop over account.incomingMessages as incomingMessage {
+							if incomingMessage is MessageType {
+								incomingMessage.actions = availableActions
+								messages.add(incomingMessage)
+							}
+						}
+					}
+				}
+				val spamFolder = MailFolder(Account(), <NewsletterMessage>Action())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerResult = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function.type as? StaticType)?.definition?.name == "MailFolder" }?.type as? ObjectType
+		assertNotNull(initializerResult)
+	}
+
+	@Test
 	fun `infers generic type in function call`() {
 		val sourceCode =
 			"""
@@ -327,6 +425,29 @@ internal class TypeInference {
 	}
 
 	@Test
+	fun `infers generic type in variadic function call`() {
+		val sourceCode =
+			"""
+				Letter class
+				PostCard class: Letter
+				PostOffice object {
+					to stamp(L: Letter; letters: ...L): ...L {
+						return letters
+					}
+				}
+				val stampedPostCard = PostOffice.stamp(PostCard())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function.type as? StaticType)?.definition?.name == "PostCard" }?.type
+		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
+			variableValueDeclaration.name == "stampedPostCard" }
+		val returnType = valueDeclaration?.type as? PluralType
+		assertNotNull(returnType)
+		assertEquals(genericParameter, returnType.baseType)
+	}
+
+	@Test
 	fun `infers generic type in operator call`() {
 		val sourceCode =
 			"""
@@ -337,7 +458,32 @@ internal class TypeInference {
 					containing A: IpAddress
 				}
 				Server object {
-					operator [A: IpAddress; ipAddress: A]: <A>Client {}
+					operator [A: IpAddress; ipAddress: A]: <A>Client
+				}
+				val client = Server[Ipv4Address()]
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function.type as? StaticType)?.definition?.name == "Ipv4Address" }?.type
+		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
+			variableValueDeclaration.name == "client" }
+		val returnType = valueDeclaration?.type as? ObjectType
+		assertNotNull(returnType)
+		assertEquals(genericParameter, returnType.typeParameters.firstOrNull())
+	}
+
+	@Test
+	fun `infers generic type in variadic operator call`() {
+		val sourceCode =
+			"""
+				IpAddress class
+				Ipv4Address class: IpAddress
+				Ipv6Address class: IpAddress
+				Client class {
+					containing A: IpAddress
+				}
+				Server object {
+					operator [A: IpAddress; ipAddresses: ...A]: <A>Client
 				}
 				val client = Server[Ipv4Address()]
             """.trimIndent()

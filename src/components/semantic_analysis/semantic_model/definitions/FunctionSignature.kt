@@ -87,35 +87,29 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	private fun inferTypeParameter(typeParameter: TypeDefinition, suppliedValues: List<Value>): Type? {
 		assert(suppliedValues.size >= fixedParameterTypes.size)
 
-		//TODO also infer types based on variadic parameters
-		// -> write test!
 		val inferredTypes = LinkedList<Type>()
-		for(parameterIndex in fixedParameterTypes.indices) {
-			val valueParameterType = fixedParameterTypes[parameterIndex]
+		for(parameterIndex in suppliedValues.indices) {
+			val parameterType = getParameterTypeAt(parameterIndex)
 			val suppliedType = suppliedValues[parameterIndex].type ?: continue
-			valueParameterType?.inferType(typeParameter, suppliedType, inferredTypes)
+			parameterType?.inferType(typeParameter, suppliedType, inferredTypes)
 		}
 		if(inferredTypes.isEmpty())
 			return null
 		return inferredTypes.combine(this)
 	}
 
-	fun accepts(suppliedValues: List<Value>): Boolean { //TODO mind variadic parameters here and in functions below (write tests!)
+	fun accepts(suppliedValues: List<Value>): Boolean {
 		assert(suppliedValues.size >= fixedParameterTypes.size)
 
-		for(parameterIndex in fixedParameterTypes.indices)
-			if(!suppliedValues[parameterIndex].isAssignableTo(fixedParameterTypes[parameterIndex]))
+		for(parameterIndex in suppliedValues.indices) {
+			val parameterType = getParameterTypeAt(parameterIndex)
+			if(!suppliedValues[parameterIndex].isAssignableTo(parameterType))
 				return false
-		if(variadicParameterType != null) {
-			for(parameterIndex in fixedParameterTypes.size until suppliedValues.size) {
-				if(!variadicParameterType.acceptsElement(suppliedValues[parameterIndex]))
-					return false
-			}
 		}
 		return true
 	}
 
-	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean {
+	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean { //TODO mind variadic parameters here and in functions below (write tests!)
 		if(otherSignature.parameterTypes.size != parameterTypes.size)
 			return false
 		var areSignaturesEqual = true
@@ -169,6 +163,13 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		if(!returnType.accepts(other.returnType))
 			return false
 		return true
+	}
+
+	fun getParameterTypeAt(index: Int): Type? {
+		return if(index < fixedParameterTypes.size)
+			fixedParameterTypes[index]
+		else
+			variadicParameterType?.baseType
 	}
 
 	override fun equals(other: Any?): Boolean {

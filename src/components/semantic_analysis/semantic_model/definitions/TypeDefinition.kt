@@ -118,11 +118,17 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 				context.addIssue(ExplicitParentOnScopedTypeDefinition(explicitParentType.source))
 			}
 		}
+		// Quick fix: Loading initializers first - bigger resolution rework required
+		explicitParentType?.determineTypes()
+		superType?.determineTypes()
 		for(semanticModel in semanticModels)
-			if(semanticModel !== explicitParentType)
+			if(semanticModel is InitializerDefinition)
 				semanticModel.determineTypes()
 		if(isDefinition && scope.initializers.isEmpty())
 			addDefaultInitializer()
+		for(semanticModel in semanticModels)
+			if(semanticModel !is InitializerDefinition && semanticModel !== explicitParentType)
+				semanticModel.determineTypes()
 		scope.ensureUniqueInitializerSignatures()
 		scope.inheritSignatures()
 		if(superType != null && inheritsFrom(this)) {

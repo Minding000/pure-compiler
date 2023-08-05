@@ -61,10 +61,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 					continue@specificityPrecedenceLoop
 			}
 			for(parameterIndex in suppliedValues.indices) {
-				val parameterType = if(parameterIndex < signature.fixedParameterTypes.size)
-					signature.fixedParameterTypes[parameterIndex]
-				else
-					signature.variadicParameterType
+				val parameterType = signature.getParameterTypeAt(parameterIndex)
 				suppliedValues[parameterIndex].setInferredType(parameterType)
 			}
 			return signature
@@ -76,10 +73,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		val validSignatures = LinkedList<FunctionSignature>()
 		for(signature in signatures) {
 			val typeSubstitutions = signature.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
-			val specificSignature = if(typeSubstitutions.isEmpty())
-				signature
-			else
-				signature.withTypeSubstitutions(typeSubstitutions)
+			val specificSignature = if(typeSubstitutions.isEmpty()) signature else signature.withTypeSubstitutions(typeSubstitutions)
 			if(specificSignature.accepts(suppliedValues))
 				validSignatures.add(specificSignature)
 		}

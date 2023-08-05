@@ -35,12 +35,12 @@ class SemanticModelGenerator(val context: Context) {
 		return file?.scope
 	}
 
-	//TODO remove these comments:
+	//TODO remove these comments when no longer needed (they currently are still relevant!):
 
 	//TODO replace all phases between 'type linking' and 'data flow analysis' with 'determine types' including:
 	// - Value.getType() - to get type (use enum: undetermined, being_determined, indeterminable, determined)
-	// - TypeDefinition.resolveInitializers() - before resolving initializer in function call
 	// - Function.resolveSignatures() - before resolving functions in function call or operators
+	// - TypeDefinition.resolveInitializers() - before resolving initializer in function call
 
 	// Implementation differences:
 	// - removed 'type linking' stage (because generic copies require values to be linked)				GOOD

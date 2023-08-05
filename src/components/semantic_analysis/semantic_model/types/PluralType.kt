@@ -2,7 +2,6 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
 class PluralType(override val source: SyntaxTreeNode, scope: Scope, val baseType: Type): Type(source, scope) {
@@ -24,11 +23,6 @@ class PluralType(override val source: SyntaxTreeNode, scope: Scope, val baseType
 		if(sourceType !is PluralType)
 			return false
 		return baseType.accepts(sourceType.baseType)
-	}
-
-	fun acceptsElement(element: Value?): Boolean {
-		val elementType = element?.type ?: return false
-		return baseType.accepts(elementType)
 	}
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
