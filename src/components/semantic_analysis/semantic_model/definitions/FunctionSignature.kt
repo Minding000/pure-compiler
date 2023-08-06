@@ -12,15 +12,13 @@ import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
-import logger.issues.definition.InvalidVariadicParameterPosition
-import logger.issues.definition.MultipleVariadicParameters
 import util.combine
 import java.util.*
 
 class FunctionSignature(override val source: SyntaxTreeNode, override val scope: BlockScope, val genericParameters: List<TypeDefinition>,
-						val parameterTypes: List<Type?>, returnType: Type?): SemanticModel(source, scope) {
-	val fixedParameterTypes: List<Type?>
-	val variadicParameterType: PluralType?
+						val parameterTypes: List<Type?>, returnType: Type?, val isVariadic: Boolean): SemanticModel(source, scope) {
+	private val fixedParameterTypes: List<Type?>
+	private val variadicParameterType: Type?
 	val returnType = returnType ?: LiteralType(source, scope, SpecialType.NOTHING)
 	var superFunctionSignature: FunctionSignature? = null
 	var parentDefinition: TypeDefinition? = null
@@ -29,31 +27,23 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	init {
 		addSemanticModels(genericParameters, parameterTypes)
 		addSemanticModels(this.returnType)
-
-		val fixedParameterTypes = LinkedList<Type?>()
-		var variadicParameterType: PluralType? = null
-		for(parameterIndex in parameterTypes.indices) {
-			val parameterType = parameterTypes[parameterIndex]
-			if(parameterIndex == parameterTypes.size - 1) {
-				if(parameterType is PluralType) {
-					variadicParameterType = parameterType
-					break
-				}
-			}
-			fixedParameterTypes.add(parameterType)
+		if(isVariadic) {
+			this.fixedParameterTypes = parameterTypes.subList(0, parameterTypes.size - 1)
+			this.variadicParameterType = parameterTypes.last()
+		} else {
+			this.fixedParameterTypes = parameterTypes
+			this.variadicParameterType = null
 		}
-		this.fixedParameterTypes = fixedParameterTypes
-		this.variadicParameterType = variadicParameterType
 	}
 
 	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
 		if(suppliedTypes.size > genericParameters.size)
 			return null
-		if(variadicParameterType == null) {
-			if(suppliedValues.size != fixedParameterTypes.size)
+		if(isVariadic) {
+			if(suppliedValues.size < fixedParameterTypes.size)
 				return null
 		} else {
-			if(suppliedValues.size < fixedParameterTypes.size)
+			if(suppliedValues.size != fixedParameterTypes.size)
 				return null
 		}
 		val typeSubstitutions = HashMap<TypeDefinition, Type>()
@@ -95,7 +85,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		for(parameterType in parameterTypes)
 			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitution))
 		return FunctionSignature(source, scope, specificGenericParameters, specificParametersTypes,
-			returnType.withTypeSubstitutions(typeSubstitution))
+			returnType.withTypeSubstitutions(typeSubstitution), isVariadic)
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -165,22 +155,6 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		return true
 	}
 
-	override fun validate() {
-		super.validate()
-		validateVariadicParameter()
-	}
-
-	private fun validateVariadicParameter() {
-		for(parameterType in fixedParameterTypes) {
-			if(parameterType is PluralType) {
-				if(variadicParameterType == null)
-					context.addIssue(InvalidVariadicParameterPosition(parameterType.source))
-				else
-					context.addIssue(MultipleVariadicParameters(source))
-			}
-		}
-	}
-
 	fun getComputedReturnType(): Type {
 		returnType.determineTypes()
 		return returnType
@@ -190,7 +164,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		return if(index < fixedParameterTypes.size)
 			fixedParameterTypes[index]
 		else
-			variadicParameterType?.baseType
+			(variadicParameterType as? PluralType)?.baseType //TODO this should also work for lists, maps, etc.
 	}
 
 	fun requiresParameters() = genericParameters.isNotEmpty() || fixedParameterTypes.isNotEmpty()
@@ -200,7 +174,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 			return false
 		if(returnType != other.returnType)
 			return false
-		if(!this.hasSameParameterTypesAs(other))
+		if(!hasSameParameterTypesAs(other))
 			return false
 		return true
 	}
@@ -298,7 +272,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 			val parentDefinition = parentDefinition
 			if(parentDefinition != null)
 				parameterTypes.addFirst(constructor.createPointerType(parentDefinition.llvmType))
-			llvmType = constructor.buildFunctionType(parameterTypes, returnType.getLlvmType(constructor), variadicParameterType != null)
+			llvmType = constructor.buildFunctionType(parameterTypes, returnType.getLlvmType(constructor), isVariadic)
 			this.llvmType = llvmType
 		}
 		return llvmType

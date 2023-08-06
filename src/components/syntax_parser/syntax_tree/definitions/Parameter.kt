@@ -22,8 +22,8 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
     override fun toSemanticModel(scope: MutableScope): SemanticParameterModel {
         modifierList?.validate(context, ALLOWED_MODIFIER_TYPES)
         val isMutable = modifierList?.containsModifier(WordAtom.MUTABLE) ?: false
-        val hasDynamicSize = modifierList?.containsModifier(WordAtom.SPREAD) ?: false
-        return SemanticParameterModel(this, scope, identifier.getValue(), type?.toSemanticModel(scope), isMutable, hasDynamicSize)
+        val isVariadic = modifierList?.containsModifier(WordAtom.SPREAD) ?: false
+        return SemanticParameterModel(this, scope, identifier.getValue(), type?.toSemanticModel(scope), isMutable, isVariadic)
     }
 
 	fun toSemanticGenericParameterModel(scope: MutableScope): TypeDefinition {

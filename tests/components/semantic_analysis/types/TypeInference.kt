@@ -94,7 +94,7 @@ internal class TypeInference {
 				Stream class {
 					val protocols: ...TransportLayerProtocol
 
-					init(protocols)
+					init(...protocols)
 				}
 				val stream = Stream(.TCP)
             """.trimIndent()
@@ -134,7 +134,7 @@ internal class TypeInference {
 				}
 				Ports class
 				NetworkInterface object {
-					to getOpenPorts(protocols: ...TransportLayerProtocol): Ports
+					to getOpenPorts(...protocols: ...TransportLayerProtocol): Ports
 				}
 				val openUdpPort = NetworkInterface.getOpenPorts(.UDP)
             """.trimIndent()
@@ -174,7 +174,7 @@ internal class TypeInference {
 				}
 				Ports class
 				NetworkInterface object {
-					operator [protocols: ...TransportLayerProtocol](): Ports
+					operator [...protocols: ...TransportLayerProtocol](): Ports
 				}
 				val udpPorts = NetworkInterface[.UDP]
             """.trimIndent()
@@ -361,7 +361,7 @@ internal class TypeInference {
 				}
 				MailFolder class {
 					val messages: <Message>List
-					init(MessageType: Message; account: Account, availableActions: ...<MessageType>Action) {
+					init(MessageType: Message; account: Account, ...availableActions: ...<MessageType>Action) {
 						loop over account.incomingMessages as incomingMessage {
 							if incomingMessage is MessageType {
 								incomingMessage.actions = availableActions
@@ -431,7 +431,7 @@ internal class TypeInference {
 				Letter class
 				PostCard class: Letter
 				PostOffice object {
-					to stamp(L: Letter; letters: ...L): ...L {
+					to stamp(L: Letter; ...letters: ...L): ...L {
 						return letters
 					}
 				}
@@ -483,7 +483,7 @@ internal class TypeInference {
 					containing A: IpAddress
 				}
 				Server object {
-					operator [A: IpAddress; ipAddresses: ...A]: <A>Client
+					operator [A: IpAddress; ...ipAddresses: ...A]: <A>Client
 				}
 				val client = Server[Ipv4Address()]
             """.trimIndent()

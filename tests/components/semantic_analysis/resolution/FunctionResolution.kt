@@ -168,6 +168,23 @@ internal class FunctionResolution {
 	}
 
 	@Test
+	fun `resolves non-variadic function calls with plural type`() {
+		val sourceCode =
+			"""
+				Int class
+				IntegerList object {
+					to add(...integers: ...Int) {
+						addAll(integers)
+					}
+					to addAll(integers: ...Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val functionCall = lintResult.find<FunctionCall> { functionCall -> (functionCall.function as? VariableValue)?.name == "addAll" }
+		assertNotNull(functionCall?.type)
+	}
+
+	@Test
 	fun `resolves variadic function calls without variadic parameters`() {
 		val sourceCode =
 			"""

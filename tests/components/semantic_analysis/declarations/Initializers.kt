@@ -398,7 +398,7 @@ internal class Initializers {
 			"""
 				Window class
 				House class {
-					init(windows: ...Window)
+					init(...windows: ...Window)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -412,7 +412,7 @@ internal class Initializers {
 			"""
 				Window class
 				House class {
-					init(openWindows: ...Window, closedWindows: ...Window)
+					init(...openWindows: ...Window, ...closedWindows: ...Window)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -426,7 +426,7 @@ internal class Initializers {
 			"""
 				Window class
 				House class {
-					init(windows: ...Window, selectedWindow: Window)
+					init(...windows: ...Window, selectedWindow: Window)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

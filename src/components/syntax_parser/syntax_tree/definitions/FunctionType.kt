@@ -7,13 +7,14 @@ import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import source_structure.Position
 import components.semantic_analysis.semantic_model.types.FunctionType as SemanticFunctionTypeModel
 
-class FunctionType(start: Position, private val parameterList: ParameterTypeList?, private val returnType: TypeSyntaxTreeNode?, end: Position):
-	TypeSyntaxTreeNode(start, end) {
+class FunctionType(start: Position, private val parameterList: ParameterTypeList?, private val returnType: TypeSyntaxTreeNode?,
+				   end: Position): TypeSyntaxTreeNode(start, end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticFunctionTypeModel {
 		val functionScope = BlockScope(scope)
 		val parameters = parameterList?.toSemanticModels(functionScope) ?: listOf()
-		val signature = FunctionSignature(this, functionScope, listOf(), parameters, returnType?.toSemanticModel(functionScope))
+		val signature = FunctionSignature(this, functionScope, listOf(), parameters, returnType?.toSemanticModel(functionScope),
+			false) //TODO there is no way to declare a variadic function signature without implementation
 		return SemanticFunctionTypeModel(this, scope, signature)
 	}
 

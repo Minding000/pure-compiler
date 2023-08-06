@@ -46,7 +46,7 @@ internal class Functions {
 			"""
 				Window class
 				House object {
-					to add(windows: ...Window)
+					to add(...windows: ...Window)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -60,7 +60,7 @@ internal class Functions {
 			"""
 				Window class
 				House object {
-					to add(openWindows: ...Window, closedWindows: ...Window)
+					to add(...openWindows: ...Window, ...closedWindows: ...Window)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -74,7 +74,7 @@ internal class Functions {
 			"""
 				Window class
 				House object {
-					to add(windows: ...Window, selectedWindow: Window)
+					to add(...windows: ...Window, selectedWindow: Window)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

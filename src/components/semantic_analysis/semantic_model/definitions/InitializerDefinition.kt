@@ -31,8 +31,9 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	override lateinit var parentDefinition: TypeDefinition
 	override val memberIdentifier
 		get() = toString(true)
-	val fixedParameters = LinkedList<Parameter>()
-	var variadicParameter: Parameter? = null
+	private val isVariadic = parameters.lastOrNull()?.isVariadic ?: false
+	private val fixedParameters: List<Parameter>
+	private val variadicParameter: Parameter?
 	var superInitializer: InitializerDefinition? = null
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
@@ -42,6 +43,13 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	init {
 		addSemanticModels(typeParameters, parameters)
 		addSemanticModels(body)
+		if(isVariadic) {
+			this.fixedParameters = parameters.subList(0, parameters.size - 1)
+			this.variadicParameter = parameters.last()
+		} else {
+			this.fixedParameters = parameters
+			this.variadicParameter = null
+		}
 	}
 
 	fun getDefinitionTypeSubstitutions(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
@@ -112,12 +120,10 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
 		val initializerDefinition = InitializerDefinition(source, scope, specificTypeParameters, specificParameters, body, isAbstract,
 			isConverting, isNative, isOverriding)
-		initializerDefinition.categorizeParameters()
 		initializerDefinition.parentDefinition = parentDefinition
 		return initializerDefinition
 	}
 
-	//TODO deduplicate with FunctionSignature?
 	//TODO support labeled input values (same for functions)
 	// -> make sure they are passed in the correct order (LLVM side)
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -142,7 +148,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		if(otherVariadicParameter != null) {
 			if(variadicParameter == null)
 				return true
-			val variadicParameterType = variadicParameter?.type ?: return false
+			val variadicParameterType = variadicParameter.type ?: return false
 			val otherVariadicParameterType = otherVariadicParameter.type ?: return true
 			if(variadicParameterType != otherVariadicParameterType)
 				return otherVariadicParameterType.accepts(variadicParameterType)
@@ -166,21 +172,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		parentDefinition = scope.getSurroundingDefinition()
 			?: throw CompilerError(source, "Initializer expected surrounding type definition.")
 		super.determineTypes()
-		categorizeParameters()
 		parentDefinition.scope.declareInitializer(this)
-	}
-
-	private fun categorizeParameters() {
-		for(parameterIndex in parameters.indices) {
-			val parameter = parameters[parameterIndex]
-			if(parameterIndex == parameters.size - 1) {
-				if(parameter.type is PluralType) {
-					variadicParameter = parameter
-					break
-				}
-			}
-			fixedParameters.add(parameter)
-		}
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -238,13 +230,10 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			}
 		}
 	}
-	//TODO fix: use Parameter.hasDynamicSize instead of Parameter.type is PluralType
-	// - write test: call non-variadic function with PluralType
-	// - adjust tests
-	// - rename to isVariadic
-	private fun validateVariadicParameter() {
+
+	private fun validateVariadicParameter() { //TODO validate that variadic parameters have Collection / Plural type
 		for(parameter in fixedParameters) {
-			if(parameter.type is PluralType) {
+			if(parameter.isVariadic) {
 				if(variadicParameter == null)
 					context.addIssue(InvalidVariadicParameterPosition(parameter.source))
 				else
@@ -259,7 +248,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			parameters[index].index = index
 		val parameterTypes = LinkedList<LlvmType?>(fixedParameters.map { parameter -> parameter.type?.getLlvmType(constructor) })
 		parameterTypes.addFirst(constructor.createPointerType(parentDefinition.llvmType))
-		llvmType = constructor.buildFunctionType(parameterTypes, constructor.voidType, variadicParameter != null)
+		llvmType = constructor.buildFunctionType(parameterTypes, constructor.voidType, isVariadic)
 		llvmValue = constructor.buildFunction("${parentDefinition.name}_Initializer", llvmType)
 	}
 

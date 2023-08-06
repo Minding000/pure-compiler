@@ -13,6 +13,8 @@ import components.semantic_analysis.semantic_model.values.Operator
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.constant_conditions.FunctionCompletesDespiteNever
 import logger.issues.constant_conditions.FunctionCompletesWithoutReturning
+import logger.issues.definition.InvalidVariadicParameterPosition
+import logger.issues.definition.MultipleVariadicParameters
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 import java.util.*
@@ -32,7 +34,9 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 				signature.toString(false, parentOperator.kind)
 			}
 		}
-	val signature = FunctionSignature(source, scope, genericParameters, parameters.map { parameter -> parameter.type }, returnType)
+	val isVariadic = parameters.lastOrNull()?.isVariadic ?: false
+	val signature = FunctionSignature(source, scope, genericParameters, parameters.map { parameter -> parameter.type }, returnType,
+		isVariadic)
 	var mightReturnValue = false
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
@@ -74,6 +78,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	override fun validate() {
 		super.validate()
 		validateOverridingKeyword()
+		validateParameters()
 		validateReturnType()
 	}
 
@@ -85,6 +90,18 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		} else {
 			if(isOverriding)
 				context.addIssue(OverriddenSuperMissing(source, parentFunction.memberType))
+		}
+	}
+
+	private fun validateParameters() {
+		for(parameterIndex in 0 until parameters.size - 1) {
+			val parameter = parameters[parameterIndex]
+			if(parameter.isVariadic) {
+				if(isVariadic)
+					context.addIssue(MultipleVariadicParameters(source))
+				else
+					context.addIssue(InvalidVariadicParameterPosition(parameter.source))
+			}
 		}
 	}
 

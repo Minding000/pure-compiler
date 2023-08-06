@@ -10,30 +10,48 @@ class Operator(source: SyntaxTreeNode, scope: Scope, val kind: Kind): Function(s
 
 	override fun validate() {
 		super.validate()
+		validateNonVariadic()
+		if(kind == Kind.BRACKETS_SET)
+			validateIndexSetter()
+		else if(kind != Kind.BRACKETS_GET)
+			validateNonIndexOperators()
+	}
+
+	private fun validateNonVariadic() {
 		for(implementation in implementations) {
-			if(kind == Kind.BRACKETS_SET) {
-				if(!SpecialType.NOTHING.matches(implementation.signature.returnType))
-					context.addIssue(ReadWriteIndexOperator(source))
-			} else if(kind != Kind.BRACKETS_GET) {
-				if(SpecialType.NOTHING.matches(implementation.signature.returnType)) {
-					if(kind.returnsValue)
-						context.addIssue(OperatorExpectedToReturn(source))
-				} else {
-					if(!kind.returnsValue)
-						context.addIssue(OperatorExpectedToNotReturn(source))
-				}
-				if(kind.isUnary) {
-					if(implementation.parameters.size > 1 || !kind.isBinary && implementation.parameters.isNotEmpty())
-						context.addIssue(ParameterInUnaryOperator(source))
-				}
-				if(kind.isBinary) {
-					if(implementation.parameters.size > 1 || !kind.isUnary && implementation.parameters.isEmpty())
-						context.addIssue(BinaryOperatorWithInvalidParameterCount(source))
-				}
+			for(parameter in implementation.parameters) {
+				if(parameter.isVariadic)
+					context.addIssue(VariadicParameterInOperator(parameter.source))
 			}
 		}
 	}
 
+	private fun validateIndexSetter() {
+		for(implementation in implementations) {
+			if(!SpecialType.NOTHING.matches(implementation.signature.returnType))
+				context.addIssue(ReadWriteIndexOperator(source))
+		}
+	}
+
+	private fun validateNonIndexOperators() {
+		for(implementation in implementations) {
+			if(SpecialType.NOTHING.matches(implementation.signature.returnType)) {
+				if(kind.returnsValue)
+					context.addIssue(OperatorExpectedToReturn(source))
+			} else {
+				if(!kind.returnsValue)
+					context.addIssue(OperatorExpectedToNotReturn(source))
+			}
+			if(kind.isUnary) {
+				if(implementation.parameters.size > 1 || !kind.isBinary && implementation.parameters.isNotEmpty())
+					context.addIssue(ParameterInUnaryOperator(source))
+			}
+			if(kind.isBinary) {
+				if(implementation.parameters.size > 1 || !kind.isUnary && implementation.parameters.isEmpty())
+					context.addIssue(BinaryOperatorWithInvalidParameterCount(source))
+			}
+		}
+	}
 
 	enum class Kind(val stringRepresentation: String, val isUnary: Boolean, val isBinary: Boolean,
 					val returnsValue: Boolean) {

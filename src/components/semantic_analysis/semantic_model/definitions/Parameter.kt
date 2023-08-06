@@ -12,14 +12,14 @@ import kotlin.properties.Delegates
 import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
 class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, name: String, type: Type?, isMutable: Boolean,
-				val hasDynamicSize: Boolean, isSpecificCopy: Boolean = false):
+				val isVariadic: Boolean, isSpecificCopy: Boolean = false):
 	ValueDeclaration(source, scope, name, type, null, true, isMutable, isSpecificCopy) {
 	val isPropertySetter = type == null
 	var propertyDeclaration: ValueDeclaration? = null
 	var index by Delegates.notNull<Int>()
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Parameter {
-		return Parameter(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), isMutable, hasDynamicSize)
+		return Parameter(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), isMutable, isVariadic)
 	}
 
 	override fun declare() {

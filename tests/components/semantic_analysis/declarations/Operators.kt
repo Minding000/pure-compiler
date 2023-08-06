@@ -1,9 +1,8 @@
 package components.semantic_analysis.declarations
 
 import logger.Severity
-import logger.issues.definition.InvalidVariadicParameterPosition
-import logger.issues.definition.MultipleVariadicParameters
 import logger.issues.definition.Redeclaration
+import logger.issues.definition.VariadicParameterInOperator
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
@@ -42,44 +41,16 @@ internal class Operators {
 	}
 
 	@Test
-	fun `allows single variadic parameter`() {
+	fun `disallows variadic parameters in operators`() {
 		val sourceCode =
 			"""
 				Window class
 				House class {
-					operator +=(windows: ...Window)
+					operator +=(...windows: ...Window)
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueNotDetected<MultipleVariadicParameters>()
-		lintResult.assertIssueNotDetected<InvalidVariadicParameterPosition>()
-	}
-
-	@Test
-	fun `detects multiple variadic parameters`() {
-		val sourceCode =
-			"""
-				Window class
-				House class {
-					operator +=(openWindows: ...Window, closedWindows: ...Window)
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<MultipleVariadicParameters>("Signatures can have at most one variadic parameter.",
-			Severity.ERROR)
-	}
-
-	@Test
-	fun `detects variadic parameters not positioned at the parameter list end`() {
-		val sourceCode =
-			"""
-				Window class
-				House class {
-					operator +=(windows: ...Window, selectedWindow: Window)
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<InvalidVariadicParameterPosition>("Variadic parameters have to be the last parameter.",
+		lintResult.assertIssueDetected<VariadicParameterInOperator>("Variadic parameter in operator definition.",
 			Severity.ERROR)
 	}
 }

@@ -2,12 +2,12 @@ package components.semantic_analysis.resolution
 
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
 import components.semantic_analysis.semantic_model.operations.MemberAccess
+import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.access.InstanceAccessFromStaticContext
 import logger.issues.access.StaticAccessFromInstanceContext
 import logger.issues.resolution.NotFound
 import logger.issues.resolution.SignatureAmbiguity
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertNotNull
@@ -84,22 +84,6 @@ internal class InitializerResolution {
 			Severity.WARNING)
 	}
 
-	@Disabled
-	@Test
-	fun `resolves initializer calls with a variable number of parameters`() {
-		val sourceCode =
-			"""
-				Int class
-				IntegerList class {
-					init(...integers: ...Int)
-				}
-				IntegerList()
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val initializerCall = lintResult.find<FunctionCall>()
-		assertNotNull(initializerCall?.type)
-	}
-
 	@Test
 	fun `emits error for ambiguous initializer calls`() {
 		val sourceCode =
@@ -119,5 +103,69 @@ internal class InitializerResolution {
 			 - '<Element>List(Int)' declared at Test.Test:5:1
 			 - '<Element>List(Int)' declared at Test.Test:6:1
 		""".trimIndent(), Severity.ERROR)
+	}
+
+	@Test
+	fun `resolves non-variadic initializer calls with plural type`() {
+		val sourceCode =
+			"""
+				Int class
+				IntegerList class {
+					init(...integers: ...Int)
+				}
+				IntegerList()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function as? VariableValue)?.name == "IntegerList" }
+		assertNotNull(initializerCall?.type)
+	}
+
+	@Test
+	fun `resolves variadic initializer calls without variadic parameters`() {
+		val sourceCode =
+			"""
+				Int class
+				IntegerList class {
+					init(capacity: Int, ...integers: ...Int)
+				}
+				IntegerList(Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function as? VariableValue)?.name == "IntegerList" }
+		assertNotNull(initializerCall?.type)
+	}
+
+	@Test
+	fun `resolves variadic initializer calls with one variadic parameter`() {
+		val sourceCode =
+			"""
+				Int class
+				IntegerList class {
+					init(capacity: Int, ...integers: ...Int)
+				}
+				IntegerList(Int(), Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function as? VariableValue)?.name == "IntegerList" }
+		assertNotNull(initializerCall?.type)
+	}
+
+	@Test
+	fun `resolves variadic initializer calls with multiple variadic parameters`() {
+		val sourceCode =
+			"""
+				Int class
+				IntegerList class {
+					init(capacity: Int, ...integers: ...Int)
+				}
+				IntegerList(Int(), Int(), Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function as? VariableValue)?.name == "IntegerList" }
+		assertNotNull(initializerCall?.type)
 	}
 }

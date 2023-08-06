@@ -1,6 +1,5 @@
 package components.semantic_analysis.resolution
 
-import components.semantic_analysis.semantic_model.control_flow.FunctionCall
 import components.semantic_analysis.semantic_model.operations.IndexAccess
 import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.VariableValue
@@ -12,7 +11,6 @@ import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
 import logger.issues.resolution.NotFound
 import logger.issues.resolution.SignatureAmbiguity
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertNotNull
@@ -335,21 +333,5 @@ internal class OperatorResolution {
 			 - '(Int) => Int' declared at Test.Test:5:10
 			 - '(Int) => Boolean' declared at Test.Test:6:10
 		""".trimIndent())
-	}
-
-	@Disabled
-	@Test
-	fun `resolves operator calls with a variable number of parameters`() {
-		val sourceCode =
-			"""
-				Int class
-				IntegerList object {
-					operator +=(...integers: ...Int)
-				}
-				IntegerList += Int(), Int()
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val initializerCall = lintResult.find<FunctionCall>()
-		assertNotNull(initializerCall?.type)
 	}
 }
