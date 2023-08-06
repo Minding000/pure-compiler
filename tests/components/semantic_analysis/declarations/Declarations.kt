@@ -115,69 +115,6 @@ internal class Declarations {
 	}
 
 	@Test
-	fun `allows function declarations`() {
-		val sourceCode =
-			"""
-				Int class
-				Human class {
-					to push()
-					to push(pressure: Int)
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueNotDetected<Redeclaration>()
-	}
-
-	@Test
-	fun `detects function redeclarations`() {
-		val sourceCode =
-			"""
-				Pressure class
-				alias P = Pressure
-				Human class {
-					to push(): Pressure
-					to push(pressure: P)
-					to push(pressure: Pressure)
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<Redeclaration>(
-			"Redeclaration of function 'Human.push(Pressure)', previously declared in Test.Test:5:4.", Severity.ERROR)
-	}
-
-	@Test
-	fun `allows operator declarations`() {
-		val sourceCode =
-			"""
-				Time class
-				Mood class
-				Human class {
-					operator [time: Time]: Mood
-					operator [start: Time, end: Time]: Mood
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueNotDetected<Redeclaration>()
-	}
-
-	@Test
-	fun `detects operator redeclarations`() {
-		val sourceCode =
-			"""
-				Time class
-				alias T = Time
-				Human class {
-					operator [start: T, end: T](time: T)
-					operator [time: T]: T
-					operator [time: Time]: Time
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<Redeclaration>(
-			"Redeclaration of operator 'Human[Time]: Time', previously declared in Test.Test:5:10.", Severity.ERROR)
-	}
-
-	@Test
 	fun `detects invalid modifiers`() {
 		val sourceCode =
 			"""

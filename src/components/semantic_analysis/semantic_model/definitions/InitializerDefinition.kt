@@ -14,6 +14,8 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
+import logger.issues.definition.InvalidVariadicParameterPosition
+import logger.issues.definition.MultipleVariadicParameters
 import logger.issues.initialization.UninitializedProperties
 import logger.issues.modifiers.*
 import util.combine
@@ -169,11 +171,13 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	}
 
 	private fun categorizeParameters() {
-		//TODO this only works with one PluralType per function for now, so that restriction should be enforced by the linter
-		for(parameter in parameters) {
-			if(parameter.type is PluralType) {
-				variadicParameter = parameter
-				continue
+		for(parameterIndex in parameters.indices) {
+			val parameter = parameters[parameterIndex]
+			if(parameterIndex == parameters.size - 1) {
+				if(parameter.type is PluralType) {
+					variadicParameter = parameter
+					break
+				}
 			}
 			fixedParameters.add(parameter)
 		}
@@ -234,9 +238,19 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			}
 		}
 	}
-
+	//TODO fix: use Parameter.hasDynamicSize instead of Parameter.type is PluralType
+	// - write test: call non-variadic function with PluralType
+	// - adjust tests
+	// - rename to isVariadic
 	private fun validateVariadicParameter() {
-		//TODO validate that at most one variadic parameter exists and that it is the last parameter
+		for(parameter in fixedParameters) {
+			if(parameter.type is PluralType) {
+				if(variadicParameter == null)
+					context.addIssue(InvalidVariadicParameterPosition(parameter.source))
+				else
+					context.addIssue(MultipleVariadicParameters(source))
+			}
+		}
 	}
 
 	override fun declare(constructor: LlvmConstructor) {

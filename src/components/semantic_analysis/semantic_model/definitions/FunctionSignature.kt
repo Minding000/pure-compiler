@@ -12,6 +12,8 @@ import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
+import logger.issues.definition.InvalidVariadicParameterPosition
+import logger.issues.definition.MultipleVariadicParameters
 import util.combine
 import java.util.*
 
@@ -25,20 +27,23 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	private var llvmType: LlvmType? = null
 
 	init {
-		//TODO this only works with one PluralType per function for now, so that restriction should be enforced by the linter
+		addSemanticModels(genericParameters, parameterTypes)
+		addSemanticModels(this.returnType)
+
 		val fixedParameterTypes = LinkedList<Type?>()
 		var variadicParameterType: PluralType? = null
-		for(parameterType in parameterTypes) {
-			if(parameterType is PluralType) {
-				variadicParameterType = parameterType
-				continue
+		for(parameterIndex in parameterTypes.indices) {
+			val parameterType = parameterTypes[parameterIndex]
+			if(parameterIndex == parameterTypes.size - 1) {
+				if(parameterType is PluralType) {
+					variadicParameterType = parameterType
+					break
+				}
 			}
 			fixedParameterTypes.add(parameterType)
 		}
 		this.fixedParameterTypes = fixedParameterTypes
 		this.variadicParameterType = variadicParameterType
-		addSemanticModels(genericParameters, parameterTypes)
-		addSemanticModels(this.returnType)
 	}
 
 	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
@@ -166,7 +171,14 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	}
 
 	private fun validateVariadicParameter() {
-		//TODO validate that at most one variadic parameter exists and that it is the last parameter
+		for(parameterType in fixedParameterTypes) {
+			if(parameterType is PluralType) {
+				if(variadicParameterType == null)
+					context.addIssue(InvalidVariadicParameterPosition(parameterType.source))
+				else
+					context.addIssue(MultipleVariadicParameters(source))
+			}
+		}
 	}
 
 	fun getComputedReturnType(): Type {

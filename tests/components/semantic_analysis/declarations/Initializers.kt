@@ -391,4 +391,46 @@ internal class Initializers {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<OverriddenSuperInitializerMissing>()
 	}
+
+	@Test
+	fun `allows single variadic parameter`() {
+		val sourceCode =
+			"""
+				Window class
+				House class {
+					init(windows: ...Window)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MultipleVariadicParameters>()
+		lintResult.assertIssueNotDetected<InvalidVariadicParameterPosition>()
+	}
+
+	@Test
+	fun `detects multiple variadic parameters`() {
+		val sourceCode =
+			"""
+				Window class
+				House class {
+					init(openWindows: ...Window, closedWindows: ...Window)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<MultipleVariadicParameters>("Signatures can have at most one variadic parameter.",
+			Severity.ERROR)
+	}
+
+	@Test
+	fun `detects variadic parameters not positioned at the parameter list end`() {
+		val sourceCode =
+			"""
+				Window class
+				House class {
+					init(windows: ...Window, selectedWindow: Window)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<InvalidVariadicParameterPosition>("Variadic parameters have to be the last parameter.",
+			Severity.ERROR)
+	}
 }
