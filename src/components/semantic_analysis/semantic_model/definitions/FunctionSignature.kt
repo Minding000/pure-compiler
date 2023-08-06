@@ -41,25 +41,6 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		addSemanticModels(this.returnType)
 	}
 
-	fun getComputedReturnType(): Type {
-		returnType.determineTypes()
-		return returnType
-	}
-
-	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {
-		val specificGenericParameters = LinkedList<TypeDefinition>()
-		for(genericParameter in genericParameters) {
-			genericParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
-				specificGenericParameters.add(specificDefinition)
-			}
-		}
-		val specificParametersTypes = LinkedList<Type?>()
-		for(parameterType in parameterTypes)
-			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitution))
-		return FunctionSignature(source, scope, specificGenericParameters, specificParametersTypes,
-			returnType.withTypeSubstitutions(typeSubstitution))
-	}
-
 	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
 		if(suppliedTypes.size > genericParameters.size)
 			return null
@@ -96,6 +77,20 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		if(inferredTypes.isEmpty())
 			return null
 		return inferredTypes.combine(this)
+	}
+
+	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {
+		val specificGenericParameters = LinkedList<TypeDefinition>()
+		for(genericParameter in genericParameters) {
+			genericParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
+				specificGenericParameters.add(specificDefinition)
+			}
+		}
+		val specificParametersTypes = LinkedList<Type?>()
+		for(parameterType in parameterTypes)
+			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitution))
+		return FunctionSignature(source, scope, specificGenericParameters, specificParametersTypes,
+			returnType.withTypeSubstitutions(typeSubstitution))
 	}
 
 	fun accepts(suppliedValues: List<Value>): Boolean {
@@ -165,12 +160,19 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		return true
 	}
 
+	fun getComputedReturnType(): Type {
+		returnType.determineTypes()
+		return returnType
+	}
+
 	fun getParameterTypeAt(index: Int): Type? {
 		return if(index < fixedParameterTypes.size)
 			fixedParameterTypes[index]
 		else
 			variadicParameterType?.baseType
 	}
+
+	fun requiresParameters() = genericParameters.isNotEmpty() || fixedParameterTypes.isNotEmpty()
 
 	override fun equals(other: Any?): Boolean {
 		if(other !is FunctionSignature)
@@ -267,8 +269,6 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 			}
 		}
 	}
-
-	fun takesNoParameters() = genericParameters.isEmpty() && parameterTypes.isEmpty()
 
 	fun getLlvmType(constructor: LlvmConstructor): LlvmType {
 		var llvmType = llvmType

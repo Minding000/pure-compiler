@@ -8,6 +8,7 @@ import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.BlockScope
+import components.semantic_analysis.semantic_model.types.PluralType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Value
@@ -18,6 +19,7 @@ import logger.issues.modifiers.*
 import util.combine
 import util.stringifyTypes
 import java.util.*
+import kotlin.math.max
 
 class InitializerDefinition(override val source: SyntaxTreeNode, override val scope: BlockScope,
 							val typeParameters: List<TypeDefinition> = emptyList(), val parameters: List<Parameter> = emptyList(),
@@ -27,6 +29,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	override lateinit var parentDefinition: TypeDefinition
 	override val memberIdentifier
 		get() = toString(true)
+	val fixedParameters = LinkedList<Parameter>()
+	var variadicParameter: Parameter? = null
 	var superInitializer: InitializerDefinition? = null
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
@@ -38,50 +42,17 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		addSemanticModels(body)
 	}
 
-	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {
-		val specificTypeParameters = LinkedList<TypeDefinition>()
-		for(typeParameter in typeParameters) {
-			typeParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
-				specificTypeParameters.add(specificDefinition)
-			}
-		}
-		val specificParameters = LinkedList<Parameter>()
-		for(parameter in parameters)
-			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
-		val initializerDefinition = InitializerDefinition(source, scope, specificTypeParameters, specificParameters, body, isAbstract,
-			isConverting, isNative, isOverriding)
-		initializerDefinition.parentDefinition = parentDefinition
-		return initializerDefinition
-	}
-
-	fun fulfillsInheritanceRequirementsOf(superInitializer: InitializerDefinition): Boolean {
-		if(parameters.size != superInitializer.parameters.size)
-			return false
-		for(parameterIndex in parameters.indices) {
-			val superParameterType = superInitializer.parameters[parameterIndex].type ?: continue
-			val baseParameterType = parameters[parameterIndex].type ?: continue
-			if(!baseParameterType.accepts(superParameterType))
-				return false
-		}
-		return true
-	}
-
-	fun accepts(suppliedValues: List<Value>): Boolean {
-		if(parameters.size != suppliedValues.size)
-			return false
-		for(parameterIndex in parameters.indices) {
-			if(!suppliedValues[parameterIndex].isAssignableTo(parameters[parameterIndex].type))
-				return false
-		}
-		return true
-	}
-
 	fun getDefinitionTypeSubstitutions(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
 									   suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
-		if(genericDefinitionTypes.size < suppliedDefinitionTypes.size)
+		if(suppliedDefinitionTypes.size > genericDefinitionTypes.size)
 			return null
-		if(parameters.size != suppliedValues.size)
-			return null
+		if(variadicParameter == null) {
+			if(suppliedValues.size != fixedParameters.size)
+				return null
+		} else {
+			if(suppliedValues.size < fixedParameters.size)
+				return null
+		}
 		val typeSubstitutions = LinkedHashMap<TypeDefinition, Type>()
 		for(parameterIndex in genericDefinitionTypes.indices) {
 			val genericParameter = genericDefinitionTypes[parameterIndex]
@@ -97,9 +68,9 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	}
 
 	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
-		if(typeParameters.size < suppliedTypes.size)
-			return null
-		if(parameters.size != suppliedValues.size)
+		assert(suppliedValues.size >= fixedParameters.size)
+
+		if(suppliedTypes.size > typeParameters.size)
 			return null
 		val typeSubstitutions = HashMap<TypeDefinition, Type>()
 		for(parameterIndex in typeParameters.indices) {
@@ -117,48 +88,96 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 
 	private fun inferTypeParameter(typeParameter: TypeDefinition, suppliedValues: List<Value>): Type? {
 		val inferredTypes = LinkedList<Type>()
-		for(parameterIndex in parameters.indices) {
-			val valueParameterType = parameters[parameterIndex].type
+		for(parameterIndex in suppliedValues.indices) {
+			val parameterType = getParameterTypeAt(parameterIndex)
 			val suppliedType = suppliedValues[parameterIndex].type ?: continue
-			valueParameterType?.inferType(typeParameter, suppliedType, inferredTypes)
+			parameterType?.inferType(typeParameter, suppliedType, inferredTypes)
 		}
 		if(inferredTypes.isEmpty())
 			return null
 		return inferredTypes.combine(this)
 	}
 
-	fun isMoreSpecificThan(otherInitializerDefinition: InitializerDefinition): Boolean {
-		if(parameters.size != otherInitializerDefinition.parameters.size)
-			return false
-		var hasSameSpecificity = true
-		for(parameterIndex in parameters.indices) {
-			val parameterType = parameters[parameterIndex].type
-			val otherParameterType = otherInitializerDefinition.parameters[parameterIndex].type
-			if(parameterType != otherParameterType) {
-				hasSameSpecificity = false
-				break
+	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {
+		val specificTypeParameters = LinkedList<TypeDefinition>()
+		for(typeParameter in typeParameters) {
+			typeParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
+				specificTypeParameters.add(specificDefinition)
 			}
 		}
-		if(hasSameSpecificity)
-			return false
-		for(parameterIndex in parameters.indices) {
-			val parameterType = parameters[parameterIndex].type ?: return false
-			val otherParameterType = otherInitializerDefinition.parameters[parameterIndex].type ?: continue
-			if(!otherParameterType.accepts(parameterType))
+		val specificParameters = LinkedList<Parameter>()
+		for(parameter in parameters)
+			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
+		val initializerDefinition = InitializerDefinition(source, scope, specificTypeParameters, specificParameters, body, isAbstract,
+			isConverting, isNative, isOverriding)
+		initializerDefinition.categorizeParameters()
+		initializerDefinition.parentDefinition = parentDefinition
+		return initializerDefinition
+	}
+
+	//TODO deduplicate with FunctionSignature?
+	//TODO support labeled input values (same for functions)
+	// -> make sure they are passed in the correct order (LLVM side)
+	fun accepts(suppliedValues: List<Value>): Boolean {
+		assert(suppliedValues.size >= fixedParameters.size)
+
+		for(parameterIndex in suppliedValues.indices) {
+			val parameterType = getParameterTypeAt(parameterIndex)
+			if(!suppliedValues[parameterIndex].isAssignableTo(parameterType))
 				return false
 		}
 		return true
 	}
 
-	fun isConvertingFrom(sourceType: Type): Boolean {
-		return isConverting && parameters.size == 1 && parameters.first().type?.accepts(sourceType) ?: false
+	fun isMoreSpecificThan(otherInitializerDefinition: InitializerDefinition): Boolean {
+		for(parameterIndex in 0 until max(fixedParameters.size, otherInitializerDefinition.fixedParameters.size)) {
+			val parameterType = getParameterTypeAt(parameterIndex) ?: return false
+			val otherParameterType = otherInitializerDefinition.getParameterTypeAt(parameterIndex) ?: return true
+			if(parameterType == otherParameterType)
+				continue
+			return otherParameterType.accepts(parameterType)
+		}
+		val otherVariadicParameter = otherInitializerDefinition.variadicParameter
+		if(otherVariadicParameter != null) {
+			if(variadicParameter == null)
+				return true
+			val variadicParameterType = variadicParameter?.type ?: return false
+			val otherVariadicParameterType = otherVariadicParameter.type ?: return true
+			if(variadicParameterType != otherVariadicParameterType)
+				return otherVariadicParameterType.accepts(variadicParameterType)
+		}
+		return false
+	}
+
+	fun fulfillsInheritanceRequirementsOf(superInitializer: InitializerDefinition): Boolean { //TODO support variadic parameters
+		if(parameters.size != superInitializer.parameters.size)
+			return false
+		for(parameterIndex in parameters.indices) {
+			val superParameterType = superInitializer.parameters[parameterIndex].type ?: continue
+			val baseParameterType = parameters[parameterIndex].type ?: continue
+			if(!baseParameterType.accepts(superParameterType))
+				return false
+		}
+		return true
 	}
 
 	override fun determineTypes() {
 		parentDefinition = scope.getSurroundingDefinition()
 			?: throw CompilerError(source, "Initializer expected surrounding type definition.")
 		super.determineTypes()
+		categorizeParameters()
 		parentDefinition.scope.declareInitializer(this)
+	}
+
+	private fun categorizeParameters() {
+		//TODO this only works with one PluralType per function for now, so that restriction should be enforced by the linter
+		for(parameter in parameters) {
+			if(parameter.type is PluralType) {
+				variadicParameter = parameter
+				continue
+			}
+			fixedParameters.add(parameter)
+		}
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -187,7 +206,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		if(isConverting) {
 			if(typeParameters.isNotEmpty())
 				context.addIssue(ConvertingInitializerTakingTypeParameters(source))
-			if(parameters.size != 1)
+			if(fixedParameters.size != 1)
 				context.addIssue(ConvertingInitializerWithInvalidParameterCount(source))
 		} else {
 			if(superInitializer?.isConverting == true)
@@ -212,9 +231,9 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		super.declare(constructor)
 		for(index in parameters.indices)
 			parameters[index].index = index
-		val parameterTypes = LinkedList(parameters.map { parameter -> parameter.type?.getLlvmType(constructor) })
+		val parameterTypes = LinkedList<LlvmType?>(fixedParameters.map { parameter -> parameter.type?.getLlvmType(constructor) })
 		parameterTypes.addFirst(constructor.createPointerType(parentDefinition.llvmType))
-		llvmType = constructor.buildFunctionType(parameterTypes)
+		llvmType = constructor.buildFunctionType(parameterTypes, constructor.voidType, variadicParameter != null)
 		llvmValue = constructor.buildFunction("${parentDefinition.name}_Initializer", llvmType)
 	}
 
@@ -246,6 +265,17 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 					" with super class '${superType.definition?.name}' without trivial initializer.")
 			constructor.buildFunctionCall(trivialInitializer.llvmType, trivialInitializer.llvmValue, listOf(thisValue))
 		}
+	}
+
+	fun isConvertingFrom(sourceType: Type): Boolean {
+		return isConverting && fixedParameters.size == 1 && fixedParameters.first().type?.accepts(sourceType) ?: false
+	}
+
+	fun getParameterTypeAt(index: Int): Type? {
+		return if(index < fixedParameters.size)
+			fixedParameters[index].type
+		else
+			(variadicParameter?.type as? PluralType)?.baseType
 	}
 
 	override fun toString(): String {

@@ -76,8 +76,10 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 				if(!match.signature.isMoreSpecificThan(otherMatch.signature))
 					continue@specificityPrecedenceLoop
 			}
-			for(parameterIndex in suppliedValues.indices)
-				suppliedValues[parameterIndex].setInferredType(match.signature.parameters[parameterIndex].type)
+			for(parameterIndex in suppliedValues.indices) {
+				val parameterType = match.signature.getParameterTypeAt(parameterIndex)
+				suppliedValues[parameterIndex].setInferredType(parameterType)
+			}
 			return match
 		}
 		throw SignatureResolutionAmbiguityError(matches.map { match -> match.signature })

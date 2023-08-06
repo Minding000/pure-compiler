@@ -281,7 +281,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val functionVariable = scope.resolveValue(functionName) ?: throw UserError("Function '$functionName' not found.")
 		val function = functionVariable.value as? Function ?: throw UserError("Variable '$functionName' is not a function.")
 		val functionImplementation = function.implementations.find { functionImplementation ->
-			functionImplementation.signature.takesNoParameters() } ?: throw UserError("Function '$functionName' has no overload without parameters.")
+			!functionImplementation.signature.requiresParameters() }
+			?: throw UserError("Function '$functionName' has no overload without parameters.")
 		var objectValue: ValueDeclaration? = null
 		if(objectDefinition != null)
 			objectValue = (objectDefinition.parentTypeDefinition?.scope ?: objectDefinition.scope).resolveValue(objectDefinition.name)
