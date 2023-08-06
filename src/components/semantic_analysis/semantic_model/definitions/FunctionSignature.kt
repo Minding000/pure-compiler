@@ -160,6 +160,15 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		return true
 	}
 
+	override fun validate() {
+		super.validate()
+		validateVariadicParameter()
+	}
+
+	private fun validateVariadicParameter() {
+		//TODO validate that at most one variadic parameter exists and that it is the last parameter
+	}
+
 	fun getComputedReturnType(): Type {
 		returnType.determineTypes()
 		return returnType

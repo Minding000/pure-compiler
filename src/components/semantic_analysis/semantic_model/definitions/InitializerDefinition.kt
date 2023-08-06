@@ -133,9 +133,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		for(parameterIndex in 0 until max(fixedParameters.size, otherInitializerDefinition.fixedParameters.size)) {
 			val parameterType = getParameterTypeAt(parameterIndex) ?: return false
 			val otherParameterType = otherInitializerDefinition.getParameterTypeAt(parameterIndex) ?: return true
-			if(parameterType == otherParameterType)
-				continue
-			return otherParameterType.accepts(parameterType)
+			if(parameterType != otherParameterType)
+				return otherParameterType.accepts(parameterType)
 		}
 		val otherVariadicParameter = otherInitializerDefinition.variadicParameter
 		if(otherVariadicParameter != null) {
@@ -149,7 +148,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		return false
 	}
 
-	fun fulfillsInheritanceRequirementsOf(superInitializer: InitializerDefinition): Boolean { //TODO support variadic parameters
+	fun fulfillsInheritanceRequirementsOf(superInitializer: InitializerDefinition): Boolean { //TODO support variadic parameters (write tests!)
 		if(parameters.size != superInitializer.parameters.size)
 			return false
 		for(parameterIndex in parameters.indices) {
@@ -203,6 +202,12 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 
 	override fun validate() {
 		super.validate()
+		validateConvertingKeyword()
+		validateOverridingKeyword()
+		validateVariadicParameter()
+	}
+
+	private fun validateConvertingKeyword() {
 		if(isConverting) {
 			if(typeParameters.isNotEmpty())
 				context.addIssue(ConvertingInitializerTakingTypeParameters(source))
@@ -212,6 +217,9 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			if(superInitializer?.isConverting == true)
 				context.addIssue(OverridingInitializerMissingConvertingKeyword(source))
 		}
+	}
+
+	private fun validateOverridingKeyword() {
 		val superInitializer = superInitializer
 		if(superInitializer == null) {
 			if(isOverriding)
@@ -225,6 +233,10 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 					context.addIssue(OverriddenSuperInitializerMissing(source))
 			}
 		}
+	}
+
+	private fun validateVariadicParameter() {
+		//TODO validate that at most one variadic parameter exists and that it is the last parameter
 	}
 
 	override fun declare(constructor: LlvmConstructor) {

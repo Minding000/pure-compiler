@@ -73,6 +73,11 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 
 	override fun validate() {
 		super.validate()
+		validateOverridingKeyword()
+		validateReturnType()
+	}
+
+	private fun validateOverridingKeyword() {
 		if(signature.superFunctionSignature != null) {
 			if(!isOverriding)
 				context.addIssue(MissingOverridingKeyword(source, parentFunction.memberType.replaceFirstChar { it.titlecase() },
@@ -81,41 +86,44 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 			if(isOverriding)
 				context.addIssue(OverriddenSuperMissing(source, parentFunction.memberType))
 		}
-		if(!SpecialType.NOTHING.matches(signature.returnType)) {
-			if(body != null) {
-				var someBlocksCompleteWithoutReturning = false
-				var mainBlockCompletesWithoutReturning = true
-				for(statement in body.mainBlock.statements) {
+	}
+
+	private fun validateReturnType() {
+		if(SpecialType.NOTHING.matches(signature.returnType))
+			return
+		if(body == null)
+			return
+		var someBlocksCompleteWithoutReturning = false
+		var mainBlockCompletesWithoutReturning = true
+		for(statement in body.mainBlock.statements) {
+			if(statement.isInterruptingExecution) {
+				mainBlockCompletesWithoutReturning = false
+				break
+			}
+		}
+		if(mainBlockCompletesWithoutReturning) {
+			someBlocksCompleteWithoutReturning = true
+		} else {
+			for(handleBlock in body.handleBlocks) {
+				var handleBlockCompletesWithoutReturning = true
+				for(statement in handleBlock.block.statements) {
 					if(statement.isInterruptingExecution) {
-						mainBlockCompletesWithoutReturning = false
+						handleBlockCompletesWithoutReturning = false
 						break
 					}
 				}
-				if(mainBlockCompletesWithoutReturning) {
+				if(handleBlockCompletesWithoutReturning) {
 					someBlocksCompleteWithoutReturning = true
-				} else {
-					for(handleBlock in body.handleBlocks) {
-						var handleBlockCompletesWithoutReturning = true
-						for(statement in handleBlock.block.statements) {
-							if(statement.isInterruptingExecution) {
-								handleBlockCompletesWithoutReturning = false
-								break
-							}
-						}
-						if(handleBlockCompletesWithoutReturning) {
-							someBlocksCompleteWithoutReturning = true
-							break
-						}
-					}
-				}
-				if(SpecialType.NEVER.matches(signature.returnType)) {
-					if(someBlocksCompleteWithoutReturning || mightReturnValue)
-						context.addIssue(FunctionCompletesDespiteNever(source))
-				} else {
-					if(someBlocksCompleteWithoutReturning)
-						context.addIssue(FunctionCompletesWithoutReturning(source))
+					break
 				}
 			}
+		}
+		if(SpecialType.NEVER.matches(signature.returnType)) {
+			if(someBlocksCompleteWithoutReturning || mightReturnValue)
+				context.addIssue(FunctionCompletesDespiteNever(source))
+		} else {
+			if(someBlocksCompleteWithoutReturning)
+				context.addIssue(FunctionCompletesWithoutReturning(source))
 		}
 	}
 
