@@ -18,7 +18,7 @@ open class LogResult(val logger: Logger) {
 				val line = issue.source?.start?.line
 				if(line?.file?.name != TestUtil.TEST_FILE_NAME)
 					continue
-				if(expectedLineNumber != null && line.number == expectedLineNumber) {
+				if(expectedLineNumber != null && line.number != expectedLineNumber) {
 					detectedLineNumber = line.number
 					continue
 				}
