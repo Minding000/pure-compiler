@@ -59,10 +59,7 @@ abstract class Scope {
 
 	open fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
 								  suppliedParameterValues: List<Value>): FunctionSignature? {
-		val kind = if(suppliedParameterValues.isEmpty())
-			Operator.Kind.BRACKETS_GET
-		else
-			Operator.Kind.BRACKETS_SET
+		val kind = if(suppliedParameterValues.isEmpty()) Operator.Kind.BRACKETS_GET else Operator.Kind.BRACKETS_SET
 		return resolveOperator(kind, listOf(*suppliedIndexValues.toTypedArray(), *suppliedParameterValues.toTypedArray()))
 	}
 }

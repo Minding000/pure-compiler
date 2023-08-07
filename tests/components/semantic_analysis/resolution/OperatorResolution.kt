@@ -1,5 +1,6 @@
 package components.semantic_analysis.resolution
 
+import components.semantic_analysis.semantic_model.operations.BinaryModification
 import components.semantic_analysis.semantic_model.operations.IndexAccess
 import components.semantic_analysis.semantic_model.values.Operator
 import components.semantic_analysis.semantic_model.values.VariableValue
@@ -13,6 +14,7 @@ import logger.issues.resolution.NotFound
 import logger.issues.resolution.SignatureAmbiguity
 import org.junit.jupiter.api.Test
 import util.TestUtil
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class OperatorResolution {
@@ -333,5 +335,22 @@ internal class OperatorResolution {
 			 - '(Int) => Int' declared at Test.Test:5:10
 			 - '(Int) => Boolean' declared at Test.Test:6:10
 		""".trimIndent())
+	}
+
+	@Test
+	fun `resolves the most specific signature between parameters`() {
+		val sourceCode =
+			"""
+				Int class
+				Number class
+				Bottle object {
+					operator +=(volume: Number)
+					operator +=(volume: Int)
+				}
+				Bottle += Int()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val operatorCall = lintResult.find<BinaryModification>()
+		assertEquals("(Int) =>|", operatorCall?.targetSignature.toString())
 	}
 }

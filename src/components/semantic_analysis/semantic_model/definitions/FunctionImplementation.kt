@@ -27,12 +27,11 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	private lateinit var parentFunction: Function
 	override val memberIdentifier: String
 		get() {
-			val parentOperator = parentFunction as? Operator
-			return if(parentOperator == null) {
-				"${parentFunction.name}${signature.toString(false)}"
-			} else {
-				signature.toString(false, parentOperator.kind)
-			}
+			val parentFunction = parentFunction
+			return if(parentFunction is Operator)
+				signature.toString(false, parentFunction.kind)
+			else
+				"${this.parentFunction.name}${signature.toString(false)}"
 		}
 	val isVariadic = parameters.lastOrNull()?.isVariadic ?: false
 	val signature = FunctionSignature(source, scope, genericParameters, parameters.map { parameter -> parameter.type }, returnType,

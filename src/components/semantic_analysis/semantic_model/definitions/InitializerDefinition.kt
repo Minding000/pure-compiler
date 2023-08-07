@@ -275,7 +275,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		for(superType in parentDefinition.getDirectSuperTypes()) {
 			if(SpecialType.ANY.matches(superType))
 				continue
-			val trivialInitializer = (superType.definition?.staticValueDeclaration?.type as? StaticType)?.resolveInitializer()?.signature
+			val trivialInitializer = (superType.definition?.staticValueDeclaration?.type as? StaticType)?.resolveInitializer()?.initializer
 				?: throw CompilerError(source, "Default initializer in class '${parentDefinition.name}'" +
 					" with super class '${superType.definition?.name}' without trivial initializer.")
 			constructor.buildFunctionCall(trivialInitializer.llvmType, trivialInitializer.llvmValue, listOf(thisValue))

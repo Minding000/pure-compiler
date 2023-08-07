@@ -9,10 +9,7 @@ import components.semantic_analysis.semantic_model.definitions.ComputedPropertyD
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
-import components.semantic_analysis.semantic_model.values.SelfReference
-import components.semantic_analysis.semantic_model.values.SuperReference
-import components.semantic_analysis.semantic_model.values.Value
-import components.semantic_analysis.semantic_model.values.VariableValue
+import components.semantic_analysis.semantic_model.values.*
 import errors.internal.CompilerError
 import logger.issues.constant_conditions.ExpressionNotAssignable
 import logger.issues.constant_conditions.TypeNotAssignable
@@ -102,30 +99,30 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 					}
 				}
 				is IndexAccess -> {
-					val indexOperator = target.implementation
-						?: throw CompilerError(source, "Missing index operator implementation.")
+					val signature = target.targetSignature ?: throw CompilerError(source, "Missing index operator implementation.")
 					val indexTarget = target.target
-					val targetValue = if(indexTarget is SuperReference)
-						context.getThisParameter(constructor)
-					else
-						indexTarget.getLlvmValue(constructor)
+					val targetValue = indexTarget.getLlvmValue(constructor)
 					val indexOperatorAddress = if(indexTarget is SuperReference) {
-						indexOperator.llvmValue
+						val operator = target.target.type?.interfaceScope?.resolveValue(Operator.Kind.BRACKETS_SET.stringRepresentation)
+						val implementation = (operator?.value as? Operator)?.getImplementationBySignature(signature)
+							?: throw CompilerError(source, "Failed to determine address of super index operator.")
+						implementation.llvmValue
 					} else {
-						val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(indexOperator.parentDefinition?.llvmType,
+						val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(signature.parentDefinition?.llvmType,
 							targetValue, Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
 						val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(context.classDefinitionStruct),
 							classDefinitionAddressLocation, "classDefinitionAddress")
+						val id = context.memberIdentities.getId(signature.toString(false,
+							Operator.Kind.BRACKETS_SET))
 						constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType, context.llvmFunctionAddressFunction,
-							listOf(classDefinitionAddress, constructor.buildInt32(context.memberIdentities.getId(indexOperator.memberIdentifier))),
-							"indexOperatorAddress")
+							listOf(classDefinitionAddress, constructor.buildInt32(id)), "indexOperatorAddress")
 					}
 					val parameters = LinkedList<LlvmValue>()
 					parameters.add(targetValue)
 					for(index in target.indices)
 						parameters.add(index.getLlvmValue(constructor))
 					parameters.add(value)
-					constructor.buildFunctionCall(indexOperator.signature.getLlvmType(constructor), indexOperatorAddress, parameters)
+					constructor.buildFunctionCall(signature.getLlvmType(constructor), indexOperatorAddress, parameters)
 				}
 				else -> throw CompilerError(source, "Target of type '${target.javaClass.simpleName}' is not assignable.")
 			}

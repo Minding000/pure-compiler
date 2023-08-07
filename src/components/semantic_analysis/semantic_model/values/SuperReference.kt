@@ -1,5 +1,7 @@
 package components.semantic_analysis.semantic_model.values
 
+import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.definitions.TypeDefinition
 import components.semantic_analysis.semantic_model.operations.IndexAccess
 import components.semantic_analysis.semantic_model.operations.MemberAccess
@@ -67,5 +69,9 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 		if(superType.definition?.baseDefinition == specifierDefinition)
 			return true
 		return false
+	}
+
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		return context.getThisParameter(constructor)
 	}
 }

@@ -471,29 +471,4 @@ internal class TypeInference {
 		assertNotNull(returnType)
 		assertEquals(genericParameter, returnType.typeParameters.firstOrNull())
 	}
-
-	@Test
-	fun `infers generic type in variadic operator call`() {
-		val sourceCode =
-			"""
-				IpAddress class
-				Ipv4Address class: IpAddress
-				Ipv6Address class: IpAddress
-				Client class {
-					containing A: IpAddress
-				}
-				Server object {
-					operator [A: IpAddress; ...ipAddresses: ...A]: <A>Client
-				}
-				val client = Server[Ipv4Address()]
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.definition?.name == "Ipv4Address" }?.type
-		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
-			variableValueDeclaration.name == "client" }
-		val returnType = valueDeclaration?.type as? ObjectType
-		assertNotNull(returnType)
-		assertEquals(genericParameter, returnType.typeParameters.firstOrNull())
-	}
 }

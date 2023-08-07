@@ -73,16 +73,16 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 			for(otherMatch in matches) {
 				if(otherMatch == match)
 					continue
-				if(!match.signature.isMoreSpecificThan(otherMatch.signature))
+				if(!match.initializer.isMoreSpecificThan(otherMatch.initializer))
 					continue@specificityPrecedenceLoop
 			}
 			for(parameterIndex in suppliedValues.indices) {
-				val parameterType = match.signature.getParameterTypeAt(parameterIndex)
+				val parameterType = match.initializer.getParameterTypeAt(parameterIndex)
 				suppliedValues[parameterIndex].setInferredType(parameterType)
 			}
 			return match
 		}
-		throw SignatureResolutionAmbiguityError(matches.map { match -> match.signature })
+		throw SignatureResolutionAmbiguityError(matches.map { match -> match.initializer })
 	}
 
 	private fun getMatchingInitializers(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
@@ -103,7 +103,7 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 		return validSignatures
 	}
 
-	class MatchResult(val signature: InitializerDefinition, val definitionTypeSubstitutions: Map<TypeDefinition, Type>)
+	class MatchResult(val initializer: InitializerDefinition, val definitionTypeSubstitutions: Map<TypeDefinition, Type>)
 
 	fun getBaseDefinition(): TypeDefinition {
 		return definition.baseDefinition ?: definition

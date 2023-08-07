@@ -4,6 +4,7 @@ import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
+import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.NumberLiteral
@@ -17,6 +18,7 @@ import components.syntax_parser.syntax_tree.operations.BinaryModification as Bin
 
 class BinaryModification(override val source: BinaryModificationSyntaxTree, scope: Scope, val target: Value, val modifier: Value,
 						 val kind: Operator.Kind): SemanticModel(source, scope) {
+	var targetSignature: FunctionSignature? = null
 
 	init {
 		addSemanticModels(target, modifier)
@@ -27,8 +29,8 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		context.registerWrite(target)
 		target.type?.let { valueType ->
 			try {
-				val operatorDefinition = valueType.interfaceScope.resolveOperator(kind, listOf(modifier))
-				if(operatorDefinition == null)
+				targetSignature = valueType.interfaceScope.resolveOperator(kind, listOf(modifier))
+				if(targetSignature == null)
 					context.addIssue(NotFound(source, "Operator", "$valueType $kind ${modifier.type}"))
 			} catch(error: SignatureResolutionAmbiguityError) {
 				//TODO write test for this

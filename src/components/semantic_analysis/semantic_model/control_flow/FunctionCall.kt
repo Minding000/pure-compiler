@@ -27,7 +27,8 @@ import java.util.*
 
 class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val function: Value, val typeParameters: List<Type> = emptyList(),
 				   val valueParameters: List<Value> = emptyList()): Value(source, scope) {
-	var targetImplementation: MemberDeclaration? = null
+	var targetInitializer: InitializerDefinition? = null
+	var targetSignature: FunctionSignature? = null
 
 	init {
 		addSemanticModels(typeParameters, valueParameters)
@@ -47,9 +48,14 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
 		staticValue = this
-		val targetImplementation = targetImplementation
-		if(targetImplementation !is Callable)
+		var targetImplementation: Callable? = targetInitializer
+		val targetSignature = targetSignature
+		if(targetSignature != null)
+			targetImplementation = ((((function as? MemberAccess)?.member ?: function) as? VariableValue)?.definition?.value as? Function)
+				?.getImplementationBySignature(targetSignature)
+		if(targetImplementation == null)
 			return
+		//TODO also track required and initialized properties for operators (IndexAccess, BinaryOperator, etc.)
 		val requiredButUninitializedProperties = LinkedList<PropertyDeclaration>()
 		for(propertyRequiredToBeInitialized in targetImplementation.propertiesRequiredToBeInitialized) {
 			val usage = tracker.add(VariableUsage.Kind.READ, propertyRequiredToBeInitialized, this)
@@ -80,7 +86,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			type.determineTypes()
 			addSemanticModels(type)
 			this.type = type
-			targetImplementation = match.signature
+			targetInitializer = match.initializer
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "initializer", getSignature())
 		}
@@ -88,16 +94,12 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 
 	private fun resolveFunctionCall(functionType: FunctionType) {
 		try {
-			val signature = functionType.resolveSignature(typeParameters, valueParameters)
-			if(signature == null) {
+			targetSignature = functionType.resolveSignature(typeParameters, valueParameters)
+			if(targetSignature == null) {
 				context.addIssue(SignatureMismatch(function, typeParameters, valueParameters))
 				return
 			}
-			type = signature.returnType
-			val variable = ((function as? MemberAccess)?.member ?: function) as? VariableValue
-			val property = variable?.definition as? PropertyDeclaration
-			val function = property?.value as? Function
-			targetImplementation = function?.getImplementationBySignature(signature)
+			type = targetSignature?.returnType
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "function", getSignature())
 		}
@@ -111,48 +113,64 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		val parameters = LinkedList<LlvmValue>()
 		for(valueParameter in valueParameters)
 			parameters.add(valueParameter.getLlvmValue(constructor))
-		return when(val target = targetImplementation) {
-			is FunctionImplementation -> {
-				val resultName = if(SpecialType.NOTHING.matches(target.signature.returnType)) "" else getSignature()
-				val functionAddress = if(target.parentDefinition == null) {
-					target.llvmValue
-				} else {
-					val targetValue = if(function is MemberAccess && function.target !is SuperReference)
-						function.target.getLlvmValue(constructor)
-					else
-						context.getThisParameter(constructor)
-					parameters.addFirst(targetValue)
-					if(function is MemberAccess && function.target is SuperReference) {
-						target.llvmValue
-					} else {
-						val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(target.parentDefinition?.llvmType,
-							targetValue, Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-						val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(context.classDefinitionStruct),
-							classDefinitionAddressLocation, "classDefinitionAddress")
-						constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType, context.llvmFunctionAddressFunction,
-							listOf(classDefinitionAddress, constructor.buildInt32(context.memberIdentities.getId(target.memberIdentifier))),
-							"functionAddress")
-					}
-				}
-				constructor.buildFunctionCall(target.signature.getLlvmType(constructor), functionAddress, parameters, resultName)
+		val functionSignature = targetSignature
+		if(functionSignature != null)
+			return createLlvmFunctionCall(constructor, functionSignature, parameters)
+		val initializerDefinition = targetInitializer ?: throw CompilerError(source, "Function call is missing a target.")
+		return createLlvmInitializerCall(constructor, initializerDefinition, parameters)
+	}
+
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature,
+									   parameters: LinkedList<LlvmValue>): LlvmValue {
+		val typeDefinition = signature.parentDefinition
+		val functionAddress = if(typeDefinition == null) {
+			val implementation = ((function as? VariableValue)?.definition?.value as? Function)?.getImplementationBySignature(signature)
+				?: throw CompilerError(source, "Failed to determine address of global function.")
+			implementation.llvmValue
+		} else {
+			val targetValue = if(function is MemberAccess)
+				function.target.getLlvmValue(constructor)
+			else
+				context.getThisParameter(constructor)
+			parameters.addFirst(targetValue)
+			if(function is MemberAccess && function.target is SuperReference) {
+				val implementation = ((function.member as? VariableValue)?.definition?.value as? Function)
+					?.getImplementationBySignature(signature)
+					?: throw CompilerError(source, "Failed to determine address of super function.")
+				implementation.llvmValue
+			} else {
+				val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(typeDefinition.llvmType, targetValue,
+					Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
+				val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(context.classDefinitionStruct),
+					classDefinitionAddressLocation, "classDefinitionAddress")
+				val functionName = (((function as? MemberAccess)?.member ?: function) as? VariableValue)?.name
+					?: throw CompilerError(source, "Failed to determine name of member function.")
+				val id = context.memberIdentities.getId("${functionName}${signature.toString(false)}")
+				constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType, context.llvmFunctionAddressFunction,
+					listOf(classDefinitionAddress, constructor.buildInt32(id)), "functionAddress")
 			}
-			is InitializerDefinition -> {
-				val isPrimaryCall = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
-				if(isPrimaryCall) {
-					val typeDefinition = target.parentDefinition
-					val newObjectAddress = constructor.buildHeapAllocation(typeDefinition.llvmType, "newObjectAddress")
-					val classDefinitionPointer = constructor.buildGetPropertyPointer(typeDefinition.llvmType, newObjectAddress,
-						Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
-					constructor.buildStore(typeDefinition.llvmClassDefinitionAddress, classDefinitionPointer)
-					parameters.addFirst(newObjectAddress)
-					constructor.buildFunctionCall(target.llvmType, target.llvmValue, parameters)
-					newObjectAddress
-				} else {
-					parameters.addFirst(context.getThisParameter(constructor))
-					constructor.buildFunctionCall(target.llvmType, target.llvmValue, parameters)
-				}
-			}
-			else -> throw CompilerError(source, "Target of type '${target?.javaClass?.simpleName}' is not callable.")
+		}
+		val resultName = if(SpecialType.NOTHING.matches(signature.returnType)) "" else getSignature()
+		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, resultName)
+	}
+
+	private fun createLlvmInitializerCall(constructor: LlvmConstructor, initializer: InitializerDefinition,
+										  parameters: LinkedList<LlvmValue>): LlvmValue {
+		//TODO primary initializer calls should also be resolved dynamically (for generic type initialization)
+		// - unless the variable definition is a specific type already (or can be traced to it)
+		val isPrimaryCall = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
+		return if(isPrimaryCall) {
+			val typeDefinition = initializer.parentDefinition
+			val newObjectAddress = constructor.buildHeapAllocation(typeDefinition.llvmType, "newObjectAddress")
+			val classDefinitionPointer = constructor.buildGetPropertyPointer(typeDefinition.llvmType, newObjectAddress,
+				Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
+			constructor.buildStore(typeDefinition.llvmClassDefinitionAddress, classDefinitionPointer)
+			parameters.addFirst(newObjectAddress)
+			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
+			newObjectAddress
+		} else {
+			parameters.addFirst(context.getThisParameter(constructor))
+			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
 		}
 	}
 

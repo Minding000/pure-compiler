@@ -14,6 +14,7 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import util.combine
 import java.util.*
+import kotlin.math.max
 
 class FunctionSignature(override val source: SyntaxTreeNode, override val scope: BlockScope, val genericParameters: List<TypeDefinition>,
 						val parameterTypes: List<Type?>, returnType: Type?, val isVariadic: Boolean): SemanticModel(source, scope) {
@@ -99,27 +100,24 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		return true
 	}
 
-	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean { //TODO mind variadic parameters here and in functions below (write tests!)
-		if(otherSignature.parameterTypes.size != parameterTypes.size)
-			return false
-		var areSignaturesEqual = true
-		for(parameterIndex in parameterTypes.indices) {
-			val parameterType = parameterTypes[parameterIndex] ?: return false
-			val otherParameterType = otherSignature.parameterTypes[parameterIndex]
-			if(otherParameterType == null) {
-				areSignaturesEqual = false
-				continue
-			}
-			if(otherParameterType != parameterType) {
-				areSignaturesEqual = false
-				if(!otherParameterType.accepts(parameterType))
-					return false
-			}
+	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean {
+		for(parameterIndex in 0 until max(fixedParameterTypes.size, otherSignature.fixedParameterTypes.size)) {
+			val parameterType = getParameterTypeAt(parameterIndex) ?: return false
+			val otherParameterType = otherSignature.getParameterTypeAt(parameterIndex) ?: return true
+			if(parameterType != otherParameterType)
+				return otherParameterType.accepts(parameterType)
 		}
-		return !areSignaturesEqual
+		val otherVariadicParameterType = otherSignature.variadicParameterType
+		if(otherVariadicParameterType != null) {
+			if(variadicParameterType == null)
+				return true
+			if(variadicParameterType != otherVariadicParameterType)
+				return otherVariadicParameterType.accepts(variadicParameterType)
+		}
+		return false
 	}
 
-	fun fulfillsInheritanceRequirementsOf(superSignature: FunctionSignature): Boolean {
+	fun fulfillsInheritanceRequirementsOf(superSignature: FunctionSignature): Boolean { //TODO mind variadic parameters here and in functions below (write tests!)
 		if(!returnType.isAssignableTo(superSignature.returnType))
 			return false
 		if(parameterTypes.size != superSignature.parameterTypes.size)

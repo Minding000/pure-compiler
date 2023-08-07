@@ -4,6 +4,7 @@ import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
+import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.BooleanLiteral
 import components.semantic_analysis.semantic_model.values.NumberLiteral
@@ -16,6 +17,7 @@ import components.syntax_parser.syntax_tree.operations.UnaryOperator as UnaryOpe
 
 class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, val value: Value, val kind: Operator.Kind):
 	Value(source, scope) {
+	var targetSignature: FunctionSignature? = null
 
 	init {
 		addSemanticModels(value)
@@ -25,12 +27,12 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		super.determineTypes()
 		value.type?.let { valueType ->
 			try {
-				val operatorDefinition = valueType.interfaceScope.resolveOperator(kind)
-				if(operatorDefinition == null) {
+				targetSignature = valueType.interfaceScope.resolveOperator(kind)
+				if(targetSignature == null) {
 					context.addIssue(NotFound(source, "Operator", "$kind$valueType"))
 					return@let
 				}
-				type = operatorDefinition.returnType
+				type = targetSignature?.returnType
 			} catch(error: SignatureResolutionAmbiguityError) {
 				//TODO write test for this
 				error.log(source, "operator", "$kind$valueType")

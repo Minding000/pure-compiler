@@ -5,6 +5,7 @@ import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
+import components.semantic_analysis.semantic_model.definitions.FunctionSignature
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.*
 import errors.internal.CompilerError
@@ -14,6 +15,7 @@ import components.syntax_parser.syntax_tree.operations.BinaryOperator as BinaryO
 
 class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope, val left: Value, val right: Value,
 					 val kind: Operator.Kind): Value(source, scope) {
+	var targetSignature: FunctionSignature? = null
 
 	init {
 		addSemanticModels(left, right)
@@ -23,12 +25,12 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		super.determineTypes()
 		left.type?.let { leftType ->
 			try {
-				val operatorDefinition = leftType.interfaceScope.resolveOperator(kind, right)
-				if(operatorDefinition == null) {
+				targetSignature = leftType.interfaceScope.resolveOperator(kind, right)
+				if(targetSignature == null) {
 					context.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.type}"))
 					return@let
 				}
-				type = operatorDefinition.returnType
+				type = targetSignature?.returnType
 			} catch(error: SignatureResolutionAmbiguityError) {
 				//TODO write test for this
 				error.log(source, "operator", "$leftType $kind ${right.type}")

@@ -1,6 +1,7 @@
 package components.semantic_analysis.resolution
 
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
+import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
@@ -10,6 +11,7 @@ import logger.issues.resolution.NotFound
 import logger.issues.resolution.SignatureAmbiguity
 import org.junit.jupiter.api.Test
 import util.TestUtil
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class InitializerResolution {
@@ -167,5 +169,58 @@ internal class InitializerResolution {
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function as? VariableValue)?.name == "IntegerList" }
 		assertNotNull(initializerCall?.type)
+	}
+
+	@Test
+	fun `resolves the most specific signature between parameters`() {
+		val sourceCode =
+			"""
+				Int class
+				Number class
+				Bottle class {
+					init(volume: Number)
+					init(volume: Int)
+				}
+				Bottle(Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function as? VariableValue)?.name == "Bottle" }
+		assertEquals("Bottle(Int)", (initializerCall?.targetInitializer as? InitializerDefinition)?.toString())
+	}
+
+	@Test
+	fun `resolves the most specific signature ignoring extraneous variadic parameter`() {
+		val sourceCode =
+			"""
+				Int class
+				Bottle class {
+					init(volume: Int)
+					init(volume: Int, ...idBytes: ...Int)
+				}
+				Bottle(Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function as? VariableValue)?.name == "Bottle" }
+		assertEquals("Bottle(Int)", (initializerCall?.targetInitializer as? InitializerDefinition)?.toString())
+	}
+
+	@Test
+	fun `resolves the most specific signature between variadic parameters`() {
+		val sourceCode =
+			"""
+				Int class
+				Number class
+				Bottle class {
+					init(...idBytes: ...Number)
+					init(...idBytes: ...Int)
+				}
+				Bottle(Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function as? VariableValue)?.name == "Bottle" }
+		assertEquals("Bottle(...Int)", (initializerCall?.targetInitializer as? InitializerDefinition)?.toString())
 	}
 }

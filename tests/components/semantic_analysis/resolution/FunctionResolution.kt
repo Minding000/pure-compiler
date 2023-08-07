@@ -13,6 +13,7 @@ import logger.issues.resolution.SignatureAmbiguity
 import logger.issues.resolution.SignatureMismatch
 import org.junit.jupiter.api.Test
 import util.TestUtil
+import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
@@ -227,5 +228,55 @@ internal class FunctionResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
 		assertNotNull(functionCall?.type)
+	}
+
+	@Test
+	fun `resolves the most specific signature between parameters`() {
+		val sourceCode =
+			"""
+				Int class
+				Number class
+				Bottle object {
+					to setVolume(volume: Number)
+					to setVolume(volume: Int)
+				}
+				Bottle.setVolume(Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
+		assertEquals("(Int) =>|", functionCall?.targetSignature.toString())
+	}
+
+	@Test
+	fun `resolves the most specific signature ignoring extraneous variadic parameter`() {
+		val sourceCode =
+			"""
+				Int class
+				Bottle object {
+					to setVolume(volume: Int)
+					to setVolume(volume: Int, ...idBytes: ...Int)
+				}
+				Bottle.setVolume(Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
+		assertEquals("(Int) =>|", functionCall?.targetSignature.toString())
+	}
+
+	@Test
+	fun `resolves the most specific signature between variadic parameters`() {
+		val sourceCode =
+			"""
+				Int class
+				Number class
+				Bottle object {
+					to setId(...idBytes: ...Number)
+					to setId(...idBytes: ...Int)
+				}
+				Bottle.setId(Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
+		assertEquals("(...Int) =>|", functionCall?.targetSignature.toString())
 	}
 }
