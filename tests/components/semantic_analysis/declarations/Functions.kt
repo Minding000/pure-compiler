@@ -1,11 +1,14 @@
 package components.semantic_analysis.declarations
 
+import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import logger.Severity
 import logger.issues.definition.InvalidVariadicParameterPosition
 import logger.issues.definition.MultipleVariadicParameters
 import logger.issues.definition.Redeclaration
 import org.junit.jupiter.api.Test
 import util.TestUtil
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 internal class Functions {
 
@@ -80,5 +83,169 @@ internal class Functions {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<InvalidVariadicParameterPosition>("Variadic parameters have to be the last parameter.",
 			Severity.ERROR)
+	}
+
+	@Test
+	fun `links function without parameters to identically named super function`() {
+		val sourceCode =
+			"""
+				House class {
+					to build()
+				}
+				WoodenHouse class: House {
+					overriding to build()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
+		assertNotNull(function)
+		assertNotNull(function.signature.superFunctionSignature)
+	}
+
+	@Test
+	fun `doesn't link function without parameters to differently named super function`() {
+		val sourceCode =
+			"""
+				House class {
+					to build()
+				}
+				WoodenHouse class: House {
+					overriding to demolish()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
+		assertNotNull(function)
+		assertNull(function.signature.superFunctionSignature)
+	}
+
+	@Test
+	fun `links function to super function with identically typed parameter`() {
+		val sourceCode =
+			"""
+				Int class
+				House class {
+					to build(a: Int)
+				}
+				WoodenHouse class: House {
+					overriding to build(b: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
+		assertNotNull(function)
+		assertNotNull(function.signature.superFunctionSignature)
+	}
+
+	@Test
+	fun `doesn't link function to super function with differently typed parameter`() {
+		val sourceCode =
+			"""
+				Int class
+				Float class
+				House class {
+					to build(a: Int)
+				}
+				WoodenHouse class: House {
+					overriding to build(a: Float)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
+		assertNotNull(function)
+		assertNull(function.signature.superFunctionSignature)
+	}
+
+	@Test
+	fun `links function to super function with super-type parameter`() {
+		val sourceCode =
+			"""
+				Number class
+				Int class: Number
+				House class {
+					to build(a: Int)
+				}
+				WoodenHouse class: House {
+					overriding to build(a: Number)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
+		assertNotNull(function)
+		assertNotNull(function.signature.superFunctionSignature)
+	}
+
+	@Test
+	fun `doesn't link function to super function with sub-type parameter`() {
+		val sourceCode =
+			"""
+				Number class
+				Int class: Number
+				House class {
+					to build(a: Number)
+				}
+				WoodenHouse class: House {
+					overriding to build(a: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
+		assertNotNull(function)
+		assertNull(function.signature.superFunctionSignature)
+	}
+
+	@Test
+	fun `links function to super function with identically typed variadic parameter`() {
+		val sourceCode =
+			"""
+				Int class
+				House class {
+					to build(...a: ...Int)
+				}
+				WoodenHouse class: House {
+					overriding to build(...a: ...Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
+		assertNotNull(function)
+		assertNotNull(function.signature.superFunctionSignature)
+	}
+
+	@Test
+	fun `doesn't link function to super function with differently typed variadic parameter`() {
+		val sourceCode =
+			"""
+				Int class
+				Float class
+				House class {
+					to build(...a: ...Int)
+				}
+				WoodenHouse class: House {
+					overriding to build(...a: ...Float)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
+		assertNotNull(function)
+		assertNull(function.signature.superFunctionSignature)
+	}
+
+	@Test
+	fun `doesn't link variadic function to non-variadic super function`() {
+		val sourceCode =
+			"""
+				Int class
+				House class {
+					to build()
+				}
+				WoodenHouse class: House {
+					overriding to build(...a: ...Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
+		assertNotNull(function)
+		assertNull(function.signature.superFunctionSignature)
 	}
 }

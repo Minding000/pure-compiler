@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 internal class Initializers {
 
@@ -432,5 +433,152 @@ internal class Initializers {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<InvalidVariadicParameterPosition>("Variadic parameters have to be the last parameter.",
 			Severity.ERROR)
+	}
+
+	@Test
+	fun `links initializer without parameters to super initializer`() {
+		val sourceCode =
+			"""
+				House class {
+					init()
+				}
+				WoodenHouse class: House {
+					overriding init()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializer = lintResult.find<InitializerDefinition>(InitializerDefinition::isOverriding)
+		assertNotNull(initializer)
+		assertNotNull(initializer.superInitializer)
+	}
+
+	@Test
+	fun `links initializer to super initializer with identically typed parameter`() {
+		val sourceCode =
+			"""
+				Int class
+				House class {
+					init(a: Int)
+				}
+				WoodenHouse class: House {
+					overriding init(b: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializer = lintResult.find<InitializerDefinition>(InitializerDefinition::isOverriding)
+		assertNotNull(initializer)
+		assertNotNull(initializer.superInitializer)
+	}
+
+	@Test
+	fun `doesn't link initializer to super initializer with differently typed parameter`() {
+		val sourceCode =
+			"""
+				Int class
+				Float class
+				House class {
+					init(a: Int)
+				}
+				WoodenHouse class: House {
+					overriding init(a: Float)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializer = lintResult.find<InitializerDefinition>(InitializerDefinition::isOverriding)
+		assertNotNull(initializer)
+		assertNull(initializer.superInitializer)
+	}
+
+	@Test
+	fun `links initializer to super initializer with super-type parameter`() {
+		val sourceCode =
+			"""
+				Number class
+				Int class: Number
+				House class {
+					init(a: Int)
+				}
+				WoodenHouse class: House {
+					overriding init(a: Number)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializer = lintResult.find<InitializerDefinition>(InitializerDefinition::isOverriding)
+		assertNotNull(initializer)
+		assertNotNull(initializer.superInitializer)
+	}
+
+	@Test
+	fun `doesn't link initializer to super initializer with sub-type parameter`() {
+		val sourceCode =
+			"""
+				Number class
+				Int class: Number
+				House class {
+					init(a: Number)
+				}
+				WoodenHouse class: House {
+					overriding init(a: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializer = lintResult.find<InitializerDefinition>(InitializerDefinition::isOverriding)
+		assertNotNull(initializer)
+		assertNull(initializer.superInitializer)
+	}
+
+	@Test
+	fun `links initializer to super initializer with identically typed variadic parameter`() {
+		val sourceCode =
+			"""
+				Int class
+				House class {
+					init(...a: ...Int)
+				}
+				WoodenHouse class: House {
+					overriding init(...a: ...Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializer = lintResult.find<InitializerDefinition>(InitializerDefinition::isOverriding)
+		assertNotNull(initializer)
+		assertNotNull(initializer.superInitializer)
+	}
+
+	@Test
+	fun `doesn't link initializer to super initializer with differently typed variadic parameter`() {
+		val sourceCode =
+			"""
+				Int class
+				Float class
+				House class {
+					init(...a: ...Int)
+				}
+				WoodenHouse class: House {
+					overriding init(...a: ...Float)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializer = lintResult.find<InitializerDefinition>(InitializerDefinition::isOverriding)
+		assertNotNull(initializer)
+		assertNull(initializer.superInitializer)
+	}
+
+	@Test
+	fun `doesn't link variadic initializer to non-variadic super initializer`() {
+		val sourceCode =
+			"""
+				Int class
+				House class {
+					init()
+				}
+				WoodenHouse class: House {
+					overriding init(...a: ...Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializer = lintResult.find<InitializerDefinition>(InitializerDefinition::isOverriding)
+		assertNotNull(initializer)
+		assertNull(initializer.superInitializer)
 	}
 }

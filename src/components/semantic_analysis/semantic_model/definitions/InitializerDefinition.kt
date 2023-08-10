@@ -156,7 +156,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		return false
 	}
 
-	fun fulfillsInheritanceRequirementsOf(superInitializer: InitializerDefinition): Boolean { //TODO support variadic parameters (write tests!)
+	fun fulfillsInheritanceRequirementsOf(superInitializer: InitializerDefinition): Boolean {
 		if(parameters.size != superInitializer.parameters.size)
 			return false
 		for(parameterIndex in parameters.indices) {

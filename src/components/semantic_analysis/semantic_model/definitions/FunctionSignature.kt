@@ -117,7 +117,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		return false
 	}
 
-	fun fulfillsInheritanceRequirementsOf(superSignature: FunctionSignature): Boolean { //TODO mind variadic parameters here and in functions below (write tests!)
+	fun fulfillsInheritanceRequirementsOf(superSignature: FunctionSignature): Boolean {
 		if(!returnType.isAssignableTo(superSignature.returnType))
 			return false
 		if(parameterTypes.size != superSignature.parameterTypes.size)
