@@ -15,7 +15,7 @@ open class PropertyDeclaration(source: SyntaxTreeNode, scope: MutableScope, name
 							   isMutable: Boolean = false, isOverriding: Boolean = false, isSpecificCopy: Boolean = false):
 	InterfaceMember(source, scope, name, type, value, isStatic, isAbstract, isConstant, isMutable, isOverriding, isSpecificCopy) {
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): PropertyDeclaration {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): PropertyDeclaration {
 		return PropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), value, isStatic, isAbstract,
 			isConstant, isMutable, isOverriding, true)
 	}

@@ -240,7 +240,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerResult = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.definition?.name == "List" }?.type as? ObjectType
+			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "List" }?.type as? ObjectType
 		assertNotNull(initializerResult)
 	}
 
@@ -296,7 +296,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.definition?.name == "Letter" }?.type
+			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "Letter" }?.type
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "letterBox" }
 		val returnType = valueDeclaration?.type as? ObjectType
@@ -337,7 +337,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerResult = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.definition?.name == "MailFolder" }?.type as? ObjectType
+			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "MailFolder" }?.type as? ObjectType
 		assertNotNull(initializerResult)
 	}
 
@@ -374,7 +374,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerResult = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.definition?.name == "MailFolder" }?.type as? ObjectType
+			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "MailFolder" }?.type as? ObjectType
 		assertNotNull(initializerResult)
 	}
 
@@ -393,7 +393,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.definition?.name == "PostCard" }?.type
+			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "PostCard" }?.type
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "stampedPostCard" }
 		val returnType = valueDeclaration?.type as? ObjectType
@@ -416,7 +416,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.definition?.name == "PostCard" }?.type
+			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "PostCard" }?.type
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "stampedPostCard" }
 		val returnType = valueDeclaration?.type as? OptionalType
@@ -439,7 +439,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.definition?.name == "PostCard" }?.type
+			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "PostCard" }?.type
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "stampedPostCard" }
 		val returnType = valueDeclaration?.type as? PluralType
@@ -464,7 +464,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.definition?.name == "Ipv4Address" }?.type
+			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "Ipv4Address" }?.type
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "client" }
 		val returnType = valueDeclaration?.type as? ObjectType

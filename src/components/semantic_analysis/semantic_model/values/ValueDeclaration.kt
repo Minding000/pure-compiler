@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.values
 
 import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
@@ -29,11 +29,11 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		addSemanticModels(type, value)
 	}
 
-	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ValueDeclaration
+	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): ValueDeclaration
 
 	override fun declare() {
 		super.declare()
-		scope.declareValue(this)
+		scope.addValueDeclaration(this)
 	}
 
 	open fun getLinkedType(): Type? {

@@ -35,6 +35,6 @@ enum class SpecialType(val className: String, val pathParts: List<String> = list
 	fun matches(type: Type?): Boolean {
 		if(type !is ObjectType)
 			return false
-		return type.name == className && type.definition?.scope?.enclosingScope == scope
+		return type.name == className && type.typeDeclaration?.scope?.enclosingScope == scope
 	}
 }

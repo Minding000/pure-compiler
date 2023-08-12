@@ -21,24 +21,24 @@ import logger.issues.modifiers.NoParentToBindTo
 import util.linkedListOf
 import java.util.*
 
-abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: String, override val scope: TypeScope,
-							  val explicitParentType: ObjectType? = null, val superType: Type? = null, val members: List<SemanticModel> = listOf(),
-							  val isBound: Boolean = false, val isSpecificCopy: Boolean = false): SemanticModel(source, scope) {
+abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: String, override val scope: TypeScope,
+							   val explicitParentType: ObjectType? = null, val superType: Type? = null, val members: List<SemanticModel> = listOf(),
+							   val isBound: Boolean = false, val isSpecificCopy: Boolean = false): SemanticModel(source, scope) {
 	protected open val isDefinition = true
 	override var parent: SemanticModel?
 		get() = super.parent
 		set(value) {
 			super.parent = value
-			parentTypeDefinition = value as? TypeDefinition
+			parentTypeDeclaration = value as? TypeDeclaration
 		}
-	var parentTypeDefinition: TypeDefinition? = null
+	var parentTypeDeclaration: TypeDeclaration? = null
 	private var hasCircularInheritance = false
 	var hasDeterminedTypes = isSpecificCopy
 	// Only used in base definition
-	private val specificDefinitions = HashMap<Map<TypeDefinition, Type>, TypeDefinition>()
-	private val pendingTypeSubstitutions = HashMap<Map<TypeDefinition, Type>, LinkedList<(TypeDefinition) -> Unit>>()
+	private val specificDefinitions = HashMap<Map<TypeDeclaration, Type>, TypeDeclaration>()
+	private val pendingTypeSubstitutions = HashMap<Map<TypeDeclaration, Type>, LinkedList<(TypeDeclaration) -> Unit>>()
 	// Only used in specific definition
-	var baseDefinition: TypeDefinition? = null
+	var baseTypeDeclaration: TypeDeclaration? = null
 	lateinit var staticValueDeclaration: ValueDeclaration
 	lateinit var properties: List<ValueDeclaration>
 	lateinit var llvmType: LlvmType
@@ -52,13 +52,13 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 		addSemanticModels(members)
 		for(member in members) {
 			if(member is InterfaceMember)
-				member.parentDefinition = this
+				member.parentTypeDeclaration = this
 		}
 	}
 
-	protected abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeDefinition
+	protected abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): TypeDeclaration
 
-	fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>, onCompletion: (TypeDefinition) -> Unit) {
+	fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>, onCompletion: (TypeDeclaration) -> Unit) {
 		var definition = specificDefinitions[typeSubstitutions]
 		if(definition != null) {
 			onCompletion(definition)
@@ -78,23 +78,23 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 		pendingTypeSubstitutions.remove(typeSubstitutions)
 	}
 
-	fun withTypeParameters(typeParameters: List<Type>, onCompletion: (TypeDefinition) -> Unit) =
-		withTypeParameters(typeParameters, HashMap<TypeDefinition, Type>(), onCompletion)
+	fun withTypeParameters(typeParameters: List<Type>, onCompletion: (TypeDeclaration) -> Unit) =
+		withTypeParameters(typeParameters, HashMap<TypeDeclaration, Type>(), onCompletion)
 
-	fun withTypeParameters(typeParameters: List<Type>, typeSubstitutions: Map<TypeDefinition, Type>,
-						   onCompletion: (TypeDefinition) -> Unit) {
-		baseDefinition?.let { baseDefinition ->
+	fun withTypeParameters(typeParameters: List<Type>, typeSubstitutions: Map<TypeDeclaration, Type>,
+						   onCompletion: (TypeDeclaration) -> Unit) {
+		baseTypeDeclaration?.let { baseDefinition ->
 			return baseDefinition.withTypeParameters(typeParameters, typeSubstitutions, onCompletion)
 		}
 		val resolvedTypeSubstitutions = typeSubstitutions.toMutableMap()
-		val placeholders = scope.getGenericTypeDefinitions()
+		val placeholders = scope.getGenericTypeDeclarations()
 		for(parameterIndex in placeholders.indices) {
 			val placeholder = placeholders[parameterIndex]
 			val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
 			resolvedTypeSubstitutions[placeholder] = typeParameter
 		}
 		withTypeSubstitutions(resolvedTypeSubstitutions) { specificTypeDefinition ->
-			specificTypeDefinition.baseDefinition = this
+			specificTypeDefinition.baseTypeDeclaration = this
 			onCompletion(specificTypeDefinition)
 		}
 	}
@@ -112,8 +112,8 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 		hasDeterminedTypes = true
 		explicitParentType?.determineTypes()
 		if(explicitParentType != null) {
-			if(parentTypeDefinition == null) {
-				parentTypeDefinition = explicitParentType.definition
+			if(parentTypeDeclaration == null) {
+				parentTypeDeclaration = explicitParentType.typeDeclaration
 			} else {
 				context.addIssue(ExplicitParentOnScopedTypeDefinition(explicitParentType.source))
 			}
@@ -150,7 +150,7 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 
 	override fun validate() {
 		super.validate()
-		if(isBound && parentTypeDefinition == null)
+		if(isBound && parentTypeDeclaration == null)
 			context.addIssue(NoParentToBindTo(source))
 		if(isDefinition && (this as? Class)?.isAbstract != true && !hasCircularInheritance)
 			scope.ensureAbstractSuperMembersImplemented()
@@ -162,12 +162,12 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 		addSemanticModels(defaultInitializer)
 	}
 
-	private fun inheritsFrom(definition: TypeDefinition): Boolean {
+	private fun inheritsFrom(definition: TypeDeclaration): Boolean {
 		for(superType in getDirectSuperTypes()) {
 			superType.determineTypes()
-			if(superType.definition == definition)
+			if(superType.typeDeclaration == definition)
 				return true
-			if(superType.definition?.inheritsFrom(definition) == true)
+			if(superType.typeDeclaration?.inheritsFrom(definition) == true)
 				return true
 		}
 		return false
@@ -177,7 +177,7 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 		val superTypes = LinkedList<ObjectType>()
 		for(superType in getDirectSuperTypes()) {
 			superTypes.add(superType)
-			superTypes.addAll(superType.definition?.getAllSuperTypes() ?: continue)
+			superTypes.addAll(superType.typeDeclaration?.getAllSuperTypes() ?: continue)
 		}
 		return superTypes
 	}
@@ -202,7 +202,7 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 	}
 
 	override fun equals(other: Any?): Boolean {
-		if(other !is TypeDefinition)
+		if(other !is TypeDeclaration)
 			return false
 		return source == other.source
 	}
@@ -238,7 +238,7 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 			if((member as? InterfaceMember)?.isStatic == true)
 				constants[member.name] = member
 		for(superType in getDirectSuperTypes()) {
-			for(constant in superType.definition?.getConstants()?.values ?: emptyList())
+			for(constant in superType.typeDeclaration?.getConstants()?.values ?: emptyList())
 				constants.putIfAbsent(constant.name, constant)
 		}
 		return constants
@@ -250,7 +250,7 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 			if(member is ValueDeclaration && (member as? InterfaceMember)?.isStatic != true)
 				properties[member.name] = member
 		for(superType in getDirectSuperTypes()) {
-			for(property in superType.definition?.getProperties()?.values ?: emptyList())
+			for(property in superType.typeDeclaration?.getProperties()?.values ?: emptyList())
 				properties.putIfAbsent(property.name, property)
 		}
 		return properties
@@ -262,7 +262,7 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 			if(member is FunctionImplementation)
 				functions[member.memberIdentifier] = member
 		for(superType in getDirectSuperTypes()) {
-			for(function in superType.definition?.getFunctions()?.values ?: emptyList())
+			for(function in superType.typeDeclaration?.getFunctions()?.values ?: emptyList())
 				functions.putIfAbsent(function.memberIdentifier, function)
 		}
 		return functions
@@ -284,7 +284,7 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 	private fun defineLlvmClassInitializer(constructor: LlvmConstructor, constants: List<ValueDeclaration>, properties: List<ValueDeclaration>, functions: List<FunctionImplementation>) {
 		println("'$name' class initializer:")
 		constructor.createAndSelectBlock(llvmClassInitializer, "entrypoint")
-		for(typeDefinition in scope.typeDefinitions.values)
+		for(typeDefinition in scope.typeDeclarations.values)
 			constructor.buildFunctionCall(typeDefinition.llvmClassInitializerType, typeDefinition.llvmClassInitializer)
 		val constantCount = constructor.buildInt32(constants.size)
 		val constantIdArrayAddress = constructor.buildHeapArrayAllocation(context.llvmMemberIdType, constantCount, "constantIdArray")

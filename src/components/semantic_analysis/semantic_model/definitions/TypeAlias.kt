@@ -7,17 +7,17 @@ import components.syntax_parser.syntax_tree.definitions.TypeAlias as TypeAliasSy
 
 class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val referenceType: Type, scope: TypeScope,
 				isSpecificCopy: Boolean = false):
-	TypeDefinition(source, name, scope, null, null, emptyList(), false, isSpecificCopy) {
+	TypeDeclaration(source, name, scope, null, null, emptyList(), false, isSpecificCopy) {
 	override val isDefinition = false
 	private var hasDeterminedEffectiveType = false
 	private var effectiveType = referenceType
 
 	init {
-		scope.typeDefinition = this
+		scope.typeDeclaration = this
 		addSemanticModels(referenceType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeAlias {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): TypeAlias {
 		return TypeAlias(source, name, referenceType.withTypeSubstitutions(typeSubstitutions),
 			scope.withTypeSubstitutions(typeSubstitutions, null), true)
 	}
@@ -29,9 +29,9 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val refe
 			hasDeterminedEffectiveType = true
 			referenceType.determineTypes()
 			if(referenceType is ObjectType) {
-				val referenceDefinition = referenceType.definition
-				if(referenceDefinition is TypeAlias)
-					effectiveType = referenceDefinition.getEffectiveType()
+				val referenceTypeDeclaration = referenceType.typeDeclaration
+				if(referenceTypeDeclaration is TypeAlias)
+					effectiveType = referenceTypeDeclaration.getEffectiveType()
 			}
 		}
 		context.declarationStack.pop(this)
@@ -40,7 +40,7 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val refe
 
 	override fun declare() {
 		super.declare()
-		scope.enclosingScope.declareType(this)
+		scope.enclosingScope.addTypeDeclaration(this)
 	}
 
 	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {

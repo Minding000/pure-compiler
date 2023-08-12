@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -13,10 +13,10 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 	init {
 		addSemanticModels(types)
 		for(type in types)
-			type.interfaceScope.subscribe(this)
+			type.interfaceScope.addSubscriber(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): OrUnionType {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): OrUnionType {
 		val specificTypes = LinkedList<Type>()
 		for(type in types)
 			specificTypes.add(type.withTypeSubstitutions(typeSubstitutions))
@@ -56,22 +56,18 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 		return simplifiedType
 	}
 
-	override fun onNewType(type: TypeDefinition) {
-		for(part in types)
-			if(!part.interfaceScope.hasType(type))
-				return
-		this.interfaceScope.addType(type)
+	override fun onNewTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
+		if(types.all { type -> type.interfaceScope.hasTypeDeclaration(newTypeDeclaration) })
+			this.interfaceScope.addTypeDeclaration(newTypeDeclaration)
 	}
 
-	override fun onNewValue(value: InterfaceMember) {
-		for(part in types)
-			if(!part.interfaceScope.hasValue(value))
-				return
-		this.interfaceScope.addValue(value)
+	override fun onNewInterfaceMember(newInterfaceMember: InterfaceMember) {
+		if(types.all { type -> type.interfaceScope.hasInterfaceMember(newInterfaceMember) })
+			this.interfaceScope.addInterfaceMember(newInterfaceMember)
 	}
 
-	override fun isInstanceOf(type: SpecialType): Boolean {
-		return types.all { part -> part.isInstanceOf(type) }
+	override fun isInstanceOf(specialType: SpecialType): Boolean {
+		return types.all { part -> part.isInstanceOf(specialType) }
 	}
 
 	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
@@ -82,18 +78,12 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 		val sourceType = unresolvedSourceType.effectiveType
 		if(sourceType is OrUnionType)
 			return sourceType.isAssignableTo(this)
-		for(type in types)
-			if(type.accepts(sourceType))
-				return true
-		return false
+		return types.any { type -> type.accepts(sourceType) }
 	}
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
 		val targetType = unresolvedTargetType.effectiveType
-		for(type in types)
-			if(!type.isAssignableTo(targetType))
-				return false
-		return true
+		return types.all { type -> type.isAssignableTo(targetType) }
 	}
 
 	override fun equals(other: Any?): Boolean {

@@ -27,7 +27,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		super.determineTypes()
 		target.type?.let { targetType ->
 			try {
-				targetSignature = targetType.interfaceScope.resolveIndexOperator(typeParameters, indices, sourceExpression)
+				targetSignature = targetType.interfaceScope.getIndexOperator(typeParameters, indices, sourceExpression)
 				if(targetSignature == null) {
 					val name = "${target.type}[${indices.joinToString { index -> index.type.toString() }}]"
 					context.addIssue(NotFound(source, "Operator", "$name(${sourceExpression?.type ?: ""})"))
@@ -63,7 +63,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 
 	fun filterForPossibleTargetTypes(availableTypes: List<ObjectType>): List<ObjectType> {
 		return availableTypes.filter { availableType ->
-			availableType.interfaceScope.resolveIndexOperator(typeParameters, indices, sourceExpression) != null
+			availableType.interfaceScope.getIndexOperator(typeParameters, indices, sourceExpression) != null
 		}
 	}
 }

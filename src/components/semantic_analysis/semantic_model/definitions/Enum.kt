@@ -11,14 +11,14 @@ import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDe
 
 class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?, superType: Type?,
 		   members: List<SemanticModel>, isBound: Boolean, isSpecificCopy: Boolean = false):
-	TypeDefinition(source, name, scope, explicitParentType, superType, members, isBound, isSpecificCopy) {
+	TypeDeclaration(source, name, scope, explicitParentType, superType, members, isBound, isSpecificCopy) {
 
 	init {
-		scope.typeDefinition = this
+		scope.typeDeclaration = this
 	}
 
 	override fun getValueDeclaration(): ValueDeclaration {
-		val targetScope = parentTypeDefinition?.scope ?: scope.enclosingScope
+		val targetScope = parentTypeDeclaration?.scope ?: scope.enclosingScope
 		val staticType = StaticType(this)
 		staticValueDeclaration = if(targetScope is TypeScope)
 			PropertyDeclaration(source, targetScope, name, staticType, null, !isBound)
@@ -29,11 +29,11 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 
 	override fun declare() {
 		super.declare()
-		val targetScope = parentTypeDefinition?.scope ?: scope.enclosingScope
-		targetScope.declareType(this)
+		val targetScope = parentTypeDeclaration?.scope ?: scope.enclosingScope
+		targetScope.addTypeDeclaration(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Enum {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Enum {
 		determineTypes()
 		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
 		return Enum(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.interfaceScope), explicitParentType, superType,

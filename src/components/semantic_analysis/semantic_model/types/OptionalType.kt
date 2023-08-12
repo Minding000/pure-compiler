@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
@@ -12,7 +12,7 @@ class OptionalType(override val source: SyntaxTreeNode, scope: Scope, val baseTy
 		addSemanticModels(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): OptionalType {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): OptionalType {
 		return OptionalType(source, scope, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
@@ -23,12 +23,9 @@ class OptionalType(override val source: SyntaxTreeNode, scope: Scope, val baseTy
 		return OptionalType(source, scope, baseType.simplified())
 	}
 
-	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableList<Type>) {
-		val sourceBaseType = if(sourceType is OptionalType)
-			sourceType.baseType
-		else
-			sourceType
-		baseType.inferType(genericType, sourceBaseType, inferredTypes)
+	override fun inferTypeParameter(typeParameter: TypeDeclaration, sourceType: Type, inferredTypes: MutableList<Type>) {
+		val sourceBaseType = if(sourceType is OptionalType) sourceType.baseType else sourceType
+		baseType.inferTypeParameter(typeParameter, sourceBaseType, inferredTypes)
 	}
 
 	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {

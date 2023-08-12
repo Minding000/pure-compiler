@@ -17,30 +17,30 @@ import logger.issues.initialization.NotInitialized
 import logger.issues.resolution.NotFound
 
 open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val name: String): Value(source, scope) {
-	var definition: ValueDeclaration? = null
+	var declaration: ValueDeclaration? = null
 	protected open var staticType: Type? = null
 
 	constructor(source: Identifier, scope: Scope): this(source, scope, source.getValue())
 
 	override fun determineTypes() {
 		super.determineTypes()
-		val definition = scope.resolveValue(this)
-		if(definition == null) {
+		val valueDeclaration = scope.getValueDeclaration(this)
+		if(valueDeclaration == null) {
 			context.addIssue(NotFound(source, "Value", name))
 			return
 		}
 		val scope = scope
-		if(scope is InterfaceScope && definition is InterfaceMember) {
-			if(scope.isStatic && !definition.isStatic) {
+		if(scope is InterfaceScope && valueDeclaration is InterfaceMember) {
+			if(scope.isStatic && !valueDeclaration.isStatic) {
 				context.addIssue(InstanceAccessFromStaticContext(source, name))
 				return
 			}
-			if(!scope.isStatic && definition.isStatic)
+			if(!scope.isStatic && valueDeclaration.isStatic)
 				context.addIssue(StaticAccessFromInstanceContext(source, name))
 		}
-		definition.usages.add(this)
-		this.definition = definition
-		type = definition.getLinkedType()
+		valueDeclaration.usages.add(this)
+		this.declaration = valueDeclaration
+		type = valueDeclaration.getLinkedType()
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -48,7 +48,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		setEndStates(tracker)
 		if(usage == null)
 			return
-		val declaration = definition
+		val declaration = declaration
 		if(declaration is LocalVariableDeclaration) {
 			if(declaration.type !is StaticType && !usage.isPreviouslyInitialized())
 				context.addIssue(NotInitialized(source, "Local variable", name))
@@ -60,30 +60,30 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 	}
 
 	open fun computeValue(tracker: VariableTracker) {
-		staticValue = tracker.getCurrentValueOf(definition) ?: this
-		staticType = tracker.getCurrentTypeOf(definition)
+		staticValue = tracker.getCurrentValueOf(declaration) ?: this
+		staticType = tracker.getCurrentTypeOf(declaration)
 	}
 
 	override fun getComputedType(): Type? = staticType
 
 	override fun hashCode(): Int {
 		var result = super.hashCode()
-		result = 31 * result + (definition?.hashCode() ?: 0)
+		result = 31 * result + (declaration?.hashCode() ?: 0)
 		return result
 	}
 
 	override fun equals(other: Any?): Boolean {
 		if(other !is VariableValue)
 			return false
-		if(definition == null)
+		if(declaration == null)
 			return false
-		return definition == other.definition
+		return declaration == other.declaration
 	}
 
 	fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue? {
-		val definition = definition
+		val definition = declaration
 		return if(definition is PropertyDeclaration) {
-			context.resolveMember(constructor, definition.parentDefinition.llvmType, context.getThisParameter(constructor), name,
+			context.resolveMember(constructor, definition.parentTypeDeclaration.llvmType, context.getThisParameter(constructor), name,
 				(definition as? InterfaceMember)?.isStatic ?: false)
 		} else {
 			definition?.llvmLocation

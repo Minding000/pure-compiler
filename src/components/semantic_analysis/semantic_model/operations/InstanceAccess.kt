@@ -19,15 +19,15 @@ class InstanceAccess(override val source: InstanceAccessSyntaxTree, scope: Scope
 	override fun setInferredType(inferredType: Type?) {
 		super.setInferredType(inferredType)
 		type?.let { type ->
-			val definition = type.interfaceScope.resolveValue(this)
+			val definition = type.interfaceScope.getValueDeclaration(this)
 				?: throw CompilerError(source, "Inferred type doesn't contain instance value.")
 			definition.usages.add(this)
-			this.definition = definition
+			this.declaration = definition
 		}
 	}
 
 	override fun computeValue(tracker: VariableTracker) {
 		super.computeValue(tracker)
-		staticValue = definition?.value
+		staticValue = declaration?.value
 	}
 }

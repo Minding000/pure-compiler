@@ -41,7 +41,7 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 		subject.analyseDataFlow(tracker)
 		val caseStates = LinkedList<VariableTracker.VariableState>()
 		val variableValue = subject as? VariableValue
-		val subjectDeclaration = variableValue?.definition
+		val subjectDeclaration = variableValue?.declaration
 		for(case in cases) {
 			case.condition.analyseDataFlow(tracker)
 			val negativeState = tracker.currentState.copy()

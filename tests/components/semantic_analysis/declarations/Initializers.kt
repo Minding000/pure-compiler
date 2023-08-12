@@ -168,7 +168,7 @@ internal class Initializers {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<AbstractMemberInNonAbstractTypeDefinition>(
-			"Abstract member 'init(Int)' is not allowed in non-abstract type definition 'Plant'.", Severity.ERROR)
+			"Abstract member 'init(Int)' is not allowed in non-abstract type declaration 'Plant'.", Severity.ERROR)
 	}
 
 	@Test
@@ -243,7 +243,7 @@ internal class Initializers {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<MissingImplementations>("""
-			Non-abstract type definition 'Tree' does not implement the following inherited members:
+			Non-abstract type declaration 'Tree' does not implement the following inherited members:
 			 - Plant
 			   - init(Int)
 		""".trimIndent(), Severity.ERROR)

@@ -30,10 +30,10 @@ internal class TypeParameters {
 		val baseTypeVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "trash" }
 		val specificType = lintResult.find<VariableValue> { variableValue ->
 			variableValue.name == "recyclingBin" }?.type
-		val functionType = specificType?.interfaceScope?.resolveValue("put")?.type as? FunctionType
+		val functionType = specificType?.interfaceScope?.getValueDeclaration("put")?.type as? FunctionType
 		assertNotNull(functionType)
 		assertNotNull(baseTypeVariable)
-		val signature = functionType.resolveSignature(listOf(baseTypeVariable))
+		val signature = functionType.getSignature(listOf(baseTypeVariable))
 		assertNotNull(signature)
 	}
 
@@ -55,10 +55,10 @@ internal class TypeParameters {
 		val baseTypeVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrink" }
 		val specificType = lintResult.find<VariableValue> { variableValue ->
 			variableValue.name == "softDrinkSupply" }?.type
-		val functionType = specificType?.interfaceScope?.resolveValue("store")?.type as? FunctionType
+		val functionType = specificType?.interfaceScope?.getValueDeclaration("store")?.type as? FunctionType
 		assertNotNull(functionType)
 		assertNotNull(baseTypeVariable)
-		val signature = functionType.resolveSignature(listOf(baseTypeVariable))
+		val signature = functionType.getSignature(listOf(baseTypeVariable))
 		assertNull(signature)
 	}
 
@@ -82,12 +82,12 @@ internal class TypeParameters {
 			variableValueDeclaration.name == "softDrink" }?.type
 		val specificType = lintResult.find<VariableValue> { variableValue ->
 			variableValue.name == "softDrinkDestination" }?.type
-		val functionType = specificType?.interfaceScope?.resolveValue("get")?.type as? FunctionType
+		val functionType = specificType?.interfaceScope?.getValueDeclaration("get")?.type as? FunctionType
 		val anyType = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.type.toString() == "Any" }?.type
 		assertNotNull(functionType)
 		assertNotNull(anyType)
-		val signature = functionType.resolveSignature()
+		val signature = functionType.getSignature()
 		assertNotNull(signature)
 		assertNotNull(baseType)
 		assertFalse(signature.returnType.isAssignableTo(baseType))
@@ -112,9 +112,9 @@ internal class TypeParameters {
 			variableValueDeclaration.name == "softDrink" }?.type
 		val specificType = lintResult.find<VariableValue> { variableValue ->
 			variableValue.name == "softDrinkSupply" }?.type
-		val functionType = specificType?.interfaceScope?.resolveValue("get")?.type as? FunctionType
+		val functionType = specificType?.interfaceScope?.getValueDeclaration("get")?.type as? FunctionType
 		assertNotNull(functionType)
-		val signature = functionType.resolveSignature()
+		val signature = functionType.getSignature()
 		assertNotNull(signature)
 		assertNotNull(baseType)
 		assertTrue(signature.returnType.isAssignableTo(baseType))

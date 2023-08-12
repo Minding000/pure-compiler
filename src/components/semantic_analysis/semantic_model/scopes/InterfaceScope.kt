@@ -3,7 +3,7 @@ package components.semantic_analysis.semantic_model.scopes
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Instance
 import components.semantic_analysis.semantic_model.values.InterfaceMember
@@ -11,78 +11,82 @@ import java.util.*
 
 class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	lateinit var type: Type
-	private val types = HashMap<String, TypeDefinition>()
-	private val values = HashMap<String, InterfaceMember>()
+	private val typeDeclarations = HashMap<String, TypeDeclaration>()
+	private val interfaceMembers = HashMap<String, InterfaceMember>()
 	val initializers = LinkedList<InitializerDefinition>()
+	private val subscribedTypes = LinkedList<Type>()
 
-	fun hasType(type: TypeDefinition): Boolean = types.containsValue(type)
-
-	fun hasValue(valueName: String): Boolean = values.containsKey(valueName)
-	fun hasValue(value: InterfaceMember): Boolean = values.containsValue(value)
-
-	fun hasInstance(name: String): Boolean {
-		for((_, value) in values) {
-			if(value is Instance && value.name == name)
-				return true
-		}
-		return false
-	}
-
-	override fun subscribe(type: Type) {
-		super.subscribe(type)
-		for((_, typeDefinition) in types)
-			type.onNewType(typeDefinition)
-		for((_, value) in values)
-			type.onNewValue(value)
+	fun addSubscriber(type: Type) {
+		subscribedTypes.add(type)
+		for((_, typeDeclaration) in typeDeclarations)
+			type.onNewTypeDeclaration(typeDeclaration)
+		for((_, interfaceMember) in interfaceMembers)
+			type.onNewInterfaceMember(interfaceMember)
 		for(initializer in initializers)
 			type.onNewInitializer(initializer)
 	}
 
-	fun addType(type: TypeDefinition) {
-		if(!types.containsKey(type.name)) {
-			types[type.name] = type
-			onNewType(type)
+	fun addTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
+		if(!typeDeclarations.containsKey(newTypeDeclaration.name)) {
+			typeDeclarations[newTypeDeclaration.name] = newTypeDeclaration
+			for(subscriber in subscribedTypes)
+				subscriber.onNewTypeDeclaration(newTypeDeclaration)
 		}
 	}
 
-	fun addValue(value: InterfaceMember) {
-		if(!values.containsKey(value.name)) {
-			values[value.name] = value
-			onNewValue(value)
+	fun addInterfaceMember(newInterfaceMember: InterfaceMember) {
+		if(!interfaceMembers.containsKey(newInterfaceMember.name)) {
+			interfaceMembers[newInterfaceMember.name] = newInterfaceMember
+			for(subscriber in subscribedTypes)
+				subscriber.onNewInterfaceMember(newInterfaceMember)
 		}
 	}
 
-	fun addInitializer(initializer: InitializerDefinition) {
-		if(!initializers.contains(initializer)) {
-			initializers.add(initializer)
-			onNewInitializer(initializer)
+	fun addInitializer(newInitializer: InitializerDefinition) {
+		if(!initializers.contains(newInitializer)) {
+			initializers.add(newInitializer)
+			for(subscriber in subscribedTypes)
+				subscriber.onNewInitializer(newInitializer)
 		}
 	}
 
-	override fun resolveValue(name: String): InterfaceMember? {
-		return values[name]
+	override fun getTypeDeclaration(name: String): TypeDeclaration? {
+		return typeDeclarations[name]
 	}
 
-	override fun resolveType(name: String): TypeDefinition? {
-		return types[name]
+	override fun getValueDeclaration(name: String): InterfaceMember? {
+		return interfaceMembers[name]
 	}
 
-	fun getSuperInitializer(initializer: InitializerDefinition): InitializerDefinition? {
-		for(superInitializer in initializers) {
-			if(initializer.fulfillsInheritanceRequirementsOf(superInitializer))
-				return superInitializer
+	fun getSuperInitializer(subInitializer: InitializerDefinition): InitializerDefinition? {
+		for(initializer in initializers) {
+			if(subInitializer.fulfillsInheritanceRequirementsOf(initializer))
+				return initializer
 		}
 		return null
 	}
 
-	fun getAbstractMembers(): List<MemberDeclaration> = type.getAbstractMembers()
+	fun getAbstractMemberDeclarations(): List<MemberDeclaration> = type.getAbstractMemberDeclarations()
 	fun getPropertiesToBeInitialized(): List<PropertyDeclaration> = type.getPropertiesToBeInitialized()
 
 	fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
 		return initializers.filter { initializer -> initializer.isConvertingFrom(sourceType) }
 	}
 
+	fun hasTypeDeclaration(typeDeclaration: TypeDeclaration): Boolean = typeDeclarations.containsValue(typeDeclaration)
+
+	fun hasInterfaceMember(valueName: String): Boolean = interfaceMembers.containsKey(valueName)
+	fun hasInterfaceMember(value: InterfaceMember): Boolean = interfaceMembers.containsValue(value)
+
+	fun hasInstance(name: String): Boolean {
+		for((_, value) in interfaceMembers) {
+			if(value is Instance && value.name == name)
+				return true
+		}
+		return false
+	}
+
 	override fun toString(): String {
-		return "InterfaceScope of $type"
+		return "${javaClass.simpleName} of $type"
 	}
 }

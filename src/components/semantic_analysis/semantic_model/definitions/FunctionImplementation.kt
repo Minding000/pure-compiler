@@ -19,11 +19,11 @@ import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 import java.util.*
 
-class FunctionImplementation(override val source: SyntaxTreeNode, override val scope: BlockScope, genericParameters: List<TypeDefinition>,
+class FunctionImplementation(override val source: SyntaxTreeNode, override val scope: BlockScope, genericParameters: List<TypeDeclaration>,
 							 val parameters: List<Parameter>, val body: ErrorHandlingContext?, returnType: Type?,
 							 override val isAbstract: Boolean = false, val isMutating: Boolean = false, val isNative: Boolean = false,
 							 val isOverriding: Boolean = false): SemanticModel(source, scope), MemberDeclaration, Callable {
-	override var parentDefinition: TypeDefinition? = null
+	override var parentTypeDeclaration: TypeDeclaration? = null
 	private lateinit var parentFunction: Function
 	override val memberIdentifier: String
 		get() {
@@ -53,8 +53,8 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 
 	override fun determineTypes() {
 		super.determineTypes()
-		parentDefinition = scope.getSurroundingDefinition()
-		signature.parentDefinition = parentDefinition
+		parentTypeDeclaration = scope.getSurroundingTypeDeclaration()
+		signature.parentDefinition = parentTypeDeclaration
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -67,7 +67,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		propertiesBeingInitialized.addAll(functionTracker.getPropertiesBeingInitialized())
 		propertiesRequiredToBeInitialized.addAll(functionTracker.getPropertiesRequiredToBeInitialized())
 		var trackerName = ""
-		val parentDefinition = parentDefinition
+		val parentDefinition = parentTypeDeclaration
 		if(parentDefinition != null)
 			trackerName += "${parentDefinition.name}."
 		trackerName += memberIdentifier
@@ -161,7 +161,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 
 	override fun toString(): String {
 		var stringRepresentation = ""
-		val parentDefinition = parentDefinition
+		val parentDefinition = parentTypeDeclaration
 		if(parentDefinition != null) {
 			stringRepresentation += parentDefinition.name
 			if(parentFunction !is Operator)

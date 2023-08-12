@@ -6,7 +6,7 @@ import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
 import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
 import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -24,26 +24,27 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 		interfaceScope.type = this
 	}
 
-	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type
+	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Type
 
 	abstract fun simplified(): Type
 
-	open fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableList<Type>) {}
+	//TODO also infer type parameters from union and plural types
+	open fun inferTypeParameter(typeParameter: TypeDeclaration, sourceType: Type, inferredTypes: MutableList<Type>) {}
 
-	open fun onNewType(type: TypeDefinition) {}
+	open fun onNewTypeDeclaration(newTypeDeclaration: TypeDeclaration) {}
 
-	open fun onNewValue(value: InterfaceMember) {}
+	open fun onNewInterfaceMember(newInterfaceMember: InterfaceMember) {}
 
-	open fun onNewInitializer(initializer: InitializerDefinition) {}
+	open fun onNewInitializer(newInitializer: InitializerDefinition) {}
 
 	final override fun determineTypes() {
 		if(hasResolvedDefinitions)
 			return
 		hasResolvedDefinitions = true
-		resolveDefinitions()
+		resolveTypeDeclarations()
 	}
 
-	protected open fun resolveDefinitions() {
+	protected open fun resolveTypeDeclarations() {
 		super.determineTypes()
 	}
 
@@ -55,14 +56,14 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 		//  -> Simplify to '...'
 	}
 
-	open fun isInstanceOf(type: SpecialType): Boolean = false
+	open fun isInstanceOf(specialType: SpecialType): Boolean = false
 
 	abstract fun accepts(unresolvedSourceType: Type): Boolean
 
 	abstract fun isAssignableTo(unresolvedTargetType: Type): Boolean
 
-	open fun getAbstractMembers(): List<MemberDeclaration> =
-		throw CompilerError(source, "Tried to get abstract members of non-super type.")
+	open fun getAbstractMemberDeclarations(): List<MemberDeclaration> =
+		throw CompilerError(source, "Tried to get abstract member declarations of non-super type.")
 	open fun getPropertiesToBeInitialized(): List<PropertyDeclaration> =
 		throw CompilerError(source, "Tried to get properties to be initialized of non-super type.")
 

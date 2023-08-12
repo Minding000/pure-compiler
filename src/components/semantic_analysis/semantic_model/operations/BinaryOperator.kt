@@ -25,7 +25,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		super.determineTypes()
 		left.type?.let { leftType ->
 			try {
-				targetSignature = leftType.interfaceScope.resolveOperator(kind, right)
+				targetSignature = leftType.interfaceScope.getOperator(kind, right)
 				if(targetSignature == null) {
 					context.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.type}"))
 					return@let
@@ -46,7 +46,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			val isAnd = kind == Operator.Kind.AND
 			tracker.setVariableStates(left.getEndState(isAnd))
 			val variableValue = left as? VariableValue
-			val declaration = variableValue?.definition
+			val declaration = variableValue?.declaration
 			if(declaration != null) {
 				val booleanLiteral = BooleanLiteral(this, isAnd)
 				tracker.add(VariableUsage.Kind.HINT, declaration, this, booleanLiteral.type, booleanLiteral)
@@ -61,7 +61,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			right.analyseDataFlow(tracker)
 			val variableValue = left as? VariableValue ?: right as? VariableValue
 			val literalValue = left as? LiteralValue ?: right as? LiteralValue
-			val declaration = variableValue?.definition
+			val declaration = variableValue?.declaration
 			if(declaration != null && literalValue != null) {
 				val isPositive = kind == Operator.Kind.EQUAL_TO
 				setEndState(tracker, !isPositive)

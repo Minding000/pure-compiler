@@ -58,7 +58,7 @@ class Context {
 	fun registerWrite(variableDeclaration: Value) {
 		if(variableDeclaration !is VariableValue)
 			return
-		val declaration = variableDeclaration.definition ?: return
+		val declaration = variableDeclaration.declaration ?: return
 		for(surroundingLoop in surroundingLoops)
 			surroundingLoop.mutatedVariables.add(declaration)
 	}

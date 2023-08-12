@@ -18,7 +18,7 @@ internal class LiteralResolution {
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val stringLiteralType = lintResult.find<StringLiteral>()?.type
 		assertIs<ObjectType>(stringLiteralType)
-		assertNotNull(stringLiteralType.definition)
+		assertNotNull(stringLiteralType.typeDeclaration)
 	}
 
 	@Test
@@ -27,7 +27,7 @@ internal class LiteralResolution {
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val numberLiteralType = lintResult.find<NumberLiteral>()?.type
 		assertIs<ObjectType>(numberLiteralType)
-		assertNotNull(numberLiteralType.definition)
+		assertNotNull(numberLiteralType.typeDeclaration)
 	}
 
 	@Test
@@ -36,7 +36,7 @@ internal class LiteralResolution {
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val booleanLiteralType = lintResult.find<BooleanLiteral>()?.type
 		assertIs<ObjectType>(booleanLiteralType)
-		assertNotNull(booleanLiteralType.definition)
+		assertNotNull(booleanLiteralType.typeDeclaration)
 	}
 
 	@Test
@@ -45,6 +45,6 @@ internal class LiteralResolution {
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val nullLiteralType = lintResult.find<NullLiteral>()?.type
 		assertIs<ObjectType>(nullLiteralType)
-		assertNotNull(nullLiteralType.definition)
+		assertNotNull(nullLiteralType.typeDeclaration)
 	}
 }

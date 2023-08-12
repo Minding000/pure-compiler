@@ -14,7 +14,7 @@ open class InitializerReference(override val source: InitializerReferenceSyntaxT
 		if(scope is InterfaceScope && scope.type is StaticType) {
 			type = scope.type
 		} else {
-			val surroundingDefinition = scope.getSurroundingDefinition()
+			val surroundingDefinition = scope.getSurroundingTypeDeclaration()
 			if(surroundingDefinition == null || !isInInitializer()) {
 				context.addIssue(InitializerReferenceOutsideOfInitializer(source))
 			} else {

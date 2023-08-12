@@ -39,7 +39,7 @@ internal class ValueResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "numberOfCats" }
-		assertNotNull(variableValue?.definition)
+		assertNotNull(variableValue?.declaration)
 	}
 
 	@Test
@@ -53,7 +53,7 @@ internal class ValueResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "livingAreaInSquareMeters" }
-		assertNotNull(variableValue?.definition)
+		assertNotNull(variableValue?.declaration)
 	}
 
 	@Test
@@ -207,7 +207,7 @@ internal class ValueResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "speed" }
-		assertNotNull(variableValue?.definition)
+		assertNotNull(variableValue?.declaration)
 	}
 
 	@Test
@@ -222,7 +222,7 @@ internal class ValueResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val member = variableValue?.type?.interfaceScope?.resolveValue("isOpen")
+		val member = variableValue?.type?.interfaceScope?.getValueDeclaration("isOpen")
 		assertNotNull(member)
 	}
 
@@ -241,7 +241,7 @@ internal class ValueResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val member = variableValue?.type?.interfaceScope?.resolveValue("isOpen")
+		val member = variableValue?.type?.interfaceScope?.getValueDeclaration("isOpen")
 		assertIs<PropertyDeclaration>(member)
 		assertEquals("no", member.value?.source?.getValue())
 	}

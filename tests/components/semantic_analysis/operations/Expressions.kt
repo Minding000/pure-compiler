@@ -3,7 +3,7 @@ package components.semantic_analysis.operations
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.control_flow.Try
 import components.semantic_analysis.semantic_model.definitions.Class
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.operations.Cast
 import components.semantic_analysis.semantic_model.operations.HasValueCheck
 import components.semantic_analysis.semantic_model.operations.MemberAccess
@@ -122,9 +122,9 @@ internal class Expressions {
 				roomWithSeats as! Vehicle
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val vehicleClass = lintResult.find<TypeDefinition> { typeDefinition -> typeDefinition.name == "Vehicle" }
+		val vehicleClass = lintResult.find<TypeDeclaration> { typeDefinition -> typeDefinition.name == "Vehicle" }
 		val cast = lintResult.find<Cast>()
-		assertEquals(vehicleClass, (cast?.type as? ObjectType)?.definition)
+		assertEquals(vehicleClass, (cast?.type as? ObjectType)?.typeDeclaration)
 	}
 
 	@Test
@@ -195,7 +195,7 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
 		assertNotNull(variableValue)
-		assertNull(variableValue.definition)
+		assertNull(variableValue.declaration)
 	}
 
 	@Test
@@ -245,7 +245,7 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
 		assertNotNull(variableValue)
-		assertNotNull(variableValue.definition)
+		assertNotNull(variableValue.declaration)
 	}
 
 	@Test
@@ -262,7 +262,7 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
 		assertNotNull(variableValue)
-		assertNull(variableValue.definition)
+		assertNull(variableValue.declaration)
 	}
 
 	@Test
@@ -309,7 +309,7 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
 		assertNotNull(variableValue)
-		assertNotNull(variableValue.definition)
+		assertNotNull(variableValue.declaration)
 	}
 
 	@Test
@@ -323,11 +323,11 @@ internal class Expressions {
 				roomWithSeats as? Vehicle
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val vehicleClass = lintResult.find<TypeDefinition> { typeDefinition -> typeDefinition.name == "Vehicle" }
+		val vehicleClass = lintResult.find<TypeDeclaration> { typeDefinition -> typeDefinition.name == "Vehicle" }
 		val cast = lintResult.find<Cast>()
 		val castResultType = cast?.type as? OptionalType
 		assertNotNull(castResultType)
-		assertEquals(vehicleClass, (castResultType.baseType as? ObjectType)?.definition)
+		assertEquals(vehicleClass, (castResultType.baseType as? ObjectType)?.typeDeclaration)
 	}
 
 	@Test
@@ -368,7 +368,7 @@ internal class Expressions {
 		val typeDefinition = lintResult.find<Class> { `class` -> `class`.name == "PrintResult" }
 		val tryType = lintResult.find<Try>()?.type
 		assertIs<ObjectType>(tryType)
-		assertEquals(typeDefinition, tryType.definition)
+		assertEquals(typeDefinition, tryType.typeDeclaration)
 	}
 
 	@Test
@@ -385,7 +385,7 @@ internal class Expressions {
 		val typeDefinition = lintResult.find<Class> { `class` -> `class`.name == "PrintResult" }
 		val tryType = lintResult.find<Try>()?.type
 		assertIs<OptionalType>(tryType)
-		assertEquals(typeDefinition, (tryType.baseType as? ObjectType)?.definition)
+		assertEquals(typeDefinition, (tryType.baseType as? ObjectType)?.typeDeclaration)
 	}
 
 	@Test

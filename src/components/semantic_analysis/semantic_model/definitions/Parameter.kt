@@ -18,20 +18,20 @@ class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, n
 	var propertyDeclaration: ValueDeclaration? = null
 	var index by Delegates.notNull<Int>()
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Parameter {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Parameter {
 		return Parameter(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), isMutable, isVariadic)
 	}
 
 	override fun declare() {
 		if(type != null)
-			scope.declareValue(this)
+			scope.addValueDeclaration(this)
 	}
 
 	override fun determineType() {
 		if(isPropertySetter) {
 			val parent = parent
 			if(parent is InitializerDefinition) {
-				propertyDeclaration = parent.parentDefinition.scope.resolveValue(name)
+				propertyDeclaration = parent.parentTypeDeclaration.scope.getValueDeclaration(name)
 				if(propertyDeclaration == null) {
 					context.addIssue(PropertyParameterMismatch(source))
 				} else {

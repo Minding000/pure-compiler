@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.context.SpecialType
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.definitions.TypeParameter as TypeParameterSyntaxTree
 
@@ -11,7 +11,7 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, 
 		addSemanticModels(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): TypeParameter {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): TypeParameter {
 		return TypeParameter(source, scope, mode, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 

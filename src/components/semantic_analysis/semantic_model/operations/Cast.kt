@@ -42,7 +42,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 		super.analyseDataFlow(tracker)
 		if(operator.returnsBoolean) {
 			val variableValue = value as? VariableValue
-			val declaration = variableValue?.definition
+			val declaration = variableValue?.declaration
 			if(declaration != null) {
 				val commonState = tracker.currentState.copy()
 				tracker.add(VariableUsage.Kind.HINT, declaration, this, referenceType)

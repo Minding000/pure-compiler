@@ -18,7 +18,7 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		addSemanticModels(setStatement)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): ComputedPropertyDeclaration {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): ComputedPropertyDeclaration {
 		return ComputedPropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), isConstant,
 			isOverriding, getExpression, setStatement, true)
 	}

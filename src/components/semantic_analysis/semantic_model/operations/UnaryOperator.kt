@@ -27,7 +27,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		super.determineTypes()
 		value.type?.let { valueType ->
 			try {
-				targetSignature = valueType.interfaceScope.resolveOperator(kind)
+				targetSignature = valueType.interfaceScope.getOperator(kind)
 				if(targetSignature == null) {
 					context.addIssue(NotFound(source, "Operator", "$kind$valueType"))
 					return@let

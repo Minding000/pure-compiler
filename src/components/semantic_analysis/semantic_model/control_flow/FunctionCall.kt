@@ -51,7 +51,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		var targetImplementation: Callable? = targetInitializer
 		val targetSignature = targetSignature
 		if(targetSignature != null)
-			targetImplementation = ((((function as? MemberAccess)?.member ?: function) as? VariableValue)?.definition?.value as? Function)
+			targetImplementation = ((((function as? MemberAccess)?.member ?: function) as? VariableValue)?.declaration?.value as? Function)
 				?.getImplementationBySignature(targetSignature)
 		if(targetImplementation == null)
 			return
@@ -69,12 +69,12 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	}
 
 	private fun resolveInitializerCall(targetType: StaticType) {
-		(targetType.definition as? Class)?.let { `class` ->
+		(targetType.typeDeclaration as? Class)?.let { `class` ->
 			if(`class`.isAbstract)
 				context.addIssue(AbstractClassInstantiation(source, `class`))
 		}
-		val baseDefinition = targetType.getBaseDefinition()
-		val genericDefinitionTypes = baseDefinition.scope.getGenericTypeDefinitions()
+		val baseTypeDeclaration = targetType.getBaseTypeDeclaration()
+		val genericDefinitionTypes = baseTypeDeclaration.scope.getGenericTypeDeclarations()
 		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: emptyList()
 		try {
 			val match = targetType.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters, valueParameters)
@@ -82,7 +82,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				context.addIssue(NotFound(source, "Initializer", getSignature()))
 				return
 			}
-			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value }, baseDefinition)
+			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value }, baseTypeDeclaration)
 			type.determineTypes()
 			addSemanticModels(type)
 			this.type = type
@@ -94,7 +94,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 
 	private fun resolveFunctionCall(functionType: FunctionType) {
 		try {
-			targetSignature = functionType.resolveSignature(typeParameters, valueParameters)
+			targetSignature = functionType.getSignature(typeParameters, valueParameters)
 			if(targetSignature == null) {
 				context.addIssue(SignatureMismatch(function, typeParameters, valueParameters))
 				return
@@ -129,7 +129,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		}
 		val typeDefinition = signature.parentDefinition
 		val functionAddress = if(typeDefinition == null) {
-			val implementation = ((function as? VariableValue)?.definition?.value as? Function)?.getImplementationBySignature(signature)
+			val implementation = ((function as? VariableValue)?.declaration?.value as? Function)?.getImplementationBySignature(signature)
 				?: throw CompilerError(source, "Failed to determine address of global function.")
 			implementation.llvmValue
 		} else {
@@ -139,7 +139,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				context.getThisParameter(constructor)
 			parameters.addFirst(targetValue)
 			if(function is MemberAccess && function.target is SuperReference) {
-				val implementation = ((function.member as? VariableValue)?.definition?.value as? Function)
+				val implementation = ((function.member as? VariableValue)?.declaration?.value as? Function)
 					?.getImplementationBySignature(signature)
 					?: throw CompilerError(source, "Failed to determine address of super function.")
 				implementation.llvmValue
@@ -167,7 +167,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		// - unless the variable definition is a specific type already (or can be traced to it)
 		val isPrimaryCall = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
 		return if(isPrimaryCall) {
-			val typeDefinition = initializer.parentDefinition
+			val typeDefinition = initializer.parentTypeDeclaration
 			val newObjectAddress = constructor.buildHeapAllocation(typeDefinition.llvmType, "newObjectAddress")
 			val classDefinitionPointer = constructor.buildGetPropertyPointer(typeDefinition.llvmType, newObjectAddress,
 				Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")

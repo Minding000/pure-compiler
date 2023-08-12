@@ -1,44 +1,45 @@
 package components.semantic_analysis.semantic_model.scopes
 
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import logger.issues.definition.Redeclaration
 
 class FileScope: MutableScope() {
-	private val referencedTypeDefinitions = HashMap<String, TypeDefinition>()
-	val typeDefinitions = HashMap<String, TypeDefinition>()
+	private val referencedTypeDeclarations = HashMap<String, TypeDeclaration>()
+	val typeDeclarations = HashMap<String, TypeDeclaration>()
 	private val referencedValueDeclarations = HashMap<String, ValueDeclaration>()
-	val valueDeclarations = HashMap<String, ValueDeclaration>()
+	private val valueDeclarations = HashMap<String, ValueDeclaration>()
 
 	fun reference(scope: FileScope) {
-		referencedTypeDefinitions.putAll(scope.typeDefinitions)
+		referencedTypeDeclarations.putAll(scope.typeDeclarations)
 		referencedValueDeclarations.putAll(scope.valueDeclarations)
 	}
 
-	override fun declareType(typeDefinition: TypeDefinition) {
-		val previousDeclaration = referencedTypeDefinitions[typeDefinition.name] ?: typeDefinitions.putIfAbsent(typeDefinition.name, typeDefinition)
-		if(previousDeclaration != null) {
-			typeDefinition.context.addIssue(Redeclaration(typeDefinition.source, "type", typeDefinition.name,
-				previousDeclaration.source))
-			return
-		}
-		onNewType(typeDefinition)
-	}
-
-	override fun resolveType(name: String): TypeDefinition? {
-		return typeDefinitions[name] ?: referencedTypeDefinitions[name]
-	}
-
-	override fun declareValue(valueDeclaration: ValueDeclaration) {
-		val previousDeclaration = referencedValueDeclarations[valueDeclaration.name] ?: valueDeclarations.putIfAbsent(valueDeclaration.name, valueDeclaration)
-		if(previousDeclaration != null) {
-			valueDeclaration.context.addIssue(Redeclaration(valueDeclaration.source, "value", valueDeclaration.name,
-				previousDeclaration.source))
+	override fun addTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
+		val existingTypeDeclaration = referencedTypeDeclarations[newTypeDeclaration.name]
+			?: typeDeclarations.putIfAbsent(newTypeDeclaration.name, newTypeDeclaration)
+		if(existingTypeDeclaration != null) {
+			newTypeDeclaration.context.addIssue(Redeclaration(newTypeDeclaration.source, "type", newTypeDeclaration.name,
+				existingTypeDeclaration.source))
 			return
 		}
 	}
 
-	override fun resolveValue(name: String): ValueDeclaration? {
+	override fun getTypeDeclaration(name: String): TypeDeclaration? {
+		return typeDeclarations[name] ?: referencedTypeDeclarations[name]
+	}
+
+	override fun addValueDeclaration(newValueDeclaration: ValueDeclaration) {
+		val existingValueDeclaration = referencedValueDeclarations[newValueDeclaration.name]
+			?: valueDeclarations.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
+		if(existingValueDeclaration != null) {
+			newValueDeclaration.context.addIssue(Redeclaration(newValueDeclaration.source, "value", newValueDeclaration.name,
+				existingValueDeclaration.source))
+			return
+		}
+	}
+
+	override fun getValueDeclaration(name: String): ValueDeclaration? {
 		return valueDeclarations[name] ?: referencedValueDeclarations[name]
 	}
 }

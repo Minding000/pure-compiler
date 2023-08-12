@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.StaticType
@@ -13,23 +13,23 @@ import components.syntax_parser.syntax_tree.definitions.Instance as InstanceSynt
 class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, name: String, val valueParameters: List<Value>,
 			   isSpecificCopy: Boolean = false):
 	InterfaceMember(source, scope, name, null, null, true, isSpecificCopy = isSpecificCopy) {
-	lateinit var typeDefinition: TypeDefinition
+	lateinit var typeDeclaration: TypeDeclaration
 
 	init {
 		addSemanticModels(valueParameters)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Instance {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Instance {
 		return Instance(source, scope, name, valueParameters, true)
 	}
 
 	override fun determineType() {
-		this.typeDefinition = scope.getSurroundingDefinition()
+		this.typeDeclaration = scope.getSurroundingTypeDeclaration()
 			?: throw CompilerError(source, "Instance outside of type definition.")
-		val type = ObjectType(typeDefinition)
+		val type = ObjectType(typeDeclaration)
 		addSemanticModels(type)
 		this.type = type
-		val staticType = StaticType(typeDefinition)
+		val staticType = StaticType(typeDeclaration)
 		addSemanticModels(staticType)
 		super.determineType()
 		try {
@@ -43,7 +43,7 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 	}
 
 	private fun getSignature(): String {
-		var signature = typeDefinition.name
+		var signature = typeDeclaration.name
 		signature += "("
 		signature += valueParameters.joinToString { parameter -> parameter.type.toString() }
 		signature += ")"

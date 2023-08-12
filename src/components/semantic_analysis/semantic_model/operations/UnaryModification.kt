@@ -32,7 +32,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 		context.registerWrite(target)
 		target.type?.let { targetType ->
 			try {
-				val operatorDefinition = targetType.interfaceScope.resolveOperator(kind)
+				val operatorDefinition = targetType.interfaceScope.getOperator(kind)
 				if(operatorDefinition == null)
 					context.addIssue(NotFound(source, "Operator", "$targetType$kind"))
 			} catch(error: SignatureResolutionAmbiguityError) {
@@ -45,7 +45,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		if(target is VariableValue) {
 			target.computeValue(tracker)
-			tracker.add(listOf(VariableUsage.Kind.READ, VariableUsage.Kind.MUTATION), target, tracker.getCurrentTypeOf(target.definition),
+			tracker.add(listOf(VariableUsage.Kind.READ, VariableUsage.Kind.MUTATION), target, tracker.getCurrentTypeOf(target.declaration),
 				getComputedTargetValue())
 		} else {
 			target.analyseDataFlow(tracker)

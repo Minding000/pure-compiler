@@ -23,7 +23,7 @@ import logger.issues.definition.GenericTypeDeclarationInObject
 import logger.issues.definition.InvalidInstanceLocation
 import logger.issues.definition.MultipleInstanceLists
 import java.util.*
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition as SemanticTypeDefinitionModel
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration as SemanticTypeDeclarationModel
 
 class TypeDefinition(private val identifier: Identifier, private val type: Word, private val explicitParentType: ObjectType?,
 					 private val superType: TypeSyntaxTreeNode?, private val body: TypeBody?):
@@ -44,7 +44,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		semanticModels.add(typeDefinition)
 	}
 
-	override fun toSemanticModel(scope: MutableScope): SemanticTypeDefinitionModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticTypeDeclarationModel {
 		val name = identifier.getValue()
 		val definitionType = type.type
 		var superType = superType?.toSemanticModel(scope)

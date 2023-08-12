@@ -17,7 +17,7 @@ class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, ov
 		addSemanticModels(parameters)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): GeneratorDefinition {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): GeneratorDefinition {
 		val specificParameters = LinkedList<Parameter>()
 		for(parameter in parameters)
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitutions))

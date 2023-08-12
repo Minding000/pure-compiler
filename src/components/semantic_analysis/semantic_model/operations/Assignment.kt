@@ -69,7 +69,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 						tracker.add(VariableUsage.Kind.WRITE, target.member, sourceExpression.type, sourceExpression.getComputedValue())
 						continue
 					}
-					if(target.member !is VariableValue || target.member.definition?.isConstant == true)
+					if(target.member !is VariableValue || target.member.declaration?.isConstant == true)
 						context.addIssue(ConstantReassignment(source, target.member.toString()))
 				}
 				is IndexAccess -> {}
@@ -85,14 +85,14 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		for(target in targets) {
 			when(target) {
 				is VariableValue -> {
-					if(target.definition is ComputedPropertyDeclaration) {
+					if(target.declaration is ComputedPropertyDeclaration) {
 						TODO("Assignments to computed properties are not implemented yet.")
 					} else {
 						constructor.buildStore(value, target.getLlvmLocation(constructor))
 					}
 				}
 				is MemberAccess -> {
-					if((target.member as? VariableValue)?.definition is ComputedPropertyDeclaration) {
+					if((target.member as? VariableValue)?.declaration is ComputedPropertyDeclaration) {
 						TODO("Assignments to computed properties are not implemented yet.")
 					} else {
 						constructor.buildStore(value, target.getLlvmLocation(constructor))
@@ -103,19 +103,17 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 					val indexTarget = target.target
 					val targetValue = indexTarget.getLlvmValue(constructor)
 					val indexOperatorAddress = if(indexTarget is SuperReference) {
-						val operator = target.target.type?.interfaceScope?.resolveValue(Operator.Kind.BRACKETS_SET.stringRepresentation)
+						val operator = target.target.type?.interfaceScope?.getValueDeclaration(
+							Operator.Kind.BRACKETS_SET.stringRepresentation)
 						val implementation = (operator?.value as? Operator)?.getImplementationBySignature(signature)
 							?: throw CompilerError(source, "Failed to determine address of super index operator.")
 						implementation.llvmValue
 					} else {
 						val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(signature.parentDefinition?.llvmType,
 							targetValue, Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-						val classDefinitionAddress = constructor.buildLoad(
-							constructor.pointerType,
-							classDefinitionAddressLocation, "classDefinitionAddress"
-						)
-						val id = context.memberIdentities.getId(signature.toString(false,
-							Operator.Kind.BRACKETS_SET))
+						val classDefinitionAddress = constructor.buildLoad(constructor.pointerType, classDefinitionAddressLocation,
+							"classDefinitionAddress")
+						val id = context.memberIdentities.getId(signature.toString(false, Operator.Kind.BRACKETS_SET))
 						constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType, context.llvmFunctionAddressFunction,
 							listOf(classDefinitionAddress, constructor.buildInt32(id)), "indexOperatorAddress")
 					}

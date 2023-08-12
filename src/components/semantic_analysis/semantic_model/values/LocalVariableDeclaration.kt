@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.semantic_model.context.VariableTracker
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
@@ -14,7 +14,7 @@ class LocalVariableDeclaration(source: SyntaxTreeNode, scope: MutableScope, name
 
 	constructor(source: Identifier, scope: MutableScope, type: Type? = null): this(source, scope, source.getValue(), type)
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): LocalVariableDeclaration {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): LocalVariableDeclaration {
 		return LocalVariableDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), value, isConstant, isMutable)
 	}
 

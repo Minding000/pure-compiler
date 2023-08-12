@@ -73,7 +73,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		for(availableType in availableTypes) {
 			when(member) {
 				is InitializerReference -> {
-					val staticType = StaticType(availableType.definition ?: continue)
+					val staticType = StaticType(availableType.typeDeclaration ?: continue)
 					val functionCall = parent as? FunctionCall ?: continue
 					if(staticType.resolveInitializer(listOf(), listOf(), functionCall.typeParameters, functionCall.valueParameters) == null)
 						continue
@@ -82,12 +82,12 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 				is VariableValue -> {
 					val parent = parent
 					if(parent is FunctionCall) {
-						val functionType = availableType.interfaceScope.resolveValue(member)?.type as? FunctionType? ?: continue
+						val functionType = availableType.interfaceScope.getValueDeclaration(member)?.type as? FunctionType? ?: continue
 						val functionCall = parent as? FunctionCall ?: continue
-						if(functionType.resolveSignature(functionCall.typeParameters, functionCall.valueParameters) == null)
+						if(functionType.getSignature(functionCall.typeParameters, functionCall.valueParameters) == null)
 							continue
 					} else {
-						if(!availableType.interfaceScope.hasValue(member.name))
+						if(!availableType.interfaceScope.hasInterfaceMember(member.name))
 							continue
 					}
 					possibleTargetTypes.add(availableType)
@@ -102,13 +102,13 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			throw CompilerError(source, "Member access references invalid member of type '${member.javaClass.simpleName}'.")
 		val targetValue = target.getLlvmValue(constructor)
 		val llvmTargetType = when(val targetType = target.type) {
-			is ObjectType -> targetType.definition?.llvmType
-			is StaticType -> targetType.definition.llvmStaticType
+			is ObjectType -> targetType.typeDeclaration?.llvmType
+			is StaticType -> targetType.typeDeclaration.llvmStaticType
 			else -> throw CompilerError(source,
 				"Member access target of type '${targetType?.javaClass?.simpleName}' is not an object or class.")
 		}
 		return context.resolveMember(constructor, llvmTargetType, targetValue, member.name,
-			(member.definition as? InterfaceMember)?.isStatic ?: false)
+			(member.declaration as? InterfaceMember)?.isStatic ?: false)
 	}
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {

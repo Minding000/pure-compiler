@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.values
 
 import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.operations.IndexAccess
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -20,16 +20,16 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 
 	override fun determineTypes() {
 		super.determineTypes()
-		val surroundingDefinition = scope.getSurroundingDefinition()
-		if(surroundingDefinition == null) {
+		val surroundingTypeDeclaration = scope.getSurroundingTypeDeclaration()
+		if(surroundingTypeDeclaration == null) {
 			context.addIssue(SuperReferenceOutsideOfTypeDefinition(source))
 			return
 		}
-		var superTypes = surroundingDefinition.getAllSuperTypes()
-		specifier?.definition?.let { specifierDefinition ->
+		var superTypes = surroundingTypeDeclaration.getAllSuperTypes()
+		specifier?.typeDeclaration?.let { specifierDefinition ->
 			superTypes = superTypes.filter { superType -> matchesSpecifier(superType, specifierDefinition) }
 			if(superTypes.isEmpty()) {
-				context.addIssue(SuperReferenceSpecifierNotInherited(source, surroundingDefinition, specifier))
+				context.addIssue(SuperReferenceSpecifierNotInherited(source, surroundingTypeDeclaration, specifier))
 				return
 			}
 		}
@@ -61,12 +61,12 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 		}
 	}
 
-	private fun matchesSpecifier(superType: Type, specifierDefinition: TypeDefinition): Boolean {
+	private fun matchesSpecifier(superType: Type, specifierDefinition: TypeDeclaration): Boolean {
 		if(superType !is ObjectType)
 			return false
-		if(superType.definition == specifierDefinition)
+		if(superType.typeDeclaration == specifierDefinition)
 			return true
-		if(superType.definition?.baseDefinition == specifierDefinition)
+		if(superType.typeDeclaration?.baseTypeDeclaration == specifierDefinition)
 			return true
 		return false
 	}

@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.types
 
 import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmType
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
@@ -12,7 +12,7 @@ class PluralType(override val source: SyntaxTreeNode, scope: Scope, val baseType
 		addSemanticModels(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): PluralType {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): PluralType {
 		return PluralType(source, scope, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 

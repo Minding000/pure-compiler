@@ -23,7 +23,7 @@ class HasValueCheck(override val source: HasValueCheckSyntaxTree, scope: Scope, 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
 		val variableValue = value as? VariableValue
-		val declaration = variableValue?.definition
+		val declaration = variableValue?.declaration
 		if(declaration != null) {
 			val commonState = tracker.currentState.copy()
 			val variableType = variableValue.type as? OptionalType

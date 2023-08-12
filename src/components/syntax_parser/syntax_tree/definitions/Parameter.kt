@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.semantic_model.context.SpecialType
-import components.semantic_analysis.semantic_model.definitions.GenericTypeDefinition
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.GenericTypeDeclaration
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.LiteralType
@@ -26,10 +26,10 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
         return SemanticParameterModel(this, scope, identifier.getValue(), type?.toSemanticModel(scope), isMutable, isVariadic)
     }
 
-	fun toSemanticGenericParameterModel(scope: MutableScope): TypeDefinition {
+	fun toSemanticGenericParameterModel(scope: MutableScope): TypeDeclaration {
 		val superType = type?.toSemanticModel(scope) ?: LiteralType(this, scope, SpecialType.ANY)
 		val typeScope = TypeScope(scope, superType.interfaceScope)
-		return GenericTypeDefinition(this, identifier.getValue(), typeScope, superType)
+		return GenericTypeDeclaration(this, identifier.getValue(), typeScope, superType)
 	}
 
     override fun toString(): String {

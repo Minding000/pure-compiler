@@ -105,16 +105,16 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		lastUsages.add(usage)
 	}
 
-	fun add(kind: VariableUsage.Kind, variable: VariableValue, resultingType: Type? = getCurrentTypeOf(variable.definition),
-			resultingValue: Value? = getCurrentValueOf(variable.definition)): VariableUsage? =
+	fun add(kind: VariableUsage.Kind, variable: VariableValue, resultingType: Type? = getCurrentTypeOf(variable.declaration),
+			resultingValue: Value? = getCurrentValueOf(variable.declaration)): VariableUsage? =
 		add(listOf(kind), variable, resultingType, resultingValue)
 	fun add(kind: VariableUsage.Kind, declaration: ValueDeclaration, semanticModel: SemanticModel, resultingType: Type? = getCurrentTypeOf(declaration),
 			resultingValue: Value? = getCurrentValueOf(declaration)): VariableUsage =
 		add(listOf(kind), declaration, semanticModel, resultingType, resultingValue)
 
-	fun add(kinds: List<VariableUsage.Kind>, variable: VariableValue, resultingType: Type? = getCurrentTypeOf(variable.definition),
-			resultingValue: Value? = getCurrentValueOf(variable.definition)): VariableUsage? {
-		return add(kinds, variable.definition ?: return null, variable, resultingType, resultingValue)
+	fun add(kinds: List<VariableUsage.Kind>, variable: VariableValue, resultingType: Type? = getCurrentTypeOf(variable.declaration),
+			resultingValue: Value? = getCurrentValueOf(variable.declaration)): VariableUsage? {
+		return add(kinds, variable.declaration ?: return null, variable, resultingType, resultingValue)
 	}
 
 	fun add(kinds: List<VariableUsage.Kind>, declaration: ValueDeclaration, semanticModel: SemanticModel,

@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.definitions.FunctionSignature
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -31,13 +31,13 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		addSignature(signature)
 	}
 
-	override fun resolveDefinitions() {
+	override fun resolveTypeDeclarations() {
 		interfaceScope.type = this
 		for(semanticModel in semanticModels)
 			semanticModel.determineTypes()
-		definition = SpecialType.FUNCTION.scope?.resolveType(name)
-		definition?.scope?.subscribe(this)
-		if(definition == null)
+		typeDeclaration = SpecialType.FUNCTION.scope?.getTypeDeclaration(name)
+		typeDeclaration?.scope?.addSubscriber(this)
+		if(typeDeclaration == null)
 			context.addIssue(LiteralTypeNotFound(source, name))
 	}
 
@@ -46,15 +46,14 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		signatures.add(signature)
 	}
 
-	fun resolveSignature(suppliedValues: List<Value>): FunctionSignature? =
-		resolveSignature(listOf(), suppliedValues)
+	fun getSignature(suppliedValues: List<Value>): FunctionSignature? = getSignature(emptyList(), suppliedValues)
 
-	fun resolveSignature(suppliedTypes: List<Type> = listOf(), suppliedValues: List<Value> = listOf()): FunctionSignature? {
-		val validSignatures = getMatchingSignatures(suppliedTypes, suppliedValues)
-		if(validSignatures.isEmpty())
+	fun getSignature(suppliedTypes: List<Type> = emptyList(), suppliedValues: List<Value> = emptyList()): FunctionSignature? {
+		val matchingSignatures = getMatchingSignatures(suppliedTypes, suppliedValues)
+		if(matchingSignatures.isEmpty())
 			return null
-		specificityPrecedenceLoop@for(signature in validSignatures) {
-			for(otherSignature in validSignatures) {
+		specificityPrecedenceLoop@for(signature in matchingSignatures) {
+			for(otherSignature in matchingSignatures) {
 				if(otherSignature === signature)
 					continue
 				if(!signature.isMoreSpecificThan(otherSignature))
@@ -66,30 +65,30 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 			}
 			return signature
 		}
-		throw SignatureResolutionAmbiguityError(validSignatures)
+		throw SignatureResolutionAmbiguityError(matchingSignatures)
 	}
 
 	private fun getMatchingSignatures(suppliedTypes: List<Type>, suppliedValues: List<Value>): List<FunctionSignature> {
-		val validSignatures = LinkedList<FunctionSignature>()
+		val matchingSignatures = LinkedList<FunctionSignature>()
 		for(signature in signatures) {
 			val typeSubstitutions = signature.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
 			val specificSignature = if(typeSubstitutions.isEmpty()) signature else signature.withTypeSubstitutions(typeSubstitutions)
 			if(specificSignature.accepts(suppliedValues))
-				validSignatures.add(specificSignature)
+				matchingSignatures.add(specificSignature)
 		}
 		superFunctionType?.let { superFunctionType ->
-			val validSuperSignatures = superFunctionType.getMatchingSignatures(suppliedTypes, suppliedValues)
-			validSuperSignatures@for(validSuperSignature in validSuperSignatures) {
-				for(validSignature in validSignatures)
-					if(validSignature.superFunctionSignature === validSuperSignature)
+			val matchingSuperSignatures = superFunctionType.getMatchingSignatures(suppliedTypes, suppliedValues)
+			validSuperSignatures@for(matchingSuperSignature in matchingSuperSignatures) {
+				for(matchingSignature in matchingSignatures)
+					if(matchingSignature.superFunctionSignature === matchingSuperSignature)
 						continue@validSuperSignatures
-				validSignatures.add(validSuperSignature)
+				matchingSignatures.add(matchingSuperSignature)
 			}
 		}
-		return validSignatures
+		return matchingSignatures
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type {
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Type {
 		val specificFunctionType = FunctionType(source, scope)
 		for(signature in signatures)
 			specificFunctionType.signatures.add(signature.withTypeSubstitutions(typeSubstitutions))

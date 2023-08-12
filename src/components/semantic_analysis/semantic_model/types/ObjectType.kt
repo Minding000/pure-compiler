@@ -7,50 +7,49 @@ import components.semantic_analysis.semantic_model.definitions.*
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
-import errors.internal.CompilerError
 import logger.issues.definition.TypeParameterCountMismatch
 import logger.issues.definition.TypeParameterNotAssignable
 import logger.issues.resolution.NotFound
 
 open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enclosingType: ObjectType?, val typeParameters: List<Type>,
-					  val name: String, var definition: TypeDefinition? = null): Type(source, scope) {
+					  val name: String, var typeDeclaration: TypeDeclaration? = null): Type(source, scope) {
 	private var isInSpecificContext = true
 
-	constructor(source: SyntaxTreeNode, surroundingScope: Scope, name: String): this(source, surroundingScope, null, listOf(), name)
+	constructor(source: SyntaxTreeNode, surroundingScope: Scope, name: String): this(source, surroundingScope, null,
+		emptyList(), name)
 
-	constructor(definition: TypeDefinition):
-		this(definition.source, definition.scope, null, listOf(), definition.name, definition)
+	constructor(typeDeclaration: TypeDeclaration):
+		this(typeDeclaration.source, typeDeclaration.scope, null, listOf(), typeDeclaration.name, typeDeclaration)
 
-	constructor(typeParameters: List<Type>, definition: TypeDefinition):
-		this(definition.source, definition.scope, null, typeParameters, definition.name, definition)
+	constructor(typeParameters: List<Type>, typeDeclaration: TypeDeclaration):
+		this(typeDeclaration.source, typeDeclaration.scope, null, typeParameters, typeDeclaration.name, typeDeclaration)
 
 	init {
 		addSemanticModels(enclosingType)
 		addSemanticModels(typeParameters)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDefinition, Type>): Type {
-		val substituteType = typeSubstitutions[definition]
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Type {
+		val substituteType = typeSubstitutions[typeDeclaration]
 		if(substituteType != null)
 			return substituteType
-		val isBound = definition?.isBound == true
+		val isBound = typeDeclaration?.isBound == true
 		if(!isBound && typeParameters.isEmpty())
 			return this
-		val specificTypeParameters = typeParameters.map { typeParameter ->
-			typeParameter.withTypeSubstitutions(typeSubstitutions) }
+		val specificTypeParameters = typeParameters.map { typeParameter -> typeParameter.withTypeSubstitutions(typeSubstitutions) }
 		//TODO this might be nicer if it was written with a return in the callback
 		// -> withTypeParameter needs to have inline modifier
 		val specificType = ObjectType(source, scope, enclosingType, specificTypeParameters, name)
-		val typeSubstitutions = if(isBound) typeSubstitutions else mapOf()
-		definition?.withTypeParameters(specificTypeParameters, typeSubstitutions) { specificDefinition ->
-			specificType.definition = specificDefinition
-			specificDefinition.scope.subscribe(specificType)
+		val effectiveTypeSubstitutions = if(isBound) typeSubstitutions else emptyMap()
+		typeDeclaration?.withTypeParameters(specificTypeParameters, effectiveTypeSubstitutions) { specificTypeDeclaration ->
+			specificType.typeDeclaration = specificTypeDeclaration
+			specificTypeDeclaration.scope.addSubscriber(specificType)
 		}
 		return specificType
 	}
 
 	override fun simplified(): ObjectType {
-		return ObjectType(source, scope, enclosingType?.simplified(), typeParameters.map(Type::simplified), name, definition)
+		return ObjectType(source, scope, enclosingType?.simplified(), typeParameters.map(Type::simplified), name, typeDeclaration)
 	}
 
 	fun setIsNonSpecificContext() {
@@ -58,61 +57,62 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 		enclosingType?.setIsNonSpecificContext()
 	}
 
-	override fun inferType(genericType: TypeDefinition, sourceType: Type, inferredTypes: MutableList<Type>) {
+	override fun inferTypeParameter(typeParameter: TypeDeclaration, sourceType: Type, inferredTypes: MutableList<Type>) {
 		if(sourceType is ObjectType) {
 			for(typeParameterIndex in typeParameters.indices) {
 				val requiredTypeParameter = typeParameters[typeParameterIndex]
 				val sourceTypeParameter = sourceType.typeParameters.getOrNull(typeParameterIndex) ?: break
-				requiredTypeParameter.inferType(genericType, sourceTypeParameter, inferredTypes)
+				requiredTypeParameter.inferTypeParameter(typeParameter, sourceTypeParameter, inferredTypes)
 			}
 		}
-		if(definition == genericType)
+		if(typeDeclaration == typeParameter)
 			inferredTypes.add(sourceType)
 	}
 
-	override fun onNewType(type: TypeDefinition) {
-		interfaceScope.addType(type)
+	override fun onNewTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
+		interfaceScope.addTypeDeclaration(newTypeDeclaration)
 	}
 
-	override fun onNewValue(value: InterfaceMember) {
-		interfaceScope.addValue(value)
+	override fun onNewInterfaceMember(newInterfaceMember: InterfaceMember) {
+		interfaceScope.addInterfaceMember(newInterfaceMember)
 	}
 
-	override fun onNewInitializer(initializer: InitializerDefinition) {
-		interfaceScope.addInitializer(initializer)
+	override fun onNewInitializer(newInitializer: InitializerDefinition) {
+		interfaceScope.addInitializer(newInitializer)
 	}
 
-	override fun resolveDefinitions() {
-		super.resolveDefinitions()
-		if(definition == null) {
+	override fun resolveTypeDeclarations() {
+		super.resolveTypeDeclarations()
+		if(typeDeclaration == null) {
 			val sourceScope = enclosingType?.interfaceScope ?: scope
-			definition = sourceScope.resolveType(name)
-			if(definition == null)
+			typeDeclaration = sourceScope.getTypeDeclaration(name)
+			if(typeDeclaration == null)
 				context.addIssue(NotFound(source, "Type", name))
-			if(definition?.isBound != true)
+			if(typeDeclaration?.isBound != true)
 				enclosingType?.setIsNonSpecificContext()
 		}
 		if(typeParameters.isNotEmpty()) {
-			definition?.withTypeParameters(typeParameters) { specificDefinition ->
-				definition = specificDefinition
+			typeDeclaration?.withTypeParameters(typeParameters) { specificTypeDeclaration ->
+				typeDeclaration = specificTypeDeclaration
 			}
 		}
 		//TODO ask the definition to resolve all its member signatures
-		definition?.scope?.subscribe(this)
-		val definition = definition
-		if(definition is TypeAlias)
-			effectiveType = definition.getEffectiveType()
+		typeDeclaration?.scope?.addSubscriber(this)
+		val typeDeclaration = typeDeclaration
+		if(typeDeclaration is TypeAlias)
+			effectiveType = typeDeclaration.getEffectiveType()
 	}
 
 	override fun validate() {
 		super.validate()
 		if(isInSpecificContext)
-			ensureSpecificDefinition()
+			ensureSpecificDeclaration()
 	}
 
-	private fun ensureSpecificDefinition() {
-		(definition?.baseDefinition ?: definition)?.let { definition ->
-			val genericTypes = definition.scope.getGenericTypeDefinitions()
+	//TODO 'specific' naming is unclear
+	private fun ensureSpecificDeclaration() {
+		(typeDeclaration?.baseTypeDeclaration ?: typeDeclaration)?.let { typeDeclaration ->
+			val genericTypes = typeDeclaration.scope.getGenericTypeDeclarations()
 			if(typeParameters.size != genericTypes.size)
 				context.addIssue(TypeParameterCountMismatch(source, typeParameters, genericTypes))
 			if(typeParameters.isEmpty())
@@ -126,10 +126,10 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 		}
 	}
 
-	override fun isInstanceOf(type: SpecialType): Boolean {
-		if(type.matches(this))
+	override fun isInstanceOf(specialType: SpecialType): Boolean {
+		if(specialType.matches(this))
 			return true
-		return definition?.getLinkedSuperType()?.isInstanceOf(type) ?: false
+		return typeDeclaration?.getLinkedSuperType()?.isInstanceOf(specialType) ?: false
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {
@@ -140,7 +140,7 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
 		val targetType = unresolvedTargetType.effectiveType
-		if(definition is TypeAlias)
+		if(typeDeclaration is TypeAlias)
 			return effectiveType.isAssignableTo(targetType)
 		if(targetType is StaticType || targetType is FunctionType)
 			return false
@@ -148,32 +148,32 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 			return targetType.accepts(this)
 		if(equals(targetType))
 			return true
-		return definition?.getLinkedSuperType()?.isAssignableTo(targetType) ?: false
+		return typeDeclaration?.getLinkedSuperType()?.isAssignableTo(targetType) ?: false
 	}
 
-	override fun getAbstractMembers(): List<MemberDeclaration> {
-		return definition?.scope?.getAbstractMembers() ?: listOf()
+	override fun getAbstractMemberDeclarations(): List<MemberDeclaration> {
+		return typeDeclaration?.scope?.getAbstractMemberDeclarations() ?: listOf()
 	}
 
 	override fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {
-		return definition?.scope?.getPropertiesToBeInitialized() ?: listOf()
+		return typeDeclaration?.scope?.getPropertiesToBeInitialized() ?: listOf()
 	}
 
 	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
-		return definition?.getConversionsFrom(sourceType) ?: listOf()
+		return typeDeclaration?.getConversionsFrom(sourceType) ?: listOf()
 	}
 
 	override fun equals(other: Any?): Boolean {
 		if(other !is Type)
 			return false
 		val otherType = other.effectiveType
-		if(definition is TypeAlias)
+		if(typeDeclaration is TypeAlias)
 			return effectiveType == otherType
 		if(otherType !is ObjectType)
 			return false
-		if(definition != otherType.definition)
+		if(typeDeclaration != otherType.typeDeclaration)
 			return false
-		if(definition == null && name != otherType.name)
+		if(typeDeclaration == null && name != otherType.name)
 			return false
 		if(typeParameters.size != otherType.typeParameters.size)
 			return false
@@ -185,7 +185,7 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 
 	override fun hashCode(): Int {
 		var result = typeParameters.hashCode()
-		result = 31 * result + (definition?.hashCode() ?: 0)
+		result = 31 * result + (typeDeclaration?.hashCode() ?: 0)
 		return result
 	}
 
@@ -211,7 +211,6 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 			return constructor.voidType
 		if(SpecialType.NEVER.matches(this))
 			return constructor.voidType
-		val structType = definition?.llvmType ?: throw CompilerError(source, "Missing LLVM type definition.")
 		return constructor.pointerType
 	}
 }

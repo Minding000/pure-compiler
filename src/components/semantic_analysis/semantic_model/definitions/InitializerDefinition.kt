@@ -24,11 +24,11 @@ import java.util.*
 import kotlin.math.max
 
 class InitializerDefinition(override val source: SyntaxTreeNode, override val scope: BlockScope,
-							val typeParameters: List<TypeDefinition> = emptyList(), val parameters: List<Parameter> = emptyList(),
+							val typeParameters: List<TypeDeclaration> = emptyList(), val parameters: List<Parameter> = emptyList(),
 							val body: SemanticModel? = null, override val isAbstract: Boolean = false, val isConverting: Boolean = false,
 							val isNative: Boolean = false, val isOverriding: Boolean = false):
 	SemanticModel(source, scope), MemberDeclaration, Callable {
-	override lateinit var parentDefinition: TypeDefinition
+	override lateinit var parentTypeDeclaration: TypeDeclaration
 	override val memberIdentifier
 		get() = toString(true)
 	private val isVariadic = parameters.lastOrNull()?.isVariadic ?: false
@@ -52,8 +52,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		}
 	}
 
-	fun getDefinitionTypeSubstitutions(genericDefinitionTypes: List<TypeDefinition>, suppliedDefinitionTypes: List<Type>,
-									   suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
+	fun getDefinitionTypeSubstitutions(genericDefinitionTypes: List<TypeDeclaration>, suppliedDefinitionTypes: List<Type>,
+									   suppliedValues: List<Value>): Map<TypeDeclaration, Type>? {
 		if(suppliedDefinitionTypes.size > genericDefinitionTypes.size)
 			return null
 		if(variadicParameter == null) {
@@ -63,7 +63,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			if(suppliedValues.size < fixedParameters.size)
 				return null
 		}
-		val typeSubstitutions = LinkedHashMap<TypeDefinition, Type>()
+		val typeSubstitutions = LinkedHashMap<TypeDeclaration, Type>()
 		for(parameterIndex in genericDefinitionTypes.indices) {
 			val genericParameter = genericDefinitionTypes[parameterIndex]
 			val requiredType = genericParameter.getLinkedSuperType()
@@ -77,12 +77,12 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		return typeSubstitutions
 	}
 
-	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
+	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDeclaration, Type>? {
 		assert(suppliedValues.size >= fixedParameters.size)
 
 		if(suppliedTypes.size > typeParameters.size)
 			return null
-		val typeSubstitutions = HashMap<TypeDefinition, Type>()
+		val typeSubstitutions = HashMap<TypeDeclaration, Type>()
 		for(parameterIndex in typeParameters.indices) {
 			val typeParameter = typeParameters[parameterIndex]
 			val requiredType = typeParameter.getLinkedSuperType()
@@ -96,20 +96,20 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		return typeSubstitutions
 	}
 
-	private fun inferTypeParameter(typeParameter: TypeDefinition, suppliedValues: List<Value>): Type? {
+	private fun inferTypeParameter(typeParameter: TypeDeclaration, suppliedValues: List<Value>): Type? {
 		val inferredTypes = LinkedList<Type>()
 		for(parameterIndex in suppliedValues.indices) {
 			val parameterType = getParameterTypeAt(parameterIndex)
 			val suppliedType = suppliedValues[parameterIndex].type ?: continue
-			parameterType?.inferType(typeParameter, suppliedType, inferredTypes)
+			parameterType?.inferTypeParameter(typeParameter, suppliedType, inferredTypes)
 		}
 		if(inferredTypes.isEmpty())
 			return null
 		return inferredTypes.combine(this)
 	}
 
-	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): InitializerDefinition {
-		val specificTypeParameters = LinkedList<TypeDefinition>()
+	fun withTypeSubstitutions(typeSubstitution: Map<TypeDeclaration, Type>): InitializerDefinition {
+		val specificTypeParameters = LinkedList<TypeDeclaration>()
 		for(typeParameter in typeParameters) {
 			typeParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
 				specificTypeParameters.add(specificDefinition)
@@ -120,7 +120,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
 		val initializerDefinition = InitializerDefinition(source, scope, specificTypeParameters, specificParameters, body, isAbstract,
 			isConverting, isNative, isOverriding)
-		initializerDefinition.parentDefinition = parentDefinition
+		initializerDefinition.parentTypeDeclaration = parentTypeDeclaration
 		return initializerDefinition
 	}
 
@@ -169,18 +169,18 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	}
 
 	override fun determineTypes() {
-		parentDefinition = scope.getSurroundingDefinition()
+		parentTypeDeclaration = scope.getSurroundingTypeDeclaration()
 			?: throw CompilerError(source, "Initializer expected surrounding type definition.")
 		super.determineTypes()
-		parentDefinition.scope.declareInitializer(this)
+		parentTypeDeclaration.scope.addInitializer(this)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		if(isNative)
 			return
-		val propertiesToBeInitialized = parentDefinition.scope.getPropertiesToBeInitialized().toMutableList()
+		val propertiesToBeInitialized = parentTypeDeclaration.scope.getPropertiesToBeInitialized().toMutableList()
 		val initializerTracker = VariableTracker(context, true)
-		for(member in parentDefinition.scope.memberDeclarations)
+		for(member in parentTypeDeclaration.scope.memberDeclarations)
 			if(member is PropertyDeclaration)
 				initializerTracker.declare(member, member.type is StaticType)
 		for(parameter in parameters)
@@ -190,7 +190,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		initializerTracker.validate()
 		propertiesBeingInitialized.addAll(initializerTracker.getPropertiesBeingInitialized())
 		propertiesRequiredToBeInitialized.addAll(initializerTracker.getPropertiesRequiredToBeInitialized())
-		tracker.addChild("${parentDefinition.name}.${memberIdentifier}", initializerTracker)
+		tracker.addChild("${parentTypeDeclaration.name}.${memberIdentifier}", initializerTracker)
 		propertiesToBeInitialized.removeAll(propertiesBeingInitialized)
 		if(propertiesToBeInitialized.isNotEmpty())
 			context.addIssue(UninitializedProperties(source, propertiesToBeInitialized))
@@ -249,17 +249,17 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		val parameterTypes = LinkedList<LlvmType?>(fixedParameters.map { parameter -> parameter.type?.getLlvmType(constructor) })
 		parameterTypes.addFirst(constructor.pointerType)
 		llvmType = constructor.buildFunctionType(parameterTypes, constructor.voidType, isVariadic)
-		llvmValue = constructor.buildFunction("${parentDefinition.name}_Initializer", llvmType)
+		llvmValue = constructor.buildFunction("${parentTypeDeclaration.name}_Initializer", llvmType)
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmValue, "entrypoint")
 		val thisValue = constructor.getParameter(llvmValue, Context.THIS_PARAMETER_INDEX)
-		for(memberDeclaration in parentDefinition.properties) {
+		for(memberDeclaration in parentTypeDeclaration.properties) {
 			val memberValue = memberDeclaration.value
 			if(memberValue != null) {
-				val memberAddress = context.resolveMember(constructor, parentDefinition.llvmType, thisValue, memberDeclaration.name)
+				val memberAddress = context.resolveMember(constructor, parentTypeDeclaration.llvmType, thisValue, memberDeclaration.name)
 				constructor.buildStore(memberValue.getLlvmValue(constructor), memberAddress)
 			}
 		}
@@ -272,12 +272,12 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	}
 
 	private fun callTrivialSuperInitializers(constructor: LlvmConstructor, thisValue: LlvmValue) {
-		for(superType in parentDefinition.getDirectSuperTypes()) {
+		for(superType in parentTypeDeclaration.getDirectSuperTypes()) {
 			if(SpecialType.ANY.matches(superType))
 				continue
-			val trivialInitializer = (superType.definition?.staticValueDeclaration?.type as? StaticType)?.resolveInitializer()?.initializer
-				?: throw CompilerError(source, "Default initializer in class '${parentDefinition.name}'" +
-					" with super class '${superType.definition?.name}' without trivial initializer.")
+			val trivialInitializer = (superType.typeDeclaration?.staticValueDeclaration?.type as? StaticType)?.resolveInitializer()?.initializer
+				?: throw CompilerError(source, "Default initializer in class '${parentTypeDeclaration.name}'" +
+					" with super class '${superType.typeDeclaration?.name}' without trivial initializer.")
 			constructor.buildFunctionCall(trivialInitializer.llvmType, trivialInitializer.llvmValue, listOf(thisValue))
 		}
 	}
@@ -299,10 +299,10 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 
 	fun toString(isInternal: Boolean): String {
 		var stringRepresentation = ""
-		val genericTypeDefinitions = parentDefinition.scope.getGenericTypeDefinitions()
+		val genericTypeDefinitions = parentTypeDeclaration.scope.getGenericTypeDeclarations()
 		if(genericTypeDefinitions.isNotEmpty())
 			stringRepresentation += "<${genericTypeDefinitions.joinToString()}>"
-		stringRepresentation += if(isInternal) "init" else parentDefinition.name
+		stringRepresentation += if(isInternal) "init" else parentTypeDeclaration.name
 		stringRepresentation += "("
 		if(typeParameters.isNotEmpty()) {
 			stringRepresentation += typeParameters.joinToString()

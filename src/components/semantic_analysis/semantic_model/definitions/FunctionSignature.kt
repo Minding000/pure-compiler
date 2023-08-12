@@ -16,13 +16,13 @@ import util.combine
 import java.util.*
 import kotlin.math.max
 
-class FunctionSignature(override val source: SyntaxTreeNode, override val scope: BlockScope, val genericParameters: List<TypeDefinition>,
+class FunctionSignature(override val source: SyntaxTreeNode, override val scope: BlockScope, val genericParameters: List<TypeDeclaration>,
 						val parameterTypes: List<Type?>, returnType: Type?, val isVariadic: Boolean): SemanticModel(source, scope) {
 	val fixedParameterTypes: List<Type?>
 	private val variadicParameterType: Type?
 	val returnType = returnType ?: LiteralType(source, scope, SpecialType.NOTHING)
 	var superFunctionSignature: FunctionSignature? = null
-	var parentDefinition: TypeDefinition? = null
+	var parentDefinition: TypeDeclaration? = null
 	private var llvmType: LlvmType? = null
 
 	init {
@@ -37,7 +37,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		}
 	}
 
-	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDefinition, Type>? {
+	fun getTypeSubstitutions(suppliedTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDeclaration, Type>? {
 		if(suppliedTypes.size > genericParameters.size)
 			return null
 		if(isVariadic) {
@@ -47,7 +47,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 			if(suppliedValues.size != fixedParameterTypes.size)
 				return null
 		}
-		val typeSubstitutions = HashMap<TypeDefinition, Type>()
+		val typeSubstitutions = HashMap<TypeDeclaration, Type>()
 		for(parameterIndex in genericParameters.indices) {
 			val genericParameter = genericParameters[parameterIndex]
 			val requiredType = genericParameter.getLinkedSuperType()
@@ -61,22 +61,22 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		return typeSubstitutions
 	}
 
-	private fun inferTypeParameter(typeParameter: TypeDefinition, suppliedValues: List<Value>): Type? {
+	private fun inferTypeParameter(typeParameter: TypeDeclaration, suppliedValues: List<Value>): Type? {
 		assert(suppliedValues.size >= fixedParameterTypes.size)
 
 		val inferredTypes = LinkedList<Type>()
 		for(parameterIndex in suppliedValues.indices) {
 			val parameterType = getParameterTypeAt(parameterIndex)
 			val suppliedType = suppliedValues[parameterIndex].type ?: continue
-			parameterType?.inferType(typeParameter, suppliedType, inferredTypes)
+			parameterType?.inferTypeParameter(typeParameter, suppliedType, inferredTypes)
 		}
 		if(inferredTypes.isEmpty())
 			return null
 		return inferredTypes.combine(this)
 	}
 
-	fun withTypeSubstitutions(typeSubstitution: Map<TypeDefinition, Type>): FunctionSignature {
-		val specificGenericParameters = LinkedList<TypeDefinition>()
+	fun withTypeSubstitutions(typeSubstitution: Map<TypeDeclaration, Type>): FunctionSignature {
+		val specificGenericParameters = LinkedList<TypeDeclaration>()
 		for(genericParameter in genericParameters) {
 			genericParameter.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
 				specificGenericParameters.add(specificDefinition)

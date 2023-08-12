@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.values
 
 import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import logger.issues.resolution.SelfReferenceOutsideOfTypeDefinition
@@ -11,7 +11,7 @@ import components.syntax_parser.syntax_tree.literals.SelfReference as SelfRefere
 
 open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Scope, private val specifier: ObjectType?):
 	Value(source, scope) {
-	var definition: TypeDefinition? = null
+	var typeDeclaration: TypeDeclaration? = null
 
 	init {
 		addSemanticModels(specifier)
@@ -20,38 +20,38 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 
 	override fun determineTypes() {
 		super.determineTypes()
-		val surroundingDefinition = scope.getSurroundingDefinition()
+		val surroundingDefinition = scope.getSurroundingTypeDeclaration()
 		if(surroundingDefinition == null) {
 			context.addIssue(SelfReferenceOutsideOfTypeDefinition(source))
 			return
 		}
 		if(specifier == null) {
-			definition = surroundingDefinition
+			typeDeclaration = surroundingDefinition
 		} else {
-			val specifierDefinition = specifier.definition
+			val specifierDefinition = specifier.typeDeclaration
 			if(specifierDefinition != null) {
 				if(isBoundTo(surroundingDefinition, specifierDefinition))
-					definition = specifierDefinition
+					typeDeclaration = specifierDefinition
 				else
 					context.addIssue(SelfReferenceSpecifierNotBound(source, surroundingDefinition, specifierDefinition))
 			}
 		}
-		definition?.let { definition ->
-			val typeParameters = definition.scope.getGenericTypeDefinitions().map { ObjectType(it) }
-			type = ObjectType(typeParameters, definition)
+		typeDeclaration?.let { typeDeclaration ->
+			val typeParameters = typeDeclaration.scope.getGenericTypeDeclarations().map { ObjectType(it) }
+			type = ObjectType(typeParameters, typeDeclaration)
 			type?.determineTypes()
 			addSemanticModels(type)
 		}
 	}
 
-	private fun isBoundTo(childDefinition: TypeDefinition, parentDefinition: TypeDefinition): Boolean {
-		var currentDefinition = childDefinition
+	private fun isBoundTo(childDeclaration: TypeDeclaration, parentDeclaration: TypeDeclaration): Boolean {
+		var currentDeclaration = childDeclaration
 		while(true) {
-			if(currentDefinition == parentDefinition)
+			if(currentDeclaration == parentDeclaration)
 				return true
-			if(!currentDefinition.isBound)
+			if(!currentDeclaration.isBound)
 				break
-			currentDefinition = currentDefinition.parentTypeDefinition ?: break
+			currentDeclaration = currentDeclaration.parentTypeDeclaration ?: break
 		}
 		return false
 	}

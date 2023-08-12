@@ -1,6 +1,6 @@
 package components.semantic_analysis.declarations
 
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
@@ -253,8 +253,8 @@ internal class Declarations {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<ExplicitParentOnScopedTypeDefinition>()
-		val typeDefinition = lintResult.find<TypeDefinition> { typeDefinition -> typeDefinition.name == "Theme" }
-		assertEquals("Editor", typeDefinition?.parentTypeDefinition?.name)
+		val typeDeclaration = lintResult.find<TypeDeclaration> { typeDefinition -> typeDefinition.name == "Theme" }
+		assertEquals("Editor", typeDeclaration?.parentTypeDeclaration?.name)
 	}
 
 	@Test

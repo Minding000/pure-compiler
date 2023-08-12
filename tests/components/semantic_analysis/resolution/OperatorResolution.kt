@@ -43,7 +43,7 @@ internal class OperatorResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "fraction" }
-		val operator = variableValue?.type?.interfaceScope?.resolveOperator(Operator.Kind.MINUS)
+		val operator = variableValue?.type?.interfaceScope?.getOperator(Operator.Kind.MINUS)
 		assertNotNull(operator)
 	}
 
@@ -78,7 +78,7 @@ internal class OperatorResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "a" }
-		val operator = variableValue?.type?.interfaceScope?.resolveOperator(Operator.Kind.PLUS, variableValue)
+		val operator = variableValue?.type?.interfaceScope?.getOperator(Operator.Kind.PLUS, variableValue)
 		assertNotNull(operator)
 	}
 
@@ -106,7 +106,7 @@ internal class OperatorResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "fraction" }
-		val operator = variableValue?.type?.interfaceScope?.resolveOperator(Operator.Kind.DOUBLE_MINUS)
+		val operator = variableValue?.type?.interfaceScope?.getOperator(Operator.Kind.DOUBLE_MINUS)
 		assertNotNull(operator)
 	}
 
@@ -141,7 +141,7 @@ internal class OperatorResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "a" }
-		val operator = variableValue?.type?.interfaceScope?.resolveOperator(Operator.Kind.PLUS_EQUALS, variableValue)
+		val operator = variableValue?.type?.interfaceScope?.getOperator(Operator.Kind.PLUS_EQUALS, variableValue)
 		assertNotNull(operator)
 	}
 

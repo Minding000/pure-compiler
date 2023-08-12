@@ -349,19 +349,19 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		var scope: Scope = file.scope
 		var objectDefinition: Object? = null
 		for(objectName in functionPathParts) {
-			objectDefinition = scope.resolveType(objectName) as? Object ?: throw UserError("Object '$objectName' not found.")
+			objectDefinition = scope.getTypeDeclaration(objectName) as? Object ?: throw UserError("Object '$objectName' not found.")
 			if(objectDefinition.isBound)
 				throw UserError("Object '$objectName' is bound.")
 			scope = objectDefinition.scope
 		}
-		val functionVariable = scope.resolveValue(functionName) ?: throw UserError("Function '$functionName' not found.")
+		val functionVariable = scope.getValueDeclaration(functionName) ?: throw UserError("Function '$functionName' not found.")
 		val function = functionVariable.value as? Function ?: throw UserError("Variable '$functionName' is not a function.")
 		val functionImplementation = function.implementations.find { functionImplementation ->
 			!functionImplementation.signature.requiresParameters() }
 			?: throw UserError("Function '$functionName' has no overload without parameters.")
 		var objectValue: ValueDeclaration? = null
 		if(objectDefinition != null)
-			objectValue = (objectDefinition.parentTypeDefinition?.scope ?: objectDefinition.scope).resolveValue(objectDefinition.name)
+			objectValue = (objectDefinition.parentTypeDeclaration?.scope ?: objectDefinition.scope).getValueDeclaration(objectDefinition.name)
 		return Pair(objectValue, functionImplementation)
 	}
 }

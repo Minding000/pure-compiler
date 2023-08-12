@@ -3,63 +3,43 @@ package components.semantic_analysis.semantic_model.scopes
 import components.semantic_analysis.semantic_model.control_flow.LoopStatement
 import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
 import components.semantic_analysis.semantic_model.definitions.FunctionSignature
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.TypeDefinition
+import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.*
-import java.util.*
+import components.semantic_analysis.semantic_model.values.Operator
+import components.semantic_analysis.semantic_model.values.Value
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
+import components.semantic_analysis.semantic_model.values.VariableValue
 
 abstract class Scope {
-	private val subscribedTypes = LinkedList<Type>()
 
-	open fun subscribe(type: Type) {
-		subscribedTypes.add(type)
+	abstract fun getTypeDeclaration(name: String): TypeDeclaration?
+
+	open fun getValueDeclaration(variable: VariableValue): ValueDeclaration? = getValueDeclaration(variable.name)
+
+	abstract fun getValueDeclaration(name: String): ValueDeclaration?
+
+	fun getOperator(kind: Operator.Kind): FunctionSignature? = getOperator(kind, listOf())
+
+	fun getOperator(kind: Operator.Kind, suppliedType: Value): FunctionSignature? = getOperator(kind, listOf(suppliedType))
+
+	open fun getOperator(kind: Operator.Kind, suppliedValues: List<Value>): FunctionSignature? {
+		val operator = getValueDeclaration(kind.stringRepresentation)?.getLinkedType() as? FunctionType
+		return operator?.getSignature(suppliedValues)
 	}
 
-	protected fun onNewType(type: TypeDefinition) {
-		for(subscriber in subscribedTypes)
-			subscriber.onNewType(type)
+	fun getIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>, suppliedParameterValue: Value?): FunctionSignature?
+		= getIndexOperator(suppliedTypes, suppliedIndexValues, listOfNotNull(suppliedParameterValue))
+
+	open fun getIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
+							  suppliedParameterValues: List<Value>): FunctionSignature? {
+		val kind = if(suppliedParameterValues.isEmpty()) Operator.Kind.BRACKETS_GET else Operator.Kind.BRACKETS_SET
+		return getOperator(kind, listOf(*suppliedIndexValues.toTypedArray(), *suppliedParameterValues.toTypedArray()))
 	}
 
-	protected fun onNewValue(value: InterfaceMember) {
-		for(subscriber in subscribedTypes)
-			subscriber.onNewValue(value)
-	}
-
-	protected fun onNewInitializer(initializer: InitializerDefinition) {
-		for(subscriber in subscribedTypes)
-			subscriber.onNewInitializer(initializer)
-	}
-
-	open fun getSurroundingDefinition(): TypeDefinition? = null
+	open fun getSurroundingTypeDeclaration(): TypeDeclaration? = null
 
 	open fun getSurroundingFunction(): FunctionImplementation? = null
 
 	open fun getSurroundingLoop(): LoopStatement? = null
-
-	abstract fun resolveType(name: String): TypeDefinition?
-
-	open fun resolveValue(variable: VariableValue): ValueDeclaration? = resolveValue(variable.name)
-
-	abstract fun resolveValue(name: String): ValueDeclaration?
-
-	fun resolveOperator(kind: Operator.Kind): FunctionSignature? = resolveOperator(kind, listOf())
-
-	fun resolveOperator(kind: Operator.Kind, suppliedType: Value): FunctionSignature? = resolveOperator(kind, listOf(suppliedType))
-
-	open fun resolveOperator(kind: Operator.Kind, suppliedValues: List<Value>): FunctionSignature? {
-		val operator = resolveValue(kind.stringRepresentation)?.getLinkedType() as? FunctionType
-		return operator?.resolveSignature(suppliedValues)
-	}
-
-	fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
-							 suppliedParameterValue: Value?): FunctionSignature?
-		= resolveIndexOperator(suppliedTypes, suppliedIndexValues, listOfNotNull(suppliedParameterValue))
-
-	open fun resolveIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
-								  suppliedParameterValues: List<Value>): FunctionSignature? {
-		val kind = if(suppliedParameterValues.isEmpty()) Operator.Kind.BRACKETS_GET else Operator.Kind.BRACKETS_SET
-		return resolveOperator(kind, listOf(*suppliedIndexValues.toTypedArray(), *suppliedParameterValues.toTypedArray()))
-	}
 }

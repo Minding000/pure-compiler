@@ -104,9 +104,9 @@ internal class AbstractModifier {
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<AbstractMemberInNonAbstractTypeDefinition>(
-			"Abstract member 'id: Int' is not allowed in non-abstract type definition 'List'.", Severity.ERROR)
+			"Abstract member 'id: Int' is not allowed in non-abstract type declaration 'List'.", Severity.ERROR)
 		lintResult.assertIssueDetected<AbstractMemberInNonAbstractTypeDefinition>(
-			"Abstract member 'clear()' is not allowed in non-abstract type definition 'List'.", Severity.ERROR)
+			"Abstract member 'clear()' is not allowed in non-abstract type declaration 'List'.", Severity.ERROR)
 	}
 
 	@Test
@@ -161,7 +161,7 @@ internal class AbstractModifier {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<MissingImplementations>(
 			"""
-				Non-abstract type definition 'LinkedList' does not implement the following inherited members:
+				Non-abstract type declaration 'LinkedList' does not implement the following inherited members:
 				 - Collection
 				   - size: Int
 				 - List
