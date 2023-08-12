@@ -110,8 +110,10 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 					} else {
 						val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(signature.parentDefinition?.llvmType,
 							targetValue, Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-						val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(context.classDefinitionStruct),
-							classDefinitionAddressLocation, "classDefinitionAddress")
+						val classDefinitionAddress = constructor.buildLoad(
+							constructor.pointerType,
+							classDefinitionAddressLocation, "classDefinitionAddress"
+						)
 						val id = context.memberIdentities.getId(signature.toString(false,
 							Operator.Kind.BRACKETS_SET))
 						constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType, context.llvmFunctionAddressFunction,

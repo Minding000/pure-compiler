@@ -122,7 +122,7 @@ class StaticType(val definition: TypeDefinition): Type(definition.source, defini
 	}
 
 	override fun createLlvmType(constructor: LlvmConstructor): LlvmType {
-		return constructor.createPointerType(definition.llvmStaticType)
+		return constructor.pointerType
 	}
 
 	override fun toString(): String {

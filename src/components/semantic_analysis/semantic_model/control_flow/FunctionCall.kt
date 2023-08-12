@@ -146,8 +146,10 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			} else {
 				val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(typeDefinition.llvmType, targetValue,
 					Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-				val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(context.classDefinitionStruct),
-					classDefinitionAddressLocation, "classDefinitionAddress")
+				val classDefinitionAddress = constructor.buildLoad(
+					constructor.pointerType,
+					classDefinitionAddressLocation, "classDefinitionAddress"
+				)
 				val functionName = (((function as? MemberAccess)?.member ?: function) as? VariableValue)?.name
 					?: throw CompilerError(source, "Failed to determine name of member function.")
 				val id = context.memberIdentities.getId("${functionName}${signature.toString(false)}")

@@ -75,7 +75,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		context.llvmMemberIndexType = constructor.i32Type
 		context.llvmMemberIdType = constructor.i32Type
 		context.llvmMemberOffsetType = constructor.i32Type
-		context.llvmMemberAddressType = constructor.createPointerType(constructor.voidType)
+		context.llvmMemberAddressType = constructor.pointerType
 		setUpSystemFunctions(constructor)
 		for(file in files)
 			file.declare(constructor)
@@ -102,10 +102,19 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			val returnsVoid = SpecialType.NOTHING.matches(userEntryPointFunction.signature.returnType)
 			val parameters = LinkedList<LlvmValue>()
 			if(userEntryPointObject != null) {
-				val objectAddress = constructor.buildLoad(userEntryPointObject.type?.getLlvmType(constructor), userEntryPointObject.llvmLocation, "objectAddress")
+				val objectAddress = constructor.buildLoad(
+					userEntryPointObject.type?.getLlvmType(constructor),
+					userEntryPointObject.llvmLocation,
+					"objectAddress"
+				)
 				parameters.add(objectAddress)
 			}
-			result = constructor.buildFunctionCall(userEntryPointFunction.signature.getLlvmType(constructor), userEntryPointFunction.llvmValue, parameters, if(returnsVoid) "" else "programResult")
+			result = constructor.buildFunctionCall(
+				userEntryPointFunction.signature.getLlvmType(constructor),
+				userEntryPointFunction.llvmValue,
+				parameters,
+				if(returnsVoid) "" else "programResult"
+			)
 			if(returnsVoid)
 				result = null
 		}
@@ -114,7 +123,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun addPrintFunction(constructor: LlvmConstructor) {
-		val charArrayType = constructor.createPointerType(constructor.byteType)
+		val charArrayType = constructor.pointerType
 		context.llvmPrintFunctionType = constructor.buildFunctionType(listOf(charArrayType), constructor.i32Type, true)
 		context.llvmPrintFunction = constructor.buildFunction("printf", context.llvmPrintFunctionType)
 	}
@@ -156,13 +165,14 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		context.classDefinitionStruct = constructor.declareStruct("_ClassStruct")
 		// The member count is not strictly required because the loop is guaranteed to find a matching member, but it is included to be safe.
 		val memberCountType = constructor.i32Type
-		val memberIdArrayType = constructor.createPointerType(context.llvmMemberIdType)
-		val memberOffsetArrayType = constructor.createPointerType(context.llvmMemberOffsetType)
-		val memberAddressArrayType = constructor.createPointerType(context.llvmMemberAddressType)
+		val memberIdArrayType = constructor.pointerType
+		val memberOffsetArrayType = constructor.pointerType
+		val memberAddressArrayType = constructor.pointerType
 		val classDefinitionMemberTypes = listOf(
 			memberCountType, memberIdArrayType, memberOffsetArrayType,
 			memberCountType, memberIdArrayType, memberOffsetArrayType,
-			memberCountType, memberIdArrayType, memberAddressArrayType)
+			memberCountType, memberIdArrayType, memberAddressArrayType
+		)
 		constructor.defineStruct(context.classDefinitionStruct, classDefinitionMemberTypes)
 		setUpMemberResolutionFunction(constructor, "Constant")
 		setUpMemberResolutionFunction(constructor, "Property")
@@ -182,19 +192,39 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			memberIdArrayPropertyIndex = Context.PROPERTY_ID_ARRAY_PROPERTY_INDEX
 			memberOffsetArrayPropertyIndex = Context.PROPERTY_OFFSET_ARRAY_PROPERTY_INDEX
 		}
-		val classPointerType = constructor.createPointerType(context.classDefinitionStruct)
+		val classPointerType = constructor.pointerType
 		val functionType = constructor.buildFunctionType(listOf(classPointerType, context.llvmMemberIdType), context.llvmMemberOffsetType)
 		val function = constructor.buildFunction("_get${type}Offset", functionType)
 		constructor.createAndSelectBlock(function, "entrypoint")
 		val classDefinition = constructor.getParameter(function, 0)
 		val targetMemberId = constructor.getParameter(function, 1)
 		context.printDebugMessage(constructor, "Searching for member with ID '%i'.", targetMemberId)
-		val memberCountAddress = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition, memberCountPropertyIndex, "memberCountAddress")
+		val memberCountAddress = constructor.buildGetPropertyPointer(
+			context.classDefinitionStruct,
+			classDefinition,
+			memberCountPropertyIndex,
+			"memberCountAddress"
+		)
 		val memberCount = constructor.buildLoad(context.llvmMemberIndexType, memberCountAddress, "memberCount")
-		val memberIdArrayLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition, memberIdArrayPropertyIndex, "memberIdArrayAddress")
-		val memberIdArray = constructor.buildLoad(constructor.createPointerType(context.llvmMemberIdType), memberIdArrayLocation, "memberIdArray")
-		val memberOffsetArrayLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition, memberOffsetArrayPropertyIndex, "memberOffsetArrayAddress")
-		val memberOffsetArray = constructor.buildLoad(constructor.createPointerType(context.llvmMemberOffsetType), memberOffsetArrayLocation, "memberOffsetArray")
+		val memberIdArrayLocation = constructor.buildGetPropertyPointer(
+			context.classDefinitionStruct,
+			classDefinition,
+			memberIdArrayPropertyIndex,
+			"memberIdArrayAddress"
+		)
+		val memberIdArray =
+			constructor.buildLoad(constructor.pointerType, memberIdArrayLocation, "memberIdArray")
+		val memberOffsetArrayLocation = constructor.buildGetPropertyPointer(
+			context.classDefinitionStruct,
+			classDefinition,
+			memberOffsetArrayPropertyIndex,
+			"memberOffsetArrayAddress"
+		)
+		val memberOffsetArray = constructor.buildLoad(
+			constructor.pointerType,
+			memberOffsetArrayLocation,
+			"memberOffsetArray"
+		)
 		val indexVariableLocation = constructor.buildStackAllocation(constructor.i32Type, "indexLocation")
 		constructor.buildStore(constructor.buildInt32(0), indexVariableLocation)
 		val loopBlock = constructor.createBlock(function, "loop")
@@ -215,13 +245,15 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		}
 		val newIndex = constructor.buildIntegerAddition(currentIndex, constructor.buildInt32(1), "newIndex")
 		constructor.buildStore(newIndex, indexVariableLocation)
-		val currentIdLocation = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, memberIdArray, currentIndex, "currentIdLocation")
+		val currentIdLocation =
+			constructor.buildGetArrayElementPointer(context.llvmMemberIdType, memberIdArray, currentIndex, "currentIdLocation")
 		val currentId = constructor.buildLoad(context.llvmMemberIdType, currentIdLocation, "currentId")
 		val memberSearchHit = constructor.buildSignedIntegerEqualTo(currentId, targetMemberId, "idCheck")
 		val returnBlock = constructor.createBlock(function, "exit")
 		constructor.buildJump(memberSearchHit, returnBlock, loopBlock)
 		constructor.select(returnBlock)
-		val memberOffsetLocation = constructor.buildGetArrayElementPointer(context.llvmMemberOffsetType, memberOffsetArray, currentIndex, "memberOffsetLocation")
+		val memberOffsetLocation =
+			constructor.buildGetArrayElementPointer(context.llvmMemberOffsetType, memberOffsetArray, currentIndex, "memberOffsetLocation")
 		val memberOffset = constructor.buildLoad(context.llvmMemberOffsetType, memberOffsetLocation, "memberOffset")
 		constructor.buildReturn(memberOffset)
 		if(type == "Constant") {
@@ -234,19 +266,39 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun setUpFunctionResolutionFunction(constructor: LlvmConstructor) {
-		val classPointerType = constructor.createPointerType(context.classDefinitionStruct)
+		val classPointerType = constructor.pointerType
 		val functionType = constructor.buildFunctionType(listOf(classPointerType, context.llvmMemberIdType), context.llvmMemberAddressType)
 		val function = constructor.buildFunction("_getFunctionAddress", functionType)
 		constructor.createAndSelectBlock(function, "entrypoint")
 		val classDefinition = constructor.getParameter(function, 0)
 		val targetMemberId = constructor.getParameter(function, 1)
 		context.printDebugMessage(constructor, "Searching for function with ID '%i'.", targetMemberId)
-		val functionCountAddress = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition, Context.FUNCTION_COUNT_PROPERTY_INDEX, "functionCountAddress")
+		val functionCountAddress = constructor.buildGetPropertyPointer(
+			context.classDefinitionStruct,
+			classDefinition,
+			Context.FUNCTION_COUNT_PROPERTY_INDEX,
+			"functionCountAddress"
+		)
 		val functionCount = constructor.buildLoad(context.llvmMemberIndexType, functionCountAddress, "functionCount")
-		val functionIdArrayLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition, Context.FUNCTION_ID_ARRAY_PROPERTY_INDEX, "functionIdArrayAddress")
-		val functionIdArray = constructor.buildLoad(constructor.createPointerType(context.llvmMemberIdType), functionIdArrayLocation, "functionIdArray")
-		val functionAddressArrayLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition, Context.FUNCTION_ADDRESS_ARRAY_PROPERTY_INDEX, "functionAddressArrayAddress")
-		val functionAddressArray = constructor.buildLoad(constructor.createPointerType(context.llvmMemberAddressType), functionAddressArrayLocation, "functionAddressArray")
+		val functionIdArrayLocation = constructor.buildGetPropertyPointer(
+			context.classDefinitionStruct,
+			classDefinition,
+			Context.FUNCTION_ID_ARRAY_PROPERTY_INDEX,
+			"functionIdArrayAddress"
+		)
+		val functionIdArray =
+			constructor.buildLoad(constructor.pointerType, functionIdArrayLocation, "functionIdArray")
+		val functionAddressArrayLocation = constructor.buildGetPropertyPointer(
+			context.classDefinitionStruct,
+			classDefinition,
+			Context.FUNCTION_ADDRESS_ARRAY_PROPERTY_INDEX,
+			"functionAddressArrayAddress"
+		)
+		val functionAddressArray = constructor.buildLoad(
+			constructor.pointerType,
+			functionAddressArrayLocation,
+			"functionAddressArray"
+		)
 		val indexVariableLocation = constructor.buildStackAllocation(constructor.i32Type, "indexLocation")
 		constructor.buildStore(constructor.buildInt32(0), indexVariableLocation)
 		val loopBlock = constructor.createBlock(function, "loop")
@@ -267,13 +319,19 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		}
 		val newIndex = constructor.buildIntegerAddition(currentIndex, constructor.buildInt32(1), "newIndex")
 		constructor.buildStore(newIndex, indexVariableLocation)
-		val currentIdLocation = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, functionIdArray, currentIndex, "currentIdLocation")
+		val currentIdLocation =
+			constructor.buildGetArrayElementPointer(context.llvmMemberIdType, functionIdArray, currentIndex, "currentIdLocation")
 		val currentId = constructor.buildLoad(context.llvmMemberIdType, currentIdLocation, "currentId")
 		val memberSearchHit = constructor.buildSignedIntegerEqualTo(currentId, targetMemberId, "idCheck")
 		val returnBlock = constructor.createBlock(function, "exit")
 		constructor.buildJump(memberSearchHit, returnBlock, loopBlock)
 		constructor.select(returnBlock)
-		val functionAddressLocation = constructor.buildGetArrayElementPointer(context.llvmMemberAddressType, functionAddressArray, currentIndex, "functionAddressLocation")
+		val functionAddressLocation = constructor.buildGetArrayElementPointer(
+			context.llvmMemberAddressType,
+			functionAddressArray,
+			currentIndex,
+			"functionAddressLocation"
+		)
 		val functionAddress = constructor.buildLoad(context.llvmMemberAddressType, functionAddressLocation, "functionAddress")
 		constructor.buildReturn(functionAddress)
 		context.llvmFunctionAddressFunction = function

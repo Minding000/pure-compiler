@@ -65,8 +65,10 @@ class Context {
 
 	fun resolveMember(constructor: LlvmConstructor, targetType: LlvmType?, targetLocation: LlvmValue, memberIdentifier: String, isStaticMember: Boolean = false): LlvmValue {
 		val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(targetType, targetLocation, CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-		val classDefinitionAddress = constructor.buildLoad(constructor.createPointerType(classDefinitionStruct),
-			classDefinitionAddressLocation, "classDefinitionAddress")
+		val classDefinitionAddress = constructor.buildLoad(
+			constructor.pointerType,
+			classDefinitionAddressLocation, "classDefinitionAddress"
+		)
 		val resolutionFunctionType = if(isStaticMember) llvmConstantOffsetFunctionType else llvmPropertyOffsetFunctionType
 		val resolutionFunction = if(isStaticMember) llvmConstantOffsetFunction else llvmPropertyOffsetFunction
 		val memberOffset = constructor.buildFunctionCall(resolutionFunctionType, resolutionFunction, listOf(

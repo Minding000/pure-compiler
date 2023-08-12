@@ -270,12 +270,12 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 
 	private fun defineLlvmStruct(constructor: LlvmConstructor, constants: List<ValueDeclaration>, properties: List<ValueDeclaration>) {
 		val llvmConstants = LinkedList<LlvmType?>()
-		llvmConstants.add(constructor.createPointerType(context.classDefinitionStruct))
+		llvmConstants.add(constructor.pointerType)
 		for(memberDeclaration in constants)
 			llvmConstants.add(memberDeclaration.type?.getLlvmType(constructor))
 		constructor.defineStruct(llvmStaticType, llvmConstants)
 		val llvmProperties = LinkedList<LlvmType?>()
-		llvmProperties.add(constructor.createPointerType(context.classDefinitionStruct))
+		llvmProperties.add(constructor.pointerType)
 		for(memberDeclaration in properties)
 			llvmProperties.add(memberDeclaration.type?.getLlvmType(constructor))
 		constructor.defineStruct(llvmType, llvmProperties)
@@ -333,14 +333,14 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 		}
 		val initialStaticValues = LinkedList<LlvmValue>()
 		initialStaticValues.add(constantCount)
-		initialStaticValues.add(constructor.createNullPointer(constructor.voidType))
-		initialStaticValues.add(constructor.createNullPointer(constructor.voidType))
+		initialStaticValues.add(constructor.nullPointer)
+		initialStaticValues.add(constructor.nullPointer)
 		initialStaticValues.add(propertyCount)
-		initialStaticValues.add(constructor.createNullPointer(constructor.voidType))
-		initialStaticValues.add(constructor.createNullPointer(constructor.voidType))
+		initialStaticValues.add(constructor.nullPointer)
+		initialStaticValues.add(constructor.nullPointer)
 		initialStaticValues.add(functionCount)
-		initialStaticValues.add(constructor.createNullPointer(constructor.voidType))
-		initialStaticValues.add(constructor.createNullPointer(constructor.voidType))
+		initialStaticValues.add(constructor.nullPointer)
+		initialStaticValues.add(constructor.nullPointer)
 		llvmClassDefinitionAddress = constructor.buildGlobal("${name}_ClassDefinition", context.classDefinitionStruct, constructor.buildConstantStruct(context.classDefinitionStruct, initialStaticValues))
 		val constantIdArrayAddressLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, llvmClassDefinitionAddress, Context.CONSTANT_ID_ARRAY_PROPERTY_INDEX, "constantIdArray")
 		val constantOffsetArrayAddressLocation = constructor.buildGetPropertyPointer(context.classDefinitionStruct, llvmClassDefinitionAddress, Context.CONSTANT_OFFSET_ARRAY_PROPERTY_INDEX, "constantOffsetArray")
@@ -359,7 +359,7 @@ abstract class TypeDefinition(override val source: SyntaxTreeNode, val name: Str
 			values.add(llvmClassDefinitionAddress)
 			for(constant in constants) {
 				val value = constant.value?.getLlvmValue(constructor)
-				values.add(value ?: constructor.createNullPointer(constructor.voidType))
+				values.add(value ?: constructor.nullPointer)
 			}
 			staticValueDeclaration.llvmLocation = constructor.buildGlobal("${name}_StaticObject", llvmStaticType, constructor.buildConstantStruct(llvmStaticType, values))
 		}

@@ -247,7 +247,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		for(index in parameters.indices)
 			parameters[index].index = index
 		val parameterTypes = LinkedList<LlvmType?>(fixedParameters.map { parameter -> parameter.type?.getLlvmType(constructor) })
-		parameterTypes.addFirst(constructor.createPointerType(parentDefinition.llvmType))
+		parameterTypes.addFirst(constructor.pointerType)
 		llvmType = constructor.buildFunctionType(parameterTypes, constructor.voidType, isVariadic)
 		llvmValue = constructor.buildFunction("${parentDefinition.name}_Initializer", llvmType)
 	}

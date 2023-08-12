@@ -212,6 +212,6 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 		if(SpecialType.NEVER.matches(this))
 			return constructor.voidType
 		val structType = definition?.llvmType ?: throw CompilerError(source, "Missing LLVM type definition.")
-		return constructor.createPointerType(structType)
+		return constructor.pointerType
 	}
 }

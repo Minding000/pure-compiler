@@ -90,7 +90,7 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		}
 		val llvmType = type?.getLlvmType(constructor)
 		if(scope is FileScope) {
-			llvmLocation = constructor.buildGlobal("${name}_Global", llvmType, constructor.createNullPointer(llvmType))
+			llvmLocation = constructor.buildGlobal("${name}_Global", llvmType, constructor.nullPointer)
 		} else {
 			val currentBlock = constructor.getCurrentBlock()
 			val function = constructor.getParentFunction(currentBlock)

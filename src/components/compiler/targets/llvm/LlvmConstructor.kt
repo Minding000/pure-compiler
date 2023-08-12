@@ -16,6 +16,7 @@ class LlvmConstructor(name: String) {
 	val floatType = Llvm.createFloatType(context)
 	val voidType = Llvm.createVoidType(context)
 	val pointerType = Llvm.createPointerType(context)
+	val nullPointer = LLVMConstPointerNull(pointerType)
 
 	fun setTargetTriple(targetTriple: String) {
 		LLVMSetTarget(module, targetTriple)
@@ -66,22 +67,6 @@ class LlvmConstructor(name: String) {
 
 	fun buildFloat(value: Double): LlvmValue {
 		return LLVMConstReal(floatType, value)
-	}
-
-	@Deprecated("Use 'pointerType' instead.", ReplaceWith("pointerType"))
-	fun createPointerType(baseType: LlvmType): LlvmType {
-		return LLVMPointerType(baseType, Llvm.DEFAULT_ADDRESS_SPACE_INDEX)
-	}
-
-	fun createNullPointer(): LlvmValue {
-		return LLVMConstPointerNull(pointerType)
-	}
-
-	@Deprecated("Use 'createNullPointer()' instead.", ReplaceWith("createNullPointer()"))
-	fun createNullPointer(baseType: LlvmType?): LlvmValue {
-		if(baseType == null)
-			throw CompilerError("Missing type in null pointer.")
-		return LLVMConstPointerNull(createPointerType(baseType))
 	}
 
 	fun getMemberOffsetInBytes(structType: LlvmType, memberIndex: Int): Long {
