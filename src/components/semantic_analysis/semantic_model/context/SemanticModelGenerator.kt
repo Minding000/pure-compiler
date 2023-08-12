@@ -18,7 +18,7 @@ class SemanticModelGenerator(val context: Context) {
 		semanticProgramModel.declare()
 		logger.addPhase("File reference resolution")
 		semanticProgramModel.resolveFileReferences()
-		logger.addPhase("Determine types")
+		logger.addPhase("Type resolution")
 		semanticProgramModel.determineTypes()
 		logger.addPhase("Data flow analysis")
 		semanticProgramModel.analyseDataFlow()

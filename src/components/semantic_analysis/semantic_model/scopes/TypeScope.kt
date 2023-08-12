@@ -82,9 +82,10 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 		for(initializer in initializers)
 			initializer.superInitializer = superScope?.getSuperInitializer(initializer)
 		for((_, interfaceMember) in interfaceMembers) {
-			interfaceMember.superMember = superScope?.resolveValue(interfaceMember.name)
+			val superMember = superScope?.resolveValue(interfaceMember.name) ?: continue
+			interfaceMember.superMember = superMember
 			val function = interfaceMember.value as? Function ?: continue
-			function.functionType.superFunctionType = interfaceMember.superMember?.type as? FunctionType
+			function.functionType.superFunctionType = superMember.type as? FunctionType
 		}
 	}
 

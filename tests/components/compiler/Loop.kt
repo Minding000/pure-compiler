@@ -134,6 +134,7 @@ internal class Loop {
 	@Test
 	fun `compiles over loops iterating over collection`() {
 		val sourceCode = """
+			referencing Pure
 			SimplestApp object {
 				to getSix(): Int {
 					return sum(List(1, 2, 3))
@@ -147,7 +148,7 @@ internal class Loop {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix", true)
 		assertEquals(6, Llvm.castToSignedInteger(result))
 	}
 }

@@ -103,6 +103,24 @@ internal class Functions {
 	}
 
 	@Test
+	fun `links function without parameters to identically named super function in second order parent`() {
+		val sourceCode =
+			"""
+				House class {
+					to build()
+				}
+				NaturalHouse class: House
+				WoodenHouse class: NaturalHouse {
+					overriding to build()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
+		assertNotNull(function)
+		assertNotNull(function.signature.superFunctionSignature)
+	}
+
+	@Test
 	fun `doesn't link function without parameters to differently named super function`() {
 		val sourceCode =
 			"""

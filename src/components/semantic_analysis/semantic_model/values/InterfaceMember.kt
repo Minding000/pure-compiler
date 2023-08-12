@@ -8,6 +8,8 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 
+//TODO Name and purpose is unclear.
+// Only Property and Instance inherit from InterfaceMember
 abstract class InterfaceMember(source: SyntaxTreeNode, scope: MutableScope, name: String, type: Type? = null, value: Value? = null,
 							   val isStatic: Boolean = false, override val isAbstract: Boolean = false, isConstant: Boolean = true,
 							   isMutable: Boolean = false, val isOverriding: Boolean = false, isSpecificCopy: Boolean = false):

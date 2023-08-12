@@ -471,6 +471,26 @@ internal class Initializers {
 	}
 
 	@Test
+	fun `links initializer to super initializer with identically typed parameter in second order parent`() {
+		val sourceCode =
+			"""
+				Int class
+				House class {
+					init
+					init(a: Int)
+				}
+				NaturalHouse class: House
+				WoodenHouse class: NaturalHouse {
+					overriding init(a: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializer = lintResult.find<InitializerDefinition>(InitializerDefinition::isOverriding)
+		assertNotNull(initializer)
+		assertNotNull(initializer.superInitializer)
+	}
+
+	@Test
 	fun `doesn't link initializer to super initializer with differently typed parameter`() {
 		val sourceCode =
 			"""

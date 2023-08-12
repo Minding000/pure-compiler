@@ -74,8 +74,8 @@ object TestUtil {
 		}
     }
 
-    fun run(sourceCode: String, entryPointPath: String): LlvmGenericValue {
-		val lintResult = lint(sourceCode)
+    fun run(sourceCode: String, entryPointPath: String, includeRequiredModules: Boolean = false): LlvmGenericValue {
+		val lintResult = lint(sourceCode, includeRequiredModules)
 		val program = LlvmProgram("Test")
 		try {
 			program.loadSemanticModel(lintResult.program, entryPointPath)
