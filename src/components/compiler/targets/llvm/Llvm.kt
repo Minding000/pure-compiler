@@ -48,20 +48,23 @@ object Llvm {
 	fun createBuilder(context: LlvmContext): LlvmBuilder = LLVMCreateBuilderInContext(context)
 
 	fun create1BitIntegerType(context: LlvmContext): LlvmType = LLVMInt1TypeInContext(context)
-
 	fun create8BitIntegerType(context: LlvmContext): LlvmType = LLVMInt8TypeInContext(context)
-
 	fun create32BitIntegerType(context: LlvmContext): LlvmType = LLVMInt32TypeInContext(context)
+	fun create64BitIntegerType(context: LlvmContext): LlvmType = LLVMInt64TypeInContext(context)
 
 	fun createFloatType(context: LlvmContext): LlvmType = LLVMFloatTypeInContext(context)
 
 	fun createVoidType(context: LlvmContext): LlvmType = LLVMVoidTypeInContext(context)
 
+	fun createPointerType(context: LlvmContext, addressSpace: Int = DEFAULT_ADDRESS_SPACE_INDEX): LlvmType =
+		LLVMPointerTypeInContext(context, addressSpace)
+
 	fun runFunction(engine: LlvmExecutionEngine, function: LlvmValue): LlvmGenericValue {
 		return runFunction(engine, function, LlvmList(0), 0)
 	}
 
-	fun runFunction(engine: LlvmExecutionEngine, function: LlvmValue, arguments: LlvmList<LlvmValue>, argumentCount: Int): LlvmGenericValue {
+	fun runFunction(engine: LlvmExecutionEngine, function: LlvmValue, arguments: LlvmList<LlvmValue>,
+					argumentCount: Int): LlvmGenericValue {
 		return LLVMRunFunction(engine, function, argumentCount, arguments)
 	}
 

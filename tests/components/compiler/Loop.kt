@@ -110,15 +110,35 @@ internal class Loop {
 			""".trimIndent())
 	}
 
-	@Disabled
 	@Test
-	fun `compiles over loops`() {
+	fun `compiles over loops iterating over plural type`() {
 		val sourceCode = """
 			SimplestApp object {
 				to getSix(): Int {
 					return sum(1, 2, 3)
 				}
-				to sum(numbers: ...Int): Int {
+				to sum(...numbers: ...Int): Int {
+					var sum = 0
+					loop over numbers as number {
+						sum += number
+					}
+					return sum
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
+		assertEquals(6, Llvm.castToSignedInteger(result))
+	}
+
+	@Disabled
+	@Test
+	fun `compiles over loops iterating over collection`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getSix(): Int {
+					return sum(List(1, 2, 3))
+				}
+				to sum(numbers: <Int>List): Int {
 					var sum = 0
 					loop over numbers as number {
 						sum += number

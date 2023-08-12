@@ -6,7 +6,7 @@ import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.control_flow.WhileGenerator as WhileGeneratorSyntaxTree
 
 class WhileGenerator(override val source: WhileGeneratorSyntaxTree, scope: Scope, val condition: Value, val isPostCondition: Boolean):
-	SemanticModel(source, scope) {
+	SemanticModel(source, scope) { //TODO test post condition compilation
 
 	init {
 		addSemanticModels(condition)

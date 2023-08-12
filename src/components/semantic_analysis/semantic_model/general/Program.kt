@@ -68,8 +68,10 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	 * Compiles code to LLVM IR.
 	 */
 	fun compile(constructor: LlvmConstructor, userEntryPointPath: String? = null): LlvmValue {
+		constructor.setTargetTriple("x86_64-pc-windows")
 		addPrintFunction(constructor)
 		addExitFunction(constructor)
+		addVariadicIntrinsics(constructor)
 		context.llvmMemberIndexType = constructor.i32Type
 		context.llvmMemberIdType = constructor.i32Type
 		context.llvmMemberOffsetType = constructor.i32Type
@@ -120,6 +122,22 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	private fun addExitFunction(constructor: LlvmConstructor) {
 		context.llvmExitFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type), constructor.voidType)
 		context.llvmExitFunction = constructor.buildFunction("exit", context.llvmExitFunctionType)
+	}
+
+	private fun addVariadicIntrinsics(constructor: LlvmConstructor) {
+		context.variadicParameterListStruct = constructor.declareStruct("_va_list")
+		val targetTriple = constructor.getTargetTriple()
+		val variadicParameterListStructMembers = if(targetTriple.contains("x86_64-unknown-linux"))
+			listOf(constructor.i32Type, constructor.i32Type, constructor.pointerType, constructor.pointerType)
+		else
+			listOf(constructor.pointerType)
+		constructor.defineStruct(context.variadicParameterListStruct, variadicParameterListStructMembers)
+		context.llvmVariableParameterIterationStartFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.voidType)
+		context.llvmVariableParameterIterationStartFunction = constructor.buildFunction("llvm.va_start", context.llvmVariableParameterIterationStartFunctionType)
+		context.llvmVariableParameterListCopyFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), constructor.voidType)
+		context.llvmVariableParameterListCopyFunction = constructor.buildFunction("llvm.va_copy", context.llvmVariableParameterListCopyFunctionType)
+		context.llvmVariableParameterIterationEndFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.voidType)
+		context.llvmVariableParameterIterationEndFunction = constructor.buildFunction("llvm.va_end", context.llvmVariableParameterIterationEndFunctionType)
 	}
 
 	private fun setUpSystemFunctions(constructor: LlvmConstructor) {

@@ -29,6 +29,13 @@ class Context {
 	lateinit var llvmPrintFunction: LlvmValue
 	lateinit var llvmExitFunctionType: LlvmType
 	lateinit var llvmExitFunction: LlvmValue
+	lateinit var variadicParameterListStruct: LlvmType
+	lateinit var llvmVariableParameterIterationStartFunctionType: LlvmType
+	lateinit var llvmVariableParameterIterationStartFunction: LlvmValue
+	lateinit var llvmVariableParameterListCopyFunctionType: LlvmType
+	lateinit var llvmVariableParameterListCopyFunction: LlvmValue
+	lateinit var llvmVariableParameterIterationEndFunctionType: LlvmType
+	lateinit var llvmVariableParameterIterationEndFunction: LlvmValue
 	val memberIdentities = IdentityMap<String>()
 
 

@@ -12,18 +12,34 @@ class LlvmConstructor(name: String) {
 	val booleanType = Llvm.create1BitIntegerType(context)
 	val byteType = Llvm.create8BitIntegerType(context)
 	val i32Type = Llvm.create32BitIntegerType(context)
+	val i64Type = Llvm.create64BitIntegerType(context)
 	val floatType = Llvm.createFloatType(context)
 	val voidType = Llvm.createVoidType(context)
+	val pointerType = Llvm.createPointerType(context)
+
+	fun setTargetTriple(targetTriple: String) {
+		LLVMSetTarget(module, targetTriple)
+	}
+
+	fun getTargetTriple(): String {
+		return LLVMGetTarget(module).string
+	}
 
 	fun getParameter(function: LlvmValue, index: Int): LlvmValue {
 		return LLVMGetParam(function, index)
 	}
 
-	fun getParentFunction(): LlvmValue {
-		return LLVMGetBasicBlockParent(getCurrentBlock())
+	fun getLastParameter(function: LlvmValue): LlvmValue {
+		return LLVMGetLastParam(function)
 	}
 
-	fun getParentFunction(block: LlvmBlock): LlvmValue {
+	fun getCurrentVariadicElement(variadicList: LlvmValue, elementType: LlvmType?, name: String): LlvmValue {
+		if(elementType == null)
+			throw CompilerError("Missing type in variadic element access.")
+		return LLVMBuildVAArg(builder, variadicList, elementType, name)
+	}
+
+	fun getParentFunction(block: LlvmBlock = getCurrentBlock()): LlvmValue {
 		return LLVMGetBasicBlockParent(block)
 	}
 
@@ -52,10 +68,16 @@ class LlvmConstructor(name: String) {
 		return LLVMConstReal(floatType, value)
 	}
 
+	@Deprecated("Use 'pointerType' instead.", ReplaceWith("pointerType"))
 	fun createPointerType(baseType: LlvmType): LlvmType {
 		return LLVMPointerType(baseType, Llvm.DEFAULT_ADDRESS_SPACE_INDEX)
 	}
 
+	fun createNullPointer(): LlvmValue {
+		return LLVMConstPointerNull(pointerType)
+	}
+
+	@Deprecated("Use 'createNullPointer()' instead.", ReplaceWith("createNullPointer()"))
 	fun createNullPointer(baseType: LlvmType?): LlvmValue {
 		if(baseType == null)
 			throw CompilerError("Missing type in null pointer.")
@@ -129,6 +151,10 @@ class LlvmConstructor(name: String) {
 		LLVMBuildUnreachable(builder)
 	}
 
+	fun setAlignment(definition: LlvmValue, byteCount: Int) {
+		LLVMSetAlignment(definition, byteCount)
+	}
+
 	fun buildGlobal(name: String, type: LlvmType?, initialValue: LlvmValue): LlvmValue {
 		if(type == null)
 			throw CompilerError("Missing type in global allocation '$name'.")
@@ -192,6 +218,12 @@ class LlvmConstructor(name: String) {
 
 	fun buildGlobalCharArray(name: String, text: String): LlvmValue {
 		return buildGlobal(name, buildArrayType(byteType, text.length + 1), buildConstantCharArray(text))
+	}
+
+	fun changeTypeAllowingDataLoss(value: LlvmValue, newType: LlvmType?, name: String): LlvmValue {
+		if(newType == null)
+			throw CompilerError("Missing new type in type change allowing data loss '$name'.")
+		return LLVMBuildTruncOrBitCast(builder, value, newType, name)
 	}
 
 	fun buildCastFromBooleanToByte(boolean: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, boolean, byteType, name)

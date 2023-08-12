@@ -122,6 +122,11 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 
 	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature,
 									   parameters: LinkedList<LlvmValue>): LlvmValue {
+		if(signature.isVariadic) {
+			val fixedParameterCount = signature.fixedParameterTypes.size
+			val variadicParameterCount = parameters.size - fixedParameterCount
+			parameters.add(fixedParameterCount, constructor.buildInt32(variadicParameterCount))
+		}
 		val typeDefinition = signature.parentDefinition
 		val functionAddress = if(typeDefinition == null) {
 			val implementation = ((function as? VariableValue)?.definition?.value as? Function)?.getImplementationBySignature(signature)

@@ -18,7 +18,7 @@ import kotlin.math.max
 
 class FunctionSignature(override val source: SyntaxTreeNode, override val scope: BlockScope, val genericParameters: List<TypeDefinition>,
 						val parameterTypes: List<Type?>, returnType: Type?, val isVariadic: Boolean): SemanticModel(source, scope) {
-	private val fixedParameterTypes: List<Type?>
+	val fixedParameterTypes: List<Type?>
 	private val variadicParameterType: Type?
 	val returnType = returnType ?: LiteralType(source, scope, SpecialType.NOTHING)
 	var superFunctionSignature: FunctionSignature? = null
@@ -266,7 +266,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	fun getLlvmType(constructor: LlvmConstructor): LlvmType {
 		var llvmType = llvmType
 		if(llvmType == null) {
-			val parameterTypes = LinkedList<LlvmType?>(fixedParameterTypes.map { parameterType -> parameterType?.getLlvmType(constructor) })
+			val parameterTypes = LinkedList<LlvmType?>(parameterTypes.map { parameterType -> parameterType?.getLlvmType(constructor) })
 			val parentDefinition = parentDefinition
 			if(parentDefinition != null)
 				parameterTypes.addFirst(constructor.createPointerType(parentDefinition.llvmType))

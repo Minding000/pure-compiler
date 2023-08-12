@@ -55,6 +55,8 @@ class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, n
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
+		if(isVariadic)
+			return
 		val function = constructor.getParentFunction()
 		llvmLocation = constructor.buildStackAllocation(type?.getLlvmType(constructor), name)
 		val value = constructor.getParameter(function, index)
