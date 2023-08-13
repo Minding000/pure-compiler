@@ -136,10 +136,10 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		}
 		if(SpecialType.NEVER.matches(signature.returnType)) {
 			if(someBlocksCompleteWithoutReturning || mightReturnValue)
-				context.addIssue(FunctionCompletesDespiteNever(source))
+				context.addIssue(FunctionCompletesDespiteNever(source, parentFunction.memberType))
 		} else {
 			if(someBlocksCompleteWithoutReturning)
-				context.addIssue(FunctionCompletesWithoutReturning(source))
+				context.addIssue(FunctionCompletesWithoutReturning(source, parentFunction.memberType))
 		}
 	}
 

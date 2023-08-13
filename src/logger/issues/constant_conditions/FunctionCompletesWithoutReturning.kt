@@ -4,8 +4,7 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.Issue
 import logger.Severity
 
-//TODO: wording: also applies to operators
-class FunctionCompletesWithoutReturning(source: SyntaxTreeNode): Issue(Severity.ERROR, source) {
-	override val text = "Function might complete without returning a value."
-	override val description = "The function specifies a return type, but might complete without returning a value."
+class FunctionCompletesWithoutReturning(source: SyntaxTreeNode, kind: String): Issue(Severity.ERROR, source) {
+	override val text = "${kind.replaceFirstChar { it.titlecase() }} might complete without returning a value."
+	override val description = "The $kind specifies a return type, but might complete without returning a value."
 }

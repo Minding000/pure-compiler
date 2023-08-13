@@ -31,8 +31,10 @@ internal class Members {
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
+	//TODO also test parsing computed property with get body
+	// -> if blocks can return this would be easier
 	@Test
-	fun `parses computed members`() { //TODO also test parsing computed property with get body
+	fun `parses computed members`() {
 		val sourceCode = """
 			Rectangle class {
 				containing Unit: Number

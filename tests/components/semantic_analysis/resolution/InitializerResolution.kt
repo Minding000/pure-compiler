@@ -1,7 +1,6 @@
 package components.semantic_analysis.resolution
 
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
-import components.semantic_analysis.semantic_model.declarations.InitializerDefinition
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
@@ -186,7 +185,7 @@ internal class InitializerResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function as? VariableValue)?.name == "Bottle" }
-		assertEquals("Bottle(Int)", (initializerCall?.targetInitializer as? InitializerDefinition)?.toString())
+		assertEquals("Bottle(Int)", initializerCall?.targetInitializer?.toString())
 	}
 
 	@Test
@@ -203,7 +202,7 @@ internal class InitializerResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function as? VariableValue)?.name == "Bottle" }
-		assertEquals("Bottle(Int)", (initializerCall?.targetInitializer as? InitializerDefinition)?.toString())
+		assertEquals("Bottle(Int)", initializerCall?.targetInitializer?.toString())
 	}
 
 	@Test
@@ -221,6 +220,6 @@ internal class InitializerResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function as? VariableValue)?.name == "Bottle" }
-		assertEquals("Bottle(...Int)", (initializerCall?.targetInitializer as? InitializerDefinition)?.toString())
+		assertEquals("Bottle(...Int)", initializerCall?.targetInitializer?.toString())
 	}
 }
