@@ -19,7 +19,7 @@ abstract class Scope {
 
 	abstract fun getValueDeclaration(name: String): ValueDeclaration?
 
-	fun getOperator(kind: Operator.Kind): FunctionSignature? = getOperator(kind, listOf())
+	fun getOperator(kind: Operator.Kind): FunctionSignature? = getOperator(kind, emptyList())
 
 	fun getOperator(kind: Operator.Kind, suppliedType: Value): FunctionSignature? = getOperator(kind, listOf(suppliedType))
 

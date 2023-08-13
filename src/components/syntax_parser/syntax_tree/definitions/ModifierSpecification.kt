@@ -9,7 +9,7 @@ interface ModifierSpecification {
 
 	fun getModifiers(): List<Modifier>
 
-	fun validate(context: Context, allowedModifiers: List<WordAtom> = listOf()) {
+	fun validate(context: Context, allowedModifiers: List<WordAtom> = emptyList()) {
 		val uniqueModifiers = HashSet<String>()
 		for(modifier in getModifiers()) {
 			val name = modifier.getValue()

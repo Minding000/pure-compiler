@@ -12,7 +12,7 @@ internal class Compiler {
 	@Test
 	fun `is able to assemble and run test program`() {
 		val expectedResult = 5L
-		val program = LlvmProgram("Test")
+		val program = LlvmProgram(TestUtil.TEST_PROJECT_NAME)
 		val constructor = program.constructor
 		val functionType = constructor.buildFunctionType(emptyList(), constructor.i32Type)
 		val function = constructor.buildFunction("getNumber", functionType)

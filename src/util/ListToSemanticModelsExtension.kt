@@ -17,7 +17,7 @@ fun List<SyntaxTreeNode>.toSemanticModels(scope: MutableScope): List<SemanticMod
 }
 
 fun List<TypeSyntaxTreeNode>?.toSemanticTypeModels(scope: MutableScope): List<Type> {
-	return this?.map { typeElement -> typeElement.toSemanticModel(scope) } ?: listOf()
+	return this?.map { typeElement -> typeElement.toSemanticModel(scope) } ?: emptyList()
 }
 
 fun List<ValueSyntaxTreeNode>.toSemanticValueModels(scope: MutableScope): List<Value> {

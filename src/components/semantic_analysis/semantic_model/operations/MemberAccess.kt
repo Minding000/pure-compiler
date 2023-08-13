@@ -76,7 +76,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 				is InitializerReference -> {
 					val staticType = StaticType(availableType.typeDeclaration ?: continue)
 					val functionCall = parent as? FunctionCall ?: continue
-					if(staticType.getInitializer(listOf(), listOf(), functionCall.typeParameters, functionCall.valueParameters) == null)
+					if(staticType.getInitializer(emptyList(), emptyList(), functionCall.typeParameters, functionCall.valueParameters) == null)
 						continue
 					possibleTargetTypes.add(staticType)
 				}

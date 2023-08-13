@@ -22,7 +22,7 @@ import util.linkedListOf
 import java.util.*
 
 abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: String, override val scope: TypeScope,
-							   val explicitParentType: ObjectType? = null, val superType: Type? = null, val members: List<SemanticModel> = listOf(),
+							   val explicitParentType: ObjectType? = null, val superType: Type? = null, val members: List<SemanticModel> = emptyList(),
 							   val isBound: Boolean = false, val isSpecificCopy: Boolean = false): SemanticModel(source, scope) {
 	protected open val isDefinition = true
 	override var parent: SemanticModel?
@@ -186,7 +186,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		return when(val superType = superType) {
 			is ObjectType -> listOf(superType)
 			is AndUnionType -> superType.types.filterIsInstance<ObjectType>()
-			else -> listOf()
+			else -> emptyList()
 		}
 	}
 

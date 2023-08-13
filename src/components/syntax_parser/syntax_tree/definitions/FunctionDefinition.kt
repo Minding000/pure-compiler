@@ -26,7 +26,7 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val functionScope = BlockScope(scope)
-		val genericParameters = parameterList.getSemanticGenericParameterModels(functionScope) ?: listOf()
+		val genericParameters = parameterList.getSemanticGenericParameterModels(functionScope) ?: emptyList()
 		val parameters = parameterList.getSemanticParameterModels(functionScope)
 		val returnType = returnType?.toSemanticModel(functionScope)
 		return SemanticFunctionImplementationModel(this, functionScope, genericParameters, parameters,

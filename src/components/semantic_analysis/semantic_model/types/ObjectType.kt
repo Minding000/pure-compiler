@@ -19,7 +19,7 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 		emptyList(), name)
 
 	constructor(typeDeclaration: TypeDeclaration):
-		this(typeDeclaration.source, typeDeclaration.scope, null, listOf(), typeDeclaration.name, typeDeclaration)
+		this(typeDeclaration.source, typeDeclaration.scope, null, emptyList(), typeDeclaration.name, typeDeclaration)
 
 	constructor(typeParameters: List<Type>, typeDeclaration: TypeDeclaration):
 		this(typeDeclaration.source, typeDeclaration.scope, null, typeParameters, typeDeclaration.name, typeDeclaration)
@@ -152,15 +152,15 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 	}
 
 	override fun getAbstractMemberDeclarations(): List<MemberDeclaration> {
-		return typeDeclaration?.scope?.getAbstractMemberDeclarations() ?: listOf()
+		return typeDeclaration?.scope?.getAbstractMemberDeclarations() ?: emptyList()
 	}
 
 	override fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {
-		return typeDeclaration?.scope?.getPropertiesToBeInitialized() ?: listOf()
+		return typeDeclaration?.scope?.getPropertiesToBeInitialized() ?: emptyList()
 	}
 
 	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
-		return typeDeclaration?.getConversionsFrom(sourceType) ?: listOf()
+		return typeDeclaration?.getConversionsFrom(sourceType) ?: emptyList()
 	}
 
 	override fun equals(other: Any?): Boolean {

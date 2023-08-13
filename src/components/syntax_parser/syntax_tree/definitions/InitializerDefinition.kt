@@ -25,8 +25,8 @@ class InitializerDefinition(start: Position, private val parameterList: Paramete
 		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 		val isOverriding = parent?.containsModifier(WordAtom.OVERRIDING) ?: false
 		val initializerScope = BlockScope(scope)
-		val genericParameters = parameterList?.getSemanticGenericParameterModels(initializerScope) ?: listOf()
-		val parameters = parameterList?.getSemanticParameterModels(initializerScope) ?: listOf()
+		val genericParameters = parameterList?.getSemanticGenericParameterModels(initializerScope) ?: emptyList()
+		val parameters = parameterList?.getSemanticParameterModels(initializerScope) ?: emptyList()
 		return SemanticInitializerDefinitionModel(this, initializerScope, genericParameters, parameters,
 			body?.toSemanticModel(initializerScope), isAbstract, isConverting, isNative, isOverriding)
 	}

@@ -9,7 +9,7 @@ class ObjectType(private val enclosingType: ObjectType?, private val typeList: T
 	TypeSyntaxTreeNode(typeList?.start ?: identifier.start, identifier.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticObjectTypeModel {
-		val typeList = typeList?.toSemanticModels(scope) ?: listOf()
+		val typeList = typeList?.toSemanticModels(scope) ?: emptyList()
 		return SemanticObjectTypeModel(this, scope, enclosingType?.toSemanticModel(scope), typeList, identifier.getValue())
 	}
 
