@@ -13,11 +13,16 @@ class NextStatement(override val source: NextStatementSyntaxTree, scope: Scope):
 
 	override fun determineTypes() {
 		super.determineTypes()
+		determineTargetLoop()
+	}
+
+	private fun determineTargetLoop() {
 		val surroundingLoop = scope.getSurroundingLoop()
-		if(surroundingLoop == null)
+		if(surroundingLoop == null) {
 			context.addIssue(NextStatementOutsideOfLoop(source))
-		else
-			targetLoop = surroundingLoop
+			return
+		}
+		targetLoop = surroundingLoop
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

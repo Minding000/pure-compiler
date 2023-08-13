@@ -1,8 +1,8 @@
 package components.semantic_analysis.operations
 
 import logger.Severity
-import logger.issues.definition.InvalidInstanceLocation
-import logger.issues.definition.MultipleInstanceLists
+import logger.issues.declaration.InvalidInstanceLocation
+import logger.issues.declaration.MultipleInstanceLists
 import logger.issues.loops.BreakStatementOutsideOfLoop
 import logger.issues.loops.NextStatementOutsideOfLoop
 import logger.issues.switches.DuplicateCase

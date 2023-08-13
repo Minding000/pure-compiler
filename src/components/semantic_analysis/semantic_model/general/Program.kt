@@ -5,8 +5,8 @@ import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.Context
 import components.semantic_analysis.semantic_model.context.SpecialType
-import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
-import components.semantic_analysis.semantic_model.definitions.Object
+import components.semantic_analysis.semantic_model.declarations.FunctionImplementation
+import components.semantic_analysis.semantic_model.declarations.Object
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
@@ -90,6 +90,11 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			userEntryPointObject = entryPointData.first
 			userEntryPointFunction = entryPointData.second
 		}
+		return createGlobalEntrypoint(constructor, userEntryPointObject, userEntryPointFunction)
+	}
+
+	private fun createGlobalEntrypoint(constructor: LlvmConstructor, userEntryPointObject: ValueDeclaration?,
+									   userEntryPointFunction: FunctionImplementation?): LlvmValue {
 		val entryPointType = userEntryPointFunction?.signature?.getLlvmType(constructor) ?: constructor.buildFunctionType()
 		val globalEntryPoint = constructor.buildFunction("entrypoint", entryPointType)
 		constructor.createAndSelectBlock(globalEntryPoint, "entrypoint")
@@ -134,7 +139,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun addVariadicIntrinsics(constructor: LlvmConstructor) {
-		context.variadicParameterListStruct = constructor.declareStruct("_va_list")
+		context.variadicParameterListStruct = constructor.declareStruct("_variadicParameterList")
 		val targetTriple = constructor.getTargetTriple()
 		val variadicParameterListStructMembers = if(targetTriple.contains("x86_64-unknown-linux"))
 			listOf(constructor.i32Type, constructor.i32Type, constructor.pointerType, constructor.pointerType)
@@ -150,20 +155,9 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun setUpSystemFunctions(constructor: LlvmConstructor) {
-		// create class struct containing:
-		// - mapping from signature to members
-		// resolve member locations by signature and class
-		// resolve function locations by signature and class
-		// ignore performance and global function for now, KISS!
-
-		// Question: How do function signatures look like?
-		//  -> For now they map one-to-one to Pure signatures
-		//  -> Later on intermediary signatures might get introduced
-		// Question: What if only one of multiple function overloads is overridden?
-		//  -> Just copy the other ones
-
 		context.classDefinitionStruct = constructor.declareStruct("_ClassStruct")
-		// The member count is not strictly required because the loop is guaranteed to find a matching member, but it is included to be safe.
+		// The member count is not strictly required because the loop is guaranteed to find a matching member,
+		//  but it is included for debugging and error reporting.
 		val memberCountType = constructor.i32Type
 		val memberIdArrayType = constructor.pointerType
 		val memberOffsetArrayType = constructor.pointerType

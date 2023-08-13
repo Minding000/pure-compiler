@@ -1,13 +1,13 @@
 package components.semantic_analysis.resolution
 
-import components.semantic_analysis.semantic_model.definitions.ComputedPropertyDeclaration
-import components.semantic_analysis.semantic_model.definitions.Parameter
-import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
+import components.semantic_analysis.semantic_model.declarations.ComputedPropertyDeclaration
+import components.semantic_analysis.semantic_model.declarations.Parameter
+import components.semantic_analysis.semantic_model.declarations.PropertyDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
-import logger.issues.definition.ComputedPropertyMissingType
-import logger.issues.definition.DeclarationMissingTypeOrValue
+import logger.issues.declaration.ComputedPropertyMissingType
+import logger.issues.declaration.DeclarationMissingTypeOrValue
 import logger.issues.initialization.CircularAssignment
 import logger.issues.modifiers.*
 import logger.issues.resolution.NotCallable

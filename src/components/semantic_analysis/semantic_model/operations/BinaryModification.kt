@@ -4,7 +4,7 @@ import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
-import components.semantic_analysis.semantic_model.definitions.FunctionSignature
+import components.semantic_analysis.semantic_model.declarations.FunctionSignature
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.NumberLiteral
@@ -79,32 +79,33 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 				if(isTargetInteger)
 					throw CompilerError(source, "Integer target with float modifier in binary modification.")
 				else if(isModifierInteger)
-					modifierValue = constructor.buildCastFromSignedIntegerToFloat(modifierValue, "cast operand to match operation")
+					modifierValue = constructor.buildCastFromSignedIntegerToFloat(modifierValue, "_implicitlyCastBinaryModifier")
 			}
+			val intermediateResultName = "_modifiedValue"
 			val operation = when(kind) {
 				Operator.Kind.PLUS_EQUALS -> {
 					if(isIntegerOperation)
-						constructor.buildIntegerAddition(targetValue, modifierValue, "integer addition assignment")
+						constructor.buildIntegerAddition(targetValue, modifierValue, intermediateResultName)
 					else
-						constructor.buildFloatAddition(targetValue, modifierValue, "float addition assignment")
+						constructor.buildFloatAddition(targetValue, modifierValue, intermediateResultName)
 				}
 				Operator.Kind.MINUS_EQUALS -> {
 					if(isIntegerOperation)
-						constructor.buildIntegerSubtraction(targetValue, modifierValue, "integer subtraction assignment")
+						constructor.buildIntegerSubtraction(targetValue, modifierValue, intermediateResultName)
 					else
-						constructor.buildFloatSubtraction(targetValue, modifierValue, "float subtraction assignment")
+						constructor.buildFloatSubtraction(targetValue, modifierValue, intermediateResultName)
 				}
 				Operator.Kind.STAR_EQUALS -> {
 					if(isIntegerOperation)
-						constructor.buildIntegerMultiplication(targetValue, modifierValue, "integer multiplication assignment")
+						constructor.buildIntegerMultiplication(targetValue, modifierValue, intermediateResultName)
 					else
-						constructor.buildFloatMultiplication(targetValue, modifierValue, "float multiplication assignment")
+						constructor.buildFloatMultiplication(targetValue, modifierValue, intermediateResultName)
 				}
 				Operator.Kind.SLASH_EQUALS -> {
 					if(isIntegerOperation)
-						constructor.buildSignedIntegerDivision(targetValue, modifierValue, "integer division assignment")
+						constructor.buildSignedIntegerDivision(targetValue, modifierValue, intermediateResultName)
 					else
-						constructor.buildFloatDivision(targetValue, modifierValue, "float division assignment")
+						constructor.buildFloatDivision(targetValue, modifierValue, intermediateResultName)
 				}
 				else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
 			}

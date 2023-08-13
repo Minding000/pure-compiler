@@ -1,10 +1,10 @@
 package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.context.SpecialType
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.MemberDeclaration
-import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
-import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.InitializerDefinition
+import components.semantic_analysis.semantic_model.declarations.MemberDeclaration
+import components.semantic_analysis.semantic_model.declarations.PropertyDeclaration
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode

@@ -1,10 +1,10 @@
 package components.semantic_analysis.resolution
 
-import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
+import components.semantic_analysis.semantic_model.declarations.PropertyDeclaration
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
-import logger.issues.definition.TypeParameterCountMismatch
+import logger.issues.declaration.TypeParameterCountMismatch
 import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
 import util.TestUtil

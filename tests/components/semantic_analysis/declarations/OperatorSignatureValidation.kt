@@ -1,7 +1,7 @@
 package components.semantic_analysis.declarations
 
 import logger.Severity
-import logger.issues.definition.*
+import logger.issues.declaration.*
 import org.junit.jupiter.api.Test
 import util.TestUtil
 

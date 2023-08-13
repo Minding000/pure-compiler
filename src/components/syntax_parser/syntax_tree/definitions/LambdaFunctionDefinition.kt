@@ -6,7 +6,7 @@ import components.syntax_parser.syntax_tree.general.StatementSection
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import source_structure.Position
-import components.semantic_analysis.semantic_model.definitions.FunctionImplementation as SemanticFunctionImplementationModel
+import components.semantic_analysis.semantic_model.declarations.FunctionImplementation as SemanticFunctionImplementationModel
 import components.semantic_analysis.semantic_model.values.Function as SemanticFunctionModel
 
 class LambdaFunctionDefinition(start: Position, private val parameterList: ParameterList?, private val body: StatementSection,

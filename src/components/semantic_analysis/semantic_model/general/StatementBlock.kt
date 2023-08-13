@@ -18,6 +18,10 @@ class StatementBlock(override val source: StatementBlockSyntaxTree, override val
 
 	override fun validate() {
 		super.validate()
+		validateUnreachableStatements()
+	}
+
+	private fun validateUnreachableStatements() {
 		var isCodeReachable = true
 		for(statement in statements) {
 			if(!isCodeReachable) {

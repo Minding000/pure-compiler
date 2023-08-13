@@ -13,37 +13,41 @@ import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.issues.constant_conditions.StaticHasValueCheckResult
 import components.syntax_parser.syntax_tree.operations.HasValueCheck as HasValueCheckSyntaxTree
 
-class HasValueCheck(override val source: HasValueCheckSyntaxTree, scope: Scope, val value: Value): Value(source, scope) {
+class HasValueCheck(override val source: HasValueCheckSyntaxTree, scope: Scope, val subject: Value): Value(source, scope) {
 
 	init {
 		type = LiteralType(source, scope, SpecialType.BOOLEAN)
-		addSemanticModels(value, type)
+		addSemanticModels(subject, type)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
-		val variableValue = value as? VariableValue
-		val declaration = variableValue?.declaration
-		if(declaration != null) {
+		val subjectVariable = subject as? VariableValue
+		val subjectVariableDeclaration = subjectVariable?.declaration
+		if(subjectVariableDeclaration != null) {
 			val commonState = tracker.currentState.copy()
-			val variableType = variableValue.type as? OptionalType
+			val variableType = subjectVariable.type as? OptionalType
 			if(variableType != null) {
-				tracker.add(VariableUsage.Kind.HINT, declaration, this, variableType.baseType)
+				tracker.add(VariableUsage.Kind.HINT, subjectVariableDeclaration, this, variableType.baseType)
 				positiveState = tracker.currentState.copy()
 			}
 			tracker.setVariableStates(commonState)
 			val nullLiteral = NullLiteral(this)
-			tracker.add(VariableUsage.Kind.HINT, declaration, this, nullLiteral.type, nullLiteral)
+			tracker.add(VariableUsage.Kind.HINT, subjectVariableDeclaration, this, nullLiteral.type, nullLiteral)
 			negativeState = tracker.currentState.copy()
 			tracker.setVariableStates(commonState)
 		}
-		val valueType = value.getComputedType()
-		staticValue = if(valueType == null) {
+		computeStaticValue()
+	}
+
+	private fun computeStaticValue() {
+		val subjectType = subject.getComputedType()
+		staticValue = if(subjectType == null) {
 			null
-		} else if(SpecialType.NULL.matches(valueType)) {
+		} else if(SpecialType.NULL.matches(subjectType)) {
 			context.addIssue(StaticHasValueCheckResult(source, "no"))
 			BooleanLiteral(this, false)
-		} else if(valueType !is OptionalType) {
+		} else if(subjectType !is OptionalType) {
 			context.addIssue(StaticHasValueCheckResult(source, "yes"))
 			BooleanLiteral(this, true)
 		} else null

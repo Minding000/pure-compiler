@@ -4,7 +4,7 @@ import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmType
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.VariableTracker
-import components.semantic_analysis.semantic_model.definitions.Object
+import components.semantic_analysis.semantic_model.declarations.Object
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import logger.issues.resolution.ReferencedFileNotFound
 import java.util.*

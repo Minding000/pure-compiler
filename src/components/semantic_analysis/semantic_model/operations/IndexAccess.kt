@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.operations
 
 import components.semantic_analysis.semantic_model.context.VariableTracker
-import components.semantic_analysis.semantic_model.definitions.FunctionSignature
+import components.semantic_analysis.semantic_model.declarations.FunctionSignature
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
@@ -21,9 +21,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	}
 
 	override fun determineTypes() {
-		val parent = parent
-		if(parent is Assignment && parent.targets.contains(this))
-			sourceExpression = parent.sourceExpression
+		determineSourceExpression()
 		super.determineTypes()
 		target.type?.let { targetType ->
 			try {
@@ -40,9 +38,10 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		}
 	}
 
-	override fun analyseDataFlow(tracker: VariableTracker) {
-		super.analyseDataFlow(tracker)
-		staticValue = this
+	private fun determineSourceExpression() {
+		val parent = parent
+		if(parent is Assignment && parent.targets.contains(this))
+			sourceExpression = parent.sourceExpression
 	}
 
 	private fun getSignature(targetType: Type): String {
@@ -59,6 +58,11 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 			signature += "(${sourceExpression.type})"
 		}
 		return signature
+	}
+
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		super.analyseDataFlow(tracker)
+		staticValue = this
 	}
 
 	fun filterForPossibleTargetTypes(availableTypes: List<ObjectType>): List<ObjectType> {

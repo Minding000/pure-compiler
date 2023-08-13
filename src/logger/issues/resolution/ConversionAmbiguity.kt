@@ -1,6 +1,6 @@
 package logger.issues.resolution
 
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
+import components.semantic_analysis.semantic_model.declarations.InitializerDefinition
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.Issue

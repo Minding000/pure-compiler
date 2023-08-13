@@ -7,7 +7,7 @@ import components.syntax_parser.syntax_tree.general.StatementSection
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.tokenizer.WordAtom
 import source_structure.Position
-import components.semantic_analysis.semantic_model.definitions.DeinitializerDefinition as SemanticDeinitializerDefinitionModel
+import components.semantic_analysis.semantic_model.declarations.DeinitializerDefinition as SemanticDeinitializerDefinitionModel
 
 class DeinitializerDefinition(start: Position, end: Position, private val body: StatementSection?):
 	SyntaxTreeNode(start, end), ModifierSectionChild {

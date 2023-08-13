@@ -8,18 +8,22 @@ import logger.issues.loops.BreakStatementOutsideOfLoop
 import components.syntax_parser.syntax_tree.control_flow.BreakStatement as BreakStatementSyntaxTree
 
 class BreakStatement(override val source: BreakStatementSyntaxTree, scope: Scope): SemanticModel(source, scope) {
-	var targetLoop: LoopStatement? = null
+	private var targetLoop: LoopStatement? = null
 	override val isInterruptingExecution = true
 
 	override fun determineTypes() {
 		super.determineTypes()
+		determineTargetLoop()
+	}
+
+	private fun determineTargetLoop() {
 		val surroundingLoop = scope.getSurroundingLoop()
 		if(surroundingLoop == null) {
 			context.addIssue(BreakStatementOutsideOfLoop(source))
-		} else {
-			surroundingLoop.mightGetBrokenOutOf = true
-			targetLoop = surroundingLoop
+			return
 		}
+		surroundingLoop.mightGetBrokenOutOf = true
+		targetLoop = surroundingLoop
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

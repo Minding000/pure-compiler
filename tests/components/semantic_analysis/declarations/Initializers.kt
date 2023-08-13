@@ -1,9 +1,9 @@
 package components.semantic_analysis.declarations
 
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.Parameter
+import components.semantic_analysis.semantic_model.declarations.InitializerDefinition
+import components.semantic_analysis.semantic_model.declarations.Parameter
 import logger.Severity
-import logger.issues.definition.*
+import logger.issues.declaration.*
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperInitializerMissing
 import logger.issues.modifiers.OverridingInitializerMissingConvertingKeyword

@@ -1,5 +1,7 @@
 package components.semantic_analysis.semantic_model.values
 
+import components.compiler.targets.llvm.LlvmConstructor
+import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
@@ -17,6 +19,10 @@ class NullLiteral(override val source: SyntaxTreeNode, scope: Scope): LiteralVal
 		addSemanticModels(type)
 	}
 
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		return constructor.nullPointer
+	}
+
 	override fun hashCode(): Int {
 		return NullLiteral::class.hashCode()
 	}
@@ -28,8 +34,4 @@ class NullLiteral(override val source: SyntaxTreeNode, scope: Scope): LiteralVal
 	override fun toString(): String {
 		return "null"
 	}
-
-	//	override fun compile(context: BuildContext): LLVMValueRef {
-//		return LLVM.LLVMConstNull(resolveType())
-//	}
 }

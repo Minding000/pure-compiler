@@ -46,7 +46,8 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			//TODO write test to make sure this is fine
 			(member as? VariableValue)?.computeValue(tracker)
 		}
-		val computedTargetType = target.getComputedType() //TODO use dataflow analysis result here instead of static type
+		//TODO use dataflow analysis result here instead of static type
+		val computedTargetType = target.getComputedType()
 		if(computedTargetType != null) {
 			if(isTypePotentiallyNull(computedTargetType)) {
 				if(!isOptional)
@@ -75,7 +76,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 				is InitializerReference -> {
 					val staticType = StaticType(availableType.typeDeclaration ?: continue)
 					val functionCall = parent as? FunctionCall ?: continue
-					if(staticType.resolveInitializer(listOf(), listOf(), functionCall.typeParameters, functionCall.valueParameters) == null)
+					if(staticType.getInitializer(listOf(), listOf(), functionCall.typeParameters, functionCall.valueParameters) == null)
 						continue
 					possibleTargetTypes.add(staticType)
 				}

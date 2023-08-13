@@ -47,7 +47,7 @@ class IfStatement(override val source: IfStatementSyntaxTree, scope: Scope, val 
 		val function = constructor.getParentFunction()
 		val condition = condition.getLlvmValue(constructor)
 		val trueBlock = constructor.createBlock(function, "if_true")
-		val falseBlock = constructor.createBlock(function, "if_false") //TODO test nested if statements
+		val falseBlock = constructor.createBlock(function, "if_false") //TODO write test for nested if statements
 		val exitBlock = constructor.createBlock("if_exit")
 		constructor.buildJump(condition, trueBlock, falseBlock)
 		constructor.select(trueBlock)

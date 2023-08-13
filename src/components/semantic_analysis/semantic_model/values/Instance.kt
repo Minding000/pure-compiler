@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.values
 
-import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.StaticType
@@ -33,7 +33,7 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 		addSemanticModels(staticType)
 		super.determineType()
 		try {
-			val initializer = staticType.resolveInitializer(valueParameters)
+			val initializer = staticType.getInitializer(valueParameters)
 			if(initializer == null)
 				context.addIssue(NotFound(source, "Initializer", getSignature()))
 		} catch(error: SignatureResolutionAmbiguityError) {

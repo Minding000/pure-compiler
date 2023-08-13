@@ -20,7 +20,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 	SemanticModel(source, scope) {
 
 	companion object {
-		private val STEP = BigDecimal(1)
+		private val STEP_SIZE = BigDecimal(1)
 	}
 
 	init {
@@ -55,8 +55,8 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 	private fun getComputedTargetValue(): Value? {
 		val targetValue = (target.getComputedValue() as? NumberLiteral ?: return null).value
 		val resultingValue = when(kind) {
-			Operator.Kind.DOUBLE_PLUS -> targetValue + STEP
-			Operator.Kind.DOUBLE_MINUS -> targetValue - STEP
+			Operator.Kind.DOUBLE_PLUS -> targetValue + STEP_SIZE
+			Operator.Kind.DOUBLE_MINUS -> targetValue - STEP_SIZE
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
 		return NumberLiteral(this, resultingValue)
@@ -67,10 +67,11 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 		if(target is VariableValue) {
 			if(SpecialType.INTEGER.matches(target.type)) {
 				val targetValue = target.getLlvmValue(constructor)
-				val modifierValue = constructor.buildInt32(1)
+				val modifierValue = constructor.buildInt32(STEP_SIZE.longValueExact())
+				val intermediateResultName = "_modifiedValue"
 				val operation = when(kind) {
-					Operator.Kind.DOUBLE_PLUS -> constructor.buildIntegerAddition(targetValue, modifierValue, "increment")
-					Operator.Kind.DOUBLE_MINUS -> constructor.buildIntegerSubtraction(targetValue, modifierValue, "decrement")
+					Operator.Kind.DOUBLE_PLUS -> constructor.buildIntegerAddition(targetValue, modifierValue, intermediateResultName)
+					Operator.Kind.DOUBLE_MINUS -> constructor.buildIntegerSubtraction(targetValue, modifierValue, intermediateResultName)
 					else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
 				}
 				constructor.buildStore(operation, target.getLlvmLocation(constructor))

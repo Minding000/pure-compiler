@@ -4,7 +4,7 @@ import components.semantic_analysis.semantic_model.values.LocalVariableDeclarati
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
-import logger.issues.definition.GenericTypeDeclarationInObject
+import logger.issues.declaration.GenericTypeDeclarationInObject
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals

@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.values
 
 import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
-import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.ObjectType
 import logger.issues.resolution.SelfReferenceOutsideOfTypeDefinition

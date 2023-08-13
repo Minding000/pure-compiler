@@ -1,6 +1,6 @@
 package util
 
-import components.semantic_analysis.semantic_model.definitions.Parameter
+import components.semantic_analysis.semantic_model.declarations.Parameter
 import components.semantic_analysis.semantic_model.values.Value
 
 fun Char.stringify(): String {

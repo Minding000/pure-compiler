@@ -13,7 +13,7 @@ class SemanticModelGenerator(val context: Context) {
 		val semanticProgramModel = programSyntaxTree.toSemanticModel(context)
 		logger.addPhase("Literal scope resolution")
 		for(literalType in SpecialType.values())
-			literalType.scope = getLiteralScope(semanticProgramModel, literalType.pathParts)
+			literalType.fileScope = getLiteralFileScope(semanticProgramModel, literalType.pathParts)
 		logger.addPhase("Declaration")
 		semanticProgramModel.declare()
 		logger.addPhase("File reference resolution")
@@ -28,7 +28,7 @@ class SemanticModelGenerator(val context: Context) {
 		return semanticProgramModel
 	}
 
-	private fun getLiteralScope(semanticProgramModel: SemanticProgramModel, pathParts: List<String>): FileScope? {
+	private fun getLiteralFileScope(semanticProgramModel: SemanticProgramModel, pathParts: List<String>): FileScope? {
 		val file = semanticProgramModel.getFile(pathParts)
 		if(file == null)
 			context.addIssue(LiteralFileNotFound(pathParts))

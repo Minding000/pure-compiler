@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.context
 
-import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
+import components.semantic_analysis.semantic_model.declarations.PropertyDeclaration
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.LiteralValue
@@ -59,7 +59,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		return getCommonType(currentState.lastVariableUsages[declaration ?: return null] ?: return null, declaration)
 	}
 
-	fun getCommonType(usages: Collection<VariableUsage>, semanticModel: SemanticModel): Type? {
+	private fun getCommonType(usages: Collection<VariableUsage>, semanticModel: SemanticModel): Type? {
 		var type: Type? = null
 		for(usage in usages) {
 			val usageType = usage.resultingType ?: return null
@@ -75,7 +75,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		return getCommonValue(currentState.lastVariableUsages[declaration] ?: return null)
 	}
 
-	fun getCommonValue(usages: Collection<VariableUsage>): Value? {
+	private fun getCommonValue(usages: Collection<VariableUsage>): Value? {
 		var value: Value? = null
 		for(usage in usages) {
 			if(value == null)

@@ -1,8 +1,8 @@
 package components.semantic_analysis.modifiers
 
 import logger.Severity
-import logger.issues.definition.AbstractMemberInNonAbstractTypeDefinition
-import logger.issues.definition.MissingImplementations
+import logger.issues.declaration.AbstractMemberInNonAbstractTypeDefinition
+import logger.issues.declaration.MissingImplementations
 import logger.issues.modifiers.AbstractClassInstantiation
 import logger.issues.modifiers.DisallowedModifier
 import org.junit.jupiter.api.Test

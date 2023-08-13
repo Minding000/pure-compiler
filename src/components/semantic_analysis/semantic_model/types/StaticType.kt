@@ -2,8 +2,8 @@ package components.semantic_analysis.semantic_model.types
 
 import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmType
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.InitializerDefinition
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.Value
 import errors.user.SignatureResolutionAmbiguityError
@@ -60,13 +60,13 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 		return typeDeclaration.getLinkedSuperType()?.isAssignableTo(targetType) ?: false
 	}
 
-	fun resolveInitializer(suppliedValues: List<Value> = emptyList()): Match? =
-		resolveInitializer(emptyList(), emptyList(), emptyList(), suppliedValues)
+	fun getInitializer(suppliedValues: List<Value> = emptyList()): Match? =
+		getInitializer(emptyList(), emptyList(), emptyList(), suppliedValues)
 
-	fun resolveInitializer(genericDefinitionTypes: List<TypeDeclaration>, suppliedDefinitionTypes: List<Type>, suppliedTypes: List<Type>,
-						   suppliedValues: List<Value>): Match? {
+	fun getInitializer(globalTypeParameters: List<TypeDeclaration>, suppliedGlobalTypes: List<Type>, suppliedLocalTypes: List<Type>,
+					   suppliedValues: List<Value>): Match? {
 		typeDeclaration.determineTypes()
-		val matches = getMatchingInitializers(genericDefinitionTypes, suppliedDefinitionTypes, suppliedTypes, suppliedValues)
+		val matches = getMatchingInitializers(globalTypeParameters, suppliedGlobalTypes, suppliedLocalTypes, suppliedValues)
 		if(matches.isEmpty())
 			return null
 		specificityPrecedenceLoop@for(match in matches) {
@@ -85,25 +85,25 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 		throw SignatureResolutionAmbiguityError(matches.map { match -> match.initializer })
 	}
 
-	private fun getMatchingInitializers(genericDefinitionTypes: List<TypeDeclaration>, suppliedDefinitionTypes: List<Type>,
-										suppliedTypes: List<Type>, suppliedValues: List<Value>): List<Match> {
+	private fun getMatchingInitializers(globalTypeParameters: List<TypeDeclaration>, suppliedGlobalTypes: List<Type>,
+										suppliedLocalTypes: List<Type>, suppliedValues: List<Value>): List<Match> {
 		val matches = LinkedList<Match>()
 		for(initializer in interfaceScope.initializers) {
 			var specificInitializer = initializer
-			val definitionTypeSubstitutions = initializer.getDefinitionTypeSubstitutions(genericDefinitionTypes, suppliedDefinitionTypes,
+			val globalTypeSubstitutions = initializer.getGlobalTypeSubstitutions(globalTypeParameters, suppliedGlobalTypes,
 				suppliedValues) ?: continue
-			if(definitionTypeSubstitutions.isNotEmpty())
-				specificInitializer = specificInitializer.withTypeSubstitutions(definitionTypeSubstitutions) //TODO the copied semanticModel should be added to semanticModels (same for functions and operators)
-			val typeSubstitutions = specificInitializer.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
-			if(typeSubstitutions.isNotEmpty())
-				specificInitializer = specificInitializer.withTypeSubstitutions(typeSubstitutions) //TODO the copied semanticModel should be added to semanticModels (same for functions and operators)
+			if(globalTypeSubstitutions.isNotEmpty())
+				specificInitializer = specificInitializer.withTypeSubstitutions(globalTypeSubstitutions)
+			val localTypeSubstitutions = specificInitializer.getLocalTypeSubstitutions(suppliedLocalTypes, suppliedValues) ?: continue
+			if(localTypeSubstitutions.isNotEmpty())
+				specificInitializer = specificInitializer.withTypeSubstitutions(localTypeSubstitutions)
 			if(specificInitializer.accepts(suppliedValues))
-				matches.add(Match(specificInitializer, definitionTypeSubstitutions))
+				matches.add(Match(specificInitializer, globalTypeSubstitutions))
 		}
 		return matches
 	}
 
-	class Match(val initializer: InitializerDefinition, val definitionTypeSubstitutions: Map<TypeDeclaration, Type>)
+	class Match(val initializer: InitializerDefinition, val globalTypeSubstitutions: Map<TypeDeclaration, Type>)
 
 	fun getBaseTypeDeclaration(): TypeDeclaration {
 		return typeDeclaration.baseTypeDeclaration ?: typeDeclaration

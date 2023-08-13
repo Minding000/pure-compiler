@@ -1,8 +1,8 @@
 package components.semantic_analysis.declarations
 
 import logger.Severity
-import logger.issues.definition.Redeclaration
-import logger.issues.definition.VariadicParameterInOperator
+import logger.issues.declaration.Redeclaration
+import logger.issues.declaration.VariadicParameterInOperator
 import org.junit.jupiter.api.Test
 import util.TestUtil
 

@@ -6,7 +6,7 @@ import components.semantic_analysis.semantic_model.context.Context
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
-import components.semantic_analysis.semantic_model.definitions.*
+import components.semantic_analysis.semantic_model.declarations.*
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.FunctionType
@@ -45,6 +45,43 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		}
 	}
 
+	private fun resolveInitializerCall(targetType: StaticType) {
+		(targetType.typeDeclaration as? Class)?.let { `class` ->
+			if(`class`.isAbstract)
+				context.addIssue(AbstractClassInstantiation(source, `class`))
+		}
+		val baseTypeDeclaration = targetType.getBaseTypeDeclaration()
+		val globalTypeParameters = baseTypeDeclaration.scope.getGenericTypeDeclarations()
+		val suppliedGlobalTypes = (function as? TypeSpecification)?.globalTypes ?: emptyList()
+		try {
+			val match = targetType.getInitializer(globalTypeParameters, suppliedGlobalTypes, typeParameters, valueParameters)
+			if(match == null) {
+				context.addIssue(NotFound(source, "Initializer", getSignature()))
+				return
+			}
+			val type = ObjectType(match.globalTypeSubstitutions.values.toList(), baseTypeDeclaration)
+			type.determineTypes()
+			addSemanticModels(type)
+			this.type = type
+			targetInitializer = match.initializer
+		} catch(error: SignatureResolutionAmbiguityError) {
+			error.log(source, "initializer", getSignature())
+		}
+	}
+
+	private fun resolveFunctionCall(functionType: FunctionType) {
+		try {
+			targetSignature = functionType.getSignature(typeParameters, valueParameters)
+			if(targetSignature == null) {
+				context.addIssue(SignatureMismatch(function, typeParameters, valueParameters))
+				return
+			}
+			type = targetSignature?.returnType
+		} catch(error: SignatureResolutionAmbiguityError) {
+			error.log(source, "function", getSignature())
+		}
+	}
+
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
 		staticValue = this
@@ -66,43 +103,6 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			tracker.add(VariableUsage.Kind.WRITE, propertyBeingInitialized, this)
 		if(tracker.isInitializer && requiredButUninitializedProperties.isNotEmpty())
 			context.addIssue(ReliesOnUninitializedProperties(source, getSignature(), requiredButUninitializedProperties))
-	}
-
-	private fun resolveInitializerCall(targetType: StaticType) {
-		(targetType.typeDeclaration as? Class)?.let { `class` ->
-			if(`class`.isAbstract)
-				context.addIssue(AbstractClassInstantiation(source, `class`))
-		}
-		val baseTypeDeclaration = targetType.getBaseTypeDeclaration()
-		val genericDefinitionTypes = baseTypeDeclaration.scope.getGenericTypeDeclarations()
-		val definitionTypeParameters = (function as? TypeSpecification)?.typeParameters ?: emptyList()
-		try {
-			val match = targetType.resolveInitializer(genericDefinitionTypes, definitionTypeParameters, typeParameters, valueParameters)
-			if(match == null) {
-				context.addIssue(NotFound(source, "Initializer", getSignature()))
-				return
-			}
-			val type = ObjectType(match.definitionTypeSubstitutions.map { typeSubstitution -> typeSubstitution.value }, baseTypeDeclaration)
-			type.determineTypes()
-			addSemanticModels(type)
-			this.type = type
-			targetInitializer = match.initializer
-		} catch(error: SignatureResolutionAmbiguityError) {
-			error.log(source, "initializer", getSignature())
-		}
-	}
-
-	private fun resolveFunctionCall(functionType: FunctionType) {
-		try {
-			targetSignature = functionType.getSignature(typeParameters, valueParameters)
-			if(targetSignature == null) {
-				context.addIssue(SignatureMismatch(function, typeParameters, valueParameters))
-				return
-			}
-			type = targetSignature?.returnType
-		} catch(error: SignatureResolutionAmbiguityError) {
-			error.log(source, "function", getSignature())
-		}
 	}
 
 	override fun compile(constructor: LlvmConstructor) {

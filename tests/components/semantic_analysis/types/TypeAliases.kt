@@ -2,7 +2,7 @@ package components.semantic_analysis.types
 
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
-import logger.issues.definition.CircularTypeAlias
+import logger.issues.declaration.CircularTypeAlias
 import logger.issues.resolution.NotCallable
 import org.junit.jupiter.api.Test
 import util.TestUtil

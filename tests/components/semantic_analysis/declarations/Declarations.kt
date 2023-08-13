@@ -1,10 +1,10 @@
 package components.semantic_analysis.declarations
 
-import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
-import logger.issues.definition.*
+import logger.issues.declaration.*
 import logger.issues.modifiers.DisallowedModifier
 import logger.issues.modifiers.DuplicateModifier
 import logger.issues.modifiers.NoParentToBindTo

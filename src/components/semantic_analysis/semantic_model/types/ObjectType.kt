@@ -3,12 +3,12 @@ package components.semantic_analysis.semantic_model.types
 import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmType
 import components.semantic_analysis.semantic_model.context.SpecialType
-import components.semantic_analysis.semantic_model.definitions.*
+import components.semantic_analysis.semantic_model.declarations.*
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
-import logger.issues.definition.TypeParameterCountMismatch
-import logger.issues.definition.TypeParameterNotAssignable
+import logger.issues.declaration.TypeParameterCountMismatch
+import logger.issues.declaration.TypeParameterNotAssignable
 import logger.issues.resolution.NotFound
 
 open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enclosingType: ObjectType?, val typeParameters: List<Type>,

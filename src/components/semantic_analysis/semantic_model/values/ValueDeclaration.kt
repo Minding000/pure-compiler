@@ -1,8 +1,8 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.compiler.targets.llvm.LlvmConstructor
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
-import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.InitializerDefinition
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
@@ -11,18 +11,18 @@ import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.constant_conditions.TypeNotAssignable
-import logger.issues.definition.DeclarationMissingTypeOrValue
+import logger.issues.declaration.DeclarationMissingTypeOrValue
 import logger.issues.resolution.ConversionAmbiguity
 import org.bytedeco.llvm.LLVM.LLVMValueRef
 import java.util.*
 
-abstract class ValueDeclaration(override val source: SyntaxTreeNode, override val scope: MutableScope, val name: String, var type: Type? = null,
-								value: Value? = null, val isConstant: Boolean = true, val isMutable: Boolean = false,
-								val isSpecificCopy: Boolean = false): SemanticModel(source, scope) {
+abstract class ValueDeclaration(override val source: SyntaxTreeNode, override val scope: MutableScope, val name: String,
+								var type: Type? = null, value: Value? = null, val isConstant: Boolean = true,
+								val isMutable: Boolean = false, val isSpecificCopy: Boolean = false): SemanticModel(source, scope) {
 	private var hasDeterminedTypes = isSpecificCopy
 	open val value = value
 	val usages = LinkedList<VariableValue>()
-	var conversion: InitializerDefinition? = null
+	private var conversion: InitializerDefinition? = null
 	lateinit var llvmLocation: LLVMValueRef
 
 	init {

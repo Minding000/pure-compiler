@@ -4,7 +4,7 @@ import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmValue
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.context.VariableUsage
-import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
+import components.semantic_analysis.semantic_model.declarations.PropertyDeclaration
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.StaticType
@@ -66,20 +66,6 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 
 	override fun getComputedType(): Type? = staticType
 
-	override fun hashCode(): Int {
-		var result = super.hashCode()
-		result = 31 * result + (declaration?.hashCode() ?: 0)
-		return result
-	}
-
-	override fun equals(other: Any?): Boolean {
-		if(other !is VariableValue)
-			return false
-		if(declaration == null)
-			return false
-		return declaration == other.declaration
-	}
-
 	fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue? {
 		val definition = declaration
 		return if(definition is PropertyDeclaration) {
@@ -92,6 +78,20 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		return constructor.buildLoad(type?.getLlvmType(constructor), getLlvmLocation(constructor), name)
+	}
+
+	override fun hashCode(): Int {
+		var result = super.hashCode()
+		result = 31 * result + (declaration?.hashCode() ?: 0)
+		return result
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if(other !is VariableValue)
+			return false
+		if(declaration == null)
+			return false
+		return declaration == other.declaration
 	}
 
 	override fun toString(): String = name

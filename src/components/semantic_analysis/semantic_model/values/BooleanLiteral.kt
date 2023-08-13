@@ -19,6 +19,10 @@ class BooleanLiteral(override val source: SyntaxTreeNode, scope: Scope, val valu
 		addSemanticModels(type)
 	}
 
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		return constructor.buildBoolean(value)
+	}
+
 	override fun hashCode(): Int {
 		var result = super.hashCode()
 		result = 31 * result + value.hashCode()
@@ -29,10 +33,6 @@ class BooleanLiteral(override val source: SyntaxTreeNode, scope: Scope, val valu
 		if(other !is BooleanLiteral)
 			return false
 		return value == other.value
-	}
-
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		return constructor.buildBoolean(value)
 	}
 
 	override fun toString(): String {

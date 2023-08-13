@@ -18,33 +18,33 @@ import logger.issues.loops.TooManyPluralTypeVariableDeclarations
 import java.util.*
 import components.syntax_parser.syntax_tree.control_flow.OverGenerator as OverGeneratorSyntaxTree
 
-class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, val collection: Value,
+class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, val iterable: Value,
 					val iteratorVariableDeclaration: LocalVariableDeclaration?, val variableDeclarations: List<LocalVariableDeclaration>):
 	SemanticModel(source, scope) {
 
 	init {
-		addSemanticModels(collection, iteratorVariableDeclaration)
+		addSemanticModels(iterable, iteratorVariableDeclaration)
 		addSemanticModels(variableDeclarations)
 	}
 
 	override fun determineTypes() {
-		collection.determineTypes()
-		val collectionType = collection.type
-		if(collectionType is PluralType)
-			setVariableTypes(collectionType)
-		else if(collectionType != null)
-			setVariableTypes(collectionType)
+		iterable.determineTypes()
+		val iterableType = iterable.type
+		if(iterableType is PluralType)
+			setVariableTypes(iterableType)
+		else if(iterableType != null)
+			setVariableTypes(iterableType)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
-		collection.analyseDataFlow(tracker)
+		iterable.analyseDataFlow(tracker)
 		if(iteratorVariableDeclaration != null)
 			tracker.declare(iteratorVariableDeclaration, true)
 		for(variableDeclaration in variableDeclarations)
 			tracker.declare(variableDeclaration, true)
 	}
 
-	private fun setVariableTypes(collectionType: PluralType) {
+	private fun setVariableTypes(iterableType: PluralType) {
 		if(iteratorVariableDeclaration != null)
 			context.addIssue(PluralTypeIteratorDeclaration(iteratorVariableDeclaration.source))
 		if(variableDeclarations.size > 2) {
@@ -55,16 +55,16 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 			addSemanticModels(indexVariableType)
 			variableDeclarations.firstOrNull()?.type = indexVariableType
 		}
-		variableDeclarations.lastOrNull()?.type = collectionType.baseType
+		variableDeclarations.lastOrNull()?.type = iterableType.baseType
 	}
 
-	private fun setVariableTypes(collectionType: Type) {
-		if(!collectionType.isInstanceOf(SpecialType.ITERABLE)) {
-			context.addIssue(NotIterable(collection.source))
+	private fun setVariableTypes(iterableType: Type) {
+		if(!iterableType.isInstanceOf(SpecialType.ITERABLE)) {
+			context.addIssue(NotIterable(iterable.source))
 			return
 		}
 		try {
-			val iteratorCreationProperty = collectionType.interfaceScope.getValueDeclaration("createIterator")
+			val iteratorCreationProperty = iterableType.interfaceScope.getValueDeclaration("createIterator")
 			val iteratorCreationFunctionType = iteratorCreationProperty?.type as? FunctionType
 			val iteratorCreationSignature = iteratorCreationFunctionType?.getSignature()
 			val iteratorType = iteratorCreationSignature?.getComputedReturnType() ?: return

@@ -1,9 +1,9 @@
 package components.semantic_analysis.semantic_model.context
 
-import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration
-import components.semantic_analysis.semantic_model.definitions.TypeAlias
+import components.semantic_analysis.semantic_model.declarations.PropertyDeclaration
+import components.semantic_analysis.semantic_model.declarations.TypeAlias
 import logger.Logger
-import logger.issues.definition.CircularTypeAlias
+import logger.issues.declaration.CircularTypeAlias
 import logger.issues.initialization.CircularAssignment
 import java.util.*
 

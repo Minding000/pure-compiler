@@ -4,8 +4,8 @@ import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity
-import logger.issues.definition.TypeParameterCountMismatch
-import logger.issues.definition.TypeParameterNotAssignable
+import logger.issues.declaration.TypeParameterCountMismatch
+import logger.issues.declaration.TypeParameterNotAssignable
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import util.TestUtil

@@ -12,16 +12,16 @@ import components.semantic_analysis.semantic_model.values.*
 import logger.issues.constant_conditions.*
 import components.syntax_parser.syntax_tree.operations.Cast as CastSyntaxTree
 
-class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, val variableDeclaration: ValueDeclaration?,
+class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value, val variableDeclaration: ValueDeclaration?,
 		   val referenceType: Type, val operator: Operator): Value(source, scope) {
 	override var isInterruptingExecution = false
 	private val isCastAlwaysSuccessful: Boolean
-		get() = value.getComputedType()?.isAssignableTo(referenceType) ?: false
+		get() = subject.getComputedType()?.isAssignableTo(referenceType) ?: false
 	private val isCastNeverSuccessful: Boolean
-		get() = value.getComputedValue() is NullLiteral
+		get() = subject.getComputedValue() is NullLiteral
 
 	init {
-		addSemanticModels(value, variableDeclaration)
+		addSemanticModels(subject, variableDeclaration)
 		type = if(operator.returnsBoolean) {
 			addSemanticModels(referenceType)
 			LiteralType(source, scope, SpecialType.BOOLEAN)
@@ -41,36 +41,41 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
 		if(operator.returnsBoolean) {
-			val variableValue = value as? VariableValue
-			val declaration = variableValue?.declaration
-			if(declaration != null) {
+			val subjectVariable = subject as? VariableValue
+			val subjectVariableDeclaration = subjectVariable?.declaration
+			if(subjectVariableDeclaration != null) {
 				val commonState = tracker.currentState.copy()
-				tracker.add(VariableUsage.Kind.HINT, declaration, this, referenceType)
+				tracker.add(VariableUsage.Kind.HINT, subjectVariableDeclaration, this, referenceType)
 				setEndState(tracker, operator == Operator.CAST_CONDITION)
 				tracker.setVariableStates(commonState)
-				val variableType = variableValue.type as? OptionalType
+				val variableType = subjectVariable.type as? OptionalType
 				val baseType = variableType?.baseType
 				if(baseType == referenceType) {
 					val nullLiteral = NullLiteral(this)
-					tracker.add(VariableUsage.Kind.HINT, declaration, this, nullLiteral.type, nullLiteral)
+					tracker.add(VariableUsage.Kind.HINT, subjectVariableDeclaration, this, nullLiteral.type, nullLiteral)
 					setEndState(tracker, operator == Operator.NEGATED_CAST_CONDITION)
 				}
 				tracker.setVariableStates(commonState)
 			}
 		}
+		computeStaticValue()
+	}
+
+	private fun computeStaticValue() {
 		if(operator.returnsBoolean) {
 			if(isCastAlwaysSuccessful)
 				staticValue = BooleanLiteral(this, operator == Operator.CAST_CONDITION)
 			else if(isCastNeverSuccessful)
 				staticValue = BooleanLiteral(this, operator == Operator.NEGATED_CAST_CONDITION)
 		} else if(operator == Operator.SAFE_CAST) {
-			staticValue = value.getComputedValue()
+			staticValue = subject.getComputedValue()
 		} else if(operator == Operator.THROWING_CAST) {
-			staticValue = value.getComputedValue()
-			isInterruptingExecution = isCastNeverSuccessful //TODO propagate 'isInterruptingExecution' property from expressions to statements in the 'SemanticModel' class
+			staticValue = subject.getComputedValue()
+			//TODO propagate 'isInterruptingExecution' property from expressions to statements in the 'SemanticModel' class
+			isInterruptingExecution = isCastNeverSuccessful
 		} else if(operator == Operator.OPTIONAL_CAST) {
 			if(isCastAlwaysSuccessful)
-				staticValue = value.getComputedValue()
+				staticValue = subject.getComputedValue()
 			else if(isCastNeverSuccessful)
 				staticValue = NullLiteral(this)
 		}
@@ -78,7 +83,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val value: Value, 
 
 	override fun validate() {
 		super.validate()
-		value.type?.let { valueType ->
+		subject.type?.let { valueType ->
 			if(valueType.isAssignableTo(referenceType)) {
 				if(operator.isConditional)
 					context.addIssue(ConditionalCastIsSafe(source, valueType, referenceType))

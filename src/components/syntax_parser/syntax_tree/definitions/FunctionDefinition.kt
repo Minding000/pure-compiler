@@ -8,7 +8,7 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import components.tokenizer.WordAtom
-import components.semantic_analysis.semantic_model.definitions.FunctionImplementation as SemanticFunctionImplementationModel
+import components.semantic_analysis.semantic_model.declarations.FunctionImplementation as SemanticFunctionImplementationModel
 
 class FunctionDefinition(private val identifier: Identifier, private val parameterList: ParameterList,
 						 private val body: StatementSection?, private var returnType: TypeSyntaxTreeNode?):

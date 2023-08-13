@@ -1,9 +1,9 @@
 package components.semantic_analysis.declarations
 
 import logger.Severity
-import logger.issues.definition.ComputedPropertyMissingType
-import logger.issues.definition.ComputedVariableWithoutSetter
-import logger.issues.definition.SetterInComputedValue
+import logger.issues.declaration.ComputedPropertyMissingType
+import logger.issues.declaration.ComputedVariableWithoutSetter
+import logger.issues.declaration.SetterInComputedValue
 import logger.issues.initialization.ConstantReassignment
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test

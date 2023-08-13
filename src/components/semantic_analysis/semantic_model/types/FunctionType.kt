@@ -1,8 +1,8 @@
 package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.context.SpecialType
-import components.semantic_analysis.semantic_model.definitions.FunctionSignature
-import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.FunctionSignature
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -35,7 +35,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		interfaceScope.type = this
 		for(semanticModel in semanticModels)
 			semanticModel.determineTypes()
-		typeDeclaration = SpecialType.FUNCTION.scope?.getTypeDeclaration(name)
+		typeDeclaration = SpecialType.FUNCTION.fileScope?.getTypeDeclaration(name)
 		typeDeclaration?.scope?.addSubscriber(this)
 		if(typeDeclaration == null)
 			context.addIssue(LiteralTypeNotFound(source, name))
@@ -48,8 +48,8 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 
 	fun getSignature(suppliedValues: List<Value>): FunctionSignature? = getSignature(emptyList(), suppliedValues)
 
-	fun getSignature(suppliedTypes: List<Type> = emptyList(), suppliedValues: List<Value> = emptyList()): FunctionSignature? {
-		val matchingSignatures = getMatchingSignatures(suppliedTypes, suppliedValues)
+	fun getSignature(suppliedLocalTypes: List<Type> = emptyList(), suppliedValues: List<Value> = emptyList()): FunctionSignature? {
+		val matchingSignatures = getMatchingSignatures(suppliedLocalTypes, suppliedValues)
 		if(matchingSignatures.isEmpty())
 			return null
 		specificityPrecedenceLoop@for(signature in matchingSignatures) {
@@ -68,16 +68,19 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		throw SignatureResolutionAmbiguityError(matchingSignatures)
 	}
 
-	private fun getMatchingSignatures(suppliedTypes: List<Type>, suppliedValues: List<Value>): List<FunctionSignature> {
+	private fun getMatchingSignatures(suppliedLocalTypes: List<Type>, suppliedValues: List<Value>): List<FunctionSignature> {
 		val matchingSignatures = LinkedList<FunctionSignature>()
 		for(signature in signatures) {
-			val typeSubstitutions = signature.getTypeSubstitutions(suppliedTypes, suppliedValues) ?: continue
-			val specificSignature = if(typeSubstitutions.isEmpty()) signature else signature.withTypeSubstitutions(typeSubstitutions)
+			val localTypeSubstitutions = signature.getLocalTypeSubstitutions(suppliedLocalTypes, suppliedValues) ?: continue
+			val specificSignature = if(localTypeSubstitutions.isEmpty())
+				signature
+			else
+				signature.withTypeSubstitutions(localTypeSubstitutions)
 			if(specificSignature.accepts(suppliedValues))
 				matchingSignatures.add(specificSignature)
 		}
 		superFunctionType?.let { superFunctionType ->
-			val matchingSuperSignatures = superFunctionType.getMatchingSignatures(suppliedTypes, suppliedValues)
+			val matchingSuperSignatures = superFunctionType.getMatchingSignatures(suppliedLocalTypes, suppliedValues)
 			validSuperSignatures@for(matchingSuperSignature in matchingSuperSignatures) {
 				for(matchingSignature in matchingSignatures)
 					if(matchingSignature.superFunctionSignature === matchingSuperSignature)

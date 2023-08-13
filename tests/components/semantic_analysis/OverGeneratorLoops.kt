@@ -3,7 +3,7 @@ package components.semantic_analysis
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
-import logger.issues.definition.DeclarationMissingTypeOrValue
+import logger.issues.declaration.DeclarationMissingTypeOrValue
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertIs

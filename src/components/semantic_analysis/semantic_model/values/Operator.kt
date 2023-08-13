@@ -3,7 +3,7 @@ package components.semantic_analysis.semantic_model.values
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
-import logger.issues.definition.*
+import logger.issues.declaration.*
 
 class Operator(source: SyntaxTreeNode, scope: Scope, val kind: Kind): Function(source, scope, kind.stringRepresentation) {
 	override val memberType = "operator"

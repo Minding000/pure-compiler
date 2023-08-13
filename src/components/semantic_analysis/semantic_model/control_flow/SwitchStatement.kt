@@ -25,15 +25,19 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 
 	override fun determineTypes() {
 		super.determineTypes()
+		inferCaseConditionTypes()
+	}
+
+	private fun inferCaseConditionTypes() {
 		val subjectType = subject.type
 		for(case in cases) {
-			if(case.condition.isAssignableTo(subjectType)) {
-				case.condition.setInferredType(subjectType)
-			} else {
+			if(!case.condition.isAssignableTo(subjectType)) {
 				val conditionType = case.condition.type
-				if(subjectType != null && conditionType != null)
+				if(conditionType != null && subjectType != null)
 					context.addIssue(CaseTypeMismatch(source, conditionType, subjectType))
+				continue
 			}
+			case.condition.setInferredType(subjectType)
 		}
 	}
 
@@ -59,27 +63,36 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 
 	override fun validate() {
 		super.validate()
-		var areAllBranchesInterruptingExecution = elseBranch?.isInterruptingExecution ?: true
-		if(cases.isEmpty()) {
-			context.addIssue(NoCases(source))
-		} else {
-			val casesWithUniqueConditions = LinkedList<Case>()
-			for(case in cases) {
-				if(!case.result.isInterruptingExecution)
-					areAllBranchesInterruptingExecution = false
-				val caseWithUniqueCondition = casesWithUniqueConditions.find {
-						caseWithUniqueCondition -> caseWithUniqueCondition.condition == case.condition }
-				if(caseWithUniqueCondition != null) {
-					context.addIssue(DuplicateCase(caseWithUniqueCondition, case))
-					continue
-				}
-				casesWithUniqueConditions.add(case)
-			}
-		}
-		if(elseBranch != null && isExhaustiveWithoutElseBranch())
-			context.addIssue(RedundantElse(elseBranch.source))
+		validateEmptySwitch()
+		validateUniqueCases()
+		validateRedundantElseBranch()
+		val areAllBranchesInterruptingExecution = cases.all { case -> case.result.isInterruptingExecution }
+			&& elseBranch?.isInterruptingExecution ?: true
 		isInterruptingExecution = (getBranchForValue(subject.getComputedValue())?.isInterruptingExecution ?: false)
 			|| (isExhaustive() && areAllBranchesInterruptingExecution)
+	}
+
+	private fun validateEmptySwitch() {
+		if(cases.isEmpty())
+			context.addIssue(NoCases(source))
+	}
+
+	private fun validateUniqueCases() {
+		val casesWithUniqueConditions = LinkedList<Case>()
+		for(case in cases) {
+			val caseWithUniqueCondition = casesWithUniqueConditions.find {
+					caseWithUniqueCondition -> caseWithUniqueCondition.condition == case.condition }
+			if(caseWithUniqueCondition != null) {
+				context.addIssue(DuplicateCase(caseWithUniqueCondition, case))
+				continue
+			}
+			casesWithUniqueConditions.add(case)
+		}
+	}
+
+	private fun validateRedundantElseBranch() {
+		if(elseBranch != null && isExhaustiveWithoutElseBranch())
+			context.addIssue(RedundantElse(elseBranch.source))
 	}
 
 	private fun getBranchForValue(value: Value?): SemanticModel? {

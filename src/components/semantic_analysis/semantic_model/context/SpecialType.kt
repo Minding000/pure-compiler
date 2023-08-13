@@ -18,7 +18,7 @@ enum class SpecialType(val className: String, val pathParts: List<String> = list
 	NEVER("Never"),
 	NOTHING("Nothing"),
 	ANY("Any");
-	var scope: FileScope? = null
+	var fileScope: FileScope? = null
 
 	companion object {
 		fun isRootType(name: String): Boolean {
@@ -35,6 +35,6 @@ enum class SpecialType(val className: String, val pathParts: List<String> = list
 	fun matches(type: Type?): Boolean {
 		if(type !is ObjectType)
 			return false
-		return type.name == className && type.typeDeclaration?.scope?.enclosingScope == scope
+		return type.name == className && type.typeDeclaration?.scope?.enclosingScope == fileScope
 	}
 }

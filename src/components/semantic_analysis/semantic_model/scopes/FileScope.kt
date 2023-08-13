@@ -1,8 +1,8 @@
 package components.semantic_analysis.semantic_model.scopes
 
-import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
-import logger.issues.definition.Redeclaration
+import logger.issues.declaration.Redeclaration
 
 class FileScope: MutableScope() {
 	private val referencedTypeDeclarations = HashMap<String, TypeDeclaration>()

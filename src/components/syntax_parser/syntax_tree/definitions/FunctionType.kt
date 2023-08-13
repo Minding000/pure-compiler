@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.definitions.FunctionSignature
+import components.semantic_analysis.semantic_model.declarations.FunctionSignature
 import components.semantic_analysis.semantic_model.scopes.BlockScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode

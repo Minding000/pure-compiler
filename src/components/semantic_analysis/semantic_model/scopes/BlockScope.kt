@@ -1,12 +1,12 @@
 package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.semantic_model.control_flow.LoopStatement
-import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
-import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.FunctionImplementation
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
-import logger.issues.definition.Redeclaration
+import logger.issues.declaration.Redeclaration
 
 class BlockScope(private val parentScope: MutableScope): MutableScope() {
 	var semanticModel: SemanticModel? = null

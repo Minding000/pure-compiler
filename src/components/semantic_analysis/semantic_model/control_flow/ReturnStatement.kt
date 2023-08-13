@@ -3,7 +3,7 @@ package components.semantic_analysis.semantic_model.control_flow
 import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.context.VariableTracker
-import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
+import components.semantic_analysis.semantic_model.declarations.FunctionImplementation
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.Value
@@ -14,8 +14,8 @@ import logger.issues.returns.ReturnValueTypeMismatch
 import components.syntax_parser.syntax_tree.control_flow.ReturnStatement as ReturnStatementSyntaxTree
 
 class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Scope, val value: Value?): SemanticModel(source, scope) {
-	var targetFunction: FunctionImplementation? = null
 	override val isInterruptingExecution = true
+	private var targetFunction: FunctionImplementation? = null
 
 	init {
 		addSemanticModels(value)
@@ -23,6 +23,10 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 
 	override fun determineTypes() {
 		super.determineTypes()
+		determineTargetFunction()
+	}
+
+	private fun determineTargetFunction() {
 		val surroundingFunction = scope.getSurroundingFunction()
 		if(surroundingFunction == null) {
 			context.addIssue(ReturnStatementOutsideOfCallable(source))
@@ -30,7 +34,20 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 		}
 		targetFunction = surroundingFunction
 		surroundingFunction.mightReturnValue = true
-		val returnType = surroundingFunction.signature.returnType
+	}
+
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		value?.analyseDataFlow(tracker)
+		tracker.registerReturnStatement()
+	}
+
+	override fun validate() {
+		super.validate()
+		validateReturnType()
+	}
+
+	private fun validateReturnType() {
+		val returnType = targetFunction?.signature?.returnType ?: return
 		if(value == null) {
 			if(!SpecialType.NOTHING.matches(returnType))
 				context.addIssue(ReturnStatementMissingValue(source))
@@ -43,11 +60,6 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 				context.addIssue(ReturnValueTypeMismatch(source))
 			}
 		}
-	}
-
-	override fun analyseDataFlow(tracker: VariableTracker) {
-		value?.analyseDataFlow(tracker)
-		tracker.registerReturnStatement()
 	}
 
 	override fun compile(constructor: LlvmConstructor) {

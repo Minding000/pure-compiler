@@ -4,7 +4,7 @@ import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import components.syntax_parser.syntax_tree.literals.TypeList
-import components.semantic_analysis.semantic_model.definitions.TypeSpecification as SemanticTypeSpecificationModel
+import components.semantic_analysis.semantic_model.declarations.TypeSpecification as SemanticTypeSpecificationModel
 
 class TypeSpecification(private val typeList: TypeList, private val identifier: Identifier): ValueSyntaxTreeNode(typeList.start, identifier.end) {
 

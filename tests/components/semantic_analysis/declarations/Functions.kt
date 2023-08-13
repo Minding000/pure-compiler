@@ -1,10 +1,10 @@
 package components.semantic_analysis.declarations
 
-import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
+import components.semantic_analysis.semantic_model.declarations.FunctionImplementation
 import logger.Severity
-import logger.issues.definition.InvalidVariadicParameterPosition
-import logger.issues.definition.MultipleVariadicParameters
-import logger.issues.definition.Redeclaration
+import logger.issues.declaration.InvalidVariadicParameterPosition
+import logger.issues.declaration.MultipleVariadicParameters
+import logger.issues.declaration.Redeclaration
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertNotNull

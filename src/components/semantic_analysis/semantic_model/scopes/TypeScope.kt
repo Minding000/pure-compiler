@@ -1,6 +1,6 @@
 package components.semantic_analysis.semantic_model.scopes
 
-import components.semantic_analysis.semantic_model.definitions.*
+import components.semantic_analysis.semantic_model.declarations.*
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
@@ -8,7 +8,7 @@ import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import errors.internal.CompilerError
-import logger.issues.definition.*
+import logger.issues.declaration.*
 import java.util.*
 
 class TypeScope(val enclosingScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
@@ -88,7 +88,7 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 
 	fun ensureTrivialInitializers() {
 		for(initializer in initializers) {
-			if(initializer.typeParameters.isNotEmpty())
+			if(initializer.localTypeParameters.isNotEmpty())
 				initializer.context.addIssue(ObjectInitializerTakingTypeParameters(initializer.source))
 			if(initializer.parameters.isNotEmpty())
 				initializer.context.addIssue(ObjectInitializerTakingParameters(initializer.source))

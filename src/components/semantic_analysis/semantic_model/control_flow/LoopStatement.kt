@@ -112,7 +112,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		val elementList = constructor.buildStackAllocation(context.variadicParameterListStruct, "_overGeneratorElementList")
 		constructor.buildFunctionCall(context.llvmVariableParameterIterationStartFunctionType,
 			context.llvmVariableParameterIterationStartFunction, listOf(elementList))
-		val elementType = (generator.collection.type as? PluralType)?.baseType?.getLlvmType(constructor)
+		val elementType = (generator.iterable.type as? PluralType)?.baseType?.getLlvmType(constructor)
 		val indexType = constructor.i32Type
 		val indexLocation = constructor.buildStackAllocation(indexType, "_overGeneratorIndexLocation")
 		constructor.buildStore(constructor.buildInt32(0), indexLocation)

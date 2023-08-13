@@ -2,8 +2,8 @@ package components.semantic_analysis.operations
 
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.control_flow.Try
-import components.semantic_analysis.semantic_model.definitions.Class
-import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.Class
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.operations.Cast
 import components.semantic_analysis.semantic_model.operations.HasValueCheck
 import components.semantic_analysis.semantic_model.operations.MemberAccess

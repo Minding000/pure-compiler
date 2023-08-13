@@ -3,7 +3,7 @@ package components.semantic_analysis.resolution
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.values.SelfReference
 import logger.Severity
-import logger.issues.definition.TypeParameterCountMismatch
+import logger.issues.declaration.TypeParameterCountMismatch
 import logger.issues.resolution.SelfReferenceOutsideOfTypeDefinition
 import logger.issues.resolution.SelfReferenceSpecifierNotBound
 import org.junit.jupiter.api.Test

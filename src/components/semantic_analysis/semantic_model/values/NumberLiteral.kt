@@ -31,14 +31,18 @@ class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value
 	}
 
 	override fun setInferredType(inferredType: Type?) {
-		val inferredBaseType = if(inferredType is OptionalType)
-			inferredType.baseType
-		else
-			inferredType
+		val inferredBaseType = if(inferredType is OptionalType) inferredType.baseType else inferredType
 		if(SpecialType.FLOAT.matches(inferredBaseType)) {
 			type = inferredBaseType
 			isInteger = false
 		}
+	}
+
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		return if(isInteger)
+			constructor.buildInt32(value.longValueExact())
+		else
+			constructor.buildFloat(value.toDouble())
 	}
 
 	override fun hashCode(): Int {
@@ -51,13 +55,6 @@ class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value
 		if(other !is NumberLiteral)
 			return false
 		return value == other.value
-	}
-
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		return if(isInteger)
-			constructor.buildInt32(value.longValueExact())
-		else
-			constructor.buildFloat(value.toDouble())
 	}
 
 	override fun toString(): String {

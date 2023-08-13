@@ -1,12 +1,12 @@
 package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.semantic_model.context.VariableTracker
-import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
-import components.semantic_analysis.semantic_model.definitions.FunctionSignature
+import components.semantic_analysis.semantic_model.declarations.FunctionImplementation
+import components.semantic_analysis.semantic_model.declarations.FunctionSignature
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
-import logger.issues.definition.Redeclaration
+import logger.issues.declaration.Redeclaration
 import java.util.*
 
 open class Function(source: SyntaxTreeNode, scope: Scope, val name: String = "<anonymous function>",
@@ -27,22 +27,14 @@ open class Function(source: SyntaxTreeNode, scope: Scope, val name: String = "<a
 		implementation.setParent(this)
 	}
 
-	fun getImplementationBySignature(signature: FunctionSignature): FunctionImplementation? {
-		for(implementation in implementations) {
-			if(implementation.signature == signature)
-				return implementation
-		}
-		return null
-	}
-
-	override fun determineTypes() {
-		super.determineTypes()
-		ensureUniqueSignatures()
-	}
-
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
 		staticValue = this
+	}
+
+	override fun validate() {
+		super.validate()
+		ensureUniqueSignatures()
 	}
 
 	private fun ensureUniqueSignatures() {
@@ -60,5 +52,13 @@ open class Function(source: SyntaxTreeNode, scope: Scope, val name: String = "<a
 					implementation.source))
 			}
 		}
+	}
+
+	fun getImplementationBySignature(signature: FunctionSignature): FunctionImplementation? {
+		for(implementation in implementations) {
+			if(implementation.signature == signature)
+				return implementation
+		}
+		return null
 	}
 }

@@ -6,7 +6,7 @@ import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import components.tokenizer.WordAtom
-import components.semantic_analysis.semantic_model.definitions.PropertyDeclaration as SemanticPropertyDeclarationModel
+import components.semantic_analysis.semantic_model.declarations.PropertyDeclaration as SemanticPropertyDeclarationModel
 
 class PropertyDeclaration(private val identifier: Identifier, private val type: TypeSyntaxTreeNode?, private val value: ValueSyntaxTreeNode?):
 	VariableSectionSyntaxTreeNode(identifier.start, (value ?: type ?: identifier).end) {

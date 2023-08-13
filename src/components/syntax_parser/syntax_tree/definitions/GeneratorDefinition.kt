@@ -7,7 +7,7 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import source_structure.Position
-import components.semantic_analysis.semantic_model.definitions.GeneratorDefinition as SemanticGeneratorDefinitionModel
+import components.semantic_analysis.semantic_model.declarations.GeneratorDefinition as SemanticGeneratorDefinitionModel
 
 class GeneratorDefinition(start: Position, private val identifier: Identifier, private val parameterList: ParameterList,
 						  private var keyReturnType: TypeSyntaxTreeNode?, private var valueReturnType: TypeSyntaxTreeNode,

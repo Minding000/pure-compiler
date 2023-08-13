@@ -1,7 +1,7 @@
 package components.semantic_analysis.resolution
 
 import components.semantic_analysis.semantic_model.control_flow.FunctionCall
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
+import components.semantic_analysis.semantic_model.declarations.InitializerDefinition
 import components.semantic_analysis.semantic_model.operations.MemberAccess
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.Severity

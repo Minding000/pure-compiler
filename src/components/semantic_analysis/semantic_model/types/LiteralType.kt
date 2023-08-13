@@ -1,7 +1,7 @@
 package components.semantic_analysis.semantic_model.types
 
 import components.semantic_analysis.semantic_model.context.SpecialType
-import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.resolution.LiteralTypeNotFound
@@ -10,7 +10,7 @@ class LiteralType(override val source: SyntaxTreeNode, scope: Scope, val literal
 	ObjectType(source, scope, literalType.className) {
 
 	override fun resolveTypeDeclarations() {
-		typeDeclaration = literalType.scope?.getTypeDeclaration(name)
+		typeDeclaration = literalType.fileScope?.getTypeDeclaration(name)
 		typeDeclaration?.scope?.addSubscriber(this)
 		if(typeDeclaration == null)
 			context.addIssue(LiteralTypeNotFound(source, name))

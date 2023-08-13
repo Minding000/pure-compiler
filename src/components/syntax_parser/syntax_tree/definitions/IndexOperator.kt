@@ -1,7 +1,7 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.definitions.Parameter
-import components.semantic_analysis.semantic_model.definitions.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.Parameter
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 
 class IndexOperator(private val parameterList: ParameterList): Operator(parameterList.start, parameterList.end) {

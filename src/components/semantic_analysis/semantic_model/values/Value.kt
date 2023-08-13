@@ -35,12 +35,6 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 		setEndStates(tracker)
 	}
 
-	override fun validate() {
-		super.validate()
-		if(type == null)
-			context.addIssue(MissingType(source))
-	}
-
 	fun setEndStates(tracker: VariableTracker) {
 		val currentState = tracker.currentState.copy()
 		positiveState = currentState
@@ -71,14 +65,10 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 	fun getComputedValue(): Value? = staticValue
 	open fun getComputedType(): Type? = getComputedValue()?.type ?: type
 
-	override fun hashCode(): Int {
-		return type.hashCode()
-	}
-
-	override fun equals(other: Any?): Boolean {
-		if(other !is Value)
-			return false
-		return type == other.type
+	override fun validate() {
+		super.validate()
+		if(type == null)
+			context.addIssue(MissingType(source))
 	}
 
 	fun getLlvmValue(constructor: LlvmConstructor): LlvmValue {
@@ -92,6 +82,16 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 
 	protected open fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		TODO("${source.getStartString()}: '${javaClass.simpleName}.createLlvmValue' is not implemented yet.")
+	}
+
+	override fun hashCode(): Int {
+		return type.hashCode()
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if(other !is Value)
+			return false
+		return type == other.type
 	}
 
 	override fun toString(): String {

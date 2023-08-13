@@ -3,11 +3,11 @@ package components.semantic_analysis.semantic_model.general
 import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.context.Context
 import components.semantic_analysis.semantic_model.context.VariableTracker
-import components.semantic_analysis.semantic_model.definitions.FunctionImplementation
-import components.semantic_analysis.semantic_model.definitions.InitializerDefinition
+import components.semantic_analysis.semantic_model.declarations.FunctionImplementation
+import components.semantic_analysis.semantic_model.declarations.InitializerDefinition
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
-import logger.issues.definition.DuplicateChildModel
+import logger.issues.declaration.DuplicateChildModel
 import java.util.*
 
 abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Scope) {
@@ -115,6 +115,4 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 			return semanticModel.find(predicate, `class`) ?: continue
 		return null
 	}
-
-//	abstract fun compile(context: BuildContext): Pointer?
 }
