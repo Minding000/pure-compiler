@@ -415,7 +415,7 @@ internal class DataFlowAnalysis {
 	}
 
 	@Test
-	fun `applies hints in boolean expressions`() { //TODO consider this syntax ambiguity
+	fun `applies hints in boolean expressions`() { //TODO consider this syntax ambiguity: Type | value
 		val sourceCode = """
 			var a: Int?
 			(a is Int) | a

@@ -13,12 +13,13 @@ import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
-import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 object TestUtil {
+	const val TEST_PROJECT_NAME = "Test"
+	const val TEST_MODULE_NAME = "Test"
 	const val TEST_FILE_NAME = "Test"
     private val defaultErrorStream = System.err
     private val testErrorStream = ByteArrayOutputStream()
@@ -35,9 +36,9 @@ object TestUtil {
     }
 
 	private fun createTestProject(sourceCode: String, includeRequiredModules: Boolean = false): Project {
-		val project = Project("Test")
-		val testModule = Module(project, "Test")
-		testModule.addFile(LinkedList(), TEST_FILE_NAME, sourceCode)
+		val project = Project(TEST_PROJECT_NAME)
+		val testModule = Module(project, TEST_MODULE_NAME)
+		testModule.addFile(emptyList(), TEST_FILE_NAME, sourceCode)
 		project.addModule(testModule)
 		if(includeRequiredModules)
 			Builder.loadRequiredModules(project)
@@ -64,7 +65,7 @@ object TestUtil {
 
     fun getIntermediateRepresentation(sourceCode: String): String {
 		val lintResult = lint(sourceCode)
-		val program = LlvmProgram("Test")
+		val program = LlvmProgram(TEST_PROJECT_NAME)
 		try {
 			program.loadSemanticModel(lintResult.program)
 			program.verify()
@@ -76,7 +77,7 @@ object TestUtil {
 
     fun run(sourceCode: String, entryPointPath: String, includeRequiredModules: Boolean = false): LlvmGenericValue {
 		val lintResult = lint(sourceCode, includeRequiredModules)
-		val program = LlvmProgram("Test")
+		val program = LlvmProgram(TEST_PROJECT_NAME)
 		try {
 			program.loadSemanticModel(lintResult.program, entryPointPath)
 			program.verify()
