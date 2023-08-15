@@ -1,7 +1,6 @@
 package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.semantic_model.declarations.*
-import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Function
@@ -9,6 +8,7 @@ import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import errors.internal.CompilerError
 import logger.issues.declaration.*
+import logger.issues.modifiers.OverridingFunctionReturnTypeNotAssignable
 import java.util.*
 
 class TypeScope(val enclosingScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
@@ -82,7 +82,29 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 			val superMember = superScope?.getValueDeclaration(interfaceMember.name) ?: continue
 			interfaceMember.superMember = superMember
 			val function = interfaceMember.value as? Function ?: continue
-			function.functionType.superFunctionType = superMember.type as? FunctionType
+			val superFunction = superMember.value as? Function ?: continue
+			function.functionType.superFunctionType = superFunction.functionType
+			for(implementation in function.implementations) {
+				val signature = implementation.signature
+				superSignatureLoop@for(superImplementation in superFunction.implementations) {
+					val superSignature = superImplementation.signature
+					if(signature.parameterTypes.size != superSignature.parameterTypes.size)
+						continue
+					for(parameterIndex in signature.parameterTypes.indices) {
+						val superParameterType = superSignature.parameterTypes[parameterIndex] ?: continue
+						val baseParameterType = signature.parameterTypes[parameterIndex] ?: continue
+						if(!baseParameterType.accepts(superParameterType))
+							continue@superSignatureLoop
+					}
+					if(signature.returnType.isAssignableTo(superSignature.returnType)) {
+						signature.superFunctionSignature = superSignature
+						break
+					} else {
+						signature.context.addIssue(OverridingFunctionReturnTypeNotAssignable(implementation.source, function.memberType,
+							implementation.toString(), superImplementation.toString()))
+					}
+				}
+			}
 		}
 	}
 

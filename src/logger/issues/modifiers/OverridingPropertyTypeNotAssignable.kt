@@ -8,5 +8,5 @@ class OverridingPropertyTypeNotAssignable(overridingType: Type, superType: Type)
 	override val text = "Type of overriding property '$overridingType' is not assignable to" +
 		" the type of the overridden property '$superType'."
 	override val description = "The type of the overriding property is not assignable to the type of the overridden property."
-	override val suggestion = "Change type to be assignable to the super type."
+	override val suggestion = "Change the type to be assignable to the super type."
 }

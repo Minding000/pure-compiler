@@ -134,7 +134,7 @@ object TestUtil {
 		assertEquals(expected, actual)
 	}
 
-    private fun printDiffPosition(expected: String, actual: String) {
+    fun printDiffPosition(expected: String, actual: String) {
         var position = 0
         var line = 1
         var index = 1

@@ -11,21 +11,8 @@ import logger.issues.resolution.LiteralTypeNotFound
 import java.util.*
 
 class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectType(source, scope, SpecialType.FUNCTION.className) {
-	private val signatures = LinkedList<FunctionSignature>()
+	val signatures = LinkedList<FunctionSignature>()
 	var superFunctionType: FunctionType? = null
-		set(value) {
-			field = value
-			value?.let { superFunctionType ->
-				for(signature in signatures) {
-					for(superSignature in superFunctionType.signatures) {
-						if(signature.fulfillsInheritanceRequirementsOf(superSignature)) {
-							signature.superFunctionSignature = superSignature
-							break
-						}
-					}
-				}
-			}
-		}
 
 	constructor(source: SyntaxTreeNode, scope: Scope, signature: FunctionSignature): this(source, scope) {
 		addSignature(signature)

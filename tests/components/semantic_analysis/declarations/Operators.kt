@@ -1,10 +1,14 @@
 package components.semantic_analysis.declarations
 
+import components.semantic_analysis.semantic_model.declarations.FunctionImplementation
 import logger.Severity
 import logger.issues.declaration.Redeclaration
 import logger.issues.declaration.VariadicParameterInOperator
+import logger.issues.modifiers.OverridingFunctionReturnTypeNotAssignable
 import org.junit.jupiter.api.Test
 import util.TestUtil
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 internal class Operators {
 
@@ -52,5 +56,27 @@ internal class Operators {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<VariadicParameterInOperator>("Variadic parameter in operator definition.",
 			Severity.ERROR)
+	}
+
+	@Test
+	fun `detects link from operator to super operator with different return type`() {
+		val sourceCode =
+			"""
+				Int class
+				Float class
+				House class {
+					operator[a: Int]: Int
+				}
+				WoodenHouse class: House {
+					overriding operator[a: Int]: Float
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val operator = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
+		assertNotNull(operator)
+		assertNull(operator.signature.superFunctionSignature)
+		lintResult.assertIssueDetected<OverridingFunctionReturnTypeNotAssignable>(
+			"Return type of overriding operator 'WoodenHouse[Int]: Float' is not assignable to " +
+				"the return type of the overridden operator 'House[Int]: Int'.", Severity.ERROR)
 	}
 }

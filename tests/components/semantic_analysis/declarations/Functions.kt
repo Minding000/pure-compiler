@@ -5,6 +5,7 @@ import logger.Severity
 import logger.issues.declaration.InvalidVariadicParameterPosition
 import logger.issues.declaration.MultipleVariadicParameters
 import logger.issues.declaration.Redeclaration
+import logger.issues.modifiers.OverridingFunctionReturnTypeNotAssignable
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertNotNull
@@ -172,6 +173,28 @@ internal class Functions {
 		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
 		assertNotNull(function)
 		assertNull(function.signature.superFunctionSignature)
+	}
+
+	@Test
+	fun `detects link from function to super function with different return type`() {
+		val sourceCode =
+			"""
+				Int class
+				Float class
+				House class {
+					to build(a: Int): Int
+				}
+				WoodenHouse class: House {
+					overriding to build(a: Int): Float
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
+		assertNotNull(function)
+		assertNull(function.signature.superFunctionSignature)
+		lintResult.assertIssueDetected<OverridingFunctionReturnTypeNotAssignable>(
+			"Return type of overriding function 'WoodenHouse.build(Int): Float' is not assignable to " +
+				"the return type of the overridden function 'House.build(Int): Int'.", Severity.ERROR)
 	}
 
 	@Test

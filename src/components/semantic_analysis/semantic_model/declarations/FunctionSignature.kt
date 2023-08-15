@@ -118,20 +118,6 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		return false
 	}
 
-	fun fulfillsInheritanceRequirementsOf(superSignature: FunctionSignature): Boolean {
-		if(!returnType.isAssignableTo(superSignature.returnType))
-			return false
-		if(parameterTypes.size != superSignature.parameterTypes.size)
-			return false
-		for(parameterIndex in parameterTypes.indices) {
-			val superParameterType = superSignature.parameterTypes[parameterIndex] ?: continue
-			val baseParameterType = parameterTypes[parameterIndex] ?: continue
-			if(!baseParameterType.accepts(superParameterType))
-				return false
-		}
-		return true
-	}
-
 	fun hasSameParameterTypesAs(otherSignature: FunctionSignature): Boolean {
 		if(parameterTypes.size != otherSignature.parameterTypes.size)
 			return false

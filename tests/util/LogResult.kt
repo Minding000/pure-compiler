@@ -37,9 +37,12 @@ open class LogResult(val logger: Logger) {
 				if(detectedLineNumber != null)
 					throw AssertionError("Issue '${I::class.simpleName}' is in line '${detectedLineNumber}'" +
 						" instead of expected line number '$expectedLineNumber'.")
-				if(detectedText != null)
+				if(detectedText != null) {
+					if(expectedText != null)
+						TestUtil.printDiffPosition(expectedText, detectedText)
 					throw AssertionError("Issue '${I::class.simpleName}' has text '${detectedText}'" +
 						" instead of expected text '$expectedText'.")
+				}
 				throw AssertionError("Expected issue '${I::class.simpleName}' hasn't been detected.")
 			}
 			1 -> return
