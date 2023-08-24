@@ -11,8 +11,8 @@ import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDe
 
 class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?,
 			superType: Type?, members: List<SemanticModel>, val isAbstract: Boolean, isBound: Boolean, val isNative: Boolean,
-			val isMutable: Boolean, isSpecificCopy: Boolean = false):
-	TypeDeclaration(source, name, scope, explicitParentType, superType, members, isBound, isSpecificCopy) {
+			val isMutable: Boolean):
+	TypeDeclaration(source, name, scope, explicitParentType, superType, members, isBound) {
 
 	init {
 		scope.typeDeclaration = this
@@ -32,13 +32,6 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 		super.declare()
 		val targetScope = parentTypeDeclaration?.scope ?: scope.enclosingScope
 		targetScope.addTypeDeclaration(this)
-	}
-
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Class {
-		determineTypes()
-		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
-		return Class(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.interfaceScope), explicitParentType,
-			superType, members, isAbstract, isBound, isNative, isMutable, true)
 	}
 
 	override fun validate() {

@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
+import components.semantic_analysis.semantic_model.declarations.GenericTypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.MetaSyntaxTreeNode
 import source_structure.Position
@@ -16,10 +16,10 @@ class ParameterList(start: Position, end: Position, private val genericParameter
 	val containsParameters: Boolean
 		get() = parameters.isNotEmpty()
 
-	fun getSemanticGenericParameterModels(scope: MutableScope): List<TypeDeclaration>? {
+	fun getSemanticGenericParameterModels(scope: MutableScope): List<GenericTypeDeclaration>? {
 		if(genericParameters == null)
 			return null
-		val genericTypeDeclarations = LinkedList<TypeDeclaration>()
+		val genericTypeDeclarations = LinkedList<GenericTypeDeclaration>()
 		for(genericParameter in genericParameters)
 			genericTypeDeclarations.add(genericParameter.toSemanticGenericParameterModel(scope))
 		return genericTypeDeclarations

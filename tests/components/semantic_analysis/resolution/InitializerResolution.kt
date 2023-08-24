@@ -102,7 +102,7 @@ internal class InitializerResolution {
 		lintResult.assertIssueDetected<SignatureAmbiguity>("""
 			Call to initializer '<Int>List(Int)' is ambiguous. Matching signatures:
 			 - '<Element>List(Int)' declared at Test.Test:5:1
-			 - '<Element>List(Int)' declared at Test.Test:6:1
+			 - '<Element>List(Element)' declared at Test.Test:6:1
 		""".trimIndent(), Severity.ERROR)
 	}
 

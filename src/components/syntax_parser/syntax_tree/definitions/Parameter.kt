@@ -2,7 +2,6 @@ package components.syntax_parser.syntax_tree.definitions
 
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.declarations.GenericTypeDeclaration
-import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.MutableScope
 import components.semantic_analysis.semantic_model.scopes.TypeScope
 import components.semantic_analysis.semantic_model.types.LiteralType
@@ -26,7 +25,7 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
         return SemanticParameterModel(this, scope, identifier.getValue(), type?.toSemanticModel(scope), isMutable, isVariadic)
     }
 
-	fun toSemanticGenericParameterModel(scope: MutableScope): TypeDeclaration {
+	fun toSemanticGenericParameterModel(scope: MutableScope): GenericTypeDeclaration {
 		val superType = type?.toSemanticModel(scope) ?: LiteralType(this, scope, SpecialType.ANY)
 		val typeScope = TypeScope(scope, superType.interfaceScope)
 		return GenericTypeDeclaration(this, identifier.getValue(), typeScope, superType)

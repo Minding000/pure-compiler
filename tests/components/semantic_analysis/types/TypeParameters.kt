@@ -30,7 +30,7 @@ internal class TypeParameters {
 		val baseTypeVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "trash" }
 		val specificType = lintResult.find<VariableValue> { variableValue ->
 			variableValue.name == "recyclingBin" }?.type
-		val functionType = specificType?.interfaceScope?.getValueDeclaration("put")?.type as? FunctionType
+		val functionType = specificType?.interfaceScope?.getValueDeclaration("put")?.second as? FunctionType
 		assertNotNull(functionType)
 		assertNotNull(baseTypeVariable)
 		val signature = functionType.getSignature(listOf(baseTypeVariable))
@@ -55,7 +55,7 @@ internal class TypeParameters {
 		val baseTypeVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrink" }
 		val specificType = lintResult.find<VariableValue> { variableValue ->
 			variableValue.name == "softDrinkSupply" }?.type
-		val functionType = specificType?.interfaceScope?.getValueDeclaration("store")?.type as? FunctionType
+		val functionType = specificType?.interfaceScope?.getValueDeclaration("store")?.second as? FunctionType
 		assertNotNull(functionType)
 		assertNotNull(baseTypeVariable)
 		val signature = functionType.getSignature(listOf(baseTypeVariable))
@@ -82,7 +82,7 @@ internal class TypeParameters {
 			variableValueDeclaration.name == "softDrink" }?.type
 		val specificType = lintResult.find<VariableValue> { variableValue ->
 			variableValue.name == "softDrinkDestination" }?.type
-		val functionType = specificType?.interfaceScope?.getValueDeclaration("get")?.type as? FunctionType
+		val functionType = specificType?.interfaceScope?.getValueDeclaration("get")?.second as? FunctionType
 		val anyType = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.type.toString() == "Any" }?.type
 		assertNotNull(functionType)
@@ -112,7 +112,7 @@ internal class TypeParameters {
 			variableValueDeclaration.name == "softDrink" }?.type
 		val specificType = lintResult.find<VariableValue> { variableValue ->
 			variableValue.name == "softDrinkSupply" }?.type
-		val functionType = specificType?.interfaceScope?.getValueDeclaration("get")?.type as? FunctionType
+		val functionType = specificType?.interfaceScope?.getValueDeclaration("get")?.second as? FunctionType
 		assertNotNull(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)

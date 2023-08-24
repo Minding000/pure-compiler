@@ -18,12 +18,11 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.declaration.CircularInheritance
 import logger.issues.declaration.ExplicitParentOnScopedTypeDefinition
 import logger.issues.modifiers.NoParentToBindTo
-import util.linkedListOf
 import java.util.*
 
 abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: String, override val scope: TypeScope,
 							   val explicitParentType: ObjectType? = null, val superType: Type? = null, val members: List<SemanticModel> = emptyList(),
-							   val isBound: Boolean = false, val isSpecificCopy: Boolean = false): SemanticModel(source, scope) {
+							   val isBound: Boolean = false): SemanticModel(source, scope) {
 	protected open val isDefinition = true
 	override var parent: SemanticModel?
 		get() = super.parent
@@ -33,12 +32,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		}
 	var parentTypeDeclaration: TypeDeclaration? = null
 	private var hasCircularInheritance = false
-	var hasDeterminedTypes = isSpecificCopy
-	// Only used in base definition
-	private val specificTypeDeclarations = HashMap<Map<TypeDeclaration, Type>, TypeDeclaration>()
-	private val pendingTypeSubstitutions = HashMap<Map<TypeDeclaration, Type>, LinkedList<(TypeDeclaration) -> Unit>>()
-	// Only used in specific definition
-	var baseTypeDeclaration: TypeDeclaration? = null
+	var hasDeterminedTypes = false
 	lateinit var staticValueDeclaration: ValueDeclaration
 	lateinit var properties: List<ValueDeclaration>
 	lateinit var llvmType: LlvmType
@@ -53,49 +47,6 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		for(member in members) {
 			if(member is InterfaceMember)
 				member.parentTypeDeclaration = this
-		}
-	}
-
-	protected abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): TypeDeclaration
-
-	fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>, onCompletion: (TypeDeclaration) -> Unit) {
-		var specificTypeDeclaration = specificTypeDeclarations[typeSubstitutions]
-		if(specificTypeDeclaration != null) {
-			onCompletion(specificTypeDeclaration)
-			return
-		}
-		var pendingTypeSubstitution = pendingTypeSubstitutions[typeSubstitutions]
-		if(pendingTypeSubstitution != null) {
-			pendingTypeSubstitution.add(onCompletion)
-			return
-		}
-		pendingTypeSubstitution = linkedListOf(onCompletion)
-		pendingTypeSubstitutions[typeSubstitutions] = pendingTypeSubstitution
-		specificTypeDeclaration = withTypeSubstitutions(typeSubstitutions)
-		specificTypeDeclarations[typeSubstitutions] = specificTypeDeclaration
-		for(onTypeSubstitution in pendingTypeSubstitution)
-			onTypeSubstitution(specificTypeDeclaration)
-		pendingTypeSubstitutions.remove(typeSubstitutions)
-	}
-
-	fun withTypeParameters(typeParameters: List<Type>, onCompletion: (TypeDeclaration) -> Unit) =
-		withTypeParameters(typeParameters, HashMap<TypeDeclaration, Type>(), onCompletion)
-
-	fun withTypeParameters(typeParameters: List<Type>, typeSubstitutions: Map<TypeDeclaration, Type>,
-						   onCompletion: (TypeDeclaration) -> Unit) {
-		baseTypeDeclaration?.let { baseDefinition ->
-			return baseDefinition.withTypeParameters(typeParameters, typeSubstitutions, onCompletion)
-		}
-		val resolvedTypeSubstitutions = typeSubstitutions.toMutableMap()
-		val placeholders = scope.getGenericTypeDeclarations()
-		for(parameterIndex in placeholders.indices) {
-			val placeholder = placeholders[parameterIndex]
-			val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
-			resolvedTypeSubstitutions[placeholder] = typeParameter
-		}
-		withTypeSubstitutions(resolvedTypeSubstitutions) { specificTypeDeclaration ->
-			specificTypeDeclaration.baseTypeDeclaration = this
-			onCompletion(specificTypeDeclaration)
 		}
 	}
 

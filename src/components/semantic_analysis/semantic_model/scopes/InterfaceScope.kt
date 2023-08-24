@@ -54,8 +54,9 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 		return typeDeclarations[name]
 	}
 
-	override fun getValueDeclaration(name: String): InterfaceMember? {
-		return interfaceMembers[name]
+	override fun getValueDeclaration(name: String): Pair<InterfaceMember?, Type?> {
+		val interfaceMember = interfaceMembers[name]
+		return Pair(interfaceMember, interfaceMember?.type)
 	}
 
 	fun getSuperInitializer(subInitializer: InitializerDefinition): InitializerDefinition? {

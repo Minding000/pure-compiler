@@ -64,23 +64,23 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 			return
 		}
 		try {
-			val iteratorCreationProperty = iterableType.interfaceScope.getValueDeclaration("createIterator")
-			val iteratorCreationFunctionType = iteratorCreationProperty?.type as? FunctionType
+			val (_, iteratorCreationPropertyType) = iterableType.interfaceScope.getValueDeclaration("createIterator")
+			val iteratorCreationFunctionType = iteratorCreationPropertyType as? FunctionType
 			val iteratorCreationSignature = iteratorCreationFunctionType?.getSignature()
 			val iteratorType = iteratorCreationSignature?.getComputedReturnType() ?: return
 			iteratorVariableDeclaration?.type = iteratorType
 			val availableValueTypes = LinkedList<Type?>()
 			if(iteratorType.isInstanceOf(SpecialType.INDEX_ITERATOR)) {
-				val indexProperty = iteratorType.interfaceScope.getValueDeclaration("currentIndex")
-				availableValueTypes.add(indexProperty?.getLinkedType())
+				val (_, indexPropertyType) = iteratorType.interfaceScope.getValueDeclaration("currentIndex")
+				availableValueTypes.add(indexPropertyType)
 			}
 			if(iteratorType.isInstanceOf(SpecialType.KEY_ITERATOR)) {
-				val keyProperty = iteratorType.interfaceScope.getValueDeclaration("currentKey")
-				availableValueTypes.add(keyProperty?.getLinkedType())
+				val (_, keyPropertyType) = iteratorType.interfaceScope.getValueDeclaration("currentKey")
+				availableValueTypes.add(keyPropertyType)
 			}
 			if(iteratorType.isInstanceOf(SpecialType.VALUE_ITERATOR)) {
-				val valueProperty = iteratorType.interfaceScope.getValueDeclaration("currentValue")
-				availableValueTypes.add(valueProperty?.getLinkedType())
+				val (_, valuePropertyType) = iteratorType.interfaceScope.getValueDeclaration("currentValue")
+				availableValueTypes.add(valuePropertyType)
 			}
 			if(variableDeclarations.size > availableValueTypes.size) {
 				context.addIssue(TooManyIterableVariableDeclarations(source, variableDeclarations, availableValueTypes))

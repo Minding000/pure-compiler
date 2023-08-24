@@ -12,15 +12,11 @@ import kotlin.properties.Delegates
 import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
 class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, name: String, type: Type?, isMutable: Boolean,
-				val isVariadic: Boolean, isSpecificCopy: Boolean = false):
-	ValueDeclaration(source, scope, name, type, null, true, isMutable, isSpecificCopy) {
+				val isVariadic: Boolean):
+	ValueDeclaration(source, scope, name, type, null, true, isMutable) {
 	val isPropertySetter = type == null
 	var propertyDeclaration: ValueDeclaration? = null
 	var index by Delegates.notNull<Int>()
-
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Parameter {
-		return Parameter(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), isMutable, isVariadic)
-	}
 
 	override fun declare() {
 		if(type != null)
@@ -31,12 +27,11 @@ class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, n
 		if(isPropertySetter) {
 			val parent = parent
 			if(parent is InitializerDefinition) {
-				propertyDeclaration = parent.parentTypeDeclaration.scope.getValueDeclaration(name)
-				if(propertyDeclaration == null) {
+				val (propertyDeclaration, type) = parent.parentTypeDeclaration.scope.getValueDeclaration(name)
+				this.propertyDeclaration = propertyDeclaration
+				this.type = type
+				if(propertyDeclaration == null)
 					context.addIssue(PropertyParameterMismatch(source))
-				} else {
-					type = propertyDeclaration?.getLinkedType()
-				}
 			} else {
 				context.addIssue(PropertyParameterOutsideOfInitializer(source))
 			}

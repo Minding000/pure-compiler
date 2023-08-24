@@ -24,7 +24,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 
 	override fun determineTypes() {
 		super.determineTypes()
-		val valueDeclaration = scope.getValueDeclaration(this)
+		val (valueDeclaration, type) = scope.getValueDeclaration(this)
 		if(valueDeclaration == null) {
 			context.addIssue(NotFound(source, "Value", name))
 			return
@@ -40,7 +40,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		}
 		valueDeclaration.usages.add(this)
 		this.declaration = valueDeclaration
-		type = valueDeclaration.getLinkedType()
+		this.type = type
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

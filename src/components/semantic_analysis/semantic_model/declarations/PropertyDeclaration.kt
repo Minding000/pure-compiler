@@ -12,13 +12,8 @@ import logger.issues.modifiers.VariablePropertyOverriddenByValue
 
 open class PropertyDeclaration(source: SyntaxTreeNode, scope: MutableScope, name: String, type: Type? = null, value: Value? = null,
 							   isStatic: Boolean = false, isAbstract: Boolean = false, isConstant: Boolean = true,
-							   isMutable: Boolean = false, isOverriding: Boolean = false, isSpecificCopy: Boolean = false):
-	InterfaceMember(source, scope, name, type, value, isStatic, isAbstract, isConstant, isMutable, isOverriding, isSpecificCopy) {
-
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): PropertyDeclaration {
-		return PropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), value, isStatic, isAbstract,
-			isConstant, isMutable, isOverriding, true)
-	}
+							   isMutable: Boolean = false, isOverriding: Boolean = false):
+	InterfaceMember(source, scope, name, type, value, isStatic, isAbstract, isConstant, isMutable, isOverriding) {
 
 	override fun determineTypes() {
 		if(!context.declarationStack.push(this))

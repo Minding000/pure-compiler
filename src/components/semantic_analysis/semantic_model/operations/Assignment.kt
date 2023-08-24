@@ -109,7 +109,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		val indexTarget = indexAccess.target
 		val targetValue = indexTarget.getLlvmValue(constructor)
 		val indexOperatorAddress = if(indexTarget is SuperReference) {
-			val operator = indexAccess.target.type?.interfaceScope?.getValueDeclaration(Operator.Kind.BRACKETS_SET.stringRepresentation)
+			val operator = indexAccess.target.type?.interfaceScope?.getValueDeclaration(Operator.Kind.BRACKETS_SET.stringRepresentation)?.first
 			val implementation = (operator?.value as? Operator)?.getImplementationBySignature(signature)
 				?: throw CompilerError(source, "Failed to determine address of super index operator.")
 			implementation.llvmValue

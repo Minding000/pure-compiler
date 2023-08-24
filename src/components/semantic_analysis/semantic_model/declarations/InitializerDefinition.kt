@@ -77,7 +77,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		return globalTypeSubstitutions
 	}
 
-	fun getLocalTypeSubstitutions(suppliedLocalTypes: List<Type>, suppliedValues: List<Value>): Map<TypeDeclaration, Type>? {
+	fun getLocalTypeSubstitutions(globalTypeSubstitutions: Map<TypeDeclaration, Type>, suppliedLocalTypes: List<Type>,
+								  suppliedValues: List<Value>): Map<TypeDeclaration, Type>? {
 		assert(suppliedValues.size >= fixedParameters.size)
 
 		if(suppliedLocalTypes.size > localTypeParameters.size)
@@ -108,29 +109,16 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		return inferredTypes.combine(this)
 	}
 
-	fun withTypeSubstitutions(typeSubstitution: Map<TypeDeclaration, Type>): InitializerDefinition {
-		val specificLocalTypeParameters = LinkedList<TypeDeclaration>()
-		for(localTypeParameter in localTypeParameters) {
-			localTypeParameter.withTypeSubstitutions(typeSubstitution) { specificTypeDeclaration ->
-				specificLocalTypeParameters.add(specificTypeDeclaration)
-			}
-		}
-		val specificParameters = LinkedList<Parameter>()
-		for(parameter in parameters)
-			specificParameters.add(parameter.withTypeSubstitutions(typeSubstitution))
-		val initializerDefinition = InitializerDefinition(source, scope, specificLocalTypeParameters, specificParameters, body, isAbstract,
-			isConverting, isNative, isOverriding)
-		initializerDefinition.parentTypeDeclaration = parentTypeDeclaration
-		return initializerDefinition
-	}
-
 	//TODO support labeled input values (same for functions)
 	// -> make sure they are passed in the correct order (LLVM side)
-	fun accepts(suppliedValues: List<Value>): Boolean {
+	fun accepts(globalTypeSubstitutions: Map<TypeDeclaration, Type>, localTypeSubstitutions: Map<TypeDeclaration, Type>,
+				suppliedValues: List<Value>): Boolean {
 		assert(suppliedValues.size >= fixedParameters.size)
 
 		for(parameterIndex in suppliedValues.indices) {
 			val parameterType = getParameterTypeAt(parameterIndex)
+				?.withTypeSubstitutions(localTypeSubstitutions)
+				?.withTypeSubstitutions(globalTypeSubstitutions)
 			if(!suppliedValues[parameterIndex].isAssignableTo(parameterType))
 				return false
 		}

@@ -23,7 +23,7 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, scope:
 			context.addIssue(TypeSpecificationOutsideOfInitializerCall(source))
 			return
 		}
-		baseType.withTypeParameters(globalTypes) { specificType -> type = specificType }
+		type = baseType //TODO actually return <TypeParameters>StaticType here (similar to how ObjectTypes handle type parameters)
 	}
 
 	override fun toString(): String {

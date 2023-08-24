@@ -33,19 +33,10 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 		val substituteType = typeSubstitutions[typeDeclaration]
 		if(substituteType != null)
 			return substituteType
-		val isBound = typeDeclaration?.isBound == true
-		if(!isBound && typeParameters.isEmpty())
+		if(typeParameters.isEmpty())
 			return this
 		val specificTypeParameters = typeParameters.map { typeParameter -> typeParameter.withTypeSubstitutions(typeSubstitutions) }
-		//TODO this might be nicer if it was written with a return in the callback
-		// -> withTypeParameter needs to have inline modifier
-		val specificType = ObjectType(source, scope, enclosingType, specificTypeParameters, name)
-		val effectiveTypeSubstitutions = if(isBound) typeSubstitutions else emptyMap()
-		typeDeclaration?.withTypeParameters(specificTypeParameters, effectiveTypeSubstitutions) { specificTypeDeclaration ->
-			specificType.typeDeclaration = specificTypeDeclaration
-			specificTypeDeclaration.scope.addSubscriber(specificType)
-		}
-		return specificType
+		return ObjectType(source, scope, enclosingType, specificTypeParameters, name)
 	}
 
 	override fun simplified(): ObjectType {
@@ -91,12 +82,6 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 			if(typeDeclaration?.isBound != true)
 				enclosingType?.setIsNonSpecificContext()
 		}
-		if(typeParameters.isNotEmpty()) {
-			typeDeclaration?.withTypeParameters(typeParameters) { specificTypeDeclaration ->
-				typeDeclaration = specificTypeDeclaration
-			}
-		}
-		//TODO ask the definition to resolve all its member signatures
 		typeDeclaration?.scope?.addSubscriber(this)
 		val typeDeclaration = typeDeclaration
 		if(typeDeclaration is TypeAlias)
@@ -111,18 +96,17 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, val enc
 
 	//TODO 'specific' naming is unclear
 	private fun ensureSpecificDeclaration() {
-		(typeDeclaration?.baseTypeDeclaration ?: typeDeclaration)?.let { typeDeclaration ->
-			val genericTypes = typeDeclaration.scope.getGenericTypeDeclarations()
-			if(typeParameters.size != genericTypes.size)
-				context.addIssue(TypeParameterCountMismatch(source, typeParameters, genericTypes))
-			if(typeParameters.isEmpty())
-				return
-			for(parameterIndex in genericTypes.indices) {
-				val genericType = genericTypes[parameterIndex]
-				val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
-				if(!genericType.acceptsSubstituteType(typeParameter))
-					context.addIssue(TypeParameterNotAssignable(source, typeParameter, genericType))
-			}
+		val typeDeclaration = typeDeclaration ?: return
+		val genericTypes = typeDeclaration.scope.getGenericTypeDeclarations()
+		if(typeParameters.size != genericTypes.size)
+			context.addIssue(TypeParameterCountMismatch(source, typeParameters, genericTypes))
+		if(typeParameters.isEmpty())
+			return
+		for(parameterIndex in genericTypes.indices) {
+			val genericType = genericTypes[parameterIndex]
+			val typeParameter = typeParameters.getOrNull(parameterIndex) ?: break
+			if(!genericType.acceptsSubstituteType(typeParameter))
+				context.addIssue(TypeParameterNotAssignable(source, typeParameter, genericType))
 		}
 	}
 

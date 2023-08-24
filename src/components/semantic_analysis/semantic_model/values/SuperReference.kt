@@ -66,8 +66,6 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 			return false
 		if(superType.typeDeclaration == specifierDefinition)
 			return true
-		if(superType.typeDeclaration?.baseTypeDeclaration == specifierDefinition)
-			return true
 		return false
 	}
 

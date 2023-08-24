@@ -10,8 +10,8 @@ import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?, superType: Type?,
-		   members: List<SemanticModel>, isBound: Boolean, isSpecificCopy: Boolean = false):
-	TypeDeclaration(source, name, scope, explicitParentType, superType, members, isBound, isSpecificCopy) {
+		   members: List<SemanticModel>, isBound: Boolean):
+	TypeDeclaration(source, name, scope, explicitParentType, superType, members, isBound) {
 
 	init {
 		scope.typeDeclaration = this
@@ -31,12 +31,5 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 		super.declare()
 		val targetScope = parentTypeDeclaration?.scope ?: scope.enclosingScope
 		targetScope.addTypeDeclaration(this)
-	}
-
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Enum {
-		determineTypes()
-		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
-		return Enum(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.interfaceScope), explicitParentType, superType,
-			members, isBound, true)
 	}
 }

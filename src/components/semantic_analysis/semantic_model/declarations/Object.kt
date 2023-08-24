@@ -36,10 +36,6 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 		targetScope.addTypeDeclaration(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Object {
-		return this //TODO What about bound objects?
-	}
-
 	override fun validate() {
 		super.validate()
 		scope.ensureTrivialInitializers()

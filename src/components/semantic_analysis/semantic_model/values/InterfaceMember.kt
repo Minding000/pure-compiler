@@ -12,14 +12,12 @@ import logger.issues.modifiers.OverriddenSuperMissing
 // Only Property and Instance inherit from InterfaceMember
 abstract class InterfaceMember(source: SyntaxTreeNode, scope: MutableScope, name: String, type: Type? = null, value: Value? = null,
 							   val isStatic: Boolean = false, override val isAbstract: Boolean = false, isConstant: Boolean = true,
-							   isMutable: Boolean = false, val isOverriding: Boolean = false, isSpecificCopy: Boolean = false):
-	ValueDeclaration(source, scope, name, type, value, isConstant, isMutable, isSpecificCopy), MemberDeclaration {
+							   isMutable: Boolean = false, val isOverriding: Boolean = false):
+	ValueDeclaration(source, scope, name, type, value, isConstant, isMutable), MemberDeclaration {
 	override lateinit var parentTypeDeclaration: TypeDeclaration
 	override val memberIdentifier
 		get() = "$name${if(type == null) "" else ": $type"}"
 	var superMember: InterfaceMember? = null
-
-	abstract override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): InterfaceMember
 
 	override fun validate() {
 		super.validate()

@@ -5,9 +5,8 @@ import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.definitions.TypeAlias as TypeAliasSyntaxTree
 
-class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val referenceType: Type, scope: TypeScope,
-				isSpecificCopy: Boolean = false):
-	TypeDeclaration(source, name, scope, null, null, emptyList(), false, isSpecificCopy) {
+class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val referenceType: Type, scope: TypeScope):
+	TypeDeclaration(source, name, scope, null, null, emptyList(), false) {
 	override val isDefinition = false
 	private var hasDeterminedEffectiveType = false
 	private var effectiveType = referenceType
@@ -15,11 +14,6 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val refe
 	init {
 		scope.typeDeclaration = this
 		addSemanticModels(referenceType)
-	}
-
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): TypeAlias {
-		return TypeAlias(source, name, referenceType.withTypeSubstitutions(typeSubstitutions),
-			scope.withTypeSubstitutions(typeSubstitutions, null), true)
 	}
 
 	fun getEffectiveType(): Type {

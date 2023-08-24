@@ -50,8 +50,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			if(`class`.isAbstract)
 				context.addIssue(AbstractClassInstantiation(source, `class`))
 		}
-		val baseTypeDeclaration = targetType.getBaseTypeDeclaration()
-		val globalTypeParameters = baseTypeDeclaration.scope.getGenericTypeDeclarations()
+		val globalTypeParameters = targetType.typeDeclaration.scope.getGenericTypeDeclarations()
 		val suppliedGlobalTypes = (function as? TypeSpecification)?.globalTypes ?: emptyList()
 		try {
 			val match = targetType.getInitializer(globalTypeParameters, suppliedGlobalTypes, typeParameters, valueParameters)
@@ -59,7 +58,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				context.addIssue(NotFound(source, "Initializer", getSignature()))
 				return
 			}
-			val type = ObjectType(match.globalTypeSubstitutions.values.toList(), baseTypeDeclaration)
+			val type = ObjectType(match.globalTypeSubstitutions.values.toList(), targetType.typeDeclaration)
 			type.determineTypes()
 			addSemanticModels(type)
 			this.type = type
@@ -146,10 +145,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			} else {
 				val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(typeDefinition.llvmType, targetValue,
 					Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-				val classDefinitionAddress = constructor.buildLoad(
-					constructor.pointerType,
-					classDefinitionAddressLocation, "classDefinitionAddress"
-				)
+				val classDefinitionAddress = constructor.buildLoad(constructor.pointerType,classDefinitionAddressLocation,
+					"classDefinitionAddress")
 				val functionName = (((function as? MemberAccess)?.member ?: function) as? VariableValue)?.name
 					?: throw CompilerError(source, "Failed to determine name of member function.")
 				val id = context.memberIdentities.getId("${functionName}${signature.toString(false)}")

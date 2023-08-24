@@ -348,14 +348,18 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 				throw UserError("Object '$objectName' is bound.")
 			scope = objectDefinition.scope
 		}
-		val functionVariable = scope.getValueDeclaration(functionName) ?: throw UserError("Function '$functionName' not found.")
+		val (functionVariable) = scope.getValueDeclaration(functionName)
+		if(functionVariable == null)
+			throw UserError("Function '$functionName' not found.")
 		val function = functionVariable.value as? Function ?: throw UserError("Variable '$functionName' is not a function.")
 		val functionImplementation = function.implementations.find { functionImplementation ->
 			!functionImplementation.signature.requiresParameters() }
 			?: throw UserError("Function '$functionName' has no overload without parameters.")
 		var objectValue: ValueDeclaration? = null
-		if(objectDefinition != null)
-			objectValue = (objectDefinition.parentTypeDeclaration?.scope ?: objectDefinition.scope).getValueDeclaration(objectDefinition.name)
+		if(objectDefinition != null) {
+			val (objectDeclaration) = (objectDefinition.parentTypeDeclaration?.scope ?: objectDefinition.scope).getValueDeclaration(objectDefinition.name)
+			objectValue = objectDeclaration
+		}
 		return Pair(objectValue, functionImplementation)
 	}
 }

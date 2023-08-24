@@ -19,30 +19,6 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 	val initializers = LinkedList<InitializerDefinition>()
 	private val subscribedTypes = LinkedList<Type>()
 
-	fun withTypeSubstitutions(typeSubstitution: Map<TypeDeclaration, Type>, superScope: InterfaceScope?): TypeScope {
-		val specificTypeScope = TypeScope(enclosingScope, superScope)
-		for((name, typeDeclaration) in typeDeclarations) {
-			if(typeDeclaration is GenericTypeDeclaration)
-				continue
-			if(typeDeclaration.isBound) {
-				typeDeclaration.withTypeSubstitutions(typeSubstitution) { specificDefinition ->
-					specificTypeScope.typeDeclarations[name] = specificDefinition
-				}
-			} else {
-				specificTypeScope.typeDeclarations[name] = typeDeclaration
-			}
-		}
-		for((name, interfaceMember) in interfaceMembers) {
-			specificTypeScope.interfaceMembers[name] = if(interfaceMember.isStatic)
-				interfaceMember
-			else
-				interfaceMember.withTypeSubstitutions(typeSubstitution)
-		}
-		for(initializer in initializers)
-			specificTypeScope.initializers.add(initializer.withTypeSubstitutions(typeSubstitution))
-		return specificTypeScope
-	}
-
 	fun addSubscriber(type: Type) {
 		subscribedTypes.add(type)
 		for((_, typeDeclaration) in typeDeclarations)
@@ -79,7 +55,7 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 		for(initializer in initializers)
 			initializer.superInitializer = superScope?.getSuperInitializer(initializer)
 		for((_, interfaceMember) in interfaceMembers) {
-			val superMember = superScope?.getValueDeclaration(interfaceMember.name) ?: continue
+			val superMember = superScope?.getValueDeclaration(interfaceMember.name)?.first ?: continue
 			interfaceMember.superMember = superMember
 			val function = interfaceMember.value as? Function ?: continue
 			val superFunction = superMember.value as? Function ?: continue
@@ -191,12 +167,14 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 		if(newValueDeclaration !is InterfaceMember)
 			throw CompilerError(newValueDeclaration.source,
 				"Tried to declare non-member of type '${newValueDeclaration.javaClass.simpleName}' in type scope.")
-		var existingValueDeclaration = enclosingScope.getValueDeclaration(newValueDeclaration.name)
+		var (existingValueDeclaration) = enclosingScope.getValueDeclaration(newValueDeclaration.name)
 		if(existingValueDeclaration != null)
 			newValueDeclaration.context.addIssue(ShadowsElement(newValueDeclaration.source, "member", newValueDeclaration.name,
 				existingValueDeclaration.source))
-		existingValueDeclaration = superScope?.getValueDeclaration(newValueDeclaration.name)
-			?: interfaceMembers.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
+		val existingSuperValueDeclaration = superScope?.getValueDeclaration(newValueDeclaration.name)
+		existingValueDeclaration = existingSuperValueDeclaration?.first
+		if(existingValueDeclaration == null)
+			existingValueDeclaration = interfaceMembers.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
 		if(existingValueDeclaration != null) {
 			newValueDeclaration.context.addIssue(Redeclaration(newValueDeclaration.source, "member",
 				"${typeDeclaration.name}.${newValueDeclaration.name}", existingValueDeclaration.source))
@@ -211,10 +189,10 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 			subscriber.onNewInterfaceMember(newValueDeclaration)
 	}
 
-	override fun getValueDeclaration(name: String): ValueDeclaration? {
-		return interfaceMembers[name]
-			?: superScope?.getValueDeclaration(name)
-			?: enclosingScope.getValueDeclaration(name)
+	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+		val interfaceMember = interfaceMembers[name]
+			?: return superScope?.getValueDeclaration(name) ?: enclosingScope.getValueDeclaration(name)
+		return Pair(interfaceMember, interfaceMember.type)
 	}
 
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {

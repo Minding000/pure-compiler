@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
+import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import logger.issues.declaration.Redeclaration
 
@@ -39,7 +40,8 @@ class FileScope: MutableScope() {
 		}
 	}
 
-	override fun getValueDeclaration(name: String): ValueDeclaration? {
-		return valueDeclarations[name] ?: referencedValueDeclarations[name]
+	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+		val valueDeclaration = valueDeclarations[name] ?: referencedValueDeclarations[name]
+		return Pair(valueDeclaration, valueDeclaration?.type)
 	}
 }

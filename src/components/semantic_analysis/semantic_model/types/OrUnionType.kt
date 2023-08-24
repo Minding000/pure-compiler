@@ -58,12 +58,12 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 
 	override fun onNewTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
 		if(types.all { type -> type.interfaceScope.hasTypeDeclaration(newTypeDeclaration) })
-			this.interfaceScope.addTypeDeclaration(newTypeDeclaration)
+			interfaceScope.addTypeDeclaration(newTypeDeclaration)
 	}
 
 	override fun onNewInterfaceMember(newInterfaceMember: InterfaceMember) {
 		if(types.all { type -> type.interfaceScope.hasInterfaceMember(newInterfaceMember) })
-			this.interfaceScope.addInterfaceMember(newInterfaceMember)
+			interfaceScope.addInterfaceMember(newInterfaceMember)
 	}
 
 	override fun isInstanceOf(specialType: SpecialType): Boolean {

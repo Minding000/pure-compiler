@@ -17,9 +17,8 @@ class GenericTypeDeclaration(override val source: ParameterSyntaxTree, name: Str
 		scope.enclosingScope.addTypeDeclaration(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): GenericTypeDeclaration {
-		val superType = superType?.withTypeSubstitutions(typeSubstitutions)
-		return GenericTypeDeclaration(source, name, scope.withTypeSubstitutions(typeSubstitutions, superType?.interfaceScope), superType)
+	fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): GenericTypeDeclaration {
+		return GenericTypeDeclaration(source, name, scope, superType?.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {

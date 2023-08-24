@@ -83,7 +83,8 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 				is VariableValue -> {
 					val parent = parent
 					if(parent is FunctionCall) {
-						val functionType = availableType.interfaceScope.getValueDeclaration(member)?.type as? FunctionType? ?: continue
+						val (_, type) = availableType.interfaceScope.getValueDeclaration(member)
+						val functionType = type as? FunctionType? ?: continue
 						val functionCall = parent as? FunctionCall ?: continue
 						if(functionType.getSignature(functionCall.typeParameters, functionCall.valueParameters) == null)
 							continue

@@ -19,10 +19,11 @@ import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 import java.util.*
 
-class FunctionImplementation(override val source: SyntaxTreeNode, override val scope: BlockScope, genericParameters: List<TypeDeclaration>,
-							 val parameters: List<Parameter>, val body: ErrorHandlingContext?, returnType: Type?,
-							 override val isAbstract: Boolean = false, val isMutating: Boolean = false, val isNative: Boolean = false,
-							 val isOverriding: Boolean = false): SemanticModel(source, scope), MemberDeclaration, Callable {
+class FunctionImplementation(override val source: SyntaxTreeNode, override val scope: BlockScope,
+							 localTypeParameters: List<GenericTypeDeclaration>, val parameters: List<Parameter>,
+							 val body: ErrorHandlingContext?, returnType: Type?, override val isAbstract: Boolean = false,
+							 val isMutating: Boolean = false, val isNative: Boolean = false, val isOverriding: Boolean = false):
+	SemanticModel(source, scope), MemberDeclaration, Callable {
 	override var parentTypeDeclaration: TypeDeclaration? = null
 	private lateinit var parentFunction: Function
 	override val memberIdentifier: String
@@ -34,7 +35,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 				"${this.parentFunction.name}${signature.toString(false)}"
 		}
 	private val isVariadic = parameters.lastOrNull()?.isVariadic ?: false
-	val signature = FunctionSignature(source, scope, genericParameters, parameters.map { parameter -> parameter.type }, returnType,
+	val signature = FunctionSignature(source, scope, localTypeParameters, parameters.map { parameter -> parameter.type }, returnType,
 		isVariadic)
 	var mightReturnValue = false
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()

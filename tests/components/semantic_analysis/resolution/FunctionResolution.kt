@@ -30,7 +30,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "Door" }
-		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.type
+		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.second
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)
@@ -54,7 +54,7 @@ internal class FunctionResolution {
 		lintResult.assertIssueNotDetected<OverridingPropertyTypeNotAssignable>()
 		lintResult.assertIssueNotDetected<OverridingPropertyTypeMismatch>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.type
+		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.second
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)
@@ -75,7 +75,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.type
+		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.second
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)
@@ -151,11 +151,13 @@ internal class FunctionResolution {
 	fun `emits error for ambiguous function calls`() {
 		val sourceCode =
 			"""
-				Int class
+				Number class
+				Int class: Number
 				List class {
 					containing Element
 					it exists(index: Int)
 					it exists(element: Element)
+					it exists(N: Number; index: N)
 				}
 				val numbers = <Int>List()
 				numbers.exists(Int())
@@ -163,8 +165,9 @@ internal class FunctionResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<SignatureAmbiguity>("""
 			Call to function '<Int>List.exists(Int)' is ambiguous. Matching signatures:
-			 - '(Int) =>|' declared at Test.Test:4:4
 			 - '(Int) =>|' declared at Test.Test:5:4
+			 - '(Element) =>|' declared at Test.Test:6:4
+			 - '(N: Number; N) =>|' declared at Test.Test:7:4
 		""".trimIndent(), Severity.ERROR)
 	}
 

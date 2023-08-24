@@ -13,22 +13,23 @@ import components.semantic_analysis.semantic_model.values.VariableValue
 
 abstract class Scope {
 
+	//TODO return Pair<TypeDeclaration, StaticType> instead
 	abstract fun getTypeDeclaration(name: String): TypeDeclaration?
 
-	open fun getValueDeclaration(variable: VariableValue): ValueDeclaration? = getValueDeclaration(variable.name)
+	abstract fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?>
+	open fun getValueDeclaration(variable: VariableValue) = getValueDeclaration(variable.name)
 
-	abstract fun getValueDeclaration(name: String): ValueDeclaration?
+	fun getOperator(kind: Operator.Kind) = getOperator(kind, emptyList())
 
-	fun getOperator(kind: Operator.Kind): FunctionSignature? = getOperator(kind, emptyList())
-
-	fun getOperator(kind: Operator.Kind, suppliedType: Value): FunctionSignature? = getOperator(kind, listOf(suppliedType))
+	fun getOperator(kind: Operator.Kind, suppliedType: Value) = getOperator(kind, listOf(suppliedType))
 
 	open fun getOperator(kind: Operator.Kind, suppliedValues: List<Value>): FunctionSignature? {
-		val operator = getValueDeclaration(kind.stringRepresentation)?.getLinkedType() as? FunctionType
+		val (valueDeclaration) = getValueDeclaration(kind.stringRepresentation)
+		val operator = valueDeclaration?.getLinkedType() as? FunctionType
 		return operator?.getSignature(suppliedValues)
 	}
 
-	fun getIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>, suppliedParameterValue: Value?): FunctionSignature?
+	fun getIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>, suppliedParameterValue: Value?)
 		= getIndexOperator(suppliedTypes, suppliedIndexValues, listOfNotNull(suppliedParameterValue))
 
 	open fun getIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,

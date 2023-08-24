@@ -38,10 +38,10 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 		var parameters = parameterList?.getSemanticParameterModels(operatorScope) ?: emptyList()
 		val body = body?.toSemanticModel(operatorScope)
 		val returnType = returnType?.toSemanticModel(operatorScope)
-		val genericParameters = (operator as? IndexOperator)?.getSemanticGenericParameterModels(operatorScope) ?: emptyList()
+		val localTypeParameters = (operator as? IndexOperator)?.getSemanticGenericParameterModels(operatorScope) ?: emptyList()
 		if(operator is IndexOperator)
 			parameters = operator.getSemanticIndexParameterModels(operatorScope) + parameters
-		return FunctionImplementation(this, operatorScope, genericParameters, parameters, body, returnType, isAbstract,
+		return FunctionImplementation(this, operatorScope, localTypeParameters, parameters, body, returnType, isAbstract,
 			isMutating, isNative, isOverriding)
 	}
 

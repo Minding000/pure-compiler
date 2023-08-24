@@ -17,7 +17,7 @@ import java.util.*
 import kotlin.math.max
 
 class FunctionSignature(override val source: SyntaxTreeNode, override val scope: BlockScope,
-						val localTypeParameters: List<TypeDeclaration>, val parameterTypes: List<Type?>,
+						val localTypeParameters: List<GenericTypeDeclaration>, val parameterTypes: List<Type?>,
 						returnType: Type?, val isVariadic: Boolean): SemanticModel(source, scope) {
 	val fixedParameterTypes: List<Type?>
 	private val variadicParameterType: Type?
@@ -77,12 +77,9 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	}
 
 	fun withTypeSubstitutions(typeSubstitution: Map<TypeDeclaration, Type>): FunctionSignature {
-		val specificLocalTypeParameters = LinkedList<TypeDeclaration>()
-		for(localTypeParameter in localTypeParameters) {
-			localTypeParameter.withTypeSubstitutions(typeSubstitution) { specificTypeDeclaration ->
-				specificLocalTypeParameters.add(specificTypeDeclaration)
-			}
-		}
+		val specificLocalTypeParameters = LinkedList<GenericTypeDeclaration>()
+		for(localTypeParameter in localTypeParameters)
+			specificLocalTypeParameters.add(localTypeParameter.withTypeSubstitutions(typeSubstitution))
 		val specificParametersTypes = LinkedList<Type?>()
 		for(parameterType in parameterTypes)
 			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitution))
@@ -90,11 +87,11 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 			returnType.withTypeSubstitutions(typeSubstitution), isVariadic)
 	}
 
-	fun accepts(suppliedValues: List<Value>): Boolean {
+	fun accepts(localTypeSubstitutions: Map<TypeDeclaration, Type>, suppliedValues: List<Value>): Boolean {
 		assert(suppliedValues.size >= fixedParameterTypes.size)
 
 		for(parameterIndex in suppliedValues.indices) {
-			val parameterType = getParameterTypeAt(parameterIndex)
+			val parameterType = getParameterTypeAt(parameterIndex)?.withTypeSubstitutions(localTypeSubstitutions)
 			if(!suppliedValues[parameterIndex].isAssignableTo(parameterType))
 				return false
 		}

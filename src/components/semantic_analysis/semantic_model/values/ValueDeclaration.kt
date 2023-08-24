@@ -2,7 +2,6 @@ package components.semantic_analysis.semantic_model.values
 
 import components.compiler.targets.llvm.LlvmConstructor
 import components.semantic_analysis.semantic_model.declarations.InitializerDefinition
-import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.FileScope
 import components.semantic_analysis.semantic_model.scopes.MutableScope
@@ -18,8 +17,8 @@ import java.util.*
 
 abstract class ValueDeclaration(override val source: SyntaxTreeNode, override val scope: MutableScope, val name: String,
 								var type: Type? = null, value: Value? = null, val isConstant: Boolean = true,
-								val isMutable: Boolean = false, val isSpecificCopy: Boolean = false): SemanticModel(source, scope) {
-	private var hasDeterminedTypes = isSpecificCopy
+								val isMutable: Boolean = false): SemanticModel(source, scope) {
+	private var hasDeterminedTypes = false
 	open val value = value
 	val usages = LinkedList<VariableValue>()
 	private var conversion: InitializerDefinition? = null
@@ -28,8 +27,6 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 	init {
 		addSemanticModels(type, value)
 	}
-
-	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): ValueDeclaration
 
 	override fun declare() {
 		super.declare()

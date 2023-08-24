@@ -4,6 +4,7 @@ import components.semantic_analysis.semantic_model.control_flow.LoopStatement
 import components.semantic_analysis.semantic_model.declarations.FunctionImplementation
 import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.general.SemanticModel
+import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.issues.declaration.Redeclaration
@@ -28,8 +29,9 @@ class BlockScope(private val parentScope: MutableScope): MutableScope() {
 	}
 
 	override fun addValueDeclaration(newValueDeclaration: ValueDeclaration) {
-		val existingValueDeclaration = parentScope.getValueDeclaration(newValueDeclaration.name)
-			?: valueDeclarations.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
+		var (existingValueDeclaration) = parentScope.getValueDeclaration(newValueDeclaration.name)
+		if(existingValueDeclaration == null)
+			existingValueDeclaration = valueDeclarations.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
 		if(existingValueDeclaration != null) {
 			newValueDeclaration.context.addIssue(Redeclaration(newValueDeclaration.source, "value", newValueDeclaration.name,
 				existingValueDeclaration.source))
@@ -37,15 +39,16 @@ class BlockScope(private val parentScope: MutableScope): MutableScope() {
 		}
 	}
 
-	override fun getValueDeclaration(name: String): ValueDeclaration? {
-		return valueDeclarations[name] ?: parentScope.getValueDeclaration(name)
+	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+		val valueDeclaration = valueDeclarations[name] ?: return parentScope.getValueDeclaration(name)
+		return Pair(valueDeclaration, valueDeclaration.type)
 	}
 
-	override fun getValueDeclaration(variable: VariableValue): ValueDeclaration? {
+	override fun getValueDeclaration(variable: VariableValue): Pair<ValueDeclaration?, Type?> {
 		val valueDeclaration = valueDeclarations[variable.name]
 		if(valueDeclaration != null) {
 			if(valueDeclaration.isBefore(variable))
-				return valueDeclaration
+				return Pair(valueDeclaration, valueDeclaration.type)
 		}
 		return parentScope.getValueDeclaration(variable)
 	}

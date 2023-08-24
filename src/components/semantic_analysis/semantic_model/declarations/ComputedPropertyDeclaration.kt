@@ -9,18 +9,11 @@ import logger.issues.declaration.SetterInComputedValue
 import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclaration as ComputedPropertySyntaxTree
 
 class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, scope: MutableScope, name: String, type: Type?,
-								  isConstant: Boolean, isOverriding: Boolean, val getExpression: Value?, val setStatement: SemanticModel?,
-								  isSpecificCopy: Boolean = false):
-	PropertyDeclaration(source, scope, name, type, getExpression, false, false, isConstant, false, isOverriding,
-		isSpecificCopy) {
+								  isConstant: Boolean, isOverriding: Boolean, val getExpression: Value?, val setStatement: SemanticModel?):
+	PropertyDeclaration(source, scope, name, type, getExpression, false, false, isConstant, false, isOverriding) {
 
 	init {
 		addSemanticModels(setStatement)
-	}
-
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): ComputedPropertyDeclaration {
-		return ComputedPropertyDeclaration(source, scope, name, type?.withTypeSubstitutions(typeSubstitutions), isConstant,
-			isOverriding, getExpression, setStatement, true)
 	}
 
 	override fun validate() {

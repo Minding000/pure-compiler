@@ -16,22 +16,10 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 	}
 
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): StaticType {
-		// Assumption: StaticTypes don't have the recursion issues ObjectTypes have,
-		//  since there can't be a StaticType inside a class definition
-		lateinit var specificType: StaticType
-		typeDeclaration.withTypeSubstitutions(typeSubstitutions) { specificTypeDeclaration ->
-			specificType = StaticType(specificTypeDeclaration)
-		}
-		return specificType
+		return this
 	}
 
 	override fun simplified(): Type = this
-
-	fun withTypeParameters(typeParameters: List<Type>, onCompletion: (StaticType) -> Unit) {
-		typeDeclaration.withTypeParameters(typeParameters) { specificTypeDeclaration ->
-			onCompletion(StaticType(specificTypeDeclaration))
-		}
-	}
 
 	override fun onNewTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
 		interfaceScope.addTypeDeclaration(newTypeDeclaration)
@@ -89,25 +77,17 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 										suppliedLocalTypes: List<Type>, suppliedValues: List<Value>): List<Match> {
 		val matches = LinkedList<Match>()
 		for(initializer in interfaceScope.initializers) {
-			var specificInitializer = initializer
 			val globalTypeSubstitutions = initializer.getGlobalTypeSubstitutions(globalTypeParameters, suppliedGlobalTypes,
 				suppliedValues) ?: continue
-			if(globalTypeSubstitutions.isNotEmpty())
-				specificInitializer = specificInitializer.withTypeSubstitutions(globalTypeSubstitutions)
-			val localTypeSubstitutions = specificInitializer.getLocalTypeSubstitutions(suppliedLocalTypes, suppliedValues) ?: continue
-			if(localTypeSubstitutions.isNotEmpty())
-				specificInitializer = specificInitializer.withTypeSubstitutions(localTypeSubstitutions)
-			if(specificInitializer.accepts(suppliedValues))
-				matches.add(Match(specificInitializer, globalTypeSubstitutions))
+			val localTypeSubstitutions = initializer.getLocalTypeSubstitutions(globalTypeSubstitutions, suppliedLocalTypes,
+				suppliedValues) ?: continue
+			if(initializer.accepts(globalTypeSubstitutions, localTypeSubstitutions, suppliedValues))
+				matches.add(Match(initializer, globalTypeSubstitutions))
 		}
 		return matches
 	}
 
 	class Match(val initializer: InitializerDefinition, val globalTypeSubstitutions: Map<TypeDeclaration, Type>)
-
-	fun getBaseTypeDeclaration(): TypeDeclaration {
-		return typeDeclaration.baseTypeDeclaration ?: typeDeclaration
-	}
 
 	override fun equals(other: Any?): Boolean {
 		if(other !is StaticType)

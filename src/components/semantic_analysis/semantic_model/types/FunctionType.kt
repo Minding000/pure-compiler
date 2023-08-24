@@ -59,12 +59,8 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		val matchingSignatures = LinkedList<FunctionSignature>()
 		for(signature in signatures) {
 			val localTypeSubstitutions = signature.getLocalTypeSubstitutions(suppliedLocalTypes, suppliedValues) ?: continue
-			val specificSignature = if(localTypeSubstitutions.isEmpty())
-				signature
-			else
-				signature.withTypeSubstitutions(localTypeSubstitutions)
-			if(specificSignature.accepts(suppliedValues))
-				matchingSignatures.add(specificSignature)
+			if(signature.accepts(localTypeSubstitutions, suppliedValues))
+				matchingSignatures.add(signature)
 		}
 		superFunctionType?.let { superFunctionType ->
 			val matchingSuperSignatures = superFunctionType.getMatchingSignatures(suppliedLocalTypes, suppliedValues)
