@@ -17,7 +17,7 @@ abstract class InterfaceMember(source: SyntaxTreeNode, scope: MutableScope, name
 	override lateinit var parentTypeDeclaration: TypeDeclaration
 	override val memberIdentifier
 		get() = "$name${if(type == null) "" else ": $type"}"
-	var superMember: InterfaceMember? = null
+	var superMember: Pair<InterfaceMember, Type?>? = null
 
 	override fun validate() {
 		super.validate()

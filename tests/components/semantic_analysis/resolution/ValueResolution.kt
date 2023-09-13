@@ -240,7 +240,7 @@ internal class ValueResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val member = variableValue?.type?.interfaceScope?.getValueDeclaration("isOpen")
+		val member = variableValue?.type?.interfaceScope?.getValueDeclaration("isOpen")?.first
 		assertIs<PropertyDeclaration>(member)
 		assertEquals("no", member.value?.source?.getValue())
 	}

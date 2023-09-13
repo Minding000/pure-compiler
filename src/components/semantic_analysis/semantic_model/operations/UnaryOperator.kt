@@ -25,18 +25,18 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 
 	override fun determineTypes() {
 		super.determineTypes()
-		subject.type?.let { valueType ->
-			try {
-				targetSignature = valueType.interfaceScope.getOperator(kind)
-				if(targetSignature == null) {
-					context.addIssue(NotFound(source, "Operator", "$kind$valueType"))
-					return@let
-				}
-				type = targetSignature?.returnType
-			} catch(error: SignatureResolutionAmbiguityError) {
-				//TODO write test for this
-				error.log(source, "operator", "$kind$valueType")
+		val subjectType = subject.type ?: return
+		try {
+			val match = subjectType.interfaceScope.getOperator(kind)
+			if(match == null) {
+				context.addIssue(NotFound(source, "Operator", "$kind$subjectType"))
+				return
 			}
+			targetSignature = match.signature
+			type = match.returnType
+		} catch(error: SignatureResolutionAmbiguityError) {
+			//TODO write test for this
+			error.log(source, "operator", "$kind$subjectType")
 		}
 	}
 

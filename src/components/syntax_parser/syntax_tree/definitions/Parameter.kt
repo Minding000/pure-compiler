@@ -27,7 +27,8 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
 
 	fun toSemanticGenericParameterModel(scope: MutableScope): GenericTypeDeclaration {
 		val superType = type?.toSemanticModel(scope) ?: LiteralType(this, scope, SpecialType.ANY)
-		val typeScope = TypeScope(scope, superType.interfaceScope)
+		val typeScope = TypeScope(scope)
+		typeScope.superScope = superType.interfaceScope
 		return GenericTypeDeclaration(this, identifier.getValue(), typeScope, superType)
 	}
 

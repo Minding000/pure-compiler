@@ -13,8 +13,8 @@ class FunctionType(start: Position, private val parameterList: ParameterTypeList
 	override fun toSemanticModel(scope: MutableScope): SemanticFunctionTypeModel {
 		val functionScope = BlockScope(scope)
 		val parameters = parameterList?.toSemanticModels(functionScope) ?: emptyList()
-		val signature = FunctionSignature(this, functionScope, emptyList(), parameters, returnType?.toSemanticModel(functionScope),
-			false) //TODO there is no way to declare a variadic function signature without implementation
+		//TODO there is no way to declare a variadic function signature without implementation
+		val signature = FunctionSignature(this, functionScope, emptyList(), parameters, returnType?.toSemanticModel(functionScope))
 		return SemanticFunctionTypeModel(this, scope, signature)
 	}
 

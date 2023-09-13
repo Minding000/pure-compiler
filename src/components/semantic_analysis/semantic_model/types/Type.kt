@@ -11,6 +11,7 @@ import components.semantic_analysis.semantic_model.general.SemanticModel
 import components.semantic_analysis.semantic_model.scopes.InterfaceScope
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 
@@ -24,7 +25,13 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 		interfaceScope.type = this
 	}
 
-	abstract fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Type
+	open fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Type {
+		if(typeSubstitutions.isEmpty())
+			return this
+		return createCopyWithTypeSubstitutions(typeSubstitutions)
+	}
+
+	protected abstract fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Type
 
 	abstract fun simplified(): Type
 
@@ -36,6 +43,8 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 	open fun onNewInterfaceMember(newInterfaceMember: InterfaceMember) {}
 
 	open fun onNewInitializer(newInitializer: InitializerDefinition) {}
+
+	abstract fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?>
 
 	final override fun determineTypes() {
 		if(hasResolvedDefinitions)
@@ -62,7 +71,7 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 
 	abstract fun isAssignableTo(unresolvedTargetType: Type): Boolean
 
-	open fun getAbstractMemberDeclarations(): List<MemberDeclaration> =
+	open fun getAbstractMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> =
 		throw CompilerError(source, "Tried to get abstract member declarations of non-super type.")
 	open fun getPropertiesToBeInitialized(): List<PropertyDeclaration> =
 		throw CompilerError(source, "Tried to get properties to be initialized of non-super type.")

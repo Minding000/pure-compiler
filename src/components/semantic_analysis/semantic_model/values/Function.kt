@@ -2,7 +2,7 @@ package components.semantic_analysis.semantic_model.values
 
 import components.semantic_analysis.semantic_model.context.VariableTracker
 import components.semantic_analysis.semantic_model.declarations.FunctionImplementation
-import components.semantic_analysis.semantic_model.declarations.FunctionSignature
+import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -12,11 +12,13 @@ import java.util.*
 open class Function(source: SyntaxTreeNode, scope: Scope, val name: String = "<anonymous function>",
 					val functionType: FunctionType = FunctionType(source, scope)): Value(source, scope, functionType) {
 	open val memberType = "function"
+	var associatedTypeDeclaration: TypeDeclaration? = null
 	val implementations = LinkedList<FunctionImplementation>()
 	val isAbstract: Boolean
 		get() = implementations.any { implementation -> implementation.isAbstract }
 
 	init {
+		functionType.associatedFunction = this
 		addSemanticModels(functionType)
 	}
 
@@ -52,13 +54,5 @@ open class Function(source: SyntaxTreeNode, scope: Scope, val name: String = "<a
 					implementation.source))
 			}
 		}
-	}
-
-	fun getImplementationBySignature(signature: FunctionSignature): FunctionImplementation? {
-		for(implementation in implementations) {
-			if(implementation.signature == signature)
-				return implementation
-		}
-		return null
 	}
 }

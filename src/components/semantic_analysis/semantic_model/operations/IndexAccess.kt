@@ -23,18 +23,18 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	override fun determineTypes() {
 		determineSourceExpression()
 		super.determineTypes()
-		target.type?.let { targetType ->
-			try {
-				targetSignature = targetType.interfaceScope.getIndexOperator(typeParameters, indices, sourceExpression)
-				if(targetSignature == null) {
-					val name = "${target.type}[${indices.joinToString { index -> index.type.toString() }}]"
-					context.addIssue(NotFound(source, "Operator", "$name(${sourceExpression?.type ?: ""})"))
-					return@let
-				}
-				type = targetSignature?.returnType
-			} catch(error: SignatureResolutionAmbiguityError) {
-				error.log(source, "operator", getSignature(targetType))
+		val targetType = target.type ?: return
+		try {
+			val match = targetType.interfaceScope.getIndexOperator(typeParameters, indices, sourceExpression)
+			if(match == null) {
+				val name = "${target.type}[${indices.joinToString { index -> index.type.toString() }}]"
+				context.addIssue(NotFound(source, "Operator", "$name(${sourceExpression?.type ?: ""})"))
+				return
 			}
+			targetSignature = match.signature
+			type = match.returnType
+		} catch(error: SignatureResolutionAmbiguityError) {
+			error.log(source, "operator", getSignature(targetType))
 		}
 	}
 

@@ -150,4 +150,20 @@ internal class TypeParameters {
 		lintResult.assertIssueDetected<TypeParameterNotAssignable>(
 			"The type parameter 'Dish' is not assignable to 'Item: SoftDrink'.", Severity.ERROR)
 	}
+
+	@Test
+	fun `allows for generic types to be type parameters`() {
+		val sourceCode =
+			"""
+			SoftDrink class
+			StorageRoom class {
+				containing Item: SoftDrink
+			}
+			CooledStorageRoom class: <Item>StorageRoom {
+				containing Item: SoftDrink
+			}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<TypeParameterNotAssignable>()
+	}
 }

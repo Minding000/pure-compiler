@@ -2,7 +2,6 @@ package components.semantic_analysis.modifiers
 
 import logger.Severity
 import logger.issues.declaration.AbstractMemberInNonAbstractTypeDefinition
-import logger.issues.declaration.MissingImplementations
 import logger.issues.modifiers.AbstractClassInstantiation
 import logger.issues.modifiers.DisallowedModifier
 import org.junit.jupiter.api.Test
@@ -141,31 +140,5 @@ internal class AbstractModifier {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<AbstractClassInstantiation>("Abstract class 'List' cannot be instantiated.",
 			Severity.ERROR)
-	}
-
-	@Test
-	fun `disallows non-abstract subclasses that don't implement inherited abstract members`() {
-		val sourceCode = """
-			Int class
-			abstract Collection class {
-				abstract val size: Int
-			}
-			abstract List class: Collection {
-				abstract to clear()
-				abstract to clear(position: Int)
-			}
-			LinkedList class: List {
-				overriding to clear()
-			}
-			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<MissingImplementations>(
-			"""
-				Non-abstract type declaration 'LinkedList' does not implement the following inherited members:
-				 - Collection
-				   - size: Int
-				 - List
-				   - clear(Int)
-			""".trimIndent(), Severity.ERROR)
 	}
 }

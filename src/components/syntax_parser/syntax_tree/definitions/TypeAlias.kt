@@ -17,7 +17,7 @@ class TypeAlias(start: Position, private val modifierList: ModifierList?, privat
 	override fun toSemanticModel(scope: MutableScope): SemanticTypeAliasModel {
 		modifierList?.validate(context)
 		val type = type.toSemanticModel(scope)
-		val typeScope = TypeScope(scope, null)
+		val typeScope = TypeScope(scope)
 		return SemanticTypeAliasModel(this, identifier.getValue(), type, typeScope)
 	}
 

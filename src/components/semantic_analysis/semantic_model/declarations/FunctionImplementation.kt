@@ -34,9 +34,9 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 			else
 				"${this.parentFunction.name}${signature.toString(false)}"
 		}
-	private val isVariadic = parameters.lastOrNull()?.isVariadic ?: false
+	val isVariadic = parameters.lastOrNull()?.isVariadic ?: false
 	val signature = FunctionSignature(source, scope, localTypeParameters, parameters.map { parameter -> parameter.type }, returnType,
-		isVariadic)
+		this)
 	var mightReturnValue = false
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()

@@ -27,15 +27,17 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 	override fun determineTypes() {
 		super.determineTypes()
 		context.registerWrite(target)
-		target.type?.let { valueType ->
-			try {
-				targetSignature = valueType.interfaceScope.getOperator(kind, listOf(modifier))
-				if(targetSignature == null)
-					context.addIssue(NotFound(source, "Operator", "$valueType $kind ${modifier.type}"))
-			} catch(error: SignatureResolutionAmbiguityError) {
-				//TODO write test for this
-				error.log(source, "operator", "$valueType $kind ${modifier.type}")
+		val valueType = target.type ?: return
+		try {
+			val match = valueType.interfaceScope.getOperator(kind, listOf(modifier))
+			if(match == null) {
+				context.addIssue(NotFound(source, "Operator", "$valueType $kind ${modifier.type}"))
+				return
 			}
+			targetSignature = match.signature
+		} catch(error: SignatureResolutionAmbiguityError) {
+			//TODO write test for this
+			error.log(source, "operator", "$valueType $kind ${modifier.type}")
 		}
 	}
 

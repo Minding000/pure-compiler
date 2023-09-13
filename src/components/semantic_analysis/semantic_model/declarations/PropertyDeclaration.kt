@@ -28,19 +28,20 @@ open class PropertyDeclaration(source: SyntaxTreeNode, scope: MutableScope, name
 	}
 
 	private fun validateSuperMember() {
-		val superMember = superMember ?: return
+		val (superMember, superMemberType) = superMember ?: return
 		if(!superMember.isConstant && isConstant)
 			context.addIssue(VariablePropertyOverriddenByValue(this))
 		val type = type ?: return
-		val superType = superMember.type ?: return
-		if(type is FunctionType && superType is FunctionType)
+		if(superMemberType == null)
+			return
+		if(type is FunctionType && superMemberType is FunctionType)
 			return
 		if(isConstant) {
-			if(!type.isAssignableTo(superType))
-				context.addIssue(OverridingPropertyTypeNotAssignable(type, superType))
+			if(!type.isAssignableTo(superMemberType))
+				context.addIssue(OverridingPropertyTypeNotAssignable(type, superMemberType))
 		} else {
-			if(type != superType)
-				context.addIssue(OverridingPropertyTypeMismatch(type, superType))
+			if(type != superMemberType)
+				context.addIssue(OverridingPropertyTypeMismatch(type, superMemberType))
 		}
 	}
 }

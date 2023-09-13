@@ -63,8 +63,8 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<ReturnValueTypeMismatch>("Return value doesn't match the declared return type.",
-			Severity.ERROR)
+		lintResult.assertIssueDetected<ReturnValueTypeMismatch>(
+			"The type 'Desk' of the returned value doesn't match the declared return type 'Int'.", Severity.ERROR)
 	}
 
 	@Test

@@ -1,6 +1,7 @@
 package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.semantic_model.declarations.*
+import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Function
@@ -8,10 +9,10 @@ import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import errors.internal.CompilerError
 import logger.issues.declaration.*
-import logger.issues.modifiers.OverridingFunctionReturnTypeNotAssignable
 import java.util.*
 
-class TypeScope(val enclosingScope: MutableScope, private val superScope: InterfaceScope?): MutableScope() {
+class TypeScope(val enclosingScope: MutableScope): MutableScope() {
+	var superScope: InterfaceScope? = null
 	lateinit var typeDeclaration: TypeDeclaration
 	val typeDeclarations = LinkedHashMap<String, TypeDeclaration>()
 	val memberDeclarations = LinkedList<MemberDeclaration>()
@@ -33,8 +34,6 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 
 	fun getAbstractMemberDeclarations(): List<MemberDeclaration> {
 		val abstractMemberDeclarations = LinkedList<MemberDeclaration>()
-		if(superScope != null)
-			abstractMemberDeclarations.addAll(superScope.getAbstractMemberDeclarations())
 		for(memberDeclaration in memberDeclarations) {
 			if(memberDeclaration.isAbstract)
 				abstractMemberDeclarations.add(memberDeclaration)
@@ -44,6 +43,7 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 
 	fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {
 		val propertiesToBeInitialized = LinkedList<PropertyDeclaration>()
+		val superScope = superScope
 		if(superScope != null)
 			propertiesToBeInitialized.addAll(superScope.getPropertiesToBeInitialized())
 		propertiesToBeInitialized.addAll(memberDeclarations.filterIsInstance<PropertyDeclaration>().filter { member ->
@@ -52,35 +52,16 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 	}
 
 	fun inheritSignatures() {
+		//TODO do this on-demand when resolving initializers to avoid out-of-order-resolution
 		for(initializer in initializers)
 			initializer.superInitializer = superScope?.getSuperInitializer(initializer)
 		for((_, interfaceMember) in interfaceMembers) {
-			val superMember = superScope?.getValueDeclaration(interfaceMember.name)?.first ?: continue
-			interfaceMember.superMember = superMember
-			val function = interfaceMember.value as? Function ?: continue
-			val superFunction = superMember.value as? Function ?: continue
-			function.functionType.superFunctionType = superFunction.functionType
-			for(implementation in function.implementations) {
-				val signature = implementation.signature
-				superSignatureLoop@for(superImplementation in superFunction.implementations) {
-					val superSignature = superImplementation.signature
-					if(signature.parameterTypes.size != superSignature.parameterTypes.size)
-						continue
-					for(parameterIndex in signature.parameterTypes.indices) {
-						val superParameterType = superSignature.parameterTypes[parameterIndex] ?: continue
-						val baseParameterType = signature.parameterTypes[parameterIndex] ?: continue
-						if(!baseParameterType.accepts(superParameterType))
-							continue@superSignatureLoop
-					}
-					if(signature.returnType.isAssignableTo(superSignature.returnType)) {
-						signature.superFunctionSignature = superSignature
-						break
-					} else {
-						signature.context.addIssue(OverridingFunctionReturnTypeNotAssignable(implementation.source, function.memberType,
-							implementation.toString(), superImplementation.toString()))
-					}
-				}
-			}
+			val (superMember, superMemberType) = superScope?.getValueDeclaration(interfaceMember.name) ?: continue
+			val superInterfaceMember = superMember as? InterfaceMember ?: continue
+			interfaceMember.superMember = Pair(superInterfaceMember, superMemberType)
+			val functionType = interfaceMember.type as? FunctionType ?: continue
+			functionType.determineSuperType()
+			functionType.determineSuperSignatures()
 		}
 	}
 
@@ -120,24 +101,6 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 			if(memberDeclaration.isAbstract)
 				typeDeclaration.context.addIssue(AbstractMemberInNonAbstractTypeDefinition(memberDeclaration, typeDeclaration))
 		}
-	}
-
-	fun ensureAbstractSuperMembersImplemented() {
-		val missingOverrides = LinkedHashMap<TypeDeclaration, LinkedList<MemberDeclaration>>()
-		val abstractSuperMembers = superScope?.getAbstractMemberDeclarations() ?: return
-		for(abstractSuperMember in abstractSuperMembers) {
-			val overridingMember = memberDeclarations.find { memberDeclaration ->
-				memberDeclaration.memberIdentifier == abstractSuperMember.memberIdentifier }
-			if(!abstractSuperMember.canBeOverriddenBy(overridingMember)) {
-				val parentDefinition = abstractSuperMember.parentTypeDeclaration
-					?: throw CompilerError(abstractSuperMember.source, "Member is missing parent definition.")
-				val missingOverridesFromType = missingOverrides.getOrPut(parentDefinition) { LinkedList() }
-				missingOverridesFromType.add(abstractSuperMember)
-			}
-		}
-		if(missingOverrides.isEmpty())
-			return
-		typeDeclaration.context.addIssue(MissingImplementations(typeDeclaration, missingOverrides))
 	}
 
 	fun addInitializer(newInitializer: InitializerDefinition) {
@@ -181,18 +144,25 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 			return
 		}
 		val value = newValueDeclaration.value
-		if(value is Function)
+		if(value is Function) {
+			value.associatedTypeDeclaration = typeDeclaration
 			memberDeclarations.addAll(value.implementations)
-		else
+		} else {
 			memberDeclarations.add(newValueDeclaration)
+		}
 		for(subscriber in subscribedTypes)
 			subscriber.onNewInterfaceMember(newValueDeclaration)
 	}
 
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
 		val interfaceMember = interfaceMembers[name]
-			?: return superScope?.getValueDeclaration(name) ?: enclosingScope.getValueDeclaration(name)
-		return Pair(interfaceMember, interfaceMember.type)
+		if(interfaceMember == null) {
+			val valueDeclarationPair = superScope?.getValueDeclaration(name)
+			if(valueDeclarationPair?.first == null)
+				return enclosingScope.getValueDeclaration(name)
+			return valueDeclarationPair
+		}
+		return Pair(interfaceMember, interfaceMember.getLinkedType())
 	}
 
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {
@@ -214,6 +184,7 @@ class TypeScope(val enclosingScope: MutableScope, private val superScope: Interf
 		for(initializer in initializers)
 			if(initializer.isConvertingFrom(sourceType))
 				conversions.add(initializer)
+		val superScope = superScope
 		if(superScope != null)
 			conversions.addAll(superScope.getConversionsFrom(sourceType))
 		return conversions

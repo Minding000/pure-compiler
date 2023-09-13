@@ -1,6 +1,8 @@
 package components.semantic_analysis.declarations
 
 import logger.Severity
+import logger.issues.declaration.AbstractMemberInNonAbstractTypeDefinition
+import logger.issues.declaration.MissingImplementations
 import logger.issues.modifiers.*
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -13,11 +15,17 @@ internal class Properties {
 			"""
 				Number class
 				Float class: Number
-				Food class {
+				Nutritional class {
 					val nutritionScore: Number
 				}
-				Vegetable class: Food
-				Potato class: Vegetable {
+				Food class: Nutritional {
+					containing N: Number
+					overriding val nutritionScore: N
+				}
+				Vegetable class: <N>Food {
+					containing N: Number
+				}
+				Potato class: <Float>Vegetable {
 					overriding val nutritionScore: Float
 				}
             """.trimIndent()
@@ -59,6 +67,24 @@ internal class Properties {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<OverriddenSuperMissing>(
 			"'overriding' keyword is used, but the property doesn't have a super property.")
+	}
+
+	@Test
+	fun `allows overriding generic value property`() {
+		val sourceCode =
+			"""
+				Number class
+				Float class: Number
+				Rectangle class {
+					containing N: Number
+					val sideLength: N
+				}
+				FloatRectangle class: <Float>Rectangle {
+					overriding val sideLength: Float
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<OverridingPropertyTypeNotAssignable>()
 	}
 
 	@Test
@@ -113,5 +139,135 @@ internal class Properties {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<VariablePropertyOverriddenByValue>(
 			"Variable super property 'nutritionScore' cannot be overridden by value property.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows abstract classes to contain abstract properties`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract IntList class {
+					abstract val size: Int
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<AbstractMemberInNonAbstractTypeDefinition>()
+	}
+
+	@Test
+	fun `disallows non-abstract classes to contain abstract properties`() {
+		val sourceCode =
+			"""
+				Int class
+				IntList class {
+					abstract val size: Int
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<AbstractMemberInNonAbstractTypeDefinition>(
+			"Abstract member 'size: Int' is not allowed in non-abstract type declaration 'IntList'.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows abstract classes to not override abstract properties`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract IntList class {
+					abstract val size: Int
+				}
+				abstract VoidIntList class: IntList
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `allows non-abstract classes to not override non-abstract properties`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract IntList class {
+					val size: Int
+				}
+				VoidIntList class: IntList
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `allows abstract classes to override abstract properties`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract IntList class {
+					abstract val size: Int
+				}
+				VoidIntList class: IntList {
+					overriding val size: Int
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `allows abstract classes to override abstract properties of generic super type`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract List class {
+					containing Element
+					abstract val first: Element
+				}
+				IntList class: <Int>List {
+					overriding val first: Int
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `doesn't require generic type definitions to override abstract properties`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract IntList class {
+					abstract val size: Int
+				}
+				abstract VoidCollections class {
+					containing VoidIntList: IntList
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `disallows non-abstract subclasses that don't implement inherited abstract operators`() {
+		val sourceCode = """
+			Int class
+			abstract Collection class {
+				abstract val size: Int
+			}
+			abstract List class: Collection {
+				abstract val minimumSize: Int
+				abstract val maximumSize: Int
+			}
+			LinkedList class: List {
+				overriding val minimumSize: Int
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<MissingImplementations>(
+			"""
+				Non-abstract type declaration 'LinkedList' does not implement the following inherited members:
+				 - Collection
+				   - size: Int
+				 - List
+				   - maximumSize: Int
+			""".trimIndent(), Severity.ERROR)
 	}
 }

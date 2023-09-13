@@ -1,5 +1,8 @@
 package code
 
+//TODO rename folder structure
+// - rename 'compiler' to 'code generation'
+// - rename 'semantic analysis' to 'semantic model'
 object Main {
 	const val DEBUG = true
 

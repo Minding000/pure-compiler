@@ -2,9 +2,8 @@ package components.semantic_analysis.declarations
 
 import components.semantic_analysis.semantic_model.declarations.FunctionImplementation
 import logger.Severity
-import logger.issues.declaration.InvalidVariadicParameterPosition
-import logger.issues.declaration.MultipleVariadicParameters
-import logger.issues.declaration.Redeclaration
+import logger.issues.declaration.*
+import logger.issues.modifiers.OverriddenSuperMissing
 import logger.issues.modifiers.OverridingFunctionReturnTypeNotAssignable
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -42,6 +41,130 @@ internal class Functions {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<Redeclaration>(
 			"Redeclaration of function 'Human.push(Pressure)', previously declared in Test.Test:5:4.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows abstract classes to contain abstract functions`() {
+		val sourceCode =
+			"""
+				abstract Plant class {
+					abstract to water()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<AbstractMemberInNonAbstractTypeDefinition>()
+	}
+
+	@Test
+	fun `disallows non-abstract classes to contain abstract functions`() {
+		val sourceCode =
+			"""
+				Plant class {
+					abstract to water()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<AbstractMemberInNonAbstractTypeDefinition>(
+			"Abstract member 'water()' is not allowed in non-abstract type declaration 'Plant'.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows abstract classes to not override abstract functions`() {
+		val sourceCode =
+			"""
+				abstract Plant class {
+					abstract to water()
+				}
+				abstract Tree class: Plant
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `allows non-abstract classes to not override non-abstract functions`() {
+		val sourceCode =
+			"""
+				abstract Plant class {
+					to water()
+				}
+				Tree class: Plant
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `allows abstract classes to override abstract functions`() {
+		val sourceCode =
+			"""
+				abstract Plant class {
+					abstract to water()
+				}
+				Tree class: Plant {
+					overriding to water()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `allows abstract classes to override abstract functions of generic super type`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract List class {
+					containing Element
+					abstract to add(element: Element)
+				}
+				IntList class: <Int>List {
+					overriding to add(element: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `doesn't require generic type definitions to override abstract functions`() {
+		val sourceCode =
+			"""
+				abstract Plant class {
+					abstract to water()
+				}
+				abstract Garden class {
+					containing Tree: Plant
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `disallows non-abstract subclasses that don't implement inherited abstract functions`() {
+		val sourceCode = """
+			Int class
+			abstract Collection class {
+				abstract val size: Int
+			}
+			abstract List class: Collection {
+				abstract to clear()
+				abstract to clear(position: Int)
+			}
+			LinkedList class: List {
+				overriding to clear()
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<MissingImplementations>(
+			"""
+				Non-abstract type declaration 'LinkedList' does not implement the following inherited members:
+				 - Collection
+				   - size: Int
+				 - List
+				   - clear(Int)
+			""".trimIndent(), Severity.ERROR)
 	}
 
 	@Test
@@ -176,6 +299,25 @@ internal class Functions {
 	}
 
 	@Test
+	fun `allows overriding of function with generic return type`() {
+		val sourceCode =
+			"""
+				Iterator class
+				abstract Iterable class {
+					containing IteratorImplementation: Iterator
+					to createIterator(): IteratorImplementation
+				}
+				Range class: <Iterator>Iterable {
+					overriding to createIterator(): Iterator {
+						return Iterator()
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<OverridingFunctionReturnTypeNotAssignable>()
+	}
+
+	@Test
 	fun `detects link from function to super function with different return type`() {
 		val sourceCode =
 			"""
@@ -191,7 +333,7 @@ internal class Functions {
 		val lintResult = TestUtil.lint(sourceCode)
 		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
 		assertNotNull(function)
-		assertNull(function.signature.superFunctionSignature)
+		lintResult.assertIssueNotDetected<OverriddenSuperMissing>()
 		lintResult.assertIssueDetected<OverridingFunctionReturnTypeNotAssignable>(
 			"Return type of overriding function 'WoodenHouse.build(Int): Float' is not assignable to " +
 				"the return type of the overridden function 'House.build(Int): Int'.", Severity.ERROR)

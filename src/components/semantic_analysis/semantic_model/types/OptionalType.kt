@@ -4,6 +4,7 @@ import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.declarations.InitializerDefinition
 import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
 class OptionalType(override val source: SyntaxTreeNode, scope: Scope, val baseType: Type): Type(source, scope) {
@@ -12,7 +13,7 @@ class OptionalType(override val source: SyntaxTreeNode, scope: Scope, val baseTy
 		addSemanticModels(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): OptionalType {
+	override fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): OptionalType {
 		return OptionalType(source, scope, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
@@ -21,6 +22,10 @@ class OptionalType(override val source: SyntaxTreeNode, scope: Scope, val baseTy
 		while(baseType is OptionalType)
 			baseType = baseType.baseType
 		return OptionalType(source, scope, baseType.simplified())
+	}
+
+	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+		return Pair(null, null)
 	}
 
 	override fun inferTypeParameter(typeParameter: TypeDeclaration, sourceType: Type, inferredTypes: MutableList<Type>) {

@@ -156,6 +156,18 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		return true
 	}
 
+	fun fulfillsInheritanceRequirementsOf(superInitializer: InitializerDefinition, typeSubstitutions: Map<TypeDeclaration, Type>): Boolean {
+		if(parameters.size != superInitializer.parameters.size)
+			return false
+		for(parameterIndex in parameters.indices) {
+			val superParameterType = superInitializer.parameters[parameterIndex].type?.withTypeSubstitutions(typeSubstitutions) ?: continue
+			val baseParameterType = parameters[parameterIndex].type ?: continue
+			if(!baseParameterType.accepts(superParameterType))
+				return false
+		}
+		return true
+	}
+
 	override fun determineTypes() {
 		parentTypeDeclaration = scope.getSurroundingTypeDeclaration()
 			?: throw CompilerError(source, "Initializer expected surrounding type definition.")

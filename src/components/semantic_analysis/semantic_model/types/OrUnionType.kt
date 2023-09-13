@@ -5,6 +5,7 @@ import components.semantic_analysis.semantic_model.declarations.InitializerDefin
 import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
 
@@ -16,7 +17,7 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 			type.interfaceScope.addSubscriber(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): OrUnionType {
+	override fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): OrUnionType {
 		val specificTypes = LinkedList<Type>()
 		for(type in types)
 			specificTypes.add(type.withTypeSubstitutions(typeSubstitutions))
@@ -64,6 +65,16 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 	override fun onNewInterfaceMember(newInterfaceMember: InterfaceMember) {
 		if(types.all { type -> type.interfaceScope.hasInterfaceMember(newInterfaceMember) })
 			interfaceScope.addInterfaceMember(newInterfaceMember)
+	}
+
+	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+		var valueDeclarationPair: Pair<ValueDeclaration?, Type?>? = null
+		for(type in types) {
+			valueDeclarationPair = type.getValueDeclaration(name)
+			if(valueDeclarationPair.first == null)
+				return Pair(null, null)
+		}
+		return valueDeclarationPair ?: Pair(null, null)
 	}
 
 	override fun isInstanceOf(specialType: SpecialType): Boolean {

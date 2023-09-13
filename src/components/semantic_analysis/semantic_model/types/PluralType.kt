@@ -4,6 +4,7 @@ import components.compiler.targets.llvm.LlvmConstructor
 import components.compiler.targets.llvm.LlvmType
 import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
 class PluralType(override val source: SyntaxTreeNode, scope: Scope, val baseType: Type): Type(source, scope) {
@@ -12,12 +13,16 @@ class PluralType(override val source: SyntaxTreeNode, scope: Scope, val baseType
 		addSemanticModels(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): PluralType {
+	override fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): PluralType {
 		return PluralType(source, scope, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun simplified(): Type {
 		return PluralType(source, scope, baseType.simplified())
+	}
+
+	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+		return Pair(null, null)
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

@@ -7,6 +7,7 @@ import components.semantic_analysis.semantic_model.declarations.PropertyDeclarat
 import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
 import components.semantic_analysis.semantic_model.values.InterfaceMember
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
 
@@ -18,7 +19,7 @@ class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types:
 			type.interfaceScope.addSubscriber(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): AndUnionType {
+	override fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): AndUnionType {
 		val specificTypes = LinkedList<Type>()
 		for(type in types)
 			specificTypes.add(type.withTypeSubstitutions(typeSubstitutions))
@@ -43,6 +44,16 @@ class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types:
 		interfaceScope.addInitializer(newInitializer)
 	}
 
+	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+		for(type in types) {
+			val valueDeclarationPair = type.getValueDeclaration(name)
+			if(valueDeclarationPair.first == null)
+				continue
+			return valueDeclarationPair
+		}
+		return Pair(null, null)
+	}
+
 	override fun isInstanceOf(specialType: SpecialType): Boolean {
 		return types.any { type -> type.isInstanceOf(specialType) }
 	}
@@ -59,7 +70,7 @@ class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types:
 		return types.any { type -> type.isAssignableTo(targetType) }
 	}
 
-	override fun getAbstractMemberDeclarations(): List<MemberDeclaration> {
+	override fun getAbstractMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> {
 		return types.flatMap { type -> type.getAbstractMemberDeclarations() }
 	}
 

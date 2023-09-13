@@ -216,6 +216,23 @@ internal class Initializers {
 	}
 
 	@Test
+	fun `allows abstract classes to override abstract initializers of generic super type`() {
+		val sourceCode =
+			"""
+				Int class
+				abstract List class {
+					containing Element
+					abstract init(element: Element)
+				}
+				IntList class: <Int>List {
+					overriding init(element: Int)
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
 	fun `doesn't require generic type definitions to override abstract initializers`() {
 		val sourceCode =
 			"""

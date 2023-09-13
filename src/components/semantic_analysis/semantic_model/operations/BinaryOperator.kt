@@ -23,18 +23,18 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 
 	override fun determineTypes() {
 		super.determineTypes()
-		left.type?.let { leftType ->
-			try {
-				targetSignature = leftType.interfaceScope.getOperator(kind, right)
-				if(targetSignature == null) {
-					context.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.type}"))
-					return@let
-				}
-				type = targetSignature?.returnType
-			} catch(error: SignatureResolutionAmbiguityError) {
-				//TODO write test for this
-				error.log(source, "operator", "$leftType $kind ${right.type}")
+		val leftType = left.type ?: return
+		try {
+			val match = leftType.interfaceScope.getOperator(kind, right)
+			if(match == null) {
+				context.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.type}"))
+				return
 			}
+			targetSignature = match.signature
+			type = match.returnType
+		} catch(error: SignatureResolutionAmbiguityError) {
+			//TODO write test for this
+			error.log(source, "operator", "$leftType $kind ${right.type}")
 		}
 	}
 

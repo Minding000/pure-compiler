@@ -39,7 +39,7 @@ class LiteralParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gener
 
 	/**
 	 * BooleanLiteral:
-	 *   <number>
+	 *   <boolean>
 	 */
 	fun parseBooleanLiteral(): BooleanLiteral {
 		return BooleanLiteral(consume(WordAtom.BOOLEAN_LITERAL))

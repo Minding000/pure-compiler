@@ -13,8 +13,10 @@ import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.ObjectType
 import components.semantic_analysis.semantic_model.types.StaticType
 import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.*
-import components.semantic_analysis.semantic_model.values.Function
+import components.semantic_analysis.semantic_model.values.InitializerReference
+import components.semantic_analysis.semantic_model.values.SuperReference
+import components.semantic_analysis.semantic_model.values.Value
+import components.semantic_analysis.semantic_model.values.VariableValue
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
@@ -70,12 +72,13 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 
 	private fun resolveFunctionCall(functionType: FunctionType) {
 		try {
-			targetSignature = functionType.getSignature(typeParameters, valueParameters)
-			if(targetSignature == null) {
+			val match = functionType.getSignature(typeParameters, valueParameters)
+			if(match == null) {
 				context.addIssue(SignatureMismatch(function, typeParameters, valueParameters))
 				return
 			}
-			type = targetSignature?.returnType
+			targetSignature = match.signature
+			type = match.returnType
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "function", getSignature())
 		}
@@ -84,13 +87,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
 		staticValue = this
-		var targetImplementation: Callable? = targetInitializer
-		val targetSignature = targetSignature
-		if(targetSignature != null)
-			targetImplementation = ((((function as? MemberAccess)?.member ?: function) as? VariableValue)?.declaration?.value as? Function)
-				?.getImplementationBySignature(targetSignature)
-		if(targetImplementation == null)
-			return
+		val targetImplementation = targetInitializer ?: targetSignature?.associatedImplementation ?: return
 		//TODO also track required and initialized properties for operators (IndexAccess, BinaryOperator, etc.)
 		val requiredButUninitializedProperties = LinkedList<PropertyDeclaration>()
 		for(propertyRequiredToBeInitialized in targetImplementation.propertiesRequiredToBeInitialized) {
@@ -128,8 +125,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		}
 		val typeDefinition = signature.parentDefinition
 		val functionAddress = if(typeDefinition == null) {
-			val implementation = ((function as? VariableValue)?.declaration?.value as? Function)?.getImplementationBySignature(signature)
-				?: throw CompilerError(source, "Failed to determine address of global function.")
+			val implementation = signature.associatedImplementation
+				?: throw CompilerError(source, "Encountered member signature without implementation.")
 			implementation.llvmValue
 		} else {
 			val targetValue = if(function is MemberAccess)
@@ -138,9 +135,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				context.getThisParameter(constructor)
 			parameters.addFirst(targetValue)
 			if(function is MemberAccess && function.target is SuperReference) {
-				val implementation = ((function.member as? VariableValue)?.declaration?.value as? Function)
-					?.getImplementationBySignature(signature)
-					?: throw CompilerError(source, "Failed to determine address of super function.")
+				val implementation = signature.associatedImplementation
+					?: throw CompilerError(source, "Encountered member signature without implementation.")
 				implementation.llvmValue
 			} else {
 				val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(typeDefinition.llvmType, targetValue,

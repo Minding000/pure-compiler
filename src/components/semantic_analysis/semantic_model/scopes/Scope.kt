@@ -2,7 +2,6 @@ package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.semantic_model.control_flow.LoopStatement
 import components.semantic_analysis.semantic_model.declarations.FunctionImplementation
-import components.semantic_analysis.semantic_model.declarations.FunctionSignature
 import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.types.FunctionType
 import components.semantic_analysis.semantic_model.types.Type
@@ -23,9 +22,9 @@ abstract class Scope {
 
 	fun getOperator(kind: Operator.Kind, suppliedType: Value) = getOperator(kind, listOf(suppliedType))
 
-	open fun getOperator(kind: Operator.Kind, suppliedValues: List<Value>): FunctionSignature? {
-		val (valueDeclaration) = getValueDeclaration(kind.stringRepresentation)
-		val operator = valueDeclaration?.getLinkedType() as? FunctionType
+	open fun getOperator(kind: Operator.Kind, suppliedValues: List<Value>): FunctionType.Match? {
+		val (_, type) = getValueDeclaration(kind.stringRepresentation)
+		val operator = type as? FunctionType
 		return operator?.getSignature(suppliedValues)
 	}
 
@@ -33,7 +32,7 @@ abstract class Scope {
 		= getIndexOperator(suppliedTypes, suppliedIndexValues, listOfNotNull(suppliedParameterValue))
 
 	open fun getIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
-							  suppliedParameterValues: List<Value>): FunctionSignature? {
+							  suppliedParameterValues: List<Value>): FunctionType.Match? {
 		val kind = if(suppliedParameterValues.isEmpty()) Operator.Kind.BRACKETS_GET else Operator.Kind.BRACKETS_SET
 		return getOperator(kind, listOf(*suppliedIndexValues.toTypedArray(), *suppliedParameterValues.toTypedArray()))
 	}

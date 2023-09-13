@@ -6,6 +6,7 @@ import components.semantic_analysis.semantic_model.declarations.InitializerDefin
 import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.Value
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import errors.user.SignatureResolutionAmbiguityError
 import java.util.*
 
@@ -15,9 +16,8 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 		typeDeclaration.scope.addSubscriber(this)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): StaticType {
-		return this
-	}
+	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>) = this
+	override fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>) = this
 
 	override fun simplified(): Type = this
 
@@ -31,6 +31,10 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 
 	override fun onNewInitializer(newInitializer: InitializerDefinition) {
 		interfaceScope.addInitializer(newInitializer)
+	}
+
+	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+		return typeDeclaration.scope.getValueDeclaration(name)
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

@@ -47,10 +47,11 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 	override fun toSemanticModel(scope: MutableScope): SemanticTypeDeclarationModel {
 		val name = identifier.getValue()
 		val definitionType = type.type
-		var superType = superType?.toSemanticModel(scope)
+		val typeScope = TypeScope(scope)
+		var superType = superType?.toSemanticModel(typeScope)
 		if(!(definitionType == WordAtom.CLASS && SpecialType.isRootType(name)))
-			superType = superType ?: LiteralType(this, scope, SpecialType.ANY)
-		val typeScope = TypeScope(scope, superType?.interfaceScope)
+			superType = superType ?: LiteralType(this, typeScope, SpecialType.ANY)
+		typeScope.superScope = superType?.interfaceScope
 		val explicitParentType = explicitParentType?.toSemanticModel(scope)
 		val members = getSemanticMemberModels(typeScope, definitionType).toMutableList()
 		val isBound = parent?.containsModifier(WordAtom.BOUND) ?: false

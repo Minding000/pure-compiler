@@ -15,8 +15,10 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import errors.internal.CompilerError
 import logger.issues.declaration.CircularInheritance
 import logger.issues.declaration.ExplicitParentOnScopedTypeDefinition
+import logger.issues.declaration.MissingImplementations
 import logger.issues.modifiers.NoParentToBindTo
 import java.util.*
 
@@ -104,7 +106,32 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		if(isBound && parentTypeDeclaration == null)
 			context.addIssue(NoParentToBindTo(source))
 		if(isDefinition && (this as? Class)?.isAbstract != true && !hasCircularInheritance)
-			scope.ensureAbstractSuperMembersImplemented()
+			ensureAbstractSuperMembersImplemented()
+	}
+
+	private fun ensureAbstractSuperMembersImplemented() {
+		val missingOverrides = LinkedHashMap<TypeDeclaration, LinkedList<MemberDeclaration>>()
+		val abstractSuperMembers = superType?.getAbstractMemberDeclarations() ?: return
+		for((abstractSuperMember, typeSubstitutions) in abstractSuperMembers) {
+			if(scope.memberDeclarations.any { memberDeclaration ->
+				return@any if(memberDeclaration is PropertyDeclaration && abstractSuperMember is PropertyDeclaration)
+					memberDeclaration.name == abstractSuperMember.name
+				else if(memberDeclaration is FunctionImplementation && abstractSuperMember is FunctionImplementation)
+					memberDeclaration.signature.fulfillsInheritanceRequirementsOf(
+						abstractSuperMember.signature.withTypeSubstitutions(typeSubstitutions))
+				else if(memberDeclaration is InitializerDefinition && abstractSuperMember is InitializerDefinition)
+					memberDeclaration.fulfillsInheritanceRequirementsOf(abstractSuperMember, typeSubstitutions)
+				else false
+			})
+				continue
+			val parentDefinition = abstractSuperMember.parentTypeDeclaration
+				?: throw CompilerError(abstractSuperMember.source, "Member is missing parent definition.")
+			val missingOverridesFromType = missingOverrides.getOrPut(parentDefinition) { LinkedList() }
+			missingOverridesFromType.add(abstractSuperMember)
+		}
+		if(missingOverrides.isEmpty())
+			return
+		context.addIssue(MissingImplementations(this, missingOverrides))
 	}
 
 	private fun addDefaultInitializer() {
@@ -146,10 +173,16 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		return scope.getConversionsFrom(sourceType)
 	}
 
+	fun getGenericTypes(): List<ObjectType> {
+		return scope.getGenericTypeDeclarations().map { genericTypeDeclaration -> ObjectType(genericTypeDeclaration) }
+	}
+
 	fun acceptsSubstituteType(substituteType: Type): Boolean {
+		if(superType == null)
+			return false
 		if(SpecialType.ANY.matches(superType))
 			return true
-		return superType?.accepts(substituteType) ?: false
+		return superType.accepts(substituteType)
 	}
 
 	override fun equals(other: Any?): Boolean {

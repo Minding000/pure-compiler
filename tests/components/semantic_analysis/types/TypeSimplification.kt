@@ -21,8 +21,8 @@ internal class TypeSimplification {
 				Randomizer.chooseRandomElementOf(Cat(), Human())
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val valueDeclaration = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertEquals("Cat | Human", valueDeclaration?.type.toString())
+		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
+		assertEquals("Cat | Human", functionCall?.type.toString())
 	}
 
 	@Test

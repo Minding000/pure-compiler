@@ -319,12 +319,14 @@ internal class OperatorResolution {
 	fun `emits error for ambiguous operator calls`() {
 		val sourceCode =
 			"""
-				Int class
+				Number class
+				Int class: Number
 				Boolean class
 				List class {
 					containing Element
 					operator [index: Int]: Element
 					operator [element: Element]: Boolean
+					operator [N: Number; index: N]: Boolean
 				}
 				val numbers = <Int>List()
 				numbers[Int()]
@@ -332,8 +334,9 @@ internal class OperatorResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<SignatureAmbiguity>("""
 			Call to operator '<Int>List[Int]' is ambiguous. Matching signatures:
-			 - '(Int) => Int' declared at Test.Test:5:10
-			 - '(Int) => Boolean' declared at Test.Test:6:10
+			 - '(Int) => Element' declared at Test.Test:6:10
+			 - '(Element) => Boolean' declared at Test.Test:7:10
+			 - '(N: Number; N) => Boolean' declared at Test.Test:8:10
 		""".trimIndent())
 	}
 

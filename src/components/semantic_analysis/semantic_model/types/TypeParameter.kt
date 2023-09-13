@@ -3,6 +3,7 @@ package components.semantic_analysis.semantic_model.types
 import components.semantic_analysis.semantic_model.context.SpecialType
 import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.scopes.Scope
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.TypeParameter as TypeParameterSyntaxTree
 
 class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, val mode: Mode, val baseType: Type): Type(source, scope) {
@@ -11,12 +12,16 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, 
 		addSemanticModels(baseType)
 	}
 
-	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): TypeParameter {
+	override fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): TypeParameter {
 		return TypeParameter(source, scope, mode, baseType.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun simplified(): Type {
 		return TypeParameter(source, scope, mode, baseType.simplified())
+	}
+
+	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+		return baseType.getValueDeclaration(name)
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

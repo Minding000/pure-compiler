@@ -34,4 +34,23 @@ internal class Assignments {
 		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 		lintResult.assertIssueNotDetected<ExpressionNotAssignable>()
 	}
+
+	@Test
+	fun `allows for generic types to be assigned to their base type`() {
+		val sourceCode =
+			"""
+				Number class
+				Cube class {
+					containing N: Number
+					val sideLength: N
+					to getSideLength(): Number {
+						val sideLengthAsNumber: Number = sideLength
+						return sideLengthAsNumber
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<TypeNotAssignable>()
+		lintResult.assertIssueNotDetected<ExpressionNotAssignable>()
+	}
 }

@@ -1,16 +1,18 @@
 package components.semantic_analysis.semantic_model.scopes
 
 import components.semantic_analysis.semantic_model.declarations.InitializerDefinition
-import components.semantic_analysis.semantic_model.declarations.MemberDeclaration
-import components.semantic_analysis.semantic_model.declarations.PropertyDeclaration
 import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.Instance
 import components.semantic_analysis.semantic_model.values.InterfaceMember
+import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import java.util.*
 
+//TODO remove all 'getLinkedType' and 'getComputedType' functions in project
 class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	lateinit var type: Type
+
+	//TODO remove following properties
 	private val typeDeclarations = HashMap<String, TypeDeclaration>()
 	private val interfaceMembers = HashMap<String, InterfaceMember>()
 	val initializers = LinkedList<InitializerDefinition>()
@@ -54,10 +56,7 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 		return typeDeclarations[name]
 	}
 
-	override fun getValueDeclaration(name: String): Pair<InterfaceMember?, Type?> {
-		val interfaceMember = interfaceMembers[name]
-		return Pair(interfaceMember, interfaceMember?.type)
-	}
+	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> = type.getValueDeclaration(name)
 
 	fun getSuperInitializer(subInitializer: InitializerDefinition): InitializerDefinition? {
 		for(initializer in initializers) {
@@ -67,8 +66,8 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 		return null
 	}
 
-	fun getAbstractMemberDeclarations(): List<MemberDeclaration> = type.getAbstractMemberDeclarations()
-	fun getPropertiesToBeInitialized(): List<PropertyDeclaration> = type.getPropertiesToBeInitialized()
+	fun getAbstractMemberDeclarations() = type.getAbstractMemberDeclarations()
+	fun getPropertiesToBeInitialized() = type.getPropertiesToBeInitialized()
 
 	fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
 		return initializers.filter { initializer -> initializer.isConvertingFrom(sourceType) }

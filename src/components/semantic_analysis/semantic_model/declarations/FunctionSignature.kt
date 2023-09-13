@@ -18,7 +18,9 @@ import kotlin.math.max
 
 class FunctionSignature(override val source: SyntaxTreeNode, override val scope: BlockScope,
 						val localTypeParameters: List<GenericTypeDeclaration>, val parameterTypes: List<Type?>,
-						returnType: Type?, val isVariadic: Boolean): SemanticModel(source, scope) {
+						returnType: Type?, val associatedImplementation: FunctionImplementation? = null): SemanticModel(source, scope) {
+	var original = this
+	val isVariadic = associatedImplementation?.isVariadic ?: false
 	val fixedParameterTypes: List<Type?>
 	private val variadicParameterType: Type?
 	val returnType = returnType ?: LiteralType(source, scope, SpecialType.NOTHING)
@@ -76,15 +78,18 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		return inferredTypes.combine(this)
 	}
 
-	fun withTypeSubstitutions(typeSubstitution: Map<TypeDeclaration, Type>): FunctionSignature {
+	fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): FunctionSignature {
 		val specificLocalTypeParameters = LinkedList<GenericTypeDeclaration>()
 		for(localTypeParameter in localTypeParameters)
-			specificLocalTypeParameters.add(localTypeParameter.withTypeSubstitutions(typeSubstitution))
+			specificLocalTypeParameters.add(localTypeParameter.withTypeSubstitutions(typeSubstitutions))
 		val specificParametersTypes = LinkedList<Type?>()
 		for(parameterType in parameterTypes)
-			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitution))
-		return FunctionSignature(source, scope, specificLocalTypeParameters, specificParametersTypes,
-			returnType.withTypeSubstitutions(typeSubstitution), isVariadic)
+			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitutions))
+		val specificSignature = FunctionSignature(source, scope, specificLocalTypeParameters, specificParametersTypes,
+			returnType.withTypeSubstitutions(typeSubstitutions), associatedImplementation)
+		specificSignature.original = this
+		specificSignature.superFunctionSignature = superFunctionSignature
+		return specificSignature
 	}
 
 	fun accepts(localTypeSubstitutions: Map<TypeDeclaration, Type>, suppliedValues: List<Value>): Boolean {
@@ -96,6 +101,24 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 				return false
 		}
 		return true
+	}
+
+	fun fulfillsInheritanceRequirementsOf(superSignature: FunctionSignature): Boolean {
+		if(parameterTypes.size != superSignature.parameterTypes.size)
+			return false
+		for(parameterIndex in parameterTypes.indices) {
+			val parameterType = parameterTypes[parameterIndex] ?: continue
+			val otherParameterType = superSignature.parameterTypes[parameterIndex] ?: continue
+			if(!otherParameterType.accepts(parameterType))
+				return false
+		}
+		return true
+	}
+
+	fun overrides(otherSignature: FunctionSignature): Boolean {
+		if(superFunctionSignature == otherSignature)
+			return true
+		return superFunctionSignature?.overrides(otherSignature) ?: false
 	}
 
 	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean {
@@ -128,18 +151,14 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		if(other.parameterTypes.size != parameterTypes.size)
 			return false
 		for(parameterIndex in parameterTypes.indices) {
-			if(parameterTypes[parameterIndex]?.let { parameterType ->
-					other.parameterTypes[parameterIndex]?.accepts(parameterType) } == false)
+			val parameterType = parameterTypes[parameterIndex] ?: continue
+			val otherParameterType = other.parameterTypes[parameterIndex] ?: continue
+			if(!otherParameterType.accepts(parameterType))
 				return false
 		}
 		if(!returnType.accepts(other.returnType))
 			return false
 		return true
-	}
-
-	fun getComputedReturnType(): Type {
-		returnType.determineTypes()
-		return returnType
 	}
 
 	fun getParameterTypeAt(index: Int): Type? {

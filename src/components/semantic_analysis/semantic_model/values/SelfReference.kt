@@ -37,8 +37,7 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 			}
 		}
 		typeDeclaration?.let { typeDeclaration ->
-			val typeParameters = typeDeclaration.scope.getGenericTypeDeclarations().map { ObjectType(it) }
-			type = ObjectType(typeParameters, typeDeclaration)
+			type = ObjectType(typeDeclaration.getGenericTypes(), typeDeclaration)
 			type?.determineTypes()
 			addSemanticModels(type)
 		}
