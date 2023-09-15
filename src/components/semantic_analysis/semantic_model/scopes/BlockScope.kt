@@ -8,6 +8,7 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.issues.declaration.Redeclaration
+import logger.issues.declaration.ShadowsElement
 
 class BlockScope(private val parentScope: MutableScope): MutableScope() {
 	var semanticModel: SemanticModel? = null
@@ -33,8 +34,13 @@ class BlockScope(private val parentScope: MutableScope): MutableScope() {
 		if(existingValueDeclaration == null)
 			existingValueDeclaration = valueDeclarations.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
 		if(existingValueDeclaration != null) {
-			newValueDeclaration.context.addIssue(Redeclaration(newValueDeclaration.source, "value", newValueDeclaration.name,
-				existingValueDeclaration.source))
+			if(existingValueDeclaration.scope is TypeScope) {
+				newValueDeclaration.context.addIssue(ShadowsElement(newValueDeclaration.source, "value", newValueDeclaration.name,
+					existingValueDeclaration.source))
+			} else {
+				newValueDeclaration.context.addIssue(Redeclaration(newValueDeclaration.source, "value", newValueDeclaration.name,
+					existingValueDeclaration.source))
+			}
 			return
 		}
 	}

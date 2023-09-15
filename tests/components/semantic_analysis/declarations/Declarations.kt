@@ -269,4 +269,38 @@ internal class Declarations {
 		lintResult.assertIssueDetected<ExplicitParentOnScopedTypeDefinition>(
 			"Explicit parent types are only allowed on unscoped type definitions.", Severity.ERROR)
 	}
+
+	@Test
+	fun `detects variables shadowing properties`() {
+		val sourceCode =
+			"""
+				Int class
+				List class {
+					var length: Int
+					to addAll(other: List) {
+						val length = other.length
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<ShadowsElement>("'length' shadows a value, previously declared in Test.Test:3:5.",
+			Severity.WARNING)
+		lintResult.assertIssueNotDetected<Redeclaration>()
+	}
+
+	@Test
+	fun `detects parameters shadowing properties`() {
+		val sourceCode =
+			"""
+				Int class
+				List class {
+					var length: Int
+					to increaseSize(length: Int) {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<ShadowsElement>("'length' shadows a value, previously declared in Test.Test:3:5.",
+			Severity.WARNING)
+		lintResult.assertIssueNotDetected<Redeclaration>()
+	}
 }

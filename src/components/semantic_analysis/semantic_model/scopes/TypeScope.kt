@@ -134,10 +134,7 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 		if(existingValueDeclaration != null)
 			newValueDeclaration.context.addIssue(ShadowsElement(newValueDeclaration.source, "member", newValueDeclaration.name,
 				existingValueDeclaration.source))
-		val existingSuperValueDeclaration = superScope?.getValueDeclaration(newValueDeclaration.name)
-		existingValueDeclaration = existingSuperValueDeclaration?.first
-		if(existingValueDeclaration == null)
-			existingValueDeclaration = interfaceMembers.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
+		existingValueDeclaration = interfaceMembers.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
 		if(existingValueDeclaration != null) {
 			newValueDeclaration.context.addIssue(Redeclaration(newValueDeclaration.source, "member",
 				"${typeDeclaration.name}.${newValueDeclaration.name}", existingValueDeclaration.source))
