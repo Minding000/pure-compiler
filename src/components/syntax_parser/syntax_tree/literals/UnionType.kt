@@ -1,12 +1,12 @@
 package components.syntax_parser.syntax_tree.literals
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import errors.internal.CompilerError
 import java.util.*
-import components.semantic_analysis.semantic_model.types.AndUnionType as SemanticAndUnionTypeModel
-import components.semantic_analysis.semantic_model.types.OrUnionType as SemanticOrUnionTypeModel
-import components.semantic_analysis.semantic_model.types.Type as SemanticTypeModel
+import components.semantic_model.types.AndUnionType as SemanticAndUnionTypeModel
+import components.semantic_model.types.OrUnionType as SemanticOrUnionTypeModel
+import components.semantic_model.types.Type as SemanticTypeModel
 
 class UnionType(private val left: TypeSyntaxTreeNode, private val right: TypeSyntaxTreeNode, private val mode: Mode): TypeSyntaxTreeNode(left.start, right.end) {
 

@@ -1,6 +1,6 @@
 package logger.issues.resolution
 
-import components.semantic_analysis.semantic_model.general.FileReference
+import components.semantic_model.general.FileReference
 import logger.Issue
 import logger.Severity
 

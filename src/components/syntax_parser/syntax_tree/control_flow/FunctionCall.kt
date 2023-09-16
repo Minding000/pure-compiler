@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.control_flow
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import source_structure.Position
@@ -8,7 +8,7 @@ import util.indent
 import util.toLines
 import util.toSemanticTypeModels
 import util.toSemanticValueModels
-import components.semantic_analysis.semantic_model.control_flow.FunctionCall as SemanticFunctionCallModel
+import components.semantic_model.control_flow.FunctionCall as SemanticFunctionCallModel
 
 class FunctionCall(private val functionReference: ValueSyntaxTreeNode, private val typeParameters: List<TypeSyntaxTreeNode>?,
 				   private val valueParameters: List<ValueSyntaxTreeNode>, end: Position): ValueSyntaxTreeNode(functionReference.start, end) {

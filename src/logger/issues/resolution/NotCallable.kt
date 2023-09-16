@@ -1,6 +1,6 @@
 package logger.issues.resolution
 
-import components.semantic_analysis.semantic_model.values.Value
+import components.semantic_model.values.Value
 import logger.Issue
 import logger.Severity
 

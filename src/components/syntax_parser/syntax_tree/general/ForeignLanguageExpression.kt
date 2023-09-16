@@ -1,9 +1,9 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.literals.ForeignLanguageLiteral
 import components.syntax_parser.syntax_tree.literals.Identifier
-import components.semantic_analysis.semantic_model.general.ForeignLanguageExpression as SemanticForeignLanguageExpressionModel
+import components.semantic_model.general.ForeignLanguageExpression as SemanticForeignLanguageExpressionModel
 
 class ForeignLanguageExpression(private val foreignParser: Identifier, private val content: ForeignLanguageLiteral):
 	ValueSyntaxTreeNode(foreignParser.start, content.end) {

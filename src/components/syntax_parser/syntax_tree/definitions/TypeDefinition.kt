@@ -1,15 +1,15 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.context.SpecialType
-import components.semantic_analysis.semantic_model.declarations.*
-import components.semantic_analysis.semantic_model.declarations.Enum
-import components.semantic_analysis.semantic_model.declarations.PropertyDeclaration
-import components.semantic_analysis.semantic_model.general.SemanticModel
-import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.scopes.TypeScope
-import components.semantic_analysis.semantic_model.types.LiteralType
-import components.semantic_analysis.semantic_model.values.Function
-import components.semantic_analysis.semantic_model.values.Operator
+import components.semantic_model.context.SpecialType
+import components.semantic_model.declarations.*
+import components.semantic_model.declarations.Enum
+import components.semantic_model.declarations.PropertyDeclaration
+import components.semantic_model.general.SemanticModel
+import components.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.TypeScope
+import components.semantic_model.types.LiteralType
+import components.semantic_model.values.Function
+import components.semantic_model.values.Operator
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSection
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSectionChild
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -23,7 +23,7 @@ import logger.issues.declaration.GenericTypeDeclarationInObject
 import logger.issues.declaration.InvalidInstanceLocation
 import logger.issues.declaration.MultipleInstanceLists
 import java.util.*
-import components.semantic_analysis.semantic_model.declarations.TypeDeclaration as SemanticTypeDeclarationModel
+import components.semantic_model.declarations.TypeDeclaration as SemanticTypeDeclarationModel
 
 class TypeDefinition(private val identifier: Identifier, private val type: Word, private val explicitParentType: ObjectType?,
 					 private val superType: TypeSyntaxTreeNode?, private val body: TypeBody?):

@@ -1,0 +1,140 @@
+package components.code_generation.operators
+
+import components.code_generation.llvm.Llvm
+import org.junit.jupiter.api.Test
+import util.TestUtil
+import kotlin.test.assertEquals
+
+internal class BinaryIntegerOperators {
+	//TODO implement unsigned integers
+
+	@Test
+	fun `compiles integer additions`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Int {
+					return 2 + 3
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles integer subtractions`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Int {
+					return 8 - 3
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles integer multiplications`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getTen(): Int {
+					return 5 * 2
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTen")
+		assertEquals(10, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles integer divisions`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Int {
+					return 10 / 2
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles integer smaller than`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getNo(): Bool {
+					return 4 < 4
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
+		assertEquals(false, Llvm.castToBoolean(result))
+	}
+
+	@Test
+	fun `compiles integer greater than`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getNo(): Bool {
+					return 4 > 4
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
+		assertEquals(false, Llvm.castToBoolean(result))
+	}
+
+	@Test
+	fun `compiles integer smaller than or equal to`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getYes(): Bool {
+					return 4 <= 4
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
+		assertEquals(true, Llvm.castToBoolean(result))
+	}
+
+	@Test
+	fun `compiles integer greater than or equal to`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getYes(): Bool {
+					return 4 >= 4
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
+		assertEquals(true, Llvm.castToBoolean(result))
+	}
+
+	@Test
+	fun `compiles integer equal to`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getYes(): Bool {
+					return 4 == 4
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
+		assertEquals(true, Llvm.castToBoolean(result))
+	}
+
+	@Test
+	fun `compiles integer not equal to`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getNo(): Bool {
+					return 4 != 4
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
+		assertEquals(false, Llvm.castToBoolean(result))
+	}
+}

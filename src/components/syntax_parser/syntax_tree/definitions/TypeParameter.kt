@@ -1,10 +1,10 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
-import components.semantic_analysis.semantic_model.types.TypeParameter as SemanticTypeParameterModel
+import components.semantic_model.types.TypeParameter as SemanticTypeParameterModel
 
 class TypeParameter(val type: TypeSyntaxTreeNode, val modifier: Word): TypeSyntaxTreeNode(type.start, modifier.end) {
 

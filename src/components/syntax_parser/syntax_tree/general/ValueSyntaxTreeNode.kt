@@ -1,7 +1,7 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.values.Value
+import components.semantic_model.scopes.MutableScope
+import components.semantic_model.values.Value
 import components.tokenizer.Word
 import source_structure.Position
 

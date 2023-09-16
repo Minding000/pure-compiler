@@ -1,7 +1,7 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.types.Type
+import components.semantic_model.scopes.MutableScope
+import components.semantic_model.types.Type
 import source_structure.Position
 
 /**

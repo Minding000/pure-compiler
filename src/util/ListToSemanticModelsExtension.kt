@@ -1,9 +1,9 @@
 package util
 
-import components.semantic_analysis.semantic_model.general.SemanticModel
-import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.Value
+import components.semantic_model.general.SemanticModel
+import components.semantic_model.scopes.MutableScope
+import components.semantic_model.types.Type
+import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode

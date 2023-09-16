@@ -1,13 +1,13 @@
 package components.syntax_parser.syntax_tree.operations
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
+import components.semantic_model.scopes.MutableScope
+import components.semantic_model.values.LocalVariableDeclaration
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import errors.internal.CompilerError
 import util.indent
-import components.semantic_analysis.semantic_model.operations.Cast as SemanticCastModel
+import components.semantic_model.operations.Cast as SemanticCastModel
 
 class Cast(val value: ValueSyntaxTreeNode, val operator: String, val identifier: Identifier?, val type: TypeSyntaxTreeNode):
 	ValueSyntaxTreeNode(value.start, type.end) {

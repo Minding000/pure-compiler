@@ -1,8 +1,8 @@
 package util
 
-import components.semantic_analysis.semantic_model.context.Context
-import components.semantic_analysis.semantic_model.general.Program
-import components.semantic_analysis.semantic_model.general.SemanticModel
+import components.semantic_model.context.Context
+import components.semantic_model.general.Program
+import components.semantic_model.general.SemanticModel
 
 //TODO rename everything related to 'lint' to 'semantic model'
 class LintResult(val context: Context, val program: Program): LogResult(context.logger) {

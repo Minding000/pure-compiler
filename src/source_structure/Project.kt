@@ -1,6 +1,6 @@
 package source_structure
 
-import components.semantic_analysis.semantic_model.context.Context
+import components.semantic_model.context.Context
 import util.indent
 import util.toLines
 import java.util.*

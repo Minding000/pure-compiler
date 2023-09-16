@@ -1,8 +1,8 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.declarations.FunctionImplementation
-import components.semantic_analysis.semantic_model.scopes.BlockScope
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.declarations.FunctionImplementation
+import components.semantic_model.scopes.BlockScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.OperatorSection
 import components.syntax_parser.syntax_tree.general.StatementSection
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -10,7 +10,7 @@ import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.tokenizer.WordAtom
 import logger.issues.declaration.GenericOperator
 import logger.issues.declaration.TypeParametersOutsideOfIndexParameterList
-import components.semantic_analysis.semantic_model.values.Operator.Kind as OperatorKind
+import components.semantic_model.values.Operator.Kind as OperatorKind
 
 class OperatorDefinition(private val operator: Operator, private val parameterList: ParameterList?, private val body: StatementSection?,
 						 private var returnType: TypeSyntaxTreeNode?):

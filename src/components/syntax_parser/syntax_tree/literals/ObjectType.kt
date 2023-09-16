@@ -1,9 +1,9 @@
 package components.syntax_parser.syntax_tree.literals
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import util.indent
-import components.semantic_analysis.semantic_model.types.ObjectType as SemanticObjectTypeModel
+import components.semantic_model.types.ObjectType as SemanticObjectTypeModel
 
 class ObjectType(private val enclosingType: ObjectType?, private val typeList: TypeList?, private val identifier: Identifier):
 	TypeSyntaxTreeNode(typeList?.start ?: identifier.start, identifier.end) {

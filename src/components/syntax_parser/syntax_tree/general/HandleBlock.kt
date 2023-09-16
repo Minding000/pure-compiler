@@ -1,10 +1,10 @@
 package components.syntax_parser.syntax_tree.general
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
+import components.semantic_model.scopes.MutableScope
+import components.semantic_model.values.LocalVariableDeclaration
 import components.syntax_parser.syntax_tree.literals.Identifier
 import source_structure.Position
-import components.semantic_analysis.semantic_model.general.HandleBlock as SemanticHandleBlockModel
+import components.semantic_model.general.HandleBlock as SemanticHandleBlockModel
 
 class HandleBlock(start: Position, private val type: TypeSyntaxTreeNode, private val identifier: Identifier?, private val block: StatementBlock):
 	SyntaxTreeNode(start, block.end) {

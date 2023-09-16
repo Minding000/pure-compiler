@@ -1,6 +1,6 @@
 package logger.issues.declaration
 
-import components.semantic_analysis.semantic_model.declarations.TypeAlias
+import components.semantic_model.declarations.TypeAlias
 import logger.Issue
 import logger.Severity
 

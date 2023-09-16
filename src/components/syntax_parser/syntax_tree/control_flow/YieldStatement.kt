@@ -1,9 +1,9 @@
 package components.syntax_parser.syntax_tree.control_flow
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import source_structure.Position
-import components.semantic_analysis.semantic_model.control_flow.YieldStatement as SemanticYieldStatementModel
+import components.semantic_model.control_flow.YieldStatement as SemanticYieldStatementModel
 
 class YieldStatement(start: Position, private val key: ValueSyntaxTreeNode?, private val value: ValueSyntaxTreeNode): ValueSyntaxTreeNode(start, value.end) {
 

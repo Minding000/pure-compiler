@@ -1,7 +1,7 @@
 package logger.issues.declaration
 
-import components.semantic_analysis.semantic_model.declarations.GenericTypeDeclaration
-import components.semantic_analysis.semantic_model.types.Type
+import components.semantic_model.declarations.GenericTypeDeclaration
+import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.Issue
 import logger.Severity

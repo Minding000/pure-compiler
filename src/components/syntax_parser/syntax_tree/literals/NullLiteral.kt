@@ -1,9 +1,9 @@
 package components.syntax_parser.syntax_tree.literals
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import components.tokenizer.Word
-import components.semantic_analysis.semantic_model.values.NullLiteral as SemanticNullLiteralModel
+import components.semantic_model.values.NullLiteral as SemanticNullLiteralModel
 
 class NullLiteral(word: Word): ValueSyntaxTreeNode(word) {
 

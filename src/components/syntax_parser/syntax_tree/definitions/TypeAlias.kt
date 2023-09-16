@@ -1,14 +1,14 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.scopes.TypeScope
+import components.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.TypeScope
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSection
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSectionChild
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import source_structure.Position
-import components.semantic_analysis.semantic_model.declarations.TypeAlias as SemanticTypeAliasModel
+import components.semantic_model.declarations.TypeAlias as SemanticTypeAliasModel
 
 class TypeAlias(start: Position, private val modifierList: ModifierList?, private val identifier: Identifier,
 				private val type: TypeSyntaxTreeNode): SyntaxTreeNode(start, type.end), ModifierSectionChild {

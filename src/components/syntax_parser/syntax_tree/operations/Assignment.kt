@@ -1,12 +1,12 @@
 package components.syntax_parser.syntax_tree.operations
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import util.indent
 import util.toLines
 import util.toSemanticValueModels
-import components.semantic_analysis.semantic_model.operations.Assignment as SemanticAssignmentModel
+import components.semantic_model.operations.Assignment as SemanticAssignmentModel
 
 class Assignment(private val targets: List<ValueSyntaxTreeNode>, val source: ValueSyntaxTreeNode): SyntaxTreeNode(targets.first().start, source.end) {
 

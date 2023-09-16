@@ -1,7 +1,7 @@
 package logger.issues.resolution
 
-import components.semantic_analysis.semantic_model.declarations.FunctionSignature
-import components.semantic_analysis.semantic_model.general.SemanticModel
+import components.semantic_model.declarations.FunctionSignature
+import components.semantic_model.general.SemanticModel
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.Issue
 import logger.Severity

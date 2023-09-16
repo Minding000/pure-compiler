@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.values.Operator
+import components.semantic_model.values.Operator
 import components.syntax_parser.syntax_tree.general.MetaSyntaxTreeNode
 import components.tokenizer.Word
 import errors.internal.CompilerError

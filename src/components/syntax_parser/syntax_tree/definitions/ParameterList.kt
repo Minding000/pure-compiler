@@ -1,13 +1,13 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.declarations.GenericTypeDeclaration
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.declarations.GenericTypeDeclaration
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.MetaSyntaxTreeNode
 import source_structure.Position
 import util.indent
 import util.toLines
 import java.util.*
-import components.semantic_analysis.semantic_model.declarations.Parameter as SemanticParameterModel
+import components.semantic_model.declarations.Parameter as SemanticParameterModel
 
 class ParameterList(start: Position, end: Position, private val genericParameters: List<Parameter>?,
 					private val parameters: List<Parameter>): MetaSyntaxTreeNode(start, end) {

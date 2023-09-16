@@ -1,6 +1,6 @@
 package util
 
-import components.compiler.targets.llvm.LlvmList
+import components.code_generation.llvm.LlvmList
 import org.bytedeco.javacpp.Pointer
 
 inline fun <reified T: Pointer?> List<T>.toLlvmList(): LlvmList<T> = LlvmList(*toTypedArray())

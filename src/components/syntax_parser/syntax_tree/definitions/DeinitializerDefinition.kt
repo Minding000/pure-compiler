@@ -1,13 +1,13 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSection
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSectionChild
 import components.syntax_parser.syntax_tree.general.StatementSection
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.tokenizer.WordAtom
 import source_structure.Position
-import components.semantic_analysis.semantic_model.declarations.DeinitializerDefinition as SemanticDeinitializerDefinitionModel
+import components.semantic_model.declarations.DeinitializerDefinition as SemanticDeinitializerDefinitionModel
 
 class DeinitializerDefinition(start: Position, end: Position, private val body: StatementSection?):
 	SyntaxTreeNode(start, end), ModifierSectionChild {

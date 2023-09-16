@@ -1,6 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.context.Context
+import components.semantic_model.context.Context
 import components.tokenizer.WordAtom
 import logger.issues.modifiers.DisallowedModifier
 import logger.issues.modifiers.DuplicateModifier

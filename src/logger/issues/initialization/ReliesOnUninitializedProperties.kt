@@ -1,6 +1,6 @@
 package logger.issues.initialization
 
-import components.semantic_analysis.semantic_model.declarations.PropertyDeclaration
+import components.semantic_model.declarations.PropertyDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.Issue
 import logger.Severity

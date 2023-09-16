@@ -1,6 +1,6 @@
 package logger.issues.loops
 
-import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
+import components.semantic_model.values.LocalVariableDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.Issue
 import logger.Severity

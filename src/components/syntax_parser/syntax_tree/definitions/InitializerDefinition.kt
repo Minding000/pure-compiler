@@ -1,14 +1,14 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.scopes.BlockScope
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.BlockScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSection
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSectionChild
 import components.syntax_parser.syntax_tree.general.StatementSection
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.tokenizer.WordAtom
 import source_structure.Position
-import components.semantic_analysis.semantic_model.declarations.InitializerDefinition as SemanticInitializerDefinitionModel
+import components.semantic_model.declarations.InitializerDefinition as SemanticInitializerDefinitionModel
 
 class InitializerDefinition(start: Position, private val parameterList: ParameterList?, private val body: StatementSection?, end: Position):
 	SyntaxTreeNode(start, end), ModifierSectionChild {

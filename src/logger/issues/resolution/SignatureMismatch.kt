@@ -1,7 +1,7 @@
 package logger.issues.resolution
 
-import components.semantic_analysis.semantic_model.types.Type
-import components.semantic_analysis.semantic_model.values.Value
+import components.semantic_model.types.Type
+import components.semantic_model.values.Value
 import logger.Issue
 import logger.Severity
 import util.stringifyTypes

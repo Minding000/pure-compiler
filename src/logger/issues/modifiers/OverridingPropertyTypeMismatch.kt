@@ -1,6 +1,6 @@
 package logger.issues.modifiers
 
-import components.semantic_analysis.semantic_model.types.Type
+import components.semantic_model.types.Type
 import logger.Issue
 import logger.Severity
 

@@ -1,0 +1,254 @@
+package components.semantic_model.operations
+
+import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmValue
+import components.semantic_model.context.SpecialType
+import components.semantic_model.context.VariableTracker
+import components.semantic_model.context.VariableUsage
+import components.semantic_model.declarations.FunctionSignature
+import components.semantic_model.scopes.Scope
+import components.semantic_model.values.*
+import errors.internal.CompilerError
+import errors.user.SignatureResolutionAmbiguityError
+import logger.issues.resolution.NotFound
+import components.syntax_parser.syntax_tree.operations.BinaryOperator as BinaryOperatorSyntaxTree
+
+class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope, val left: Value, val right: Value,
+					 val kind: Operator.Kind): Value(source, scope) {
+	var targetSignature: FunctionSignature? = null
+
+	init {
+		addSemanticModels(left, right)
+	}
+
+	override fun determineTypes() {
+		super.determineTypes()
+		val leftType = left.type ?: return
+		try {
+			val match = leftType.interfaceScope.getOperator(kind, right)
+			if(match == null) {
+				context.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.type}"))
+				return
+			}
+			targetSignature = match.signature
+			type = match.returnType
+		} catch(error: SignatureResolutionAmbiguityError) {
+			//TODO write test for this
+			error.log(source, "operator", "$leftType $kind ${right.type}")
+		}
+	}
+
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		val isConditional = SpecialType.BOOLEAN.matches(left.type) && (kind == Operator.Kind.AND || kind == Operator.Kind.PIPE)
+		val isComparison = kind == Operator.Kind.EQUAL_TO || kind == Operator.Kind.NOT_EQUAL_TO
+		left.analyseDataFlow(tracker)
+		if(isConditional) {
+			val isAnd = kind == Operator.Kind.AND
+			tracker.setVariableStates(left.getEndState(isAnd))
+			val variableValue = left as? VariableValue
+			val declaration = variableValue?.declaration
+			if(declaration != null) {
+				val booleanLiteral = BooleanLiteral(this, isAnd)
+				tracker.add(VariableUsage.Kind.HINT, declaration, this, booleanLiteral.type, booleanLiteral)
+			}
+			right.analyseDataFlow(tracker)
+			setEndState(right.getEndState(isAnd), isAnd)
+			tracker.setVariableStates(left.getEndState(!isAnd))
+			tracker.addVariableStates(right.getEndState(!isAnd))
+			setEndState(tracker, !isAnd)
+			tracker.addVariableStates(getEndState(isAnd))
+		} else if(isComparison) {
+			right.analyseDataFlow(tracker)
+			val variableValue = left as? VariableValue ?: right as? VariableValue
+			val literalValue = left as? LiteralValue ?: right as? LiteralValue
+			val declaration = variableValue?.declaration
+			if(declaration != null && literalValue != null) {
+				val isPositive = kind == Operator.Kind.EQUAL_TO
+				setEndState(tracker, !isPositive)
+				tracker.add(VariableUsage.Kind.HINT, declaration, this, literalValue.type, literalValue)
+				setEndState(tracker, isPositive)
+				tracker.addVariableStates(getEndState(!isPositive))
+			} else {
+				setEndStates(tracker)
+			}
+		} else {
+			right.analyseDataFlow(tracker)
+			setEndStates(tracker)
+		}
+		computeStaticValue()
+	}
+
+	private fun computeStaticValue() {
+		staticValue = when(kind) {
+			Operator.Kind.DOUBLE_QUESTION_MARK -> {
+				val leftValue = left.getComputedValue() ?: return
+				if(leftValue is NullLiteral)
+					right.getComputedValue()
+				else
+					leftValue
+			}
+			Operator.Kind.AND -> {
+				val leftValue = left.getComputedValue() as? BooleanLiteral ?: return
+				val rightValue = right.getComputedValue() as? BooleanLiteral ?: return
+				BooleanLiteral(this, leftValue.value && rightValue.value)
+			}
+			Operator.Kind.PIPE -> {
+				val leftValue = left.getComputedValue() as? BooleanLiteral ?: return
+				val rightValue = right.getComputedValue() as? BooleanLiteral ?: return
+				BooleanLiteral(this, leftValue.value || rightValue.value)
+			}
+			Operator.Kind.PLUS -> {
+				val leftValue = left.getComputedValue() as? NumberLiteral ?: return
+				val rightValue = right.getComputedValue() as? NumberLiteral ?: return
+				NumberLiteral(this, leftValue.value + rightValue.value)
+			}
+			Operator.Kind.MINUS -> {
+				val leftValue = left.getComputedValue() as? NumberLiteral ?: return
+				val rightValue = right.getComputedValue() as? NumberLiteral ?: return
+				NumberLiteral(this, leftValue.value - rightValue.value)
+			}
+			Operator.Kind.STAR -> {
+				val leftValue = left.getComputedValue() as? NumberLiteral ?: return
+				val rightValue = right.getComputedValue() as? NumberLiteral ?: return
+				NumberLiteral(this, leftValue.value * rightValue.value)
+			}
+			Operator.Kind.SLASH -> {
+				val leftValue = left.getComputedValue() as? NumberLiteral ?: return
+				val rightValue = right.getComputedValue() as? NumberLiteral ?: return
+				NumberLiteral(this, leftValue.value / rightValue.value)
+			}
+			Operator.Kind.SMALLER_THAN -> {
+				val leftValue = left.getComputedValue() as? NumberLiteral ?: return
+				val rightValue = right.getComputedValue() as? NumberLiteral ?: return
+				BooleanLiteral(this, leftValue.value < rightValue.value)
+			}
+			Operator.Kind.GREATER_THAN -> {
+				val leftValue = left.getComputedValue() as? NumberLiteral ?: return
+				val rightValue = right.getComputedValue() as? NumberLiteral ?: return
+				BooleanLiteral(this, leftValue.value > rightValue.value)
+			}
+			Operator.Kind.SMALLER_THAN_OR_EQUAL_TO -> {
+				val leftValue = left.getComputedValue() as? NumberLiteral ?: return
+				val rightValue = right.getComputedValue() as? NumberLiteral ?: return
+				BooleanLiteral(this, leftValue.value <= rightValue.value)
+			}
+			Operator.Kind.GREATER_THAN_OR_EQUAL_TO -> {
+				val leftValue = left.getComputedValue() as? NumberLiteral ?: return
+				val rightValue = right.getComputedValue() as? NumberLiteral ?: return
+				BooleanLiteral(this, leftValue.value >= rightValue.value)
+			}
+			Operator.Kind.EQUAL_TO -> {
+				val leftValue = left.getComputedValue() ?: return
+				val rightValue = right.getComputedValue() ?: return
+				val areValuesEqual = leftValue == rightValue
+				val isIdentityComparison = leftValue !is LiteralValue || rightValue !is LiteralValue
+				if(!areValuesEqual && isIdentityComparison)
+					return
+				BooleanLiteral(this, areValuesEqual)
+			}
+			Operator.Kind.NOT_EQUAL_TO -> {
+				val leftValue = left.getComputedValue() ?: return
+				val rightValue = right.getComputedValue() ?: return
+				val areValuesEqual = leftValue == rightValue
+				val isIdentityComparison = leftValue !is LiteralValue || rightValue !is LiteralValue
+				if(!areValuesEqual && isIdentityComparison)
+					return
+				BooleanLiteral(this, !areValuesEqual)
+			}
+			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
+		}
+	}
+
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		val resultName = "_binaryOperatorResult"
+		var leftValue = left.getLlvmValue(constructor)
+		var rightValue = right.getLlvmValue(constructor)
+		if(SpecialType.BOOLEAN.matches(left.type) && SpecialType.BOOLEAN.matches(right.type)) {
+			when(kind) {
+				Operator.Kind.AND -> return constructor.buildAnd(leftValue, rightValue, resultName)
+				Operator.Kind.PIPE -> return constructor.buildOr(leftValue, rightValue, resultName)
+				Operator.Kind.EQUAL_TO -> return constructor.buildBooleanEqualTo(leftValue, rightValue, resultName)
+				Operator.Kind.NOT_EQUAL_TO -> return constructor.buildBooleanNotEqualTo(leftValue, rightValue, resultName)
+				else -> {}
+			}
+		}
+		val isLeftInteger = SpecialType.INTEGER.matches(left.type)
+		val isLeftPrimitiveNumber = isLeftInteger || SpecialType.FLOAT.matches(left.type)
+		val isRightInteger = SpecialType.INTEGER.matches(right.type)
+		val isRightPrimitiveNumber = isRightInteger || SpecialType.FLOAT.matches(right.type)
+		if(isLeftPrimitiveNumber && isRightPrimitiveNumber) {
+			val isIntegerOperation = isLeftInteger && isRightInteger
+			if(!isIntegerOperation) {
+				val intermediateOperandName = "_implicitlyCastBinaryOperand"
+				if(isLeftInteger)
+					leftValue = constructor.buildCastFromSignedIntegerToFloat(leftValue, intermediateOperandName)
+				else if(isRightInteger)
+					rightValue = constructor.buildCastFromSignedIntegerToFloat(rightValue, intermediateOperandName)
+			}
+			when(kind) {
+				Operator.Kind.PLUS -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerAddition(leftValue, rightValue, resultName)
+					else
+						constructor.buildFloatAddition(leftValue, rightValue, resultName)
+				}
+				Operator.Kind.MINUS -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerSubtraction(leftValue, rightValue, resultName)
+					else
+						constructor.buildFloatSubtraction(leftValue, rightValue, resultName)
+				}
+				Operator.Kind.STAR -> {
+					return if(isIntegerOperation)
+						constructor.buildIntegerMultiplication(leftValue, rightValue, resultName)
+					else
+						constructor.buildFloatMultiplication(leftValue, rightValue, resultName)
+				}
+				Operator.Kind.SLASH -> {
+					return if(isIntegerOperation)
+						constructor.buildSignedIntegerDivision(leftValue, rightValue, resultName)
+					else
+						constructor.buildFloatDivision(leftValue, rightValue, resultName)
+				}
+				Operator.Kind.SMALLER_THAN -> {
+					return if(isIntegerOperation)
+						constructor.buildSignedIntegerLessThan(leftValue, rightValue, resultName)
+					else
+						constructor.buildFloatLessThan(leftValue, rightValue, resultName)
+				}
+				Operator.Kind.GREATER_THAN -> {
+					return if(isIntegerOperation)
+						constructor.buildSignedIntegerGreaterThan(leftValue, rightValue, resultName)
+					else
+						constructor.buildFloatGreaterThan(leftValue, rightValue, resultName)
+				}
+				Operator.Kind.SMALLER_THAN_OR_EQUAL_TO -> {
+					return if(isIntegerOperation)
+						constructor.buildSignedIntegerLessThanOrEqualTo(leftValue, rightValue, resultName)
+					else
+						constructor.buildFloatLessThanOrEqualTo(leftValue, rightValue, resultName)
+				}
+				Operator.Kind.GREATER_THAN_OR_EQUAL_TO -> {
+					return if(isIntegerOperation)
+						constructor.buildSignedIntegerGreaterThanOrEqualTo(leftValue, rightValue, resultName)
+					else
+						constructor.buildFloatGreaterThanOrEqualTo(leftValue, rightValue, resultName)
+				}
+				Operator.Kind.EQUAL_TO -> {
+					return if(isIntegerOperation)
+						constructor.buildSignedIntegerEqualTo(leftValue, rightValue, resultName)
+					else
+						constructor.buildFloatEqualTo(leftValue, rightValue, resultName)
+				}
+				Operator.Kind.NOT_EQUAL_TO -> {
+					return if(isIntegerOperation)
+						constructor.buildSignedIntegerNotEqualTo(leftValue, rightValue, resultName)
+					else
+						constructor.buildFloatNotEqualTo(leftValue, rightValue, resultName)
+				}
+				else -> {}
+			}
+		}
+		TODO("Binary '${left.type} $kind ${right.type}' operator is not implemented yet.")
+	}
+}

@@ -1,7 +1,7 @@
 package logger.issues.declaration
 
-import components.semantic_analysis.semantic_model.declarations.MemberDeclaration
-import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.MemberDeclaration
+import components.semantic_model.declarations.TypeDeclaration
 import components.tokenizer.WordAtom
 import logger.Issue
 import logger.Severity

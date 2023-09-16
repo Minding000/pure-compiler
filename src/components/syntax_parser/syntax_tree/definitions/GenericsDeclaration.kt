@@ -1,7 +1,7 @@
 package components.syntax_parser.syntax_tree.definitions
 
-import components.semantic_analysis.semantic_model.general.SemanticModel
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.general.SemanticModel
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.MetaSyntaxTreeNode
 import source_structure.Position
 import util.indent

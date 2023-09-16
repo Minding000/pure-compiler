@@ -1,14 +1,14 @@
 package components.syntax_parser.syntax_tree.control_flow
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
-import components.semantic_analysis.semantic_model.values.LocalVariableDeclaration
+import components.semantic_model.scopes.MutableScope
+import components.semantic_model.values.LocalVariableDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import source_structure.Position
 import util.indent
 import util.toLines
-import components.semantic_analysis.semantic_model.control_flow.OverGenerator as SemanticOverGeneratorModel
+import components.semantic_model.control_flow.OverGenerator as SemanticOverGeneratorModel
 
 class OverGenerator(start: Position, private val collection: ValueSyntaxTreeNode, private val iteratorVariableDeclaration: Identifier?,
 					private val variableDeclarations: List<Identifier>):

@@ -1,7 +1,7 @@
 package code
 
-import components.compiler.targets.llvm.LlvmCompiler
-import components.semantic_analysis.semantic_model.context.SemanticModelGenerator
+import components.code_generation.llvm.LlvmCompiler
+import components.semantic_model.context.SemanticModelGenerator
 import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import errors.internal.CompilerError
 import errors.user.UserError

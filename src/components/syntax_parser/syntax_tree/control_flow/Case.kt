@@ -1,10 +1,10 @@
 package components.syntax_parser.syntax_tree.control_flow
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import util.indent
-import components.semantic_analysis.semantic_model.control_flow.Case as SemanticCaseModel
+import components.semantic_model.control_flow.Case as SemanticCaseModel
 
 class Case(private val condition: ValueSyntaxTreeNode, private val result: SyntaxTreeNode): SyntaxTreeNode(condition.start, result.end) {
 

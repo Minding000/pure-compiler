@@ -1,6 +1,6 @@
 package logger.issues.switches
 
-import components.semantic_analysis.semantic_model.control_flow.Case
+import components.semantic_model.control_flow.Case
 import logger.Issue
 import logger.Severity
 import logger.actions.RemoveElement

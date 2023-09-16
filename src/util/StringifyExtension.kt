@@ -1,7 +1,7 @@
 package util
 
-import components.semantic_analysis.semantic_model.declarations.Parameter
-import components.semantic_analysis.semantic_model.values.Value
+import components.semantic_model.declarations.Parameter
+import components.semantic_model.values.Value
 
 fun Char.stringify(): String {
 	if(isISOControl())

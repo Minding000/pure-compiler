@@ -1,11 +1,11 @@
 package components.syntax_parser.syntax_tree.operations
 
-import components.semantic_analysis.semantic_model.scopes.MutableScope
+import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.Operator
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import util.indent
-import components.semantic_analysis.semantic_model.operations.BinaryModification as SemanticBinaryModificationModel
+import components.semantic_model.operations.BinaryModification as SemanticBinaryModificationModel
 
 class BinaryModification(val target: ValueSyntaxTreeNode, val modifier: ValueSyntaxTreeNode, val operator: Operator):
 	SyntaxTreeNode(target.start, modifier.end) {

@@ -1,6 +1,6 @@
 package logger.issues.modifiers
 
-import components.semantic_analysis.semantic_model.declarations.Class
+import components.semantic_model.declarations.Class
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.tokenizer.WordAtom
 import logger.Issue

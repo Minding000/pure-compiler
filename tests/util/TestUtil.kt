@@ -1,10 +1,10 @@
 package util
 
 import code.Builder
-import components.compiler.targets.llvm.LlvmGenericValue
-import components.compiler.targets.llvm.LlvmProgram
-import components.semantic_analysis.semantic_model.context.SemanticModelGenerator
-import components.semantic_analysis.semantic_model.context.VariableTracker
+import components.code_generation.llvm.LlvmGenericValue
+import components.code_generation.llvm.LlvmProgram
+import components.semantic_model.context.SemanticModelGenerator
+import components.semantic_model.context.VariableTracker
 import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import components.tokenizer.WordAtom
 import components.tokenizer.WordGenerator

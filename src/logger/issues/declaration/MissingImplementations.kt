@@ -1,7 +1,7 @@
 package logger.issues.declaration
 
-import components.semantic_analysis.semantic_model.declarations.MemberDeclaration
-import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.MemberDeclaration
+import components.semantic_model.declarations.TypeDeclaration
 import logger.Issue
 import logger.Severity
 import java.util.*
