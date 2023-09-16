@@ -77,6 +77,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 
 	override fun validate() {
 		super.validate()
+		scope.validate()
 		validateOverridingKeyword()
 		validateParameters()
 		validateReturnType()

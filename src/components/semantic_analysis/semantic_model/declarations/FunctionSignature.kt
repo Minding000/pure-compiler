@@ -171,6 +171,12 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 
 	fun requiresParameters() = localTypeParameters.isNotEmpty() || fixedParameterTypes.isNotEmpty()
 
+	override fun validate() {
+		super.validate()
+		if(this == original && associatedImplementation == null)
+			scope.validate()
+	}
+
 	fun getLlvmType(constructor: LlvmConstructor): LlvmType {
 		var llvmType = llvmType
 		if(llvmType == null) {

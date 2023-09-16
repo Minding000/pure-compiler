@@ -75,6 +75,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 
 	override fun validate() {
 		super.validate()
+		scope.validate()
 		if(!(hasFiniteGenerator || mightGetBrokenOutOf))
 			isInterruptingExecution = true
 	}

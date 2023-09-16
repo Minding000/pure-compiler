@@ -198,6 +198,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 
 	override fun validate() {
 		super.validate()
+		scope.validate()
 		validateConvertingKeyword()
 		validateOverridingKeyword()
 		validateVariadicParameter()

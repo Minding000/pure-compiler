@@ -18,6 +18,7 @@ class StatementBlock(override val source: StatementBlockSyntaxTree, override val
 
 	override fun validate() {
 		super.validate()
+		scope.validate()
 		validateUnreachableStatements()
 	}
 

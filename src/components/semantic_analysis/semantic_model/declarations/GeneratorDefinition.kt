@@ -14,4 +14,9 @@ class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, ov
 		addSemanticModels(keyReturnType, valueReturnType, body)
 		addSemanticModels(parameters)
 	}
+
+	override fun validate() {
+		super.validate()
+		scope.validate()
+	}
 }

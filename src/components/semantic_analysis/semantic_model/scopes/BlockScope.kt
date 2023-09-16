@@ -30,19 +30,10 @@ class BlockScope(private val parentScope: MutableScope): MutableScope() {
 	}
 
 	override fun addValueDeclaration(newValueDeclaration: ValueDeclaration) {
-		var (existingValueDeclaration) = parentScope.getValueDeclaration(newValueDeclaration.name)
-		if(existingValueDeclaration == null)
-			existingValueDeclaration = valueDeclarations.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
-		if(existingValueDeclaration != null) {
-			if(existingValueDeclaration.scope is TypeScope) {
-				newValueDeclaration.context.addIssue(ShadowsElement(newValueDeclaration.source, "value", newValueDeclaration.name,
-					existingValueDeclaration.source))
-			} else {
-				newValueDeclaration.context.addIssue(Redeclaration(newValueDeclaration.source, "value", newValueDeclaration.name,
-					existingValueDeclaration.source))
-			}
-			return
-		}
+		val existingValueDeclaration = valueDeclarations.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
+		if(existingValueDeclaration != null)
+			newValueDeclaration.context.addIssue(Redeclaration(newValueDeclaration.source, "value", newValueDeclaration.name,
+				existingValueDeclaration.source))
 	}
 
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
@@ -69,5 +60,20 @@ class BlockScope(private val parentScope: MutableScope): MutableScope() {
 
 	override fun getSurroundingLoop(): LoopStatement? {
 		return (semanticModel as? LoopStatement) ?: parentScope.getSurroundingLoop()
+	}
+
+	fun validate() {
+		for((name, valueDeclaration) in valueDeclarations) {
+			val (parentValueDeclaration) = parentScope.getValueDeclaration(name)
+			if(parentValueDeclaration != null) {
+				if(parentValueDeclaration.scope is TypeScope) {
+					valueDeclaration.context.addIssue(ShadowsElement(valueDeclaration.source, "value", valueDeclaration.name,
+						parentValueDeclaration.source))
+				} else {
+					valueDeclaration.context.addIssue(Redeclaration(valueDeclaration.source, "value", valueDeclaration.name,
+						parentValueDeclaration.source))
+				}
+			}
+		}
 	}
 }
