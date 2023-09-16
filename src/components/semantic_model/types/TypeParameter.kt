@@ -20,6 +20,10 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, 
 		return TypeParameter(source, scope, mode, baseType.simplified())
 	}
 
+	override fun getTypeDeclaration(name: String): TypeDeclaration? {
+		return baseType.getTypeDeclaration(name)
+	}
+
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
 		return baseType.getValueDeclaration(name)
 	}

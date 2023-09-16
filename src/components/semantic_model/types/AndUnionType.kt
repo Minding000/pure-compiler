@@ -6,7 +6,6 @@ import components.semantic_model.declarations.MemberDeclaration
 import components.semantic_model.declarations.PropertyDeclaration
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.scopes.Scope
-import components.semantic_model.values.InterfaceMember
 import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
@@ -32,16 +31,14 @@ class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types:
 		return AndUnionType(source, scope, types.map(Type::simplified))
 	}
 
-	override fun onNewTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
-		interfaceScope.addTypeDeclaration(newTypeDeclaration)
-	}
-
-	override fun onNewInterfaceMember(newInterfaceMember: InterfaceMember) {
-		interfaceScope.addInterfaceMember(newInterfaceMember)
-	}
-
 	override fun onNewInitializer(newInitializer: InitializerDefinition) {
 		interfaceScope.addInitializer(newInitializer)
+	}
+
+	override fun getTypeDeclaration(name: String): TypeDeclaration? {
+		for(type in types)
+			return type.getTypeDeclaration(name) ?: continue
+		return null
 	}
 
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {

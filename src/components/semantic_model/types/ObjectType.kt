@@ -5,7 +5,6 @@ import components.code_generation.llvm.LlvmType
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.*
 import components.semantic_model.scopes.Scope
-import components.semantic_model.values.InterfaceMember
 import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.declaration.TypeParameterCountMismatch
@@ -65,16 +64,12 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 			inferredTypes.add(sourceType)
 	}
 
-	override fun onNewTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
-		interfaceScope.addTypeDeclaration(newTypeDeclaration)
-	}
-
-	override fun onNewInterfaceMember(newInterfaceMember: InterfaceMember) {
-		interfaceScope.addInterfaceMember(newInterfaceMember)
-	}
-
 	override fun onNewInitializer(newInitializer: InitializerDefinition) {
 		interfaceScope.addInitializer(newInitializer)
+	}
+
+	override fun getTypeDeclaration(name: String): TypeDeclaration? {
+		return getTypeDeclaration()?.scope?.getTypeDeclaration(name)
 	}
 
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {

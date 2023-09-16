@@ -25,10 +25,6 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 
 	fun addSubscriber(type: Type) {
 		subscribedTypes.add(type)
-		for((_, typeDeclaration) in typeDeclarations)
-			type.onNewTypeDeclaration(typeDeclaration)
-		for((_, interfaceMember) in interfaceMembers)
-			type.onNewInterfaceMember(interfaceMember)
 		for(initializer in initializers)
 			type.onNewInitializer(initializer)
 		if(type !is StaticType)
@@ -115,13 +111,9 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 
 	override fun addTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
 		val existingTypeDeclaration = typeDeclarations.putIfAbsent(newTypeDeclaration.name, newTypeDeclaration)
-		if(existingTypeDeclaration != null) {
+		if(existingTypeDeclaration != null)
 			newTypeDeclaration.context.addIssue(Redeclaration(newTypeDeclaration.source, "type",
 				"${this.typeDeclaration.name}.${newTypeDeclaration.name}", existingTypeDeclaration.source))
-			return
-		}
-		for(subscriber in subscribedTypes)
-			subscriber.onNewTypeDeclaration(newTypeDeclaration)
 	}
 
 	override fun addValueDeclaration(newValueDeclaration: ValueDeclaration) {
@@ -141,8 +133,6 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 		} else {
 			memberDeclarations.add(newValueDeclaration)
 		}
-		for(subscriber in subscribedTypes)
-			subscriber.onNewInterfaceMember(newValueDeclaration)
 	}
 
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {

@@ -4,7 +4,6 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
-import components.semantic_model.values.InterfaceMember
 import components.semantic_model.values.Value
 import components.semantic_model.values.ValueDeclaration
 import errors.user.SignatureResolutionAmbiguityError
@@ -21,20 +20,21 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 
 	override fun simplified(): Type = this
 
-	override fun onNewTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
-		interfaceScope.addTypeDeclaration(newTypeDeclaration)
-	}
-
-	override fun onNewInterfaceMember(newInterfaceMember: InterfaceMember) {
-		interfaceScope.addInterfaceMember(newInterfaceMember)
-	}
-
 	override fun onNewInitializer(newInitializer: InitializerDefinition) {
 		interfaceScope.addInitializer(newInitializer)
 	}
 
+	override fun getTypeDeclaration(name: String): TypeDeclaration? {
+		val typeDeclaration = typeDeclaration.scope.getTypeDeclaration(name)
+		if(typeDeclaration?.isBound == true)
+			return null
+		return typeDeclaration
+	}
+
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
-		return typeDeclaration.scope.getValueDeclaration(name)
+		val valueDeclarationPair = typeDeclaration.scope.getValueDeclaration(name)
+		//TODO only return static value declarations here (write tests!)
+		return valueDeclarationPair
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

@@ -24,6 +24,10 @@ class OptionalType(override val source: SyntaxTreeNode, scope: Scope, val baseTy
 		return OptionalType(source, scope, baseType.simplified())
 	}
 
+	override fun getTypeDeclaration(name: String): TypeDeclaration? {
+		return null
+	}
+
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
 		return Pair(null, null)
 	}

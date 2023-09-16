@@ -89,7 +89,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 						if(functionType.getSignature(functionCall.typeParameters, functionCall.valueParameters) == null)
 							continue
 					} else {
-						if(!availableType.interfaceScope.hasInterfaceMember(member.name))
+						if(!availableType.interfaceScope.hasValueDeclaration(member.name))
 							continue
 					}
 					possibleTargetTypes.add(availableType)

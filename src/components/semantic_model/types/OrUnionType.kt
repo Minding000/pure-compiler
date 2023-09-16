@@ -4,7 +4,6 @@ import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.scopes.Scope
-import components.semantic_model.values.InterfaceMember
 import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
@@ -57,14 +56,11 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 		return simplifiedType
 	}
 
-	override fun onNewTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
-		if(types.all { type -> type.interfaceScope.hasTypeDeclaration(newTypeDeclaration) })
-			interfaceScope.addTypeDeclaration(newTypeDeclaration)
-	}
-
-	override fun onNewInterfaceMember(newInterfaceMember: InterfaceMember) {
-		if(types.all { type -> type.interfaceScope.hasInterfaceMember(newInterfaceMember) })
-			interfaceScope.addInterfaceMember(newInterfaceMember)
+	override fun getTypeDeclaration(name: String): TypeDeclaration? {
+		var typeDeclaration: TypeDeclaration? = null
+		for(type in types)
+			typeDeclaration = type.getTypeDeclaration(name) ?: return null
+		return typeDeclaration
 	}
 
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {

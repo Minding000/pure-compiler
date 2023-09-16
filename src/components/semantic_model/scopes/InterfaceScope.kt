@@ -4,7 +4,6 @@ import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.types.Type
 import components.semantic_model.values.Instance
-import components.semantic_model.values.InterfaceMember
 import components.semantic_model.values.ValueDeclaration
 import java.util.*
 
@@ -13,35 +12,13 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	lateinit var type: Type
 
 	//TODO remove following properties
-	private val typeDeclarations = HashMap<String, TypeDeclaration>()
-	private val interfaceMembers = HashMap<String, InterfaceMember>()
 	val initializers = LinkedList<InitializerDefinition>()
 	private val subscribedTypes = LinkedList<Type>()
 
 	fun addSubscriber(type: Type) {
 		subscribedTypes.add(type)
-		for((_, typeDeclaration) in typeDeclarations)
-			type.onNewTypeDeclaration(typeDeclaration)
-		for((_, interfaceMember) in interfaceMembers)
-			type.onNewInterfaceMember(interfaceMember)
 		for(initializer in initializers)
 			type.onNewInitializer(initializer)
-	}
-
-	fun addTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
-		if(!typeDeclarations.containsKey(newTypeDeclaration.name)) {
-			typeDeclarations[newTypeDeclaration.name] = newTypeDeclaration
-			for(subscriber in subscribedTypes)
-				subscriber.onNewTypeDeclaration(newTypeDeclaration)
-		}
-	}
-
-	fun addInterfaceMember(newInterfaceMember: InterfaceMember) {
-		if(!interfaceMembers.containsKey(newInterfaceMember.name)) {
-			interfaceMembers[newInterfaceMember.name] = newInterfaceMember
-			for(subscriber in subscribedTypes)
-				subscriber.onNewInterfaceMember(newInterfaceMember)
-		}
 	}
 
 	fun addInitializer(newInitializer: InitializerDefinition) {
@@ -52,9 +29,7 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 		}
 	}
 
-	override fun getTypeDeclaration(name: String): TypeDeclaration? {
-		return typeDeclarations[name]
-	}
+	override fun getTypeDeclaration(name: String): TypeDeclaration? = type.getTypeDeclaration(name)
 
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> = type.getValueDeclaration(name)
 
@@ -73,17 +48,14 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 		return initializers.filter { initializer -> initializer.isConvertingFrom(sourceType) }
 	}
 
-	fun hasTypeDeclaration(typeDeclaration: TypeDeclaration): Boolean = typeDeclarations.containsValue(typeDeclaration)
-
-	fun hasInterfaceMember(valueName: String): Boolean = interfaceMembers.containsKey(valueName)
-	fun hasInterfaceMember(value: InterfaceMember): Boolean = interfaceMembers.containsValue(value)
+	fun hasValueDeclaration(name: String): Boolean {
+		val (valueDeclaration) = getValueDeclaration(name)
+		return valueDeclaration != null
+	}
 
 	fun hasInstance(name: String): Boolean {
-		for((_, value) in interfaceMembers) {
-			if(value is Instance && value.name == name)
-				return true
-		}
-		return false
+		val (valueDeclaration) = getValueDeclaration(name)
+		return valueDeclaration is Instance
 	}
 
 	override fun toString(): String {

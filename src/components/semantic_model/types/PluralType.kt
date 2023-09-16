@@ -21,6 +21,10 @@ class PluralType(override val source: SyntaxTreeNode, scope: Scope, val baseType
 		return PluralType(source, scope, baseType.simplified())
 	}
 
+	override fun getTypeDeclaration(name: String): TypeDeclaration? {
+		return null
+	}
+
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
 		return Pair(null, null)
 	}
