@@ -39,5 +39,6 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 	override fun validate() {
 		super.validate()
 		scope.ensureTrivialInitializers()
+		scope.ensureNoAbstractMembers()
 	}
 }

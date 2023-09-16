@@ -32,4 +32,9 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 		val targetScope = parentTypeDeclaration?.scope ?: scope.enclosingScope
 		targetScope.addTypeDeclaration(this)
 	}
+
+	override fun validate() {
+		super.validate()
+		scope.ensureNoAbstractMembers()
+	}
 }

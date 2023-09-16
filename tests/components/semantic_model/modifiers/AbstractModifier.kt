@@ -109,6 +109,32 @@ internal class AbstractModifier {
 	}
 
 	@Test
+	fun `disallows abstract members in objects`() {
+		val sourceCode = """
+			Int class
+			System object {
+				abstract val id: Int
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<AbstractMemberInNonAbstractTypeDefinition>(
+			"Abstract member 'id: Int' is not allowed in non-abstract type declaration 'System'.", Severity.ERROR)
+	}
+
+	@Test
+	fun `disallows abstract members in enums`() {
+		val sourceCode = """
+			Int class
+			Status enum {
+				abstract val id: Int
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<AbstractMemberInNonAbstractTypeDefinition>(
+			"Abstract member 'id: Int' is not allowed in non-abstract type declaration 'Status'.", Severity.ERROR)
+	}
+
+	@Test
 	fun `allows non-abstract members in non-abstract classes`() {
 		val sourceCode = """
 			Int class

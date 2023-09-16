@@ -35,7 +35,6 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 
 	override fun validate() {
 		super.validate()
-		//TODO disallow abstract members in objects and enums (write tests)
 		if(!isAbstract)
 			scope.ensureNoAbstractMembers()
 	}
