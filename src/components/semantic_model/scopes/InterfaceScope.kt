@@ -6,7 +6,6 @@ import components.semantic_model.types.Type
 import components.semantic_model.values.Instance
 import components.semantic_model.values.ValueDeclaration
 
-//TODO remove all 'getLinkedType' and 'getComputedType' functions in project
 class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	lateinit var type: Type
 

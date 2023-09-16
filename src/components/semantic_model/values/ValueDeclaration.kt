@@ -33,7 +33,7 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		scope.addValueDeclaration(this)
 	}
 
-	open fun getLinkedType(): Type? {
+	fun getLinkedType(): Type? {
 		val type = type
 		if(type != null) {
 			type.determineTypes()
