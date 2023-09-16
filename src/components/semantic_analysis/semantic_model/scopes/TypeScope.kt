@@ -114,8 +114,7 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 	}
 
 	override fun addTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
-		val existingTypeDeclaration = superScope?.getTypeDeclaration(newTypeDeclaration.name)
-			?: typeDeclarations.putIfAbsent(newTypeDeclaration.name, newTypeDeclaration)
+		val existingTypeDeclaration = typeDeclarations.putIfAbsent(newTypeDeclaration.name, newTypeDeclaration)
 		if(existingTypeDeclaration != null) {
 			newTypeDeclaration.context.addIssue(Redeclaration(newTypeDeclaration.source, "type",
 				"${this.typeDeclaration.name}.${newTypeDeclaration.name}", existingTypeDeclaration.source))

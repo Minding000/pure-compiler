@@ -8,5 +8,5 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
  */
 class CompilerError(message: String, cause: Throwable? = null): InternalError(message, cause) {
 
-	constructor(source: SyntaxTreeNode, message: String): this("${source.getStartString()}: $message")
+	constructor(source: SyntaxTreeNode?, message: String): this(if(source == null) message else "${source.getStartString()}: $message")
 }

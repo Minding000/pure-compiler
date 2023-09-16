@@ -17,13 +17,10 @@ class FileScope: MutableScope() {
 	}
 
 	override fun addTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
-		val existingTypeDeclaration = referencedTypeDeclarations[newTypeDeclaration.name]
-			?: typeDeclarations.putIfAbsent(newTypeDeclaration.name, newTypeDeclaration)
-		if(existingTypeDeclaration != null) {
+		val existingTypeDeclaration = typeDeclarations.putIfAbsent(newTypeDeclaration.name, newTypeDeclaration)
+		if(existingTypeDeclaration != null)
 			newTypeDeclaration.context.addIssue(Redeclaration(newTypeDeclaration.source, "type", newTypeDeclaration.name,
 				existingTypeDeclaration.source))
-			return
-		}
 	}
 
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {

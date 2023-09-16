@@ -15,13 +15,10 @@ class BlockScope(private val parentScope: MutableScope): MutableScope() {
 	private val valueDeclarations = HashMap<String, ValueDeclaration>()
 
 	override fun addTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
-		val existingValueDeclaration = parentScope.getTypeDeclaration(newTypeDeclaration.name)
-			?: typeDeclarations.putIfAbsent(newTypeDeclaration.name, newTypeDeclaration)
-		if(existingValueDeclaration != null) {
+		val existingValueDeclaration = typeDeclarations.putIfAbsent(newTypeDeclaration.name, newTypeDeclaration)
+		if(existingValueDeclaration != null)
 			newTypeDeclaration.context.addIssue(Redeclaration(newTypeDeclaration.source, "type", newTypeDeclaration.name,
 				existingValueDeclaration.source))
-			return
-		}
 	}
 
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {
