@@ -8,7 +8,6 @@ import components.semantic_analysis.semantic_model.types.Type
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
 import logger.issues.declaration.Redeclaration
-import logger.issues.declaration.ShadowsElement
 
 class BlockScope(private val parentScope: MutableScope): MutableScope() {
 	var semanticModel: SemanticModel? = null
@@ -66,10 +65,7 @@ class BlockScope(private val parentScope: MutableScope): MutableScope() {
 		for((name, valueDeclaration) in valueDeclarations) {
 			val (parentValueDeclaration) = parentScope.getValueDeclaration(name)
 			if(parentValueDeclaration != null) {
-				if(parentValueDeclaration.scope is TypeScope) {
-					valueDeclaration.context.addIssue(ShadowsElement(valueDeclaration.source, "value", valueDeclaration.name,
-						parentValueDeclaration.source))
-				} else {
+				if(parentValueDeclaration.scope is BlockScope) {
 					valueDeclaration.context.addIssue(Redeclaration(valueDeclaration.source, "value", valueDeclaration.name,
 						parentValueDeclaration.source))
 				}

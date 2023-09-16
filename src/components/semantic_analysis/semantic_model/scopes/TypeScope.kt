@@ -8,7 +8,10 @@ import components.semantic_analysis.semantic_model.values.Function
 import components.semantic_analysis.semantic_model.values.InterfaceMember
 import components.semantic_analysis.semantic_model.values.ValueDeclaration
 import errors.internal.CompilerError
-import logger.issues.declaration.*
+import logger.issues.declaration.AbstractMemberInNonAbstractTypeDefinition
+import logger.issues.declaration.ObjectInitializerTakingParameters
+import logger.issues.declaration.ObjectInitializerTakingTypeParameters
+import logger.issues.declaration.Redeclaration
 import java.util.*
 
 class TypeScope(val enclosingScope: MutableScope): MutableScope() {
@@ -111,11 +114,7 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 	}
 
 	override fun addTypeDeclaration(newTypeDeclaration: TypeDeclaration) {
-		var existingTypeDeclaration = enclosingScope.getTypeDeclaration(newTypeDeclaration.name)
-		if(existingTypeDeclaration != null)
-			newTypeDeclaration.context.addIssue(ShadowsElement(newTypeDeclaration.source, "type", newTypeDeclaration.name,
-				existingTypeDeclaration.source))
-		existingTypeDeclaration = superScope?.getTypeDeclaration(newTypeDeclaration.name)
+		val existingTypeDeclaration = superScope?.getTypeDeclaration(newTypeDeclaration.name)
 			?: typeDeclarations.putIfAbsent(newTypeDeclaration.name, newTypeDeclaration)
 		if(existingTypeDeclaration != null) {
 			newTypeDeclaration.context.addIssue(Redeclaration(newTypeDeclaration.source, "type",
@@ -130,11 +129,7 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 		if(newValueDeclaration !is InterfaceMember)
 			throw CompilerError(newValueDeclaration.source,
 				"Tried to declare non-member of type '${newValueDeclaration.javaClass.simpleName}' in type scope.")
-		var (existingValueDeclaration) = enclosingScope.getValueDeclaration(newValueDeclaration.name)
-		if(existingValueDeclaration != null)
-			newValueDeclaration.context.addIssue(ShadowsElement(newValueDeclaration.source, "member", newValueDeclaration.name,
-				existingValueDeclaration.source))
-		existingValueDeclaration = interfaceMembers.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
+		val existingValueDeclaration = interfaceMembers.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
 		if(existingValueDeclaration != null) {
 			newValueDeclaration.context.addIssue(Redeclaration(newValueDeclaration.source, "member",
 				"${typeDeclaration.name}.${newValueDeclaration.name}", existingValueDeclaration.source))

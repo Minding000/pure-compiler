@@ -1,14 +1,21 @@
 package components.semantic_analysis.declarations
 
+import components.semantic_analysis.semantic_model.context.SemanticModelGenerator
 import components.semantic_analysis.semantic_model.declarations.TypeDeclaration
 import components.semantic_analysis.semantic_model.values.VariableValue
+import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.declaration.*
 import logger.issues.modifiers.DisallowedModifier
 import logger.issues.modifiers.DuplicateModifier
 import logger.issues.modifiers.NoParentToBindTo
+import logger.issues.resolution.ReferencedFileNotFound
 import org.junit.jupiter.api.Test
+import source_structure.Module
+import source_structure.Project
+import util.LintResult
+import util.ParseResult
 import util.TestUtil
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -36,21 +43,6 @@ internal class Declarations {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<DeclarationMissingTypeOrValue>(
 			"Declaration requires a type or value to infer a type from.", Severity.ERROR)
-	}
-
-	@Test
-	fun `detects shadowed variables`() {
-		val sourceCode =
-			"""
-				Handler class
-				val defaultHandler: Handler
-				Event class {
-					const defaultHandler: Handler
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<ShadowsElement>(
-			"'defaultHandler' shadows a member, previously declared in Test.Test:2:4.", Severity.WARNING)
 	}
 
 	@Test
@@ -271,36 +263,28 @@ internal class Declarations {
 	}
 
 	@Test
-	fun `detects variables shadowing properties`() {
-		val sourceCode =
+	fun `allows referenced values to be shadowed`() {
+		val externalDeclaration =
 			"""
 				Int class
-				List class {
-					var length: Int
-					to addAll(other: List) {
-						val length = other.length
-					}
-				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<ShadowsElement>("'length' shadows a value, previously declared in Test.Test:3:5.",
-			Severity.WARNING)
-		lintResult.assertIssueNotDetected<Redeclaration>()
-	}
-
-	@Test
-	fun `detects parameters shadowing properties`() {
-		val sourceCode =
+		val localDeclaration =
 			"""
+				referencing ${TestUtil.TEST_MODULE_NAME}.ExternalDeclaration
 				Int class
-				List class {
-					var length: Int
-					to increaseSize(length: Int) {}
-				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<ShadowsElement>("'length' shadows a value, previously declared in Test.Test:3:5.",
-			Severity.WARNING)
-		lintResult.assertIssueNotDetected<Redeclaration>()
+		val project = Project(TestUtil.TEST_PROJECT_NAME)
+		val testModule = Module(project, TestUtil.TEST_MODULE_NAME)
+		val fileName = "LocalDeclaration"
+		testModule.addFile(emptyList(), "ExternalDeclaration", externalDeclaration)
+		testModule.addFile(emptyList(), fileName, localDeclaration)
+		project.addModule(testModule)
+		val syntaxTreeGenerator = SyntaxTreeGenerator(project)
+		val parseResult = ParseResult(syntaxTreeGenerator, syntaxTreeGenerator.parseProgram())
+		val program = SemanticModelGenerator(project.context).createSemanticModel(parseResult.program)
+		val lintResult = LintResult(project.context, program)
+		project.context.logger.printReport(Severity.INFO)
+		lintResult.assertIssueNotDetected<ReferencedFileNotFound>(fileName)
+		lintResult.assertIssueNotDetected<Redeclaration>(fileName)
 	}
 }

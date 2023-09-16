@@ -31,13 +31,10 @@ class FileScope: MutableScope() {
 	}
 
 	override fun addValueDeclaration(newValueDeclaration: ValueDeclaration) {
-		val existingValueDeclaration = referencedValueDeclarations[newValueDeclaration.name]
-			?: valueDeclarations.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
-		if(existingValueDeclaration != null) {
+		val existingValueDeclaration = valueDeclarations.putIfAbsent(newValueDeclaration.name, newValueDeclaration)
+		if(existingValueDeclaration != null)
 			newValueDeclaration.context.addIssue(Redeclaration(newValueDeclaration.source, "value", newValueDeclaration.name,
 				existingValueDeclaration.source))
-			return
-		}
 	}
 
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {

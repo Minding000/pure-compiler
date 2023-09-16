@@ -52,12 +52,12 @@ open class LogResult(val logger: Logger) {
 		}
 	}
 
-	inline fun <reified I: Issue>assertIssueNotDetected() {
+	inline fun <reified I: Issue>assertIssueNotDetected(fileName: String = TestUtil.TEST_FILE_NAME) {
 		for(issue in logger.issues()) {
 			if(issue.isInternal)
 				continue
 			if(issue is I) {
-				if(issue.source?.start?.line?.file?.name != TestUtil.TEST_FILE_NAME)
+				if(issue.source?.start?.line?.file?.name != fileName)
 					continue
 				throw AssertionError("Issue '${I::class.simpleName}' has unexpectedly been detected.")
 			}
