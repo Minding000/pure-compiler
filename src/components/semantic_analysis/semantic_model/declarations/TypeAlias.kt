@@ -23,7 +23,7 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val refe
 			hasDeterminedEffectiveType = true
 			referenceType.determineTypes()
 			if(referenceType is ObjectType) {
-				val referenceTypeDeclaration = referenceType.typeDeclaration
+				val referenceTypeDeclaration = referenceType.getTypeDeclaration()
 				if(referenceTypeDeclaration is TypeAlias)
 					effectiveType = referenceTypeDeclaration.getEffectiveType()
 			}

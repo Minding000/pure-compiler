@@ -51,7 +51,7 @@ internal class SelfReference {
 		val lintResult = TestUtil.lint(sourceCode)
 		val selfReferenceType = lintResult.find<SelfReference>()?.type
 		assertIs<ObjectType>(selfReferenceType)
-		assertEquals("Car", selfReferenceType.typeDeclaration?.name)
+		assertEquals("Car", selfReferenceType.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -67,7 +67,7 @@ internal class SelfReference {
 		val lintResult = TestUtil.lint(sourceCode)
 		val selfReferenceType = lintResult.find<SelfReference>()?.type
 		assertIs<ObjectType>(selfReferenceType)
-		assertEquals("Car", selfReferenceType.typeDeclaration?.name)
+		assertEquals("Car", selfReferenceType.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -83,7 +83,7 @@ internal class SelfReference {
 		val lintResult = TestUtil.lint(sourceCode)
 		val selfReferenceType = lintResult.find<SelfReference>()?.type
 		assertIs<ObjectType>(selfReferenceType)
-		assertEquals("FastestCar", selfReferenceType.typeDeclaration?.name)
+		assertEquals("FastestCar", selfReferenceType.getTypeDeclaration()?.name)
 	}
 
 	@Test

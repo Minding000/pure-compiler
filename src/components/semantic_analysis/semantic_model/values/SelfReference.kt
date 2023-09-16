@@ -28,7 +28,7 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 		if(specifier == null) {
 			typeDeclaration = surroundingDefinition
 		} else {
-			val specifierDefinition = specifier.typeDeclaration
+			val specifierDefinition = specifier.getTypeDeclaration()
 			if(specifierDefinition != null) {
 				if(isBoundTo(surroundingDefinition, specifierDefinition))
 					typeDeclaration = specifierDefinition

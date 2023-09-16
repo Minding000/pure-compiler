@@ -17,7 +17,7 @@ import errors.internal.CompilerError
 
 abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = false): SemanticModel(source, scope) {
 	val interfaceScope = InterfaceScope(isStatic)
-	private var hasResolvedDefinitions = false
+	private var hasResolvedDeclarations = false
 	var effectiveType = this
 	private var cachedLlvmType: LlvmType? = null
 
@@ -47,9 +47,9 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 	abstract fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?>
 
 	final override fun determineTypes() {
-		if(hasResolvedDefinitions)
+		if(hasResolvedDeclarations)
 			return
-		hasResolvedDefinitions = true
+		hasResolvedDeclarations = true
 		resolveTypeDeclarations()
 	}
 

@@ -28,7 +28,8 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		interfaceScope.type = this
 		for(semanticModel in semanticModels)
 			semanticModel.determineTypes()
-		typeDeclaration = SpecialType.FUNCTION.fileScope?.getTypeDeclaration(name)
+		val typeDeclaration = SpecialType.FUNCTION.fileScope?.getTypeDeclaration(name)
+		typeDeclarationCache = typeDeclaration
 		typeDeclaration?.scope?.addSubscriber(this)
 		if(typeDeclaration == null)
 			context.addIssue(LiteralTypeNotFound(source, name))

@@ -66,7 +66,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		explicitParentType?.determineTypes()
 		if(explicitParentType != null) {
 			if(parentTypeDeclaration == null) {
-				parentTypeDeclaration = explicitParentType.typeDeclaration
+				parentTypeDeclaration = explicitParentType.getTypeDeclaration()
 			} else {
 				context.addIssue(ExplicitParentOnScopedTypeDefinition(explicitParentType.source))
 			}
@@ -143,9 +143,10 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	private fun inheritsFrom(definition: TypeDeclaration): Boolean {
 		for(superType in getDirectSuperTypes()) {
 			superType.determineTypes()
-			if(superType.typeDeclaration == definition)
+			val superTypeDeclaration = superType.getTypeDeclaration()
+			if(superTypeDeclaration == definition)
 				return true
-			if(superType.typeDeclaration?.inheritsFrom(definition) == true)
+			if(superTypeDeclaration?.inheritsFrom(definition) == true)
 				return true
 		}
 		return false
@@ -155,7 +156,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		val superTypes = LinkedList<ObjectType>()
 		for(superType in getDirectSuperTypes()) {
 			superTypes.add(superType)
-			superTypes.addAll(superType.typeDeclaration?.getAllSuperTypes() ?: continue)
+			superTypes.addAll(superType.getTypeDeclaration()?.getAllSuperTypes() ?: continue)
 		}
 		return superTypes
 	}
@@ -222,7 +223,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			if((member as? InterfaceMember)?.isStatic == true)
 				constants[member.name] = member
 		for(superType in getDirectSuperTypes()) {
-			for(constant in superType.typeDeclaration?.getConstants()?.values ?: emptyList())
+			for(constant in superType.getTypeDeclaration()?.getConstants()?.values ?: emptyList())
 				constants.putIfAbsent(constant.name, constant)
 		}
 		return constants
@@ -234,7 +235,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			if(member is ValueDeclaration && (member as? InterfaceMember)?.isStatic != true)
 				properties[member.name] = member
 		for(superType in getDirectSuperTypes()) {
-			for(property in superType.typeDeclaration?.getProperties()?.values ?: emptyList())
+			for(property in superType.getTypeDeclaration()?.getProperties()?.values ?: emptyList())
 				properties.putIfAbsent(property.name, property)
 		}
 		return properties
@@ -246,7 +247,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			if(member is FunctionImplementation)
 				functions[member.memberIdentifier] = member
 		for(superType in getDirectSuperTypes()) {
-			for(function in superType.typeDeclaration?.getFunctions()?.values ?: emptyList())
+			for(function in superType.getTypeDeclaration()?.getFunctions()?.values ?: emptyList())
 				functions.putIfAbsent(function.memberIdentifier, function)
 		}
 		return functions

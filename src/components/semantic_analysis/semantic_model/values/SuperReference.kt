@@ -26,7 +26,7 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 			return
 		}
 		var superTypes = surroundingTypeDeclaration.getAllSuperTypes()
-		specifier?.typeDeclaration?.let { specifierDefinition ->
+		specifier?.getTypeDeclaration()?.let { specifierDefinition ->
 			superTypes = superTypes.filter { superType -> matchesSpecifier(superType, specifierDefinition) }
 			if(superTypes.isEmpty()) {
 				context.addIssue(SuperReferenceSpecifierNotInherited(source, surroundingTypeDeclaration, specifier))
@@ -64,7 +64,7 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 	private fun matchesSpecifier(superType: Type, specifierDefinition: TypeDeclaration): Boolean {
 		if(superType !is ObjectType)
 			return false
-		if(superType.typeDeclaration == specifierDefinition)
+		if(superType.getTypeDeclaration() == specifierDefinition)
 			return true
 		return false
 	}

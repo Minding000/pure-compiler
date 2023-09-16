@@ -124,7 +124,7 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		val vehicleClass = lintResult.find<TypeDeclaration> { typeDefinition -> typeDefinition.name == "Vehicle" }
 		val cast = lintResult.find<Cast>()
-		assertEquals(vehicleClass, (cast?.type as? ObjectType)?.typeDeclaration)
+		assertEquals(vehicleClass, (cast?.type as? ObjectType)?.getTypeDeclaration())
 	}
 
 	@Test
@@ -327,7 +327,7 @@ internal class Expressions {
 		val cast = lintResult.find<Cast>()
 		val castResultType = cast?.type as? OptionalType
 		assertNotNull(castResultType)
-		assertEquals(vehicleClass, (castResultType.baseType as? ObjectType)?.typeDeclaration)
+		assertEquals(vehicleClass, (castResultType.baseType as? ObjectType)?.getTypeDeclaration())
 	}
 
 	@Test
@@ -368,7 +368,7 @@ internal class Expressions {
 		val typeDefinition = lintResult.find<Class> { `class` -> `class`.name == "PrintResult" }
 		val tryType = lintResult.find<Try>()?.type
 		assertIs<ObjectType>(tryType)
-		assertEquals(typeDefinition, tryType.typeDeclaration)
+		assertEquals(typeDefinition, tryType.getTypeDeclaration())
 	}
 
 	@Test
@@ -385,7 +385,7 @@ internal class Expressions {
 		val typeDefinition = lintResult.find<Class> { `class` -> `class`.name == "PrintResult" }
 		val tryType = lintResult.find<Try>()?.type
 		assertIs<OptionalType>(tryType)
-		assertEquals(typeDefinition, (tryType.baseType as? ObjectType)?.typeDeclaration)
+		assertEquals(typeDefinition, (tryType.baseType as? ObjectType)?.getTypeDeclaration())
 	}
 
 	@Test

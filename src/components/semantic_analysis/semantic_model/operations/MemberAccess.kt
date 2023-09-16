@@ -74,7 +74,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		for(availableType in availableTypes) {
 			when(member) {
 				is InitializerReference -> {
-					val staticType = StaticType(availableType.typeDeclaration ?: continue)
+					val staticType = StaticType(availableType.getTypeDeclaration() ?: continue)
 					val functionCall = parent as? FunctionCall ?: continue
 					if(staticType.getInitializer(emptyList(), emptyList(), functionCall.typeParameters, functionCall.valueParameters) == null)
 						continue
@@ -104,7 +104,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			throw CompilerError(source, "Member access references invalid member of type '${member.javaClass.simpleName}'.")
 		val targetValue = target.getLlvmValue(constructor)
 		val llvmTargetType = when(val targetType = target.type) {
-			is ObjectType -> targetType.typeDeclaration?.llvmType
+			is ObjectType -> targetType.getTypeDeclaration()?.llvmType
 			is StaticType -> targetType.typeDeclaration.llvmStaticType
 			else -> throw CompilerError(source,
 				"Member access target of type '${targetType?.javaClass?.simpleName}' is not an object or class.")

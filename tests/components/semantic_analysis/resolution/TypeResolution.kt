@@ -32,7 +32,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "bird" }
-		assertNotNull((declaration?.type as? ObjectType)?.typeDeclaration)
+		assertNotNull((declaration?.type as? ObjectType)?.getTypeDeclaration())
 	}
 
 	@Test
@@ -44,7 +44,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "birdFeeder" }
-		assertEquals("BirdFeeder", (declaration?.type as? ObjectType)?.typeDeclaration?.name)
+		assertEquals("BirdFeeder", (declaration?.type as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -56,7 +56,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "birdType" }
-		assertEquals("BirdType", (declaration?.type as? ObjectType)?.typeDeclaration?.name)
+		assertEquals("BirdType", (declaration?.type as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -68,7 +68,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "eventHandler" }
-		assertEquals("EventHandler", (declaration?.type as? ObjectType)?.typeDeclaration?.name)
+		assertEquals("EventHandler", (declaration?.type as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -82,7 +82,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "birdType" }
-		assertEquals("Type", (declaration?.type as? ObjectType)?.typeDeclaration?.name)
+		assertEquals("Type", (declaration?.type as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -98,7 +98,7 @@ internal class TypeResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<TypeParameterCountMismatch>()
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "listView" }
-		assertEquals("View", (declaration?.type as? ObjectType)?.typeDeclaration?.name)
+		assertEquals("View", (declaration?.type as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -112,7 +112,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "element" }
-		assertEquals("Element", (declaration?.type as? ObjectType)?.typeDeclaration?.name)
+		assertEquals("Element", (declaration?.type as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
