@@ -11,17 +11,17 @@ import java.util.*
 
 class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.source, typeDeclaration.scope, true) {
 
-	init {
-		typeDeclaration.scope.addSubscriber(this)
-	}
-
 	override fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>) = this
 	override fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>) = this
 
 	override fun simplified(): Type = this
 
-	override fun onNewInitializer(newInitializer: InitializerDefinition) {
-		interfaceScope.addInitializer(newInitializer)
+	override fun getInitializers(): List<InitializerDefinition> {
+		return typeDeclaration.scope.initializers
+	}
+
+	override fun getAllInitializers(): List<InitializerDefinition> {
+		return typeDeclaration.scope.initializers
 	}
 
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {
@@ -80,7 +80,7 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 	private fun getMatchingInitializers(globalTypeParameters: List<TypeDeclaration>, suppliedGlobalTypes: List<Type>,
 										suppliedLocalTypes: List<Type>, suppliedValues: List<Value>): List<Match> {
 		val matches = LinkedList<Match>()
-		for(initializer in interfaceScope.initializers) {
+		for(initializer in interfaceScope.getDirectInitializers()) {
 			val globalTypeSubstitutions = initializer.getGlobalTypeSubstitutions(globalTypeParameters, suppliedGlobalTypes,
 				suppliedValues) ?: continue
 			val localTypeSubstitutions = initializer.getLocalTypeSubstitutions(globalTypeSubstitutions, suppliedLocalTypes,

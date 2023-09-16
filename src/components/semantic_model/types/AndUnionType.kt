@@ -14,8 +14,6 @@ class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types:
 
 	init {
 		addSemanticModels(types)
-		for(type in types)
-			type.interfaceScope.addSubscriber(this)
 	}
 
 	override fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): AndUnionType {
@@ -31,8 +29,8 @@ class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types:
 		return AndUnionType(source, scope, types.map(Type::simplified))
 	}
 
-	override fun onNewInitializer(newInitializer: InitializerDefinition) {
-		interfaceScope.addInitializer(newInitializer)
+	override fun getAllInitializers(): List<InitializerDefinition> {
+		return types.flatMap { type -> type.getAllInitializers() }
 	}
 
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {

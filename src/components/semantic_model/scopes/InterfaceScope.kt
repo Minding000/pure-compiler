@@ -5,36 +5,18 @@ import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.types.Type
 import components.semantic_model.values.Instance
 import components.semantic_model.values.ValueDeclaration
-import java.util.*
 
 //TODO remove all 'getLinkedType' and 'getComputedType' functions in project
 class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	lateinit var type: Type
 
-	//TODO remove following properties
-	val initializers = LinkedList<InitializerDefinition>()
-	private val subscribedTypes = LinkedList<Type>()
-
-	fun addSubscriber(type: Type) {
-		subscribedTypes.add(type)
-		for(initializer in initializers)
-			type.onNewInitializer(initializer)
-	}
-
-	fun addInitializer(newInitializer: InitializerDefinition) {
-		if(!initializers.contains(newInitializer)) {
-			initializers.add(newInitializer)
-			for(subscriber in subscribedTypes)
-				subscriber.onNewInitializer(newInitializer)
-		}
-	}
-
+	fun getDirectInitializers(): List<InitializerDefinition> = type.getInitializers()
+	fun getAllInitializers(): List<InitializerDefinition> = type.getAllInitializers()
 	override fun getTypeDeclaration(name: String): TypeDeclaration? = type.getTypeDeclaration(name)
-
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> = type.getValueDeclaration(name)
 
 	fun getSuperInitializer(subInitializer: InitializerDefinition): InitializerDefinition? {
-		for(initializer in initializers) {
+		for(initializer in getAllInitializers()) {
 			if(subInitializer.fulfillsInheritanceRequirementsOf(initializer))
 				return initializer
 		}
@@ -45,7 +27,7 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	fun getPropertiesToBeInitialized() = type.getPropertiesToBeInitialized()
 
 	fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
-		return initializers.filter { initializer -> initializer.isConvertingFrom(sourceType) }
+		return getDirectInitializers().filter { initializer -> initializer.isConvertingFrom(sourceType) }
 	}
 
 	fun hasValueDeclaration(name: String): Boolean {

@@ -64,8 +64,12 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 			inferredTypes.add(sourceType)
 	}
 
-	override fun onNewInitializer(newInitializer: InitializerDefinition) {
-		interfaceScope.addInitializer(newInitializer)
+	override fun getInitializers(): List<InitializerDefinition> {
+		return getTypeDeclaration()?.scope?.initializers ?: emptyList()
+	}
+
+	override fun getAllInitializers(): List<InitializerDefinition> {
+		return getTypeDeclaration()?.getAllInitializers() ?: emptyList()
 	}
 
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {
@@ -109,7 +113,6 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 				context.addIssue(NotFound(source, "Type", name))
 			inferEnclosingType()
 		}
-		typeDeclarationCache?.scope?.addSubscriber(this)
 		val typeDeclaration = typeDeclarationCache
 		if(typeDeclaration is TypeAlias)
 			effectiveType = typeDeclaration.getEffectiveType()

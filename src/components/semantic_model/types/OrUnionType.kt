@@ -12,8 +12,6 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 
 	init {
 		addSemanticModels(types)
-		for(type in types)
-			type.interfaceScope.addSubscriber(this)
 	}
 
 	override fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): OrUnionType {

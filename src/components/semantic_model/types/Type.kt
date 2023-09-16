@@ -37,8 +37,8 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 	//TODO also infer type parameters from union and plural types
 	open fun inferTypeParameter(typeParameter: TypeDeclaration, sourceType: Type, inferredTypes: MutableList<Type>) {}
 
-	open fun onNewInitializer(newInitializer: InitializerDefinition) {}
-
+	open fun getInitializers(): List<InitializerDefinition> = emptyList()
+	open fun getAllInitializers(): List<InitializerDefinition> = emptyList()
 	abstract fun getTypeDeclaration(name: String): TypeDeclaration?
 	abstract fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?>
 

@@ -57,6 +57,16 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		return superType
 	}
 
+	fun getAllInitializers(): List<InitializerDefinition> {
+		if(hasCircularInheritance)
+			return emptyList()
+		val allInitializers = LinkedList<InitializerDefinition>()
+		allInitializers.addAll(scope.initializers)
+		val superScope = scope.superScope ?: return allInitializers
+		allInitializers.addAll(superScope.getAllInitializers())
+		return allInitializers
+	}
+
 	open fun getValueDeclaration(): ValueDeclaration? = null
 
 	override fun determineTypes() {
@@ -74,6 +84,10 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		// Quick fix: Loading initializers first - bigger resolution rework required
 		explicitParentType?.determineTypes()
 		superType?.determineTypes()
+		if(superType != null && inheritsFrom(this)) {
+			hasCircularInheritance = true
+			context.addIssue(CircularInheritance(superType.source))
+		}
 		for(semanticModel in semanticModels)
 			if(semanticModel is InitializerDefinition)
 				semanticModel.determineTypes()
@@ -84,10 +98,6 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 				semanticModel.determineTypes()
 		scope.ensureUniqueInitializerSignatures()
 		scope.inheritSignatures()
-		if(superType != null && inheritsFrom(this)) {
-			hasCircularInheritance = true
-			context.addIssue(CircularInheritance(superType.source))
-		}
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

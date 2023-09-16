@@ -21,15 +21,6 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 	val memberDeclarations = LinkedList<MemberDeclaration>()
 	private val interfaceMembers = HashMap<String, InterfaceMember>()
 	val initializers = LinkedList<InitializerDefinition>()
-	private val subscribedTypes = LinkedList<Type>()
-
-	fun addSubscriber(type: Type) {
-		subscribedTypes.add(type)
-		for(initializer in initializers)
-			type.onNewInitializer(initializer)
-		if(type !is StaticType)
-			superScope?.addSubscriber(type)
-	}
 
 	fun getAbstractMemberDeclarations(): List<MemberDeclaration> {
 		val abstractMemberDeclarations = LinkedList<MemberDeclaration>()
@@ -105,8 +96,6 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 	fun addInitializer(newInitializer: InitializerDefinition) {
 		initializers.add(newInitializer)
 		memberDeclarations.add(newInitializer)
-		for(subscriber in subscribedTypes)
-			subscriber.onNewInitializer(newInitializer)
 	}
 
 	override fun addTypeDeclaration(newTypeDeclaration: TypeDeclaration) {

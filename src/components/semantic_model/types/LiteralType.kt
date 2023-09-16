@@ -12,7 +12,6 @@ class LiteralType(override val source: SyntaxTreeNode, scope: Scope, val literal
 	override fun resolveTypeDeclarations() {
 		val typeDeclaration = literalType.fileScope?.getTypeDeclaration(name)
 		typeDeclarationCache = typeDeclaration
-		typeDeclaration?.scope?.addSubscriber(this)
 		if(typeDeclaration == null)
 			context.addIssue(LiteralTypeNotFound(source, name))
 	}
