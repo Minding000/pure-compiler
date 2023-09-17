@@ -11,9 +11,15 @@ class FileScope: MutableScope() {
 	private val referencedValueDeclarations = HashMap<String, ValueDeclaration>()
 	private val valueDeclarations = HashMap<String, ValueDeclaration>()
 
-	fun reference(scope: FileScope) {
-		referencedTypeDeclarations.putAll(scope.typeDeclarations)
-		referencedValueDeclarations.putAll(scope.valueDeclarations)
+	fun reference(scope: FileScope, referenceAliases: Map<String, String>) {
+		for((originalName, typeDeclaration) in scope.typeDeclarations) {
+			val localName = referenceAliases[originalName] ?: originalName
+			referencedTypeDeclarations[localName] = typeDeclaration
+		}
+		for((originalName, valueDeclaration) in scope.valueDeclarations) {
+			val localName = referenceAliases[originalName] ?: originalName
+			referencedValueDeclarations[localName] = valueDeclaration
+		}
 	}
 
 	override fun addTypeDeclaration(newTypeDeclaration: TypeDeclaration) {

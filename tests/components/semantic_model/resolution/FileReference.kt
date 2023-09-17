@@ -65,4 +65,60 @@ internal class FileReference {
 		assertNotNull(declaration)
 		assertNull((declaration.type as? ObjectType)?.getTypeDeclaration())
 	}
+
+	@Test
+	fun `aliased types from a referenced file are accessible`() {
+		val typeProvider =
+			"""
+				String class
+            """.trimIndent()
+		val typeRequester =
+			"""
+				referencing ${TestUtil.TEST_MODULE_NAME}.String {
+					String as Text
+				}
+				var text: Text
+            """.trimIndent()
+		val project = Project(TestUtil.TEST_PROJECT_NAME)
+		val testModule = Module(project, TestUtil.TEST_MODULE_NAME)
+		testModule.addFile(emptyList(), "TypeRequester", typeRequester)
+		testModule.addFile(emptyList(), "String", typeProvider)
+		project.addModule(testModule)
+		val syntaxTreeGenerator = SyntaxTreeGenerator(project)
+		val parseResult = ParseResult(syntaxTreeGenerator, syntaxTreeGenerator.parseProgram())
+		val program = SemanticModelGenerator(project.context).createSemanticModel(parseResult.program)
+		val typeRequesterFile = program.getFile(listOf(TestUtil.TEST_MODULE_NAME, "TypeRequester"))
+		assertNotNull(typeRequesterFile)
+		val declaration = typeRequesterFile.find<ValueDeclaration> { declaration -> declaration.name == "text" }
+		assertNotNull(declaration)
+		assertEquals("String", (declaration.type as? ObjectType)?.getTypeDeclaration()?.name)
+	}
+
+	@Test
+	fun `original types from a alias-referenced file are inaccessible`() {
+		val typeProvider =
+			"""
+				String class
+            """.trimIndent()
+		val typeRequester =
+			"""
+				referencing ${TestUtil.TEST_MODULE_NAME}.String {
+					String as Text
+				}
+				var string: String
+            """.trimIndent()
+		val project = Project(TestUtil.TEST_PROJECT_NAME)
+		val testModule = Module(project, TestUtil.TEST_MODULE_NAME)
+		testModule.addFile(emptyList(), "TypeRequester", typeRequester)
+		testModule.addFile(emptyList(), "String", typeProvider)
+		project.addModule(testModule)
+		val syntaxTreeGenerator = SyntaxTreeGenerator(project)
+		val parseResult = ParseResult(syntaxTreeGenerator, syntaxTreeGenerator.parseProgram())
+		val program = SemanticModelGenerator(project.context).createSemanticModel(parseResult.program)
+		val typeRequesterFile = program.getFile(listOf(TestUtil.TEST_MODULE_NAME, "TypeRequester"))
+		assertNotNull(typeRequesterFile)
+		val declaration = typeRequesterFile.find<ValueDeclaration> { declaration -> declaration.name == "string" }
+		assertNotNull(declaration)
+		assertNull((declaration.type as? ObjectType)?.getTypeDeclaration())
+	}
 }

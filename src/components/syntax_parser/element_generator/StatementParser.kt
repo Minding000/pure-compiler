@@ -199,8 +199,8 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 	private fun parseAlias(): ReferenceAlias {
 		val originalName = parseIdentifier()
 		consume(WordAtom.AS)
-		val aliasName = parseIdentifier()
-		return ReferenceAlias(originalName, aliasName)
+		val localName = parseIdentifier()
+		return ReferenceAlias(originalName, localName)
 	}
 
 	/**

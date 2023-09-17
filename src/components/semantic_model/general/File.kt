@@ -43,14 +43,13 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 					continue
 				if(file.matches(fileReference.parts)) {
 					referencedFiles.add(file)
+					scope.reference(file.scope, fileReference.getNameAliases())
 					noFilesFound = false
 				}
 			}
 			if(noFilesFound)
 				context.addIssue(ReferencedFileNotFound(fileReference))
 		}
-		for(referencedFile in referencedFiles)
-			scope.reference(referencedFile.scope)
 	}
 
 	fun analyseDataFlow() {

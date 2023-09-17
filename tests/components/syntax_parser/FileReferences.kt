@@ -8,12 +8,12 @@ internal class FileReferences {
 	@Test
 	fun `parses file references`() {
 		val sourceCode = """
-			referencing pure
+			referencing Pure
 			""".trimIndent()
 		val expected =
 			"""
 				FileReference {
-					Identifier { pure }
+					Identifier { Pure }
 				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
@@ -22,12 +22,12 @@ internal class FileReferences {
 	@Test
 	fun `parses file references with multiple path elements`() {
 		val sourceCode = """
-			referencing pure.lang.dataTypes.String
+			referencing Pure.lang.dataTypes.String
 			""".trimIndent()
 		val expected =
 			"""
 				FileReference {
-					Identifier { pure }
+					Identifier { Pure }
 					Identifier { lang }
 					Identifier { dataTypes }
 					Identifier { String }
@@ -39,14 +39,14 @@ internal class FileReferences {
 	@Test
 	fun `parses file references with type aliases`() {
 		val sourceCode = """
-			referencing pure {
+			referencing Pure {
 				String as Text
 			}
 			""".trimIndent()
 		val expected =
 			"""
 				FileReference {
-					Identifier { pure }
+					Identifier { Pure }
 					AliasBlock {
 						Alias { Identifier { String } as Identifier { Text } }
 					}
