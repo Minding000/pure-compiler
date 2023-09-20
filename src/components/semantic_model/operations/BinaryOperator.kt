@@ -7,6 +7,8 @@ import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.scopes.Scope
+import components.semantic_model.types.OptionalType
+import components.semantic_model.types.OrUnionType
 import components.semantic_model.values.*
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
@@ -24,6 +26,17 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 	override fun determineTypes() {
 		super.determineTypes()
 		val leftType = left.type ?: return
+		val rightType = right.type ?: return
+		if(kind == Operator.Kind.DOUBLE_QUESTION_MARK) {
+			if(SpecialType.NULL.matches(leftType)) {
+				type = rightType
+			} else {
+				val nonOptionalLeftType = if(leftType is OptionalType) leftType.baseType else leftType
+				type = OrUnionType(source, scope, listOf(nonOptionalLeftType, rightType)).simplified()
+				addSemanticModels(type)
+			}
+			return
+		}
 		try {
 			val match = leftType.interfaceScope.getOperator(kind, right)
 			if(match == null) {
@@ -160,6 +173,8 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 	}
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		if(kind == Operator.Kind.DOUBLE_QUESTION_MARK)
+			return getNullCoalescenceResult(constructor)
 		val resultName = "_binaryOperatorResult"
 		var leftValue = left.getLlvmValue(constructor)
 		var rightValue = right.getLlvmValue(constructor)
@@ -250,5 +265,32 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			}
 		}
 		TODO("Binary '${left.type} $kind ${right.type}' operator is not implemented yet.")
+	}
+
+	private fun getNullCoalescenceResult(constructor: LlvmConstructor): LlvmValue {
+		val rightValue = right.getLlvmValue(constructor)
+		if(SpecialType.NULL.matches(left.type))
+			return rightValue
+		var leftValue = left.getLlvmValue(constructor)
+		val leftType = left.type
+		if(leftType !is OptionalType)
+			return leftValue
+		val resultType = type?.getLlvmType(constructor)
+		val result = constructor.buildStackAllocation(resultType, "_nullCoalescenceResultVariable")
+		val function = constructor.getParentFunction()
+		val valueBlock = constructor.createBlock(function, "nullCoalescenceValueBlock")
+		val nullBlock = constructor.createBlock(function, "nullCoalescenceNullBlock")
+		val resultBlock = constructor.createBlock(function, "nullCoalescenceResultBlock")
+		constructor.buildJump(constructor.buildIsNull(leftValue, "_isLeftNull"), nullBlock, valueBlock)
+		constructor.select(nullBlock)
+		constructor.buildStore(rightValue, result)
+		constructor.buildJump(resultBlock)
+		constructor.select(valueBlock)
+		if(type?.isLlvmPrimitive() == true && leftType.baseType.isLlvmPrimitive())
+			leftValue = constructor.buildLoad(leftType.baseType.getLlvmType(constructor), leftValue, "_unboxedPrimitive")
+		constructor.buildStore(leftValue, result)
+		constructor.buildJump(resultBlock)
+		constructor.select(resultBlock)
+		return constructor.buildLoad(resultType, result, "_nullCoalescenceResult")
 	}
 }

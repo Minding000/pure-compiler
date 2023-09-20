@@ -11,6 +11,7 @@ import logger.Severity
 import logger.issues.access.GuaranteedAccessWithHasValueCheck
 import logger.issues.access.OptionalAccessWithoutHasValueCheck
 import logger.issues.constant_conditions.*
+import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.*
@@ -436,5 +437,53 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<TypeSpecificationOutsideOfInitializerCall>(
 			"Type specifications can only be used on initializers.", Severity.ERROR)
+	}
+
+	@Test
+	fun `doesn't require null coalescence operator implementation`() {
+		val sourceCode =
+			"""
+				1 ?? 0
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+	}
+
+	@Test
+	fun `null coalescence operator returns or union of operand types`() {
+		val sourceCode =
+			"""
+				1 ?? yes
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val nullCoalescenceOperator = lintResult.find<BinaryOperator>()
+		assertNotNull(nullCoalescenceOperator)
+		assertEquals("Bool | Int", nullCoalescenceOperator.type.toString())
+	}
+
+	@Test
+	fun `null coalescence operator returns non-optional type if right operand type is non-optional`() {
+		val sourceCode =
+			"""
+				Int class
+				var number: Int? = null
+				number ?? yes
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val nullCoalescenceOperator = lintResult.find<BinaryOperator>()
+		assertNotNull(nullCoalescenceOperator)
+		assertEquals("Bool | Int", nullCoalescenceOperator.type.toString())
+	}
+
+	@Test
+	fun `null coalescence operator ignores left operand if it is null`() {
+		val sourceCode =
+			"""
+				null ?? yes
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val nullCoalescenceOperator = lintResult.find<BinaryOperator>()
+		assertNotNull(nullCoalescenceOperator)
+		assertEquals("Bool", nullCoalescenceOperator.type.toString())
 	}
 }

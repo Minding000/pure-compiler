@@ -103,7 +103,10 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		if(member !is VariableValue)
 			throw CompilerError(source, "Member access references invalid member of type '${member.javaClass.simpleName}'.")
 		val targetValue = target.getLlvmValue(constructor)
-		val llvmTargetType = when(val targetType = target.type) {
+		var targetType = target.type
+		if(targetType is OptionalType)
+			targetType = targetType.baseType
+		val llvmTargetType = when(targetType) {
 			is ObjectType -> targetType.getTypeDeclaration()?.llvmType
 			is StaticType -> targetType.typeDeclaration.llvmStaticType
 			else -> throw CompilerError(source,
@@ -114,6 +117,40 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 	}
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		return constructor.buildLoad(member.type?.getLlvmType(constructor), getLlvmLocation(constructor), "member")
+		val memberType = member.type
+		val memberLlvmType = memberType?.getLlvmType(constructor)
+		return if(isOptional) {
+			val resultLlvmType = constructor.pointerType
+			val targetValue = target.getLlvmValue(constructor)
+			val result = constructor.buildStackAllocation(resultLlvmType, "_optionalMemberAccessResultVariable")
+			val function = constructor.getParentFunction()
+			val valueBlock = constructor.createBlock(function, "_optionalMemberAccessValueBlock")
+			val nullBlock = constructor.createBlock(function, "_optionalMemberAccessNullBlock")
+			val resultBlock = constructor.createBlock(function, "_optionalMemberAccessResultBlock")
+			constructor.buildJump(constructor.buildIsNull(targetValue, "_isTargetNull"), nullBlock, valueBlock)
+			constructor.select(nullBlock)
+			constructor.buildStore(constructor.nullPointer, result)
+			constructor.buildJump(resultBlock)
+			constructor.select(valueBlock)
+			val memberValue = constructor.buildLoad(memberLlvmType, getLlvmLocation(constructor), "member")
+			if(memberType?.isLlvmPrimitive() == true) {
+				//TODO copy all (optional) primitives (or value-objects) on use
+				// - assignment - DONE
+				// - function argument
+				//   - binary operator calls
+				//   - index assignment
+				// - return
+				val box = constructor.buildHeapAllocation(memberLlvmType, "_optionalPrimitiveBox")
+				constructor.buildStore(memberValue, box)
+				constructor.buildStore(box, result)
+			} else {
+				constructor.buildStore(memberValue, result)
+			}
+			constructor.buildJump(resultBlock)
+			constructor.select(resultBlock)
+			constructor.buildLoad(resultLlvmType, result, "_optionalMemberAccessResult")
+		} else {
+			constructor.buildLoad(memberLlvmType, getLlvmLocation(constructor), "member")
+		}
 	}
 }

@@ -139,15 +139,10 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 					?: throw CompilerError(source, "Encountered member signature without implementation.")
 				implementation.llvmValue
 			} else {
-				val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(typeDefinition.llvmType, targetValue,
-					Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-				val classDefinitionAddress = constructor.buildLoad(constructor.pointerType,classDefinitionAddressLocation,
-					"classDefinitionAddress")
 				val functionName = (((function as? MemberAccess)?.member ?: function) as? VariableValue)?.name
 					?: throw CompilerError(source, "Failed to determine name of member function.")
-				val id = context.memberIdentities.getId("${functionName}${signature.toString(false)}")
-				constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType, context.llvmFunctionAddressFunction,
-					listOf(classDefinitionAddress, constructor.buildInt32(id)), "functionAddress")
+				context.resolveFunction(constructor, typeDefinition.llvmType, targetValue,
+					"${functionName}${signature.toString(false)}")
 			}
 		}
 		val resultName = if(SpecialType.NOTHING.matches(signature.returnType)) "" else getSignature()

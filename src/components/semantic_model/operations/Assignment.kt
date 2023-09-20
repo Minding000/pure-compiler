@@ -9,6 +9,7 @@ import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
+import components.semantic_model.types.OptionalType
 import components.semantic_model.values.*
 import errors.internal.CompilerError
 import logger.issues.constant_conditions.ExpressionNotAssignable
@@ -88,14 +89,28 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 					if(target.declaration is ComputedPropertyDeclaration) {
 						TODO("Assignments to computed properties are not implemented yet.")
 					} else {
-						constructor.buildStore(value, target.getLlvmLocation(constructor))
+						val sourceType = sourceExpression.type
+						if(target.type is OptionalType && sourceType?.isLlvmPrimitive() == true) {
+							val box = constructor.buildHeapAllocation(sourceType.getLlvmType(constructor), "_optionalPrimitiveBox")
+							constructor.buildStore(value, box)
+							constructor.buildStore(box, target.getLlvmLocation(constructor))
+						} else {
+							constructor.buildStore(value, target.getLlvmLocation(constructor))
+						}
 					}
 				}
 				is MemberAccess -> {
 					if((target.member as? VariableValue)?.declaration is ComputedPropertyDeclaration) {
 						TODO("Assignments to computed properties are not implemented yet.")
 					} else {
-						constructor.buildStore(value, target.getLlvmLocation(constructor))
+						val sourceType = sourceExpression.type
+						if(target.type is OptionalType && sourceType?.isLlvmPrimitive() == true) {
+							val box = constructor.buildHeapAllocation(sourceType.getLlvmType(constructor), "_optionalPrimitiveBox")
+							constructor.buildStore(value, box)
+							constructor.buildStore(box, target.getLlvmLocation(constructor))
+						} else {
+							constructor.buildStore(value, target.getLlvmLocation(constructor))
+						}
 					}
 				}
 				is IndexAccess -> compileAssignmentToIndexAccess(constructor, target, value)

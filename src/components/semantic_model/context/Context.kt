@@ -63,18 +63,27 @@ class Context {
 			surroundingLoop.mutatedVariables.add(declaration)
 	}
 
-	fun resolveMember(constructor: LlvmConstructor, targetType: LlvmType?, targetLocation: LlvmValue, memberIdentifier: String, isStaticMember: Boolean = false): LlvmValue {
+	fun resolveMember(constructor: LlvmConstructor, targetType: LlvmType?, targetLocation: LlvmValue, memberIdentifier: String,
+					  isStaticMember: Boolean = false): LlvmValue {
 		val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(targetType, targetLocation,
 			CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-		val classDefinitionAddress = constructor.buildLoad(
-			constructor.pointerType,
-			classDefinitionAddressLocation, "classDefinitionAddress"
-		)
+		val classDefinitionAddress = constructor.buildLoad(constructor.pointerType,classDefinitionAddressLocation,
+			"classDefinitionAddress")
 		val resolutionFunctionType = if(isStaticMember) llvmConstantOffsetFunctionType else llvmPropertyOffsetFunctionType
 		val resolutionFunction = if(isStaticMember) llvmConstantOffsetFunction else llvmPropertyOffsetFunction
-		val memberOffset = constructor.buildFunctionCall(resolutionFunctionType, resolutionFunction, listOf(
-				classDefinitionAddress, constructor.buildInt32(memberIdentities.getId(memberIdentifier))), "memberOffset")
+		val memberOffset = constructor.buildFunctionCall(resolutionFunctionType, resolutionFunction,
+			listOf(classDefinitionAddress, constructor.buildInt32(memberIdentities.getId(memberIdentifier))), "memberOffset")
 		return constructor.buildGetArrayElementPointer(constructor.byteType, targetLocation, memberOffset, "memberAddress")
+	}
+
+	fun resolveFunction(constructor: LlvmConstructor, targetType: LlvmType?, targetLocation: LlvmValue,
+						signatureIdentifier: String): LlvmValue {
+		val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(targetType, targetLocation,
+			CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
+		val classDefinitionAddress = constructor.buildLoad(constructor.pointerType,classDefinitionAddressLocation,
+			"classDefinitionAddress")
+		return constructor.buildFunctionCall(llvmFunctionAddressFunctionType, llvmFunctionAddressFunction,
+			listOf(classDefinitionAddress, constructor.buildInt32(memberIdentities.getId(signatureIdentifier))), "functionAddress")
 	}
 
 	fun getThisParameter(constructor: LlvmConstructor): LlvmValue {

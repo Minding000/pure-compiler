@@ -96,4 +96,34 @@ internal class MemberAccess {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getKey")
 		assertEquals(3, Llvm.castToSignedInteger(result))
 	}
+
+	@Test
+	fun `compiles optional member access with target value`() {
+		val sourceCode = """
+			SimplestApp object {
+				val a: Int = 62
+				to getA(): Int {
+					val app: SimplestApp? = SimplestApp
+					return app?.a ?? 0
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
+		assertEquals(62, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles optional member access without target value`() {
+		val sourceCode = """
+			SimplestApp object {
+				val a: Int = 62
+				to getA(): Int {
+					val app: SimplestApp? = null
+					return app?.a ?? 0
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
+		assertEquals(0, Llvm.castToSignedInteger(result))
+	}
 }

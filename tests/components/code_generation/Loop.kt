@@ -111,7 +111,7 @@ internal class Loop {
 	}
 
 	@Test
-	fun `compiles over loops iterating over plural type`() {
+	fun `compiles over loops iterating over plural type`() { //TODO check dataflow analysis error for 'sum'
 		val sourceCode = """
 			SimplestApp object {
 				to getSix(): Int {
@@ -128,6 +128,26 @@ internal class Loop {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
 		assertEquals(6, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `provides index when iterating over plural type`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getThree(): Int {
+					return countParameters(0, 0, 0)
+				}
+				to countParameters(...numbers: ...Int): Int {
+					var parameterCount = 0
+					loop over numbers as index, number {
+						parameterCount = index + 1
+					}
+					return parameterCount
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree")
+		assertEquals(3, Llvm.castToSignedInteger(result))
 	}
 
 	@Disabled

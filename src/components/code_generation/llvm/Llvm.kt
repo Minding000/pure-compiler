@@ -74,15 +74,9 @@ object Llvm {
 	}
 
 	fun castToFloat(genericValue: LlvmGenericValue): Double = LLVMGenericValueToFloat(LLVMFloatType(), genericValue)
-	fun castToSignedInteger(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue,
-		YES
-	)
-	fun castToUnsignedInteger(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue,
-		NO
-	)
-	fun castToBoolean(genericValue: LlvmGenericValue): Boolean = castToUnsignedInteger(
-		genericValue
-	) == 1L
+	fun castToSignedInteger(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue, YES)
+	fun castToUnsignedInteger(genericValue: LlvmGenericValue): Long = LLVMGenericValueToInt(genericValue, NO)
+	fun castToBoolean(genericValue: LlvmGenericValue): Boolean = castToUnsignedInteger(genericValue) == 1L
 
 	fun bool(value: Boolean): Int = if(value) YES else NO
 }

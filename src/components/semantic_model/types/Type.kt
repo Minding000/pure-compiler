@@ -78,4 +78,8 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 	protected open fun createLlvmType(constructor: LlvmConstructor): LlvmType { //TODO use 'abstract' modifier when done
 		TODO("${source.getStartString()}: '${javaClass.simpleName}.createLlvmType' is not implemented yet.")
 	}
+
+	fun isLlvmPrimitive(): Boolean {
+		return SpecialType.BOOLEAN.matches(this) || SpecialType.INTEGER.matches(this) || SpecialType.FLOAT.matches(this)
+	}
 }

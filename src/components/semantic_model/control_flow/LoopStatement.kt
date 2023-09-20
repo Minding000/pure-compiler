@@ -7,7 +7,9 @@ import components.semantic_model.context.VariableUsage
 import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.BlockScope
+import components.semantic_model.types.FunctionType
 import components.semantic_model.types.PluralType
+import components.semantic_model.types.Type
 import components.semantic_model.values.BooleanLiteral
 import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.control_flow.LoopStatement as LoopStatementSyntaxTree
@@ -82,7 +84,11 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 
 	override fun compile(constructor: LlvmConstructor) {
 		if(generator is OverGenerator) {
-			compileVariadicOverLoop(constructor, generator)
+			val iterableType = generator.iterable.type
+			if(iterableType is PluralType)
+				compileVariadicOverLoop(constructor, generator, iterableType)
+			else
+				compileIteratorOverLoop(constructor, generator, iterableType)
 			return
 		}
 		val function = constructor.getParentFunction()
@@ -105,7 +111,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		}
 	}
 
-	private fun compileVariadicOverLoop(constructor: LlvmConstructor, generator: OverGenerator) {
+	private fun compileVariadicOverLoop(constructor: LlvmConstructor, generator: OverGenerator, pluralType: PluralType) {
 		for(variableDeclaration in generator.variableDeclarations)
 			variableDeclaration.compile(constructor)
 		val function = constructor.getParentFunction()
@@ -113,9 +119,9 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		val elementList = constructor.buildStackAllocation(context.variadicParameterListStruct, "_overGeneratorElementList")
 		constructor.buildFunctionCall(context.llvmVariableParameterIterationStartFunctionType,
 			context.llvmVariableParameterIterationStartFunction, listOf(elementList))
-		val elementType = (generator.iterable.type as? PluralType)?.baseType?.getLlvmType(constructor)
 		val indexType = constructor.i32Type
-		val indexLocation = constructor.buildStackAllocation(indexType, "_overGeneratorIndexLocation")
+		val indexLocation = generator.currentIndexVariable?.llvmLocation
+			?: constructor.buildStackAllocation(indexType, "_overGeneratorIndexLocation")
 		constructor.buildStore(constructor.buildInt32(0), indexLocation)
 		entryBlock = constructor.createBlock(function, "loop_entry")
 		exitBlock = constructor.createBlock("loop_exit")
@@ -126,13 +132,14 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		val bodyBlock = constructor.createBlock(function, "loop_body")
 		constructor.buildJump(condition, bodyBlock, exitBlock)
 		constructor.select(bodyBlock)
-		val elementVariable = generator.variableDeclarations.firstOrNull()
-		if(elementVariable != null) {
+		val valueVariable = generator.currentValueVariable
+		if(valueVariable != null) {
 			// Variadic parameters are always 64bits in size (at least on Windows).
 			// See: https://discourse.llvm.org/t/va-arg-on-windows-64/40780
 			val elementMemory = constructor.getCurrentVariadicElement(elementList, constructor.i64Type, "_overGeneratorElementMemory")
+			val elementType = pluralType.baseType.getLlvmType(constructor)
 			val element = constructor.changeTypeAllowingDataLoss(elementMemory, elementType, "_overGeneratorElement")
-			constructor.buildStore(element, elementVariable.llvmLocation)
+			constructor.buildStore(element, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)
 		val newIndex = constructor.buildIntegerAddition(index, constructor.buildInt32(1), "_newOverGeneratorIndex")
@@ -143,6 +150,56 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		constructor.select(exitBlock)
 		constructor.buildFunctionCall(context.llvmVariableParameterIterationEndFunctionType,
 			context.llvmVariableParameterIterationEndFunction, listOf(elementList))
+	}
+
+	private fun compileIteratorOverLoop(constructor: LlvmConstructor, generator: OverGenerator, iterableType: Type?) {
+		for(variableDeclaration in generator.variableDeclarations)
+			variableDeclaration.compile(constructor)
+
+		val iteratorCreationPropertyType = iterableType?.getValueDeclaration("createIterator")?.second
+		val iteratorCreationMatch = (iteratorCreationPropertyType as? FunctionType)?.getSignature()
+		val iteratorCreationSignature = iteratorCreationMatch?.signature
+		val iteratorType = iteratorCreationMatch?.returnType
+		val iteratorLlvmType = iteratorType?.getLlvmType(constructor)
+		val iteratorAdvancePropertyType = iteratorType?.getValueDeclaration("advance")?.second
+		val iteratorAdvanceSignature = (iteratorAdvancePropertyType as? FunctionType)?.getSignature()?.signature
+
+		val function = constructor.getParentFunction()
+		val createIteratorAddress = context.resolveFunction(constructor, iterableType?.getLlvmType(constructor),
+			generator.iterable.getLlvmValue(constructor), "createIterator(): <Element>List.Iterator") //TODO change function IDs: exclude return type
+		val iterator = constructor.buildFunctionCall(iteratorCreationSignature?.getLlvmType(constructor), createIteratorAddress,
+			emptyList(), "iterator")
+		entryBlock = constructor.createBlock(function, "loop_entry")
+		exitBlock = constructor.createBlock("loop_exit")
+		constructor.buildJump(entryBlock)
+		constructor.select(entryBlock)
+		val condition = context.resolveMember(constructor, iteratorLlvmType, iterator, "isDone")
+		val bodyBlock = constructor.createBlock(function, "loop_body")
+		constructor.buildJump(condition, bodyBlock, exitBlock)
+		constructor.select(bodyBlock)
+		val indexVariable = generator.currentIndexVariable
+		if(indexVariable != null) {
+			val indexProperty = context.resolveMember(constructor, iteratorLlvmType, iterator, "currentIndex")
+			constructor.buildStore(indexProperty, indexVariable.llvmLocation)
+		}
+		val keyVariable = generator.currentKeyVariable
+		if(keyVariable != null) {
+			val indexProperty = context.resolveMember(constructor, iteratorLlvmType, iterator, "currentKey")
+			constructor.buildStore(indexProperty, keyVariable.llvmLocation)
+		}
+		val valueVariable = generator.currentValueVariable
+		if(valueVariable != null) {
+			val indexProperty = context.resolveMember(constructor, iteratorLlvmType, iterator, "currentValue")
+			constructor.buildStore(indexProperty, valueVariable.llvmLocation)
+		}
+		body.compile(constructor)
+		val advanceFunctionAddress = context.resolveFunction(constructor, iterableType?.getLlvmType(constructor),
+			generator.iterable.getLlvmValue(constructor), "advance()")
+		constructor.buildFunctionCall(iteratorAdvanceSignature?.getLlvmType(constructor), advanceFunctionAddress)
+		if(!body.isInterruptingExecution)
+			constructor.buildJump(entryBlock)
+		constructor.addBlockToFunction(function, exitBlock)
+		constructor.select(exitBlock)
 	}
 
 	fun jumpToNextIteration(constructor: LlvmConstructor) {

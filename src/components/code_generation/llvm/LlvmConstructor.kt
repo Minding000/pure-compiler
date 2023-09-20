@@ -106,7 +106,9 @@ class LlvmConstructor(name: String) {
 		LLVMAddAttributeAtIndex(function, LLVMAttributeReturnIndex, attribute)
 	}
 
-	fun buildFunctionCall(functionType: LlvmType, function: LlvmValue, parameters: List<LlvmValue> = emptyList(), name: String = ""): LlvmValue {
+	fun buildFunctionCall(functionType: LlvmType?, function: LlvmValue, parameters: List<LlvmValue> = emptyList(), name: String = ""): LlvmValue {
+		if(functionType == null)
+			throw CompilerError("Missing function type in function call '$name'.")
 		return LLVMBuildCall2(builder, functionType, function, parameters.toLlvmList(), parameters.size, name)
 	}
 
@@ -140,12 +142,14 @@ class LlvmConstructor(name: String) {
 		LLVMSetAlignment(definition, byteCount)
 	}
 
-	fun buildGlobal(name: String, type: LlvmType?, initialValue: LlvmValue): LlvmValue {
+	fun declareGlobal(name: String, type: LlvmType?): LlvmValue {
 		if(type == null)
 			throw CompilerError("Missing type in global allocation '$name'.")
-		val global = LLVMAddGlobal(module, type, name)
+		return LLVMAddGlobal(module, type, name)
+	}
+
+	fun defineGlobal(global: LlvmValue, initialValue: LlvmValue) {
 		LLVMSetInitializer(global, initialValue)
-		return global
 	}
 
 	fun buildConstantStruct(type: LlvmType?, values: List<LlvmValue>): LlvmValue {
@@ -154,7 +158,9 @@ class LlvmConstructor(name: String) {
 		return LLVMConstNamedStruct(type, values.toLlvmList(), values.size)
 	}
 
-	fun buildHeapAllocation(type: LlvmType, name: String): LlvmValue {
+	fun buildHeapAllocation(type: LlvmType?, name: String): LlvmValue {
+		if(type == null)
+			throw CompilerError("Missing type in heap allocation '$name'.")
 		return LLVMBuildMalloc(builder, type, name)
 	}
 
@@ -202,7 +208,9 @@ class LlvmConstructor(name: String) {
 	}
 
 	fun buildGlobalCharArray(name: String, text: String): LlvmValue {
-		return buildGlobal(name, buildArrayType(byteType, text.length + 1), buildConstantCharArray(text))
+		val globalCharArray = declareGlobal(name, buildArrayType(byteType, text.length + 1))
+		defineGlobal(globalCharArray, buildConstantCharArray(text))
+		return globalCharArray
 	}
 
 	fun changeTypeAllowingDataLoss(value: LlvmValue, newType: LlvmType?, name: String): LlvmValue {
@@ -215,6 +223,8 @@ class LlvmConstructor(name: String) {
 	fun buildCastFromIntegerToByte(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, byteType, name)
 
 	fun buildCastFromSignedIntegerToFloat(integer: LlvmValue, name: String): LlvmValue = LLVMBuildSIToFP(builder, integer, floatType, name)
+
+	fun buildIsNull(value: LlvmValue, name: String): LlvmValue = LLVMBuildIsNull(builder, value, name)
 
 	fun buildBooleanNegation(value: LlvmValue, name: String): LlvmValue = LLVMBuildNot(builder, value, name)
 	fun buildAnd(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildAnd(builder, left, right, name)

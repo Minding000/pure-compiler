@@ -15,14 +15,14 @@ internal class TypeDefinitions {
 		assertContains(intermediateRepresentation, """
 			define void @SimplestApp_ClassInitializer() {
 			entrypoint:
-			  %constantIdArray = tail call ptr @malloc(i32 0)
-			  %constantOffsetArray = tail call ptr @malloc(i32 0)
+			  %staticMemberIdArray = tail call ptr @malloc(i32 0)
+			  %staticMemberOffsetArray = tail call ptr @malloc(i32 0)
 			  %propertyIdArray = tail call ptr @malloc(i32 0)
 			  %propertyOffsetArray = tail call ptr @malloc(i32 0)
 			  %functionIdArray = tail call ptr @malloc(i32 0)
 			  %functionAddressArray = tail call ptr @malloc(i32 0)
-			  store ptr %constantIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 1), align 8
-			  store ptr %constantOffsetArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 2), align 8
+			  store ptr %staticMemberIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 1), align 8
+			  store ptr %staticMemberOffsetArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 2), align 8
 			  store ptr %propertyIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 4), align 8
 			  store ptr %propertyOffsetArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 5), align 8
 			  store ptr %functionIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 7), align 8
@@ -60,8 +60,8 @@ internal class TypeDefinitions {
 		assertContains(intermediateRepresentation, """
 			define void @SimplestApp_ClassInitializer() {
 			entrypoint:
-			  %constantIdArray = tail call ptr @malloc(i32 0)
-			  %constantOffsetArray = tail call ptr @malloc(i32 0)
+			  %staticMemberIdArray = tail call ptr @malloc(i32 0)
+			  %staticMemberOffsetArray = tail call ptr @malloc(i32 0)
 			  %propertyIdArray = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (i32, ptr null, i32 1) to i32))
 			  %propertyOffsetArray = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (i32, ptr null, i32 1) to i32))
 			  %functionIdArray = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (i32, ptr null, i32 1) to i32))
@@ -74,8 +74,8 @@ internal class TypeDefinitions {
 			  %functionAddressLocation = getelementptr ptr, ptr %functionAddressArray, i32 0
 			  store i32 2, ptr %functionIdLocation, align 4
 			  store ptr @"run()", ptr %functionAddressLocation, align 8
-			  store ptr %constantIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 1), align 8
-			  store ptr %constantOffsetArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 2), align 8
+			  store ptr %staticMemberIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 1), align 8
+			  store ptr %staticMemberOffsetArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 2), align 8
 			  store ptr %propertyIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 4), align 8
 			  store ptr %propertyOffsetArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 5), align 8
 			  store ptr %functionIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 7), align 8
@@ -123,8 +123,8 @@ internal class TypeDefinitions {
 		assertContains(intermediateRepresentation, """
 			define void @Application_ClassInitializer() {
 			entrypoint:
-			  %constantIdArray = tail call ptr @malloc(i32 0)
-			  %constantOffsetArray = tail call ptr @malloc(i32 0)
+			  %staticMemberIdArray = tail call ptr @malloc(i32 0)
+			  %staticMemberOffsetArray = tail call ptr @malloc(i32 0)
 			  %propertyIdArray = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (i32, ptr null, i32 1) to i32))
 			  %propertyOffsetArray = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (i32, ptr null, i32 1) to i32))
 			  %functionIdArray = tail call ptr @malloc(i32 0)
@@ -133,8 +133,8 @@ internal class TypeDefinitions {
 			  %propertyOffsetLocation = getelementptr i32, ptr %propertyOffsetArray, i32 0
 			  store i32 1, ptr %propertyIdLocation, align 4
 			  store i32 8, ptr %propertyOffsetLocation, align 4
-			  store ptr %constantIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @Application_ClassDefinition, i32 0, i32 1), align 8
-			  store ptr %constantOffsetArray, ptr getelementptr inbounds (%_ClassStruct, ptr @Application_ClassDefinition, i32 0, i32 2), align 8
+			  store ptr %staticMemberIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @Application_ClassDefinition, i32 0, i32 1), align 8
+			  store ptr %staticMemberOffsetArray, ptr getelementptr inbounds (%_ClassStruct, ptr @Application_ClassDefinition, i32 0, i32 2), align 8
 			  store ptr %propertyIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @Application_ClassDefinition, i32 0, i32 4), align 8
 			  store ptr %propertyOffsetArray, ptr getelementptr inbounds (%_ClassStruct, ptr @Application_ClassDefinition, i32 0, i32 5), align 8
 			  store ptr %functionIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @Application_ClassDefinition, i32 0, i32 7), align 8
@@ -176,22 +176,22 @@ internal class TypeDefinitions {
 		assertContains(intermediateRepresentation, """
 			define void @InternetProtocol_ClassInitializer() {
 			entrypoint:
-			  %constantIdArray = tail call ptr @malloc(i32 mul (i32 ptrtoint (ptr getelementptr (i32, ptr null, i32 1) to i32), i32 2))
-			  %constantOffsetArray = tail call ptr @malloc(i32 mul (i32 ptrtoint (ptr getelementptr (i32, ptr null, i32 1) to i32), i32 2))
+			  %staticMemberIdArray = tail call ptr @malloc(i32 mul (i32 ptrtoint (ptr getelementptr (i32, ptr null, i32 1) to i32), i32 2))
+			  %staticMemberOffsetArray = tail call ptr @malloc(i32 mul (i32 ptrtoint (ptr getelementptr (i32, ptr null, i32 1) to i32), i32 2))
 			  %propertyIdArray = tail call ptr @malloc(i32 0)
 			  %propertyOffsetArray = tail call ptr @malloc(i32 0)
 			  %functionIdArray = tail call ptr @malloc(i32 0)
 			  %functionAddressArray = tail call ptr @malloc(i32 0)
-			  %constantIdLocation = getelementptr i32, ptr %constantIdArray, i32 0
-			  %constantOffsetLocation = getelementptr i32, ptr %constantOffsetArray, i32 0
-			  store i32 1, ptr %constantIdLocation, align 4
-			  store i32 8, ptr %constantOffsetLocation, align 4
-			  %constantIdLocation1 = getelementptr i32, ptr %constantIdArray, i32 1
-			  %constantOffsetLocation2 = getelementptr i32, ptr %constantOffsetArray, i32 1
-			  store i32 2, ptr %constantIdLocation1, align 4
-			  store i32 16, ptr %constantOffsetLocation2, align 4
-			  store ptr %constantIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 1), align 8
-			  store ptr %constantOffsetArray, ptr getelementptr inbounds (%_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 2), align 8
+			  %staticMemberIdLocation = getelementptr i32, ptr %staticMemberIdArray, i32 0
+			  %staticMemberOffsetLocation = getelementptr i32, ptr %staticMemberOffsetArray, i32 0
+			  store i32 1, ptr %staticMemberIdLocation, align 4
+			  store i32 8, ptr %staticMemberOffsetLocation, align 4
+			  %staticMemberIdLocation1 = getelementptr i32, ptr %staticMemberIdArray, i32 1
+			  %staticMemberOffsetLocation2 = getelementptr i32, ptr %staticMemberOffsetArray, i32 1
+			  store i32 2, ptr %staticMemberIdLocation1, align 4
+			  store i32 16, ptr %staticMemberOffsetLocation2, align 4
+			  store ptr %staticMemberIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 1), align 8
+			  store ptr %staticMemberOffsetArray, ptr getelementptr inbounds (%_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 2), align 8
 			  store ptr %propertyIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 4), align 8
 			  store ptr %propertyOffsetArray, ptr getelementptr inbounds (%_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 5), align 8
 			  store ptr %functionIdArray, ptr getelementptr inbounds (%_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 7), align 8

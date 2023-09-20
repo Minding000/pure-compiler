@@ -10,6 +10,7 @@ import components.semantic_model.types.PluralType
 import components.semantic_model.types.Type
 import components.semantic_model.values.LocalVariableDeclaration
 import components.semantic_model.values.Value
+import components.semantic_model.values.ValueDeclaration
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.loops.NotIterable
 import logger.issues.loops.PluralTypeIteratorDeclaration
@@ -21,6 +22,9 @@ import components.syntax_parser.syntax_tree.control_flow.OverGenerator as OverGe
 class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, val iterable: Value,
 					val iteratorVariableDeclaration: LocalVariableDeclaration?, val variableDeclarations: List<LocalVariableDeclaration>):
 	SemanticModel(source, scope) {
+	var currentIndexVariable: ValueDeclaration? = null
+	var currentKeyVariable: ValueDeclaration? = null
+	var currentValueVariable: ValueDeclaration? = null
 
 	init {
 		addSemanticModels(iterable, iteratorVariableDeclaration)
@@ -53,9 +57,11 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 			val indexVariableType = LiteralType(source, scope, SpecialType.INTEGER)
 			indexVariableType.determineTypes()
 			addSemanticModels(indexVariableType)
-			variableDeclarations.firstOrNull()?.type = indexVariableType
+			currentIndexVariable = variableDeclarations.firstOrNull()
+			currentIndexVariable?.type = indexVariableType
 		}
-		variableDeclarations.lastOrNull()?.type = iterableType.baseType
+		currentValueVariable = variableDeclarations.lastOrNull()
+		currentValueVariable?.type = iterableType.baseType
 	}
 
 	private fun setVariableTypes(iterableType: Type) {
@@ -68,27 +74,28 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 			val iteratorCreationFunctionType = iteratorCreationPropertyType as? FunctionType
 			val iteratorType = iteratorCreationFunctionType?.getSignature()?.returnType ?: return
 			iteratorVariableDeclaration?.type = iteratorType
+			var variableIndex = variableDeclarations.size - 1
 			val availableValueTypes = LinkedList<Type?>()
-			if(iteratorType.isInstanceOf(SpecialType.INDEX_ITERATOR)) {
-				val (_, indexPropertyType) = iteratorType.interfaceScope.getValueDeclaration("currentIndex")
-				availableValueTypes.add(indexPropertyType)
+			if(iteratorType.isInstanceOf(SpecialType.VALUE_ITERATOR)) {
+				val (_, valuePropertyType) = iteratorType.interfaceScope.getValueDeclaration("currentValue")
+				currentValueVariable = variableDeclarations.getOrNull(variableIndex--)
+				currentValueVariable?.type = valuePropertyType
+				availableValueTypes.add(valuePropertyType)
 			}
 			if(iteratorType.isInstanceOf(SpecialType.KEY_ITERATOR)) {
 				val (_, keyPropertyType) = iteratorType.interfaceScope.getValueDeclaration("currentKey")
+				currentKeyVariable = variableDeclarations.getOrNull(variableIndex--)
+				currentKeyVariable?.type = keyPropertyType
 				availableValueTypes.add(keyPropertyType)
 			}
-			if(iteratorType.isInstanceOf(SpecialType.VALUE_ITERATOR)) {
-				val (_, valuePropertyType) = iteratorType.interfaceScope.getValueDeclaration("currentValue")
-				availableValueTypes.add(valuePropertyType)
+			if(iteratorType.isInstanceOf(SpecialType.INDEX_ITERATOR)) {
+				val (_, indexPropertyType) = iteratorType.interfaceScope.getValueDeclaration("currentIndex")
+				currentIndexVariable = variableDeclarations.getOrNull(variableIndex)
+				currentIndexVariable?.type = indexPropertyType
+				availableValueTypes.add(indexPropertyType)
 			}
-			if(variableDeclarations.size > availableValueTypes.size) {
+			if(variableDeclarations.size > availableValueTypes.size)
 				context.addIssue(TooManyIterableVariableDeclarations(source, variableDeclarations, availableValueTypes))
-				return
-			}
-			for(index in variableDeclarations.indices) {
-				val sourceValueIndex = availableValueTypes.size - (variableDeclarations.size - index)
-				variableDeclarations[index].type = availableValueTypes[sourceValueIndex]
-			}
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "function", "createIterator()")
 		}

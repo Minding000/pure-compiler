@@ -1,5 +1,7 @@
 package components.semantic_model.types
 
+import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmType
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
@@ -63,6 +65,10 @@ class OptionalType(override val source: SyntaxTreeNode, scope: Scope, val baseTy
 		if(baseType != other.baseType)
 			return false
 		return true
+	}
+
+	override fun createLlvmType(constructor: LlvmConstructor): LlvmType {
+		return constructor.pointerType
 	}
 
 	override fun hashCode(): Int {
