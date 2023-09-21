@@ -1,5 +1,7 @@
 package components.semantic_model.operations
 
+import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
@@ -51,5 +53,13 @@ class HasValueCheck(override val source: HasValueCheckSyntaxTree, scope: Scope, 
 			context.addIssue(StaticHasValueCheckResult(source, "yes"))
 			BooleanLiteral(this, true)
 		} else null
+	}
+
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		if(SpecialType.NULL.matches(subject.type))
+			return constructor.buildBoolean(false)
+		if(subject.type !is OptionalType)
+			return constructor.buildBoolean(true)
+		return constructor.buildIsNotNull(subject.getLlvmValue(constructor), "_hasValueCheckResult")
 	}
 }

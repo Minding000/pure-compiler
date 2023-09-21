@@ -53,11 +53,23 @@ internal class UnaryOperators {
 	}
 
 	@Test
-	fun `parses has-value checks`() {
+	fun `parses has-value checks on identifiers`() {
 		val sourceCode = "x?"
 		val expected =
 			"""
 				HasValueCheck { Identifier { x } }
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses has-value checks on member accesses`() {
+		val sourceCode = "a.x?"
+		val expected =
+			"""
+				HasValueCheck { MemberAccess {
+					Identifier { a }.Identifier { x }
+				} }
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}

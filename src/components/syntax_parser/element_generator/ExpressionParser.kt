@@ -188,18 +188,31 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 
 	/**
 	 * UnaryOperator:
-	 *   <Accessor>
-	 *   !<Accessor>
-	 *   +<Accessor>
-	 *   -<Accessor>
-	 *   ...<Accessor>
+	 *   <HasValueCheck>
+	 *   !<HasValueCheck>
+	 *   +<HasValueCheck>
+	 *   -<HasValueCheck>
+	 *   ...<HasValueCheck>
 	 */
 	private fun parseUnaryOperator(): ValueSyntaxTreeNode {
 		if(WordType.UNARY_OPERATOR.includes(currentWord?.type)) {
 			val operator = parseOperator(WordType.UNARY_OPERATOR)
-			return UnaryOperator(parseAccessor(), operator)
+			return UnaryOperator(parseHasValueCheck(), operator)
 		}
-		return parseAccessor()
+		return parseHasValueCheck()
+	}
+
+	/**
+	 * HasValueCheck:
+	 *   <Accessor>?
+	 */
+	private fun parseHasValueCheck(): ValueSyntaxTreeNode {
+		val accessor = parseAccessor()
+		if(currentWord?.type == WordAtom.QUESTION_MARK) {
+			consume(WordAtom.QUESTION_MARK)
+			return HasValueCheck(accessor)
+		}
+		return accessor
 	}
 
 	/**
@@ -341,7 +354,6 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 	 *   <SuperReference>
 	 *   <InitializerReference>
 	 *   <ForeignLanguageExpression>
-	 *   <HasValueCheck>
 	 *   <Identifier>
 	 *   <InstanceAccess>
 	 *   <TypeSpecification>
@@ -359,7 +371,6 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 			WordAtom.IDENTIFIER -> {
 				when(nextWord?.type) {
 					WordAtom.FOREIGN_EXPRESSION -> parseForeignLanguageExpression()
-					WordAtom.QUESTION_MARK -> parseHasValueCheck()
 					else -> literalParser.parseIdentifier()
 				}
 			}
@@ -431,16 +442,6 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 	 */
 	private fun parseForeignLanguageLiteral(): ForeignLanguageLiteral {
 		return ForeignLanguageLiteral(consume(WordAtom.FOREIGN_LANGUAGE))
-	}
-
-	/**
-	 * HasValueCheck:
-	 *   <Identifier>?
-	 */
-	private fun parseHasValueCheck(): HasValueCheck {
-		val identifier = literalParser.parseIdentifier()
-		consume(WordAtom.QUESTION_MARK)
-		return HasValueCheck(identifier)
 	}
 
 	/**
