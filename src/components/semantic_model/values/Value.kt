@@ -71,6 +71,10 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 			context.addIssue(MissingType(source))
 	}
 
+	open fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue? {
+		throw CompilerError(source, "Tried to access '${javaClass.simpleName}' LLVM location.")
+	}
+
 	fun getLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		var llvmValue = llvmValue
 		if(llvmValue == null) {

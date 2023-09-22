@@ -99,7 +99,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		return possibleTargetTypes
 	}
 
-	fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue {
+	override fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue {
 		if(member !is VariableValue)
 			throw CompilerError(source, "Member access references invalid member of type '${member.javaClass.simpleName}'.")
 		val targetValue = target.getLlvmValue(constructor)

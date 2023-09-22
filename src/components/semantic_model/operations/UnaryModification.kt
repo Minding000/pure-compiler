@@ -70,19 +70,17 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
-		if(target is VariableValue) { //TODO What about member accesses? (write test!)
-			if(SpecialType.INTEGER.matches(target.type)) {
-				val targetValue = target.getLlvmValue(constructor)
-				val modifierValue = constructor.buildInt32(STEP_SIZE.longValueExact())
-				val intermediateResultName = "_modifiedValue"
-				val operation = when(kind) {
-					Operator.Kind.DOUBLE_PLUS -> constructor.buildIntegerAddition(targetValue, modifierValue, intermediateResultName)
-					Operator.Kind.DOUBLE_MINUS -> constructor.buildIntegerSubtraction(targetValue, modifierValue, intermediateResultName)
-					else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
-				}
-				constructor.buildStore(operation, target.getLlvmLocation(constructor))
-				return
+		if(SpecialType.INTEGER.matches(target.type)) {
+			val targetValue = target.getLlvmValue(constructor)
+			val modifierValue = constructor.buildInt32(STEP_SIZE.longValueExact())
+			val intermediateResultName = "_modifiedValue"
+			val operation = when(kind) {
+				Operator.Kind.DOUBLE_PLUS -> constructor.buildIntegerAddition(targetValue, modifierValue, intermediateResultName)
+				Operator.Kind.DOUBLE_MINUS -> constructor.buildIntegerSubtraction(targetValue, modifierValue, intermediateResultName)
+				else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
 			}
+			constructor.buildStore(operation, target.getLlvmLocation(constructor))
+			return
 		}
 		val signature = targetSignature ?: throw CompilerError(source, "Unary modification is missing a target.")
 		createLlvmFunctionCall(constructor, signature)

@@ -188,6 +188,23 @@ internal class BinaryModifications {
 	}
 
 	@Test
+	fun `compiles primitive binary modifications on member accesses`() {
+		val sourceCode = """
+			City object {
+				var residentCount = 0
+			}
+			SimplestApp object {
+				to getOneHundred(): Int {
+					City.residentCount += 100
+					return City.residentCount
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOneHundred")
+		assertEquals(100, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
 	fun `compiles custom operator calls`() {
 		val sourceCode = """
 			Pool class {

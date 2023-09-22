@@ -66,7 +66,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 
 	override fun getComputedType(): Type? = staticType
 
-	fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue? {
+	override fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue? {
 		val definition = declaration
 		return if(definition is PropertyDeclaration) {
 			context.resolveMember(constructor, definition.parentTypeDeclaration.llvmType, context.getThisParameter(constructor), name,

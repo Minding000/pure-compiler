@@ -38,6 +38,23 @@ internal class UnaryModifications {
 	}
 
 	@Test
+	fun `compiles primitive unary modifications on member accesses`() {
+		val sourceCode = """
+			City object {
+				var residentCount = 0
+			}
+			SimplestApp object {
+				to getOne(): Int {
+					City.residentCount++
+					return City.residentCount
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne")
+		assertEquals(1, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
 	fun `compiles custom operator calls`() {
 		val sourceCode = """
 			QuadraticCounter class {
