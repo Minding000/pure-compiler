@@ -1,9 +1,11 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
+import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.NumberLiteral
@@ -14,10 +16,12 @@ import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
 import java.math.BigDecimal
+import java.util.*
 import components.syntax_parser.syntax_tree.operations.UnaryModification as UnaryModificationSyntaxTree
 
 class UnaryModification(override val source: UnaryModificationSyntaxTree, scope: Scope, val target: Value, val kind: Operator.Kind):
 	SemanticModel(source, scope) {
+	var targetSignature: FunctionSignature? = null
 
 	companion object {
 		private val STEP_SIZE = BigDecimal(1)
@@ -30,15 +34,17 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 	override fun determineTypes() {
 		super.determineTypes()
 		context.registerWrite(target)
-		target.type?.let { targetType ->
-			try {
-				val operatorDefinition = targetType.interfaceScope.getOperator(kind)
-				if(operatorDefinition == null)
-					context.addIssue(NotFound(source, "Operator", "$targetType$kind"))
-			} catch(error: SignatureResolutionAmbiguityError) {
-				//TODO write test for this
-				error.log(source, "operator", "$targetType$kind")
+		val targetType = target.type ?: return
+		try {
+			val match = targetType.interfaceScope.getOperator(kind)
+			if(match == null) {
+				context.addIssue(NotFound(source, "Operator", "$targetType$kind"))
+				return
 			}
+			targetSignature = match.signature
+		} catch(error: SignatureResolutionAmbiguityError) {
+			//TODO write test for this
+			error.log(source, "operator", "$targetType$kind")
 		}
 	}
 
@@ -64,7 +70,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
-		if(target is VariableValue) {
+		if(target is VariableValue) { //TODO What about member accesses? (write test!)
 			if(SpecialType.INTEGER.matches(target.type)) {
 				val targetValue = target.getLlvmValue(constructor)
 				val modifierValue = constructor.buildInt32(STEP_SIZE.longValueExact())
@@ -75,7 +81,20 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 					else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
 				}
 				constructor.buildStore(operation, target.getLlvmLocation(constructor))
+				return
 			}
 		}
+		val signature = targetSignature ?: throw CompilerError(source, "Unary modification is missing a target.")
+		createLlvmFunctionCall(constructor, signature)
+	}
+
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature) {
+		val typeDefinition = signature.parentDefinition
+		val targetValue = target.getLlvmValue(constructor)
+		val parameters = LinkedList<LlvmValue>()
+		parameters.add(targetValue)
+		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
+			signature.toString(false, kind))
+		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
 	}
 }

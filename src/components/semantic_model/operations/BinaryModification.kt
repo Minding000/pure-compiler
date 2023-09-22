@@ -69,13 +69,14 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
-		if(target !is VariableValue)
-			return
 		val isTargetInteger = SpecialType.INTEGER.matches(target.type)
 		val isTargetPrimitiveNumber = isTargetInteger || SpecialType.FLOAT.matches(target.type)
 		val isModifierInteger = SpecialType.INTEGER.matches(modifier.type)
 		val isModifierPrimitiveNumber = isModifierInteger || SpecialType.FLOAT.matches(modifier.type)
 		if(isTargetPrimitiveNumber && isModifierPrimitiveNumber) {
+			//TODO What about member accesses? (write test!)
+			if(target !is VariableValue)
+				return
 			val targetValue = target.getLlvmValue(constructor)
 			var modifierValue = modifier.getLlvmValue(constructor)
 			val isIntegerOperation = isTargetInteger && isModifierInteger

@@ -36,4 +36,28 @@ internal class UnaryModifications {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
 		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
+
+	@Test
+	fun `compiles custom operator calls`() {
+		val sourceCode = """
+			QuadraticCounter class {
+				var linearCounter = 1
+				operator ++ {
+					linearCounter++
+				}
+				to getCount(): Int {
+					return linearCounter * linearCounter
+				}
+			}
+			SimplestApp object {
+				to getFour(): Int {
+					val counter = QuadraticCounter()
+					counter++
+					return counter.getCount()
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFour")
+		assertEquals(4, Llvm.castToSignedInteger(result))
+	}
 }
