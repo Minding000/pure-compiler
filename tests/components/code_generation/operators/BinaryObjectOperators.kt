@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 internal class BinaryObjectOperators {
 
 	@Test
-	fun `compiles custom operators`() {
+	fun `compiles custom operator calls`() {
 		val sourceCode = """
 			Joker class {
 				operator ==(other: Joker): Bool {

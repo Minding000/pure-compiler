@@ -1,6 +1,7 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
@@ -14,6 +15,7 @@ import components.semantic_model.values.VariableValue
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
+import java.util.*
 import components.syntax_parser.syntax_tree.operations.BinaryModification as BinaryModificationSyntaxTree
 
 class BinaryModification(override val source: BinaryModificationSyntaxTree, scope: Scope, val target: Value, val modifier: Value,
@@ -112,6 +114,20 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 				else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
 			}
 			constructor.buildStore(operation, target.getLlvmLocation(constructor))
+		} else {
+			val signature = targetSignature ?: throw CompilerError(source, "Binary operator is missing a target.")
+			createLlvmFunctionCall(constructor, signature)
 		}
+	}
+
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature) {
+		val typeDefinition = signature.parentDefinition
+		val targetValue = target.getLlvmValue(constructor)
+		val parameters = LinkedList<LlvmValue>()
+		parameters.add(targetValue)
+		parameters.add(modifier.getLlvmValue(constructor))
+		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
+			signature.toString(false, kind))
+		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
 	}
 }

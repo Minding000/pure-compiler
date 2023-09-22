@@ -186,4 +186,25 @@ internal class BinaryModifications {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
 		assertEquals(5.0, Llvm.castToFloat(result))
 	}
+
+	@Test
+	fun `compiles custom operator calls`() {
+		val sourceCode = """
+			Pool class {
+				var subPoolCount = 0
+				operator +=(other: Pool) {
+					subPoolCount++
+				}
+			}
+			SimplestApp object {
+				to getOne(): Int {
+					val pool = Pool()
+					pool += Pool()
+					return pool.subPoolCount
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne")
+		assertEquals(1, Llvm.castToSignedInteger(result))
+	}
 }
