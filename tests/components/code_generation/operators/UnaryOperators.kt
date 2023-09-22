@@ -45,4 +45,28 @@ internal class UnaryOperators {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNegativeOnePointFive")
 		assertEquals(-1.5, Llvm.castToFloat(result))
 	}
+
+	@Test
+	fun `compiles custom operator calls`() {
+		val sourceCode = """
+			Acceleration class {
+				var value = 0
+				operator -(): Acceleration {
+					val negativeAcceleration = Acceleration()
+					negativeAcceleration.value = -value
+					return negativeAcceleration
+				}
+			}
+			SimplestApp object {
+				to getNegativeTen(): Int {
+					val acceleration = Acceleration()
+					acceleration.value = 10
+					val negativeAcceleration = -acceleration
+					return negativeAcceleration.value
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNegativeTen")
+		assertEquals(-10, Llvm.castToSignedInteger(result))
+	}
 }

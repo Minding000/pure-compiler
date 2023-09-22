@@ -13,6 +13,7 @@ import components.semantic_model.values.Value
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
+import java.util.*
 import components.syntax_parser.syntax_tree.operations.UnaryOperator as UnaryOperatorSyntaxTree
 
 class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, val subject: Value, val kind: Operator.Kind):
@@ -78,6 +79,17 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 			if(kind == Operator.Kind.MINUS)
 				return constructor.buildFloatNegation(llvmValue, resultName)
 		}
-		TODO("Unary '$kind${subject.type}' operator is not implemented yet.")
+		val signature = targetSignature ?: throw CompilerError(source, "Unary operator is missing a target.")
+		return createLlvmFunctionCall(constructor, signature)
+	}
+
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
+		val typeDefinition = signature.parentDefinition
+		val targetValue = subject.getLlvmValue(constructor)
+		val parameters = LinkedList<LlvmValue>()
+		parameters.add(targetValue)
+		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
+			signature.toString(false, kind))
+		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_unaryOperatorResult")
 	}
 }

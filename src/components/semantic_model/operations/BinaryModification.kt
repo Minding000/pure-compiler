@@ -115,7 +115,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 			}
 			constructor.buildStore(operation, target.getLlvmLocation(constructor))
 		} else {
-			val signature = targetSignature ?: throw CompilerError(source, "Binary operator is missing a target.")
+			val signature = targetSignature ?: throw CompilerError(source, "Binary modification is missing a target.")
 			createLlvmFunctionCall(constructor, signature)
 		}
 	}
