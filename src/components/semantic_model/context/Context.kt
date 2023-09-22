@@ -27,6 +27,8 @@ class Context {
 	lateinit var llvmMemberAddressType: LlvmType
 	lateinit var llvmPrintFunctionType: LlvmType
 	lateinit var llvmPrintFunction: LlvmValue
+	lateinit var llvmFlushFunctionType: LlvmType
+	lateinit var llvmFlushFunction: LlvmValue
 	lateinit var llvmExitFunctionType: LlvmType
 	lateinit var llvmExitFunction: LlvmValue
 	lateinit var variadicParameterListStruct: LlvmType
@@ -80,7 +82,7 @@ class Context {
 						signatureIdentifier: String): LlvmValue {
 		val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(targetType, targetLocation,
 			CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-		val classDefinitionAddress = constructor.buildLoad(constructor.pointerType,classDefinitionAddressLocation,
+		val classDefinitionAddress = constructor.buildLoad(constructor.pointerType, classDefinitionAddressLocation,
 			"classDefinitionAddress")
 		return constructor.buildFunctionCall(llvmFunctionAddressFunctionType, llvmFunctionAddressFunction,
 			listOf(classDefinitionAddress, constructor.buildInt32(memberIdentities.getId(signatureIdentifier))), "functionAddress")
@@ -95,5 +97,12 @@ class Context {
 	fun printDebugMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
 		val formatStringGlobal = constructor.buildGlobalCharArray("debugFormat", "$formatString\n")
 		constructor.buildFunctionCall(llvmPrintFunctionType, llvmPrintFunction, listOf(formatStringGlobal, *values), "debugPrintCall")
+		constructor.buildFunctionCall(llvmFlushFunctionType, llvmFlushFunction, listOf(constructor.nullPointer), "debugFlushCall")
+	}
+
+	fun panic(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
+		printDebugMessage(constructor, formatString, *values)
+		val exitCode = constructor.buildInt32(1)
+		constructor.buildFunctionCall(llvmExitFunctionType, llvmExitFunction, listOf(exitCode))
 	}
 }

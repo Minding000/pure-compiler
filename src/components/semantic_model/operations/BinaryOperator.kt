@@ -13,6 +13,7 @@ import components.semantic_model.values.*
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
+import java.util.*
 import components.syntax_parser.syntax_tree.operations.BinaryOperator as BinaryOperatorSyntaxTree
 
 class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope, val left: Value, val right: Value,
@@ -264,7 +265,19 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				else -> {}
 			}
 		}
-		TODO("Binary '${left.type} $kind ${right.type}' operator is not implemented yet.")
+		val signature = targetSignature ?: throw CompilerError(source, "Binary operator is missing a target.")
+		return createLlvmFunctionCall(constructor, signature)
+	}
+
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
+		val typeDefinition = signature.parentDefinition
+		val targetValue = left.getLlvmValue(constructor)
+		val parameters = LinkedList<LlvmValue>()
+		parameters.add(targetValue)
+		parameters.add(right.getLlvmValue(constructor))
+		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
+			signature.toString(false, kind))
+		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_binaryOperatorResult")
 	}
 
 	private fun getNullCoalescenceResult(constructor: LlvmConstructor): LlvmValue {

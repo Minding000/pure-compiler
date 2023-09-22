@@ -4,7 +4,6 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.VariableTracker
-import components.semantic_model.declarations.Object
 import components.semantic_model.scopes.FileScope
 import logger.issues.resolution.ReferencedFileNotFound
 import java.util.*
@@ -68,7 +67,7 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 	override fun compile(constructor: LlvmConstructor) {
 		constructor.createAndSelectBlock(llvmInitializerValue, "entrypoint")
 		for(typeDeclaration in scope.typeDeclarations.values) {
-			if(typeDeclaration is Object)
+			if(typeDeclaration.isDefinition)
 				constructor.buildFunctionCall(typeDeclaration.llvmClassInitializerType, typeDeclaration.llvmClassInitializer)
 		}
 		super.compile(constructor)

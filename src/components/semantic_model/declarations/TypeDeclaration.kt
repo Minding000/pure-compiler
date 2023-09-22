@@ -25,7 +25,7 @@ import java.util.*
 abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: String, override val scope: TypeScope,
 							   val explicitParentType: ObjectType? = null, val superType: Type? = null, val members: List<SemanticModel> = emptyList(),
 							   val isBound: Boolean = false): SemanticModel(source, scope) {
-	protected open val isDefinition = true
+	open val isDefinition = true
 	override var parent: SemanticModel?
 		get() = super.parent
 		set(value) {
@@ -238,9 +238,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		if(isDefinition) {
+		if(isDefinition)
 			buildLlvmClassInitializer(constructor, staticMembers, properties, functions)
-		}
 		super.compile(constructor)
 	}
 

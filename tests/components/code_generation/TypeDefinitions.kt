@@ -154,6 +154,7 @@ internal class TypeDefinitions {
 
 			define void @Test_FileInitializer() {
 			entrypoint:
+			  call void @Application_ClassInitializer()
 			  %newObjectAddress = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%Application_ClassStruct, ptr null, i32 1) to i32))
 			  %classDefinitionPointer = getelementptr inbounds %Application_ClassStruct, ptr %newObjectAddress, i32 0, i32 0
 			  store ptr @Application_ClassDefinition, ptr %classDefinitionPointer, align 8
@@ -206,6 +207,7 @@ internal class TypeDefinitions {
 
 			define void @Test_FileInitializer() {
 			entrypoint:
+			  call void @InternetProtocol_ClassInitializer()
 			  %InternetProtocol = load ptr, ptr @InternetProtocol_StaticObject, align 8
 			  %classDefinition = getelementptr inbounds %InternetProtocol_StaticStruct, ptr %InternetProtocol, i32 0, i32 0
 			  %classDefinitionAddress = load ptr, ptr %classDefinition, align 8
