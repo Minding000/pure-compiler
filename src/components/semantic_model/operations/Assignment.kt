@@ -120,7 +120,8 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 	}
 
 	private fun compileAssignmentToIndexAccess(constructor: LlvmConstructor, indexAccess: IndexAccess, value: LlvmValue) {
-		val signature = indexAccess.targetSignature ?: throw CompilerError(source, "Missing index operator implementation.")
+		val signature = indexAccess.targetSignature?.original
+			?: throw CompilerError(source, "Missing index operator implementation.")
 		val indexTarget = indexAccess.target
 		val targetValue = indexTarget.getLlvmValue(constructor)
 		val indexOperatorAddress = if(indexTarget is SuperReference) {

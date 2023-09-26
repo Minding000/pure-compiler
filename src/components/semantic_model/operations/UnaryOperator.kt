@@ -79,7 +79,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 			if(kind == Operator.Kind.MINUS)
 				return constructor.buildFloatNegation(llvmValue, resultName)
 		}
-		val signature = targetSignature ?: throw CompilerError(source, "Unary operator is missing a target.")
+		val signature = targetSignature?.original ?: throw CompilerError(source, "Unary operator is missing a target.")
 		return createLlvmFunctionCall(constructor, signature)
 	}
 

@@ -82,7 +82,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 			constructor.buildStore(operation, target.getLlvmLocation(constructor))
 			return
 		}
-		val signature = targetSignature ?: throw CompilerError(source, "Unary modification is missing a target.")
+		val signature = targetSignature?.original ?: throw CompilerError(source, "Unary modification is missing a target.")
 		createLlvmFunctionCall(constructor, signature)
 	}
 

@@ -265,7 +265,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				else -> {}
 			}
 		}
-		val signature = targetSignature ?: throw CompilerError(source, "Binary operator is missing a target.")
+		val signature = targetSignature?.original ?: throw CompilerError(source, "Binary operator is missing a target.")
 		return createLlvmFunctionCall(constructor, signature)
 	}
 

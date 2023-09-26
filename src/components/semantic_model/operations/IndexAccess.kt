@@ -1,13 +1,18 @@
 package components.semantic_model.operations
 
+import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.Type
+import components.semantic_model.values.Operator
 import components.semantic_model.values.Value
+import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
+import java.util.*
 import components.syntax_parser.syntax_tree.access.IndexAccess as IndexAccessSyntaxTree
 
 class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val target: Value, val typeParameters: List<Type>,
@@ -69,5 +74,26 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		return availableTypes.filter { availableType ->
 			availableType.interfaceScope.getIndexOperator(typeParameters, indices, sourceExpression) != null
 		}
+	}
+
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		val signature = targetSignature?.original ?: throw CompilerError(source, "Index access is missing a target.")
+		return createLlvmFunctionCall(constructor, signature)
+	}
+
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
+		val typeDefinition = signature.parentDefinition
+		val targetValue = target.getLlvmValue(constructor)
+		val parameters = LinkedList<LlvmValue>()
+		parameters.add(targetValue)
+		for(index in indices)
+			parameters.add(index.getLlvmValue(constructor))
+		val sourceExpression = sourceExpression
+		if(sourceExpression != null)
+			parameters.add(sourceExpression.getLlvmValue(constructor))
+		val kind = if(sourceExpression == null) Operator.Kind.BRACKETS_GET else Operator.Kind.BRACKETS_SET
+		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
+			signature.toString(false, kind))
+		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_indexAccessResult")
 	}
 }
