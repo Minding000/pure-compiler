@@ -4,11 +4,13 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.control_flow.LoopStatement
+import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
 import logger.Issue
 import logger.Logger
 import java.util.*
+import kotlin.properties.Delegates
 
 class Context {
 	val logger = Logger("compiler")
@@ -38,6 +40,11 @@ class Context {
 	lateinit var llvmVariableParameterListCopyFunction: LlvmValue
 	lateinit var llvmVariableParameterIterationEndFunctionType: LlvmType
 	lateinit var llvmVariableParameterIterationEndFunction: LlvmValue
+	var arrayTypeDeclaration: TypeDeclaration? = null
+	var arrayValueIndex by Delegates.notNull<Int>()
+	var stringTypeDeclaration: TypeDeclaration? = null
+	lateinit var llvmStringByteArrayInitializerType: LlvmType
+	lateinit var llvmStringByteArrayInitializer: LlvmValue
 	val memberIdentities = IdentityMap<String>()
 
 
@@ -95,7 +102,7 @@ class Context {
 	}
 
 	fun printDebugMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
-		val formatStringGlobal = constructor.buildGlobalCharArray("debugFormat", "$formatString\n")
+		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("debugFormat", "$formatString\n")
 		constructor.buildFunctionCall(llvmPrintFunctionType, llvmPrintFunction, listOf(formatStringGlobal, *values), "debugPrintCall")
 		constructor.buildFunctionCall(llvmFlushFunctionType, llvmFlushFunction, listOf(constructor.nullPointer), "debugFlushCall")
 	}

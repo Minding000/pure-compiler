@@ -10,6 +10,7 @@ import components.semantic_model.declarations.Object
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Function
 import components.semantic_model.values.ValueDeclaration
+import errors.internal.CompilerError
 import errors.user.UserError
 import java.util.*
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
@@ -82,6 +83,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			file.declare(constructor)
 		for(file in files)
 			file.define(constructor)
+		findArrayTypeDeclaration()
+		findStringInitializer()
 		for(file in files)
 			file.compile(constructor)
 		var userEntryPointObject: ValueDeclaration? = null
@@ -294,6 +297,24 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.buildReturn(functionAddress)
 		context.llvmFunctionAddressFunction = function
 		context.llvmFunctionAddressFunctionType = functionType
+	}
+
+	private fun findArrayTypeDeclaration() {
+		val fileScope = SpecialType.ARRAY.fileScope
+		context.arrayTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.ARRAY.className)
+	}
+
+	private fun findStringInitializer() {
+		val fileScope = SpecialType.STRING.fileScope
+		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.STRING.className)
+		context.stringTypeDeclaration = typeDeclaration
+		if(typeDeclaration == null)
+			return
+		val byteArrayInitializer = typeDeclaration.getAllInitializers().find { initializerDefinition ->
+			initializerDefinition.parameters.size == 1 }
+			?: throw CompilerError(typeDeclaration.source, "Failed to find string literal initializer.")
+		context.llvmStringByteArrayInitializer = byteArrayInitializer.llvmValue
+		context.llvmStringByteArrayInitializerType = byteArrayInitializer.llvmType
 	}
 
 	fun getEntryPoint(entryPointPath: String): Pair<ValueDeclaration?, FunctionImplementation> {

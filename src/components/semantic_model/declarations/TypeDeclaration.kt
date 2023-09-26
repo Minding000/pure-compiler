@@ -289,6 +289,10 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		llvmProperties.add(constructor.pointerType)
 		for(memberDeclaration in properties)
 			llvmProperties.add(memberDeclaration.type?.getLlvmType(constructor))
+		if(SpecialType.ARRAY.matches(this)) {
+			llvmProperties.add(constructor.pointerType)
+			context.arrayValueIndex = llvmProperties.size
+		}
 		constructor.defineStruct(llvmType, llvmProperties)
 	}
 

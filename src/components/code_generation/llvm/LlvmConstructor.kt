@@ -203,13 +203,13 @@ class LlvmConstructor(name: String) {
 		return LLVMBuildGEP2(builder, elementType, arrayPointer, indices.toLlvmList(), indices.size, name)
 	}
 
-	fun buildConstantCharArray(text: String): LlvmValue {
+	fun buildConstantAsciiCharArray(text: String): LlvmValue {
 		return LLVMConstStringInContext(context, text, text.length, Llvm.NO)
 	}
 
-	fun buildGlobalCharArray(name: String, text: String): LlvmValue {
+	fun buildGlobalAsciiCharArray(name: String, text: String): LlvmValue {
 		val globalCharArray = declareGlobal(name, buildArrayType(byteType, text.length + 1))
-		defineGlobal(globalCharArray, buildConstantCharArray(text))
+		defineGlobal(globalCharArray, buildConstantAsciiCharArray(text))
 		return globalCharArray
 	}
 

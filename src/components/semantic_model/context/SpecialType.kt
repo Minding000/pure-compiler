@@ -1,10 +1,12 @@
 package components.semantic_model.context
 
+import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.scopes.FileScope
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.Type
 
 enum class SpecialType(val className: String, val pathParts: List<String> = listOf("Pure", "lang", "dataTypes", className)) {
+	ARRAY("Array", listOf("Pure", "lang", "collections", "Array")),
 	STRING("String"),
 	INTEGER("Int"),
 	FLOAT("Float"),
@@ -36,5 +38,9 @@ enum class SpecialType(val className: String, val pathParts: List<String> = list
 		if(type !is ObjectType)
 			return false
 		return type.name == className && type.getTypeDeclaration()?.scope?.enclosingScope == fileScope
+	}
+
+	fun matches(typeDeclaration: TypeDeclaration): Boolean {
+		return typeDeclaration.name == className && typeDeclaration.scope.enclosingScope == fileScope
 	}
 }

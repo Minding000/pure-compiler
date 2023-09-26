@@ -13,7 +13,7 @@ import util.isRepresentedAsAnInteger
 import java.math.BigDecimal
 
 class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value: BigDecimal): LiteralValue(source, scope) {
-	var isInteger = value.isRepresentedAsAnInteger()
+	private var isInteger = value.isRepresentedAsAnInteger()
 
 	constructor(parent: SemanticModel, value: BigDecimal): this(parent.source, parent.scope, value) {
 		(type as? LiteralType)?.determineTypes()
