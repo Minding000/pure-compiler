@@ -270,4 +270,48 @@ internal class Properties {
 				   - maximumSize: Int
 			""".trimIndent(), Severity.ERROR)
 	}
+
+	@Test
+	fun `allows properties to overwrite properties`() {
+		val sourceCode = """
+			Computer class {
+				val result = 0
+			}
+			ClassicalComputer class: Computer {
+				overriding val result = 1
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<OverridingPropertyTypeMismatch>()
+	}
+
+	@Test
+	fun `disallows properties to overwrite computed properties`() {
+		val sourceCode = """
+			Computer class {
+				val result: Int gets 1
+			}
+			ClassicalComputer class: Computer {
+				overriding val result = 0
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<OverridingMemberKindMismatch>(
+			"'result' property cannot override 'result' computed property.", Severity.ERROR)
+	}
+
+	@Test
+	fun `disallows properties to overwrite functions`() {
+		val sourceCode = """
+			Computer class {
+				to result()
+			}
+			ClassicalComputer class: Computer {
+				overriding val result = 1
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<OverridingMemberKindMismatch>(
+			"'result' property cannot override 'result' function.", Severity.ERROR)
+	}
 }

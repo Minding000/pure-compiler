@@ -5,6 +5,8 @@ import logger.issues.declaration.ComputedPropertyMissingType
 import logger.issues.declaration.ComputedVariableWithoutSetter
 import logger.issues.declaration.SetterInComputedValue
 import logger.issues.initialization.ConstantReassignment
+import logger.issues.modifiers.OverridingMemberKindMismatch
+import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -113,4 +115,52 @@ internal class ComputedProperties {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<ConstantReassignment>()
 	}
+
+	@Test
+	fun `allows computed properties to overwrite computed properties`() {
+		val sourceCode = """
+			Computer class {
+				val result: Int gets 0
+			}
+			ClassicalComputer class: Computer {
+				overriding val result: Int gets 1
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<OverridingPropertyTypeMismatch>()
+	}
+
+	@Test
+	fun `disallows computed properties to overwrite properties`() {
+		val sourceCode = """
+			Computer class {
+				val result = 0
+			}
+			ClassicalComputer class: Computer {
+				overriding val result: Int gets 1
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<OverridingMemberKindMismatch>(
+			"'result' computed property cannot override 'result' property.", Severity.ERROR)
+	}
+
+	@Test
+	fun `disallows computed properties to overwrite functions`() {
+		val sourceCode = """
+			Computer class {
+				to result()
+			}
+			ClassicalComputer class: Computer {
+				overriding val result: Int gets 1
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<OverridingMemberKindMismatch>(
+			"'result' computed property cannot override 'result' function.", Severity.ERROR)
+	}
+
+	//TODO use 'computed' keyword instead of 'val' and 'var' for computed properties
+
+	//TODO write test: allows overriding computed properties to add getter / setter
 }

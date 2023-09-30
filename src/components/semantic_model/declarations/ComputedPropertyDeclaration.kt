@@ -4,10 +4,15 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.MutableScope
+import components.semantic_model.types.FunctionType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Value
 import logger.issues.declaration.ComputedVariableWithoutSetter
 import logger.issues.declaration.SetterInComputedValue
+import logger.issues.modifiers.OverridingMemberKindMismatch
+import logger.issues.modifiers.OverridingPropertyTypeMismatch
+import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
+import logger.issues.modifiers.VariablePropertyOverriddenByValue
 import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclaration as ComputedPropertySyntaxTree
 
 class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, scope: MutableScope, name: String, type: Type?,
@@ -32,6 +37,30 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		} else {
 			if(setStatement == null)
 				context.addIssue(ComputedVariableWithoutSetter(source))
+		}
+	}
+
+	override fun validateSuperMember() {
+		val (superMember, superMemberType) = superMember ?: return
+		if(!superMember.isConstant && isConstant)
+			context.addIssue(VariablePropertyOverriddenByValue(this))
+		val type = type ?: return
+		if(superMemberType == null)
+			return
+		if(superMemberType is FunctionType) {
+			context.addIssue(OverridingMemberKindMismatch(source, name, "computed property", "function"))
+			return
+		}
+		if(superMember !is ComputedPropertyDeclaration) {
+			context.addIssue(OverridingMemberKindMismatch(source, name, "computed property", "property"))
+			return
+		}
+		if(isConstant) {
+			if(!type.isAssignableTo(superMemberType))
+				context.addIssue(OverridingPropertyTypeNotAssignable(type, superMemberType))
+		} else {
+			if(type != superMemberType)
+				context.addIssue(OverridingPropertyTypeMismatch(type, superMemberType))
 		}
 	}
 

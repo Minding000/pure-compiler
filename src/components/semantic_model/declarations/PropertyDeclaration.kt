@@ -6,6 +6,7 @@ import components.semantic_model.types.Type
 import components.semantic_model.values.InterfaceMember
 import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import logger.issues.modifiers.OverridingMemberKindMismatch
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
 import logger.issues.modifiers.VariablePropertyOverriddenByValue
@@ -27,15 +28,28 @@ open class PropertyDeclaration(source: SyntaxTreeNode, scope: MutableScope, name
 		validateSuperMember()
 	}
 
-	private fun validateSuperMember() {
+	protected open fun validateSuperMember() {
 		val (superMember, superMemberType) = superMember ?: return
 		if(!superMember.isConstant && isConstant)
 			context.addIssue(VariablePropertyOverriddenByValue(this))
 		val type = type ?: return
 		if(superMemberType == null)
 			return
-		if(type is FunctionType && superMemberType is FunctionType)
+		if(type is FunctionType) {
+			if(superMember is ComputedPropertyDeclaration)
+				context.addIssue(OverridingMemberKindMismatch(source, name, "function", "computed property"))
+			else if(superMemberType !is FunctionType)
+				context.addIssue(OverridingMemberKindMismatch(source, name, "function", "property"))
 			return
+		}
+		if(superMemberType is FunctionType) {
+			context.addIssue(OverridingMemberKindMismatch(source, name, "property", "function"))
+			return
+		}
+		if(superMember is ComputedPropertyDeclaration) {
+			context.addIssue(OverridingMemberKindMismatch(source, name, "property", "computed property"))
+			return
+		}
 		if(isConstant) {
 			if(!type.isAssignableTo(superMemberType))
 				context.addIssue(OverridingPropertyTypeNotAssignable(type, superMemberType))

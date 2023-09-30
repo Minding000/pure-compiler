@@ -4,6 +4,8 @@ import logger.Severity
 import logger.issues.declaration.*
 import logger.issues.modifiers.OverriddenSuperMissing
 import logger.issues.modifiers.OverridingFunctionReturnTypeNotAssignable
+import logger.issues.modifiers.OverridingMemberKindMismatch
+import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertNotNull
@@ -429,5 +431,49 @@ internal class Functions {
 		val function = lintResult.find<FunctionImplementation>(FunctionImplementation::isOverriding)
 		assertNotNull(function)
 		assertNull(function.signature.superFunctionSignature)
+	}
+
+	@Test
+	fun `allows functions to overwrite functions`() {
+		val sourceCode = """
+			Computer class {
+				to result()
+			}
+			ClassicalComputer class: Computer {
+				overriding to result()
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<OverridingPropertyTypeMismatch>()
+	}
+
+	@Test
+	fun `disallows functions to overwrite properties`() {
+		val sourceCode = """
+			Computer class {
+				val result = 1
+			}
+			ClassicalComputer class: Computer {
+				overriding to result()
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<OverridingMemberKindMismatch>(
+			"'result' function cannot override 'result' property.", Severity.ERROR)
+	}
+
+	@Test
+	fun `disallows functions to overwrite computed properties`() {
+		val sourceCode = """
+			Computer class {
+				val result: Int gets 1
+			}
+			ClassicalComputer class: Computer {
+				overriding to result()
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<OverridingMemberKindMismatch>(
+			"'result' function cannot override 'result' computed property.", Severity.ERROR)
 	}
 }
