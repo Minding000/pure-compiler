@@ -96,9 +96,7 @@ class Context {
 	}
 
 	fun getThisParameter(constructor: LlvmConstructor): LlvmValue {
-		return constructor.getParameter(constructor.getParentFunction(),
-			THIS_PARAMETER_INDEX
-		)
+		return constructor.getParameter(constructor.getParentFunction(), THIS_PARAMETER_INDEX)
 	}
 
 	fun printDebugMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {

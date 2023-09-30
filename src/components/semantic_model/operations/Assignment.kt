@@ -82,41 +82,48 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
-		val value = sourceExpression.getLlvmValue(constructor)
+		val rawLlvmValue = sourceExpression.getLlvmValue(constructor)
+		val sourceType = sourceExpression.type
+		val pointerLlvmValue = if(sourceType?.isLlvmPrimitive() == true && targets.any { target -> target.type is OptionalType }) {
+			val box = constructor.buildHeapAllocation(sourceType.getLlvmType(constructor), "_optionalPrimitiveBox")
+			constructor.buildStore(rawLlvmValue, box)
+			box
+		} else {
+			rawLlvmValue
+		}
 		for(target in targets) {
+			val llvmValue = if(target.type is OptionalType) pointerLlvmValue else rawLlvmValue
 			when(target) {
 				is VariableValue -> {
-					if(target.declaration is ComputedPropertyDeclaration) {
-						TODO("Assignments to computed properties are not implemented yet.")
-					} else {
-						val sourceType = sourceExpression.type
-						if(target.type is OptionalType && sourceType?.isLlvmPrimitive() == true) {
-							val box = constructor.buildHeapAllocation(sourceType.getLlvmType(constructor), "_optionalPrimitiveBox")
-							constructor.buildStore(value, box)
-							constructor.buildStore(box, target.getLlvmLocation(constructor))
-						} else {
-							constructor.buildStore(value, target.getLlvmLocation(constructor))
-						}
-					}
+					val declaration = target.declaration
+					if(declaration is ComputedPropertyDeclaration)
+						buildSetterCall(constructor, declaration, context.getThisParameter(constructor), llvmValue)
+					else
+						constructor.buildStore(llvmValue, target.getLlvmLocation(constructor))
 				}
 				is MemberAccess -> {
-					if((target.member as? VariableValue)?.declaration is ComputedPropertyDeclaration) {
-						TODO("Assignments to computed properties are not implemented yet.")
-					} else {
-						val sourceType = sourceExpression.type
-						if(target.type is OptionalType && sourceType?.isLlvmPrimitive() == true) {
-							val box = constructor.buildHeapAllocation(sourceType.getLlvmType(constructor), "_optionalPrimitiveBox")
-							constructor.buildStore(value, box)
-							constructor.buildStore(box, target.getLlvmLocation(constructor))
-						} else {
-							constructor.buildStore(value, target.getLlvmLocation(constructor))
-						}
-					}
+					val declaration = (target.member as? VariableValue)?.declaration
+					if(declaration is ComputedPropertyDeclaration)
+						buildSetterCall(constructor, declaration, target.target.getLlvmValue(constructor), llvmValue)
+					else
+						constructor.buildStore(llvmValue, target.getLlvmLocation(constructor))
 				}
-				is IndexAccess -> compileAssignmentToIndexAccess(constructor, target, value)
+				is IndexAccess -> compileAssignmentToIndexAccess(constructor, target, llvmValue)
 				else -> throw CompilerError(source, "Target of type '${target.javaClass.simpleName}' is not assignable.")
 			}
 		}
+	}
+
+	private fun buildSetterCall(constructor: LlvmConstructor, declaration: ComputedPropertyDeclaration, targetValue: LlvmValue,
+								sourceValue: LlvmValue) {
+		val parameters = LinkedList<LlvmValue>()
+		parameters.add(targetValue)
+		parameters.add(sourceValue)
+		val functionAddress = context.resolveFunction(constructor, declaration.parentTypeDeclaration.llvmType, targetValue,
+			declaration.setterIdentifier)
+		val functionType = constructor.buildFunctionType(listOf(constructor.pointerType,
+			sourceExpression.type?.getLlvmType(constructor)))
+		constructor.buildFunctionCall(functionType, functionAddress, parameters)
 	}
 
 	private fun compileAssignmentToIndexAccess(constructor: LlvmConstructor, indexAccess: IndexAccess, value: LlvmValue) {

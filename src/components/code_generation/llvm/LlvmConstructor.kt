@@ -30,7 +30,7 @@ class LlvmConstructor(name: String) {
 		return LLVMGetParam(function, index)
 	}
 
-	fun getLastParameter(function: LlvmValue): LlvmValue {
+	fun getLastParameter(function: LlvmValue = getParentFunction()): LlvmValue {
 		return LLVMGetLastParam(function)
 	}
 

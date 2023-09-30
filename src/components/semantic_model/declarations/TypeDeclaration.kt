@@ -38,7 +38,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	lateinit var staticValueDeclaration: ValueDeclaration
 	private lateinit var staticMembers: List<ValueDeclaration>
 	lateinit var properties: List<ValueDeclaration>
-	private lateinit var functions: List<FunctionImplementation>
+	private lateinit var functions: List<LlvmMemberFunction>
 	lateinit var llvmType: LlvmType
 	lateinit var llvmClassDefinitionAddress: LlvmValue
 	lateinit var llvmClassInitializer: LlvmValue
@@ -232,7 +232,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			for(property in properties)
 				context.memberIdentities.register(property.name)
 			for(function in functions)
-				context.memberIdentities.register(function.memberIdentifier)
+				context.memberIdentities.register(function.identifier)
 		}
 		super.define(constructor)
 	}
@@ -258,7 +258,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	private fun getProperties(): Map<String, ValueDeclaration> {
 		val properties = HashMap<String, ValueDeclaration>()
 		for(member in scope.memberDeclarations)
-			if(member is ValueDeclaration && (member as? InterfaceMember)?.isStatic != true)
+			if(member is ValueDeclaration && member !is ComputedPropertyDeclaration && (member as? InterfaceMember)?.isStatic != true)
 				properties[member.name] = member
 		for(superType in getDirectSuperTypes()) {
 			for(property in superType.getTypeDeclaration()?.getProperties()?.values ?: emptyList())
@@ -267,14 +267,27 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		return properties
 	}
 
-	private fun getFunctions(): Map<String, FunctionImplementation> {
-		val functions = HashMap<String, FunctionImplementation>()
-		for(member in scope.memberDeclarations)
-			if(member is FunctionImplementation)
-				functions[member.memberIdentifier] = member
+	private fun getFunctions(): Map<String, LlvmMemberFunction> {
+		val functions = HashMap<String, LlvmMemberFunction>()
+		for(member in scope.memberDeclarations) {
+			if(member is FunctionImplementation) {
+				functions[member.memberIdentifier] = LlvmMemberFunction(member.memberIdentifier, member.llvmValue)
+			} else if(member is ComputedPropertyDeclaration) {
+				val llvmGetterValue = member.llvmGetterValue
+				if(llvmGetterValue != null) {
+					val getterIdentifier = member.getterIdentifier
+					functions[getterIdentifier] = LlvmMemberFunction(getterIdentifier, llvmGetterValue)
+				}
+				val llvmSetterValue = member.llvmSetterValue
+				if(llvmSetterValue != null) {
+					val setterIdentifier = member.setterIdentifier
+					functions[setterIdentifier] = LlvmMemberFunction(setterIdentifier, llvmSetterValue)
+				}
+			}
+		}
 		for(superType in getDirectSuperTypes()) {
 			for(function in superType.getTypeDeclaration()?.getFunctions()?.values ?: emptyList())
-				functions.putIfAbsent(function.memberIdentifier, function)
+				functions.putIfAbsent(function.identifier, function)
 		}
 		return functions
 	}
@@ -296,7 +309,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		constructor.defineStruct(llvmType, llvmProperties)
 	}
 
-	private fun buildLlvmClassInitializer(constructor: LlvmConstructor, staticMembers: List<ValueDeclaration>, properties: List<ValueDeclaration>, functions: List<FunctionImplementation>) {
+	private fun buildLlvmClassInitializer(constructor: LlvmConstructor, staticMembers: List<ValueDeclaration>,
+										  properties: List<ValueDeclaration>, functions: List<LlvmMemberFunction>) {
 		println("'$name' class initializer:")
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmClassInitializer, "entrypoint")
@@ -340,8 +354,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			constructor.buildStore(memberOffsetValue, offsetLocation)
 		}
 		for((memberIndex, function) in functions.withIndex()) {
-			val memberId = context.memberIdentities.getId(function.memberIdentifier)
-			println("Mapping function '${function.memberIdentifier}' to ID '$memberId'.")
+			val memberId = context.memberIdentities.getId(function.identifier)
+			println("Mapping function '${function.identifier}' to ID '$memberId'.")
 			val memberIndexValue = constructor.buildInt32(memberIndex)
 			val idLocation = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, functionIdArrayAddress, memberIndexValue, "functionIdLocation")
 			val addressLocation = constructor.buildGetArrayElementPointer(context.llvmMemberAddressType, functionAddressArrayAddress, memberIndexValue, "functionAddressLocation")
@@ -395,4 +409,6 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			return name
 		return "$name: $superType"
 	}
+
+	class LlvmMemberFunction(val identifier: String, val llvmValue: LlvmValue)
 }

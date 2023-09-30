@@ -1,7 +1,6 @@
 package components.code_generation
 
 import components.code_generation.llvm.Llvm
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -30,25 +29,6 @@ internal class Assignment {
 				var a = 11
 				to getFive(): Int {
 					a = 5
-					return a
-				}
-			}
-		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
-	}
-
-	@Disabled
-	@Test
-	fun `compiles assignments to computed properties`() {
-		val sourceCode = """
-			SimplestApp object {
-				var a = 12
-				var b: Int
-					gets a
-					sets a = b
-				to getFive(): Int {
-					b = 5
 					return a
 				}
 			}

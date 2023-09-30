@@ -1,5 +1,7 @@
 package components.semantic_model.declarations
 
+import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmValue
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.Type
@@ -11,6 +13,12 @@ import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclarat
 class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, scope: MutableScope, name: String, type: Type?,
 								  isConstant: Boolean, isOverriding: Boolean, val getExpression: Value?, val setStatement: SemanticModel?):
 	PropertyDeclaration(source, scope, name, type, getExpression, false, false, isConstant, false, isOverriding) {
+	val getterIdentifier
+		get() = "get $memberIdentifier"
+	val setterIdentifier
+		get() = "set $memberIdentifier"
+	var llvmGetterValue: LlvmValue? = null
+	var llvmSetterValue: LlvmValue? = null
 
 	init {
 		addSemanticModels(setStatement)
@@ -25,5 +33,32 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 			if(setStatement == null)
 				context.addIssue(ComputedVariableWithoutSetter(source))
 		}
+	}
+
+	override fun declare(constructor: LlvmConstructor) {
+		super.declare(constructor)
+		val llvmType = type?.getLlvmType(constructor)
+		if(getExpression != null)
+			llvmGetterValue = constructor.buildFunction(getterIdentifier,
+				constructor.buildFunctionType(listOf(constructor.pointerType), llvmType))
+		if(setStatement != null)
+			llvmSetterValue = constructor.buildFunction(setterIdentifier,
+				constructor.buildFunctionType(listOf(constructor.pointerType, llvmType)))
+	}
+
+	override fun compile(constructor: LlvmConstructor) {
+		val previousBlock = constructor.getCurrentBlock()
+		val llvmGetterValue = llvmGetterValue
+		if(llvmGetterValue != null && getExpression != null) {
+			constructor.createAndSelectBlock(llvmGetterValue, "entrypoint")
+			constructor.buildReturn(getExpression.getLlvmValue(constructor))
+		}
+		val llvmSetterValue = llvmSetterValue
+		if(llvmSetterValue != null && setStatement != null) {
+			constructor.createAndSelectBlock(llvmSetterValue, "entrypoint")
+			setStatement.compile(constructor)
+			constructor.buildReturn()
+		}
+		constructor.select(previousBlock)
 	}
 }

@@ -4,6 +4,7 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
+import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.PropertyDeclaration
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
@@ -11,6 +12,7 @@ import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
+import errors.internal.CompilerError
 import logger.issues.access.InstanceAccessFromStaticContext
 import logger.issues.access.StaticAccessFromInstanceContext
 import logger.issues.initialization.NotInitialized
@@ -67,17 +69,34 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 	override fun getComputedType(): Type? = staticType
 
 	override fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue? {
-		val definition = declaration
-		return if(definition is PropertyDeclaration) {
-			context.resolveMember(constructor, definition.parentTypeDeclaration.llvmType, context.getThisParameter(constructor), name,
-				(definition as? InterfaceMember)?.isStatic ?: false)
+		if(declaration is ComputedPropertyDeclaration)
+			throw CompilerError(source, "Computed properties do not have a location.")
+		val declaration = declaration
+		return if(declaration is PropertyDeclaration) {
+			context.resolveMember(constructor, declaration.parentTypeDeclaration.llvmType, context.getThisParameter(constructor), name,
+				(declaration as? InterfaceMember)?.isStatic ?: false)
 		} else {
-			definition?.llvmLocation
+			declaration?.llvmLocation
 		}
 	}
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		val declaration = declaration
+		if(declaration is ComputedPropertyDeclaration) {
+			val setStatement = declaration.setStatement
+			if(setStatement != null && isIn(setStatement))
+				return constructor.getLastParameter()
+			return createLlvmFunctionCall(constructor, declaration)
+		}
 		return constructor.buildLoad(type?.getLlvmType(constructor), getLlvmLocation(constructor), name)
+	}
+
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
+		val targetValue = context.getThisParameter(constructor)
+		val functionAddress = context.resolveFunction(constructor, computedPropertyDeclaration.parentTypeDeclaration.llvmType, targetValue,
+			computedPropertyDeclaration.getterIdentifier)
+		return constructor.buildFunctionCall(constructor.buildFunctionType(listOf(constructor.pointerType), type?.getLlvmType(constructor)),
+			functionAddress, listOf(targetValue), "_computedPropertyGetterResult")
 	}
 
 	override fun hashCode(): Int {

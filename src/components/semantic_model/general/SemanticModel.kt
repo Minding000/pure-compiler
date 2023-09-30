@@ -48,6 +48,10 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 		return source.start < other.source.start && other.source.end < source.end
 	}
 
+	fun isIn(other: SemanticModel): Boolean {
+		return this === other || parent?.isIn(other) ?: false
+	}
+
 	fun isBefore(other: SemanticModel): Boolean {
 		return source.end < other.source.start
 	}
