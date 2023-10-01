@@ -8,6 +8,7 @@ import components.semantic_model.types.Type
 enum class SpecialType(val className: String, val pathParts: List<String> = listOf("Pure", "lang", "dataTypes", className)) {
 	ARRAY("Array", listOf("Pure", "lang", "collections", "Array")),
 	STRING("String"),
+	BYTE("Byte"),
 	INTEGER("Int"),
 	FLOAT("Float"),
 	BOOLEAN("Bool"),

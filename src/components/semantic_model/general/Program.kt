@@ -74,6 +74,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		addFlushFunction(constructor)
 		addExitFunction(constructor)
 		addVariadicIntrinsics(constructor)
+		createClosureStruct(constructor)
 		context.llvmMemberIndexType = constructor.i32Type
 		context.llvmMemberIdType = constructor.i32Type
 		context.llvmMemberOffsetType = constructor.i32Type
@@ -160,6 +161,11 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		context.llvmVariableParameterListCopyFunction = constructor.buildFunction("llvm.va_copy", context.llvmVariableParameterListCopyFunctionType)
 		context.llvmVariableParameterIterationEndFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.voidType)
 		context.llvmVariableParameterIterationEndFunction = constructor.buildFunction("llvm.va_end", context.llvmVariableParameterIterationEndFunctionType)
+	}
+
+	private fun createClosureStruct(constructor: LlvmConstructor) {
+		context.closureStruct = constructor.declareStruct("_Closure")
+		constructor.defineStruct(context.closureStruct, listOf(constructor.pointerType, constructor.i32Type, constructor.pointerType))
 	}
 
 	private fun setUpSystemFunctions(constructor: LlvmConstructor) {

@@ -40,8 +40,12 @@ class Context {
 	lateinit var llvmVariableParameterListCopyFunction: LlvmValue
 	lateinit var llvmVariableParameterIterationEndFunctionType: LlvmType
 	lateinit var llvmVariableParameterIterationEndFunction: LlvmValue
+	lateinit var closureStruct: LlvmType
 	var arrayTypeDeclaration: TypeDeclaration? = null
 	var arrayValueIndex by Delegates.notNull<Int>()
+	var byteValueIndex by Delegates.notNull<Int>()
+	var integerValueIndex by Delegates.notNull<Int>()
+	var floatValueIndex by Delegates.notNull<Int>()
 	var stringTypeDeclaration: TypeDeclaration? = null
 	lateinit var llvmStringByteArrayInitializerType: LlvmType
 	lateinit var llvmStringByteArrayInitializer: LlvmValue
@@ -60,6 +64,7 @@ class Context {
 		const val FUNCTION_ID_ARRAY_PROPERTY_INDEX = 7
 		const val FUNCTION_ADDRESS_ARRAY_PROPERTY_INDEX = 8
 		const val THIS_PARAMETER_INDEX = 0
+		const val CLOSURE_FUNCTION_ADDRESS_PROPERTY_INDEX = 0
 	}
 
 	fun addIssue(issue: Issue) = logger.add(issue)

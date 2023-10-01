@@ -302,11 +302,24 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		llvmProperties.add(constructor.pointerType)
 		for(memberDeclaration in properties)
 			llvmProperties.add(memberDeclaration.type?.getLlvmType(constructor))
+		addNativeProperties(constructor, llvmProperties)
+		constructor.defineStruct(llvmType, llvmProperties)
+	}
+
+	private fun addNativeProperties(constructor: LlvmConstructor, llvmProperties: LinkedList<LlvmType?>) {
 		if(SpecialType.ARRAY.matches(this)) {
 			llvmProperties.add(constructor.pointerType)
 			context.arrayValueIndex = llvmProperties.size
+		} else if(SpecialType.BYTE.matches(this)) {
+			llvmProperties.add(constructor.byteType)
+			context.byteValueIndex = llvmProperties.size
+		} else if(SpecialType.INTEGER.matches(this)) {
+			llvmProperties.add(constructor.i32Type)
+			context.integerValueIndex = llvmProperties.size
+		} else if(SpecialType.FLOAT.matches(this)) {
+			llvmProperties.add(constructor.floatType)
+			context.floatValueIndex = llvmProperties.size
 		}
-		constructor.defineStruct(llvmType, llvmProperties)
 	}
 
 	private fun buildLlvmClassInitializer(constructor: LlvmConstructor, staticMembers: List<ValueDeclaration>,
@@ -315,7 +328,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmClassInitializer, "entrypoint")
 		for(typeDeclaration in scope.typeDeclarations.values) {
-			if(typeDeclaration !is GenericTypeDeclaration)
+			if(typeDeclaration.isDefinition)
 				constructor.buildFunctionCall(typeDeclaration.llvmClassInitializerType, typeDeclaration.llvmClassInitializer)
 		}
 		val staticMemberCount = constructor.buildInt32(staticMembers.size)

@@ -126,8 +126,14 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		val typeDefinition = signature.parentDefinition
 		val functionAddress = if(typeDefinition == null) {
 			val implementation = signature.associatedImplementation
-				?: throw CompilerError(source, "Encountered member signature without implementation.")
-			implementation.llvmValue
+			if(implementation == null) {
+				//TODO add captured variables as parameters
+				val closureLocation = function.getLlvmValue(constructor)
+				constructor.buildGetPropertyPointer(context.closureStruct, closureLocation, Context.CLOSURE_FUNCTION_ADDRESS_PROPERTY_INDEX,
+					"_functionAddress")
+			} else {
+				implementation.llvmValue
+			}
 		} else {
 			val targetValue = if(function is MemberAccess)
 				function.target.getLlvmValue(constructor)

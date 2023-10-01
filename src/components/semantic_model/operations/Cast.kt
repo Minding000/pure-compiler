@@ -1,5 +1,7 @@
 package components.semantic_model.operations
 
+import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
@@ -123,6 +125,16 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 					context.addIssue(CastVariableAccessAfterIfStatement(usage.source))
 			}
 		}
+	}
+
+	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		//TODO implement special cases:
+		// - Cast from optional primitive to primitive: unbox and check
+		// - Cast from primitive to optional primitive: box
+		// - Cast from primitive to pointer type: construct wrapper
+		// - Cast from pointer type to primitive: destruct wrapper
+		// - Cast from primitive to primitive: LLVM cast (could be combined with casts above)
+		return subject.getLlvmValue(constructor)
 	}
 
 	enum class Operator(val stringRepresentation: String, val isConditional: Boolean = false,

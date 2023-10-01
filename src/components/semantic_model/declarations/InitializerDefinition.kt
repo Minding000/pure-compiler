@@ -264,12 +264,30 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 				constructor.buildStore(memberValue.getLlvmValue(constructor), memberAddress)
 			}
 		}
-		if(body == null)
+		if(isNative)
+			compileNativeInitializer(constructor, thisValue)
+		else if(body == null)
 			callTrivialSuperInitializers(constructor, thisValue)
 		else
 			super.compile(constructor)
 		constructor.buildReturn()
 		constructor.select(previousBlock)
+	}
+
+	private fun compileNativeInitializer(constructor: LlvmConstructor, thisValue: LlvmValue) {
+		if(SpecialType.BYTE.matches(parentTypeDeclaration)) {
+			val byteValuePointer = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
+				context.byteValueIndex, "byteValuePointer")
+			constructor.buildStore(constructor.getParameter(llvmValue, 1), byteValuePointer)
+		} else if(SpecialType.INTEGER.matches(parentTypeDeclaration)) {
+			val integerValuePointer = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
+				context.integerValueIndex, "integerValuePointer")
+			constructor.buildStore(constructor.getParameter(llvmValue, 1), integerValuePointer)
+		} else if(SpecialType.FLOAT.matches(parentTypeDeclaration)) {
+			val floatValuePointer = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
+				context.floatValueIndex, "floatValuePointer")
+			constructor.buildStore(constructor.getParameter(llvmValue, 1), floatValuePointer)
+		}
 	}
 
 	private fun callTrivialSuperInitializers(constructor: LlvmConstructor, thisValue: LlvmValue) {

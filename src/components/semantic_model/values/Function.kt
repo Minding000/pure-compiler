@@ -1,5 +1,6 @@
 package components.semantic_model.values
 
+import components.code_generation.llvm.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration
@@ -54,5 +55,10 @@ open class Function(source: SyntaxTreeNode, scope: Scope, val name: String = "<a
 					implementation.source))
 			}
 		}
+	}
+
+	override fun compile(constructor: LlvmConstructor) {
+		//TODO compile closures (write tests!)
+		super.compile(constructor)
 	}
 }
