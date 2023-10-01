@@ -2,8 +2,10 @@ package components.semantic_model.control_flow
 
 import components.code_generation.llvm.LlvmBlock
 import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
+import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.BlockScope
@@ -12,6 +14,7 @@ import components.semantic_model.types.PluralType
 import components.semantic_model.types.Type
 import components.semantic_model.values.BooleanLiteral
 import components.semantic_model.values.ValueDeclaration
+import errors.internal.CompilerError
 import components.syntax_parser.syntax_tree.control_flow.LoopStatement as LoopStatementSyntaxTree
 
 class LoopStatement(override val source: LoopStatementSyntaxTree, override val scope: BlockScope, val generator: SemanticModel?,
@@ -160,12 +163,14 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		val iteratorCreationMatch = (iteratorCreationPropertyType as? FunctionType)?.getSignature()
 		val iteratorCreationSignature = iteratorCreationMatch?.signature
 		val iteratorType = iteratorCreationMatch?.returnType
-		val iteratorLlvmType = iteratorType?.getLlvmType(constructor)
 		val iteratorAdvancePropertyType = iteratorType?.getValueDeclaration("advance")?.second
 		val iteratorAdvanceSignature = (iteratorAdvancePropertyType as? FunctionType)?.getSignature()?.signature
+		val iteratorIsDonePropertyPair = iteratorType?.getValueDeclaration("isDone")
+		val iteratorIsDoneComputedProperty = iteratorIsDonePropertyPair?.first as? ComputedPropertyDeclaration
+			?: throw CompilerError(source, "'Iterator.isDone' computed property not found.")
 
 		val function = constructor.getParentFunction()
-		val createIteratorAddress = context.resolveFunction(constructor, iterableType?.getLlvmType(constructor),
+		val createIteratorAddress = context.resolveFunction(constructor, iterableType.getLlvmType(constructor),
 			generator.iterable.getLlvmValue(constructor), "createIterator(): <Element>List.Iterator") //TODO change function IDs: exclude return type
 		val iterator = constructor.buildFunctionCall(iteratorCreationSignature?.getLlvmType(constructor), createIteratorAddress,
 			emptyList(), "iterator")
@@ -173,33 +178,50 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		exitBlock = constructor.createBlock("loop_exit")
 		constructor.buildJump(entryBlock)
 		constructor.select(entryBlock)
-		val condition = context.resolveMember(constructor, iteratorLlvmType, iterator, "isDone")
+		val condition = buildGetterCall(constructor, iterator, iteratorIsDoneComputedProperty)
 		val bodyBlock = constructor.createBlock(function, "loop_body")
 		constructor.buildJump(condition, bodyBlock, exitBlock)
 		constructor.select(bodyBlock)
 		val indexVariable = generator.currentIndexVariable
 		if(indexVariable != null) {
-			val indexProperty = context.resolveMember(constructor, iteratorLlvmType, iterator, "currentIndex")
-			constructor.buildStore(indexProperty, indexVariable.llvmLocation)
+			val iteratorCurrentIndexPropertyPair = iteratorType.getValueDeclaration("currentIndex")
+			val iteratorCurrentIndexComputedProperty = iteratorCurrentIndexPropertyPair.first as? ComputedPropertyDeclaration
+				?: throw CompilerError(source, "'Iterator.currentIndex' computed property not found.")
+			val currentIndexValue = buildGetterCall(constructor, iterator, iteratorCurrentIndexComputedProperty)
+			constructor.buildStore(currentIndexValue, indexVariable.llvmLocation)
 		}
 		val keyVariable = generator.currentKeyVariable
 		if(keyVariable != null) {
-			val indexProperty = context.resolveMember(constructor, iteratorLlvmType, iterator, "currentKey")
-			constructor.buildStore(indexProperty, keyVariable.llvmLocation)
+			val iteratorCurrentKeyPropertyPair = iteratorType.getValueDeclaration("currentKey")
+			val iteratorCurrentKeyComputedProperty = iteratorCurrentKeyPropertyPair.first as? ComputedPropertyDeclaration
+				?: throw CompilerError(source, "'Iterator.currentKey' computed property not found.")
+			val currentKeyValue = buildGetterCall(constructor, iterator, iteratorCurrentKeyComputedProperty)
+			constructor.buildStore(currentKeyValue, keyVariable.llvmLocation)
 		}
 		val valueVariable = generator.currentValueVariable
 		if(valueVariable != null) {
-			val indexProperty = context.resolveMember(constructor, iteratorLlvmType, iterator, "currentValue")
-			constructor.buildStore(indexProperty, valueVariable.llvmLocation)
+			val iteratorCurrentValuePropertyPair = iteratorType.getValueDeclaration("currentValue")
+			val iteratorCurrentValueComputedProperty = iteratorCurrentValuePropertyPair.first as? ComputedPropertyDeclaration
+				?: throw CompilerError(source, "'Iterator.currentValue' computed property not found.")
+			val currentValueValue = buildGetterCall(constructor, iterator, iteratorCurrentValueComputedProperty)
+			constructor.buildStore(currentValueValue, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)
-		val advanceFunctionAddress = context.resolveFunction(constructor, iterableType?.getLlvmType(constructor),
+		val advanceFunctionAddress = context.resolveFunction(constructor, iterableType.getLlvmType(constructor),
 			generator.iterable.getLlvmValue(constructor), "advance()")
 		constructor.buildFunctionCall(iteratorAdvanceSignature?.getLlvmType(constructor), advanceFunctionAddress)
 		if(!body.isInterruptingExecution)
 			constructor.buildJump(entryBlock)
 		constructor.addBlockToFunction(function, exitBlock)
 		constructor.select(exitBlock)
+	}
+
+	private fun buildGetterCall(constructor: LlvmConstructor, targetValue: LlvmValue, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
+		val functionAddress = context.resolveFunction(constructor, computedPropertyDeclaration.parentTypeDeclaration.llvmType, targetValue,
+			computedPropertyDeclaration.getterIdentifier)
+		return constructor.buildFunctionCall(constructor.buildFunctionType(listOf(constructor.pointerType),
+			computedPropertyDeclaration.type?.getLlvmType(constructor)), functionAddress, listOf(targetValue),
+			"_computedPropertyGetterResult")
 	}
 
 	fun jumpToNextIteration(constructor: LlvmConstructor) {

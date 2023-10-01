@@ -34,7 +34,7 @@ internal class Members {
 	//TODO also test parsing computed property with get body
 	// -> if blocks can return this would be easier
 	@Test
-	fun `parses computed members`() {
+	fun `parses computed properties`() {
 		val sourceCode = """
 			Rectangle class {
 				containing Unit: Number
@@ -45,7 +45,7 @@ internal class Members {
 					top
 					bottom
 				}
-				val: Unit {
+				computed: Unit {
 					width
 						gets right - left
 						sets right = left + width
@@ -67,7 +67,7 @@ internal class Members {
 							bottom = centerY + halfHeight
 						}
 				}
-				val isSquare: Bool
+				computed isSquare: Bool
 					gets width == height
 			}
 		""".trimIndent()
@@ -83,7 +83,7 @@ internal class Members {
 						PropertyDeclaration { Identifier { top } }
 						PropertyDeclaration { Identifier { bottom } }
 					}
-					VariableSection [ val: ObjectType { Identifier { Unit } } ] {
+					ComputedPropertySection [ ObjectType { Identifier { Unit } } ] {
 						ComputedPropertyDeclaration {
 							Identifier { width }
 							gets BinaryOperator {
@@ -163,7 +163,7 @@ internal class Members {
 							} }
 						}
 					}
-					VariableSection [ val ] {
+					ComputedPropertySection [] {
 						ComputedPropertyDeclaration {
 							Identifier { isSquare }: ObjectType { Identifier { Bool } }
 							gets BinaryOperator {
@@ -221,13 +221,13 @@ internal class Members {
 	@Test
 	fun `computed properties can not be declared outside of type definition`() {
 		val sourceCode = """
-			val x gets 3
+			computed x gets 3
 			""".trimIndent()
 		val parseResult = TestUtil.parse(sourceCode)
 		parseResult.assertIssueDetected<UnexpectedWord>("""
-			Unexpected GETS in Test.Test:1:6: 'gets'.
-			val x gets 3
-			      ^^^^
+			Unexpected COMPUTED in Test.Test:1:0: 'computed'.
+			computed x gets 3
+			^^^^^^^^
 			Expected atom instead.
 		""".trimIndent())
 	}

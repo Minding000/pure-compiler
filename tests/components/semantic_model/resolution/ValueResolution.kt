@@ -99,7 +99,7 @@ internal class ValueResolution {
 			"""
 				Int class
 				House class {
-					val size gets Int()
+					computed size gets Int()
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -165,7 +165,7 @@ internal class ValueResolution {
 		val sourceCode =
 			"""
 				House object {
-					val livingAreaInSquareMeters gets Flat.size
+					computed livingAreaInSquareMeters gets Flat.size
 				}
 				Flat object {
 					val size = House.livingAreaInSquareMeters

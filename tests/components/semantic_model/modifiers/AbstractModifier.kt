@@ -59,12 +59,12 @@ internal class AbstractModifier {
 		val sourceCode =
 			"""
 				abstract Goldfish class {
-					abstract val name: String
+					abstract computed name: String
 						gets "Bernd"
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<DisallowedModifier>()
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test

@@ -466,7 +466,7 @@ internal class Functions {
 	fun `disallows functions to overwrite computed properties`() {
 		val sourceCode = """
 			Computer class {
-				val result: Int gets 1
+				computed result: Int gets 1
 			}
 			ClassicalComputer class: Computer {
 				overriding to result()

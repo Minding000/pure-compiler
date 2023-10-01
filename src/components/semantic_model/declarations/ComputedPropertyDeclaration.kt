@@ -7,8 +7,6 @@ import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.FunctionType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Value
-import logger.issues.declaration.ComputedVariableWithoutSetter
-import logger.issues.declaration.SetterInComputedValue
 import logger.issues.modifiers.OverridingMemberKindMismatch
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
@@ -16,8 +14,9 @@ import logger.issues.modifiers.VariablePropertyOverriddenByValue
 import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclaration as ComputedPropertySyntaxTree
 
 class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, scope: MutableScope, name: String, type: Type?,
-								  isConstant: Boolean, isOverriding: Boolean, val getExpression: Value?, val setStatement: SemanticModel?):
-	PropertyDeclaration(source, scope, name, type, getExpression, false, false, isConstant, false, isOverriding) {
+								  isOverriding: Boolean, isAbstract: Boolean, val getExpression: Value?, val setStatement: SemanticModel?):
+	PropertyDeclaration(source, scope, name, type, getExpression, false, isAbstract, setStatement == null,
+		false, isOverriding) {
 	val getterIdentifier
 		get() = "get $memberIdentifier"
 	val setterIdentifier
@@ -27,17 +26,6 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 
 	init {
 		addSemanticModels(setStatement)
-	}
-
-	override fun validate() {
-		super.validate()
-		if(isConstant) {
-			if(setStatement != null)
-				context.addIssue(SetterInComputedValue(setStatement.source))
-		} else {
-			if(setStatement == null)
-				context.addIssue(ComputedVariableWithoutSetter(source))
-		}
 	}
 
 	override fun validateSuperMember() {

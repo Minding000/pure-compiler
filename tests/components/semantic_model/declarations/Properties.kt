@@ -289,7 +289,7 @@ internal class Properties {
 	fun `disallows properties to overwrite computed properties`() {
 		val sourceCode = """
 			Computer class {
-				val result: Int gets 1
+				computed result: Int gets 1
 			}
 			ClassicalComputer class: Computer {
 				overriding val result = 0

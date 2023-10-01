@@ -607,7 +607,30 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 	}
 
 	/**
-	 * FunctionDeclaration:
+	 * ComputedPropertyDeclaration:
+	 *   <Identifier>[: <Type>] [get <Expression>] [set <Statement>]
+	 */
+	private fun parseComputedPropertyDeclaration(): ComputedPropertyDeclaration {
+		val identifier = parseIdentifier()
+		val type = if(currentWord?.type == WordAtom.COLON) {
+			consume(WordAtom.COLON)
+			typeParser.parseType()
+		} else null
+		consumeLineBreaks()
+		val getExpression = if(currentWord?.type == WordAtom.GETS) {
+			consume(WordAtom.GETS)
+			parseExpression()
+		} else null
+		consumeLineBreaks()
+		val setStatement = if(currentWord?.type == WordAtom.SETS) {
+			consume(WordAtom.SETS)
+			parseStatement()
+		} else null
+		return ComputedPropertyDeclaration(identifier, type, getExpression, setStatement)
+	}
+
+	/**
+	 * FunctionDefinition:
 	 *   <Identifier><ParameterList>[: <Type>] [<StatementSection>]
 	 */
 	private fun parseFunctionDefinition(): FunctionDefinition {
@@ -702,6 +725,7 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 	 *   <VariableSection>
 	 *   <InitializerDefinition>
 	 *   <DeinitializerDefinition>
+	 *   <ComputedPropertySection>
 	 *   <FunctionSection>
 	 *   <OperatorSection>
 	 *   <TypeDefinition>
@@ -716,6 +740,8 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 				return parseInitializerDefinition()
 			if(currentWord?.type == WordAtom.DEINITIALIZER)
 				return parseDeinitializerDefinition()
+			if(currentWord?.type == WordAtom.COMPUTED)
+				return parseComputedPropertySection()
 			if(WordType.FUNCTION_DECLARATION.includes(currentWord?.type))
 				return parseFunctionSection()
 			if(currentWord?.type == WordAtom.OPERATOR)
@@ -825,7 +851,6 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 
 	/**
 	 * PropertyDeclaration:
-	 *   <Identifier>[: <Type>] [get <Expression>] [set <Statement>]
 	 *   <Identifier>[: <Type>] [= <Expression>]
 	 */
 	private fun parseProperty(): VariableSectionSyntaxTreeNode {
@@ -834,24 +859,42 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 			consume(WordAtom.COLON)
 			typeParser.parseType()
 		} else null
-		consumeLineBreaks()
-		val getExpression = if(currentWord?.type == WordAtom.GETS) {
-			consume(WordAtom.GETS)
-			parseExpression()
-		} else null
-		consumeLineBreaks()
-		val setStatement = if(currentWord?.type == WordAtom.SETS) {
-			consume(WordAtom.SETS)
-			parseStatement()
-		} else null
-		if(getExpression != null || setStatement != null)
-			return ComputedPropertyDeclaration(identifier, type, getExpression, setStatement)
 		var value: ValueSyntaxTreeNode? = null
 		if(currentWord?.type == WordAtom.ASSIGNMENT) {
 			consume(WordAtom.ASSIGNMENT)
 			value = parseExpression()
 		}
 		return PropertyDeclaration(identifier, type, value)
+	}
+
+	/**
+	 * ComputedPropertySection:
+	 *   computed <ComputedPropertyDeclaration>
+	 *   computed[: <Type>] {
+	 *   	<ComputedPropertyDeclaration>...
+	 *   }
+	 */
+	private fun parseComputedPropertySection(): ComputedPropertySection {
+		val start = consume(WordAtom.COMPUTED).start
+		val type = if(currentWord?.type == WordAtom.COLON) {
+			consume(WordAtom.COLON)
+			typeParser.parseType()
+		} else null
+		val computedProperties = LinkedList<ComputedPropertyDeclaration>()
+		val end = if(currentWord?.type == WordAtom.OPENING_BRACE) {
+			consume(WordAtom.OPENING_BRACE)
+			while(currentWord?.type != WordAtom.CLOSING_BRACE) {
+				consumeLineBreaks()
+				if(currentWord?.type == WordAtom.CLOSING_BRACE)
+					break
+				computedProperties.add(parseComputedPropertyDeclaration())
+			}
+			consume(WordAtom.CLOSING_BRACE).end
+		} else {
+			computedProperties.add(parseComputedPropertyDeclaration())
+			computedProperties.last().end
+		}
+		return ComputedPropertySection(start, end, type, computedProperties)
 	}
 
 	/**

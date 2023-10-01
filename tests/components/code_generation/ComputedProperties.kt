@@ -12,7 +12,7 @@ internal class ComputedProperties {
 		val sourceCode = """
 			SimplestApp object {
 				val three = 3
-				val six: Int gets three * 2
+				computed six: Int gets three * 2
 				to getSix(): Int {
 					return six
 				}
@@ -26,7 +26,7 @@ internal class ComputedProperties {
 	fun `compiles computed property setter access on variable`() {
 		val sourceCode = """
 			SimplestApp object {
-				val full: Int sets half = full / 2
+				computed full: Int sets half = full / 2
 				val half = 2
 				to getSix(): Int {
 					full = 12
@@ -43,7 +43,7 @@ internal class ComputedProperties {
 		val sourceCode = """
 			SimplestApp object {
 				val three = 3
-				val six: Int gets three * 2
+				computed six: Int gets three * 2
 				to getSix(): Int {
 					return this.six
 				}
@@ -58,7 +58,7 @@ internal class ComputedProperties {
 		val sourceCode = """
 			SimplestApp object {
 				val three = 3
-				val six: Int gets three * 2
+				computed six: Int gets three * 2
 				to getSix(): Int {
 					val app: SimplestApp? = SimplestApp
 					return app?.six ?? 0
@@ -73,7 +73,7 @@ internal class ComputedProperties {
 	fun `compiles computed property setter access on member access`() {
 		val sourceCode = """
 			SimplestApp object {
-				val full: Int sets half = this.full / 2
+				computed full: Int sets half = this.full / 2
 				val half = 2
 				to getSix(): Int {
 					this.full = 12

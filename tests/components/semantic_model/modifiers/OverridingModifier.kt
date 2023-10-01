@@ -44,7 +44,7 @@ internal class OverridingModifier {
 		val sourceCode =
 			"""
 				Goldfish class {
-					overriding val name: String
+					overriding computed name: String
 						gets "Bernd"
 				}
             """.trimIndent()

@@ -26,6 +26,11 @@ internal class ValueDeclarations {
 	}
 
 	@Test
+	fun `detects computed property tokens`() {
+		TestUtil.assertTokenType("computed", WordAtom.COMPUTED)
+	}
+
+	@Test
 	fun `detects getter tokens`() {
 		TestUtil.assertTokenType("gets", WordAtom.GETS)
 	}
