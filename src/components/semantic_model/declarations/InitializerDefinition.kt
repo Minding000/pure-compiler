@@ -31,8 +31,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	override lateinit var parentTypeDeclaration: TypeDeclaration
 	override val memberIdentifier
 		get() = toString(true)
-	private val isVariadic = parameters.lastOrNull()?.isVariadic ?: false
-	private val fixedParameters: List<Parameter>
+	val isVariadic = parameters.lastOrNull()?.isVariadic ?: false
+	val fixedParameters: List<Parameter>
 	private val variadicParameter: Parameter?
 	var superInitializer: InitializerDefinition? = null
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
@@ -247,14 +247,14 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		super.declare(constructor)
 		for(index in parameters.indices)
 			parameters[index].index = index + Context.VALUE_PARAMETER_OFFSET
-		val parameterTypes = LinkedList<LlvmType?>(fixedParameters.map { parameter -> parameter.type?.getLlvmType(constructor) })
+		val parameterTypes = LinkedList<LlvmType?>(parameters.map { parameter -> parameter.type?.getLlvmType(constructor) })
 		parameterTypes.addFirst(constructor.pointerType)
 		parameterTypes.addFirst(constructor.pointerType)
 		llvmType = constructor.buildFunctionType(parameterTypes, constructor.voidType, isVariadic)
 		llvmValue = constructor.buildFunction("${parentTypeDeclaration.name}_Initializer", llvmType)
 	}
 
-	override fun compile(constructor: LlvmConstructor) { //TODO add support for variadic initializers
+	override fun compile(constructor: LlvmConstructor) {
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmValue, "entrypoint")
 		val thisValue = constructor.getParameter(llvmValue, Context.THIS_PARAMETER_INDEX)

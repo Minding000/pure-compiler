@@ -47,4 +47,26 @@ internal class Initializer {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
 		assertEquals(74, Llvm.castToSignedInteger(result))
 	}
+
+	@Test
+	fun `supports variadic parameters`() {
+		val sourceCode = """
+			Summer class {
+				var sum = 0
+				init(...numbers: ...Int) {
+					loop over numbers as number {
+						sum += number
+					}
+				}
+			}
+			SimplestApp object {
+				to getSum(): Int {
+					val summer = Summer(1, 2, 4, 8)
+					return summer.sum
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSum")
+		assertEquals(15, Llvm.castToSignedInteger(result))
+	}
 }

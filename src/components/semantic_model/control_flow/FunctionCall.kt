@@ -116,8 +116,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		val functionSignature = targetSignature
 		val returnValue = if(functionSignature == null) {
 			val initializerDefinition = targetInitializer ?: throw CompilerError(source, "Function call is missing a target.")
-			parameters.add(exceptionAddressLocation)
-			createLlvmInitializerCall(constructor, initializerDefinition, parameters)
+			createLlvmInitializerCall(constructor, initializerDefinition, exceptionAddressLocation, parameters)
 		} else {
 			createLlvmFunctionCall(constructor, functionSignature, exceptionAddressLocation, parameters)
 		}
@@ -171,7 +170,12 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	}
 
 	private fun createLlvmInitializerCall(constructor: LlvmConstructor, initializer: InitializerDefinition,
-										  parameters: LinkedList<LlvmValue>): LlvmValue {
+										  exceptionAddressLocation: LlvmValue, parameters: LinkedList<LlvmValue>): LlvmValue {
+		if(initializer.isVariadic) {
+			val fixedParameterCount = initializer.fixedParameters.size
+			val variadicParameterCount = parameters.size - fixedParameterCount
+			parameters.add(fixedParameterCount, constructor.buildInt32(variadicParameterCount))
+		}
 		//TODO primary initializer calls should also be resolved dynamically (for generic type initialization)
 		// - unless the variable definition is a specific type already (or can be traced to it)
 		val isPrimaryCall = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
@@ -181,10 +185,12 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			val classDefinitionPointer = constructor.buildGetPropertyPointer(typeDefinition.llvmType, newObjectAddress,
 				Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
 			constructor.buildStore(typeDefinition.llvmClassDefinitionAddress, classDefinitionPointer)
+			parameters.addFirst(exceptionAddressLocation)
 			parameters.add(Context.THIS_PARAMETER_INDEX, newObjectAddress)
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
 			newObjectAddress
 		} else {
+			parameters.addFirst(exceptionAddressLocation)
 			parameters.add(Context.THIS_PARAMETER_INDEX, context.getThisParameter(constructor))
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
 		}
