@@ -23,7 +23,7 @@ internal class Loop {
 		""".trimIndent()
 		val intermediateRepresentation = TestUtil.getIntermediateRepresentation(sourceCode)
 		assertContains(intermediateRepresentation, """
-			define void @"run()"(ptr %0) {
+			define void @"run()"(ptr %0, ptr %1) {
 			entrypoint:
 			  %a_Variable = alloca i32, align 4
 			  store i32 1, ptr %a_Variable, align 4
@@ -90,7 +90,7 @@ internal class Loop {
 			""".trimIndent()
 		val intermediateRepresentation = TestUtil.getIntermediateRepresentation(sourceCode)
 		assertContains(intermediateRepresentation, """
-			define void @"run()"(ptr %0) {
+			define void @"run()"(ptr %0, ptr %1) {
 			entrypoint:
 			  %x_Variable = alloca i1, align 1
 			  store i1 true, ptr %x_Variable, align 1

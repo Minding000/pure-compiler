@@ -1,5 +1,6 @@
 package components.semantic_model.control_flow
 
+import components.code_generation.llvm.LlvmConstructor
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.OptionalType
 import components.semantic_model.values.Value
@@ -19,5 +20,11 @@ class Try(override val source: TrySyntaxTree, scope: Scope, val expression: Valu
 			else
 				expressionType
 		}
+	}
+
+	override fun compile(constructor: LlvmConstructor) {
+		super.compile(constructor)
+		//TODO compile try
+		// - return null on error
 	}
 }

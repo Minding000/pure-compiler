@@ -1,6 +1,7 @@
 package components.semantic_model.declarations
 
 import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.MutableScope
@@ -21,6 +22,8 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		get() = "get $memberIdentifier"
 	val setterIdentifier
 		get() = "set $memberIdentifier"
+	var llvmGetterType: LlvmType? = null
+	var llvmSetterType: LlvmType? = null
 	var llvmGetterValue: LlvmValue? = null
 	var llvmSetterValue: LlvmValue? = null
 
@@ -55,12 +58,16 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)
 		val llvmType = type?.getLlvmType(constructor)
-		if(getExpression != null)
-			llvmGetterValue = constructor.buildFunction(getterIdentifier,
-				constructor.buildFunctionType(listOf(constructor.pointerType), llvmType))
-		if(setStatement != null)
-			llvmSetterValue = constructor.buildFunction(setterIdentifier,
-				constructor.buildFunctionType(listOf(constructor.pointerType, llvmType)))
+		if(getExpression != null) {
+			val functionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), llvmType)
+			llvmGetterType = functionType
+			llvmGetterValue = constructor.buildFunction(getterIdentifier, functionType)
+		}
+		if(setStatement != null) {
+			val functionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType, llvmType))
+			llvmSetterType = functionType
+			llvmSetterValue = constructor.buildFunction(setterIdentifier, functionType)
+		}
 	}
 
 	override fun compile(constructor: LlvmConstructor) {

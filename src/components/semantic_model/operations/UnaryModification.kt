@@ -89,10 +89,16 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature) {
 		val typeDefinition = signature.parentDefinition
 		val targetValue = target.getLlvmValue(constructor)
+		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
 		val parameters = LinkedList<LlvmValue>()
+		parameters.add(exceptionAddressLocation)
 		parameters.add(targetValue)
 		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
 			signature.toString(false, kind))
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
+		//TODO if exception exists
+		// check for optional try (normal and force try have no effect)
+		// check for catch
+		// resume raise
 	}
 }

@@ -86,10 +86,16 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
 		val typeDefinition = signature.parentDefinition
 		val targetValue = subject.getLlvmValue(constructor)
+		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
 		val parameters = LinkedList<LlvmValue>()
+		parameters.add(exceptionAddressLocation)
 		parameters.add(targetValue)
 		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
 			signature.toString(false, kind))
 		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_unaryOperatorResult")
+		//TODO if exception exists
+		// check for optional try (normal and force try have no effect)
+		// check for catch
+		// resume raise
 	}
 }

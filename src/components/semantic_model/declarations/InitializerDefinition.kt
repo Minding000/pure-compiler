@@ -246,8 +246,9 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)
 		for(index in parameters.indices)
-			parameters[index].index = index
+			parameters[index].index = index + Context.VALUE_PARAMETER_OFFSET
 		val parameterTypes = LinkedList<LlvmType?>(fixedParameters.map { parameter -> parameter.type?.getLlvmType(constructor) })
+		parameterTypes.addFirst(constructor.pointerType)
 		parameterTypes.addFirst(constructor.pointerType)
 		llvmType = constructor.buildFunctionType(parameterTypes, constructor.voidType, isVariadic)
 		llvmValue = constructor.buildFunction("${parentTypeDeclaration.name}_Initializer", llvmType)
@@ -298,7 +299,11 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			val trivialInitializer = (superTypeDeclaration?.staticValueDeclaration?.type as? StaticType)?.getInitializer()?.initializer
 				?: throw CompilerError(source, "Default initializer in class '${parentTypeDeclaration.name}'" +
 					" with super class '${superTypeDeclaration?.name}' without trivial initializer.")
-			constructor.buildFunctionCall(trivialInitializer.llvmType, trivialInitializer.llvmValue, listOf(thisValue))
+			val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+			constructor.buildFunctionCall(trivialInitializer.llvmType, trivialInitializer.llvmValue,
+				listOf(exceptionAddressLocation, thisValue))
+			//TODO if exception exists
+			// resume raise
 		}
 	}
 

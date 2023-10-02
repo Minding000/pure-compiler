@@ -2,6 +2,7 @@ package components.semantic_model.declarations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
+import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.general.ErrorHandlingContext
@@ -148,11 +149,13 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)
 		for(index in parameters.indices)
-			parameters[index].index = index + 1
+			parameters[index].index = index + Context.VALUE_PARAMETER_OFFSET
 		llvmValue = constructor.buildFunction(memberIdentifier, signature.getLlvmType(constructor))
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
+		if(isNative)
+			return
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmValue, "entrypoint")
 		super.compile(constructor)

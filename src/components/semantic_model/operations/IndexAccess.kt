@@ -84,7 +84,9 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
 		val typeDefinition = signature.parentDefinition
 		val targetValue = target.getLlvmValue(constructor)
+		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
 		val parameters = LinkedList<LlvmValue>()
+		parameters.add(exceptionAddressLocation)
 		parameters.add(targetValue)
 		for(index in indices)
 			parameters.add(index.getLlvmValue(constructor))
@@ -95,5 +97,9 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
 			signature.toString(false, kind))
 		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_indexAccessResult")
+		//TODO if exception exists
+		// check for optional try (normal and force try have no effect)
+		// check for catch
+		// resume raise
 	}
 }

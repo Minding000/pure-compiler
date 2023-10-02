@@ -107,16 +107,30 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val parameters = LinkedList<LlvmValue>()
+
+		//TODO reuse pointer provided by caller?
+		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+
 		for(valueParameter in valueParameters)
 			parameters.add(valueParameter.getLlvmValue(constructor))
 		val functionSignature = targetSignature
-		if(functionSignature != null)
-			return createLlvmFunctionCall(constructor, functionSignature, parameters)
-		val initializerDefinition = targetInitializer ?: throw CompilerError(source, "Function call is missing a target.")
-		return createLlvmInitializerCall(constructor, initializerDefinition, parameters)
+		val returnValue = if(functionSignature == null) {
+			val initializerDefinition = targetInitializer ?: throw CompilerError(source, "Function call is missing a target.")
+			parameters.add(exceptionAddressLocation)
+			createLlvmInitializerCall(constructor, initializerDefinition, parameters)
+		} else {
+			createLlvmFunctionCall(constructor, functionSignature, exceptionAddressLocation, parameters)
+		}
+
+		//TODO if exception exists
+		// check for optional try (normal and force try have no effect)
+		// check for catch
+		// resume raise
+
+		return returnValue
 	}
 
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature,
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, exceptionAddressLocation: LlvmValue,
 									   parameters: LinkedList<LlvmValue>): LlvmValue {
 		if(signature.isVariadic) {
 			val fixedParameterCount = signature.fixedParameterTypes.size
@@ -151,6 +165,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 					"${functionName}${signature.toString(false)}")
 			}
 		}
+		parameters.addFirst(exceptionAddressLocation)
 		val resultName = if(SpecialType.NOTHING.matches(signature.returnType)) "" else getSignature()
 		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, resultName)
 	}
@@ -166,11 +181,11 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			val classDefinitionPointer = constructor.buildGetPropertyPointer(typeDefinition.llvmType, newObjectAddress,
 				Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
 			constructor.buildStore(typeDefinition.llvmClassDefinitionAddress, classDefinitionPointer)
-			parameters.addFirst(newObjectAddress)
+			parameters.add(Context.THIS_PARAMETER_INDEX, newObjectAddress)
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
 			newObjectAddress
 		} else {
-			parameters.addFirst(context.getThisParameter(constructor))
+			parameters.add(Context.THIS_PARAMETER_INDEX, context.getThisParameter(constructor))
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
 		}
 	}

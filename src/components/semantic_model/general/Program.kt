@@ -111,6 +111,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		if(userEntryPointFunction != null) {
 			val returnsVoid = SpecialType.NOTHING.matches(userEntryPointFunction.signature.returnType)
 			val parameters = LinkedList<LlvmValue>()
+			val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+			parameters.add(exceptionAddressLocation)
 			if(userEntryPointObject != null) {
 				val objectAddress = constructor.buildLoad(
 					userEntryPointObject.type?.getLlvmType(constructor),
@@ -125,6 +127,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 				parameters,
 				if(returnsVoid) "" else "programResult"
 			)
+			//TODO check for uncaught exception (exceptionAddressLocation)
 			if(returnsVoid)
 				result = null
 		}

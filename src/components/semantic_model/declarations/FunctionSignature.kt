@@ -182,6 +182,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 			val parentDefinition = parentDefinition
 			if(parentDefinition != null)
 				parameterTypes.addFirst(constructor.pointerType)
+			parameterTypes.addFirst(constructor.pointerType)
 			llvmType = constructor.buildFunctionType(parameterTypes, returnType.getLlvmType(constructor), isVariadic)
 			this.llvmType = llvmType
 		}

@@ -219,9 +219,13 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 	private fun buildGetterCall(constructor: LlvmConstructor, targetValue: LlvmValue, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
 		val functionAddress = context.resolveFunction(constructor, computedPropertyDeclaration.parentTypeDeclaration.llvmType, targetValue,
 			computedPropertyDeclaration.getterIdentifier)
-		return constructor.buildFunctionCall(constructor.buildFunctionType(listOf(constructor.pointerType),
-			computedPropertyDeclaration.type?.getLlvmType(constructor)), functionAddress, listOf(targetValue),
-			"_computedPropertyGetterResult")
+		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		return constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
+			listOf(exceptionAddressLocation, targetValue), "_computedPropertyGetterResult")
+		//TODO if exception exists
+		// check for optional try (normal and force try have no effect)
+		// check for catch
+		// resume raise
 	}
 
 	fun jumpToNextIteration(constructor: LlvmConstructor) {

@@ -86,17 +86,22 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 			val setStatement = declaration.setStatement
 			if(setStatement != null && isIn(setStatement))
 				return constructor.getLastParameter()
-			return createLlvmFunctionCall(constructor, declaration)
+			return buildGetterCall(constructor, declaration)
 		}
 		return constructor.buildLoad(type?.getLlvmType(constructor), getLlvmLocation(constructor), name)
 	}
 
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
+	private fun buildGetterCall(constructor: LlvmConstructor, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
 		val targetValue = context.getThisParameter(constructor)
 		val functionAddress = context.resolveFunction(constructor, computedPropertyDeclaration.parentTypeDeclaration.llvmType, targetValue,
 			computedPropertyDeclaration.getterIdentifier)
-		return constructor.buildFunctionCall(constructor.buildFunctionType(listOf(constructor.pointerType), type?.getLlvmType(constructor)),
-			functionAddress, listOf(targetValue), "_computedPropertyGetterResult")
+		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		return constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
+			listOf(exceptionAddressLocation, targetValue), "_computedPropertyGetterResult")
+		//TODO if exception exists
+		// check for optional try (normal and force try have no effect)
+		// check for catch
+		// resume raise
 	}
 
 	override fun hashCode(): Int {

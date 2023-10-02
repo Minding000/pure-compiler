@@ -117,13 +117,17 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 	private fun buildSetterCall(constructor: LlvmConstructor, declaration: ComputedPropertyDeclaration, targetValue: LlvmValue,
 								sourceValue: LlvmValue) {
 		val parameters = LinkedList<LlvmValue>()
+		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		parameters.add(exceptionAddressLocation)
 		parameters.add(targetValue)
 		parameters.add(sourceValue)
 		val functionAddress = context.resolveFunction(constructor, declaration.parentTypeDeclaration.llvmType, targetValue,
 			declaration.setterIdentifier)
-		val functionType = constructor.buildFunctionType(listOf(constructor.pointerType,
-			sourceExpression.type?.getLlvmType(constructor)))
-		constructor.buildFunctionCall(functionType, functionAddress, parameters)
+		constructor.buildFunctionCall(declaration.llvmSetterType, functionAddress, parameters)
+		//TODO if exception exists
+		// check for optional try (normal and force try have no effect)
+		// check for catch
+		// resume raise
 	}
 
 	private fun compileAssignmentToIndexAccess(constructor: LlvmConstructor, indexAccess: IndexAccess, value: LlvmValue) {
@@ -144,11 +148,17 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 			constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType, context.llvmFunctionAddressFunction,
 				listOf(classDefinitionAddress, constructor.buildInt32(id)), "indexOperatorAddress")
 		}
+		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
 		val parameters = LinkedList<LlvmValue>()
+		parameters.add(exceptionAddressLocation)
 		parameters.add(targetValue)
 		for(index in indexAccess.indices)
 			parameters.add(index.getLlvmValue(constructor))
 		parameters.add(value)
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), indexOperatorAddress, parameters)
+		//TODO if exception exists
+		// check for optional try (normal and force try have no effect)
+		// check for catch
+		// resume raise
 	}
 }

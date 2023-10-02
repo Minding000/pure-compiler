@@ -273,11 +273,17 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		val typeDefinition = signature.parentDefinition
 		val targetValue = left.getLlvmValue(constructor)
 		val parameters = LinkedList<LlvmValue>()
+		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		parameters.add(exceptionAddressLocation)
 		parameters.add(targetValue)
 		parameters.add(right.getLlvmValue(constructor))
 		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
 			signature.toString(false, kind))
 		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_binaryOperatorResult")
+		//TODO if exception exists
+		// check for optional try (normal and force try have no effect)
+		// check for catch
+		// resume raise
 	}
 
 	private fun getNullCoalescenceResult(constructor: LlvmConstructor): LlvmValue {
