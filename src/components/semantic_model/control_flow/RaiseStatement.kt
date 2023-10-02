@@ -32,7 +32,9 @@ class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope
 			constructor.buildReturn()
 			return
 		}
-		val nullValue = if(SpecialType.BYTE.matches(returnType))
+		val nullValue = if(SpecialType.BOOLEAN.matches(returnType))
+			constructor.buildBoolean(false)
+		else if(SpecialType.BYTE.matches(returnType))
 			constructor.buildByte(0)
 		else if(SpecialType.INTEGER.matches(returnType))
 			constructor.buildInt32(0)

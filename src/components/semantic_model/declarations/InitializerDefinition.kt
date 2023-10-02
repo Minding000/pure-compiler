@@ -254,7 +254,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		llvmValue = constructor.buildFunction("${parentTypeDeclaration.name}_Initializer", llvmType)
 	}
 
-	override fun compile(constructor: LlvmConstructor) {
+	override fun compile(constructor: LlvmConstructor) { //TODO add support for variadic initializers
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmValue, "entrypoint")
 		val thisValue = constructor.getParameter(llvmValue, Context.THIS_PARAMETER_INDEX)

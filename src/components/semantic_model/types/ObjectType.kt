@@ -238,6 +238,8 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 			return constructor.floatType
 		if(SpecialType.INTEGER.matches(this))
 			return constructor.i32Type
+		if(SpecialType.BYTE.matches(this))
+			return constructor.byteType
 		if(SpecialType.BOOLEAN.matches(this))
 			return constructor.booleanType
 		if(SpecialType.NOTHING.matches(this))
