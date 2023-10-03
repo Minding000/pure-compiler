@@ -113,6 +113,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		val llvmTargetType = when(targetType) {
 			is ObjectType -> targetType.getTypeDeclaration()?.llvmType
 			is StaticType -> targetType.typeDeclaration.llvmStaticType
+			//TODO support member accesses on union types
 			else -> throw CompilerError(source,
 				"Member access target of type '${targetType?.javaClass?.simpleName}' is not an object or class.")
 		}

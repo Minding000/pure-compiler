@@ -10,6 +10,7 @@ import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.BlockScope
 import components.semantic_model.types.FunctionType
+import components.semantic_model.types.ObjectType
 import components.semantic_model.types.PluralType
 import components.semantic_model.types.Type
 import components.semantic_model.values.BooleanLiteral
@@ -170,15 +171,22 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			?: throw CompilerError(source, "'Iterator.isDone' computed property not found.")
 
 		val function = constructor.getParentFunction()
-		val createIteratorAddress = context.resolveFunction(constructor, iterableType.getLlvmType(constructor),
-			generator.iterable.getLlvmValue(constructor), "createIterator(): <Element>List.Iterator") //TODO change function IDs: exclude return type
-		val iterator = constructor.buildFunctionCall(iteratorCreationSignature?.getLlvmType(constructor), createIteratorAddress,
-			emptyList(), "iterator")
+		//TODO support looping over union types
+		val iterableLlvmValue = generator.iterable.getLlvmValue(constructor)
+		val createIteratorAddress = context.resolveFunction(constructor, (iterableType as? ObjectType)?.getTypeDeclaration()?.llvmType,
+			iterableLlvmValue, "createIterator(): <Element>List.Iterator") //TODO change function IDs: exclude return type
+		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		val iteratorLlvmValue = constructor.buildFunctionCall(iteratorCreationSignature?.getLlvmType(constructor), createIteratorAddress,
+			listOf(exceptionAddressLocation, iterableLlvmValue), "iterator")
+		//TODO if exception exists
+		// check for optional try (normal and force try have no effect)
+		// check for catch
+		// resume raise
 		entryBlock = constructor.createBlock(function, "loop_entry")
 		exitBlock = constructor.createBlock("loop_exit")
 		constructor.buildJump(entryBlock)
 		constructor.select(entryBlock)
-		val condition = buildGetterCall(constructor, iterator, iteratorIsDoneComputedProperty)
+		val condition = buildGetterCall(constructor, iteratorLlvmValue, iteratorIsDoneComputedProperty)
 		val bodyBlock = constructor.createBlock(function, "loop_body")
 		constructor.buildJump(condition, bodyBlock, exitBlock)
 		constructor.select(bodyBlock)
@@ -187,7 +195,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			val iteratorCurrentIndexPropertyPair = iteratorType.getValueDeclaration("currentIndex")
 			val iteratorCurrentIndexComputedProperty = iteratorCurrentIndexPropertyPair.first as? ComputedPropertyDeclaration
 				?: throw CompilerError(source, "'Iterator.currentIndex' computed property not found.")
-			val currentIndexValue = buildGetterCall(constructor, iterator, iteratorCurrentIndexComputedProperty)
+			val currentIndexValue = buildGetterCall(constructor, iteratorLlvmValue, iteratorCurrentIndexComputedProperty)
 			constructor.buildStore(currentIndexValue, indexVariable.llvmLocation)
 		}
 		val keyVariable = generator.currentKeyVariable
@@ -195,7 +203,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			val iteratorCurrentKeyPropertyPair = iteratorType.getValueDeclaration("currentKey")
 			val iteratorCurrentKeyComputedProperty = iteratorCurrentKeyPropertyPair.first as? ComputedPropertyDeclaration
 				?: throw CompilerError(source, "'Iterator.currentKey' computed property not found.")
-			val currentKeyValue = buildGetterCall(constructor, iterator, iteratorCurrentKeyComputedProperty)
+			val currentKeyValue = buildGetterCall(constructor, iteratorLlvmValue, iteratorCurrentKeyComputedProperty)
 			constructor.buildStore(currentKeyValue, keyVariable.llvmLocation)
 		}
 		val valueVariable = generator.currentValueVariable
@@ -203,13 +211,18 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			val iteratorCurrentValuePropertyPair = iteratorType.getValueDeclaration("currentValue")
 			val iteratorCurrentValueComputedProperty = iteratorCurrentValuePropertyPair.first as? ComputedPropertyDeclaration
 				?: throw CompilerError(source, "'Iterator.currentValue' computed property not found.")
-			val currentValueValue = buildGetterCall(constructor, iterator, iteratorCurrentValueComputedProperty)
+			val currentValueValue = buildGetterCall(constructor, iteratorLlvmValue, iteratorCurrentValueComputedProperty)
 			constructor.buildStore(currentValueValue, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)
 		val advanceFunctionAddress = context.resolveFunction(constructor, iterableType.getLlvmType(constructor),
 			generator.iterable.getLlvmValue(constructor), "advance()")
-		constructor.buildFunctionCall(iteratorAdvanceSignature?.getLlvmType(constructor), advanceFunctionAddress)
+		constructor.buildFunctionCall(iteratorAdvanceSignature?.getLlvmType(constructor), advanceFunctionAddress,
+			listOf(exceptionAddressLocation, iteratorLlvmValue))
+		//TODO if exception exists
+		// check for optional try (normal and force try have no effect)
+		// check for catch
+		// resume raise
 		if(!body.isInterruptingExecution)
 			constructor.buildJump(entryBlock)
 		constructor.addBlockToFunction(function, exitBlock)

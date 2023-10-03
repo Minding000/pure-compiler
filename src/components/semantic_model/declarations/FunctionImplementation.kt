@@ -154,7 +154,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		if(isNative)
+		if(isAbstract || isNative)
 			return
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmValue, "entrypoint")

@@ -255,6 +255,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
+		if(isAbstract)
+			return
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmValue, "entrypoint")
 		val thisValue = constructor.getParameter(llvmValue, Context.THIS_PARAMETER_INDEX)
