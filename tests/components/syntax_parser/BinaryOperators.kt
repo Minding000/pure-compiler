@@ -116,4 +116,18 @@ internal class BinaryOperators {
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
+
+	@Test
+	fun `identity comparison takes precedence over equality comparison`() {
+		val sourceCode = "yes == 2 === 3"
+		val expected =
+			"""
+				BinaryOperator {
+					BooleanLiteral { yes } Operator { == } BinaryOperator {
+						NumberLiteral { 2 } Operator { === } NumberLiteral { 3 }
+					}
+				}
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
 }

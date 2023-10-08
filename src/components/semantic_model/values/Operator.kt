@@ -76,6 +76,8 @@ class Operator(source: SyntaxTreeNode, scope: Scope, val kind: Kind): Function(s
 		GREATER_THAN(">", false, true, true),
 		SMALLER_THAN_OR_EQUAL_TO("<=", false, true, true),
 		GREATER_THAN_OR_EQUAL_TO(">=", false, true, true),
+		IDENTICAL_TO("===", false, true, true),
+		NOT_IDENTICAL_TO("!==", false, true, true),
 		EQUAL_TO("==", false, true, true),
 		NOT_EQUAL_TO("!=", false, true, true);
 

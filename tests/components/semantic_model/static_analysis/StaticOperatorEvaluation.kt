@@ -168,7 +168,35 @@ internal class StaticOperatorEvaluation {
 	}
 
 	@Test
-	fun `calculates result of equals`() {
+	fun `calculates result of identity comparison`() {
+		val sourceCode =
+			"""
+				Int class
+				val number = Int()
+				number === number
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val staticResult = lintResult.find<BinaryOperator>()?.getComputedValue()
+		assertIs<BooleanLiteral>(staticResult)
+		assertEquals(true, staticResult.value)
+	}
+
+	@Test
+	fun `calculates result of negated identity comparison`() {
+		val sourceCode =
+			"""
+				Int class
+				val number = Int()
+				number !== number
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val staticResult = lintResult.find<BinaryOperator>()?.getComputedValue()
+		assertIs<BooleanLiteral>(staticResult)
+		assertEquals(false, staticResult.value)
+	}
+
+	@Test
+	fun `calculates result of equality comparison`() {
 		val sourceCode =
 			"""
 				no == no
@@ -180,7 +208,7 @@ internal class StaticOperatorEvaluation {
 	}
 
 	@Test
-	fun `calculates result of not equals`() {
+	fun `calculates result of negated equality comparison`() {
 		val sourceCode =
 			"""
 				98 != 554

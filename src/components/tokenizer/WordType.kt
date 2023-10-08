@@ -5,6 +5,8 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.NOT,
 		WordAtom.AND,
 		WordAtom.OR,
+		WordAtom.IDENTICAL,
+		WordAtom.NOT_IDENTICAL,
 		WordAtom.EQUALS,
 		WordAtom.NOT_EQUALS,
 		WordAtom.GREATER_OR_EQUALS_THAN,
@@ -54,11 +56,15 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.STAR,
 		WordAtom.SLASH
 	),
-	EQUALITY(
+	IDENTITY_COMPARISON(
+		WordAtom.IDENTICAL,
+		WordAtom.NOT_IDENTICAL
+	),
+	EQUALITY_COMPARISON(
 		WordAtom.EQUALS,
 		WordAtom.NOT_EQUALS
 	),
-	COMPARISON(
+	VALUE_COMPARISON(
 		WordAtom.GREATER_OR_EQUALS_THAN,
 		WordAtom.LOWER_OR_EQUALS_THAN,
 		WordAtom.GREATER_THAN,

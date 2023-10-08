@@ -76,6 +76,16 @@ internal class Operators {
 	}
 
 	@Test
+	fun `detects identical tokens`() {
+		TestUtil.assertTokenType("===", WordAtom.IDENTICAL)
+	}
+
+	@Test
+	fun `detects negated identical tokens`() {
+		TestUtil.assertTokenType("!==", WordAtom.NOT_IDENTICAL)
+	}
+
+	@Test
 	fun `detects equals tokens`() {
 		TestUtil.assertTokenType("==", WordAtom.EQUALS)
 	}

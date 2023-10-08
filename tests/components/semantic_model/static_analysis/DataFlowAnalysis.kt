@@ -709,7 +709,7 @@ internal class DataFlowAnalysis {
 		val sourceCode = """
 			var a = random()
 			val b = a
-			val c = a == b
+			val c = a === b
 		""".trimIndent()
 		val report = """
 			start -> 3

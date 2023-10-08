@@ -151,23 +151,25 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				val rightValue = right.getComputedValue() as? NumberLiteral ?: return
 				BooleanLiteral(this, leftValue.value >= rightValue.value)
 			}
-			Operator.Kind.EQUAL_TO -> {
+			Operator.Kind.IDENTICAL_TO -> {
 				val leftValue = left.getComputedValue() ?: return
 				val rightValue = right.getComputedValue() ?: return
-				val areValuesEqual = leftValue == rightValue
-				val isIdentityComparison = leftValue !is LiteralValue || rightValue !is LiteralValue
-				if(!areValuesEqual && isIdentityComparison)
-					return
-				BooleanLiteral(this, areValuesEqual)
+				BooleanLiteral(this, leftValue == rightValue)
+			}
+			Operator.Kind.NOT_IDENTICAL_TO -> {
+				val leftValue = left.getComputedValue() ?: return
+				val rightValue = right.getComputedValue() ?: return
+				BooleanLiteral(this, leftValue != rightValue)
+			}
+			Operator.Kind.EQUAL_TO -> {
+				val leftValue = left.getComputedValue() as? LiteralValue ?: return
+				val rightValue = right.getComputedValue() as? LiteralValue ?: return
+				BooleanLiteral(this, leftValue == rightValue)
 			}
 			Operator.Kind.NOT_EQUAL_TO -> {
-				val leftValue = left.getComputedValue() ?: return
-				val rightValue = right.getComputedValue() ?: return
-				val areValuesEqual = leftValue == rightValue
-				val isIdentityComparison = leftValue !is LiteralValue || rightValue !is LiteralValue
-				if(!areValuesEqual && isIdentityComparison)
-					return
-				BooleanLiteral(this, !areValuesEqual)
+				val leftValue = left.getComputedValue() as? LiteralValue ?: return
+				val rightValue = right.getComputedValue() as? LiteralValue ?: return
+				BooleanLiteral(this, leftValue != rightValue)
 			}
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}

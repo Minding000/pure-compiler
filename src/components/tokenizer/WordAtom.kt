@@ -20,6 +20,8 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	DIVIDE("\\/="),
 	AND("&"),
 	OR("\\|"),
+	IDENTICAL("==="),
+	NOT_IDENTICAL("!=="),
 	EQUALS("=="),
 	NOT_EQUALS("!="),
 	GREATER_OR_EQUALS_THAN(">="),

@@ -59,32 +59,47 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 
 	/**
 	 * BinaryBooleanExpression:
-	 *   <Equality>
-	 *   <Equality> & <Equality>
-	 *   <Equality> | <Equality>
+	 *   <EqualityComparison>
+	 *   <EqualityComparison> & <EqualityComparison>
+	 *   <EqualityComparison> | <EqualityComparison>
 	 */
 	private fun parseBinaryBooleanExpression(): ValueSyntaxTreeNode {
-		var expression: ValueSyntaxTreeNode = parseEquality()
+		var expression: ValueSyntaxTreeNode = parseEqualityComparison()
 		while(WordType.BINARY_BOOLEAN_OPERATOR.includes(currentWord?.type)) {
 			val operator = parseOperator(WordType.BINARY_BOOLEAN_OPERATOR)
-			expression = BinaryOperator(expression, parseEquality(), operator)
+			expression = BinaryOperator(expression, parseEqualityComparison(), operator)
 		}
 		return expression
 	}
 
 	/**
-	 * Equality:
-	 *   <Comparison>
-	 *   <Comparison> >= <Comparison>
-	 *   <Comparison> <= <Comparison>
-	 *   <Comparison> > <Comparison>
-	 *   <Comparison> < <Comparison>
+	 * EqualityComparison:
+	 *   <IdentityComparison>
+	 *   <IdentityComparison> == <IdentityComparison>
+	 *   <IdentityComparison> != <IdentityComparison>
 	 */
-	private fun parseEquality(): ValueSyntaxTreeNode {
-		var expression: ValueSyntaxTreeNode = parseComparison()
-		while(WordType.EQUALITY.includes(currentWord?.type)) {
-			val operator = parseOperator(WordType.EQUALITY)
-			expression = BinaryOperator(expression, parseComparison(), operator)
+	private fun parseEqualityComparison(): ValueSyntaxTreeNode {
+		var expression: ValueSyntaxTreeNode = parseIdentityComparison()
+		while(WordType.EQUALITY_COMPARISON.includes(currentWord?.type)) {
+			val operator = parseOperator(WordType.EQUALITY_COMPARISON)
+			expression = BinaryOperator(expression, parseIdentityComparison(), operator)
+		}
+		return expression
+	}
+
+	/**
+	 * IdentityComparison:
+	 *   <ValueComparison>
+	 *   <ValueComparison> >= <ValueComparison>
+	 *   <ValueComparison> <= <ValueComparison>
+	 *   <ValueComparison> > <ValueComparison>
+	 *   <ValueComparison> < <ValueComparison>
+	 */
+	private fun parseIdentityComparison(): ValueSyntaxTreeNode {
+		var expression: ValueSyntaxTreeNode = parseValueComparison()
+		while(WordType.IDENTITY_COMPARISON.includes(currentWord?.type)) {
+			val operator = parseOperator(WordType.IDENTITY_COMPARISON)
+			expression = BinaryOperator(expression, parseValueComparison(), operator)
 		}
 		return expression
 	}
@@ -92,13 +107,15 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 	/**
 	 * Comparison:
 	 *   <Addition>
-	 *   <Addition> == <Addition>
-	 *   <Addition> != <Addition>
+	 *   <Addition> >= <Addition>
+	 *   <Addition> <= <Addition>
+	 *   <Addition> > <Addition>
+	 *   <Addition> < <Addition>
 	 */
-	private fun parseComparison(): ValueSyntaxTreeNode {
+	private fun parseValueComparison(): ValueSyntaxTreeNode {
 		var expression: ValueSyntaxTreeNode = parseAddition()
-		while(WordType.COMPARISON.includes(currentWord?.type)) {
-			val operator = parseOperator(WordType.COMPARISON)
+		while(WordType.VALUE_COMPARISON.includes(currentWord?.type)) {
+			val operator = parseOperator(WordType.VALUE_COMPARISON)
 			expression = BinaryOperator(expression, parseAddition(), operator)
 		}
 		return expression
