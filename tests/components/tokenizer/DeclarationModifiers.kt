@@ -16,6 +16,11 @@ internal class DeclarationModifiers {
 	}
 
 	@Test
+	fun `detects copied modifier tokens`() {
+		TestUtil.assertTokenType("copied", WordAtom.COPIED)
+	}
+
+	@Test
 	fun `detects converting modifier tokens`() {
 		TestUtil.assertTokenType("converting", WordAtom.CONVERTING)
 	}

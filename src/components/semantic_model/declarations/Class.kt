@@ -10,8 +10,9 @@ import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?,
-			superType: Type?, members: List<SemanticModel>, val isAbstract: Boolean, isBound: Boolean, val isNative: Boolean,
-			val isMutable: Boolean): TypeDeclaration(source, name, scope, explicitParentType, superType, members, isBound) {
+			superType: Type?, members: List<SemanticModel>, val isAbstract: Boolean, isBound: Boolean, val isCopied: Boolean,
+			val isNative: Boolean, val isMutable: Boolean):
+	TypeDeclaration(source, name, scope, explicitParentType, superType, members, isBound) {
 
 	init {
 		scope.typeDeclaration = this

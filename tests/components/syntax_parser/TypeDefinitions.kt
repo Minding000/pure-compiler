@@ -181,6 +181,18 @@ internal class TypeDefinitions {
 	}
 
 	@Test
+	fun `parses copied modifiers`() {
+		val sourceCode = "copied Distance class"
+		val expected =
+			"""
+				ModifierSection [ ModifierList { Modifier { copied } } ] {
+					TypeDefinition [ Identifier { Distance } class ]
+				}
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
+
+	@Test
 	fun `parses converting modifiers`() {
 		val sourceCode = """
 			Submarine class {

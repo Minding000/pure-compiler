@@ -118,6 +118,7 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 	MODIFIER(
 		WordAtom.ABSTRACT,
 		WordAtom.BOUND,
+		WordAtom.COPIED,
 		WordAtom.CONVERTING,
 		WordAtom.NATIVE,
 		WordAtom.OVERRIDING,

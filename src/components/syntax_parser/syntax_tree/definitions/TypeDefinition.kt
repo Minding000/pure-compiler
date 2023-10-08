@@ -31,7 +31,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 	override var parent: ModifierSection? = null
 
 	companion object {
-		val ALLOWED_CLASS_MODIFIERS = listOf(WordAtom.ABSTRACT, WordAtom.BOUND, WordAtom.IMMUTABLE, WordAtom.NATIVE)
+		val ALLOWED_CLASS_MODIFIERS = listOf(WordAtom.ABSTRACT, WordAtom.BOUND, WordAtom.COPIED, WordAtom.IMMUTABLE, WordAtom.NATIVE)
 		val ALLOWED_OBJECT_MODIFIERS = listOf(WordAtom.BOUND, WordAtom.NATIVE, WordAtom.IMMUTABLE)
 		val ALLOWED_ENUM_MODIFIERS = listOf(WordAtom.BOUND)
 	}
@@ -58,10 +58,12 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		val typeDefinition = when(definitionType) {
 			WordAtom.CLASS -> {
 				val isAbstract = parent?.containsModifier(WordAtom.ABSTRACT) ?: false
+				val isCopied = parent?.containsModifier(WordAtom.COPIED) ?: false
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 				val isMutable = !(parent?.containsModifier(WordAtom.IMMUTABLE) ?: false)
 				parent?.validate(ALLOWED_CLASS_MODIFIERS)
-				Class(this, name, typeScope, explicitParentType, superType, members, isAbstract, isBound, isNative, isMutable)
+				Class(this, name, typeScope, explicitParentType, superType, members, isAbstract, isBound, isCopied, isNative,
+					isMutable)
 			}
 			WordAtom.OBJECT -> {
 				val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
