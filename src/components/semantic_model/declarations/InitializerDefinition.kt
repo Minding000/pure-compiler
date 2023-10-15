@@ -14,6 +14,7 @@ import components.semantic_model.types.Type
 import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
+import logger.issues.declaration.ExtraneousBody
 import logger.issues.declaration.InvalidVariadicParameterPosition
 import logger.issues.declaration.MultipleVariadicParameters
 import logger.issues.initialization.UninitializedProperties
@@ -202,6 +203,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		validateConvertingKeyword()
 		validateOverridingKeyword()
 		validateVariadicParameter()
+		validateBodyPresent()
 	}
 
 	private fun validateConvertingKeyword() {
@@ -240,6 +242,13 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 				else
 					context.addIssue(MultipleVariadicParameters(source))
 			}
+		}
+	}
+
+	private fun validateBodyPresent() {
+		if(isAbstract || isNative) {
+			if(body != null)
+				context.addIssue(ExtraneousBody(source, isAbstract, "initializer", toString()))
 		}
 	}
 

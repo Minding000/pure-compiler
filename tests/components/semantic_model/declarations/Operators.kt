@@ -1,10 +1,7 @@
 package components.semantic_model.declarations
 
 import logger.Severity
-import logger.issues.declaration.AbstractMemberInNonAbstractTypeDefinition
-import logger.issues.declaration.MissingImplementations
-import logger.issues.declaration.Redeclaration
-import logger.issues.declaration.VariadicParameterInOperator
+import logger.issues.declaration.*
 import logger.issues.modifiers.OverriddenSuperMissing
 import logger.issues.modifiers.OverridingFunctionReturnTypeNotAssignable
 import org.junit.jupiter.api.Test
@@ -43,6 +40,79 @@ internal class Operators {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<Redeclaration>(
 			"Redeclaration of operator 'Human[Time]: Time', previously declared in Test.Test:5:10.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows body`() {
+		val sourceCode =
+			"""
+				Number class {
+					operator ++() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingBody>()
+	}
+
+	@Test
+	fun `detects missing body`() {
+		val sourceCode =
+			"""
+				Number class {
+					operator ++()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<MissingBody>("Operator 'Number++' is missing a body.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows missing body on abstract operator`() {
+		val sourceCode =
+			"""
+				abstract Number class {
+					abstract operator ++()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ExtraneousBody>()
+	}
+
+	@Test
+	fun `detects body on abstract operator`() {
+		val sourceCode =
+			"""
+				abstract Number class {
+					abstract operator ++() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<ExtraneousBody>("Abstract operator 'Number++' defines a body.",
+			Severity.ERROR)
+	}
+
+	@Test
+	fun `allows missing body on native operator`() {
+		val sourceCode =
+			"""
+				Number class {
+					native operator ++()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ExtraneousBody>()
+	}
+
+	@Test
+	fun `detects body on native operator`() {
+		val sourceCode =
+			"""
+				Number class {
+					native operator ++() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<ExtraneousBody>("Native operator 'Number++' defines a body.", Severity.ERROR)
 	}
 
 	@Test

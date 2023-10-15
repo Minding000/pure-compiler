@@ -45,6 +45,79 @@ internal class Functions {
 	}
 
 	@Test
+	fun `allows body`() {
+		val sourceCode =
+			"""
+				Number class {
+					to increment() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingBody>()
+	}
+
+	@Test
+	fun `detects missing body`() {
+		val sourceCode =
+			"""
+				Number class {
+					to increment()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<MissingBody>("Function 'Number.increment()' is missing a body.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows missing body on abstract function`() {
+		val sourceCode =
+			"""
+				abstract Number class {
+					abstract to increment()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ExtraneousBody>()
+	}
+
+	@Test
+	fun `detects body on abstract function`() {
+		val sourceCode =
+			"""
+				abstract Number class {
+					abstract to increment() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<ExtraneousBody>("Abstract function 'Number.increment()' defines a body.",
+			Severity.ERROR)
+	}
+
+	@Test
+	fun `allows missing body on native function`() {
+		val sourceCode =
+			"""
+				Number class {
+					native to increment()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ExtraneousBody>()
+	}
+
+	@Test
+	fun `detects body on native function`() {
+		val sourceCode =
+			"""
+				Number class {
+					native to increment() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<ExtraneousBody>("Native function 'Number.increment()' defines a body.", Severity.ERROR)
+	}
+
+	@Test
 	fun `allows abstract classes to contain abstract functions`() {
 		val sourceCode =
 			"""

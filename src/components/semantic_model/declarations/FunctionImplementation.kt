@@ -14,7 +14,9 @@ import components.semantic_model.values.Operator
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.constant_conditions.FunctionCompletesDespiteNever
 import logger.issues.constant_conditions.FunctionCompletesWithoutReturning
+import logger.issues.declaration.ExtraneousBody
 import logger.issues.declaration.InvalidVariadicParameterPosition
+import logger.issues.declaration.MissingBody
 import logger.issues.declaration.MultipleVariadicParameters
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
@@ -82,6 +84,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		validateOverridingKeyword()
 		validateParameters()
 		validateReturnType()
+		validateBodyPresent()
 	}
 
 	private fun validateOverridingKeyword() {
@@ -143,6 +146,16 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		} else {
 			if(someBlocksCompleteWithoutReturning)
 				context.addIssue(FunctionCompletesWithoutReturning(source, parentFunction.memberType))
+		}
+	}
+
+	private fun validateBodyPresent() {
+		if(isAbstract || isNative) {
+			if(body != null)
+				context.addIssue(ExtraneousBody(source, isAbstract, parentFunction.memberType, toString()))
+		} else {
+			if(body == null)
+				context.addIssue(MissingBody(source, parentFunction.memberType, toString()))
 		}
 	}
 

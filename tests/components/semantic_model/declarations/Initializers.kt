@@ -88,6 +88,79 @@ internal class Initializers {
 	}
 
 	@Test
+	fun `allows body`() {
+		val sourceCode =
+			"""
+				Number class {
+					init() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingBody>()
+	}
+
+	@Test
+	fun `allows missing body`() {
+		val sourceCode =
+			"""
+				Number class {
+					init()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingBody>()
+	}
+
+	@Test
+	fun `allows missing body on abstract operator`() {
+		val sourceCode =
+			"""
+				abstract Number class {
+					abstract init()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ExtraneousBody>()
+	}
+
+	@Test
+	fun `detects body on abstract operator`() {
+		val sourceCode =
+			"""
+				abstract Number class {
+					abstract init() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<ExtraneousBody>("Abstract initializer 'Number()' defines a body.",
+			Severity.ERROR)
+	}
+
+	@Test
+	fun `allows missing body on native initializer`() {
+		val sourceCode =
+			"""
+				Number class {
+					native init()
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ExtraneousBody>()
+	}
+
+	@Test
+	fun `detects body on native initializer`() {
+		val sourceCode =
+			"""
+				Number class {
+					native init() {}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<ExtraneousBody>("Native initializer 'Number()' defines a body.", Severity.ERROR)
+	}
+
+	@Test
 	fun `creates default initializer if no initializer is defined`() {
 		val sourceCode =
 			"""
