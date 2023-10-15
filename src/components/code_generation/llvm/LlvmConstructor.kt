@@ -130,6 +130,14 @@ class LlvmConstructor(name: String) {
 		LLVMPositionBuilderAtEnd(builder, block)
 	}
 
+	fun selectStart(block: LlvmBlock) {
+		val firstInstruction = LLVMGetFirstInstruction(block)
+		if(firstInstruction == null)
+			select(block)
+		else
+			LLVMPositionBuilder(builder, block, firstInstruction)
+	}
+
 	fun addBlockToFunction(function: LlvmValue, block: LlvmBlock) {
 		LLVMAppendExistingBasicBlock(function, block)
 	}
@@ -172,6 +180,22 @@ class LlvmConstructor(name: String) {
 		if(type == null)
 			throw CompilerError("Missing type in stack allocation '$name'.")
 		return LLVMBuildAlloca(builder, type, name)
+	}
+
+	/**
+	 * Places stack allocation in the entry block, so it can be optimized by 'mem2reg' pass.
+	 * see: https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl07.html
+	 */
+	fun buildStackAllocationInEntryBlock(type: LlvmType?, name: String): LlvmValue {
+		if(type == null)
+			throw CompilerError("Missing type in entry point stack allocation '$name'.")
+		val currentBlock = getCurrentBlock()
+		val function = getParentFunction(currentBlock)
+		val entryBlock = getEntryBlock(function)
+		selectStart(entryBlock)
+		val location = LLVMBuildAlloca(builder, type, name)
+		select(currentBlock)
+		return location
 	}
 
 	fun buildStackArrayAllocation(type: LlvmType, size: LlvmValue, name: String): LlvmValue {
