@@ -20,6 +20,7 @@ enum class SpecialType(val className: String, val pathParts: List<String> = list
 	VALUE_ITERATOR("ValueIterator", listOf("Pure", "lang", "collections", "iterators", "ValueIterator")),
 	NEVER("Never"),
 	NOTHING("Nothing"),
+	IDENTIFIABLE("Identifiable"),
 	ANY("Any");
 	var fileScope: FileScope? = null
 

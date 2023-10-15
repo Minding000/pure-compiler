@@ -295,7 +295,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 
 	private fun callTrivialSuperInitializers(constructor: LlvmConstructor, thisValue: LlvmValue) {
 		for(superType in parentTypeDeclaration.getDirectSuperTypes()) {
-			if(SpecialType.ANY.matches(superType))
+			if(SpecialType.IDENTIFIABLE.matches(superType) || SpecialType.ANY.matches(superType))
 				continue
 			val superTypeDeclaration = superType.getTypeDeclaration()
 			val trivialInitializer = (superTypeDeclaration?.staticValueDeclaration?.type as? StaticType)?.getInitializer()?.initializer

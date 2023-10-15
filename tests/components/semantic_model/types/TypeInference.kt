@@ -234,7 +234,7 @@ internal class TypeInference {
 				}
 				val receipts = <Receipt>List()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val initializerResult = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "List" }?.type as? ObjectType
 		assertNotNull(initializerResult)
@@ -290,7 +290,7 @@ internal class TypeInference {
 				}
 				val letterBox = Box(Letter())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "Letter" }?.type
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->

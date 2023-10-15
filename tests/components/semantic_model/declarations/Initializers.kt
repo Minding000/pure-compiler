@@ -198,7 +198,7 @@ internal class Initializers {
 	}
 
 	@Test
-	fun `allows abstract classes to override abstract initializers`() {
+	fun `allows classes to override abstract initializers`() {
 		val sourceCode =
 			"""
 				Int class
@@ -208,6 +208,27 @@ internal class Initializers {
 				Tree class: Plant {
 					overriding init(size: Int)
 				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `allows classes to not override abstract initializers overridden by a super type`() {
+		val sourceCode =
+			"""
+				Float class
+				abstract WaterConsumer class {
+					abstract init(waterLevel: Float)
+				}
+				abstract TallWaterConsumer class: WaterConsumer
+				abstract Plant class {
+					abstract init(waterLevel: Float)
+				}
+				Tree class: Plant {
+					overriding init(waterLevel: Float)
+				}
+				TallTree class: Tree & TallWaterConsumer
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<MissingImplementations>()

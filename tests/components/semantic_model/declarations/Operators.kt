@@ -101,7 +101,7 @@ internal class Operators {
 	}
 
 	@Test
-	fun `allows abstract classes to override abstract operators`() {
+	fun `allows classes to override abstract operators`() {
 		val sourceCode =
 			"""
 				Int class
@@ -111,6 +111,26 @@ internal class Operators {
 				VoidIntList class: IntList {
 					overriding operator[index: Int]: Int
 				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `allows classes to not override abstract operators overridden by a super type`() {
+		val sourceCode =
+			"""
+				abstract WaterConsumer class {
+					abstract operator ++()
+				}
+				abstract TallWaterConsumer class: WaterConsumer
+				abstract Plant class {
+					abstract operator ++()
+				}
+				Tree class: Plant {
+					overriding operator ++()
+				}
+				TallTree class: Tree & TallWaterConsumer
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<MissingImplementations>()

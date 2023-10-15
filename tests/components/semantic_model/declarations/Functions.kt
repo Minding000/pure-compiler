@@ -96,7 +96,7 @@ internal class Functions {
 	}
 
 	@Test
-	fun `allows abstract classes to override abstract functions`() {
+	fun `allows classes to override abstract functions`() {
 		val sourceCode =
 			"""
 				abstract Plant class {
@@ -111,7 +111,27 @@ internal class Functions {
 	}
 
 	@Test
-	fun `allows abstract classes to override abstract functions of generic super type`() {
+	fun `allows classes to not override abstract functions overridden by a super type`() {
+		val sourceCode =
+			"""
+				abstract WaterConsumer class {
+					abstract to water()
+				}
+				abstract TallWaterConsumer class: WaterConsumer
+				abstract Plant class {
+					abstract to water()
+				}
+				Tree class: Plant {
+					overriding to water()
+				}
+				TallTree class: Tree & TallWaterConsumer
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `allows classes to override abstract functions of generic super type`() {
 		val sourceCode =
 			"""
 				Int class

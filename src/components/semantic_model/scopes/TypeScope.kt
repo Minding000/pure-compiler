@@ -135,10 +135,20 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 		return Pair(interfaceMember, interfaceMember.getLinkedType())
 	}
 
+	fun getDirectValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+		val interfaceMember = interfaceMembers[name] ?: return superScope?.getValueDeclaration(name) ?: Pair(null, null)
+		return Pair(interfaceMember, interfaceMember.getLinkedType())
+	}
+
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {
 		return typeDeclarations[name]
 			?: superScope?.getTypeDeclaration(name)
 			?: enclosingScope.getTypeDeclaration(name)
+	}
+
+	fun getDirectTypeDeclaration(name: String): TypeDeclaration? {
+		return typeDeclarations[name]
+			?: superScope?.getTypeDeclaration(name)
 	}
 
 	override fun getSurroundingTypeDeclaration(): TypeDeclaration {

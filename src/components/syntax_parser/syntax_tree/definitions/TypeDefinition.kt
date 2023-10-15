@@ -48,9 +48,19 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		val name = identifier.getValue()
 		val definitionType = type.type
 		val typeScope = TypeScope(scope)
-		var superType = superType?.toSemanticModel(typeScope)
-		if(!(definitionType == WordAtom.CLASS && SpecialType.isRootType(name)))
-			superType = superType ?: LiteralType(this, typeScope, SpecialType.ANY)
+		val superType = superType?.toSemanticModel(typeScope) ?: if(definitionType == WordAtom.CLASS) {
+			if(SpecialType.isRootType(name)) {
+				null
+			} else {
+				if((parent?.containsModifier(WordAtom.ABSTRACT) == true) || (parent?.containsModifier(WordAtom.COPIED) == true)) {
+					LiteralType(this, typeScope, SpecialType.ANY)
+				} else {
+					LiteralType(this, typeScope, SpecialType.IDENTIFIABLE)
+				}
+			}
+		} else {
+			LiteralType(this, typeScope, SpecialType.IDENTIFIABLE)
+		}
 		typeScope.superScope = superType?.interfaceScope
 		val explicitParentType = explicitParentType?.toSemanticModel(scope)
 		val members = getSemanticMemberModels(typeScope, definitionType).toMutableList()

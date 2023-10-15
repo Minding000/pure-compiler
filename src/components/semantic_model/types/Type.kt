@@ -59,8 +59,10 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 
 	abstract fun isAssignableTo(unresolvedTargetType: Type): Boolean
 
-	open fun getAbstractMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> =
-		throw CompilerError(source, "Tried to get abstract member declarations of non-super type.")
+	open fun getPotentiallyUnimplementedAbstractMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> =
+		throw CompilerError(source, "Tried to get potentially unimplemented abstract member declarations of non-super type.")
+	open fun implements(abstractMember: MemberDeclaration, typeSubstitutions: Map<TypeDeclaration, Type>): Boolean =
+		throw CompilerError(source, "Tried to check whether a non-super type implements an abstract member.")
 	open fun getPropertiesToBeInitialized(): List<PropertyDeclaration> =
 		throw CompilerError(source, "Tried to get properties to be initialized of non-super type.")
 

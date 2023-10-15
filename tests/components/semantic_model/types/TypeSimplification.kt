@@ -20,7 +20,7 @@ internal class TypeSimplification {
 				}
 				Randomizer.chooseRandomElementOf(Cat(), Human())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
 		assertEquals("Cat | Human", functionCall?.type.toString())
 	}
@@ -35,7 +35,7 @@ internal class TypeSimplification {
 				}
 				Randomizer.chooseRandomElementOf(Cat(), Cat())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val valueDeclaration = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
 		assertEquals("Cat", valueDeclaration?.type.toString())
 	}
@@ -51,7 +51,7 @@ internal class TypeSimplification {
 				}
 				Randomizer.chooseRandomElementOf(Animal(), Cat())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val valueDeclaration = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
 		assertEquals("Animal", valueDeclaration?.type.toString())
 	}
@@ -67,7 +67,7 @@ internal class TypeSimplification {
 				}
 				Randomizer.chooseRandomElementOf(Cat(), null)
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val valueDeclaration = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
 		assertEquals("Cat?", valueDeclaration?.type.toString())
 	}
@@ -85,7 +85,7 @@ internal class TypeSimplification {
 				val horseOrCat: Horse | Cat = Horse()
 				Randomizer.chooseRandomElementOf(Monkey(), horseOrCat)
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val valueDeclaration = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
 		assertEquals("Cat | Horse | Monkey", valueDeclaration?.type.toString())
 	}
@@ -105,7 +105,7 @@ internal class TypeSimplification {
 				val horseOrCat: Cat | Horse = Cat()
 				Randomizer.chooseRandomElementOf(humanOrMonkey, horseOrCat)
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val valueDeclaration = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
 		assertEquals("Cat | Horse | Human | Monkey", valueDeclaration?.type.toString())
 	}
@@ -124,7 +124,7 @@ internal class TypeSimplification {
 				val bob: Human & Patient = Bob
 				Randomizer.chooseRandomElementOf(bob, Horse())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val valueDeclaration = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
 		assertEquals("Horse | (Human & Patient)", valueDeclaration?.type.toString())
 	}
@@ -146,7 +146,7 @@ internal class TypeSimplification {
 				}
 				Randomizer.chooseRandomElementOf(bob, ferdinant)
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val valueDeclaration = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
 		assertEquals("(Human | Horse) & Patient", valueDeclaration?.type.toString())
 	}

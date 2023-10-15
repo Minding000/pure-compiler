@@ -4,9 +4,8 @@ import components.semantic_model.declarations.MemberDeclaration
 import components.semantic_model.declarations.TypeDeclaration
 import logger.Issue
 import logger.Severity
-import java.util.*
 
-class MissingImplementations(val typeDeclaration: TypeDeclaration, val missingOverrides: Map<TypeDeclaration, LinkedList<MemberDeclaration>>):
+class MissingImplementations(val typeDeclaration: TypeDeclaration, val missingOverrides: Map<TypeDeclaration, List<MemberDeclaration>>):
 	Issue(Severity.ERROR, typeDeclaration.source) {
 	override val text: String
 		get() {

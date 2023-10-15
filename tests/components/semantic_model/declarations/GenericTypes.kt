@@ -104,7 +104,7 @@ internal class GenericTypes {
 					to getFirstElement(): Element
 				}
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val variableValueType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "firstElement" }?.type
 		assertEquals("Int", variableValueType.toString())
 	}

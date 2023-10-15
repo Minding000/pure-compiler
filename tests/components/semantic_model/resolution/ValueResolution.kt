@@ -3,6 +3,7 @@ package components.semantic_model.resolution
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.Parameter
 import components.semantic_model.declarations.PropertyDeclaration
+import components.semantic_model.values.ValueDeclaration
 import components.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
@@ -16,6 +17,7 @@ import util.TestUtil
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 internal class ValueResolution {
 
@@ -280,5 +282,27 @@ internal class ValueResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<NotCallable>("'Bird.age' is not callable.", Severity.ERROR)
+	}
+
+	@Test
+	fun `doesn't resolve values enclosed by enclosing type of super type`() {
+		val sourceCode =
+			"""
+				Int class
+				Editor class {
+					val id: Int
+					Input class
+				}
+				AccessibleInput class: Editor.Input {
+					var value = id
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "value" }
+		assertNotNull(declaration)
+		val value = declaration.value
+		assertNotNull(value)
+		assertIs<VariableValue>(value)
+		assertNull(value.declaration)
 	}
 }

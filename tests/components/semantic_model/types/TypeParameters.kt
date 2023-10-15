@@ -50,7 +50,7 @@ internal class TypeParameters {
 			val softDrink = SoftDrink()
 			softDrinkSupply.store(softDrink)
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val baseTypeVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "softDrink" }
 		val specificType = lintResult.find<VariableValue> { variableValue ->
 			variableValue.name == "softDrinkSupply" }?.type
@@ -106,7 +106,7 @@ internal class TypeParameters {
 			val softDrinkSupply = <SoftDrink producing>StorageRoom()
 			val softDrink: SoftDrink = softDrinkSupply.get()
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val baseType = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "softDrink" }?.type
 		val specificType = lintResult.find<VariableValue> { variableValue ->

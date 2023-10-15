@@ -65,8 +65,12 @@ class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types:
 		return types.any { type -> type.isAssignableTo(targetType) }
 	}
 
-	override fun getAbstractMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> {
-		return types.flatMap { type -> type.getAbstractMemberDeclarations() }
+	override fun getPotentiallyUnimplementedAbstractMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> {
+		return types.flatMap { type -> type.getPotentiallyUnimplementedAbstractMemberDeclarations() }
+	}
+
+	override fun implements(abstractMember: MemberDeclaration, typeSubstitutions: Map<TypeDeclaration, Type>): Boolean {
+		return types.any { type -> type.implements(abstractMember, typeSubstitutions) }
 	}
 
 	override fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {

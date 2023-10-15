@@ -98,7 +98,7 @@ internal class InitializerResolution {
 				}
 				val numbers = <Int>List(Int())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		lintResult.assertIssueDetected<SignatureAmbiguity>("""
 			Call to initializer '<Int>List(Int)' is ambiguous. Matching signatures:
 			 - '<Element>List(Int)' declared at Test.Test:5:1

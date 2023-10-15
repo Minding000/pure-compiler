@@ -162,7 +162,7 @@ internal class FunctionResolution {
 				val numbers = <Int>List()
 				numbers.exists(Int())
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		lintResult.assertIssueDetected<SignatureAmbiguity>("""
 			Call to function '<Int>List.exists(Int)' is ambiguous. Matching signatures:
 			 - '(Int) =>|' declared at Test.Test:5:4

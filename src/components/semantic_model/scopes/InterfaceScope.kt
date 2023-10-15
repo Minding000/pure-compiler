@@ -22,7 +22,6 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 		return null
 	}
 
-	fun getAbstractMemberDeclarations() = type.getAbstractMemberDeclarations()
 	fun getPropertiesToBeInitialized() = type.getPropertiesToBeInitialized()
 
 	fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {

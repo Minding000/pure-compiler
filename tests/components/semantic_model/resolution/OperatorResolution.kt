@@ -331,7 +331,7 @@ internal class OperatorResolution {
 				val numbers = <Int>List()
 				numbers[Int()]
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		lintResult.assertIssueDetected<SignatureAmbiguity>("""
 			Call to operator '<Int>List[Int]' is ambiguous. Matching signatures:
 			 - '(Int) => Element' declared at Test.Test:6:10

@@ -23,8 +23,8 @@ import logger.issues.modifiers.NoParentToBindTo
 import java.util.*
 
 abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: String, override val scope: TypeScope,
-							   val explicitParentType: ObjectType? = null, val superType: Type? = null, val members: List<SemanticModel> = emptyList(),
-							   val isBound: Boolean = false): SemanticModel(source, scope) {
+							   val explicitParentType: ObjectType? = null, val superType: Type? = null,
+							   val members: List<SemanticModel> = emptyList(), val isBound: Boolean = false): SemanticModel(source, scope) {
 	open val isDefinition = true
 	override var parent: SemanticModel?
 		get() = super.parent
@@ -123,27 +123,36 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 
 	private fun ensureAbstractSuperMembersImplemented() {
 		val missingOverrides = LinkedHashMap<TypeDeclaration, LinkedList<MemberDeclaration>>()
-		val abstractSuperMembers = superType?.getAbstractMemberDeclarations() ?: return
-		for((abstractSuperMember, typeSubstitutions) in abstractSuperMembers) {
-			if(scope.memberDeclarations.any { memberDeclaration ->
-				return@any if(memberDeclaration is PropertyDeclaration && abstractSuperMember is PropertyDeclaration)
-					memberDeclaration.name == abstractSuperMember.name
-				else if(memberDeclaration is FunctionImplementation && abstractSuperMember is FunctionImplementation)
-					memberDeclaration.signature.fulfillsInheritanceRequirementsOf(
-						abstractSuperMember.signature.withTypeSubstitutions(typeSubstitutions))
-				else if(memberDeclaration is InitializerDefinition && abstractSuperMember is InitializerDefinition)
-					memberDeclaration.fulfillsInheritanceRequirementsOf(abstractSuperMember, typeSubstitutions)
-				else false
-			})
-				continue
-			val parentDefinition = abstractSuperMember.parentTypeDeclaration
-				?: throw CompilerError(abstractSuperMember.source, "Member is missing parent definition.")
+		for((unimplementedMember) in getUnimplementedAbstractSuperMemberDeclarations()) {
+			val parentDefinition = unimplementedMember.parentTypeDeclaration
+				?: throw CompilerError(unimplementedMember.source, "Member is missing parent definition.")
 			val missingOverridesFromType = missingOverrides.getOrPut(parentDefinition) { LinkedList() }
-			missingOverridesFromType.add(abstractSuperMember)
+			missingOverridesFromType.add(unimplementedMember)
 		}
 		if(missingOverrides.isEmpty())
 			return
 		context.addIssue(MissingImplementations(this, missingOverrides))
+	}
+
+	fun getUnimplementedAbstractSuperMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> {
+		val abstractSuperMembers = superType?.getPotentiallyUnimplementedAbstractMemberDeclarations() ?: return emptyList()
+		return abstractSuperMembers.filter { (abstractSuperMember, typeSubstitutions) ->
+			!implements(abstractSuperMember, typeSubstitutions) }
+	}
+
+	fun implements(abstractMember: MemberDeclaration, typeSubstitutions: Map<TypeDeclaration, Type>): Boolean {
+		return scope.memberDeclarations.any { memberDeclaration ->
+			if(memberDeclaration == abstractMember)
+				return false
+			return@any if(memberDeclaration is PropertyDeclaration && abstractMember is PropertyDeclaration)
+				memberDeclaration.name == abstractMember.name
+			else if(memberDeclaration is FunctionImplementation && abstractMember is FunctionImplementation)
+				memberDeclaration.signature.fulfillsInheritanceRequirementsOf(
+					abstractMember.signature.withTypeSubstitutions(typeSubstitutions))
+			else if(memberDeclaration is InitializerDefinition && abstractMember is InitializerDefinition)
+				memberDeclaration.fulfillsInheritanceRequirementsOf(abstractMember, typeSubstitutions)
+			else false
+		} || superType?.implements(abstractMember, typeSubstitutions) ?: false
 	}
 
 	private fun addDefaultInitializer() {
@@ -190,7 +199,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		return scope.getGenericTypeDeclarations().map { genericTypeDeclaration -> ObjectType(genericTypeDeclaration) }
 	}
 
-	fun acceptsSubstituteType(substituteType: Type): Boolean {
+	fun acceptsSubstituteType(substituteType: Type): Boolean { //TODO fix: it's not clear that Identifiable inherits from Any when running without STD lib
 		if(superType == null)
 			return false
 		if(SpecialType.ANY.matches(superType))

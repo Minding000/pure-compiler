@@ -10,7 +10,6 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.declaration.TypeParameterCountMismatch
 import logger.issues.declaration.TypeParameterNotAssignable
 import logger.issues.resolution.NotFound
-import java.util.*
 
 open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enclosingType: ObjectType?, val typeParameters: List<Type>,
 					  val name: String, typeDeclaration: TypeDeclaration? = null): Type(source, scope) {
@@ -73,11 +72,11 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 	}
 
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {
-		return getTypeDeclaration()?.scope?.getTypeDeclaration(name)
+		return getTypeDeclaration()?.scope?.getDirectTypeDeclaration(name)
 	}
 
 	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
-		val (valueDeclaration, type) = getTypeDeclaration()?.scope?.getValueDeclaration(name) ?: return Pair(null, null)
+		val (valueDeclaration, type) = getTypeDeclaration()?.scope?.getDirectValueDeclaration(name) ?: return Pair(null, null)
 		val typeSubstitutions = getTypeSubstitutions()
 		return Pair(valueDeclaration, type?.withTypeSubstitutions(typeSubstitutions))
 	}
@@ -175,16 +174,18 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 		return typeDeclaration?.getLinkedSuperType()?.isAssignableTo(targetType) ?: false
 	}
 
-	override fun getAbstractMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> {
+	override fun getPotentiallyUnimplementedAbstractMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> {
 		val typeDeclaration = getTypeDeclaration() ?: return emptyList()
-		val abstractMemberDeclarations = LinkedList<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>>()
-		val superScope = typeDeclaration.scope.superScope
-		if(superScope != null)
-			abstractMemberDeclarations.addAll(superScope.getAbstractMemberDeclarations())
+		val abstractMemberDeclarations = typeDeclaration.getUnimplementedAbstractSuperMemberDeclarations().toMutableList()
 		val typeSubstitutions = getTypeSubstitutions()
 		abstractMemberDeclarations.addAll(typeDeclaration.scope.getAbstractMemberDeclarations().map { abstractMemberDeclaration ->
 			Pair(abstractMemberDeclaration, typeSubstitutions) })
 		return abstractMemberDeclarations
+	}
+
+	override fun implements(abstractMember: MemberDeclaration, typeSubstitutions: Map<TypeDeclaration, Type>): Boolean {
+		val typeDeclaration = getTypeDeclaration() ?: return false
+		return typeDeclaration.implements(abstractMember, typeSubstitutions)
 	}
 
 	override fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {

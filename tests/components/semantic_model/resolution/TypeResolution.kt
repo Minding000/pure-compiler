@@ -9,7 +9,9 @@ import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 internal class TypeResolution {
 
@@ -86,7 +88,28 @@ internal class TypeResolution {
 	}
 
 	@Test
-	fun `resolves types enclosing in generic types`() {
+	fun `doesn't resolve types enclosed by enclosing type of super type`() {
+		val sourceCode =
+			"""
+				Editor class {
+					Text class
+					Input class
+				}
+				AccessibleInput class: Editor.Input {
+					var value: Text
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "value" }
+		assertNotNull(declaration)
+		val type = declaration.type
+		assertNotNull(type)
+		assertIs<ObjectType>(type)
+		assertNull(type.getTypeDeclaration())
+	}
+
+	@Test
+	fun `resolves types enclosed in generic types`() {
 		val sourceCode =
 			"""
 				List class {
@@ -128,7 +151,7 @@ internal class TypeResolution {
 				val list = <Country>List()
 				list.add(Germany)
             """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		val memberAccess = lintResult.find<MemberAccess> { memberAccess -> memberAccess.member.toString() == "add" }
 		assertEquals("(Country) =>|", memberAccess?.type.toString())
 	}

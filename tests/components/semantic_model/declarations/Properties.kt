@@ -197,7 +197,7 @@ internal class Properties {
 	}
 
 	@Test
-	fun `allows abstract classes to override abstract properties`() {
+	fun `allows classes to override abstract properties`() {
 		val sourceCode =
 			"""
 				Int class
@@ -207,6 +207,27 @@ internal class Properties {
 				VoidIntList class: IntList {
 					overriding val size: Int
 				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingImplementations>()
+	}
+
+	@Test
+	fun `allows classes to not override abstract properties overridden by a super type`() {
+		val sourceCode =
+			"""
+				Float class
+				abstract WaterConsumer class {
+					abstract var waterLevel: Float
+				}
+				abstract TallWaterConsumer class: WaterConsumer
+				abstract Plant class {
+					abstract var waterLevel: Float
+				}
+				Tree class: Plant {
+					overriding var waterLevel: Float
+				}
+				TallTree class: Tree & TallWaterConsumer
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<MissingImplementations>()
