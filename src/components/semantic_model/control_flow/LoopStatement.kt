@@ -142,7 +142,10 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			// See: https://discourse.llvm.org/t/va-arg-on-windows-64/40780
 			val elementMemory = constructor.getCurrentVariadicElement(elementList, constructor.i64Type, "_overGeneratorElementMemory")
 			val elementType = pluralType.baseType.getLlvmType(constructor)
-			val element = constructor.changeTypeAllowingDataLoss(elementMemory, elementType, "_overGeneratorElement")
+			val element = if(elementType == constructor.pointerType)
+				constructor.buildCastFromIntegerToPointer(elementMemory, "_overGeneratorElement")
+			else
+				constructor.changeTypeAllowingDataLoss(elementMemory, elementType, "_overGeneratorElement")
 			constructor.buildStore(element, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)

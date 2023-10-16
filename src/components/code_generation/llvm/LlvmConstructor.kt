@@ -243,6 +243,8 @@ class LlvmConstructor(name: String) {
 		return LLVMBuildTruncOrBitCast(builder, value, newType, name)
 	}
 
+	fun buildCastFromIntegerToPointer(value: LlvmValue, name: String): LlvmValue = LLVMBuildIntToPtr(builder, value, pointerType, name)
+
 	fun buildCastFromBooleanToByte(boolean: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, boolean, byteType, name)
 	fun buildCastFromIntegerToByte(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, byteType, name)
 
