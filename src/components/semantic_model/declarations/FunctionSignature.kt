@@ -89,6 +89,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 			returnType.withTypeSubstitutions(typeSubstitutions), associatedImplementation)
 		specificSignature.original = this
 		specificSignature.superFunctionSignature = superFunctionSignature
+		specificSignature.parentDefinition = parentDefinition
 		return specificSignature
 	}
 

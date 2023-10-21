@@ -279,6 +279,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	private fun getFunctions(): Map<String, LlvmMemberFunction> {
 		val functions = HashMap<String, LlvmMemberFunction>()
 		for(member in scope.memberDeclarations) {
+//			if(member.isAbstract)
+//				continue
 			if(member is FunctionImplementation) {
 				functions[member.memberIdentifier] = LlvmMemberFunction(member.memberIdentifier, member.llvmValue)
 			} else if(member is ComputedPropertyDeclaration) {
@@ -317,17 +319,17 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 
 	private fun addNativeProperties(constructor: LlvmConstructor, llvmProperties: LinkedList<LlvmType?>) {
 		if(SpecialType.ARRAY.matches(this)) {
-			llvmProperties.add(constructor.pointerType)
 			context.arrayValueIndex = llvmProperties.size
+			llvmProperties.add(constructor.pointerType)
 		} else if(SpecialType.BYTE.matches(this)) {
-			llvmProperties.add(constructor.byteType)
 			context.byteValueIndex = llvmProperties.size
+			llvmProperties.add(constructor.byteType)
 		} else if(SpecialType.INTEGER.matches(this)) {
-			llvmProperties.add(constructor.i32Type)
 			context.integerValueIndex = llvmProperties.size
+			llvmProperties.add(constructor.i32Type)
 		} else if(SpecialType.FLOAT.matches(this)) {
-			llvmProperties.add(constructor.floatType)
 			context.floatValueIndex = llvmProperties.size
+			llvmProperties.add(constructor.floatType)
 		}
 	}
 

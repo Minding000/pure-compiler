@@ -91,7 +91,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		parameters.add(exceptionAddressLocation)
 		parameters.add(targetValue)
 		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
-			signature.toString(false, kind))
+			signature.original.toString(false, kind))
 		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_unaryOperatorResult")
 		//TODO if exception exists
 		// check for optional try (normal and force try have no effect)

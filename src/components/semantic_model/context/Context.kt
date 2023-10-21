@@ -31,6 +31,8 @@ class Context {
 	lateinit var llvmPrintFunction: LlvmValue
 	lateinit var llvmFlushFunctionType: LlvmType
 	lateinit var llvmFlushFunction: LlvmValue
+	lateinit var llvmSleepFunctionType: LlvmType
+	lateinit var llvmSleepFunction: LlvmValue
 	lateinit var llvmExitFunctionType: LlvmType
 	lateinit var llvmExitFunction: LlvmValue
 	lateinit var variadicParameterListStruct: LlvmType
@@ -42,6 +44,7 @@ class Context {
 	lateinit var llvmVariableParameterIterationEndFunction: LlvmValue
 	lateinit var closureStruct: LlvmType
 	var arrayTypeDeclaration: TypeDeclaration? = null
+	var integerTypeDeclaration: TypeDeclaration? = null
 	var arrayValueIndex by Delegates.notNull<Int>()
 	var byteValueIndex by Delegates.notNull<Int>()
 	var integerValueIndex by Delegates.notNull<Int>()
@@ -79,9 +82,9 @@ class Context {
 			surroundingLoop.mutatedVariables.add(declaration)
 	}
 
-	fun resolveMember(constructor: LlvmConstructor, targetType: LlvmType?, targetLocation: LlvmValue, memberIdentifier: String,
+	fun resolveMember(constructor: LlvmConstructor, targetStructType: LlvmType?, targetLocation: LlvmValue, memberIdentifier: String,
 					  isStaticMember: Boolean = false): LlvmValue {
-		val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(targetType, targetLocation,
+		val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(targetStructType, targetLocation,
 			CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
 		val classDefinitionAddress = constructor.buildLoad(constructor.pointerType,classDefinitionAddressLocation,
 			"classDefinitionAddress")
@@ -92,9 +95,9 @@ class Context {
 		return constructor.buildGetArrayElementPointer(constructor.byteType, targetLocation, memberOffset, "memberAddress")
 	}
 
-	fun resolveFunction(constructor: LlvmConstructor, targetType: LlvmType?, targetLocation: LlvmValue,
+	fun resolveFunction(constructor: LlvmConstructor, targetStructType: LlvmType?, targetLocation: LlvmValue,
 						signatureIdentifier: String): LlvmValue {
-		val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(targetType, targetLocation,
+		val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(targetStructType, targetLocation,
 			CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
 		val classDefinitionAddress = constructor.buildLoad(constructor.pointerType, classDefinitionAddressLocation,
 			"classDefinitionAddress")
@@ -110,6 +113,7 @@ class Context {
 		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("debugFormat", "$formatString\n")
 		constructor.buildFunctionCall(llvmPrintFunctionType, llvmPrintFunction, listOf(formatStringGlobal, *values), "debugPrintCall")
 		constructor.buildFunctionCall(llvmFlushFunctionType, llvmFlushFunction, listOf(constructor.nullPointer), "debugFlushCall")
+//		constructor.buildFunctionCall(llvmSleepFunctionType, llvmSleepFunction, listOf(constructor.buildUnsignedInt32(1000)))
 	}
 
 	fun panic(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {

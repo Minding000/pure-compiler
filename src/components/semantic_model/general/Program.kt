@@ -72,6 +72,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.setTargetTriple("x86_64-pc-windows")
 		addPrintFunction(constructor)
 		addFlushFunction(constructor)
+		addSleepFunction(constructor)
 		addExitFunction(constructor)
 		addVariadicIntrinsics(constructor)
 		createClosureStruct(constructor)
@@ -85,6 +86,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		for(file in files)
 			file.define(constructor)
 		findArrayTypeDeclaration()
+		findIntegerTypeDeclaration()
 		findStringInitializer()
 		for(file in files)
 			file.compile(constructor)
@@ -100,9 +102,11 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 
 	private fun createGlobalEntrypoint(constructor: LlvmConstructor, userEntryPointObject: ValueDeclaration?,
 									   userEntryPointFunction: FunctionImplementation?): LlvmValue {
-		val entryPointType = userEntryPointFunction?.signature?.getLlvmType(constructor) ?: constructor.buildFunctionType()
+		val entryPointType = constructor.buildFunctionType(emptyList(),
+			userEntryPointFunction?.signature?.returnType?.getLlvmType(constructor) ?: constructor.voidType)
 		val globalEntryPoint = constructor.buildFunction("entrypoint", entryPointType)
 		constructor.createAndSelectBlock(globalEntryPoint, "entrypoint")
+
 		context.printDebugMessage(constructor, "Starting program...")
 		for(file in files)
 			constructor.buildFunctionCall(file.llvmInitializerType, file.llvmInitializerValue)
@@ -142,7 +146,12 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 
 	private fun addFlushFunction(constructor: LlvmConstructor) {
 		context.llvmFlushFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.i32Type)
-		context.llvmFlushFunction = constructor.buildFunction("fflush", context.llvmPrintFunctionType)
+		context.llvmFlushFunction = constructor.buildFunction("fflush", context.llvmFlushFunctionType)
+	}
+
+	private fun addSleepFunction(constructor: LlvmConstructor) {
+		context.llvmSleepFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type), constructor.voidType)
+		context.llvmSleepFunction = constructor.buildFunction("Sleep", context.llvmSleepFunctionType)
 	}
 
 	private fun addExitFunction(constructor: LlvmConstructor) {
@@ -311,6 +320,11 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	private fun findArrayTypeDeclaration() {
 		val fileScope = SpecialType.ARRAY.fileScope
 		context.arrayTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.ARRAY.className)
+	}
+
+	private fun findIntegerTypeDeclaration() {
+		val fileScope = SpecialType.INTEGER.fileScope
+		context.integerTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.INTEGER.className)
 	}
 
 	private fun findStringInitializer() {

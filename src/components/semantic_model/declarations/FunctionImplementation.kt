@@ -160,6 +160,9 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	}
 
 	override fun declare(constructor: LlvmConstructor) {
+		//TODO What about native functions?
+//		if(isAbstract)
+//			return
 		super.declare(constructor)
 		for(index in parameters.indices)
 			parameters[index].index = index + Context.VALUE_PARAMETER_OFFSET

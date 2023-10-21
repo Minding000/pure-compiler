@@ -218,7 +218,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			constructor.buildStore(currentValueValue, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)
-		val advanceFunctionAddress = context.resolveFunction(constructor, iterableType.getLlvmType(constructor),
+		val advanceFunctionAddress = context.resolveFunction(constructor, (iterableType as? ObjectType)?.getTypeDeclaration()?.llvmType,
 			generator.iterable.getLlvmValue(constructor), "advance()")
 		constructor.buildFunctionCall(iteratorAdvanceSignature?.getLlvmType(constructor), advanceFunctionAddress,
 			listOf(exceptionAddressLocation, iteratorLlvmValue))

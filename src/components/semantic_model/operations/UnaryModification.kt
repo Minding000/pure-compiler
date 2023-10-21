@@ -94,7 +94,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 		parameters.add(exceptionAddressLocation)
 		parameters.add(targetValue)
 		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
-			signature.toString(false, kind))
+			signature.original.toString(false, kind))
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
 		//TODO if exception exists
 		// check for optional try (normal and force try have no effect)

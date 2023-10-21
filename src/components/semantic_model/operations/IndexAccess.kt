@@ -95,7 +95,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 			parameters.add(sourceExpression.getLlvmValue(constructor))
 		val kind = if(sourceExpression == null) Operator.Kind.BRACKETS_GET else Operator.Kind.BRACKETS_SET
 		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
-			signature.toString(false, kind))
+			signature.original.toString(false, kind))
 		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_indexAccessResult")
 		//TODO if exception exists
 		// check for optional try (normal and force try have no effect)

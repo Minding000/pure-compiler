@@ -60,7 +60,8 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 		val stringClassDefinitionAddress = context.stringTypeDeclaration?.llvmClassDefinitionAddress
 			?: throw CompilerError(source, "Missing string type declaration.")
 		constructor.buildStore(stringClassDefinitionAddress, stringClassDefinitionPointer)
-		val parameters = listOf(newStringAddress, newByteArrayAddress)
+		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		val parameters = listOf(exceptionAddressLocation, newStringAddress, newByteArrayAddress)
 		constructor.buildFunctionCall(context.llvmStringByteArrayInitializerType, context.llvmStringByteArrayInitializer, parameters)
 		return newStringAddress
 	}

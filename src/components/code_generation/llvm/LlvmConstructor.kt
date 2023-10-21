@@ -64,6 +64,9 @@ class LlvmConstructor(name: String) {
 	fun buildInt32(value: Long): LlvmValue {
 		return LLVMConstInt(i32Type, value, Llvm.NO)
 	}
+	fun buildInt64(value: Long): LlvmValue {
+		return LLVMConstInt(i64Type, value, Llvm.NO)
+	}
 
 	fun buildFloat(value: Double): LlvmValue {
 		return LLVMConstReal(floatType, value)
@@ -219,6 +222,8 @@ class LlvmConstructor(name: String) {
 	fun buildGetPropertyPointer(structType: LlvmType?, structPointer: LlvmValue, propertyIndex: Int, name: String): LlvmValue {
 		if(structType == null)
 			throw CompilerError("Missing struct type in getelementptr '$name'.")
+		if(LLVMGetTypeKind(structType) != LLVMStructTypeKind)
+			throw CompilerError("Trying to get property of non-struct type in '$name'.")
 		return LLVMBuildStructGEP2(builder, structType, structPointer, propertyIndex, name)
 	}
 

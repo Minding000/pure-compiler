@@ -2,6 +2,7 @@ package components.semantic_model.control_flow
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
@@ -106,19 +107,16 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	}
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		val parameters = LinkedList<LlvmValue>()
 
 		//TODO reuse pointer provided by caller?
 		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
 
-		for(valueParameter in valueParameters)
-			parameters.add(valueParameter.getLlvmValue(constructor))
 		val functionSignature = targetSignature
 		val returnValue = if(functionSignature == null) {
 			val initializerDefinition = targetInitializer ?: throw CompilerError(source, "Function call is missing a target.")
-			createLlvmInitializerCall(constructor, initializerDefinition, exceptionAddressLocation, parameters)
+			createLlvmInitializerCall(constructor, initializerDefinition, exceptionAddressLocation)
 		} else {
-			createLlvmFunctionCall(constructor, functionSignature, exceptionAddressLocation, parameters)
+			createLlvmFunctionCall(constructor, functionSignature, exceptionAddressLocation)
 		}
 
 		//TODO if exception exists
@@ -129,8 +127,11 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		return returnValue
 	}
 
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, exceptionAddressLocation: LlvmValue,
-									   parameters: LinkedList<LlvmValue>): LlvmValue {
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, exceptionAddressLocation: LlvmValue): LlvmValue {
+		val parameters = LinkedList<LlvmValue>()
+		for((index, valueParameter) in valueParameters.withIndex())
+			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
+				valueParameter.type, targetSignature?.getParameterTypeAt(index)))
 		if(signature.isVariadic) {
 			val fixedParameterCount = signature.fixedParameterTypes.size
 			val variadicParameterCount = parameters.size - fixedParameterCount
@@ -161,7 +162,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				val functionName = (((function as? MemberAccess)?.member ?: function) as? VariableValue)?.name
 					?: throw CompilerError(source, "Failed to determine name of member function.")
 				context.resolveFunction(constructor, typeDefinition.llvmType, targetValue,
-					"${functionName}${signature.toString(false)}")
+					"${functionName}${signature.original.toString(false)}")
 			}
 		}
 		parameters.addFirst(exceptionAddressLocation)
@@ -170,7 +171,11 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	}
 
 	private fun createLlvmInitializerCall(constructor: LlvmConstructor, initializer: InitializerDefinition,
-										  exceptionAddressLocation: LlvmValue, parameters: LinkedList<LlvmValue>): LlvmValue {
+										  exceptionAddressLocation: LlvmValue): LlvmValue {
+		val parameters = LinkedList<LlvmValue>()
+		for((index, valueParameter) in valueParameters.withIndex())
+			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
+				valueParameter.type, targetInitializer?.getParameterTypeAt(index)))
 		if(initializer.isVariadic) {
 			val fixedParameterCount = initializer.fixedParameters.size
 			val variadicParameterCount = parameters.size - fixedParameterCount

@@ -280,7 +280,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		parameters.add(targetValue)
 		parameters.add(right.getLlvmValue(constructor))
 		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
-			signature.toString(false, kind))
+			signature.original.toString(false, kind))
 		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_binaryOperatorResult")
 		//TODO if exception exists
 		// check for optional try (normal and force try have no effect)

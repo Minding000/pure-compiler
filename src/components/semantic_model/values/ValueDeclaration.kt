@@ -90,8 +90,10 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
+		val value = value
 		if(scope is TypeScope || type is StaticType) {
-			super.compile(constructor)
+			if(value is Function)
+				value.compile(constructor)
 			return
 		}
 		if(scope is FileScope) {
@@ -99,7 +101,6 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		} else {
 			llvmLocation = constructor.buildStackAllocation(type?.getLlvmType(constructor), "${name}_Variable")
 		}
-		val value = value
 		if(value != null) {
 			val llvmValue = value.getLlvmValue(constructor)
 			val valueType = value.type

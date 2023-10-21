@@ -83,7 +83,10 @@ object TestUtil {
 			program.verify()
 			program.compile()
 			println("----------")
-			println(program.getIntermediateRepresentation())
+			val intermediateRepresentation = program.getIntermediateRepresentation()
+			println(intermediateRepresentation)
+			println("----------")
+			printDiagnostics(intermediateRepresentation)
 			println("----------")
 			return program.run()
 		} catch(exception: Exception) {
@@ -93,6 +96,14 @@ object TestUtil {
 			program.dispose()
 		}
     }
+
+	private fun printDiagnostics(intermediateRepresentation: String) {
+		println("External functions:")
+		intermediateRepresentation
+			.split("\n")
+			.filter { line -> line.startsWith("declare") }
+			.forEach { line -> println(line) }
+	}
 
 	fun analyseDataFlow(sourceCode: String): VariableTracker {
 		val parseResult = parse(sourceCode, includeRequiredModules = false, printReport = false)
