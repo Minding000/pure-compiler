@@ -25,12 +25,20 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 			context.addIssue(SuperReferenceOutsideOfTypeDefinition(source))
 			return
 		}
-		var superTypes = surroundingTypeDeclaration.getAllSuperTypes()
-		specifier?.getTypeDeclaration()?.let { specifierDefinition ->
-			superTypes = superTypes.filter { superType -> matchesSpecifier(superType, specifierDefinition) }
-			if(superTypes.isEmpty()) {
-				context.addIssue(SuperReferenceSpecifierNotInherited(source, surroundingTypeDeclaration, specifier))
-				return
+		val superTypes = if(specifier == null) {
+			surroundingTypeDeclaration.getDirectSuperTypes()
+		} else {
+			val specifierDefinition = specifier.getTypeDeclaration()
+			if(specifierDefinition == null) {
+				emptyList()
+			} else {
+				val superType = surroundingTypeDeclaration.getAllSuperTypes().find { superType ->
+					matchesSpecifier(superType, specifierDefinition) }
+				if(superType == null) {
+					context.addIssue(SuperReferenceSpecifierNotInherited(source, surroundingTypeDeclaration, specifier))
+					return
+				}
+				listOf(superType)
 			}
 		}
 		val possibleTargetTypes = when(val parent = parent) {

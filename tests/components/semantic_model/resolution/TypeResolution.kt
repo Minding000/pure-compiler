@@ -167,7 +167,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val propertyDeclaration = lintResult.find<PropertyDeclaration>()
-		assertEquals("<Element>List", propertyDeclaration?.type.toString())
+		assertEquals("Self", propertyDeclaration?.type.toString())
 	}
 
 	@Test

@@ -9,7 +9,7 @@ import components.semantic_model.values.SuperReference as SemanticSuperReference
 class SuperReference(word: Word, private val specifier: ObjectType?, end: Position): ValueSyntaxTreeNode(word.start, end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticSuperReferenceModel {
-		return SemanticSuperReferenceModel(this, scope, specifier?.toSemanticModel(scope))
+		return SemanticSuperReferenceModel(this, scope, specifier?.toSemanticObjectTypeModel(scope))
 	}
 
 	override fun toString(): String {

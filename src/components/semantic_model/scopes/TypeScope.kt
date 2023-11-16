@@ -31,6 +31,15 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 		return abstractMemberDeclarations
 	}
 
+	fun getSpecificMemberDeclarations(): List<MemberDeclaration> {
+		val specificMemberDeclarations = LinkedList<MemberDeclaration>()
+		for(memberDeclaration in memberDeclarations) {
+			if(memberDeclaration is FunctionImplementation && memberDeclaration.isSpecific)
+				specificMemberDeclarations.add(memberDeclaration)
+		}
+		return specificMemberDeclarations
+	}
+
 	fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {
 		val propertiesToBeInitialized = LinkedList<PropertyDeclaration>()
 		val superScope = superScope

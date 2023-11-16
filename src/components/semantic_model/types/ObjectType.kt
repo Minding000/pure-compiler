@@ -188,6 +188,13 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 		return typeDeclaration.implements(abstractMember, typeSubstitutions)
 	}
 
+	override fun getSpecificMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> {
+		val typeDeclaration = getTypeDeclaration() ?: return emptyList()
+		val typeSubstitutions = getTypeSubstitutions()
+		return typeDeclaration.scope.getSpecificMemberDeclarations().map { abstractMemberDeclaration ->
+			Pair(abstractMemberDeclaration, typeSubstitutions) }
+	}
+
 	override fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {
 		return getTypeDeclaration()?.scope?.getPropertiesToBeInitialized() ?: emptyList()
 	}

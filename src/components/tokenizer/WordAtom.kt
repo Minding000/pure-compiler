@@ -105,6 +105,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	MUTATING("mutating\\b"),
 	NATIVE("native\\b"),
 	OVERRIDING("overriding\\b"),
+	SPECIFIC("specific\\b"),
 	CONSUMING("consuming\\b"), // Alternative: 'taking'
 	PRODUCING("producing\\b"), // Alternative: 'giving'
 	REFERENCING("referencing\\b"),

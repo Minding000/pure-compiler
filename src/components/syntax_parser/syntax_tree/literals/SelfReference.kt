@@ -9,7 +9,7 @@ import components.semantic_model.values.SelfReference as SemanticSelfReferenceMo
 class SelfReference(word: Word, private val specifier: ObjectType?, end: Position): ValueSyntaxTreeNode(word.start, end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticSelfReferenceModel {
-		return SemanticSelfReferenceModel(this, scope, specifier?.toSemanticModel(scope))
+		return SemanticSelfReferenceModel(this, scope, specifier?.toSemanticObjectTypeModel(scope))
 	}
 
 	override fun toString(): String {

@@ -19,6 +19,7 @@ import errors.internal.CompilerError
 import logger.issues.declaration.CircularInheritance
 import logger.issues.declaration.ExplicitParentOnScopedTypeDefinition
 import logger.issues.declaration.MissingImplementations
+import logger.issues.declaration.MissingSpecificOverrides
 import logger.issues.modifiers.NoParentToBindTo
 import java.util.*
 
@@ -117,8 +118,11 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		super.validate()
 		if(isBound && parentTypeDeclaration == null)
 			context.addIssue(NoParentToBindTo(source))
-		if(isDefinition && (this as? Class)?.isAbstract != true && !hasCircularInheritance)
-			ensureAbstractSuperMembersImplemented()
+		if(isDefinition) {
+			if((this as? Class)?.isAbstract != true && !hasCircularInheritance)
+				ensureAbstractSuperMembersImplemented()
+			ensureSpecificMembersOverridden()
+		}
 	}
 
 	private fun ensureAbstractSuperMembersImplemented() {
@@ -153,6 +157,36 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 				memberDeclaration.fulfillsInheritanceRequirementsOf(abstractMember, typeSubstitutions)
 			else false
 		} || superType?.implements(abstractMember, typeSubstitutions) ?: false
+	}
+
+	private fun ensureSpecificMembersOverridden() {
+		val missingOverrides = LinkedHashMap<TypeDeclaration, LinkedList<MemberDeclaration>>()
+		for((unimplementedMember) in getUnoverriddenSpecificSuperMemberDeclarations()) {
+			val parentDefinition = unimplementedMember.parentTypeDeclaration
+				?: throw CompilerError(unimplementedMember.source, "Member is missing parent definition.")
+			val missingOverridesFromType = missingOverrides.getOrPut(parentDefinition) { LinkedList() }
+			missingOverridesFromType.add(unimplementedMember)
+		}
+		if(missingOverrides.isEmpty())
+			return
+		context.addIssue(MissingSpecificOverrides(this, missingOverrides))
+	}
+
+	private fun getUnoverriddenSpecificSuperMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> {
+		val specificSuperMembers = superType?.getSpecificMemberDeclarations() ?: return emptyList()
+		return specificSuperMembers.filter { (specificSuperMember, typeSubstitutions) ->
+			!overrides(specificSuperMember, typeSubstitutions) }
+	}
+
+	private fun overrides(specificMember: MemberDeclaration, typeSubstitutions: Map<TypeDeclaration, Type>): Boolean {
+		return scope.memberDeclarations.any { memberDeclaration ->
+			if(memberDeclaration == specificMember)
+				return false
+			if(memberDeclaration !is FunctionImplementation || specificMember !is FunctionImplementation)
+				return@any false
+			return@any memberDeclaration.signature.fulfillsInheritanceRequirementsOf(
+				specificMember.signature.withTypeSubstitutions(typeSubstitutions))
+		}
 	}
 
 	private fun addDefaultInitializer() {

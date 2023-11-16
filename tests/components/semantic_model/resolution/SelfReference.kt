@@ -1,6 +1,6 @@
 package components.semantic_model.resolution
 
-import components.semantic_model.types.ObjectType
+import components.semantic_model.types.SelfType
 import components.semantic_model.values.SelfReference
 import logger.Severity
 import logger.issues.declaration.TypeParameterCountMismatch
@@ -50,8 +50,8 @@ internal class SelfReference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val selfReferenceType = lintResult.find<SelfReference>()?.type
-		assertIs<ObjectType>(selfReferenceType)
-		assertEquals("Car", selfReferenceType.getTypeDeclaration()?.name)
+		assertIs<SelfType>(selfReferenceType)
+		assertEquals("Car", selfReferenceType.typeDeclaration?.name)
 	}
 
 	@Test
@@ -66,8 +66,8 @@ internal class SelfReference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val selfReferenceType = lintResult.find<SelfReference>()?.type
-		assertIs<ObjectType>(selfReferenceType)
-		assertEquals("Car", selfReferenceType.getTypeDeclaration()?.name)
+		assertIs<SelfType>(selfReferenceType)
+		assertEquals("Car", selfReferenceType.typeDeclaration?.name)
 	}
 
 	@Test
@@ -82,8 +82,8 @@ internal class SelfReference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val selfReferenceType = lintResult.find<SelfReference>()?.type
-		assertIs<ObjectType>(selfReferenceType)
-		assertEquals("FastestCar", selfReferenceType.getTypeDeclaration()?.name)
+		assertIs<SelfType>(selfReferenceType)
+		assertEquals("FastestCar", selfReferenceType.typeDeclaration?.name)
 	}
 
 	@Test
@@ -99,8 +99,9 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val selfReference = lintResult.find<SelfReference>()
-		assertEquals("Inner", selfReference?.type.toString())
+		val selfReferenceType = lintResult.find<SelfReference>()?.type
+		assertIs<SelfType>(selfReferenceType)
+		assertEquals("Inner", selfReferenceType.typeDeclaration?.name)
 	}
 
 	@Test
@@ -116,8 +117,9 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val selfReference = lintResult.find<SelfReference>()
-		assertEquals("Outer", selfReference?.type.toString())
+		val selfReferenceType = lintResult.find<SelfReference>()?.type
+		assertIs<SelfType>(selfReferenceType)
+		assertEquals("Outer", selfReferenceType.typeDeclaration?.name)
 	}
 
 	@Test
@@ -134,8 +136,9 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val selfReference = lintResult.find<SelfReference>()
-		assertEquals("Middle", selfReference?.type.toString())
+		val selfReferenceType = lintResult.find<SelfReference>()?.type
+		assertIs<SelfType>(selfReferenceType)
+		assertEquals("Middle", selfReferenceType.typeDeclaration?.name)
 	}
 
 	@Test

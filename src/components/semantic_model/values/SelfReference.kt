@@ -5,13 +5,14 @@ import components.code_generation.llvm.LlvmValue
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.ObjectType
+import components.semantic_model.types.SelfType
 import logger.issues.resolution.SelfReferenceOutsideOfTypeDefinition
 import logger.issues.resolution.SelfReferenceSpecifierNotBound
 import components.syntax_parser.syntax_tree.literals.SelfReference as SelfReferenceSyntaxTree
 
 open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Scope, private val specifier: ObjectType?):
 	Value(source, scope) {
-	var typeDeclaration: TypeDeclaration? = null
+	private var typeDeclaration: TypeDeclaration? = null
 
 	init {
 		addSemanticModels(specifier)
@@ -37,7 +38,7 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 			}
 		}
 		typeDeclaration?.let { typeDeclaration ->
-			type = ObjectType(typeDeclaration.getGenericTypes(), typeDeclaration)
+			type = SelfType(typeDeclaration)
 			type?.determineTypes()
 			addSemanticModels(type)
 		}

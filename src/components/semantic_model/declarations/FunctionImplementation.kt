@@ -18,15 +18,17 @@ import logger.issues.declaration.ExtraneousBody
 import logger.issues.declaration.InvalidVariadicParameterPosition
 import logger.issues.declaration.MissingBody
 import logger.issues.declaration.MultipleVariadicParameters
+import logger.issues.modifiers.ExtraneousSpecificModifier
 import logger.issues.modifiers.MissingOverridingKeyword
+import logger.issues.modifiers.MissingSpecificKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 import java.util.*
 
 class FunctionImplementation(override val source: SyntaxTreeNode, override val scope: BlockScope,
 							 localTypeParameters: List<GenericTypeDeclaration>, val parameters: List<Parameter>,
 							 val body: ErrorHandlingContext?, returnType: Type?, override val isAbstract: Boolean = false,
-							 val isMutating: Boolean = false, val isNative: Boolean = false, val isOverriding: Boolean = false):
-	SemanticModel(source, scope), MemberDeclaration, Callable {
+							 val isMutating: Boolean = false, val isNative: Boolean = false, val isOverriding: Boolean = false,
+							 val isSpecific: Boolean = false): SemanticModel(source, scope), MemberDeclaration, Callable {
 	override var parentTypeDeclaration: TypeDeclaration? = null
 	private lateinit var parentFunction: Function
 	override val memberIdentifier: String
@@ -41,6 +43,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	val signature = FunctionSignature(source, scope, localTypeParameters, parameters.map { parameter -> parameter.type }, returnType,
 		this)
 	var mightReturnValue = false
+	var usesOwnTypeAsSelf = false
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 	lateinit var llvmValue: LlvmValue
@@ -82,6 +85,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		super.validate()
 		scope.validate()
 		validateOverridingKeyword()
+		validateSpecificKeyword()
 		validateParameters()
 		validateReturnType()
 		validateBodyPresent()
@@ -95,6 +99,17 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		} else {
 			if(isOverriding)
 				context.addIssue(OverriddenSuperMissing(source, parentFunction.memberType))
+		}
+	}
+
+	private fun validateSpecificKeyword() {
+		if(usesOwnTypeAsSelf) {
+			if(!isSpecific)
+				context.addIssue(MissingSpecificKeyword(source, parentFunction.memberType.replaceFirstChar { it.titlecase() },
+					toString()))
+		} else {
+			if(isSpecific)
+				context.addIssue(ExtraneousSpecificModifier(source, parentFunction.memberType))
 		}
 	}
 

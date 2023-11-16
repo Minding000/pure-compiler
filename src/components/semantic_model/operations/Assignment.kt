@@ -10,6 +10,7 @@ import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.OptionalType
+import components.semantic_model.types.SelfType
 import components.semantic_model.values.*
 import errors.internal.CompilerError
 import logger.issues.constant_conditions.ExpressionNotAssignable
@@ -54,6 +55,21 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 				continue
 			}
 			context.addIssue(TypeNotAssignable(source, sourceType, targetType))
+		}
+		registerSelfTypeUsages()
+	}
+
+	private fun registerSelfTypeUsages() {
+		val sourceType = sourceExpression.type
+		val baseSourceType = if(sourceType is OptionalType) sourceType.baseType else sourceType
+		if(baseSourceType !is SelfType) {
+			val surroundingFunction = scope.getSurroundingFunction()
+			for(target in targets) {
+				val targetType = target.type
+				val baseTargetType = if(targetType is OptionalType) targetType.baseType else targetType
+				if(baseTargetType is SelfType)
+					surroundingFunction?.usesOwnTypeAsSelf = true
+			}
 		}
 	}
 

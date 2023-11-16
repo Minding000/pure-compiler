@@ -18,7 +18,7 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 	lateinit var parent: OperatorSection
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.MUTATING, WordAtom.NATIVE, WordAtom.OVERRIDING)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.MUTATING, WordAtom.NATIVE, WordAtom.OVERRIDING, WordAtom.SPECIFIC)
 	}
 
 	override fun toSemanticModel(scope: MutableScope): FunctionImplementation {
@@ -27,6 +27,7 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 		val isMutating = parent.containsModifier(WordAtom.MUTATING)
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
+		val isSpecific = parent.containsModifier(WordAtom.SPECIFIC)
 		val operatorScope = BlockScope(scope)
 		if(parameterList?.containsGenericParameterList == true) {
 			if(operator is IndexOperator) {
@@ -42,7 +43,7 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 		if(operator is IndexOperator)
 			parameters = operator.getSemanticIndexParameterModels(operatorScope) + parameters
 		return FunctionImplementation(this, operatorScope, localTypeParameters, parameters, body, returnType, isAbstract,
-			isMutating, isNative, isOverriding)
+			isMutating, isNative, isOverriding, isSpecific)
 	}
 
 	fun getKind(): OperatorKind {

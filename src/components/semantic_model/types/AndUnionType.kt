@@ -73,6 +73,10 @@ class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types:
 		return types.any { type -> type.implements(abstractMember, typeSubstitutions) }
 	}
 
+	override fun getSpecificMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> {
+		return types.flatMap { type -> type.getSpecificMemberDeclarations() }
+	}
+
 	override fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {
 		return types.flatMap { type -> type.getPropertiesToBeInitialized() }
 	}

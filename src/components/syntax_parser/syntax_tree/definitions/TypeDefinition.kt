@@ -62,7 +62,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 			LiteralType(this, typeScope, SpecialType.IDENTIFIABLE)
 		}
 		typeScope.superScope = superType?.interfaceScope
-		val explicitParentType = explicitParentType?.toSemanticModel(scope)
+		val explicitParentType = explicitParentType?.toSemanticObjectTypeModel(scope)
 		val members = getSemanticMemberModels(typeScope, definitionType).toMutableList()
 		val isBound = parent?.containsModifier(WordAtom.BOUND) ?: false
 		val typeDefinition = when(definitionType) {

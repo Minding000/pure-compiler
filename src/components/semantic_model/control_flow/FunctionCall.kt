@@ -10,10 +10,7 @@ import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.*
 import components.semantic_model.operations.MemberAccess
 import components.semantic_model.scopes.Scope
-import components.semantic_model.types.FunctionType
-import components.semantic_model.types.ObjectType
-import components.semantic_model.types.StaticType
-import components.semantic_model.types.Type
+import components.semantic_model.types.*
 import components.semantic_model.values.InitializerReference
 import components.semantic_model.values.SuperReference
 import components.semantic_model.values.Value
@@ -23,6 +20,7 @@ import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.initialization.ReliesOnUninitializedProperties
 import logger.issues.modifiers.AbstractClassInstantiation
+import logger.issues.resolution.CallToSpecificSuperMember
 import logger.issues.resolution.NotCallable
 import logger.issues.resolution.NotFound
 import logger.issues.resolution.SignatureMismatch
@@ -80,8 +78,25 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			}
 			targetSignature = match.signature
 			type = match.returnType
+			registerSelfTypeUsages(match.signature)
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "function", getSignature())
+		}
+	}
+
+	//TODO do the same for initializer calls
+	//TODO do the same for all operator calls
+	private fun registerSelfTypeUsages(signature: FunctionSignature) {
+		for((index, parameter) in valueParameters.withIndex()) {
+			val sourceType = parameter.type
+			val baseSourceType = if(sourceType is OptionalType) sourceType.baseType else sourceType
+			if(baseSourceType !is SelfType) {
+				val surroundingFunction = scope.getSurroundingFunction()
+				val targetType = signature.getParameterTypeAt(index)
+				val baseTargetType = if(targetType is OptionalType) targetType.baseType else targetType
+				if(baseTargetType is SelfType)
+					surroundingFunction?.usesOwnTypeAsSelf = true
+			}
 		}
 	}
 
@@ -100,6 +115,16 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			tracker.add(VariableUsage.Kind.WRITE, propertyBeingInitialized, this)
 		if(tracker.isInitializer && requiredButUninitializedProperties.isNotEmpty())
 			context.addIssue(ReliesOnUninitializedProperties(source, getSignature(), requiredButUninitializedProperties))
+	}
+
+	override fun validate() {
+		super.validate()
+		validateCallToSpecificFunction()
+	}
+
+	private fun validateCallToSpecificFunction() {
+		if(function is MemberAccess && function.target is SuperReference && targetSignature?.associatedImplementation?.isSpecific == true)
+			context.addIssue(CallToSpecificSuperMember(source))
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
