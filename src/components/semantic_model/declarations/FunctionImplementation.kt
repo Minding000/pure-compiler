@@ -8,6 +8,7 @@ import components.semantic_model.context.VariableTracker
 import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.BlockScope
+import components.semantic_model.types.SelfType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Function
 import components.semantic_model.values.Operator
@@ -18,17 +19,15 @@ import logger.issues.declaration.ExtraneousBody
 import logger.issues.declaration.InvalidVariadicParameterPosition
 import logger.issues.declaration.MissingBody
 import logger.issues.declaration.MultipleVariadicParameters
-import logger.issues.modifiers.ExtraneousSpecificModifier
-import logger.issues.modifiers.MissingOverridingKeyword
-import logger.issues.modifiers.MissingSpecificKeyword
-import logger.issues.modifiers.OverriddenSuperMissing
+import logger.issues.modifiers.*
 import java.util.*
 
 class FunctionImplementation(override val source: SyntaxTreeNode, override val scope: BlockScope,
 							 localTypeParameters: List<GenericTypeDeclaration>, val parameters: List<Parameter>,
 							 val body: ErrorHandlingContext?, returnType: Type?, override val isAbstract: Boolean = false,
 							 val isMutating: Boolean = false, val isNative: Boolean = false, val isOverriding: Boolean = false,
-							 val isSpecific: Boolean = false): SemanticModel(source, scope), MemberDeclaration, Callable {
+							 val isSpecific: Boolean = false, val isMonomorphic: Boolean = false):
+	SemanticModel(source, scope), MemberDeclaration, Callable {
 	override var parentTypeDeclaration: TypeDeclaration? = null
 	private lateinit var parentFunction: Function
 	override val memberIdentifier: String
@@ -86,6 +85,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		scope.validate()
 		validateOverridingKeyword()
 		validateSpecificKeyword()
+		validateMonomorphicKeyword()
 		validateParameters()
 		validateReturnType()
 		validateBodyPresent()
@@ -110,6 +110,18 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		} else {
 			if(isSpecific)
 				context.addIssue(ExtraneousSpecificModifier(source, parentFunction.memberType))
+		}
+	}
+
+	private fun validateMonomorphicKeyword() {
+		val hasSelfTypeParameter = signature.parameterTypes.any { parameterType -> parameterType is SelfType }
+		if(hasSelfTypeParameter) {
+			if(!isMonomorphic)
+				context.addIssue(MissingMonomorphicKeyword(source, parentFunction.memberType.replaceFirstChar { it.titlecase() },
+					toString()))
+		} else {
+			if(isMonomorphic)
+				context.addIssue(ExtraneousMonomorphicModifier(source, parentFunction.memberType))
 		}
 	}
 

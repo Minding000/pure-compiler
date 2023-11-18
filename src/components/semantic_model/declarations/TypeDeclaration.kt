@@ -16,10 +16,7 @@ import components.semantic_model.values.InterfaceMember
 import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
-import logger.issues.declaration.CircularInheritance
-import logger.issues.declaration.ExplicitParentOnScopedTypeDefinition
-import logger.issues.declaration.MissingImplementations
-import logger.issues.declaration.MissingSpecificOverrides
+import logger.issues.declaration.*
 import logger.issues.modifiers.NoParentToBindTo
 import java.util.*
 
@@ -122,6 +119,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			if((this as? Class)?.isAbstract != true && !hasCircularInheritance)
 				ensureAbstractSuperMembersImplemented()
 			ensureSpecificMembersOverridden()
+			validateMonomorphicSuperMember()
 		}
 	}
 
@@ -187,6 +185,15 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			return@any memberDeclaration.signature.fulfillsInheritanceRequirementsOf(
 				specificMember.signature.withTypeSubstitutions(typeSubstitutions))
 		}
+	}
+
+	private fun validateMonomorphicSuperMember() {
+		val superTypeContainsMonomorphicMemberImplementations = getDirectSuperTypes().any { superType ->
+			val classDeclaration = superType.getTypeDeclaration() as? Class ?: return@any false
+			return@any !classDeclaration.isAbstract && classDeclaration.containsMonomorphicMemberImplementation()
+		}
+		if(superTypeContainsMonomorphicMemberImplementations)
+			context.addIssue(MonomorphicInheritance(source))
 	}
 
 	private fun addDefaultInitializer() {

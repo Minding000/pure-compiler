@@ -16,7 +16,8 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 	lateinit var parent: FunctionSection
 
 	companion object {
-		val ALLOWED_MODIFIERS = listOf(WordAtom.ABSTRACT, WordAtom.MUTATING, WordAtom.NATIVE, WordAtom.OVERRIDING, WordAtom.SPECIFIC)
+		val ALLOWED_MODIFIERS = listOf(WordAtom.ABSTRACT, WordAtom.MUTATING, WordAtom.NATIVE, WordAtom.OVERRIDING, WordAtom.SPECIFIC,
+			WordAtom.MONOMORPHIC)
 	}
 
 	override fun toSemanticModel(scope: MutableScope): SemanticFunctionImplementationModel {
@@ -26,12 +27,13 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 		val isNative = parent.containsModifier(WordAtom.NATIVE)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val isSpecific = parent.containsModifier(WordAtom.SPECIFIC)
+		val isMonomorphic = parent.containsModifier(WordAtom.MONOMORPHIC)
 		val functionScope = BlockScope(scope)
 		val localTypeParameters = parameterList.getSemanticGenericParameterModels(functionScope) ?: emptyList()
 		val parameters = parameterList.getSemanticParameterModels(functionScope)
 		val returnType = returnType?.toSemanticModel(functionScope)
 		return SemanticFunctionImplementationModel(this, functionScope, localTypeParameters, parameters,
-			body?.toSemanticModel(functionScope), returnType, isAbstract, isMutating, isNative, isOverriding, isSpecific)
+			body?.toSemanticModel(functionScope), returnType, isAbstract, isMutating, isNative, isOverriding, isSpecific, isMonomorphic)
 	}
 
 	fun getName(): String = identifier.getValue()

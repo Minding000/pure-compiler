@@ -39,4 +39,9 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 		if(!isAbstract)
 			scope.ensureNoAbstractMembers()
 	}
+
+	fun containsMonomorphicMemberImplementation(): Boolean {
+		return scope.memberDeclarations.any { memberDeclaration ->
+			memberDeclaration is FunctionImplementation && memberDeclaration.isMonomorphic && !memberDeclaration.isAbstract }
+	}
 }
