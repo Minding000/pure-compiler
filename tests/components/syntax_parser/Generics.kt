@@ -196,4 +196,26 @@ internal class Generics {
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
+
+	@Test
+	fun `parses specific types`() {
+		val sourceCode = """
+			Math object {
+				to add(N: specific Number; a: N, b: N): N
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ Identifier { Math } object ] { TypeBody {
+					FunctionSection [ to ] {
+						Function [ Identifier { add } ParameterList {
+							Parameter { Identifier { N }: ObjectType { specific Identifier { Number } } };
+							Parameter { Identifier { a }: ObjectType { Identifier { N } } }
+							Parameter { Identifier { b }: ObjectType { Identifier { N } } }
+						}: ObjectType { Identifier { N } } ]
+					}
+				} }
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
 }

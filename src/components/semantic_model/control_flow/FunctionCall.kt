@@ -18,6 +18,7 @@ import components.semantic_model.values.VariableValue
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
+import logger.issues.access.AbstractMonomorphicAccess
 import logger.issues.initialization.ReliesOnUninitializedProperties
 import logger.issues.modifiers.AbstractClassInstantiation
 import logger.issues.resolution.CallToSpecificSuperMember
@@ -79,6 +80,11 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			targetSignature = match.signature
 			type = match.returnType
 			registerSelfTypeUsages(match.signature)
+			val targetType = (function as? MemberAccess)?.target?.type
+			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
+				&& (targetType as? ObjectType)?.isSpecific == false)
+				context.addIssue(AbstractMonomorphicAccess(source, "function",
+					match.signature.toString(false), targetType))
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "function", getSignature())
 		}

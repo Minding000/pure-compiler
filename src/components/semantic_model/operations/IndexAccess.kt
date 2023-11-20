@@ -11,6 +11,7 @@ import components.semantic_model.values.Operator
 import components.semantic_model.values.Value
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
+import logger.issues.access.AbstractMonomorphicAccess
 import logger.issues.resolution.NotFound
 import java.util.*
 import components.syntax_parser.syntax_tree.access.IndexAccess as IndexAccessSyntaxTree
@@ -38,6 +39,10 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 			}
 			targetSignature = match.signature
 			type = match.returnType
+			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
+				&& (targetType as? ObjectType)?.isSpecific == false)
+				context.addIssue(AbstractMonomorphicAccess(source, "operator",
+					match.signature.toString(false, getOperatorKind()), targetType))
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "operator", getSignature(targetType))
 		}
@@ -93,13 +98,16 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		val sourceExpression = sourceExpression
 		if(sourceExpression != null)
 			parameters.add(sourceExpression.getLlvmValue(constructor))
-		val kind = if(sourceExpression == null) Operator.Kind.BRACKETS_GET else Operator.Kind.BRACKETS_SET
 		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
-			signature.original.toString(false, kind))
+			signature.original.toString(false, getOperatorKind()))
 		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_indexAccessResult")
 		//TODO if exception exists
 		// check for optional try (normal and force try have no effect)
 		// check for catch
 		// resume raise
+	}
+
+	private fun getOperatorKind(): Operator.Kind {
+		return if(sourceExpression == null) Operator.Kind.BRACKETS_GET else Operator.Kind.BRACKETS_SET
 	}
 }

@@ -83,17 +83,21 @@ class TypeParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Generato
 
 	/**
 	 * ObjectType:
-	 *   [<TypeList>]<Identifier>
-	 *   <ObjectType>.[<TypeList>]<Identifier>
+	 *   [specific ][<TypeList>]<Identifier>
+	 *   [specific ]<ObjectType>.[<TypeList>]<Identifier>
 	 */
 	fun parseObjectType(allowTypeList: Boolean = true): ObjectType {
+		val isSpecific = if(currentWord?.type == WordAtom.SPECIFIC) {
+			consume(WordAtom.SPECIFIC)
+			true
+		} else false
 		var objectType: ObjectType? = null
 		while(true) {
 			val typeList = if(allowTypeList)
 				parseOptionalTypeList()
 			else null
 			val identifier = parseIdentifier()
-			objectType = ObjectType(objectType, typeList, identifier)
+			objectType = ObjectType(isSpecific, objectType, typeList, identifier)
 			if(currentWord?.type != WordAtom.DOT)
 				return objectType
 			consume(WordAtom.DOT)

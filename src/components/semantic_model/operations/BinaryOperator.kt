@@ -7,11 +7,13 @@ import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.scopes.Scope
+import components.semantic_model.types.ObjectType
 import components.semantic_model.types.OptionalType
 import components.semantic_model.types.OrUnionType
 import components.semantic_model.values.*
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
+import logger.issues.access.AbstractMonomorphicAccess
 import logger.issues.resolution.NotFound
 import java.util.*
 import components.syntax_parser.syntax_tree.operations.BinaryOperator as BinaryOperatorSyntaxTree
@@ -46,6 +48,10 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			}
 			targetSignature = match.signature
 			type = match.returnType
+			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
+				&& (leftType as? ObjectType)?.isSpecific == false)
+				context.addIssue(AbstractMonomorphicAccess(source, "operator",
+					match.signature.toString(false, kind), leftType))
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
 			error.log(source, "operator", "$leftType $kind ${right.type}")

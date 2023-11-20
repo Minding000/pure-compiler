@@ -12,7 +12,7 @@ import logger.issues.declaration.TypeParameterNotAssignable
 import logger.issues.resolution.NotFound
 
 open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enclosingType: ObjectType?, val typeParameters: List<Type>,
-					  val name: String, typeDeclaration: TypeDeclaration? = null): Type(source, scope) {
+					  val name: String, typeDeclaration: TypeDeclaration? = null, val isSpecific: Boolean = false): Type(source, scope) {
 	private var isInSpecificContext = true
 	protected var typeDeclarationCache: TypeDeclaration? = typeDeclaration
 

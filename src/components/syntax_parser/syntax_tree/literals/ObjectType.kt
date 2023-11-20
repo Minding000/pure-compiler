@@ -8,8 +8,8 @@ import logger.issues.declaration.InvalidSelfTypeLocation
 import util.indent
 import components.semantic_model.types.ObjectType as SemanticObjectTypeModel
 
-class ObjectType(private val enclosingType: ObjectType?, private val typeList: TypeList?, private val identifier: Identifier):
-	TypeSyntaxTreeNode(typeList?.start ?: identifier.start, identifier.end) {
+class ObjectType(private val isSpecific: Boolean, private val enclosingType: ObjectType?, private val typeList: TypeList?,
+				 private val identifier: Identifier): TypeSyntaxTreeNode(typeList?.start ?: identifier.start, identifier.end) {
 
 	companion object {
 		const val SELF_TYPE_NAME = "Self"
@@ -21,9 +21,11 @@ class ObjectType(private val enclosingType: ObjectType?, private val typeList: T
 		if(name == SELF_TYPE_NAME) {
 			//TODO disallow non-empty type list
 			//TODO disallow enclosing type
+			//TODO disallow specific modifier
 			return SelfType(this, scope)
 		}
-		return SemanticObjectTypeModel(this, scope, enclosingType?.toSemanticObjectTypeModel(scope), typeList, name)
+		return SemanticObjectTypeModel(this, scope, enclosingType?.toSemanticObjectTypeModel(scope), typeList, name,
+			null, isSpecific)
 	}
 
 
@@ -35,7 +37,8 @@ class ObjectType(private val enclosingType: ObjectType?, private val typeList: T
 			context.addIssue(InvalidSelfTypeLocation(this))
 			return null
 		}
-		return SemanticObjectTypeModel(this, scope, enclosingType?.toSemanticObjectTypeModel(scope), typeList, name)
+		return SemanticObjectTypeModel(this, scope, enclosingType?.toSemanticObjectTypeModel(scope), typeList, name,
+			null, isSpecific)
 	}
 
 	override fun toString(): String {
@@ -43,6 +46,8 @@ class ObjectType(private val enclosingType: ObjectType?, private val typeList: T
 		if(enclosingType != null)
 			stringRepresentation += " [${"\n$enclosingType".indent()}\n]"
 		stringRepresentation += " { "
+		if(isSpecific)
+			stringRepresentation += "specific "
 		if(typeList != null)
 			stringRepresentation += "$typeList "
 		stringRepresentation += "$identifier }"
