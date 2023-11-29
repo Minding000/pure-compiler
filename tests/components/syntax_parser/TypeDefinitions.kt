@@ -105,6 +105,30 @@ internal class TypeDefinitions {
 	}
 
 	@Test
+	fun `parses abstract instances`() {
+		val sourceCode =
+			"""
+				abstract Number class {
+					abstract instances ZERO
+				}
+            """.trimIndent()
+		val expected =
+			"""
+				ModifierSection [ ModifierList { Modifier { abstract } } ] {
+					TypeDefinition [ Identifier { Number } class ] { TypeBody {
+						ModifierSection [ ModifierList { Modifier { abstract } } ] {
+							InstanceList {
+								Instance [ Identifier { ZERO } ] {
+								}
+							}
+						}
+					} }
+				}
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
+
+	@Test
 	fun `parses type aliases`() {
 		val sourceCode =
 			"""

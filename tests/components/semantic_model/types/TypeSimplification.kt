@@ -1,6 +1,6 @@
 package components.semantic_model.types
 
-import components.semantic_model.control_flow.FunctionCall
+import components.semantic_model.operations.FunctionCall
 import components.semantic_model.operations.MemberAccess
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test

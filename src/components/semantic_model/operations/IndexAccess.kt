@@ -38,9 +38,15 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 				return
 			}
 			targetSignature = match.signature
-			type = match.returnType
+			var returnType = match.returnType.getLocalType(this, targetType)
+			val surroundingFunction = scope.getSurroundingFunction()
+			if(surroundingFunction?.whereClause?.matches(returnType) == true) {
+				returnType = ObjectType(surroundingFunction.whereClause)
+				addSemanticModels(returnType)
+			}
+			type = returnType
 			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
-				&& (targetType as? ObjectType)?.isSpecific == false)
+				&& !targetType.isMemberAccessible(match.signature, true))
 				context.addIssue(AbstractMonomorphicAccess(source, "operator",
 					match.signature.toString(false, getOperatorKind()), targetType))
 		} catch(error: SignatureResolutionAmbiguityError) {

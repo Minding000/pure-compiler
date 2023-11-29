@@ -3,9 +3,11 @@ package components.semantic_model.types
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.semantic_model.context.SpecialType
+import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.scopes.Scope
+import components.semantic_model.values.Value
 import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
@@ -24,6 +26,14 @@ class OptionalType(override val source: SyntaxTreeNode, scope: Scope, val baseTy
 		while(baseType is OptionalType)
 			baseType = baseType.baseType
 		return OptionalType(source, scope, baseType.simplified())
+	}
+
+	override fun getLocalType(value: Value, sourceType: Type): Type {
+		return OptionalType(source, scope, baseType.getLocalType(value, sourceType))
+	}
+
+	override fun isMemberAccessible(signature: FunctionSignature, requireSpecificType: Boolean): Boolean {
+		return baseType.isMemberAccessible(signature, requireSpecificType)
 	}
 
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {

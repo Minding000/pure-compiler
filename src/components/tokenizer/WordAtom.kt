@@ -69,6 +69,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	TO("to\\b"),
 	OPERATOR("operator\\b"),
 	GENERATOR("generate\\b"),
+	WHERE("where\\b"),
 	CONTAINING("containing\\b"),
 	IN("in\\b"),
 	TYPE_ALIAS("alias\\b"),

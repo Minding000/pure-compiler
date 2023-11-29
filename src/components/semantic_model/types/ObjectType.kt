@@ -46,6 +46,20 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 		return ObjectType(source, scope, enclosingType?.simplified(), typeParameters.map(Type::simplified), name, getTypeDeclaration())
 	}
 
+	override fun isMemberAccessible(signature: FunctionSignature, requireSpecificType: Boolean): Boolean {
+		val typeDeclaration = getTypeDeclaration() ?: return false
+		if(requireSpecificType && !isSpecific) {
+			if(typeDeclaration is GenericTypeDeclaration || typeDeclaration is WhereClause || typeDeclaration is TypeAlias)
+				return typeDeclaration.superType?.isMemberAccessible(signature, true) == true
+		} else {
+			if(typeDeclaration == signature.original.parentDefinition)
+				return true
+			if(typeDeclaration is GenericTypeDeclaration || typeDeclaration is WhereClause || typeDeclaration is TypeAlias)
+				return typeDeclaration.superType?.isMemberAccessible(signature) == true
+		}
+		return false
+	}
+
 	fun setIsNonSpecificContext() {
 		isInSpecificContext = false
 		enclosingType?.setIsNonSpecificContext()

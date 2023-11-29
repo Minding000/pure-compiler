@@ -5,7 +5,6 @@ import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
-import components.semantic_model.control_flow.FunctionCall
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.*
@@ -31,7 +30,9 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 				targetType = targetType.baseType
 			member.scope = targetType.interfaceScope
 			member.determineTypes()
-			member.type?.let { memberType ->
+			var memberType = member.type
+			if(memberType != null) {
+				memberType = memberType.getLocalType(this, targetType)
 				type = if(isOptional && memberType !is OptionalType)
 					OptionalType(source, scope, memberType)
 				else

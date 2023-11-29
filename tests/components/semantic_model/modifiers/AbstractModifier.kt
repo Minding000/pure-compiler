@@ -43,6 +43,18 @@ internal class AbstractModifier {
 	}
 
 	@Test
+	fun `is allowed on instance lists`() {
+		val sourceCode =
+			"""
+				abstract Number class {
+					abstract instances ZERO
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
+	}
+
+	@Test
 	fun `is allowed on properties`() {
 		val sourceCode =
 			"""

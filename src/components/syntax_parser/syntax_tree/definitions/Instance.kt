@@ -10,10 +10,12 @@ import util.toLines
 import util.toSemanticValueModels
 import components.semantic_model.values.Instance as SemanticInstanceModel
 
-class Instance(val identifier: Identifier, val parameters: List<ValueSyntaxTreeNode>, end: Position): SyntaxTreeNode(identifier.start, end) {
+class Instance(val identifier: Identifier, val parameters: List<ValueSyntaxTreeNode>, end: Position):
+	SyntaxTreeNode(identifier.start, end) {
+	var isAbstract = false
 
 	override fun toSemanticModel(scope: MutableScope): SemanticInstanceModel {
-		return SemanticInstanceModel(this, scope, identifier.getValue(), parameters.toSemanticValueModels(scope))
+		return SemanticInstanceModel(this, scope, identifier.getValue(), parameters.toSemanticValueModels(scope), isAbstract)
 	}
 
 	override fun toString(): String {

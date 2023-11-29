@@ -1,6 +1,6 @@
 package components.semantic_model.types
 
-import components.semantic_model.control_flow.FunctionCall
+import components.semantic_model.operations.FunctionCall
 import components.semantic_model.operations.InstanceAccess
 import components.semantic_model.values.ValueDeclaration
 import logger.issues.resolution.NotFound
@@ -189,18 +189,16 @@ internal class TypeInference {
 					instances TCP, UDP
 				}
 				val protocol = TransportLayerProtocol.TCP
+				var isLosslessProtocol = no
 				switch protocol {
 					.TCP:
-						cli.printLine("TCP")
-					.UDP:
-						cli.printLine("UDP")
+						isLosslessProtocol = yes
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
-		assertNotNull(type)
+		lintResult.assertIssueNotDetected<NotFound>()
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertEquals(type, instanceAccess?.type)
+		assertEquals("TransportLayerProtocol", instanceAccess?.type.toString())
 	}
 
 	@Test

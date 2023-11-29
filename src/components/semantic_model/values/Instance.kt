@@ -2,15 +2,15 @@ package components.semantic_model.values
 
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.scopes.MutableScope
-import components.semantic_model.types.ObjectType
+import components.semantic_model.types.SelfType
 import components.semantic_model.types.StaticType
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
 import components.syntax_parser.syntax_tree.definitions.Instance as InstanceSyntaxTree
 
-class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, name: String, val valueParameters: List<Value>):
-	InterfaceMember(source, scope, name, null, null, true) {
+class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, name: String, val valueParameters: List<Value>,
+			   isAbstract: Boolean): InterfaceMember(source, scope, name, null, null, true, isAbstract) {
 	lateinit var typeDeclaration: TypeDeclaration
 
 	init {
@@ -20,7 +20,7 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 	override fun determineType() {
 		this.typeDeclaration = scope.getSurroundingTypeDeclaration()
 			?: throw CompilerError(source, "Instance outside of type definition.")
-		val type = ObjectType(typeDeclaration)
+		val type = SelfType(typeDeclaration)
 		addSemanticModels(type)
 		this.type = type
 		val staticType = StaticType(typeDeclaration)

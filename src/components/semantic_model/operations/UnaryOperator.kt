@@ -6,6 +6,7 @@ import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.scopes.Scope
+import components.semantic_model.types.ObjectType
 import components.semantic_model.values.BooleanLiteral
 import components.semantic_model.values.NumberLiteral
 import components.semantic_model.values.Operator
@@ -34,7 +35,13 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 				return
 			}
 			targetSignature = match.signature
-			type = match.returnType
+			var returnType = match.returnType.getLocalType(this, subjectType)
+			val surroundingFunction = scope.getSurroundingFunction()
+			if(surroundingFunction?.whereClause?.matches(returnType) == true) {
+				returnType = ObjectType(surroundingFunction.whereClause)
+				addSemanticModels(returnType)
+			}
+			type = returnType
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
 			error.log(source, "operator", "$kind$subjectType")

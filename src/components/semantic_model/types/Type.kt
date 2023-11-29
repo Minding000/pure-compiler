@@ -3,13 +3,11 @@ package components.semantic_model.types
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.semantic_model.context.SpecialType
-import components.semantic_model.declarations.InitializerDefinition
-import components.semantic_model.declarations.MemberDeclaration
-import components.semantic_model.declarations.PropertyDeclaration
-import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.*
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
+import components.semantic_model.values.Value
 import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
@@ -33,6 +31,10 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 	protected abstract fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Type
 
 	abstract fun simplified(): Type
+
+	open fun getLocalType(value: Value, sourceType: Type): Type = this
+
+	open fun isMemberAccessible(signature: FunctionSignature, requireSpecificType: Boolean = false): Boolean = false
 
 	//TODO also infer type parameters from union and plural types
 	open fun inferTypeParameter(typeParameter: TypeDeclaration, sourceType: Type, inferredTypes: MutableList<Type>) {}

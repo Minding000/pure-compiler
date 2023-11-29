@@ -12,8 +12,9 @@ import logger.issues.declaration.GenericOperator
 import logger.issues.declaration.TypeParametersOutsideOfIndexParameterList
 import components.semantic_model.values.Operator.Kind as OperatorKind
 
-class OperatorDefinition(private val operator: Operator, private val parameterList: ParameterList?, private val body: StatementSection?,
-						 private var returnType: TypeSyntaxTreeNode?):
+class OperatorDefinition(private val operator: Operator, private val parameterList: ParameterList?,
+						 private var returnType: TypeSyntaxTreeNode?, private val whereClause: WhereClause?,
+						 private val body: StatementSection?):
 	SyntaxTreeNode(operator.start, body?.end ?: returnType?.end ?: parameterList?.end ?: operator.end) {
 	lateinit var parent: OperatorSection
 
@@ -44,8 +45,9 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 		val localTypeParameters = (operator as? IndexOperator)?.getSemanticGenericParameterModels(operatorScope) ?: emptyList()
 		if(operator is IndexOperator)
 			parameters = operator.getSemanticIndexParameterModels(operatorScope) + parameters
-		return FunctionImplementation(this, operatorScope, localTypeParameters, parameters, body, returnType, isAbstract,
-			isMutating, isNative, isOverriding, isSpecific, isMonomorphic)
+		val whereClause = whereClause?.toSemanticModel(operatorScope)
+		return FunctionImplementation(this, operatorScope, localTypeParameters, parameters, body, returnType, whereClause,
+			isAbstract, isMutating, isNative, isOverriding, isSpecific, isMonomorphic)
 	}
 
 	fun getKind(): OperatorKind {
@@ -58,17 +60,19 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 	}
 
 	override fun toString(): String {
-		val string = StringBuilder()
-		string.append("OperatorDefinition [ ")
-		string.append(operator)
+		val stringRepresentation = StringBuilder()
+		stringRepresentation.append("OperatorDefinition [ ")
+		stringRepresentation.append(operator)
 		if(parameterList != null)
-			string.append(" ")
+			stringRepresentation.append(" ")
 				.append(parameterList)
-		string.append(": ")
+		stringRepresentation.append(": ")
 			.append(returnType ?: "void")
-			.append(" ] { ")
+		if(whereClause != null)
+			stringRepresentation.append(" $whereClause")
+		stringRepresentation.append(" ] { ")
 			.append(body)
 			.append(" }")
-		return string.toString()
+		return stringRepresentation.toString()
 	}
 }

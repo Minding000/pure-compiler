@@ -8,7 +8,7 @@ import util.indent
 import util.toLines
 import util.toSemanticTypeModels
 import util.toSemanticValueModels
-import components.semantic_model.control_flow.FunctionCall as SemanticFunctionCallModel
+import components.semantic_model.operations.FunctionCall as SemanticFunctionCallModel
 
 class FunctionCall(private val functionReference: ValueSyntaxTreeNode, private val typeParameters: List<TypeSyntaxTreeNode>?,
 				   private val valueParameters: List<ValueSyntaxTreeNode>, end: Position): ValueSyntaxTreeNode(functionReference.start, end) {

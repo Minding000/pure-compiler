@@ -57,7 +57,9 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 			} else if(value.isAssignableTo(returnType)) {
 				value.setInferredType(returnType)
 			} else {
-				context.addIssue(ReturnValueTypeMismatch(source, value.type, returnType))
+				val valueType = value.type
+				if(valueType != null)
+					context.addIssue(ReturnValueTypeMismatch(source, valueType, returnType))
 			}
 		}
 	}

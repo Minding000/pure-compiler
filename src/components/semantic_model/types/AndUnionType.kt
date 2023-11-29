@@ -1,11 +1,9 @@
 package components.semantic_model.types
 
 import components.semantic_model.context.SpecialType
-import components.semantic_model.declarations.InitializerDefinition
-import components.semantic_model.declarations.MemberDeclaration
-import components.semantic_model.declarations.PropertyDeclaration
-import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.*
 import components.semantic_model.scopes.Scope
+import components.semantic_model.values.Value
 import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
@@ -27,6 +25,14 @@ class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types:
 		if(types.size == 1)
 			return types.first().simplified()
 		return AndUnionType(source, scope, types.map(Type::simplified))
+	}
+
+	override fun getLocalType(value: Value, sourceType: Type): Type {
+		return AndUnionType(source, scope, types.map { type -> type.getLocalType(value, sourceType) }).simplified()
+	}
+
+	override fun isMemberAccessible(signature: FunctionSignature, requireSpecificType: Boolean): Boolean {
+		return types.any { type -> type.isMemberAccessible(signature, requireSpecificType) }
 	}
 
 	override fun getAllInitializers(): List<InitializerDefinition> {

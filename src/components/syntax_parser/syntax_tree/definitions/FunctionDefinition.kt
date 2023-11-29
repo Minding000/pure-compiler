@@ -11,7 +11,8 @@ import components.tokenizer.WordAtom
 import components.semantic_model.declarations.FunctionImplementation as SemanticFunctionImplementationModel
 
 class FunctionDefinition(private val identifier: Identifier, private val parameterList: ParameterList,
-						 private val body: StatementSection?, private var returnType: TypeSyntaxTreeNode?):
+						 private var returnType: TypeSyntaxTreeNode?, private val whereClause: WhereClause?,
+						 private val body: StatementSection?):
 	SyntaxTreeNode(identifier.start, body?.end ?: returnType?.end ?: parameterList.end) {
 	lateinit var parent: FunctionSection
 
@@ -32,8 +33,10 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 		val localTypeParameters = parameterList.getSemanticGenericParameterModels(functionScope) ?: emptyList()
 		val parameters = parameterList.getSemanticParameterModels(functionScope)
 		val returnType = returnType?.toSemanticModel(functionScope)
+		val whereClause = whereClause?.toSemanticModel(functionScope)
 		return SemanticFunctionImplementationModel(this, functionScope, localTypeParameters, parameters,
-			body?.toSemanticModel(functionScope), returnType, isAbstract, isMutating, isNative, isOverriding, isSpecific, isMonomorphic)
+			body?.toSemanticModel(functionScope), returnType, whereClause, isAbstract, isMutating, isNative, isOverriding, isSpecific,
+			isMonomorphic)
 	}
 
 	fun getName(): String = identifier.getValue()
@@ -46,7 +49,9 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 			.append(parameterList)
 			.append(": ")
 			.append(returnType ?: "void")
-			.append(" ]")
+		if(whereClause != null)
+			stringRepresentation.append(" $whereClause")
+		stringRepresentation.append(" ]")
 		if(body != null)
 			stringRepresentation
 				.append(" { ")

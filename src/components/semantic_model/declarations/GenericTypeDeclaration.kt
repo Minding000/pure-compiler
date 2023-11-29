@@ -1,7 +1,10 @@
 package components.semantic_model.declarations
 
 import components.semantic_model.scopes.TypeScope
+import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
+import components.semantic_model.values.LocalVariableDeclaration
+import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
 class GenericTypeDeclaration(override val source: ParameterSyntaxTree, name: String, scope: TypeScope, superType: Type?):
@@ -10,6 +13,16 @@ class GenericTypeDeclaration(override val source: ParameterSyntaxTree, name: Str
 
 	init {
 		scope.typeDeclaration = this
+	}
+
+	override fun getValueDeclaration(): ValueDeclaration {
+		val targetScope = parentTypeDeclaration?.scope ?: scope.enclosingScope
+		val staticType = StaticType(this)
+		staticValueDeclaration = if(targetScope is TypeScope)
+			PropertyDeclaration(source, targetScope, name, staticType)
+		else
+			LocalVariableDeclaration(source, targetScope, name, staticType)
+		return staticValueDeclaration
 	}
 
 	override fun declare() {

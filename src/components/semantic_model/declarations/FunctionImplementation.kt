@@ -24,9 +24,9 @@ import java.util.*
 
 class FunctionImplementation(override val source: SyntaxTreeNode, override val scope: BlockScope,
 							 localTypeParameters: List<GenericTypeDeclaration>, val parameters: List<Parameter>,
-							 val body: ErrorHandlingContext?, returnType: Type?, override val isAbstract: Boolean = false,
-							 val isMutating: Boolean = false, val isNative: Boolean = false, val isOverriding: Boolean = false,
-							 val isSpecific: Boolean = false, val isMonomorphic: Boolean = false):
+							 val body: ErrorHandlingContext?, returnType: Type?, val whereClause: WhereClause? = null,
+							 override val isAbstract: Boolean = false, val isMutating: Boolean = false, val isNative: Boolean = false,
+							 val isOverriding: Boolean = false, val isSpecific: Boolean = false, val isMonomorphic: Boolean = false):
 	SemanticModel(source, scope), MemberDeclaration, Callable {
 	override var parentTypeDeclaration: TypeDeclaration? = null
 	private lateinit var parentFunction: Function
@@ -50,7 +50,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	init {
 		scope.semanticModel = this
 		addSemanticModels(parameters)
-		addSemanticModels(body)
+		addSemanticModels(body, whereClause)
 	}
 
 	fun setParent(function: Function) {

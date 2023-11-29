@@ -10,10 +10,9 @@ import components.syntax_parser.syntax_tree.access.InstanceAccess as InstanceAcc
 
 class InstanceAccess(override val source: InstanceAccessSyntaxTree, scope: Scope, name: String): VariableValue(source, scope, name) {
 
-	override fun isAssignableTo(targetType: Type?): Boolean {
-		if(targetType is OptionalType)
-			return isAssignableTo(targetType.baseType)
-		return targetType?.interfaceScope?.hasInstance(name) ?: false
+	override fun determineTypes() {
+		// Do nothing.
+		// Type is always inferred.
 	}
 
 	override fun setInferredType(inferredType: Type?) {
@@ -29,5 +28,11 @@ class InstanceAccess(override val source: InstanceAccessSyntaxTree, scope: Scope
 	override fun computeValue(tracker: VariableTracker) {
 		super.computeValue(tracker)
 		staticValue = declaration?.value
+	}
+
+	override fun isAssignableTo(targetType: Type?): Boolean {
+		if(targetType is OptionalType)
+			return isAssignableTo(targetType.baseType)
+		return targetType?.interfaceScope?.hasInstance(name) ?: false
 	}
 }

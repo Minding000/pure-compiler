@@ -1,6 +1,6 @@
 package components.semantic_model.static_analysis
 
-import components.semantic_model.types.ObjectType
+import components.semantic_model.types.SelfType
 import components.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.constant_conditions.UnreachableStatement
@@ -180,6 +180,9 @@ internal class ExecutionFlowAnalysis {
 
 	@Test
 	fun `calculates result of trivial optional casts`() {
+		//TODO investigate:
+		// "ERROR: Test.Test:5:5: 'result' cannot be reassigned, because it is constant."
+		// warns that constant is written to it loop but does not realize that it is also declared in the loop
 		val sourceCode =
 			"""
 				Color enum {
@@ -193,6 +196,6 @@ internal class ExecutionFlowAnalysis {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "result" }
-		assertIs<ObjectType>(variableValue?.getComputedType())
+		assertIs<SelfType>(variableValue?.getComputedType())
 	}
 }

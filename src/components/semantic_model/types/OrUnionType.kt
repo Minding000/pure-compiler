@@ -1,9 +1,11 @@
 package components.semantic_model.types
 
 import components.semantic_model.context.SpecialType
+import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.scopes.Scope
+import components.semantic_model.values.Value
 import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
@@ -52,6 +54,14 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 		if(isOptional)
 			simplifiedType = OptionalType(source, scope, simplifiedType)
 		return simplifiedType
+	}
+
+	override fun getLocalType(value: Value, sourceType: Type): Type {
+		return OrUnionType(source, scope, types.map { type -> type.getLocalType(value, sourceType) }).simplified()
+	}
+
+	override fun isMemberAccessible(signature: FunctionSignature, requireSpecificType: Boolean): Boolean {
+		return types.all { type -> type.isMemberAccessible(signature, requireSpecificType) }
 	}
 
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {

@@ -1,7 +1,10 @@
 package components.semantic_model.types
 
+import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmType
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.scopes.Scope
+import components.semantic_model.values.Value
 import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.declaration.InvalidSelfTypeLocation
@@ -16,6 +19,14 @@ class SelfType(source: SyntaxTreeNode, scope: Scope): Type(source, scope) {
 	override fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): SelfType = this
 	override fun simplified(): SelfType = this
 
+	override fun getLocalType(value: Value, sourceType: Type): Type {
+		if(value.scope.getSurroundingTypeDeclaration() == typeDeclaration)
+			return this
+		if(sourceType is StaticType)
+			return ObjectType(sourceType.typeDeclaration)
+		return sourceType
+	}
+
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {
 		return typeDeclaration?.scope?.getDirectTypeDeclaration(name)
 	}
@@ -28,15 +39,24 @@ class SelfType(source: SyntaxTreeNode, scope: Scope): Type(source, scope) {
 		if(unresolvedSourceType is StaticType)
 			return false
 		val sourceType = unresolvedSourceType.effectiveType
-		if(sourceType is ObjectType) //TODO also accept sub-types
-			return sourceType.getTypeDeclaration() == typeDeclaration
+		if(sourceType is ObjectType) {
+			val sourceTypeDeclaration = sourceType.getTypeDeclaration()
+			if(sourceTypeDeclaration == typeDeclaration)
+				return true
+			val sourceSuperType = sourceTypeDeclaration?.getLinkedSuperType() ?: return false
+			return accepts(sourceSuperType)
+		}
 		return sourceType.isAssignableTo(this)
 	}
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
 		val targetType = unresolvedTargetType.effectiveType
-		if(targetType is ObjectType) //TODO also allow assignment to super-types
-			return targetType.getTypeDeclaration() == typeDeclaration
+		if(targetType is ObjectType) {
+			if(targetType.getTypeDeclaration() == typeDeclaration)
+				return true
+			val superType = typeDeclaration?.getLinkedSuperType() ?: return false
+			return targetType.accepts(superType)
+		}
 		return targetType is SelfType
 	}
 
@@ -49,4 +69,6 @@ class SelfType(source: SyntaxTreeNode, scope: Scope): Type(source, scope) {
 	}
 
 	override fun toString() = "Self"
+
+	override fun createLlvmType(constructor: LlvmConstructor): LlvmType = constructor.pointerType
 }

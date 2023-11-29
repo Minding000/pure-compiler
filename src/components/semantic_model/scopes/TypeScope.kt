@@ -55,6 +55,8 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 		for(initializer in initializers)
 			initializer.superInitializer = superScope?.getSuperInitializer(initializer)
 		for((_, interfaceMember) in interfaceMembers) {
+			if(interfaceMember.type is StaticType)
+				continue
 			val (superMember, superMemberType) = superScope?.getValueDeclaration(interfaceMember.name) ?: continue
 			val superInterfaceMember = superMember as? InterfaceMember ?: continue
 			interfaceMember.superMember = Pair(superInterfaceMember, superMemberType)

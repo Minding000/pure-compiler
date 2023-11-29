@@ -84,4 +84,23 @@ internal class General {
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
+
+	@Test
+	fun `recovers after syntax error in type definition`() {
+		val sourceCode = """
+			Volcano class {
+				va height = Int
+				val name: String
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				TypeDefinition [ Identifier { Volcano } class ] { TypeBody {
+					VariableSection [ val ] {
+						PropertyDeclaration { Identifier { name }: ObjectType { Identifier { String } } }
+					}
+				} }
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
 }

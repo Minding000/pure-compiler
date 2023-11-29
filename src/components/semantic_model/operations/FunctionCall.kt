@@ -1,4 +1,4 @@
-package components.semantic_model.control_flow
+package components.semantic_model.operations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
@@ -8,7 +8,6 @@ import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.*
-import components.semantic_model.operations.MemberAccess
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.*
 import components.semantic_model.values.InitializerReference
@@ -78,11 +77,20 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				return
 			}
 			targetSignature = match.signature
-			type = match.returnType
-			registerSelfTypeUsages(match.signature)
+			//TODO improve 'targetType' determination
 			val targetType = (function as? MemberAccess)?.target?.type
+			var returnType: Type? = match.returnType
+			if(targetType != null)
+				returnType = returnType?.getLocalType(this, targetType)
+			val surroundingFunction = scope.getSurroundingFunction()
+			if(surroundingFunction?.whereClause?.matches(returnType) == true) {
+				returnType = ObjectType(surroundingFunction.whereClause)
+				addSemanticModels(returnType)
+			}
+			type = returnType
+			registerSelfTypeUsages(match.signature)
 			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
-				&& (targetType as? ObjectType)?.isSpecific == false)
+				&& targetType?.isMemberAccessible(match.signature, true) == false)
 				context.addIssue(AbstractMonomorphicAccess(source, "function",
 					match.signature.toString(false), targetType))
 		} catch(error: SignatureResolutionAmbiguityError) {

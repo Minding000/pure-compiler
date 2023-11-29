@@ -11,7 +11,8 @@ import util.indent
 import components.semantic_model.declarations.ComputedPropertyDeclaration as SemanticComputedPropertyDeclarationModel
 
 class ComputedPropertyDeclaration(private val identifier: Identifier, private val type: TypeSyntaxTreeNode?,
-								  private val getExpression: ValueSyntaxTreeNode?, private val setStatement: SyntaxTreeNode?):
+								  private val whereClause: WhereClause?, private val getExpression: ValueSyntaxTreeNode?,
+								  private val setStatement: SyntaxTreeNode?):
 	SyntaxTreeNode(identifier.start, setStatement?.end ?: getExpression?.end ?: identifier.end) {
 	lateinit var parent: ComputedPropertySection
 
@@ -24,22 +25,25 @@ class ComputedPropertyDeclaration(private val identifier: Identifier, private va
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val type = type ?: parent.type
+		val whereClause = whereClause?.toSemanticModel(scope)
 		return SemanticComputedPropertyDeclarationModel(this, scope, identifier.getValue(), type?.toSemanticModel(scope),
-			isOverriding, isAbstract, getExpression?.toSemanticModel(scope), setStatement?.toSemanticModel(scope))
+			whereClause, isOverriding, isAbstract, getExpression?.toSemanticModel(scope), setStatement?.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {
-		val string = StringBuilder()
-		string
+		val stringRepresentation = StringBuilder()
+		stringRepresentation
 			.append("ComputedPropertyDeclaration {\n\t")
 			.append(identifier.toString())
 		if(type != null)
-			string.append(": ").append(type)
+			stringRepresentation.append(": ").append(type)
+		if(whereClause != null)
+			stringRepresentation.append(" $whereClause".indent())
 		if(getExpression != null)
-			string.append("\n\tgets ").append(getExpression.toString().indent())
+			stringRepresentation.append("\n\tgets ").append(getExpression.toString().indent())
 		if(setStatement != null)
-			string.append("\n\tsets ").append(setStatement.toString().indent())
-		string.append("\n}")
-		return string.toString()
+			stringRepresentation.append("\n\tsets ").append(setStatement.toString().indent())
+		stringRepresentation.append("\n}")
+		return stringRepresentation.toString()
 	}
 }

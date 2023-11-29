@@ -1,6 +1,6 @@
 package components.semantic_model.resolution
 
-import components.semantic_model.control_flow.FunctionCall
+import components.semantic_model.operations.FunctionCall
 import components.semantic_model.operations.MemberAccess
 import components.semantic_model.types.FunctionType
 import components.semantic_model.values.VariableValue

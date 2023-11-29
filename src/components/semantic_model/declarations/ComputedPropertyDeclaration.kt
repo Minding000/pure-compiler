@@ -15,7 +15,8 @@ import logger.issues.modifiers.VariablePropertyOverriddenByValue
 import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclaration as ComputedPropertySyntaxTree
 
 class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, scope: MutableScope, name: String, type: Type?,
-								  isOverriding: Boolean, isAbstract: Boolean, val getExpression: Value?, val setStatement: SemanticModel?):
+								  val whereClause: WhereClause?, isOverriding: Boolean, isAbstract: Boolean, val getExpression: Value?,
+								  val setStatement: SemanticModel?):
 	PropertyDeclaration(source, scope, name, type, getExpression, false, isAbstract, setStatement == null,
 		false, isOverriding) {
 	val getterIdentifier
@@ -28,7 +29,7 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 	var llvmSetterValue: LlvmValue? = null
 
 	init {
-		addSemanticModels(setStatement)
+		addSemanticModels(whereClause, setStatement)
 	}
 
 	override fun validateSuperMember() {

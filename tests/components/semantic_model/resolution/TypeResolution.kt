@@ -166,7 +166,7 @@ internal class TypeResolution {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val propertyDeclaration = lintResult.find<PropertyDeclaration>()
+		val propertyDeclaration = lintResult.find<PropertyDeclaration> { propertyDeclaration -> propertyDeclaration.name == "interface" }
 		assertEquals("Self", propertyDeclaration?.type.toString())
 	}
 

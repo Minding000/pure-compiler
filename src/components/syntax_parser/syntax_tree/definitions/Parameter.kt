@@ -29,7 +29,9 @@ class Parameter(private val modifierList: ModifierList?, private val identifier:
 		val superType = type?.toSemanticModel(scope) ?: LiteralType(this, scope, SpecialType.ANY)
 		val typeScope = TypeScope(scope)
 		typeScope.superScope = superType.interfaceScope
-		return GenericTypeDeclaration(this, identifier.getValue(), typeScope, superType)
+		val typeDefinition = GenericTypeDeclaration(this, identifier.getValue(), typeScope, superType)
+		typeDefinition.addSemanticModels(typeDefinition.getValueDeclaration())
+		return typeDefinition
 	}
 
     override fun toString(): String {

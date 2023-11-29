@@ -8,6 +8,7 @@ import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.PropertyDeclaration
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
+import components.semantic_model.types.ObjectType
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -42,7 +43,13 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		}
 		valueDeclaration.usages.add(this)
 		this.declaration = valueDeclaration
-		this.type = type
+		val surroundingFunction = scope.getSurroundingFunction()
+		if(surroundingFunction?.whereClause?.matches(type) == true) {
+			this.type = ObjectType(surroundingFunction.whereClause)
+			addSemanticModels(this.type)
+		} else {
+			this.type = type
+		}
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

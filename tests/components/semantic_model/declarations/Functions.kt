@@ -6,6 +6,7 @@ import logger.issues.modifiers.OverriddenSuperMissing
 import logger.issues.modifiers.OverridingFunctionReturnTypeNotAssignable
 import logger.issues.modifiers.OverridingMemberKindMismatch
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
+import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertNotNull
@@ -569,4 +570,31 @@ internal class Functions {
 		lintResult.assertIssueDetected<OverridingMemberKindMismatch>(
 			"'result' function cannot override 'result' computed property.", Severity.ERROR)
 	}
+
+	//TODO same test for computed properties
+	//TODO same test for operators
+	@Test
+	fun `constrains type if where clause exists`() {
+		val sourceCode = """
+			abstract Addable class {
+				abstract instances ZERO
+				abstract monomorphic operator +(other: Self): Self
+			}
+			List class {
+				containing Element
+				val first: Element
+				val last: Element
+				to sum(): Element where Element is specific Addable {
+					var sum = Element.ZERO
+					sum = sum + first
+					sum = sum + last
+					return sum
+				}
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+	}
+
+	//TODO test that function with where is only accessible when condition is met
 }

@@ -1,7 +1,7 @@
 package components.semantic_model.declarations
 
-import components.semantic_model.control_flow.FunctionCall
 import components.semantic_model.general.SemanticModel
+import components.semantic_model.operations.FunctionCall
 import components.semantic_model.scopes.TypeScope
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.StaticType

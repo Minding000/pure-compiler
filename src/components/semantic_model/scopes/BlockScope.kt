@@ -9,7 +9,7 @@ import components.semantic_model.values.ValueDeclaration
 import components.semantic_model.values.VariableValue
 import logger.issues.declaration.Redeclaration
 
-class BlockScope(private val parentScope: MutableScope): MutableScope() {
+class BlockScope(val parentScope: MutableScope): MutableScope() {
 	var semanticModel: SemanticModel? = null
 	private val typeDeclarations = HashMap<String, TypeDeclaration>()
 	private val valueDeclarations = HashMap<String, ValueDeclaration>()
