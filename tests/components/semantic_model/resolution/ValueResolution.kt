@@ -305,4 +305,6 @@ internal class ValueResolution {
 		assertIs<VariableValue>(value)
 		assertNull(value.declaration)
 	}
+
+	//TODO test that computed property with where is only accessible when condition is met
 }

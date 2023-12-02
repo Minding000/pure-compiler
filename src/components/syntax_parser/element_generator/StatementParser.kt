@@ -613,7 +613,8 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 
 	/**
 	 * ComputedPropertyDeclaration:
-	 *   <Identifier>[: <Type>][ <WhereClause>] [get <Expression>] [set <Statement>]
+	 *   <Identifier>[: <Type>][ <WhereClause>] [gets <Expression>] [sets <Statement>]
+	 *   <Identifier>[: <Type>][ <WhereClause>] [gets <StatementSection>] [sets <Statement>]
 	 */
 	private fun parseComputedPropertyDeclaration(): ComputedPropertyDeclaration {
 		val identifier = parseIdentifier()
@@ -623,16 +624,19 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 		} else null
 		val whereClause = parseWhereClause()
 		consumeLineBreaks()
-		val getExpression = if(currentWord?.type == WordAtom.GETS) {
+		val getter = if(currentWord?.type == WordAtom.GETS) {
 			consume(WordAtom.GETS)
-			parseExpression()
+			if(currentWord?.type == WordAtom.OPENING_BRACE)
+				parseStatementSection()
+			else
+				parseExpression()
 		} else null
 		consumeLineBreaks()
-		val setStatement = if(currentWord?.type == WordAtom.SETS) {
+		val setter = if(currentWord?.type == WordAtom.SETS) {
 			consume(WordAtom.SETS)
 			parseStatement()
 		} else null
-		return ComputedPropertyDeclaration(identifier, type, whereClause, getExpression, setStatement)
+		return ComputedPropertyDeclaration(identifier, type, whereClause, getter, setter)
 	}
 
 	/**

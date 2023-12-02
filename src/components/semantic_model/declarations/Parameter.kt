@@ -6,13 +6,13 @@ import components.semantic_model.context.VariableUsage
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.Type
 import components.semantic_model.values.ValueDeclaration
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.declaration.PropertyParameterMismatch
 import logger.issues.declaration.PropertyParameterOutsideOfInitializer
 import kotlin.properties.Delegates
-import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
-class Parameter(override val source: ParameterSyntaxTree, scope: MutableScope, name: String, type: Type?, isMutable: Boolean,
-				val isVariadic: Boolean):
+class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: String, type: Type?, isMutable: Boolean = false,
+				val isVariadic: Boolean = false):
 	ValueDeclaration(source, scope, name, type, null, true, isMutable) {
 	val isPropertySetter = type == null
 	var propertyDeclaration: ValueDeclaration? = null

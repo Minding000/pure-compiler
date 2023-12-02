@@ -1,19 +1,19 @@
 package components.syntax_parser.syntax_tree.definitions
 
+import components.semantic_model.scopes.BlockScope
 import components.semantic_model.scopes.MutableScope
 import components.syntax_parser.syntax_tree.definitions.sections.ComputedPropertySection
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
-import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import components.tokenizer.WordAtom
 import util.indent
 import components.semantic_model.declarations.ComputedPropertyDeclaration as SemanticComputedPropertyDeclarationModel
 
 class ComputedPropertyDeclaration(private val identifier: Identifier, private val type: TypeSyntaxTreeNode?,
-								  private val whereClause: WhereClause?, private val getExpression: ValueSyntaxTreeNode?,
-								  private val setStatement: SyntaxTreeNode?):
-	SyntaxTreeNode(identifier.start, setStatement?.end ?: getExpression?.end ?: identifier.end) {
+								  private val whereClause: WhereClause?, private val getter: SyntaxTreeNode?,
+								  private val setter: SyntaxTreeNode?):
+	SyntaxTreeNode(identifier.start, setter?.end ?: getter?.end ?: identifier.end) {
 	lateinit var parent: ComputedPropertySection
 
 	companion object {
@@ -26,8 +26,11 @@ class ComputedPropertyDeclaration(private val identifier: Identifier, private va
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val type = type ?: parent.type
 		val whereClause = whereClause?.toSemanticModel(scope)
+		val getterScope = BlockScope(scope)
+		val setterScope = BlockScope(scope)
 		return SemanticComputedPropertyDeclarationModel(this, scope, identifier.getValue(), type?.toSemanticModel(scope),
-			whereClause, isOverriding, isAbstract, getExpression?.toSemanticModel(scope), setStatement?.toSemanticModel(scope))
+			whereClause, isOverriding, isAbstract, getterScope, setterScope, getter?.toSemanticModel(getterScope),
+			setter?.toSemanticModel(setterScope))
 	}
 
 	override fun toString(): String {
@@ -39,10 +42,10 @@ class ComputedPropertyDeclaration(private val identifier: Identifier, private va
 			stringRepresentation.append(": ").append(type)
 		if(whereClause != null)
 			stringRepresentation.append(" $whereClause".indent())
-		if(getExpression != null)
-			stringRepresentation.append("\n\tgets ").append(getExpression.toString().indent())
-		if(setStatement != null)
-			stringRepresentation.append("\n\tsets ").append(setStatement.toString().indent())
+		if(getter != null)
+			stringRepresentation.append("\n\tgets ").append(getter.toString().indent())
+		if(setter != null)
+			stringRepresentation.append("\n\tsets ").append(setter.toString().indent())
 		stringRepresentation.append("\n}")
 		return stringRepresentation.toString()
 	}

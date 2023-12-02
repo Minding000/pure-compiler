@@ -4,11 +4,12 @@ import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.ValueDeclaration
-import components.syntax_parser.syntax_tree.general.StatementSection
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
 
-class ErrorHandlingContext(override val source: StatementSection, scope: Scope, val mainBlock: StatementBlock,
-						   val handleBlocks: List<HandleBlock>, val alwaysBlock: StatementBlock?): SemanticModel(source, scope) {
+class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, val mainBlock: StatementBlock,
+						   val handleBlocks: List<HandleBlock> = emptyList(), val alwaysBlock: StatementBlock? = null):
+	SemanticModel(source, scope) {
 	override var isInterruptingExecution = false
 
 	init {

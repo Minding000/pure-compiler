@@ -571,8 +571,6 @@ internal class Functions {
 			"'result' function cannot override 'result' computed property.", Severity.ERROR)
 	}
 
-	//TODO same test for computed properties
-	//TODO same test for operators
 	@Test
 	fun `constrains type if where clause exists`() {
 		val sourceCode = """
@@ -595,6 +593,4 @@ internal class Functions {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
 	}
-
-	//TODO test that function with where is only accessible when condition is met
 }

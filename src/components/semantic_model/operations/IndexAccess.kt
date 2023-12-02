@@ -38,13 +38,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 				return
 			}
 			targetSignature = match.signature
-			var returnType = match.returnType.getLocalType(this, targetType)
-			val surroundingFunction = scope.getSurroundingFunction()
-			if(surroundingFunction?.whereClause?.matches(returnType) == true) {
-				returnType = ObjectType(surroundingFunction.whereClause)
-				addSemanticModels(returnType)
-			}
-			type = returnType
+			setUnextendedType(match.returnType.getLocalType(this, targetType))
 			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
 				&& !targetType.isMemberAccessible(match.signature, true))
 				context.addIssue(AbstractMonomorphicAccess(source, "operator",

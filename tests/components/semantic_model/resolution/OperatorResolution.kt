@@ -356,4 +356,6 @@ internal class OperatorResolution {
 		val operatorCall = lintResult.find<BinaryModification>()
 		assertEquals("(Int) =>|", operatorCall?.targetSignature.toString())
 	}
+
+	//TODO test that operator with where is only accessible when condition is met
 }

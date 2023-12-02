@@ -82,12 +82,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			var returnType: Type? = match.returnType
 			if(targetType != null)
 				returnType = returnType?.getLocalType(this, targetType)
-			val surroundingFunction = scope.getSurroundingFunction()
-			if(surroundingFunction?.whereClause?.matches(returnType) == true) {
-				returnType = ObjectType(surroundingFunction.whereClause)
-				addSemanticModels(returnType)
-			}
-			type = returnType
+			setUnextendedType(returnType)
 			registerSelfTypeUsages(match.signature)
 			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
 				&& targetType?.isMemberAccessible(match.signature, true) == false)

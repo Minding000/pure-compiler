@@ -5,6 +5,7 @@ import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
+import components.semantic_model.types.ObjectType
 import components.semantic_model.types.OptionalType
 import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -19,6 +20,22 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 
 	open fun isAssignableTo(targetType: Type?): Boolean {
 		return type?.let { type -> targetType?.accepts(type) } ?: false
+	}
+
+	fun setUnextendedType(type: Type?) {
+		val surroundingComputedProperty = scope.getSurroundingComputedProperty()
+		if(surroundingComputedProperty?.whereClause?.matches(type) == true) {
+			this.type = ObjectType(surroundingComputedProperty.whereClause)
+			addSemanticModels(this.type)
+			return
+		}
+		val surroundingFunction = scope.getSurroundingFunction()
+		if(surroundingFunction?.whereClause?.matches(type) == true) {
+			this.type = ObjectType(surroundingFunction.whereClause)
+			addSemanticModels(this.type)
+			return
+		}
+		this.type = type
 	}
 
 	open fun setInferredType(inferredType: Type?) {

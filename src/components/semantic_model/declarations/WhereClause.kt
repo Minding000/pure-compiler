@@ -6,7 +6,6 @@ import components.semantic_model.types.ObjectType
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import components.semantic_model.values.LocalVariableDeclaration
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.WhereClause as WhereClauseSyntaxTree
 
 class WhereClause(source: WhereClauseSyntaxTree, scope: TypeScope, val subject: ObjectType, override: Type):
@@ -23,14 +22,26 @@ class WhereClause(source: WhereClauseSyntaxTree, scope: TypeScope, val subject: 
 
 	override fun declare() {
 		super.declare()
-		scope.enclosingScope.addTypeDeclaration(this)
-		scope.enclosingScope.addValueDeclaration(getValueDeclaration())
-	}
-
-	override fun getValueDeclaration(): ValueDeclaration {
 		val staticType = StaticType(this)
-		staticValueDeclaration = LocalVariableDeclaration(source, scope.enclosingScope, name, staticType)
-		addSemanticModels(staticValueDeclaration)
-		return staticValueDeclaration
+		val parent = parent
+		if(parent is ComputedPropertyDeclaration) {
+			if(parent.getterErrorHandlingContext != null) {
+				parent.getterScope.addTypeDeclaration(this)
+				staticValueDeclaration = LocalVariableDeclaration(source, parent.getterScope, name, staticType)
+				staticValueDeclaration.declare()
+				addSemanticModels(staticValueDeclaration)
+			}
+			if(parent.setterErrorHandlingContext != null) {
+				parent.setterScope.addTypeDeclaration(this)
+				staticValueDeclaration = LocalVariableDeclaration(source, parent.setterScope, name, staticType)
+				staticValueDeclaration.declare()
+				addSemanticModels(staticValueDeclaration)
+			}
+		} else {
+			scope.enclosingScope.addTypeDeclaration(this)
+			staticValueDeclaration = LocalVariableDeclaration(source, scope.enclosingScope, name, staticType)
+			staticValueDeclaration.declare()
+			addSemanticModels(staticValueDeclaration)
+		}
 	}
 }

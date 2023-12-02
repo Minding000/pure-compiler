@@ -5,16 +5,18 @@ import components.semantic_model.control_flow.BreakStatement
 import components.semantic_model.control_flow.NextStatement
 import components.semantic_model.control_flow.ReturnStatement
 import components.semantic_model.scopes.BlockScope
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.constant_conditions.UnreachableStatement
-import components.syntax_parser.syntax_tree.general.StatementBlock as StatementBlockSyntaxTree
 
-class StatementBlock(override val source: StatementBlockSyntaxTree, override val scope: BlockScope, val statements: List<SemanticModel>):
+class StatementBlock(override val source: SyntaxTreeNode, override val scope: BlockScope, val statements: List<SemanticModel>):
 	SemanticModel(source, scope) {
 	override var isInterruptingExecution = false
 
 	init {
 		addSemanticModels(statements)
 	}
+
+	constructor(source: SyntaxTreeNode, scope: BlockScope, statement: SemanticModel): this(source, scope, listOf(statement))
 
 	override fun validate() {
 		super.validate()

@@ -1,6 +1,7 @@
 package components.semantic_model.scopes
 
 import components.semantic_model.control_flow.LoopStatement
+import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.types.FunctionType
@@ -38,6 +39,8 @@ abstract class Scope {
 	}
 
 	open fun getSurroundingTypeDeclaration(): TypeDeclaration? = null
+
+	open fun getSurroundingComputedProperty(): ComputedPropertyDeclaration? = null
 
 	open fun getSurroundingFunction(): FunctionImplementation? = null
 

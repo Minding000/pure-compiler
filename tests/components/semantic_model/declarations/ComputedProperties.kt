@@ -5,6 +5,7 @@ import logger.issues.declaration.ComputedPropertyMissingType
 import logger.issues.initialization.ConstantReassignment
 import logger.issues.modifiers.OverridingMemberKindMismatch
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
+import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -102,4 +103,22 @@ internal class ComputedProperties {
 	}
 
 	//TODO write test: allows overriding computed properties to add getter / setter
+
+	@Test
+	fun `constrains type if where clause exists`() {
+		val sourceCode = """
+			abstract Addable class {
+				abstract instances ZERO
+				abstract monomorphic operator +(other: Self): Self
+			}
+			List class {
+				containing Element
+				val first: Element
+				val last: Element
+				computed sum: Element where Element is specific Addable gets first + last
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+	}
 }

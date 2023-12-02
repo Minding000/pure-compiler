@@ -31,8 +31,6 @@ internal class Members {
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
-	//TODO also test parsing computed property with get body
-	// -> if blocks can return this would be easier
 	@Test
 	fun `parses computed properties`() {
 		val sourceCode = """
@@ -53,14 +51,18 @@ internal class Members {
 						gets bottom - top
 						sets bottom = top + height
 					centerX
-						gets left + width / 2
+						gets {
+							return left + width / 2
+						}
 						sets {
 							val halfWidth = width / 2
 							left = centerX - halfWidth
 							right = centerX + halfWidth
 						}
 					centerY
-						gets top + height / 2
+						gets {
+							return top + height / 2
+						}
 						sets {
 							val halfHeight = height / 2
 							top = centerY - halfHeight
@@ -110,11 +112,13 @@ internal class Members {
 						}
 						ComputedPropertyDeclaration {
 							Identifier { centerX }
-							gets BinaryOperator {
-								Identifier { left } Operator { + } BinaryOperator {
-									Identifier { width } Operator { / } NumberLiteral { 2 }
-								}
-							}
+							gets StatementSection { StatementBlock {
+								Return { BinaryOperator {
+									Identifier { left } Operator { + } BinaryOperator {
+										Identifier { width } Operator { / } NumberLiteral { 2 }
+									}
+								} }
+							} }
 							sets StatementSection { StatementBlock {
 								VariableSection [ val ] {
 									LocalVariableDeclaration { Identifier { halfWidth } = BinaryOperator {
@@ -137,11 +141,13 @@ internal class Members {
 						}
 						ComputedPropertyDeclaration {
 							Identifier { centerY }
-							gets BinaryOperator {
-								Identifier { top } Operator { + } BinaryOperator {
-									Identifier { height } Operator { / } NumberLiteral { 2 }
-								}
-							}
+							gets StatementSection { StatementBlock {
+								Return { BinaryOperator {
+									Identifier { top } Operator { + } BinaryOperator {
+										Identifier { height } Operator { / } NumberLiteral { 2 }
+									}
+								} }
+							} }
 							sets StatementSection { StatementBlock {
 								VariableSection [ val ] {
 									LocalVariableDeclaration { Identifier { halfHeight } = BinaryOperator {

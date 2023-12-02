@@ -3,19 +3,21 @@ package components.semantic_model.control_flow
 import components.code_generation.llvm.LlvmConstructor
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
+import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Value
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.returns.RedundantReturnValue
 import logger.issues.returns.ReturnStatementMissingValue
 import logger.issues.returns.ReturnStatementOutsideOfCallable
 import logger.issues.returns.ReturnValueTypeMismatch
-import components.syntax_parser.syntax_tree.control_flow.ReturnStatement as ReturnStatementSyntaxTree
 
-class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Scope, val value: Value?): SemanticModel(source, scope) {
+class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val value: Value?): SemanticModel(source, scope) {
 	override val isInterruptingExecution = true
 	private var targetFunction: FunctionImplementation? = null
+	private var targetComputedProperty: ComputedPropertyDeclaration? = null
 
 	init {
 		addSemanticModels(value)
@@ -27,6 +29,11 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 	}
 
 	private fun determineTargetFunction() {
+		val surroundingComputedProperty = scope.getSurroundingComputedProperty()
+		if(surroundingComputedProperty != null) {
+			targetComputedProperty = surroundingComputedProperty
+			return
+		}
 		val surroundingFunction = scope.getSurroundingFunction()
 		if(surroundingFunction == null) {
 			context.addIssue(ReturnStatementOutsideOfCallable(source))
@@ -47,7 +54,17 @@ class ReturnStatement(override val source: ReturnStatementSyntaxTree, scope: Sco
 	}
 
 	private fun validateReturnType() {
-		val returnType = targetFunction?.signature?.returnType ?: return
+		var returnType = targetFunction?.signature?.returnType
+		val targetComputedProperty = targetComputedProperty
+		if(targetComputedProperty != null) {
+			val getter = targetComputedProperty.getterErrorHandlingContext
+			returnType = if(getter != null && isIn(getter))
+				targetComputedProperty.getterReturnType
+			else
+				targetComputedProperty.setterReturnType
+		}
+		if(returnType == null)
+			return
 		if(value == null) {
 			if(!SpecialType.NOTHING.matches(returnType))
 				context.addIssue(ReturnStatementMissingValue(source))

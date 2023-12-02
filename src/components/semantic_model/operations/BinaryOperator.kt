@@ -7,7 +7,6 @@ import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.scopes.Scope
-import components.semantic_model.types.ObjectType
 import components.semantic_model.types.OptionalType
 import components.semantic_model.types.OrUnionType
 import components.semantic_model.values.*
@@ -47,13 +46,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				return
 			}
 			targetSignature = match.signature
-			var returnType = match.returnType.getLocalType(this, leftType)
-			val surroundingFunction = scope.getSurroundingFunction()
-			if(surroundingFunction?.whereClause?.matches(returnType) == true) {
-				returnType = ObjectType(surroundingFunction.whereClause)
-				addSemanticModels(returnType)
-			}
-			type = returnType
+			setUnextendedType(match.returnType.getLocalType(this, leftType))
 			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
 				&& !leftType.isMemberAccessible(match.signature, true))
 				context.addIssue(AbstractMonomorphicAccess(source, "operator",

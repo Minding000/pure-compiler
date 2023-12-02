@@ -282,4 +282,6 @@ internal class FunctionResolution {
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
 		assertEquals("(...Int) =>|", functionCall?.targetSignature.toString())
 	}
+
+	//TODO test that function with where is only accessible when condition is met
 }

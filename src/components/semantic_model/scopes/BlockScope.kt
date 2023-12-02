@@ -1,6 +1,7 @@
 package components.semantic_model.scopes
 
 import components.semantic_model.control_flow.LoopStatement
+import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.general.SemanticModel
@@ -48,6 +49,10 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 
 	override fun getSurroundingTypeDeclaration(): TypeDeclaration? {
 		return parentScope.getSurroundingTypeDeclaration()
+	}
+
+	override fun getSurroundingComputedProperty(): ComputedPropertyDeclaration? {
+		return (semanticModel as? ComputedPropertyDeclaration) ?: parentScope.getSurroundingComputedProperty()
 	}
 
 	override fun getSurroundingFunction(): FunctionImplementation? {

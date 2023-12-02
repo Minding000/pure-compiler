@@ -8,7 +8,6 @@ import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.PropertyDeclaration
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
-import components.semantic_model.types.ObjectType
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -43,13 +42,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		}
 		valueDeclaration.usages.add(this)
 		this.declaration = valueDeclaration
-		val surroundingFunction = scope.getSurroundingFunction()
-		if(surroundingFunction?.whereClause?.matches(type) == true) {
-			this.type = ObjectType(surroundingFunction.whereClause)
-			addSemanticModels(this.type)
-		} else {
-			this.type = type
-		}
+		setUnextendedType(type)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -90,7 +83,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val declaration = declaration
 		if(declaration is ComputedPropertyDeclaration) {
-			val setStatement = declaration.setStatement
+			val setStatement = declaration.setter
 			if(setStatement != null && isIn(setStatement))
 				return constructor.getLastParameter()
 			return buildGetterCall(constructor, declaration)

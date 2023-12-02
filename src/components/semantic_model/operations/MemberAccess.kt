@@ -163,8 +163,8 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 	private fun getMemberValue(constructor: LlvmConstructor, memberLlvmType: LlvmType?): LlvmValue {
 		val declaration = (member as? VariableValue)?.declaration
 		return if(declaration is ComputedPropertyDeclaration) {
-			val setStatement = declaration.setStatement
-			if(setStatement != null && isIn(setStatement))
+			val setter = declaration.setter
+			if(setter != null && isIn(setter))
 				constructor.getLastParameter()
 			else
 				buildGetterCall(constructor, declaration)

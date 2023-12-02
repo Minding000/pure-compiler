@@ -4,6 +4,7 @@ import logger.Severity
 import logger.issues.declaration.*
 import logger.issues.modifiers.OverriddenSuperMissing
 import logger.issues.modifiers.OverridingFunctionReturnTypeNotAssignable
+import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertNotNull
@@ -320,5 +321,28 @@ internal class Operators {
 		lintResult.assertIssueDetected<OverridingFunctionReturnTypeNotAssignable>(
 			"Return type of overriding operator 'WoodenHouse[Int]: Float' is not assignable to " +
 				"the return type of the overridden operator 'House[Int]: Int'.", Severity.ERROR)
+	}
+
+	@Test
+	fun `constrains type if where clause exists`() {
+		val sourceCode = """
+			abstract Addable class {
+				abstract instances ZERO
+				abstract monomorphic operator +(other: Self): Self
+			}
+			List class {
+				containing Element
+				val first: Element
+				val last: Element
+				operator []: Element where Element is specific Addable {
+					var sum = Element.ZERO
+					sum = sum + first
+					sum = sum + last
+					return sum
+				}
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
 	}
 }
