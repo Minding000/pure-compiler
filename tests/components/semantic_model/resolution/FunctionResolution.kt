@@ -9,6 +9,7 @@ import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
+import logger.issues.resolution.NotFound
 import logger.issues.resolution.SignatureAmbiguity
 import logger.issues.resolution.SignatureMismatch
 import org.junit.jupiter.api.Test
@@ -284,4 +285,17 @@ internal class FunctionResolution {
 	}
 
 	//TODO test that function with where is only accessible when condition is met
+
+	@Test
+	fun `constrains type if where clause exists`() { //TODO adjust name and content
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				to sum(): Element where Element is specific Addable
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+	}
 }

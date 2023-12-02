@@ -180,9 +180,6 @@ internal class ExecutionFlowAnalysis {
 
 	@Test
 	fun `calculates result of trivial optional casts`() {
-		//TODO investigate:
-		// "ERROR: Test.Test:5:5: 'result' cannot be reassigned, because it is constant."
-		// warns that constant is written to it loop but does not realize that it is also declared in the loop
 		val sourceCode =
 			"""
 				Color enum {

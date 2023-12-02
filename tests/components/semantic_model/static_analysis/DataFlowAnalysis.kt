@@ -732,7 +732,7 @@ internal class DataFlowAnalysis {
 		""".trimIndent()
 		val report = """
 			start -> 5
-			5: declaration & write -> 5 (null, null)
+			5: declaration & write -> end (null, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertStringEquals(report, tracker.getReportFor("c"))

@@ -45,6 +45,18 @@ internal class Initialization {
 	}
 
 	@Test
+	fun `allows declaration of constants in loops`() {
+		val sourceCode =
+			"""
+				loop {
+					val a = 5
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ConstantReassignment>()
+	}
+
+	@Test
 	fun `allows assignments to uninitialized constant local variables`() {
 		val sourceCode =
 			"""

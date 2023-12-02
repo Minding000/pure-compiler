@@ -161,6 +161,12 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		val firstVariableUsages = currentState.firstVariableUsages[referencePoint] ?: return
 		for((declaration, lastUsages) in originState.lastVariableUsages) {
 			for(firstUsage in firstVariableUsages[declaration] ?: continue) {
+				if(firstUsage.kinds.contains(VariableUsage.Kind.DECLARATION)) {
+					val end = VariableUsage(listOf(VariableUsage.Kind.END), declaration)
+					for(lastUsage in lastUsages)
+						lastUsage.nextUsages.add(end)
+					continue
+				}
 				for(lastUsage in lastUsages) {
 					firstUsage.previousUsages.addFirst(lastUsage)
 					lastUsage.nextUsages.addFirst(firstUsage)
