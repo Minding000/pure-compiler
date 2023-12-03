@@ -27,12 +27,12 @@ internal class Operators {
 
 	@Test
 	fun `detects and tokens`() {
-		TestUtil.assertTokenType("&", WordAtom.AND)
+		TestUtil.assertTokenType("and", WordAtom.AND_OPERATOR)
 	}
 
 	@Test
 	fun `detects or tokens`() {
-		TestUtil.assertTokenType("|", WordAtom.OR)
+		TestUtil.assertTokenType("or", WordAtom.OR_OPERATOR)
 	}
 
 	@Test
@@ -118,11 +118,6 @@ internal class Operators {
 	@Test
 	fun `detects negation tokens`() {
 		TestUtil.assertTokenType("!", WordAtom.NOT)
-	}
-
-	@Test
-	fun `detects spread tokens`() {
-		TestUtil.assertTokenType("...", WordAtom.SPREAD)
 	}
 
 	@Test

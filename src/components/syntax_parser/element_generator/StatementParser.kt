@@ -685,16 +685,30 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 
 	/**
 	 * WhereClause:
-	 *   where <Identifier> is <Type>
+	 *   where <WhereClauseCondition>[ and <WhereClauseCondition>]...
 	 */
 	private fun parseWhereClause(): WhereClause? {
 		if(currentWord?.type !== WordAtom.WHERE)
 			return null
 		val start = consume(WordAtom.WHERE).start
+		val conditions = LinkedList<WhereClauseCondition>()
+		conditions.add(parseWhereClauseCondition())
+		while(currentWord?.type == WordAtom.AND_OPERATOR) {
+			consume(WordAtom.AND_OPERATOR)
+			conditions.add(parseWhereClauseCondition())
+		}
+		return WhereClause(conditions, start)
+	}
+
+	/**
+	 * WhereClauseCondition:
+	 *   <Identifier> is <Type>
+	 */
+	private fun parseWhereClauseCondition(): WhereClauseCondition {
 		val subject = parseIdentifier()
 		consume(WordAtom.IS)
 		val override = typeParser.parseType()
-		return WhereClause(subject, override, start)
+		return WhereClauseCondition(subject, override)
 	}
 
 	/**

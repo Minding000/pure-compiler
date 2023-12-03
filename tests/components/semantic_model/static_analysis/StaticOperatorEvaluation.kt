@@ -51,7 +51,7 @@ internal class StaticOperatorEvaluation {
 	fun `calculates result of boolean and`() {
 		val sourceCode =
 			"""
-				yes & no
+				yes and no
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.getComputedValue()
@@ -63,7 +63,7 @@ internal class StaticOperatorEvaluation {
 	fun `calculates result of boolean or`() {
 		val sourceCode =
 			"""
-				yes | no
+				yes or no
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<BinaryOperator>()?.getComputedValue()

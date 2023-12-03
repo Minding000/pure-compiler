@@ -384,7 +384,7 @@ internal class DataFlowAnalysis {
 	fun `branches on boolean and`() {
 		val sourceCode = """
 			var a: Bool
-			a & a
+			a and a
 		""".trimIndent()
 		val report = """
 			start -> 1
@@ -401,7 +401,7 @@ internal class DataFlowAnalysis {
 	fun `branches on boolean or`() {
 		val sourceCode = """
 			var a: Bool
-			a | a
+			a or a
 		""".trimIndent()
 		val report = """
 			start -> 1
@@ -415,10 +415,10 @@ internal class DataFlowAnalysis {
 	}
 
 	@Test
-	fun `applies hints in boolean expressions`() { //TODO consider this syntax ambiguity: Type | value
+	fun `applies hints in boolean expressions`() {
 		val sourceCode = """
 			var a: Int?
-			(a is Int) | a
+			a is Int or a
 		""".trimIndent()
 		val report = """
 			start -> 1
@@ -635,7 +635,7 @@ internal class DataFlowAnalysis {
 	fun `applies hints from and expressions`() {
 		val sourceCode = """
 			val a: Int?
-			if (a is Int) & a == 2 {
+			if a is Int and a == 2 {
 				a
 			} else {
 				a
@@ -660,7 +660,7 @@ internal class DataFlowAnalysis {
 	fun `applies hints from or expressions`() {
 		val sourceCode = """
 			val a: Int?
-			if (a is Int) | a == 2 {
+			if a is Int or a == 2 {
 				a
 			} else {
 				a

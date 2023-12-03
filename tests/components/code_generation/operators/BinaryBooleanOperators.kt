@@ -12,7 +12,7 @@ internal class BinaryBooleanOperators {
 		val sourceCode = """
 			SimplestApp object {
 				to getNo(): Bool {
-					return yes & no
+					return yes and no
 				}
 			}
 			""".trimIndent()
@@ -25,7 +25,7 @@ internal class BinaryBooleanOperators {
 		val sourceCode = """
 			SimplestApp object {
 				to getYes(): Bool {
-					return yes | no
+					return yes or no
 				}
 			}
 			""".trimIndent()

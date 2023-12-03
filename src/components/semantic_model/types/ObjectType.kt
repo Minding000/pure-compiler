@@ -49,12 +49,12 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 	override fun isMemberAccessible(signature: FunctionSignature, requireSpecificType: Boolean): Boolean {
 		val typeDeclaration = getTypeDeclaration() ?: return false
 		if(requireSpecificType && !isSpecific) {
-			if(typeDeclaration is GenericTypeDeclaration || typeDeclaration is WhereClause || typeDeclaration is TypeAlias)
+			if(typeDeclaration is GenericTypeDeclaration || typeDeclaration is WhereClauseCondition || typeDeclaration is TypeAlias)
 				return typeDeclaration.superType?.isMemberAccessible(signature, true) == true
 		} else {
 			if(typeDeclaration == signature.original.parentDefinition)
 				return true
-			if(typeDeclaration is GenericTypeDeclaration || typeDeclaration is WhereClause || typeDeclaration is TypeAlias)
+			if(typeDeclaration is GenericTypeDeclaration || typeDeclaration is WhereClauseCondition || typeDeclaration is TypeAlias)
 				return typeDeclaration.superType?.isMemberAccessible(signature) == true
 		}
 		return false

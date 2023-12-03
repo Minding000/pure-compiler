@@ -91,9 +91,10 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 
 					//TODO validate that where clause subject is generic type of parent type definition
 
-					if(!whereClause.override.accepts(typeParameter))
+					val whereClauseCondition = whereClause.conditions.first()
+					if(!whereClauseCondition.override.accepts(typeParameter))
 						context.addIssue(WhereClauseUnfulfilled(source, "Function", getSignature(false),
-							targetType, whereClause))
+							targetType, whereClauseCondition))
 				}
 			}
 			setUnextendedType(returnType)

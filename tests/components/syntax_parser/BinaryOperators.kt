@@ -67,13 +67,13 @@ internal class BinaryOperators {
 
 	@Test
 	fun `parses binary boolean operators`() {
-		val sourceCode = "yes & no | yes"
+		val sourceCode = "yes and no or yes"
 		val expected =
 			"""
 				BinaryOperator {
 					BinaryOperator {
-						BooleanLiteral { yes } Operator { & } BooleanLiteral { no }
-					} Operator { | } BooleanLiteral { yes }
+						BooleanLiteral { yes } Operator { and } BooleanLiteral { no }
+					} Operator { or } BooleanLiteral { yes }
 				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
@@ -99,7 +99,7 @@ internal class BinaryOperators {
 
 	@Test
 	fun `parses binary number and boolean operators with correct precedence`() {
-		val sourceCode = "9 + 534 > 234 == no & 2 == 2"
+		val sourceCode = "9 + 534 > 234 == no and 2 == 2"
 		val expected =
 			"""
 				BinaryOperator {
@@ -109,7 +109,7 @@ internal class BinaryOperators {
 								NumberLiteral { 9 } Operator { + } NumberLiteral { 534 }
 							} Operator { > } NumberLiteral { 234 }
 						} Operator { == } BooleanLiteral { no }
-					} Operator { & } BinaryOperator {
+					} Operator { and } BinaryOperator {
 						NumberLiteral { 2 } Operator { == } NumberLiteral { 2 }
 					}
 				}

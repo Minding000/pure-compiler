@@ -284,6 +284,8 @@ internal class FunctionResolution {
 		assertEquals("(...Int) =>|", functionCall?.targetSignature.toString())
 	}
 
+	//TODO write similar tests for computed properties
+	//TODO write similar tests for operators
 	@Test
 	fun `allows accessing functions without where clause`() {
 		val sourceCode = """

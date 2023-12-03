@@ -23,7 +23,7 @@ internal class WhereClauses {
 					ComputedPropertySection [] {
 						ComputedPropertyDeclaration {
 							Identifier { liquidIgnitionTemperature }: ObjectType { Identifier { Float } } WhereClause {
-								Identifier { Liquid } is ObjectType { Identifier { Ignitable } }
+								WhereClauseCondition { Identifier { Liquid } is ObjectType { Identifier { Ignitable } } }
 							}
 							gets NumberLiteral { 0 }
 						}
@@ -36,21 +36,23 @@ internal class WhereClauses {
 	@Test
 	fun `parses where clauses on functions`() {
 		val sourceCode = """
-			Truck class {
-				containing Liquid
-				to explode() where Liquid is Ignitable {}
+			Map class {
+				containing Key, Value
+				to lowercase() where Key is String and Value is String {}
 			}
 			""".trimIndent()
 		val expected =
 			"""
-				TypeDefinition [ Identifier { Truck } class ] { TypeBody {
+				TypeDefinition [ Identifier { Map } class ] { TypeBody {
 					GenericsDeclaration {
-						Parameter { Identifier { Liquid } }
+						Parameter { Identifier { Key } }
+						Parameter { Identifier { Value } }
 					}
 					FunctionSection [ to ] {
-						Function [ Identifier { explode } ParameterList {
+						Function [ Identifier { lowercase } ParameterList {
 						}: void WhereClause {
-							Identifier { Liquid } is ObjectType { Identifier { Ignitable } }
+							WhereClauseCondition { Identifier { Key } is ObjectType { Identifier { String } } }
+							WhereClauseCondition { Identifier { Value } is ObjectType { Identifier { String } } }
 						} ] { StatementSection { StatementBlock {
 						} } }
 					}
@@ -78,7 +80,7 @@ internal class WhereClauses {
 							Parameter { Identifier { componentIndex }: ObjectType { Identifier { Int } } }
 						} } ParameterList {
 						}: ObjectType { Identifier { Component } } WhereClause {
-							Identifier { Liquid } is ObjectType { Identifier { Emulsion } }
+							WhereClauseCondition { Identifier { Liquid } is ObjectType { Identifier { Emulsion } } }
 						} ] { StatementSection { StatementBlock {
 						} } }
 					}

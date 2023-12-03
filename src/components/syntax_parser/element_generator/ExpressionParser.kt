@@ -60,8 +60,8 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 	/**
 	 * BinaryBooleanExpression:
 	 *   <EqualityComparison>
-	 *   <EqualityComparison> & <EqualityComparison>
-	 *   <EqualityComparison> | <EqualityComparison>
+	 *   <EqualityComparison> and <EqualityComparison>
+	 *   <EqualityComparison> or <EqualityComparison>
 	 */
 	private fun parseBinaryBooleanExpression(): ValueSyntaxTreeNode {
 		var expression: ValueSyntaxTreeNode = parseEqualityComparison()

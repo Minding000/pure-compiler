@@ -1,12 +1,12 @@
 package logger.issues.access
 
-import components.semantic_model.declarations.WhereClause
+import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.Issue
 import logger.Severity
 
-class WhereClauseUnfulfilled(source: SyntaxTreeNode, memberType: String, signature: String, targetType: Type, whereClause: WhereClause):
+class WhereClauseUnfulfilled(source: SyntaxTreeNode, memberType: String, signature: String, targetType: Type, whereClause: WhereClauseCondition):
 	Issue(Severity.ERROR, source) {
 	override val text = "$memberType '$signature' cannot be accessed on object of type '$targetType'," +
 		" because the condition '$whereClause' is not met."

@@ -169,7 +169,7 @@ internal class FunctionDefinitions {
 						}
 
 						==(right: Vector) {
-							return right.x == x & right.y == y
+							return right.x == x and right.y == y
 						}
 					}
 				}
@@ -204,7 +204,7 @@ internal class FunctionDefinitions {
 									MemberAccess {
 										Identifier { right }.Identifier { x }
 									} Operator { == } Identifier { x }
-								} Operator { & } BinaryOperator {
+								} Operator { and } BinaryOperator {
 									MemberAccess {
 										Identifier { right }.Identifier { y }
 									} Operator { == } Identifier { y }

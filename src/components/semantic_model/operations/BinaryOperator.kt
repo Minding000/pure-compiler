@@ -58,7 +58,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
-		val isConditional = SpecialType.BOOLEAN.matches(left.type) && (kind == Operator.Kind.AND || kind == Operator.Kind.PIPE)
+		val isConditional = SpecialType.BOOLEAN.matches(left.type) && (kind == Operator.Kind.AND || kind == Operator.Kind.OR)
 		val isComparison = kind == Operator.Kind.EQUAL_TO || kind == Operator.Kind.NOT_EQUAL_TO
 		left.analyseDataFlow(tracker)
 		if(isConditional) {
@@ -111,7 +111,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				val rightValue = right.getComputedValue() as? BooleanLiteral ?: return
 				BooleanLiteral(this, leftValue.value && rightValue.value)
 			}
-			Operator.Kind.PIPE -> {
+			Operator.Kind.OR -> {
 				val leftValue = left.getComputedValue() as? BooleanLiteral ?: return
 				val rightValue = right.getComputedValue() as? BooleanLiteral ?: return
 				BooleanLiteral(this, leftValue.value || rightValue.value)
@@ -189,7 +189,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		if(SpecialType.BOOLEAN.matches(left.type) && SpecialType.BOOLEAN.matches(right.type)) {
 			when(kind) {
 				Operator.Kind.AND -> return constructor.buildAnd(leftValue, rightValue, resultName)
-				Operator.Kind.PIPE -> return constructor.buildOr(leftValue, rightValue, resultName)
+				Operator.Kind.OR -> return constructor.buildOr(leftValue, rightValue, resultName)
 				Operator.Kind.EQUAL_TO -> return constructor.buildBooleanEqualTo(leftValue, rightValue, resultName)
 				Operator.Kind.NOT_EQUAL_TO -> return constructor.buildBooleanNotEqualTo(leftValue, rightValue, resultName)
 				else -> {}

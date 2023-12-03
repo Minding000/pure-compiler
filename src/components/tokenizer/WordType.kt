@@ -3,8 +3,8 @@ package components.tokenizer
 enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 	OPERATOR(
 		WordAtom.NOT,
-		WordAtom.AND,
-		WordAtom.OR,
+		WordAtom.AND_OPERATOR,
+		WordAtom.OR_OPERATOR,
 		WordAtom.IDENTICAL,
 		WordAtom.NOT_IDENTICAL,
 		WordAtom.EQUALS,
@@ -41,12 +41,12 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.DIVIDE
 	),
 	BINARY_BOOLEAN_OPERATOR(
-		WordAtom.AND,
-		WordAtom.OR
+		WordAtom.AND_OPERATOR,
+		WordAtom.OR_OPERATOR
 	),
 	UNION_OPERATOR(
-		WordAtom.AND,
-		WordAtom.OR
+		WordAtom.AND_UNION,
+		WordAtom.OR_UNION
 	),
 	ADDITION(
 		WordAtom.PLUS,
