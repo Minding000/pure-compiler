@@ -2,6 +2,7 @@ package components.tokenizer
 
 import logger.issues.tokenization.UnknownWord
 import source_structure.*
+import util.NOT_FOUND
 import java.util.regex.Pattern
 
 class WordGenerator(private val project: Project) {
@@ -65,7 +66,7 @@ class WordGenerator(private val project: Project) {
 		var remainingCharacterCount = input.indexOf('\n')
 		if(remainingCharacterCount == 0)
 			return null
-		if(remainingCharacterCount == -1)
+		if(remainingCharacterCount == NOT_FOUND)
 			remainingCharacterCount = input.length
 		val wordStartIndex = position
 		position += remainingCharacterCount

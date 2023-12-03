@@ -286,4 +286,45 @@ internal class Declarations {
 		lintResult.assertIssueNotDetected<ReferencedFileNotFound>(fileName)
 		lintResult.assertIssueNotDetected<Redeclaration>(fileName)
 	}
+
+	@Test
+	fun `allows declarations without where clause`() {
+		val sourceCode = """
+			List class {
+				containing Element
+				to sum(): Element
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<InvalidWhereClauseSubject>()
+	}
+
+	@Test
+	fun `allows where clause subject referencing generic type`() {
+		val sourceCode = """
+			Addable class
+			List class {
+				containing Element
+				to sum(): Element where Element is Addable
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<InvalidWhereClauseSubject>()
+	}
+
+	@Test
+	fun `disallows where clause subject referencing non-generic type`() {
+		val sourceCode = """
+			Addable class
+			Paper class
+			List class {
+				containing Element
+				to sum(): Element where Paper is Addable
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<InvalidWhereClauseSubject>(
+			"Condition 'Paper is Addable' has no effect, because subject 'Paper' is not a generic type of 'List'.",
+			Severity.WARNING)
+	}
 }

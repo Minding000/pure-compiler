@@ -1,7 +1,7 @@
 package source_structure
 
+import util.NOT_FOUND
 import util.indent
-import java.util.*
 
 class File(val module: Module, val pathParts: List<String>, val name: String, val content: String) {
 	val lines = ArrayList<Line>()
@@ -12,7 +12,7 @@ class File(val module: Module, val pathParts: List<String>, val name: String, va
 		while(true) {
 			lineNumber++
 			val endIndex = content.indexOf("\n", startIndex)
-			if(endIndex == -1) {
+			if(endIndex == NOT_FOUND) {
 				lines.add(Line(this, startIndex, content.length, lineNumber))
 				break
 			}

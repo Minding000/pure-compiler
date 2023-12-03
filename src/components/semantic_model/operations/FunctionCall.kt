@@ -90,13 +90,13 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 					//TODO match condition subject with type parameter (keep inheritance in mind)
 					val typeParameter = typeParameters?.first()//.find { type -> type.index == condition.subject.typeDeclaration.index }
 					if(typeParameter != null) {
-						//TODO validate that where clause subject is generic type of parent type definition
 
 						if(!condition.override.accepts(typeParameter))
 							context.addIssue(WhereClauseUnfulfilled(source, "Function", getSignature(false),
 								targetType, condition))
 					}
 				}
+
 			}
 			setUnextendedType(returnType)
 			registerSelfTypeUsages(match.signature)

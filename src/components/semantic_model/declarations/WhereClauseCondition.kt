@@ -6,11 +6,14 @@ import components.semantic_model.types.ObjectType
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import components.semantic_model.values.LocalVariableDeclaration
+import logger.issues.declaration.InvalidWhereClauseSubject
+import util.NOT_FOUND
 import components.syntax_parser.syntax_tree.definitions.WhereClauseCondition as WhereClauseConditionSyntaxTree
 
 class WhereClauseCondition(source: WhereClauseConditionSyntaxTree, scope: TypeScope, val subject: ObjectType, val override: Type):
 	TypeDeclaration(source, subject.name, scope, null, AndUnionType(source, scope, listOf(subject, override))) {
 	override val isDefinition = false
+	var subjectTypeDeclarationIndex = NOT_FOUND
 
 	init {
 		scope.typeDeclaration = this
@@ -42,6 +45,16 @@ class WhereClauseCondition(source: WhereClauseConditionSyntaxTree, scope: TypeSc
 			staticValueDeclaration = LocalVariableDeclaration(source, scope.enclosingScope, name, staticType)
 			staticValueDeclaration.declare()
 			addSemanticModels(staticValueDeclaration)
+		}
+	}
+
+	override fun determineTypes() {
+		super.determineTypes()
+		val typeDefinition = parent?.scope?.getSurroundingTypeDeclaration()
+		if(typeDefinition != null) {
+			subjectTypeDeclarationIndex = typeDefinition.scope.getGenericTypeDeclarations().indexOf(subject.getTypeDeclaration())
+			if(subjectTypeDeclarationIndex == NOT_FOUND)
+				context.addIssue(InvalidWhereClauseSubject(this, typeDefinition.name))
 		}
 	}
 
