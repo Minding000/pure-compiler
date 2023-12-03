@@ -8,7 +8,7 @@ import components.semantic_model.types.Type
 import components.semantic_model.values.LocalVariableDeclaration
 import components.syntax_parser.syntax_tree.definitions.WhereClause as WhereClauseSyntaxTree
 
-class WhereClause(source: WhereClauseSyntaxTree, scope: TypeScope, val subject: ObjectType, override: Type):
+class WhereClause(source: WhereClauseSyntaxTree, scope: TypeScope, val subject: ObjectType, val override: Type):
 	TypeDeclaration(source, subject.name, scope, null, AndUnionType(source, scope, listOf(subject, override))) {
 	override val isDefinition = false
 
@@ -44,4 +44,6 @@ class WhereClause(source: WhereClauseSyntaxTree, scope: TypeScope, val subject: 
 			addSemanticModels(staticValueDeclaration)
 		}
 	}
+
+	override fun toString(): String = "$subject is $override"
 }

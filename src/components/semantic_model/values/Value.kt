@@ -30,8 +30,8 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 			return
 		}
 		val surroundingFunction = scope.getSurroundingFunction()
-		if(surroundingFunction?.whereClause?.matches(type) == true) {
-			this.type = ObjectType(surroundingFunction.whereClause)
+		if(surroundingFunction?.signature?.whereClause?.matches(type) == true) {
+			this.type = ObjectType(surroundingFunction.signature.whereClause)
 			addSemanticModels(this.type)
 			return
 		}

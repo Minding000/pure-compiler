@@ -18,6 +18,7 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.access.AbstractMonomorphicAccess
+import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.initialization.ReliesOnUninitializedProperties
 import logger.issues.modifiers.AbstractClassInstantiation
 import logger.issues.resolution.CallToSpecificSuperMember
@@ -80,8 +81,21 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			//TODO improve 'targetType' determination
 			val targetType = (function as? MemberAccess)?.target?.type
 			var returnType: Type? = match.returnType
-			if(targetType != null)
+			if(targetType != null) {
 				returnType = returnType?.getLocalType(this, targetType)
+				val typeParameter = (targetType as? ObjectType)?.typeParameters?.firstOrNull()
+				val whereClause = match.signature.whereClause
+				if(whereClause != null && typeParameter != null) {
+					//TODO multiple generic parameters can profit from multiple where clause conditions
+					// e.g. <Key, Value>Map.lowercase() where Key is String and Value is String
+
+					//TODO validate that where clause subject is generic type of parent type definition
+
+					if(!whereClause.override.accepts(typeParameter))
+						context.addIssue(WhereClauseUnfulfilled(source, "Function", getSignature(false),
+							targetType, whereClause))
+				}
+			}
 			setUnextendedType(returnType)
 			registerSelfTypeUsages(match.signature)
 			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
@@ -235,12 +249,12 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		}
 	}
 
-	private fun getSignature(): String {
+	private fun getSignature(includeParentType: Boolean = true): String {
 		var signature = ""
 		signature += when(function) {
 			is VariableValue -> function.name
 			is TypeSpecification -> function
-			is MemberAccess -> "${function.target.type}.${function.member}"
+			is MemberAccess -> if(includeParentType) "${function.target.type}.${function.member}" else function.member
 			else -> "<anonymous function>"
 		}
 		signature += "("

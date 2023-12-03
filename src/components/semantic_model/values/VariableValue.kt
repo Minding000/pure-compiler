@@ -15,6 +15,7 @@ import components.syntax_parser.syntax_tree.literals.Identifier
 import errors.internal.CompilerError
 import logger.issues.access.InstanceAccessFromStaticContext
 import logger.issues.access.StaticAccessFromInstanceContext
+import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.initialization.NotInitialized
 import logger.issues.resolution.NotFound
 
@@ -30,6 +31,17 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		if(valueDeclaration == null) {
 			context.addIssue(NotFound(source, "Value", name))
 			return
+		}
+		val targetType = (scope as? InterfaceScope)?.type
+		if(targetType != null) {
+			if(valueDeclaration is ComputedPropertyDeclaration) {
+				val whereClause = valueDeclaration.whereClause
+				if(whereClause != null) {
+					if(!whereClause.override.accepts(targetType))
+						context.addIssue(WhereClauseUnfulfilled(source, "Computed property",
+							"${valueDeclaration.parentTypeDeclaration.name}.${valueDeclaration.name}", targetType, whereClause))
+				}
+			}
 		}
 		val scope = scope
 		if(scope is InterfaceScope && valueDeclaration is InterfaceMember) {

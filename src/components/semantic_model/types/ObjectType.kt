@@ -246,6 +246,8 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 
 	override fun toString(): String {
 		var stringRepresentation = ""
+		if(isSpecific)
+			stringRepresentation += "specific "
 		if(enclosingType != null && getTypeDeclaration() !is GenericTypeDeclaration)
 			stringRepresentation += "$enclosingType."
 		stringRepresentation += if(typeParameters.isEmpty())

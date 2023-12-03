@@ -5,11 +5,11 @@ import components.semantic_model.operations.MemberAccess
 import components.semantic_model.types.FunctionType
 import components.semantic_model.values.VariableValue
 import logger.Severity
+import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
-import logger.issues.resolution.NotFound
 import logger.issues.resolution.SignatureAmbiguity
 import logger.issues.resolution.SignatureMismatch
 import org.junit.jupiter.api.Test
@@ -284,18 +284,52 @@ internal class FunctionResolution {
 		assertEquals("(...Int) =>|", functionCall?.targetSignature.toString())
 	}
 
-	//TODO test that function with where is only accessible when condition is met
+	@Test
+	fun `allows accessing functions without where clause`() {
+		val sourceCode = """
+			abstract Addable class
+			IntegerList class {
+				to sum(): Addable
+			}
+			Int class: Addable
+			val integerList = IntegerList()
+			integerList.sum()
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
+	}
 
 	@Test
-	fun `constrains type if where clause exists`() { //TODO adjust name and content
+	fun `allows accessing functions with where clause when type condition is met`() {
 		val sourceCode = """
 			abstract Addable class
 			List class {
 				containing Element
 				to sum(): Element where Element is specific Addable
 			}
+			Int class: Addable
+			val integerList = <Int>List()
+			integerList.sum()
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
+	}
+
+	@Test
+	fun `disallows accessing functions with where clause when type condition is not met`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				to sum(): Element where Element is specific Addable
+			}
+			Parachute class
+			val parachuteList = <Parachute>List()
+			parachuteList.sum()
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Function 'sum()' cannot be accessed on object of type '<Parachute>List'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
 	}
 }
