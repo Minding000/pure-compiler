@@ -35,10 +35,9 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		val targetType = (scope as? InterfaceScope)?.type
 		if(targetType != null) {
 			if(valueDeclaration is ComputedPropertyDeclaration) {
-				val whereClause = valueDeclaration.whereClause
-				if(whereClause != null) {
-					//TODO fix wrong condition (see FunctionCall)
-					val whereClauseCondition = whereClause.conditions.first()
+				//TODO fix wrong condition (see FunctionCall)
+				val whereClauseCondition = valueDeclaration.whereClauseConditions.firstOrNull()
+				if(whereClauseCondition != null) {
 					if(!whereClauseCondition.override.accepts(targetType))
 						context.addIssue(WhereClauseUnfulfilled(source, "Computed property",
 							"${valueDeclaration.parentTypeDeclaration.name}.${valueDeclaration.name}", targetType,

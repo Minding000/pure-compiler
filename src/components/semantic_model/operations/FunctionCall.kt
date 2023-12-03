@@ -83,18 +83,19 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			var returnType: Type? = match.returnType
 			if(targetType != null) {
 				returnType = returnType?.getLocalType(this, targetType)
-				val typeParameter = (targetType as? ObjectType)?.typeParameters?.firstOrNull()
-				val whereClause = match.signature.whereClause
-				if(whereClause != null && typeParameter != null) {
-					//TODO multiple generic parameters can profit from multiple where clause conditions
-					// e.g. <Key, Value>Map.lowercase() where Key is String and Value is String
 
-					//TODO validate that where clause subject is generic type of parent type definition
+				val typeParameters = (targetType as? ObjectType)?.typeParameters
+				for(condition in match.signature.whereClauseConditions) {
 
-					val whereClauseCondition = whereClause.conditions.first()
-					if(!whereClauseCondition.override.accepts(typeParameter))
-						context.addIssue(WhereClauseUnfulfilled(source, "Function", getSignature(false),
-							targetType, whereClauseCondition))
+					//TODO match condition subject with type parameter (keep inheritance in mind)
+					val typeParameter = typeParameters?.first()//.find { type -> type.index == condition.subject.typeDeclaration.index }
+					if(typeParameter != null) {
+						//TODO validate that where clause subject is generic type of parent type definition
+
+						if(!condition.override.accepts(typeParameter))
+							context.addIssue(WhereClauseUnfulfilled(source, "Function", getSignature(false),
+								targetType, condition))
+					}
 				}
 			}
 			setUnextendedType(returnType)

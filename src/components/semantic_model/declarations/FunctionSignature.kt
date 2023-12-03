@@ -18,8 +18,8 @@ import kotlin.math.max
 
 class FunctionSignature(override val source: SyntaxTreeNode, override val scope: BlockScope,
 						val localTypeParameters: List<GenericTypeDeclaration>, val parameterTypes: List<Type?>, returnType: Type?,
-						val whereClause: WhereClause? = null, val associatedImplementation: FunctionImplementation? = null):
-	SemanticModel(source, scope) {
+						val whereClauseConditions: List<WhereClauseCondition> = emptyList(),
+						val associatedImplementation: FunctionImplementation? = null): SemanticModel(source, scope) {
 	var original = this
 	val isVariadic = associatedImplementation?.isVariadic ?: false
 	val fixedParameterTypes: List<Type?>
@@ -30,8 +30,8 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	private var llvmType: LlvmType? = null
 
 	init {
-		addSemanticModels(localTypeParameters, parameterTypes)
-		addSemanticModels(this.returnType, whereClause)
+		addSemanticModels(localTypeParameters, parameterTypes, whereClauseConditions)
+		addSemanticModels(this.returnType)
 		if(isVariadic) {
 			fixedParameterTypes = parameterTypes.subList(0, parameterTypes.size - 1)
 			variadicParameterType = parameterTypes.last()
@@ -87,7 +87,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		for(parameterType in parameterTypes)
 			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitutions))
 		val specificSignature = FunctionSignature(source, scope, specificLocalTypeParameters, specificParametersTypes,
-			returnType.withTypeSubstitutions(typeSubstitutions), whereClause, associatedImplementation)
+			returnType.withTypeSubstitutions(typeSubstitutions), whereClauseConditions, associatedImplementation)
 		specificSignature.original = this
 		specificSignature.superFunctionSignature = superFunctionSignature
 		specificSignature.parentDefinition = parentDefinition

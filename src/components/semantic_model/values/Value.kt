@@ -24,14 +24,14 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 
 	fun setUnextendedType(type: Type?) {
 		val surroundingComputedProperty = scope.getSurroundingComputedProperty()
-		var whereClauseCondition = surroundingComputedProperty?.whereClause?.conditions?.first()
+		var whereClauseCondition = surroundingComputedProperty?.whereClauseConditions?.firstOrNull()
 		if(whereClauseCondition?.matches(type) == true) {
 			this.type = ObjectType(whereClauseCondition)
 			addSemanticModels(this.type)
 			return
 		}
 		val surroundingFunction = scope.getSurroundingFunction()
-		whereClauseCondition = surroundingFunction?.signature?.whereClause?.conditions?.first()
+		whereClauseCondition = surroundingFunction?.signature?.whereClauseConditions?.firstOrNull()
 		if(whereClauseCondition?.matches(type) == true) {
 			this.type = ObjectType(whereClauseCondition)
 			addSemanticModels(this.type)

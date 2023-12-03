@@ -45,8 +45,8 @@ class OperatorDefinition(private val operator: Operator, private val parameterLi
 		val localTypeParameters = (operator as? IndexOperator)?.getSemanticGenericParameterModels(operatorScope) ?: emptyList()
 		if(operator is IndexOperator)
 			parameters = operator.getSemanticIndexParameterModels(operatorScope) + parameters
-		val whereClause = whereClause?.toSemanticModel(operatorScope)
-		return FunctionImplementation(this, operatorScope, localTypeParameters, parameters, body, returnType, whereClause,
+		val whereClauseConditions = whereClause?.toWhereClauseConditionSemanticModels(operatorScope) ?: emptyList()
+		return FunctionImplementation(this, operatorScope, localTypeParameters, parameters, body, returnType, whereClauseConditions,
 			isAbstract, isMutating, isNative, isOverriding, isSpecific, isMonomorphic)
 	}
 

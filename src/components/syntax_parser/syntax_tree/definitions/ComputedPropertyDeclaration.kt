@@ -25,11 +25,11 @@ class ComputedPropertyDeclaration(private val identifier: Identifier, private va
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
 		val type = type ?: parent.type
-		val whereClause = whereClause?.toSemanticModel(scope)
+		val whereClauseConditions = whereClause?.toWhereClauseConditionSemanticModels(scope) ?: emptyList()
 		val getterScope = BlockScope(scope)
 		val setterScope = BlockScope(scope)
 		return SemanticComputedPropertyDeclarationModel(this, scope, identifier.getValue(), type?.toSemanticModel(scope),
-			whereClause, isOverriding, isAbstract, getterScope, setterScope, getter?.toSemanticModel(getterScope),
+			whereClauseConditions, isOverriding, isAbstract, getterScope, setterScope, getter?.toSemanticModel(getterScope),
 			setter?.toSemanticModel(setterScope))
 	}
 

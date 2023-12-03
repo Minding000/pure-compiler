@@ -23,7 +23,7 @@ class WhereClauseCondition(source: WhereClauseConditionSyntaxTree, scope: TypeSc
 	override fun declare() {
 		super.declare()
 		val staticType = StaticType(this)
-		val parent = parent?.parent
+		val parent = parent
 		if(parent is ComputedPropertyDeclaration) {
 			if(parent.getterErrorHandlingContext != null) {
 				parent.getterScope.addTypeDeclaration(this)

@@ -33,10 +33,10 @@ class FunctionDefinition(private val identifier: Identifier, private val paramet
 		val localTypeParameters = parameterList.getSemanticGenericParameterModels(functionScope) ?: emptyList()
 		val parameters = parameterList.getSemanticParameterModels(functionScope)
 		val returnType = returnType?.toSemanticModel(functionScope)
-		val whereClause = whereClause?.toSemanticModel(functionScope)
+		val whereClauseConditions = whereClause?.toWhereClauseConditionSemanticModels(functionScope) ?: emptyList()
 		return SemanticFunctionImplementationModel(this, functionScope, localTypeParameters, parameters,
-			body?.toSemanticModel(functionScope), returnType, whereClause, isAbstract, isMutating, isNative, isOverriding, isSpecific,
-			isMonomorphic)
+			body?.toSemanticModel(functionScope), returnType, whereClauseConditions, isAbstract, isMutating, isNative, isOverriding,
+			isSpecific, isMonomorphic)
 	}
 
 	fun getName(): String = identifier.getValue()
