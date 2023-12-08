@@ -10,6 +10,7 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.declaration.TypeParameterCountMismatch
 import logger.issues.declaration.TypeParameterNotAssignable
 import logger.issues.resolution.NotFound
+import java.util.*
 
 open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enclosingType: ObjectType?, val typeParameters: List<Type>,
 					  val name: String, typeDeclaration: TypeDeclaration? = null, val isSpecific: Boolean = false): Type(source, scope) {
@@ -31,7 +32,9 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 	}
 
 	override fun createCopyWithTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Type {
-		val typeDeclaration = getTypeDeclaration()
+		var typeDeclaration = getTypeDeclaration()
+		if(typeDeclaration is WhereClauseCondition)
+			typeDeclaration = typeDeclaration.getSubjectTypeDefinition()
 		val substituteType = typeSubstitutions[typeDeclaration]
 		if(substituteType != null)
 			return substituteType
@@ -89,10 +92,17 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 		return getTypeDeclaration()?.scope?.getDirectTypeDeclaration(name)
 	}
 
-	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
-		val (valueDeclaration, type) = getTypeDeclaration()?.scope?.getDirectValueDeclaration(name) ?: return Pair(null, null)
+	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
+		val (valueDeclaration, whereClauseConditions, type) = getTypeDeclaration()?.scope?.getDirectValueDeclaration(name)
+			?: return Triple(null, null, null)
 		val typeSubstitutions = getTypeSubstitutions()
-		return Pair(valueDeclaration, type?.withTypeSubstitutions(typeSubstitutions))
+		val specificType = type?.withTypeSubstitutions(typeSubstitutions)
+		if(whereClauseConditions == null)
+			return Triple(valueDeclaration, null, specificType)
+		val specificWhereClauseConditions = LinkedList<WhereClauseCondition>()
+		for(whereClauseCondition in whereClauseConditions)
+			specificWhereClauseConditions.add(whereClauseCondition.withTypeSubstitutions(typeSubstitutions))
+		return Triple(valueDeclaration, specificWhereClauseConditions, specificType)
 	}
 
 	private fun getTypeSubstitutions(): Map<TypeDeclaration, Type> {

@@ -86,8 +86,11 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		val specificParametersTypes = LinkedList<Type?>()
 		for(parameterType in parameterTypes)
 			specificParametersTypes.add(parameterType?.withTypeSubstitutions(typeSubstitutions))
+		val specificWhereClauseConditions = LinkedList<WhereClauseCondition>()
+		for(whereClauseCondition in whereClauseConditions)
+			specificWhereClauseConditions.add(whereClauseCondition.withTypeSubstitutions(typeSubstitutions))
 		val specificSignature = FunctionSignature(source, scope, specificLocalTypeParameters, specificParametersTypes,
-			returnType.withTypeSubstitutions(typeSubstitutions), whereClauseConditions, associatedImplementation)
+			returnType.withTypeSubstitutions(typeSubstitutions), specificWhereClauseConditions, associatedImplementation)
 		specificSignature.original = this
 		specificSignature.superFunctionSignature = superFunctionSignature
 		specificSignature.parentDefinition = parentDefinition

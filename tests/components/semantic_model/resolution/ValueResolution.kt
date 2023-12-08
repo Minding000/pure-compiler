@@ -6,6 +6,7 @@ import components.semantic_model.declarations.PropertyDeclaration
 import components.semantic_model.values.ValueDeclaration
 import components.semantic_model.values.VariableValue
 import logger.Severity
+import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.declaration.ComputedPropertyMissingType
 import logger.issues.declaration.DeclarationMissingTypeOrValue
@@ -306,5 +307,130 @@ internal class ValueResolution {
 		assertNull(value.declaration)
 	}
 
-	//TODO test that computed property with where is only accessible when condition is met
+	@Test
+	fun `allows accessing computed properties without where clause`() {
+		val sourceCode = """
+			abstract Addable class
+			IntegerList class {
+				computed sum: Addable
+			}
+			Int class: Addable
+			val integerList = IntegerList()
+			integerList.sum
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
+	}
+
+	@Test
+	fun `allows accessing computed properties with where clause when type condition is met`() {
+		val sourceCode = """
+			ID class
+			String class
+			Map class {
+				containing Key, Value
+				computed lowercase where Value is String and Key is ID
+			}
+			val stringMap = <ID, String>Map()
+			stringMap.lowercase
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
+	}
+
+	@Test
+	fun `disallows accessing computed properties with where clause when type condition is not met`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				computed sum: Element where Element is specific Addable
+			}
+			Parachute class
+			val parachuteList = <Parachute>List()
+			parachuteList.sum
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Computed property 'sum' cannot be accessed on object of type '<Parachute>List'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows accessing inherited computed properties with where clause when type condition is met`() {
+		val sourceCode = """
+			ID class
+			String class
+			Map class {
+				containing Key, Value
+				computed lowercase where Value is String and Key is ID
+			}
+			InvertedMap class: <Value, Key>Map {
+				containing Key, Value
+			}
+			val stringMap = <ID, String>Map()
+			stringMap.lowercase
+			val invertedStringMap = <String, ID>InvertedMap()
+			invertedStringMap.lowercase()
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
+	}
+
+	@Test
+	fun `disallows accessing inherited computed properties with where clause when type condition is not met`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				computed sum: Element where Element is specific Addable
+			}
+			LinkedList class: <Element>List {
+				containing Element
+			}
+			Parachute class
+			val parachuteList = <Parachute>LinkedList()
+			parachuteList.sum
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Computed property 'sum' cannot be accessed on object of type '<Parachute>LinkedList'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows accessing inherited computed properties with statically fulfilled where clause`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				computed sum: Element where Element is specific Addable
+			}
+			Int class: Addable
+			IntegerList class: <Int>List
+			val integerList = IntegerList()
+			integerList.sum
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
+	}
+
+	@Test
+	fun `disallows accessing inherited computed properties with statically unfulfilled where clause`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				computed sum: Element where Element is specific Addable
+			}
+			Parachute class
+			ParachuteList class: <Parachute>List
+			val parachuteList = ParachuteList()
+			parachuteList.sum
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Computed property 'sum' cannot be accessed on object of type 'ParachuteList'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
 }

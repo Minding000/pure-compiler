@@ -57,7 +57,7 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 		for((_, interfaceMember) in interfaceMembers) {
 			if(interfaceMember.type is StaticType)
 				continue
-			val (superMember, superMemberType) = superScope?.getValueDeclaration(interfaceMember.name) ?: continue
+			val (superMember, _, superMemberType) = superScope?.getValueDeclaration(interfaceMember.name) ?: continue
 			val superInterfaceMember = superMember as? InterfaceMember ?: continue
 			interfaceMember.superMember = Pair(superInterfaceMember, superMemberType)
 			val functionType = interfaceMember.type as? FunctionType ?: continue
@@ -135,20 +135,24 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 		}
 	}
 
-	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
 		val interfaceMember = interfaceMembers[name]
 		if(interfaceMember == null) {
-			val valueDeclarationPair = superScope?.getValueDeclaration(name)
-			if(valueDeclarationPair?.first == null)
+			val valueDeclarationTriple = superScope?.getValueDeclaration(name)
+			if(valueDeclarationTriple?.first == null)
 				return enclosingScope.getValueDeclaration(name)
-			return valueDeclarationPair
+			return valueDeclarationTriple
 		}
-		return Pair(interfaceMember, interfaceMember.getLinkedType())
+		return Triple(interfaceMember, (interfaceMember as? ComputedPropertyDeclaration)?.whereClauseConditions,
+			interfaceMember.getLinkedType())
 	}
 
-	fun getDirectValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
-		val interfaceMember = interfaceMembers[name] ?: return superScope?.getValueDeclaration(name) ?: Pair(null, null)
-		return Pair(interfaceMember, interfaceMember.getLinkedType())
+	fun getDirectValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
+		val interfaceMember = interfaceMembers[name]
+			?: return superScope?.getValueDeclaration(name)
+			?: Triple(null, null, null)
+		return Triple(interfaceMember, (interfaceMember as? ComputedPropertyDeclaration)?.whereClauseConditions,
+			interfaceMember.getLinkedType())
 	}
 
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {

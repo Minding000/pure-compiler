@@ -78,26 +78,10 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				return
 			}
 			targetSignature = match.signature
-			//TODO improve 'targetType' determination
-			val targetType = (function as? MemberAccess)?.target?.type
+			val targetType = getTargetType()
 			var returnType: Type? = match.returnType
-			if(targetType != null) {
+			if(targetType != null)
 				returnType = returnType?.getLocalType(this, targetType)
-
-				val typeParameters = (targetType as? ObjectType)?.typeParameters
-				for(condition in match.signature.whereClauseConditions) {
-
-					//TODO match condition subject with type parameter (keep inheritance in mind)
-					val typeParameter = typeParameters?.first()//.find { type -> type.index == condition.subject.typeDeclaration.index }
-					if(typeParameter != null) {
-
-						if(!condition.override.accepts(typeParameter))
-							context.addIssue(WhereClauseUnfulfilled(source, "Function", getSignature(false),
-								targetType, condition))
-					}
-				}
-
-			}
 			setUnextendedType(returnType)
 			registerSelfTypeUsages(match.signature)
 			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
@@ -107,6 +91,11 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "function", getSignature())
 		}
+	}
+
+	private fun getTargetType(): Type? {
+		//TODO improve 'targetType' determination
+		return (function as? MemberAccess)?.target?.type
 	}
 
 	//TODO do the same for initializer calls
@@ -145,11 +134,23 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	override fun validate() {
 		super.validate()
 		validateCallToSpecificFunction()
+		validateWhereClauseConditions()
 	}
 
 	private fun validateCallToSpecificFunction() {
 		if(function is MemberAccess && function.target is SuperReference && targetSignature?.associatedImplementation?.isSpecific == true)
 			context.addIssue(CallToSpecificSuperMember(source))
+	}
+
+	private fun validateWhereClauseConditions() {
+		val signature = targetSignature ?: return
+		val targetType = getTargetType() ?: return
+		val typeParameters = (targetType as? ObjectType)?.typeParameters ?: emptyList()
+		for(condition in signature.whereClauseConditions) {
+			if(!condition.isMet(typeParameters))
+				context.addIssue(WhereClauseUnfulfilled(source, "Function", getSignature(false), targetType,
+					condition))
+		}
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
@@ -177,7 +178,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		return returnValue
 	}
 
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, exceptionAddressLocation: LlvmValue): LlvmValue {
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature,
+									   exceptionAddressLocation: LlvmValue): LlvmValue {
 		val parameters = LinkedList<LlvmValue>()
 		for((index, valueParameter) in valueParameters.withIndex())
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),

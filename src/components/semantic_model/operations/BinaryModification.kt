@@ -8,6 +8,7 @@ import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
+import components.semantic_model.types.ObjectType
 import components.semantic_model.values.NumberLiteral
 import components.semantic_model.values.Operator
 import components.semantic_model.values.Value
@@ -15,6 +16,7 @@ import components.semantic_model.values.VariableValue
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.access.AbstractMonomorphicAccess
+import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.resolution.NotFound
 import java.util.*
 import components.syntax_parser.syntax_tree.operations.BinaryModification as BinaryModificationSyntaxTree
@@ -70,6 +72,22 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
 		return NumberLiteral(this, resultingValue)
+	}
+
+	override fun validate() {
+		super.validate()
+		validateWhereClauseConditions()
+	}
+
+	private fun validateWhereClauseConditions() {
+		val signature = targetSignature ?: return
+		val targetType = target.type ?: return
+		val typeParameters = (targetType as? ObjectType)?.typeParameters ?: emptyList()
+		for(condition in signature.whereClauseConditions) {
+			if(!condition.isMet(typeParameters))
+				context.addIssue(WhereClauseUnfulfilled(source, "Operator",
+					signature.original.toString(false, kind), targetType, condition))
+		}
 	}
 
 	override fun compile(constructor: LlvmConstructor) {

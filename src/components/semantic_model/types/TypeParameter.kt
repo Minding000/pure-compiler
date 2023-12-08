@@ -2,6 +2,7 @@ package components.semantic_model.types
 
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.TypeParameter as TypeParameterSyntaxTree
@@ -24,7 +25,7 @@ class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, 
 		return baseType.getTypeDeclaration(name)
 	}
 
-	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
 		return baseType.getValueDeclaration(name)
 	}
 

@@ -4,6 +4,7 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.values.Value
 import components.semantic_model.values.ValueDeclaration
 import errors.user.SignatureResolutionAmbiguityError
@@ -31,10 +32,10 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 		return typeDeclaration
 	}
 
-	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
-		val valueDeclarationPair = typeDeclaration.scope.getValueDeclaration(name)
+	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
+		val valueDeclarationTriple = typeDeclaration.scope.getValueDeclaration(name)
 		//TODO only return static value declarations here (write tests!)
-		return valueDeclarationPair
+		return valueDeclarationTriple
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

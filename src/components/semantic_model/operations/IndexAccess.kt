@@ -12,6 +12,7 @@ import components.semantic_model.values.Value
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.access.AbstractMonomorphicAccess
+import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.resolution.NotFound
 import java.util.*
 import components.syntax_parser.syntax_tree.access.IndexAccess as IndexAccessSyntaxTree
@@ -54,25 +55,25 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 			sourceExpression = parent.sourceExpression
 	}
 
-	private fun getSignature(targetType: Type): String {
-		var signature = "$targetType["
-		if(typeParameters.isNotEmpty()) {
-			signature += typeParameters.joinToString()
-			signature += ";"
-			if(indices.isNotEmpty())
-				signature += " "
-		}
-		signature += indices.joinToString { index -> index.type.toString() }
-		signature += "]"
-		sourceExpression?.let { sourceExpression ->
-			signature += "(${sourceExpression.type})"
-		}
-		return signature
-	}
-
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
 		staticValue = this
+	}
+
+	override fun validate() {
+		super.validate()
+		validateWhereClauseConditions()
+	}
+
+	private fun validateWhereClauseConditions() {
+		val signature = targetSignature ?: return
+		val targetType = target.type ?: return
+		val typeParameters = (targetType as? ObjectType)?.typeParameters ?: emptyList()
+		for(condition in signature.whereClauseConditions) {
+			if(!condition.isMet(typeParameters))
+				context.addIssue(WhereClauseUnfulfilled(source, "Operator",
+					signature.original.toString(false, getOperatorKind()), targetType, condition))
+		}
 	}
 
 	fun filterForPossibleTargetTypes(availableTypes: List<ObjectType>): List<ObjectType> {
@@ -105,6 +106,25 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		// check for optional try (normal and force try have no effect)
 		// check for catch
 		// resume raise
+	}
+
+	private fun getSignature(targetType: Type, includeParentType: Boolean = true): String {
+		var signature = ""
+		if(includeParentType)
+			signature += targetType.toString()
+		signature += "["
+		if(typeParameters.isNotEmpty()) {
+			signature += typeParameters.joinToString()
+			signature += ";"
+			if(indices.isNotEmpty())
+				signature += " "
+		}
+		signature += indices.joinToString { index -> index.type.toString() }
+		signature += "]"
+		sourceExpression?.let { sourceExpression ->
+			signature += "(${sourceExpression.type})"
+		}
+		return signature
 	}
 
 	private fun getOperatorKind(): Operator.Kind {

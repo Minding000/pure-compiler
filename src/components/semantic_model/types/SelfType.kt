@@ -3,6 +3,7 @@ package components.semantic_model.types
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Value
 import components.semantic_model.values.ValueDeclaration
@@ -31,8 +32,8 @@ class SelfType(source: SyntaxTreeNode, scope: Scope): Type(source, scope) {
 		return typeDeclaration?.scope?.getDirectTypeDeclaration(name)
 	}
 
-	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
-		return typeDeclaration?.scope?.getDirectValueDeclaration(name) ?: return Pair(null, null)
+	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
+		return typeDeclaration?.scope?.getDirectValueDeclaration(name) ?: return Triple(null, null, null)
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

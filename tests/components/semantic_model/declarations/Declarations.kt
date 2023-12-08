@@ -41,7 +41,7 @@ internal class Declarations {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<DeclarationMissingTypeOrValue>(
-			"Declaration requires a type or value to infer a type from.", Severity.ERROR)
+			"Declaration requires a type or a value to infer a type from.", Severity.ERROR)
 	}
 
 	@Test
@@ -306,6 +306,10 @@ internal class Declarations {
 			List class {
 				containing Element
 				to sum(): Element where Element is Addable
+			}
+			AddableList class: <Addable>List
+			LinkedList class: <Element>List {
+				containing Element
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

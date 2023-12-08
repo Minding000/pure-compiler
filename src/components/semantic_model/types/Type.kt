@@ -42,7 +42,7 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 	open fun getInitializers(): List<InitializerDefinition> = emptyList()
 	open fun getAllInitializers(): List<InitializerDefinition> = emptyList()
 	abstract fun getTypeDeclaration(name: String): TypeDeclaration?
-	abstract fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?>
+	abstract fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?>
 
 	final override fun determineTypes() {
 		if(hasResolvedDeclarations)

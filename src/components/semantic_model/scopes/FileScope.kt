@@ -1,6 +1,7 @@
 package components.semantic_model.scopes
 
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.types.Type
 import components.semantic_model.values.ValueDeclaration
 import logger.issues.declaration.Redeclaration
@@ -40,8 +41,8 @@ class FileScope: MutableScope() {
 				existingValueDeclaration.source))
 	}
 
-	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
 		val valueDeclaration = valueDeclarations[name] ?: referencedValueDeclarations[name]
-		return Pair(valueDeclaration, valueDeclaration?.type)
+		return Triple(valueDeclaration, null, valueDeclaration?.type)
 	}
 }

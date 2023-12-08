@@ -31,7 +31,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "Door" }
-		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.second
+		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.third
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)
@@ -55,7 +55,7 @@ internal class FunctionResolution {
 		lintResult.assertIssueNotDetected<OverridingPropertyTypeNotAssignable>()
 		lintResult.assertIssueNotDetected<OverridingPropertyTypeMismatch>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.second
+		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.third
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)
@@ -76,7 +76,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.second
+		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.third
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)
@@ -284,8 +284,6 @@ internal class FunctionResolution {
 		assertEquals("(...Int) =>|", functionCall?.targetSignature.toString())
 	}
 
-	//TODO write similar tests for computed properties
-	//TODO write similar tests for operators
 	@Test
 	fun `allows accessing functions without where clause`() {
 		val sourceCode = """
@@ -304,16 +302,16 @@ internal class FunctionResolution {
 	@Test
 	fun `allows accessing functions with where clause when type condition is met`() {
 		val sourceCode = """
-			abstract Addable class
-			List class {
-				containing Element
-				to sum(): Element where Element is specific Addable
+			ID class
+			String class
+			Map class {
+				containing Key, Value
+				to lowercase() where Value is String and Key is ID {}
 			}
-			Int class: Addable
-			val integerList = <Int>List()
-			integerList.sum()
+			val stringMap = <ID, String>Map()
+			stringMap.lowercase()
 			""".trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
+		val lintResult = TestUtil.lint(sourceCode, true)
 		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
 	}
 
@@ -332,6 +330,84 @@ internal class FunctionResolution {
 		val lintResult = TestUtil.lint(sourceCode, true)
 		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
 			"Function 'sum()' cannot be accessed on object of type '<Parachute>List'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows accessing inherited functions with where clause when type condition is met`() {
+		val sourceCode = """
+			ID class
+			String class
+			Map class {
+				containing Key, Value
+				to lowercase() where Value is String and Key is ID {}
+			}
+			InvertedMap class: <Value, Key>Map {
+				containing Key, Value
+			}
+			val stringMap = <ID, String>Map()
+			stringMap.lowercase()
+			val invertedStringMap = <String, ID>InvertedMap()
+			invertedStringMap.lowercase()
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
+	}
+
+	@Test
+	fun `disallows accessing inherited functions with where clause when type condition is not met`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				to sum(): Element where Element is specific Addable
+			}
+			LinkedList class: <Element>List {
+				containing Element
+			}
+			Parachute class
+			val parachuteList = <Parachute>LinkedList()
+			parachuteList.sum()
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Function 'sum()' cannot be accessed on object of type '<Parachute>LinkedList'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows accessing inherited functions with statically fulfilled where clause`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				to sum(): Element where Element is specific Addable
+			}
+			Int class: Addable
+			IntegerList class: <Int>List
+			val integerList = IntegerList()
+			integerList.sum()
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
+	}
+
+	@Test
+	fun `disallows accessing inherited functions with statically unfulfilled where clause`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				to sum(): Element where Element is specific Addable
+			}
+			Parachute class
+			ParachuteList class: <Parachute>List
+			val parachuteList = ParachuteList()
+			parachuteList.sum()
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Function 'sum()' cannot be accessed on object of type 'ParachuteList'," +
 				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
 	}
 }

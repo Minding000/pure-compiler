@@ -106,7 +106,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 			return
 		try {
 			val function = associatedFunction ?: return
-			val (_, superMemberType) = function.associatedTypeDeclaration?.superType?.getValueDeclaration(function.name) ?: return
+			val (_, _, superMemberType) = function.associatedTypeDeclaration?.superType?.getValueDeclaration(function.name) ?: return
 			superFunctionType = superMemberType as? FunctionType
 		} finally {
 			hasDeterminedSuperFunction = true

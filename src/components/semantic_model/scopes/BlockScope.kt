@@ -4,6 +4,7 @@ import components.semantic_model.control_flow.LoopStatement
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.types.Type
 import components.semantic_model.values.ValueDeclaration
@@ -33,16 +34,16 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 				existingValueDeclaration.source))
 	}
 
-	override fun getValueDeclaration(name: String): Pair<ValueDeclaration?, Type?> {
+	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
 		val valueDeclaration = valueDeclarations[name] ?: return parentScope.getValueDeclaration(name)
-		return Pair(valueDeclaration, valueDeclaration.type)
+		return Triple(valueDeclaration, null, valueDeclaration.type)
 	}
 
-	override fun getValueDeclaration(variable: VariableValue): Pair<ValueDeclaration?, Type?> {
+	override fun getValueDeclaration(variable: VariableValue): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
 		val valueDeclaration = valueDeclarations[variable.name]
 		if(valueDeclaration != null) {
 			if(valueDeclaration.isBefore(variable))
-				return Pair(valueDeclaration, valueDeclaration.type)
+				return Triple(valueDeclaration, null, valueDeclaration.type)
 		}
 		return parentScope.getValueDeclaration(variable)
 	}

@@ -10,17 +10,28 @@ import logger.issues.declaration.InvalidWhereClauseSubject
 import util.NOT_FOUND
 import components.syntax_parser.syntax_tree.definitions.WhereClauseCondition as WhereClauseConditionSyntaxTree
 
-class WhereClauseCondition(source: WhereClauseConditionSyntaxTree, scope: TypeScope, val subject: ObjectType, val override: Type):
-	TypeDeclaration(source, subject.name, scope, null, AndUnionType(source, scope, listOf(subject, override))) {
+class WhereClauseCondition(override val source: WhereClauseConditionSyntaxTree, scope: TypeScope, val subject: Type, val override: Type,
+						   private val isOriginal: Boolean = true):
+	TypeDeclaration(source, (subject as? ObjectType)?.name ?: "", scope, null,
+		AndUnionType(source, scope, listOf(subject, override))) {
 	override val isDefinition = false
-	var subjectTypeDeclarationIndex = NOT_FOUND
+	private var subjectTypeDeclarationIndex = NOT_FOUND
 
 	init {
 		scope.typeDeclaration = this
 	}
 
+	fun isMet(typeParameters: List<Type>): Boolean {
+		val subjectTypeDefinition = getSubjectTypeDefinition()
+		if(subjectTypeDefinition is GenericTypeDeclaration) {
+			val typeParameter = typeParameters.getOrNull(subjectTypeDeclarationIndex) ?: return false
+			return override.accepts(typeParameter)
+		}
+		return override.accepts(subject)
+	}
+
 	fun matches(type: Type?): Boolean {
-		return (type as? ObjectType)?.getTypeDeclaration() == subject.getTypeDeclaration()
+		return (type as? ObjectType)?.getTypeDeclaration() == getSubjectTypeDefinition()
 	}
 
 	override fun declare() {
@@ -50,13 +61,22 @@ class WhereClauseCondition(source: WhereClauseConditionSyntaxTree, scope: TypeSc
 
 	override fun determineTypes() {
 		super.determineTypes()
-		val typeDefinition = parent?.scope?.getSurroundingTypeDeclaration()
-		if(typeDefinition != null) {
-			subjectTypeDeclarationIndex = typeDefinition.scope.getGenericTypeDeclarations().indexOf(subject.getTypeDeclaration())
+		val surroundingTypeDefinition = parent?.scope?.getSurroundingTypeDeclaration()
+		val subjectTypeDefinition = getSubjectTypeDefinition()
+		if(surroundingTypeDefinition != null && (isOriginal || subjectTypeDefinition is GenericTypeDeclaration)) {
+			subjectTypeDeclarationIndex = surroundingTypeDefinition.scope.getGenericTypeDeclarations().indexOf(subjectTypeDefinition)
 			if(subjectTypeDeclarationIndex == NOT_FOUND)
-				context.addIssue(InvalidWhereClauseSubject(this, typeDefinition.name))
+				context.addIssue(InvalidWhereClauseSubject(this, surroundingTypeDefinition.name))
 		}
 	}
 
-	override fun toString(): String = "$subject is $override"
+	fun getSubjectTypeDefinition(): TypeDeclaration? {
+		return (subject as? ObjectType)?.getTypeDeclaration()
+	}
+
+	fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): WhereClauseCondition {
+		return WhereClauseCondition(source, scope, subject.withTypeSubstitutions(typeSubstitutions), override, false)
+	}
+
+	override fun toString(): String = "${source.subject.getValue()} is $override"
 }

@@ -27,7 +27,8 @@ class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: 
 		if(isPropertySetter) {
 			val parent = parent
 			if(parent is InitializerDefinition) {
-				val (propertyDeclaration, type) = parent.parentTypeDeclaration.scope.getValueDeclaration(name)
+				//TODO disallow computed property with where clause as target
+				val (propertyDeclaration, _, type) = parent.parentTypeDeclaration.scope.getValueDeclaration(name)
 				this.propertyDeclaration = propertyDeclaration
 				this.type = type
 				if(propertyDeclaration == null)

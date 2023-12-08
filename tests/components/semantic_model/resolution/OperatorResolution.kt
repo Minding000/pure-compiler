@@ -5,6 +5,7 @@ import components.semantic_model.operations.IndexAccess
 import components.semantic_model.values.Operator
 import components.semantic_model.values.VariableValue
 import logger.Severity
+import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
@@ -357,5 +358,202 @@ internal class OperatorResolution {
 		assertEquals("(Int) =>|", operatorCall?.targetSignature.toString())
 	}
 
-	//TODO test that operator with where is only accessible when condition is met
+	@Test
+	fun `allows accessing operators without where clause`() {
+		val sourceCode = """
+			abstract Addable class
+			IntegerList class {
+				operator []: Addable
+			}
+			Int class: Addable
+			val integerList = IntegerList()
+			integerList[]
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
+	}
+
+	@Test
+	fun `allows accessing operators with where clause when type condition is met`() {
+		val sourceCode = """
+			ID class
+			String class
+			Map class {
+				containing Key, Value
+				operator [] where Value is String and Key is ID {}
+			}
+			val stringMap = <ID, String>Map()
+			stringMap[]
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
+	}
+
+	@Test
+	fun `disallows accessing index operators with where clause when type condition is not met`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				operator []: Element where Element is specific Addable
+			}
+			Parachute class
+			val parachuteList = <Parachute>List()
+			parachuteList[]
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Operator '[]: Element' cannot be accessed on object of type '<Parachute>List'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
+
+	@Test
+	fun `disallows accessing unary operators with where clause when type condition is not met`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				operator !: Element where Element is specific Addable
+			}
+			Parachute class
+			val parachuteList = <Parachute>List()
+			!parachuteList
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Operator '!: Element' cannot be accessed on object of type '<Parachute>List'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
+
+	@Test
+	fun `disallows accessing unary modifications with where clause when type condition is not met`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				operator ++: Element where Element is specific Addable
+			}
+			Parachute class
+			val parachuteList = <Parachute>List()
+			parachuteList++
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Operator '++' cannot be accessed on object of type '<Parachute>List'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
+
+	@Test
+	fun `disallows accessing binary operators with where clause when type condition is not met`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				operator +(other: <Element>List): Element where Element is specific Addable
+			}
+			Parachute class
+			val parachuteList = <Parachute>List()
+			parachuteList + parachuteList
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Operator ' + <Element>List: Element' cannot be accessed on object of type '<Parachute>List'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
+
+	@Test
+	fun `disallows accessing binary modification with where clause when type condition is not met`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				operator +=(other: <Element>List): Element where Element is specific Addable
+			}
+			Parachute class
+			val parachuteList = <Parachute>List()
+			parachuteList += parachuteList
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Operator ' += <Element>List' cannot be accessed on object of type '<Parachute>List'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows accessing inherited operators with where clause when type condition is met`() {
+		val sourceCode = """
+			ID class
+			String class
+			Map class {
+				containing Key, Value
+				operator [] where Value is String and Key is ID {}
+			}
+			InvertedMap class: <Value, Key>Map {
+				containing Key, Value
+			}
+			val stringMap = <ID, String>Map()
+			stringMap[]
+			val invertedStringMap = <String, ID>InvertedMap()
+			invertedStringMap[]
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
+	}
+
+	@Test
+	fun `disallows accessing inherited operators with where clause when type condition is not met`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				operator []: Element where Element is specific Addable
+			}
+			LinkedList class: <Element>List {
+				containing Element
+			}
+			Parachute class
+			val parachuteList = <Parachute>LinkedList()
+			parachuteList[]
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Operator '[]: Element' cannot be accessed on object of type '<Parachute>LinkedList'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows accessing inherited operators with statically fulfilled where clause`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				operator []: Element where Element is specific Addable
+			}
+			Int class: Addable
+			IntegerList class: <Int>List
+			val integerList = IntegerList()
+			integerList[]
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<WhereClauseUnfulfilled>()
+	}
+
+	@Test
+	fun `disallows accessing inherited operators with statically unfulfilled where clause`() {
+		val sourceCode = """
+			abstract Addable class
+			List class {
+				containing Element
+				operator []: Element where Element is specific Addable
+			}
+			Parachute class
+			ParachuteList class: <Parachute>List
+			val parachuteList = ParachuteList()
+			parachuteList[]
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
+			"Operator '[]: Element' cannot be accessed on object of type 'ParachuteList'," +
+				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
 }

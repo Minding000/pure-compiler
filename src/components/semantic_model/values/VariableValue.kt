@@ -6,8 +6,10 @@ import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.PropertyDeclaration
+import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
+import components.semantic_model.types.ObjectType
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -21,29 +23,17 @@ import logger.issues.resolution.NotFound
 
 open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val name: String): Value(source, scope) {
 	var declaration: ValueDeclaration? = null
+	var whereClauseConditions: List<WhereClauseCondition>? = null
 	protected open var staticType: Type? = null
 
 	constructor(source: Identifier, scope: Scope): this(source, scope, source.getValue())
 
 	override fun determineTypes() {
 		super.determineTypes()
-		val (valueDeclaration, type) = scope.getValueDeclaration(this)
+		val (valueDeclaration, whereClauseConditions, type) = scope.getValueDeclaration(this)
 		if(valueDeclaration == null) {
 			context.addIssue(NotFound(source, "Value", name))
 			return
-		}
-		val targetType = (scope as? InterfaceScope)?.type
-		if(targetType != null) {
-			if(valueDeclaration is ComputedPropertyDeclaration) {
-				//TODO fix wrong condition (see FunctionCall)
-				val whereClauseCondition = valueDeclaration.whereClauseConditions.firstOrNull()
-				if(whereClauseCondition != null) {
-					if(!whereClauseCondition.override.accepts(targetType))
-						context.addIssue(WhereClauseUnfulfilled(source, "Computed property",
-							"${valueDeclaration.parentTypeDeclaration.name}.${valueDeclaration.name}", targetType,
-							whereClauseCondition))
-				}
-			}
 		}
 		val scope = scope
 		if(scope is InterfaceScope && valueDeclaration is InterfaceMember) {
@@ -55,7 +45,8 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 				context.addIssue(StaticAccessFromInstanceContext(source, name))
 		}
 		valueDeclaration.usages.add(this)
-		this.declaration = valueDeclaration
+		declaration = valueDeclaration
+		this.whereClauseConditions = whereClauseConditions
 		setUnextendedType(type)
 	}
 
@@ -81,6 +72,22 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 	}
 
 	override fun getComputedType(): Type? = staticType
+
+	override fun validate() {
+		super.validate()
+		validateWhereClauseConditions()
+	}
+
+	private fun validateWhereClauseConditions() {
+		val whereClauseConditions = whereClauseConditions ?: return
+		val targetType = (scope as? InterfaceScope)?.type ?: return
+		val declaration = declaration as? ComputedPropertyDeclaration ?: return
+		val typeParameters = (targetType as? ObjectType)?.typeParameters ?: emptyList()
+		for(condition in whereClauseConditions) {
+			if(!condition.isMet(typeParameters))
+				context.addIssue(WhereClauseUnfulfilled(source, "Computed property", declaration.name, targetType, condition))
+		}
+	}
 
 	override fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue? {
 		if(declaration is ComputedPropertyDeclaration)
