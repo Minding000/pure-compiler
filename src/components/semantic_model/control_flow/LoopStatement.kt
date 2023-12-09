@@ -9,10 +9,7 @@ import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.BlockScope
-import components.semantic_model.types.FunctionType
-import components.semantic_model.types.ObjectType
-import components.semantic_model.types.PluralType
-import components.semantic_model.types.Type
+import components.semantic_model.types.*
 import components.semantic_model.values.BooleanLiteral
 import components.semantic_model.values.ValueDeclaration
 import errors.internal.CompilerError
@@ -175,8 +172,13 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		val function = constructor.getParentFunction()
 		//TODO support looping over union types
 		val iterableLlvmValue = generator.iterable.getLlvmValue(constructor)
-		val createIteratorAddress = context.resolveFunction(constructor, (iterableType as? ObjectType)?.getTypeDeclaration()?.llvmType,
-			iterableLlvmValue, "createIterator(): <Element>List.Iterator") //TODO change function IDs: exclude return type
+		val iterableLlvmType = when(iterableType) {
+			is ObjectType -> iterableType.getTypeDeclaration()?.llvmType
+			is SelfType -> iterableType.typeDeclaration?.llvmType
+			else -> null
+		}
+		val createIteratorAddress = context.resolveFunction(constructor, iterableLlvmType, iterableLlvmValue,
+			"createIterator(): <Element>List.Iterator") //TODO change function IDs: exclude return type
 		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
 		val iteratorLlvmValue = constructor.buildFunctionCall(iteratorCreationSignature?.getLlvmType(constructor), createIteratorAddress,
 			listOf(exceptionAddressLocation, iterableLlvmValue), "iterator")
@@ -217,8 +219,8 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			constructor.buildStore(currentValueValue, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)
-		val advanceFunctionAddress = context.resolveFunction(constructor, (iterableType as? ObjectType)?.getTypeDeclaration()?.llvmType,
-			generator.iterable.getLlvmValue(constructor), "advance()")
+		val advanceFunctionAddress = context.resolveFunction(constructor, iterableLlvmType, generator.iterable.getLlvmValue(constructor),
+			"advance()")
 		constructor.buildFunctionCall(iteratorAdvanceSignature?.getLlvmType(constructor), advanceFunctionAddress,
 			listOf(exceptionAddressLocation, iteratorLlvmValue))
 		//TODO if exception exists
