@@ -31,7 +31,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "Door" }
-		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.third
+		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.type
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)
@@ -55,7 +55,7 @@ internal class FunctionResolution {
 		lintResult.assertIssueNotDetected<OverridingPropertyTypeNotAssignable>()
 		lintResult.assertIssueNotDetected<OverridingPropertyTypeMismatch>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.third
+		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.type
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)
@@ -76,7 +76,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.third
+		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.type
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)

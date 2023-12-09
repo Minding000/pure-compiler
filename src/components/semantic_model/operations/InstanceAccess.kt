@@ -18,9 +18,8 @@ class InstanceAccess(override val source: InstanceAccessSyntaxTree, scope: Scope
 	override fun setInferredType(inferredType: Type?) {
 		super.setInferredType(inferredType)
 		val type = type ?: return
-		val (declaration) = type.interfaceScope.getValueDeclaration(this)
-		if(declaration == null)
-			throw CompilerError(source, "Inferred type doesn't contain instance value.")
+		val declaration = type.interfaceScope.getValueDeclaration(this)?.declaration
+			?: throw CompilerError(source, "Inferred type doesn't contain instance value.")
 		declaration.usages.add(this)
 		this.declaration = declaration
 	}

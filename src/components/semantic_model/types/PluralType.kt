@@ -3,7 +3,6 @@ package components.semantic_model.types
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.semantic_model.declarations.TypeDeclaration
-import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -26,8 +25,8 @@ class PluralType(override val source: SyntaxTreeNode, scope: Scope, val baseType
 		return null
 	}
 
-	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
-		return Triple(null, null, null)
+	override fun getValueDeclaration(name: String): ValueDeclaration.Match? {
+		return null
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

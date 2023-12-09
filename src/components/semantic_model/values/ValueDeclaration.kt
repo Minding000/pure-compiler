@@ -1,7 +1,10 @@
 package components.semantic_model.values
 
 import components.code_generation.llvm.LlvmConstructor
+import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.InitializerDefinition
+import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.FileScope
 import components.semantic_model.scopes.MutableScope
@@ -111,6 +114,17 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 			} else {
 				constructor.buildStore(llvmValue, llvmLocation)
 			}
+		}
+	}
+
+	data class Match(val declaration: ValueDeclaration, val whereClauseConditions: List<WhereClauseCondition>?, val type: Type?) {
+
+		constructor(declaration: ValueDeclaration):
+			this(declaration, (declaration as? ComputedPropertyDeclaration)?.whereClauseConditions, declaration.getLinkedType())
+
+		fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): Match {
+			return Match(declaration, whereClauseConditions?.map { condition -> condition.withTypeSubstitutions(typeSubstitutions) },
+				type?.withTypeSubstitutions(typeSubstitutions))
 		}
 	}
 }

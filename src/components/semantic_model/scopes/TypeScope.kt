@@ -135,24 +135,16 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 		}
 	}
 
-	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
-		val interfaceMember = interfaceMembers[name]
-		if(interfaceMember == null) {
-			val valueDeclarationTriple = superScope?.getValueDeclaration(name)
-			if(valueDeclarationTriple?.first == null)
-				return enclosingScope.getValueDeclaration(name)
-			return valueDeclarationTriple
-		}
-		return Triple(interfaceMember, (interfaceMember as? ComputedPropertyDeclaration)?.whereClauseConditions,
-			interfaceMember.getLinkedType())
-	}
-
-	fun getDirectValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
+	override fun getValueDeclaration(name: String): ValueDeclaration.Match? {
 		val interfaceMember = interfaceMembers[name]
 			?: return superScope?.getValueDeclaration(name)
-			?: Triple(null, null, null)
-		return Triple(interfaceMember, (interfaceMember as? ComputedPropertyDeclaration)?.whereClauseConditions,
-			interfaceMember.getLinkedType())
+				?: enclosingScope.getValueDeclaration(name)
+		return ValueDeclaration.Match(interfaceMember)
+	}
+
+	fun getDirectValueDeclaration(name: String): ValueDeclaration.Match? {
+		val interfaceMember = interfaceMembers[name] ?: return superScope?.getValueDeclaration(name)
+		return ValueDeclaration.Match(interfaceMember)
 	}
 
 	override fun getTypeDeclaration(name: String): TypeDeclaration? {

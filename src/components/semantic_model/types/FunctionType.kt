@@ -106,7 +106,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 			return
 		try {
 			val function = associatedFunction ?: return
-			val (_, _, superMemberType) = function.associatedTypeDeclaration?.superType?.getValueDeclaration(function.name) ?: return
+			val superMemberType = function.associatedTypeDeclaration?.superType?.getValueDeclaration(function.name)?.type ?: return
 			superFunctionType = superMemberType as? FunctionType
 		} finally {
 			hasDeterminedSuperFunction = true
@@ -148,10 +148,6 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		}
 	}
 
-	class Match(val signature: FunctionSignature, val localTypeSubstitutions: Map<TypeDeclaration, Type>) {
-		val returnType = signature.returnType.withTypeSubstitutions(localTypeSubstitutions)
-	}
-
 	override fun accepts(unresolvedSourceType: Type): Boolean {
 		return unresolvedSourceType.isAssignableTo(this)
 	}
@@ -188,5 +184,9 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 
 	override fun toString(): String {
 		return signatures.joinToString(" & ")
+	}
+
+	class Match(val signature: FunctionSignature, val localTypeSubstitutions: Map<TypeDeclaration, Type>) {
+		val returnType = signature.returnType.withTypeSubstitutions(localTypeSubstitutions)
 	}
 }

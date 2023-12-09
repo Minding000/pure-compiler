@@ -6,7 +6,6 @@ import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
-import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Value
 import components.semantic_model.values.ValueDeclaration
@@ -41,8 +40,8 @@ class OptionalType(override val source: SyntaxTreeNode, scope: Scope, val baseTy
 		return null
 	}
 
-	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
-		return Triple(null, null, null)
+	override fun getValueDeclaration(name: String): ValueDeclaration.Match? {
+		return null
 	}
 
 	override fun inferTypeParameter(typeParameter: TypeDeclaration, sourceType: Type, inferredTypes: MutableList<Type>) {

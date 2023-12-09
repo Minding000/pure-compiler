@@ -45,14 +45,10 @@ class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types:
 		return null
 	}
 
-	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
-		for(type in types) {
-			val valueDeclarationTriple = type.getValueDeclaration(name)
-			if(valueDeclarationTriple.first == null)
-				continue
-			return valueDeclarationTriple
-		}
-		return Triple(null, null, null)
+	override fun getValueDeclaration(name: String): ValueDeclaration.Match? {
+		for(type in types)
+			return type.getValueDeclaration(name) ?: continue
+		return null
 	}
 
 	override fun isInstanceOf(specialType: SpecialType): Boolean {

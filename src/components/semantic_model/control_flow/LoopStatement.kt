@@ -163,14 +163,13 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		for(variableDeclaration in generator.variableDeclarations)
 			variableDeclaration.compile(constructor)
 
-		val iteratorCreationPropertyType = iterableType?.getValueDeclaration("createIterator")?.second
+		val iteratorCreationPropertyType = iterableType?.getValueDeclaration("createIterator")?.type
 		val iteratorCreationMatch = (iteratorCreationPropertyType as? FunctionType)?.getSignature()
 		val iteratorCreationSignature = iteratorCreationMatch?.signature
 		val iteratorType = iteratorCreationMatch?.returnType
-		val iteratorAdvancePropertyType = iteratorType?.getValueDeclaration("advance")?.second
+		val iteratorAdvancePropertyType = iteratorType?.getValueDeclaration("advance")?.type
 		val iteratorAdvanceSignature = (iteratorAdvancePropertyType as? FunctionType)?.getSignature()?.signature
-		val iteratorIsDonePropertyPair = iteratorType?.getValueDeclaration("isDone")
-		val iteratorIsDoneComputedProperty = iteratorIsDonePropertyPair?.first as? ComputedPropertyDeclaration
+		val iteratorIsDoneComputedProperty = iteratorType?.getValueDeclaration("isDone")?.declaration as? ComputedPropertyDeclaration
 			?: throw CompilerError(source, "'Iterator.isDone' computed property not found.")
 
 		val function = constructor.getParentFunction()
@@ -195,24 +194,24 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		constructor.select(bodyBlock)
 		val indexVariable = generator.currentIndexVariable
 		if(indexVariable != null) {
-			val iteratorCurrentIndexPropertyPair = iteratorType.getValueDeclaration("currentIndex")
-			val iteratorCurrentIndexComputedProperty = iteratorCurrentIndexPropertyPair.first as? ComputedPropertyDeclaration
+			val iteratorCurrentIndexComputedProperty = iteratorType.getValueDeclaration("currentIndex")
+				?.declaration as? ComputedPropertyDeclaration
 				?: throw CompilerError(source, "'Iterator.currentIndex' computed property not found.")
 			val currentIndexValue = buildGetterCall(constructor, iteratorLlvmValue, iteratorCurrentIndexComputedProperty)
 			constructor.buildStore(currentIndexValue, indexVariable.llvmLocation)
 		}
 		val keyVariable = generator.currentKeyVariable
 		if(keyVariable != null) {
-			val iteratorCurrentKeyPropertyPair = iteratorType.getValueDeclaration("currentKey")
-			val iteratorCurrentKeyComputedProperty = iteratorCurrentKeyPropertyPair.first as? ComputedPropertyDeclaration
+			val iteratorCurrentKeyComputedProperty = iteratorType.getValueDeclaration("currentKey")
+				?.declaration as? ComputedPropertyDeclaration
 				?: throw CompilerError(source, "'Iterator.currentKey' computed property not found.")
 			val currentKeyValue = buildGetterCall(constructor, iteratorLlvmValue, iteratorCurrentKeyComputedProperty)
 			constructor.buildStore(currentKeyValue, keyVariable.llvmLocation)
 		}
 		val valueVariable = generator.currentValueVariable
 		if(valueVariable != null) {
-			val iteratorCurrentValuePropertyPair = iteratorType.getValueDeclaration("currentValue")
-			val iteratorCurrentValueComputedProperty = iteratorCurrentValuePropertyPair.first as? ComputedPropertyDeclaration
+			val iteratorCurrentValueComputedProperty = iteratorType.getValueDeclaration("currentValue")
+				?.declaration as? ComputedPropertyDeclaration
 				?: throw CompilerError(source, "'Iterator.currentValue' computed property not found.")
 			val currentValueValue = buildGetterCall(constructor, iteratorLlvmValue, iteratorCurrentValueComputedProperty)
 			constructor.buildStore(currentValueValue, valueVariable.llvmLocation)

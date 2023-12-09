@@ -10,7 +10,6 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.declaration.TypeParameterCountMismatch
 import logger.issues.declaration.TypeParameterNotAssignable
 import logger.issues.resolution.NotFound
-import java.util.*
 
 open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enclosingType: ObjectType?, val typeParameters: List<Type>,
 					  val name: String, typeDeclaration: TypeDeclaration? = null, val isSpecific: Boolean = false): Type(source, scope) {
@@ -92,17 +91,9 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 		return getTypeDeclaration()?.scope?.getDirectTypeDeclaration(name)
 	}
 
-	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
-		val (valueDeclaration, whereClauseConditions, type) = getTypeDeclaration()?.scope?.getDirectValueDeclaration(name)
-			?: return Triple(null, null, null)
+	override fun getValueDeclaration(name: String): ValueDeclaration.Match? {
 		val typeSubstitutions = getTypeSubstitutions()
-		val specificType = type?.withTypeSubstitutions(typeSubstitutions)
-		if(whereClauseConditions == null)
-			return Triple(valueDeclaration, null, specificType)
-		val specificWhereClauseConditions = LinkedList<WhereClauseCondition>()
-		for(whereClauseCondition in whereClauseConditions)
-			specificWhereClauseConditions.add(whereClauseCondition.withTypeSubstitutions(typeSubstitutions))
-		return Triple(valueDeclaration, specificWhereClauseConditions, specificType)
+		return getTypeDeclaration()?.scope?.getDirectValueDeclaration(name)?.withTypeSubstitutions(typeSubstitutions)
 	}
 
 	private fun getTypeSubstitutions(): Map<TypeDeclaration, Type> {

@@ -4,9 +4,7 @@ import components.semantic_model.control_flow.LoopStatement
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration
-import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.general.SemanticModel
-import components.semantic_model.types.Type
 import components.semantic_model.values.ValueDeclaration
 import components.semantic_model.values.VariableValue
 import logger.issues.declaration.Redeclaration
@@ -34,16 +32,16 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 				existingValueDeclaration.source))
 	}
 
-	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
+	override fun getValueDeclaration(name: String): ValueDeclaration.Match? {
 		val valueDeclaration = valueDeclarations[name] ?: return parentScope.getValueDeclaration(name)
-		return Triple(valueDeclaration, null, valueDeclaration.type)
+		return ValueDeclaration.Match(valueDeclaration)
 	}
 
-	override fun getValueDeclaration(variable: VariableValue): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
+	override fun getValueDeclaration(variable: VariableValue): ValueDeclaration.Match? {
 		val valueDeclaration = valueDeclarations[variable.name]
 		if(valueDeclaration != null) {
 			if(valueDeclaration.isBefore(variable))
-				return Triple(valueDeclaration, null, valueDeclaration.type)
+				return ValueDeclaration.Match(valueDeclaration)
 		}
 		return parentScope.getValueDeclaration(variable)
 	}
@@ -65,13 +63,15 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 	}
 
 	fun validate() {
+		validateDeclarations()
+	}
+
+	private fun validateDeclarations() {
 		for((name, valueDeclaration) in valueDeclarations) {
-			val (parentValueDeclaration) = parentScope.getValueDeclaration(name)
-			if(parentValueDeclaration != null) {
-				if(parentValueDeclaration.scope is BlockScope) {
-					valueDeclaration.context.addIssue(Redeclaration(valueDeclaration.source, "value", valueDeclaration.name,
-						parentValueDeclaration.source))
-				}
+			val parentValueDeclaration = parentScope.getValueDeclaration(name)?.declaration ?: continue
+			if(parentValueDeclaration.scope is BlockScope) {
+				valueDeclaration.context.addIssue(Redeclaration(valueDeclaration.source, "value", valueDeclaration.name,
+					parentValueDeclaration.source))
 			}
 		}
 	}

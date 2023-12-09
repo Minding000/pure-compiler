@@ -4,7 +4,6 @@ import components.semantic_model.control_flow.LoopStatement
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration
-import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.types.FunctionType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Operator
@@ -17,7 +16,7 @@ abstract class Scope {
 	//TODO return Pair<TypeDeclaration, StaticType> instead
 	abstract fun getTypeDeclaration(name: String): TypeDeclaration?
 
-	abstract fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?>
+	abstract fun getValueDeclaration(name: String): ValueDeclaration.Match?
 	open fun getValueDeclaration(variable: VariableValue) = getValueDeclaration(variable.name)
 
 	fun getOperator(kind: Operator.Kind) = getOperator(kind, emptyList())
@@ -25,8 +24,7 @@ abstract class Scope {
 	fun getOperator(kind: Operator.Kind, suppliedType: Value) = getOperator(kind, listOf(suppliedType))
 
 	open fun getOperator(kind: Operator.Kind, suppliedValues: List<Value>): FunctionType.Match? {
-		val (_, _, type) = getValueDeclaration(kind.stringRepresentation)
-		val operator = type as? FunctionType
+		val operator = getValueDeclaration(kind.stringRepresentation)?.type as? FunctionType
 		return operator?.getSignature(suppliedValues)
 	}
 

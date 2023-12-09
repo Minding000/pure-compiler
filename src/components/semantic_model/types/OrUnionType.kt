@@ -4,7 +4,6 @@ import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
-import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Value
 import components.semantic_model.values.ValueDeclaration
@@ -72,14 +71,11 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 		return typeDeclaration
 	}
 
-	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> {
-		var valueDeclarationTriple: Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?>? = null
-		for(type in types) {
-			valueDeclarationTriple = type.getValueDeclaration(name)
-			if(valueDeclarationTriple.first == null)
-				return Triple(null, null, null)
-		}
-		return valueDeclarationTriple ?: Triple(null, null, null)
+	override fun getValueDeclaration(name: String): ValueDeclaration.Match? {
+		var match: ValueDeclaration.Match? = null
+		for(type in types)
+			match = type.getValueDeclaration(name) ?: return null
+		return match
 	}
 
 	override fun isInstanceOf(specialType: SpecialType): Boolean {

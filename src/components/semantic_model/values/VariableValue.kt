@@ -30,24 +30,24 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 
 	override fun determineTypes() {
 		super.determineTypes()
-		val (valueDeclaration, whereClauseConditions, type) = scope.getValueDeclaration(this)
-		if(valueDeclaration == null) {
+		val match = scope.getValueDeclaration(this)
+		if(match == null) {
 			context.addIssue(NotFound(source, "Value", name))
 			return
 		}
 		val scope = scope
-		if(scope is InterfaceScope && valueDeclaration is InterfaceMember) {
-			if(scope.isStatic && !valueDeclaration.isStatic) {
+		if(scope is InterfaceScope && match.declaration is InterfaceMember) {
+			if(scope.isStatic && !match.declaration.isStatic) {
 				context.addIssue(InstanceAccessFromStaticContext(source, name))
 				return
 			}
-			if(!scope.isStatic && valueDeclaration.isStatic)
+			if(!scope.isStatic && match.declaration.isStatic)
 				context.addIssue(StaticAccessFromInstanceContext(source, name))
 		}
-		valueDeclaration.usages.add(this)
-		declaration = valueDeclaration
-		this.whereClauseConditions = whereClauseConditions
-		setUnextendedType(type)
+		match.declaration.usages.add(this)
+		declaration = match.declaration
+		whereClauseConditions = match.whereClauseConditions
+		setUnextendedType(match.type)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

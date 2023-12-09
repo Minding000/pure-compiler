@@ -2,7 +2,6 @@ package components.semantic_model.scopes
 
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
-import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.types.Type
 import components.semantic_model.values.Instance
 import components.semantic_model.values.ValueDeclaration
@@ -13,8 +12,7 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	fun getDirectInitializers(): List<InitializerDefinition> = type.getInitializers()
 	fun getAllInitializers(): List<InitializerDefinition> = type.getAllInitializers()
 	override fun getTypeDeclaration(name: String): TypeDeclaration? = type.getTypeDeclaration(name)
-	override fun getValueDeclaration(name: String): Triple<ValueDeclaration?, List<WhereClauseCondition>?, Type?> =
-		type.getValueDeclaration(name)
+	override fun getValueDeclaration(name: String): ValueDeclaration.Match? = type.getValueDeclaration(name)
 
 	fun getSuperInitializer(subInitializer: InitializerDefinition): InitializerDefinition? {
 		for(initializer in getAllInitializers()) {
@@ -31,13 +29,11 @@ class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	}
 
 	fun hasValueDeclaration(name: String): Boolean {
-		val (valueDeclaration) = getValueDeclaration(name)
-		return valueDeclaration != null
+		return getValueDeclaration(name) != null
 	}
 
 	fun hasInstance(name: String): Boolean {
-		val (valueDeclaration) = getValueDeclaration(name)
-		return valueDeclaration is Instance
+		return getValueDeclaration(name)?.declaration is Instance
 	}
 
 	override fun toString(): String {
