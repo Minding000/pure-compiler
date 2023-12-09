@@ -281,8 +281,6 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 				context.memberIdentities.register(memberDeclaration.name)
 			for(property in properties)
 				context.memberIdentities.register(property.name)
-			for(function in functions)
-				context.memberIdentities.register(function.identifier)
 		}
 		super.define(constructor)
 	}
@@ -320,20 +318,25 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	private fun getFunctions(): Map<String, LlvmMemberFunction> {
 		val functions = HashMap<String, LlvmMemberFunction>()
 		for(member in scope.memberDeclarations) {
-//			if(member.isAbstract)
-//				continue
 			if(member is FunctionImplementation) {
-				functions[member.memberIdentifier] = LlvmMemberFunction(member.memberIdentifier, member.llvmValue)
+				val memberIdentifier = member.memberIdentifier
+				context.memberIdentities.register(memberIdentifier)
+				if(!member.isAbstract)
+					functions[memberIdentifier] = LlvmMemberFunction(memberIdentifier, member.llvmValue)
 			} else if(member is ComputedPropertyDeclaration) {
 				val llvmGetterValue = member.llvmGetterValue
 				if(llvmGetterValue != null) {
 					val getterIdentifier = member.getterIdentifier
-					functions[getterIdentifier] = LlvmMemberFunction(getterIdentifier, llvmGetterValue)
+					context.memberIdentities.register(getterIdentifier)
+					if(!member.isAbstract)
+						functions[getterIdentifier] = LlvmMemberFunction(getterIdentifier, llvmGetterValue)
 				}
 				val llvmSetterValue = member.llvmSetterValue
 				if(llvmSetterValue != null) {
 					val setterIdentifier = member.setterIdentifier
-					functions[setterIdentifier] = LlvmMemberFunction(setterIdentifier, llvmSetterValue)
+					context.memberIdentities.register(setterIdentifier)
+					if(!member.isAbstract)
+						functions[setterIdentifier] = LlvmMemberFunction(setterIdentifier, llvmSetterValue)
 				}
 			}
 		}
@@ -359,6 +362,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	}
 
 	private fun addNativeProperties(constructor: LlvmConstructor, llvmProperties: LinkedList<LlvmType?>) {
+		//TODO same for Bool
 		if(SpecialType.ARRAY.matches(this)) {
 			context.arrayValueIndex = llvmProperties.size
 			llvmProperties.add(constructor.pointerType)

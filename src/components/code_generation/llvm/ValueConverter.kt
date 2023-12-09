@@ -26,6 +26,7 @@ object ValueConverter {
 			return constructor.buildLoad(targetType.getLlvmType(constructor), sourceValue, "_unboxedPrimitive")
 		}
 		if(sourceType?.isLlvmPrimitive() == true && targetType?.isLlvmPrimitive() == false) {
+			//TODO same for other primitives
 			if(SpecialType.INTEGER.matches(sourceType)) {
 				val newIntegerAddress = constructor.buildHeapAllocation(context.integerTypeDeclaration?.llvmType, "newIntegerAddress")
 				val integerClassDefinitionPointer = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType,
@@ -42,6 +43,7 @@ object ValueConverter {
 			}
 		}
 		if(sourceType?.isLlvmPrimitive() == false && targetType?.isLlvmPrimitive() == true) {
+			//TODO same for other primitives
 			if(SpecialType.INTEGER.matches(targetType)) {
 				val valuePointer = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, sourceValue,
 					context.integerValueIndex, "valuePointer")

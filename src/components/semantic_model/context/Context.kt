@@ -3,6 +3,7 @@ package components.semantic_model.context
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.native_implementations.*
 import components.semantic_model.control_flow.LoopStatement
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.values.Value
@@ -53,6 +54,7 @@ class Context {
 	lateinit var llvmStringByteArrayInitializerType: LlvmType
 	lateinit var llvmStringByteArrayInitializer: LlvmValue
 	val memberIdentities = IdentityMap<String>()
+	val nativeImplementations = HashMap<String, (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit>()
 
 
 	companion object {
@@ -107,6 +109,21 @@ class Context {
 
 	fun getThisParameter(constructor: LlvmConstructor): LlvmValue {
 		return constructor.getParameter(constructor.getParentFunction(), THIS_PARAMETER_INDEX)
+	}
+
+	fun loadNativeImplementations() {
+		ArrayNatives.load(this)
+		BoolNatives.load(this)
+		ByteNatives.load(this)
+		FloatNatives.load(this)
+		IntNatives.load(this)
+	}
+
+	fun compileNativeImplementation(constructor: LlvmConstructor, identifier: String, llvmValue: LlvmValue) {
+		//TODO throw error
+		val compileImplementation = nativeImplementations[identifier] ?: return
+		//	?: throw CompilerError("Missing native implementation for identifier '$identifier'.")
+		compileImplementation(constructor, llvmValue)
 	}
 
 	fun printDebugMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {

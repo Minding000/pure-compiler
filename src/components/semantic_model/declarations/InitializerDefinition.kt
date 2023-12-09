@@ -287,18 +287,19 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	}
 
 	private fun compileNativeInitializer(constructor: LlvmConstructor, thisValue: LlvmValue) {
+		//TODO same for Bool and Array
 		if(SpecialType.BYTE.matches(parentTypeDeclaration)) {
 			val byteValuePointer = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
 				context.byteValueIndex, "byteValuePointer")
-			constructor.buildStore(constructor.getParameter(llvmValue, 1), byteValuePointer)
+			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), byteValuePointer)
 		} else if(SpecialType.INTEGER.matches(parentTypeDeclaration)) {
 			val integerValuePointer = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
 				context.integerValueIndex, "integerValuePointer")
-			constructor.buildStore(constructor.getParameter(llvmValue, 1), integerValuePointer)
+			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), integerValuePointer)
 		} else if(SpecialType.FLOAT.matches(parentTypeDeclaration)) {
 			val floatValuePointer = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
 				context.floatValueIndex, "floatValuePointer")
-			constructor.buildStore(constructor.getParameter(llvmValue, 1), floatValuePointer)
+			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), floatValuePointer)
 		}
 	}
 

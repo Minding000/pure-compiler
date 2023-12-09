@@ -81,6 +81,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		context.llvmMemberOffsetType = constructor.i32Type
 		context.llvmMemberAddressType = constructor.pointerType
 		setUpSystemFunctions(constructor)
+		context.loadNativeImplementations()
 		for(file in files)
 			file.declare(constructor)
 		for(file in files)
