@@ -8,7 +8,7 @@ import logger.issues.initialization.UninitializedProperties
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
-internal class Initialization {
+internal class InitializationState {
 
 	@Test
 	fun `allows use of initialized local variables`() {
@@ -16,6 +16,20 @@ internal class Initialization {
 			"""
 				val x = 5
 				x
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotInitialized>()
+	}
+
+	@Test
+	fun `allows use of initialized local variables after loop`() {
+		val sourceCode =
+			"""
+			var a = 0
+			loop over Range(0, 5) as number {
+				a += number
+			}
+			a
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotInitialized>()

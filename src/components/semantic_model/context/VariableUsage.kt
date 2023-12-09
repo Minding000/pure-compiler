@@ -7,10 +7,10 @@ import java.util.*
 
 class VariableUsage(val kinds: List<Kind>, val semanticModel: SemanticModel, var resultingType: Type? = null, var resultingValue: Value? = null) {
 	private var isRequiredToBeInitializedCache: Boolean? = null
-	private var isInitializedCache: Boolean? = null
+	private var initializationStateCache = InitializationState.UNKNOWN
 	private var isPossiblyInitializedCache: Boolean? = null
-	var previousUsages = LinkedList<VariableUsage>()
-	var nextUsages = LinkedList<VariableUsage>()
+	val previousUsages = LinkedList<VariableUsage>()
+	val nextUsages = LinkedList<VariableUsage>()
 	var willExit = false
 
 	fun isRequiredToBeInitialized(): Boolean {
@@ -33,13 +33,19 @@ class VariableUsage(val kinds: List<Kind>, val semanticModel: SemanticModel, var
 	}
 
 	fun isNowInitialized(): Boolean {
-		var isInitialized = isInitializedCache
-		if(isInitialized != null)
-			return isInitialized
-		isInitializedCache = false
-		isInitialized = kinds.contains(Kind.WRITE) || (previousUsages.isNotEmpty() && previousUsages.all(VariableUsage::isNowInitialized))
-		isInitializedCache = isInitialized
-		return isInitialized
+		return getInitializationState() == InitializationState.INITIALIZED
+	}
+
+	private fun getInitializationState(): InitializationState {
+		if(initializationStateCache != InitializationState.UNKNOWN)
+			return initializationStateCache
+		initializationStateCache = InitializationState.PENDING
+		initializationStateCache = if(kinds.contains(Kind.WRITE) || !(previousUsages.isEmpty()
+				|| previousUsages.any { usage -> usage.getInitializationState() == InitializationState.UNINITIALIZED}))
+			InitializationState.INITIALIZED
+		else
+			InitializationState.UNINITIALIZED
+		return initializationStateCache
 	}
 
 	fun isPreviouslyPossiblyInitialized(): Boolean {
@@ -79,5 +85,12 @@ class VariableUsage(val kinds: List<Kind>, val semanticModel: SemanticModel, var
 		MUTATION,
 		HINT,
 		END
+	}
+
+	enum class InitializationState {
+		UNKNOWN,
+		PENDING,
+		INITIALIZED,
+		UNINITIALIZED
 	}
 }

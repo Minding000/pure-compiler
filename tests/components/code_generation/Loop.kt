@@ -111,7 +111,7 @@ internal class Loop {
 	}
 
 	@Test
-	fun `compiles over loops iterating over plural type`() { //TODO check dataflow analysis error for 'sum'
+	fun `compiles over loops iterating over plural type`() {
 		val sourceCode = """
 			SimplestApp object {
 				to getSix(): Int {
