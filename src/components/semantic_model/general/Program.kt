@@ -74,6 +74,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		addFlushFunction(constructor)
 		addSleepFunction(constructor)
 		addExitFunction(constructor)
+		addMemoryCopyFunction(constructor)
 		addVariadicIntrinsics(constructor)
 		createClosureStruct(constructor)
 		context.llvmMemberIndexType = constructor.i32Type
@@ -87,7 +88,10 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		for(file in files)
 			file.define(constructor)
 		findArrayTypeDeclaration()
+		findBooleanTypeDeclaration()
+		findByteTypeDeclaration()
 		findIntegerTypeDeclaration()
+		findFloatTypeDeclaration()
 		findStringInitializer()
 		for(file in files)
 			file.compile(constructor)
@@ -151,13 +155,19 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun addSleepFunction(constructor: LlvmConstructor) {
-		context.llvmSleepFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type), constructor.voidType)
+		context.llvmSleepFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type))
 		context.llvmSleepFunction = constructor.buildFunction("Sleep", context.llvmSleepFunctionType)
 	}
 
 	private fun addExitFunction(constructor: LlvmConstructor) {
-		context.llvmExitFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type), constructor.voidType)
+		context.llvmExitFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type))
 		context.llvmExitFunction = constructor.buildFunction("exit", context.llvmExitFunctionType)
+	}
+
+	private fun addMemoryCopyFunction(constructor: LlvmConstructor) {
+		context.llvmMemoryCopyFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType,
+			constructor.i32Type), constructor.pointerType)
+		context.llvmMemoryCopyFunction = constructor.buildFunction("memcpy", context.llvmMemoryCopyFunctionType)
 	}
 
 	private fun addVariadicIntrinsics(constructor: LlvmConstructor) {
@@ -323,9 +333,24 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		context.arrayTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.ARRAY.className)
 	}
 
+	private fun findBooleanTypeDeclaration() {
+		val fileScope = SpecialType.BOOLEAN.fileScope
+		context.booleanTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.BOOLEAN.className)
+	}
+
+	private fun findByteTypeDeclaration() {
+		val fileScope = SpecialType.BYTE.fileScope
+		context.byteTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.BYTE.className)
+	}
+
 	private fun findIntegerTypeDeclaration() {
 		val fileScope = SpecialType.INTEGER.fileScope
 		context.integerTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.INTEGER.className)
+	}
+
+	private fun findFloatTypeDeclaration() {
+		val fileScope = SpecialType.FLOAT.fileScope
+		context.floatTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.FLOAT.className)
 	}
 
 	private fun findStringInitializer() {

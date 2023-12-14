@@ -12,8 +12,7 @@ import logger.issues.declaration.PropertyParameterOutsideOfInitializer
 import kotlin.properties.Delegates
 
 class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: String, type: Type?, isMutable: Boolean = false,
-				val isVariadic: Boolean = false):
-	ValueDeclaration(source, scope, name, type, null, true, isMutable) {
+				val isVariadic: Boolean = false): ValueDeclaration(source, scope, name, type, null, true, isMutable) {
 	val isPropertySetter = type == null
 	var propertyDeclaration: ValueDeclaration? = null
 	var index by Delegates.notNull<Int>()
@@ -29,8 +28,8 @@ class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: 
 			if(parent is InitializerDefinition) {
 				//TODO disallow computed property with where clause as target
 				val match = parent.parentTypeDeclaration.scope.getValueDeclaration(name)
-				this.propertyDeclaration = match?.declaration
-				this.type = match?.type
+				propertyDeclaration = match?.declaration
+				type = match?.type
 				if(propertyDeclaration == null)
 					context.addIssue(PropertyParameterMismatch(source))
 			} else {
@@ -42,9 +41,9 @@ class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: 
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		if(isPropertySetter) {
-			propertyDeclaration?.let { propertyDeclaration ->
+			val propertyDeclaration = propertyDeclaration
+			if(propertyDeclaration != null)
 				tracker.add(VariableUsage.Kind.WRITE, propertyDeclaration, this)
-			}
 		} else {
 			tracker.declare(this, true)
 		}

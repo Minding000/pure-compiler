@@ -8,6 +8,24 @@ import kotlin.test.assertEquals
 internal class Initializer {
 
 	@Test
+	fun `initializes property with value of property parameter`() {
+		val sourceCode = """
+			Application class {
+				val id: Int
+				init(id)
+			}
+			SimplestApp object {
+				to getA(): Int {
+					val application = Application(53)
+					return application.id
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
+		assertEquals(53, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
 	fun `compiles explicit super initializer calls`() {
 		val sourceCode = """
 			Application class {

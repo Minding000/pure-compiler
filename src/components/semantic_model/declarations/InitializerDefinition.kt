@@ -24,6 +24,7 @@ import util.stringifyTypes
 import java.util.*
 import kotlin.math.max
 
+//TODO disallow converting initializers in bound classes
 class InitializerDefinition(override val source: SyntaxTreeNode, override val scope: BlockScope,
 							val localTypeParameters: List<TypeDeclaration> = emptyList(), val parameters: List<Parameter> = emptyList(),
 							val body: SemanticModel? = null, override val isAbstract: Boolean = false, val isConverting: Boolean = false,
@@ -253,12 +254,19 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	}
 
 	override fun declare(constructor: LlvmConstructor) {
+		if(isAbstract)
+			return
 		super.declare(constructor)
+		var valueParameterOffset = Context.VALUE_PARAMETER_OFFSET
+		if(parentTypeDeclaration.isBound)
+			valueParameterOffset++
 		for(index in parameters.indices)
-			parameters[index].index = index + Context.VALUE_PARAMETER_OFFSET
+			parameters[index].index = index + valueParameterOffset
 		val parameterTypes = LinkedList<LlvmType?>(parameters.map { parameter -> parameter.type?.getLlvmType(constructor) })
-		parameterTypes.addFirst(constructor.pointerType)
-		parameterTypes.addFirst(constructor.pointerType)
+		parameterTypes.add(Context.EXCEPTION_PARAMETER_INDEX, constructor.pointerType)
+		parameterTypes.add(Context.THIS_PARAMETER_INDEX, constructor.pointerType)
+		if(parentTypeDeclaration.isBound)
+			parameterTypes.add(Context.PARENT_PARAMETER_OFFSET, constructor.pointerType)
 		llvmType = constructor.buildFunctionType(parameterTypes, constructor.voidType, isVariadic)
 		llvmValue = constructor.buildFunction("${parentTypeDeclaration.name}_Initializer", llvmType)
 	}
@@ -269,6 +277,18 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmValue, "entrypoint")
 		val thisValue = constructor.getParameter(llvmValue, Context.THIS_PARAMETER_INDEX)
+		if(parentTypeDeclaration.isBound) {
+			val parentValue = constructor.getParameter(llvmValue, Context.PARENT_PARAMETER_OFFSET)
+			val parentProperty = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
+				Context.PARENT_PROPERTY_INDEX, "_parentProperty")
+			constructor.buildStore(parentValue, parentProperty)
+		}
+		for(parameter in parameters) {
+			if(parameter.isPropertySetter) {
+				val propertyAddress = context.resolveMember(constructor, parentTypeDeclaration.llvmType, thisValue, parameter.name)
+				constructor.buildStore(constructor.getParameter(llvmValue, parameter.index), propertyAddress)
+			}
+		}
 		for(memberDeclaration in parentTypeDeclaration.properties) {
 			val memberValue = memberDeclaration.value
 			if(memberValue != null) {
@@ -287,8 +307,13 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	}
 
 	private fun compileNativeInitializer(constructor: LlvmConstructor, thisValue: LlvmValue) {
-		//TODO same for Bool and Array
-		if(SpecialType.BYTE.matches(parentTypeDeclaration)) {
+		//TODO create different initializers for Array
+		//TODO consider moving this code to 'code_generation/llvm/native_implementations'
+		if(SpecialType.BOOLEAN.matches(parentTypeDeclaration)) {
+			val booleanValuePointer = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
+				context.booleanValueIndex, "booleanValuePointer")
+			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), booleanValuePointer)
+		} else if(SpecialType.BYTE.matches(parentTypeDeclaration)) {
 			val byteValuePointer = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
 				context.byteValueIndex, "byteValuePointer")
 			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), byteValuePointer)

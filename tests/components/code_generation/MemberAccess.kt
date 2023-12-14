@@ -56,6 +56,32 @@ internal class MemberAccess {
 	}
 
 	@Test
+	fun `compiles implicit member access to bound class`() {
+		val sourceCode = """
+			IdContext class {
+				val initialId: Int
+				init(initialId)
+				bound IdGenerator class {
+					val currentId = initialId
+					to getNewId(): Int {
+						currentId++
+						return currentId
+					}
+				}
+			}
+			SimplestApp object {
+				to getId(): Int {
+					val context = IdContext(22)
+					val generator = context.IdGenerator()
+					return generator.getNewId()
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getId")
+		assertEquals(23, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
 	fun `compiles calls to overridden functions`() {
 		val sourceCode = """
 			Application class {

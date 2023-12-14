@@ -109,7 +109,8 @@ class LlvmConstructor(name: String) {
 		LLVMAddAttributeAtIndex(function, LLVMAttributeReturnIndex, attribute)
 	}
 
-	fun buildFunctionCall(functionType: LlvmType?, function: LlvmValue, parameters: List<LlvmValue> = emptyList(), name: String = ""): LlvmValue {
+	fun buildFunctionCall(functionType: LlvmType?, function: LlvmValue, parameters: List<LlvmValue?> = emptyList(),
+						  name: String = ""): LlvmValue {
 		if(functionType == null)
 			throw CompilerError("Missing function type in function call '$name'.")
 		return LLVMBuildCall2(builder, functionType, function, parameters.toLlvmList(), parameters.size, name)
@@ -175,8 +176,8 @@ class LlvmConstructor(name: String) {
 		return LLVMBuildMalloc(builder, type, name)
 	}
 
-	fun buildHeapArrayAllocation(type: LlvmType, size: LlvmValue, name: String): LlvmValue {
-		return LLVMBuildArrayMalloc(builder, type, size, name)
+	fun buildHeapArrayAllocation(elementType: LlvmType, size: LlvmValue, name: String): LlvmValue {
+		return LLVMBuildArrayMalloc(builder, elementType, size, name)
 	}
 
 	fun buildStackAllocation(type: LlvmType?, name: String): LlvmValue {
@@ -201,8 +202,8 @@ class LlvmConstructor(name: String) {
 		return location
 	}
 
-	fun buildStackArrayAllocation(type: LlvmType, size: LlvmValue, name: String): LlvmValue {
-		return LLVMBuildArrayAlloca(builder, type, size, name)
+	fun buildStackArrayAllocation(elementType: LlvmType, size: LlvmValue, name: String): LlvmValue {
+		return LLVMBuildArrayAlloca(builder, elementType, size, name)
 	}
 
 	fun buildStore(value: LlvmValue, location: LlvmValue?) {

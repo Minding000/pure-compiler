@@ -199,11 +199,12 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	override fun compile(constructor: LlvmConstructor) {
 		if(isAbstract)
 			return
+		val previousBlock = constructor.getCurrentBlock()
 		if(isNative) {
 			context.compileNativeImplementation(constructor, toString(), llvmValue)
+			constructor.select(previousBlock)
 			return
 		}
-		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmValue, "entrypoint")
 		super.compile(constructor)
 		if(body?.isInterruptingExecution != true)

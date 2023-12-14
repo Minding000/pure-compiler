@@ -16,7 +16,7 @@ import java.util.*
 import components.syntax_parser.syntax_tree.access.MemberAccess as MemberAccessSyntaxTree
 
 class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, val target: Value, val member: Value,
-				   private val isOptional: Boolean): Value(source, scope) {
+				   val isOptional: Boolean): Value(source, scope) {
 
 	init {
 		addSemanticModels(target, member)

@@ -11,6 +11,7 @@ import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.OptionalType
 import components.semantic_model.types.SelfType
+import components.semantic_model.types.Type
 import components.semantic_model.values.*
 import errors.internal.CompilerError
 import logger.issues.constant_conditions.ExpressionNotAssignable
@@ -100,7 +101,8 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		super.compile(constructor)
 		val rawLlvmValue = sourceExpression.getLlvmValue(constructor)
 		val sourceType = sourceExpression.type
-		val pointerLlvmValue = if(sourceType?.isLlvmPrimitive() == true && targets.any { target -> target.type is OptionalType }) {
+		//TODO fix: source value is calculated even if there's no valid target (member access on null value) (write test!)
+		val pointerLlvmValue = if(sourceType?.isLlvmPrimitive() == true && targets.any { target -> getWriteType(target) is OptionalType }) {
 			val box = constructor.buildHeapAllocation(sourceType.getLlvmType(constructor), "_optionalPrimitiveBox")
 			constructor.buildStore(rawLlvmValue, box)
 			box
@@ -108,7 +110,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 			rawLlvmValue
 		}
 		for(target in targets) {
-			val llvmValue = if(target.type is OptionalType) pointerLlvmValue else rawLlvmValue
+			val llvmValue = if(getWriteType(target) is OptionalType) pointerLlvmValue else rawLlvmValue
 			when(target) {
 				is VariableValue -> {
 					val declaration = target.declaration
@@ -118,16 +120,41 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 						constructor.buildStore(llvmValue, target.getLlvmLocation(constructor))
 				}
 				is MemberAccess -> {
-					val declaration = (target.member as? VariableValue)?.declaration
-					if(declaration is ComputedPropertyDeclaration)
-						buildSetterCall(constructor, declaration, target.target.getLlvmValue(constructor), llvmValue)
-					else
-						constructor.buildStore(llvmValue, target.getLlvmLocation(constructor))
+					val memberAccess = target
+					val declaration = (memberAccess.member as? VariableValue)?.declaration
+					val memberAccessTargetValue = memberAccess.target.getLlvmValue(constructor)
+					if(memberAccess.isOptional) {
+						val function = constructor.getParentFunction()
+						val writeBlock = constructor.createBlock(function, "optionalMemberAccess_write")
+						val endBlock = constructor.createBlock(function, "optionalMemberAccess_end")
+						constructor.buildJump(constructor.buildIsNull(memberAccessTargetValue, "_isTargetNull"), endBlock, writeBlock)
+						constructor.select(writeBlock)
+						//TODO fix: member access target value is calculated twice if not computed property (write test!)
+						if(declaration is ComputedPropertyDeclaration)
+							buildSetterCall(constructor, declaration, memberAccessTargetValue, llvmValue)
+						else
+							constructor.buildStore(llvmValue, memberAccess.getLlvmLocation(constructor))
+						constructor.buildJump(endBlock)
+						constructor.select(endBlock)
+					} else {
+						if(declaration is ComputedPropertyDeclaration)
+							buildSetterCall(constructor, declaration, memberAccessTargetValue, llvmValue)
+						else
+							constructor.buildStore(llvmValue, memberAccess.getLlvmLocation(constructor))
+					}
 				}
 				is IndexAccess -> compileAssignmentToIndexAccess(constructor, target, llvmValue)
 				else -> throw CompilerError(source, "Target of type '${target.javaClass.simpleName}' is not assignable.")
 			}
 		}
+	}
+
+	private fun getWriteType(value: Value): Type? {
+		if(value is MemberAccess && value.isOptional) {
+			val targetType = value.target.type ?: return null
+			return value.member.type?.getLocalType(value, targetType)
+		}
+		return value.type
 	}
 
 	private fun buildSetterCall(constructor: LlvmConstructor, declaration: ComputedPropertyDeclaration, targetValue: LlvmValue,

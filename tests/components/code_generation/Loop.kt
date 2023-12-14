@@ -161,9 +161,8 @@ internal class Loop {
 				}
 				to sum(numbers: <Int>List): Int {
 					var sum = 0
-					loop over numbers as number {
+					loop over numbers as number
 						sum += number
-					}
 					return sum
 				}
 			}

@@ -42,6 +42,7 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 	}
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		//TODO initialize Array.size property
 		val newByteArrayAddress = constructor.buildHeapAllocation(context.arrayTypeDeclaration?.llvmType, "newByteArrayAddress")
 		val arrayClassDefinitionPointer = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, newByteArrayAddress,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "arrayClassDefinitionPointer")

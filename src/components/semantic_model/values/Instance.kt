@@ -9,6 +9,7 @@ import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
 import components.syntax_parser.syntax_tree.definitions.Instance as InstanceSyntaxTree
 
+//TODO disallow instances in bound classes
 class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, name: String, val valueParameters: List<Value>,
 			   isAbstract: Boolean): InterfaceMember(source, scope, name, null, null, true, isAbstract) {
 	lateinit var typeDeclaration: TypeDeclaration

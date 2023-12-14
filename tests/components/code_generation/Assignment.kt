@@ -53,6 +53,38 @@ internal class Assignment {
 	}
 
 	@Test
+	fun `compiles assignments to optional member accesses with value`() {
+		val sourceCode = """
+			SimplestApp object {
+				var a = 11
+				to getFive(): Int {
+					var app: SimplestApp? = SimplestApp
+					app?.a = 5
+					return a
+				}
+			}
+		""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles assignments to optional member accesses without value`() {
+		val sourceCode = """
+			SimplestApp object {
+				var a = 11
+				to getEleven(): Int {
+					var app: SimplestApp? = null
+					app?.a = 5
+					return a
+				}
+			}
+		""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEleven")
+		assertEquals(11, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
 	fun `compiles assignments to index accesses`() {
 		val sourceCode = """
 			SimplestApp object {

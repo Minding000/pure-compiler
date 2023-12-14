@@ -8,6 +8,7 @@ import components.semantic_model.control_flow.LoopStatement
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
+import errors.internal.CompilerError
 import logger.Issue
 import logger.Logger
 import java.util.*
@@ -36,6 +37,8 @@ class Context {
 	lateinit var llvmSleepFunction: LlvmValue
 	lateinit var llvmExitFunctionType: LlvmType
 	lateinit var llvmExitFunction: LlvmValue
+	lateinit var llvmMemoryCopyFunctionType: LlvmType
+	lateinit var llvmMemoryCopyFunction: LlvmValue
 	lateinit var variadicParameterListStruct: LlvmType
 	lateinit var llvmVariableParameterIterationStartFunctionType: LlvmType
 	lateinit var llvmVariableParameterIterationStartFunction: LlvmValue
@@ -45,8 +48,12 @@ class Context {
 	lateinit var llvmVariableParameterIterationEndFunction: LlvmValue
 	lateinit var closureStruct: LlvmType
 	var arrayTypeDeclaration: TypeDeclaration? = null
+	var booleanTypeDeclaration: TypeDeclaration? = null
+	var byteTypeDeclaration: TypeDeclaration? = null
 	var integerTypeDeclaration: TypeDeclaration? = null
+	var floatTypeDeclaration: TypeDeclaration? = null
 	var arrayValueIndex by Delegates.notNull<Int>()
+	var booleanValueIndex by Delegates.notNull<Int>()
 	var byteValueIndex by Delegates.notNull<Int>()
 	var integerValueIndex by Delegates.notNull<Int>()
 	var floatValueIndex by Delegates.notNull<Int>()
@@ -54,11 +61,11 @@ class Context {
 	lateinit var llvmStringByteArrayInitializerType: LlvmType
 	lateinit var llvmStringByteArrayInitializer: LlvmValue
 	val memberIdentities = IdentityMap<String>()
-	val nativeImplementations = HashMap<String, (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit>()
-
+	private val nativeImplementations = HashMap<String, (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit>()
 
 	companion object {
 		const val CLASS_DEFINITION_PROPERTY_INDEX = 0
+		const val PARENT_PROPERTY_INDEX = 1
 		const val CONSTANT_COUNT_PROPERTY_INDEX = 0
 		const val CONSTANT_ID_ARRAY_PROPERTY_INDEX = 1
 		const val CONSTANT_OFFSET_ARRAY_PROPERTY_INDEX = 2
@@ -70,6 +77,7 @@ class Context {
 		const val FUNCTION_ADDRESS_ARRAY_PROPERTY_INDEX = 8
 		const val EXCEPTION_PARAMETER_INDEX = 0
 		const val THIS_PARAMETER_INDEX = 1
+		const val PARENT_PARAMETER_OFFSET = 2
 		const val VALUE_PARAMETER_OFFSET = 2
 		const val CLOSURE_FUNCTION_ADDRESS_PROPERTY_INDEX = 0
 	}
@@ -116,7 +124,15 @@ class Context {
 		BoolNatives.load(this)
 		ByteNatives.load(this)
 		FloatNatives.load(this)
+		IdentifiableNatives.load(this)
 		IntNatives.load(this)
+		NullNatives.load(this)
+	}
+
+	fun registerNativeImplementation(identifier: String, implementation: (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit) {
+		val existingImplementation = nativeImplementations.putIfAbsent(identifier, implementation)
+		if(existingImplementation != null)
+			throw CompilerError("Duplicate native implementation for identifier '$identifier'.")
 	}
 
 	fun compileNativeImplementation(constructor: LlvmConstructor, identifier: String, llvmValue: LlvmValue) {

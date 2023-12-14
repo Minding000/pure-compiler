@@ -2,10 +2,12 @@ package components.semantic_model.values
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
+import components.semantic_model.context.Context
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.PropertyDeclaration
+import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
@@ -94,11 +96,32 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 			throw CompilerError(source, "Computed properties do not have a location.")
 		val declaration = declaration
 		return if(declaration is PropertyDeclaration) {
-			context.resolveMember(constructor, declaration.parentTypeDeclaration.llvmType, context.getThisParameter(constructor), name,
+			//TODO same for other bound member accesses (e.g. member access with self target in bound class)
+			var currentValue = context.getThisParameter(constructor)
+			var currentTypeDeclaration = scope.getSurroundingTypeDeclaration() ?: return null
+			while(!isDeclaredIn(declaration, currentTypeDeclaration)) {
+				if(!currentTypeDeclaration.isBound)
+					return null
+				val parentProperty = constructor.buildGetPropertyPointer(currentTypeDeclaration.llvmType, currentValue,
+					Context.PARENT_PROPERTY_INDEX, "_parentProperty")
+				currentValue = constructor.buildLoad(constructor.pointerType, parentProperty, "_parent")
+				currentTypeDeclaration = currentTypeDeclaration.parent?.scope?.getSurroundingTypeDeclaration() ?: return null
+			}
+			context.resolveMember(constructor, declaration.parentTypeDeclaration.llvmType, currentValue, name,
 				(declaration as? InterfaceMember)?.isStatic ?: false)
 		} else {
 			declaration?.llvmLocation
 		}
+	}
+
+	private fun isDeclaredIn(property: PropertyDeclaration, typeDeclaration: TypeDeclaration): Boolean {
+		if(property.parentTypeDeclaration == typeDeclaration)
+			return true
+		for(superType in typeDeclaration.getDirectSuperTypes()) {
+			if(isDeclaredIn(property, superType.getTypeDeclaration() ?: continue))
+				return true
+		}
+		return false
 	}
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {

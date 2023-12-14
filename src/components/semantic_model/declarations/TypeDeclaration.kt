@@ -32,7 +32,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		}
 	var parentTypeDeclaration: TypeDeclaration? = null
 	private var hasCircularInheritance = false
-	var hasDeterminedTypes = false
+	private var hasDeterminedTypes = false
 	lateinit var staticValueDeclaration: ValueDeclaration
 	private lateinit var staticMembers: List<ValueDeclaration>
 	lateinit var properties: List<ValueDeclaration>
@@ -42,6 +42,11 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	lateinit var llvmClassInitializer: LlvmValue
 	lateinit var llvmClassInitializerType: LlvmType
 	lateinit var llvmStaticType: LlvmType
+
+	companion object {
+		const val FIXED_STATIC_PROPERTY_COUNT = 1
+		const val FIXED_PROPERTY_COUNT = 1
+	}
 
 	init {
 		addSemanticModels(explicitParentType, superType)
@@ -355,6 +360,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		constructor.defineStruct(llvmStaticType, llvmConstants)
 		val llvmProperties = LinkedList<LlvmType?>()
 		llvmProperties.add(constructor.pointerType)
+		if(isBound)
+			llvmProperties.add(constructor.pointerType)
 		for(memberDeclaration in properties)
 			llvmProperties.add(memberDeclaration.type?.getLlvmType(constructor))
 		addNativeProperties(constructor, llvmProperties)
@@ -362,10 +369,12 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	}
 
 	private fun addNativeProperties(constructor: LlvmConstructor, llvmProperties: LinkedList<LlvmType?>) {
-		//TODO same for Bool
 		if(SpecialType.ARRAY.matches(this)) {
 			context.arrayValueIndex = llvmProperties.size
 			llvmProperties.add(constructor.pointerType)
+		} else if(SpecialType.BOOLEAN.matches(this)) {
+			context.booleanValueIndex = llvmProperties.size
+			llvmProperties.add(constructor.booleanType)
 		} else if(SpecialType.BYTE.matches(this)) {
 			context.byteValueIndex = llvmProperties.size
 			llvmProperties.add(constructor.byteType)
@@ -398,7 +407,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		val functionAddressArrayAddress = constructor.buildHeapArrayAllocation(context.llvmMemberAddressType, functionCount, "functionAddressArray")
 		for((memberIndex, memberDeclaration) in staticMembers.withIndex()) {
 			val memberId = context.memberIdentities.getId(memberDeclaration.name)
-			val structMemberIndex = memberIndex + 1
+			val structMemberIndex = memberIndex + FIXED_STATIC_PROPERTY_COUNT
 			val memberOffset = constructor.getMemberOffsetInBytes(llvmStaticType, structMemberIndex)
 			println("Mapping static member '${memberDeclaration.name}' to ID '$memberId' with offset '$memberOffset'.")
 			val memberIndexValue = constructor.buildInt32(memberIndex)
@@ -409,9 +418,12 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			constructor.buildStore(memberIdValue, idLocation)
 			constructor.buildStore(memberOffsetValue, offsetLocation)
 		}
+		var fixedPropertyCount = FIXED_PROPERTY_COUNT
+		if(isBound)
+			fixedPropertyCount++
 		for((memberIndex, property) in properties.withIndex()) {
 			val memberId = context.memberIdentities.getId(property.name)
-			val structMemberIndex = memberIndex + 1
+			val structMemberIndex = memberIndex + fixedPropertyCount
 			val memberOffset = constructor.getMemberOffsetInBytes(llvmType, structMemberIndex)
 			println("Mapping property '${property.name}' to ID '$memberId' with offset '$memberOffset'.")
 			val memberIndexValue = constructor.buildInt32(memberIndex)

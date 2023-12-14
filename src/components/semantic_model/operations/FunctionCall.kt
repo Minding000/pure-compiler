@@ -48,11 +48,12 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	}
 
 	private fun resolveInitializerCall(targetType: StaticType) {
-		(targetType.typeDeclaration as? Class)?.let { `class` ->
-			if(`class`.isAbstract)
-				context.addIssue(AbstractClassInstantiation(source, `class`))
+		val typeDeclaration = targetType.typeDeclaration
+		if(typeDeclaration is Class) {
+			if(typeDeclaration.isAbstract)
+				context.addIssue(AbstractClassInstantiation(source, typeDeclaration))
 		}
-		val globalTypeParameters = targetType.typeDeclaration.scope.getGenericTypeDeclarations()
+		val globalTypeParameters = typeDeclaration.scope.getGenericTypeDeclarations()
 		val suppliedGlobalTypes = (function as? TypeSpecification)?.globalTypes ?: emptyList()
 		try {
 			val match = targetType.getInitializer(globalTypeParameters, suppliedGlobalTypes, typeParameters, valueParameters)
@@ -224,7 +225,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 
 	private fun createLlvmInitializerCall(constructor: LlvmConstructor, initializer: InitializerDefinition,
 										  exceptionAddressLocation: LlvmValue): LlvmValue {
-		val parameters = LinkedList<LlvmValue>()
+		val parameters = LinkedList<LlvmValue?>()
 		for((index, valueParameter) in valueParameters.withIndex())
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
 				valueParameter.type, targetInitializer?.getParameterTypeAt(index)))
@@ -237,13 +238,17 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		// - unless the variable definition is a specific type already (or can be traced to it)
 		val isPrimaryCall = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
 		return if(isPrimaryCall) {
-			val typeDefinition = initializer.parentTypeDeclaration
-			val newObjectAddress = constructor.buildHeapAllocation(typeDefinition.llvmType, "newObjectAddress")
-			val classDefinitionPointer = constructor.buildGetPropertyPointer(typeDefinition.llvmType, newObjectAddress,
+			val typeDeclaration = initializer.parentTypeDeclaration
+			val newObjectAddress = constructor.buildHeapAllocation(typeDeclaration.llvmType, "newObjectAddress")
+			val classDefinitionPointer = constructor.buildGetPropertyPointer(typeDeclaration.llvmType, newObjectAddress,
 				Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
-			constructor.buildStore(typeDefinition.llvmClassDefinitionAddress, classDefinitionPointer)
-			parameters.addFirst(exceptionAddressLocation)
+			constructor.buildStore(typeDeclaration.llvmClassDefinitionAddress, classDefinitionPointer)
+			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddressLocation)
 			parameters.add(Context.THIS_PARAMETER_INDEX, newObjectAddress)
+			if(typeDeclaration.isBound) {
+				val parent = (function as? MemberAccess)?.target?.getLlvmValue(constructor) ?: context.getThisParameter(constructor)
+				parameters.add(Context.PARENT_PARAMETER_OFFSET, parent)
+			}
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
 			newObjectAddress
 		} else {
