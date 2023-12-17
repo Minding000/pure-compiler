@@ -1,7 +1,6 @@
 package components.code_generation
 
 import components.code_generation.llvm.Llvm
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertContains
@@ -146,7 +145,6 @@ internal class Loop {
 		assertEquals(3, Llvm.castToSignedInteger(result))
 	}
 
-	@Disabled
 	@Test
 	fun `compiles over loops iterating over collection`() {
 		val sourceCode = """
@@ -157,7 +155,6 @@ internal class Loop {
 				}
 				to sum(numbers: <Int>List): Int {
 					var sum = 0
-//					return numbers.head?.element ?? -3
 					loop over numbers as number
 						sum += number
 					return sum

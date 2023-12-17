@@ -32,12 +32,10 @@ object ValueConverter {
 		// Boxed primitive -> wrapped optional
 
 		if(sourceType?.isLlvmPrimitive() == true && targetType is OptionalType) {
-			val box = constructor.buildHeapAllocation(sourceType.getLlvmType(constructor), "_optionalPrimitiveBox")
-			constructor.buildStore(sourceValue, box)
-			return box
+			return boxPrimitive(constructor, sourceValue, sourceType.getLlvmType(constructor))
 		}
 		if(sourceType is OptionalType && targetType?.isLlvmPrimitive() == true) {
-			return constructor.buildLoad(targetType.getLlvmType(constructor), sourceValue, "_unboxedPrimitive")
+			return unboxPrimitive(constructor, sourceValue, targetType.getLlvmType(constructor))
 		}
 		if(sourceType?.isLlvmPrimitive() == true && targetType?.isLlvmPrimitive() == false) {
 			//TODO same for other primitives (write tests!):
@@ -45,31 +43,45 @@ object ValueConverter {
 			// - bool
 			// - byte
 			if(SpecialType.INTEGER.matches(sourceType)) {
-				val newIntegerAddress = constructor.buildHeapAllocation(context.integerTypeDeclaration?.llvmType, "newIntegerAddress")
-				val integerClassDefinitionPointer = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType,
-					newIntegerAddress, Context.CLASS_DEFINITION_PROPERTY_INDEX, "integerClassDefinitionPointer")
-				val integerClassDefinitionAddress = context.integerTypeDeclaration?.llvmClassDefinitionAddress
-					?: throw CompilerError(source, "Missing integer type declaration.")
-				constructor.buildStore(integerClassDefinitionAddress, integerClassDefinitionPointer)
-				val valuePointer = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, newIntegerAddress,
-					context.integerValueIndex, "valuePointer")
-				constructor.buildStore(sourceValue, valuePointer)
-				return newIntegerAddress
+				return wrapInteger(context, constructor, sourceValue)
 			} else {
 				throw CompilerError(source, "Unknown primitive type '$sourceType'.")
 			}
 		}
-		if(sourceType?.isLlvmPrimitive() == false && targetType?.isLlvmPrimitive() == true) {
+		val sourceBaseType = if(sourceType is OptionalType) sourceType.baseType else sourceType
+		val targetBaseType = if(targetType is OptionalType) targetType.baseType else targetType
+		if(sourceBaseType?.isLlvmPrimitive() == false && targetBaseType?.isLlvmPrimitive() == true) {
 			//TODO same for other primitives (write tests!):
 			// - float
 			// - bool
 			// - byte
-			if(SpecialType.INTEGER.matches(targetType)) {
-				val valuePointer = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, sourceValue,
-					context.integerValueIndex, "valuePointer")
-				return constructor.buildLoad(targetType.getLlvmType(constructor), valuePointer, "_unwrappedPrimitive")
+			if(SpecialType.INTEGER.matches(targetBaseType)) {
+				if(targetType is OptionalType) {
+					val sourceLlvmType = sourceType?.getLlvmType(constructor)
+					if(sourceType is OptionalType) {
+						val result = constructor.buildStackAllocation(sourceLlvmType, "_unwrapAndBoxResultVariable")
+						val function = constructor.getParentFunction()
+						val valueBlock = constructor.createBlock(function, "_unwrapAndBoxValueBlock")
+						val nullBlock = constructor.createBlock(function, "_unwrapAndBoxNullBlock")
+						val resultBlock = constructor.createBlock(function, "_unwrapAndBoxResultBlock")
+						constructor.buildJump(constructor.buildIsNull(sourceValue, "_isSourceNull"), nullBlock, valueBlock)
+						constructor.select(nullBlock)
+						constructor.buildStore(constructor.nullPointer, result)
+						constructor.buildJump(resultBlock)
+						constructor.select(valueBlock)
+						val integer = unwrapInteger(context, constructor, sourceValue)
+						constructor.buildStore(boxPrimitive(constructor, integer, sourceLlvmType), result)
+						constructor.buildJump(resultBlock)
+						constructor.select(resultBlock)
+						return result
+					} else {
+						val integer = unwrapInteger(context, constructor, sourceValue)
+						return boxPrimitive(constructor, integer, sourceLlvmType)
+					}
+				}
+				return unwrapInteger(context, constructor, sourceValue)
 			} else {
-				throw CompilerError(source, "Unknown primitive type '$sourceType'.")
+				throw CompilerError(source, "Unknown primitive type '$targetBaseType'.")
 			}
 		}
 		if(SpecialType.INTEGER.matches(sourceType) && SpecialType.FLOAT.matches(targetType)) {
@@ -90,5 +102,34 @@ object ValueConverter {
 			return newObjectAddress
 		}
 		return sourceValue
+	}
+
+	private fun boxPrimitive(constructor: LlvmConstructor, value: LlvmValue, type: LlvmType?): LlvmValue {
+		val box = constructor.buildHeapAllocation(type, "_optionalPrimitiveBox")
+		constructor.buildStore(value, box)
+		return box
+	}
+
+	private fun unboxPrimitive(constructor: LlvmConstructor, value: LlvmValue, type: LlvmType?): LlvmValue {
+		return constructor.buildLoad(type, value, "_unboxedPrimitive")
+	}
+
+	fun wrapInteger(context: Context, constructor: LlvmConstructor, primitiveLlvmValue: LlvmValue): LlvmValue {
+		val newIntegerAddress = constructor.buildHeapAllocation(context.integerTypeDeclaration?.llvmType, "newIntegerAddress")
+		val integerClassDefinitionPointer = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType,
+			newIntegerAddress, Context.CLASS_DEFINITION_PROPERTY_INDEX, "integerClassDefinitionPointer")
+		val integerClassDefinitionAddress = context.integerTypeDeclaration?.llvmClassDefinitionAddress
+			?: throw CompilerError("Missing integer type declaration.")
+		constructor.buildStore(integerClassDefinitionAddress, integerClassDefinitionPointer)
+		val valuePointer = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, newIntegerAddress,
+			context.integerValueIndex, "valuePointer")
+		constructor.buildStore(primitiveLlvmValue, valuePointer)
+		return newIntegerAddress
+	}
+
+	fun unwrapInteger(context: Context, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue): LlvmValue {
+		val propertyPointer = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, wrappedLlvmValue,
+			context.integerValueIndex, "_propertyPointer")
+		return constructor.buildLoad(constructor.i32Type, propertyPointer, "_primitiveValue")
 	}
 }

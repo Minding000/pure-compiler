@@ -151,16 +151,12 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			if(setter != null && isIn(setter))
 				constructor.getLastParameter()
 			else
-				convertIfRequired(constructor, buildGetterCall(constructor, declaration), declaration.type)
+				ValueConverter.convertIfRequired(this, constructor, buildGetterCall(constructor, declaration), declaration.type, type)
 		} else {
 			val declaredMemberType = declaration?.type ?: member.type
-			convertIfRequired(constructor, constructor.buildLoad(declaredMemberType?.getLlvmType(constructor), getLlvmLocation(constructor),
-				"member"), declaredMemberType)
+			ValueConverter.convertIfRequired(this, constructor, constructor.buildLoad(declaredMemberType?.getLlvmType(constructor),
+				getLlvmLocation(constructor), "member"), declaredMemberType, type)
 		}
-	}
-
-	private fun convertIfRequired(constructor: LlvmConstructor, value: LlvmValue, sourceType: Type?): LlvmValue {
-		return ValueConverter.convertIfRequired(this, constructor, value, sourceType, type)
 	}
 
 	private fun buildGetterCall(constructor: LlvmConstructor, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
