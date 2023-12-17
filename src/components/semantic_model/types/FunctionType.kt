@@ -2,6 +2,7 @@ package components.semantic_model.types
 
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.FunctionSignature
+import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Function
@@ -83,8 +84,9 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		val matches = LinkedList<Match>()
 		for(signature in signatures) {
 			val localTypeSubstitutions = signature.getLocalTypeSubstitutions(suppliedLocalTypes, suppliedValues) ?: continue
-			if(signature.accepts(localTypeSubstitutions, suppliedValues))
-				matches.add(Match(signature, localTypeSubstitutions))
+			val conversions = HashMap<Value, InitializerDefinition>()
+			if(signature.accepts(localTypeSubstitutions, suppliedValues, conversions))
+				matches.add(Match(signature, localTypeSubstitutions, conversions))
 		}
 		determineSuperType()
 		determineSuperSignatures()
@@ -186,7 +188,8 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		return signatures.joinToString(" & ")
 	}
 
-	class Match(val signature: FunctionSignature, val localTypeSubstitutions: Map<TypeDeclaration, Type>) {
+	class Match(val signature: FunctionSignature, val localTypeSubstitutions: Map<TypeDeclaration, Type>,
+				val conversions: Map<Value, InitializerDefinition>) {
 		val returnType = signature.returnType.withTypeSubstitutions(localTypeSubstitutions)
 	}
 }

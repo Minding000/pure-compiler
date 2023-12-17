@@ -96,16 +96,19 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 			throw CompilerError(source, "Computed properties do not have a location.")
 		val declaration = declaration
 		return if(declaration is PropertyDeclaration) {
-			//TODO same for other bound member accesses (e.g. member access with self target in bound class)
 			var currentValue = context.getThisParameter(constructor)
-			var currentTypeDeclaration = scope.getSurroundingTypeDeclaration() ?: return null
+			var currentTypeDeclaration = scope.getSurroundingTypeDeclaration()
+				?: throw CompilerError(source, "Property is referenced by variable value outside of a type declaration.")
 			while(!isDeclaredIn(declaration, currentTypeDeclaration)) {
 				if(!currentTypeDeclaration.isBound)
-					return null
+					throw CompilerError(source,
+						"Type declaration of property referenced by variable value not found in its surrounding type declaration.")
 				val parentProperty = constructor.buildGetPropertyPointer(currentTypeDeclaration.llvmType, currentValue,
 					Context.PARENT_PROPERTY_INDEX, "_parentProperty")
 				currentValue = constructor.buildLoad(constructor.pointerType, parentProperty, "_parent")
-				currentTypeDeclaration = currentTypeDeclaration.parent?.scope?.getSurroundingTypeDeclaration() ?: return null
+				currentTypeDeclaration = currentTypeDeclaration.parent?.scope?.getSurroundingTypeDeclaration()
+					?: throw CompilerError(source,
+					"Type declaration of property referenced by variable value not found in its surrounding type declaration.")
 			}
 			context.resolveMember(constructor, declaration.parentTypeDeclaration.llvmType, currentValue, name,
 				(declaration as? InterfaceMember)?.isStatic ?: false)

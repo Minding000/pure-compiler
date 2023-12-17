@@ -1,8 +1,8 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ComputedPropertyDeclaration
@@ -49,7 +49,6 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			//TODO write test to make sure this is fine
 			(member as? VariableValue)?.computeValue(tracker)
 		}
-		//TODO use dataflow analysis result here instead of static type
 		val computedTargetType = target.getComputedType()
 		if(computedTargetType != null) {
 			if(isTypePotentiallyNull(computedTargetType)) {
@@ -122,8 +121,6 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 	}
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		val memberType = member.type
-		val memberLlvmType = memberType?.getLlvmType(constructor)
 		return if(isOptional) {
 			val resultLlvmType = constructor.pointerType
 			val targetValue = target.getLlvmValue(constructor)
@@ -137,39 +134,33 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			constructor.buildStore(constructor.nullPointer, result)
 			constructor.buildJump(resultBlock)
 			constructor.select(valueBlock)
-			val memberValue = getMemberValue(constructor, memberLlvmType)
-			if(memberType?.isLlvmPrimitive() == true) {
-				//TODO copy all (optional) primitives (or value-objects) on use
-				// - assignment - DONE
-				// - function argument
-				//   - binary operator calls
-				//   - index assignment
-				// - return
-				val box = constructor.buildHeapAllocation(memberLlvmType, "_optionalPrimitiveBox")
-				constructor.buildStore(memberValue, box)
-				constructor.buildStore(box, result)
-			} else {
-				constructor.buildStore(memberValue, result)
-			}
+			val memberValue = getMemberValue(constructor)
+			constructor.buildStore(memberValue, result)
 			constructor.buildJump(resultBlock)
 			constructor.select(resultBlock)
 			constructor.buildLoad(resultLlvmType, result, "_optionalMemberAccessResult")
 		} else {
-			getMemberValue(constructor, memberLlvmType)
+			getMemberValue(constructor)
 		}
 	}
 
-	private fun getMemberValue(constructor: LlvmConstructor, memberLlvmType: LlvmType?): LlvmValue {
+	private fun getMemberValue(constructor: LlvmConstructor): LlvmValue {
 		val declaration = (member as? VariableValue)?.declaration
 		return if(declaration is ComputedPropertyDeclaration) {
 			val setter = declaration.setter
 			if(setter != null && isIn(setter))
 				constructor.getLastParameter()
 			else
-				buildGetterCall(constructor, declaration)
+				convertIfRequired(constructor, buildGetterCall(constructor, declaration), declaration.type)
 		} else {
-			constructor.buildLoad(memberLlvmType, getLlvmLocation(constructor), "member")
+			val declaredMemberType = declaration?.type ?: member.type
+			convertIfRequired(constructor, constructor.buildLoad(declaredMemberType?.getLlvmType(constructor), getLlvmLocation(constructor),
+				"member"), declaredMemberType)
 		}
+	}
+
+	private fun convertIfRequired(constructor: LlvmConstructor, value: LlvmValue, sourceType: Type?): LlvmValue {
+		return ValueConverter.convertIfRequired(this, constructor, value, sourceType, type)
 	}
 
 	private fun buildGetterCall(constructor: LlvmConstructor, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {

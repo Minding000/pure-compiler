@@ -31,6 +31,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				   val valueParameters: List<Value> = emptyList()): Value(source, scope) {
 	var targetInitializer: InitializerDefinition? = null
 	var targetSignature: FunctionSignature? = null
+	var conversions: Map<Value, InitializerDefinition>? = null
 
 	init {
 		addSemanticModels(typeParameters, valueParameters)
@@ -66,6 +67,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			addSemanticModels(type)
 			this.type = type
 			targetInitializer = match.initializer
+			conversions = match.conversions
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "initializer", getSignature())
 		}
@@ -79,6 +81,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				return
 			}
 			targetSignature = match.signature
+			conversions = match.conversions
 			val targetType = getTargetType()
 			var returnType: Type? = match.returnType
 			if(targetType != null)
@@ -184,7 +187,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		val parameters = LinkedList<LlvmValue>()
 		for((index, valueParameter) in valueParameters.withIndex())
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
-				valueParameter.type, targetSignature?.getParameterTypeAt(index)))
+				valueParameter.type, targetSignature?.getParameterTypeAt(index), conversions?.get(valueParameter)))
 		if(signature.isVariadic) {
 			val fixedParameterCount = signature.fixedParameterTypes.size
 			val variadicParameterCount = parameters.size - fixedParameterCount
@@ -228,7 +231,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		val parameters = LinkedList<LlvmValue?>()
 		for((index, valueParameter) in valueParameters.withIndex())
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
-				valueParameter.type, targetInitializer?.getParameterTypeAt(index)))
+				valueParameter.type, targetInitializer?.getParameterTypeAt(index), conversions?.get(valueParameter)))
 		if(initializer.isVariadic) {
 			val fixedParameterCount = initializer.fixedParameters.size
 			val variadicParameterCount = parameters.size - fixedParameterCount

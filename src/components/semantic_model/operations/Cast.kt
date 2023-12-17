@@ -134,6 +134,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 		// - Cast from primitive to pointer type: construct wrapper
 		// - Cast from pointer type to primitive: destruct wrapper
 		// - Cast from primitive to primitive: LLVM cast (could be combined with casts above)
+		// - Cast null value (no type info)
 		return subject.getLlvmValue(constructor)
 	}
 

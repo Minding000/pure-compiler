@@ -19,6 +19,7 @@ import logger.issues.declaration.InvalidVariadicParameterPosition
 import logger.issues.declaration.MultipleVariadicParameters
 import logger.issues.initialization.UninitializedProperties
 import logger.issues.modifiers.*
+import logger.issues.resolution.ConversionAmbiguity
 import util.combine
 import util.stringifyTypes
 import java.util.*
@@ -114,15 +115,28 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	//TODO support labeled input values (same for functions)
 	// -> make sure they are passed in the correct order (LLVM side)
 	fun accepts(globalTypeSubstitutions: Map<TypeDeclaration, Type>, localTypeSubstitutions: Map<TypeDeclaration, Type>,
-				suppliedValues: List<Value>): Boolean {
+				suppliedValues: List<Value>, conversions: MutableMap<Value, InitializerDefinition>): Boolean {
 		assert(suppliedValues.size >= fixedParameters.size)
 
 		for(parameterIndex in suppliedValues.indices) {
 			val parameterType = getParameterTypeAt(parameterIndex)
 				?.withTypeSubstitutions(localTypeSubstitutions)
 				?.withTypeSubstitutions(globalTypeSubstitutions)
-			if(!suppliedValues[parameterIndex].isAssignableTo(parameterType))
+				?: return false
+			val suppliedValue = suppliedValues[parameterIndex]
+			if(!suppliedValue.isAssignableTo(parameterType)) {
+				val suppliedType = suppliedValue.type ?: return false
+				val possibleConversions = parameterType.getConversionsFrom(suppliedType)
+				if(possibleConversions.isNotEmpty()) {
+					if(possibleConversions.size > 1) {
+						context.addIssue(ConversionAmbiguity(source, suppliedType, parameterType, possibleConversions))
+						return false
+					}
+					conversions[suppliedValue] = possibleConversions.first()
+					continue
+				}
 				return false
+			}
 		}
 		return true
 	}

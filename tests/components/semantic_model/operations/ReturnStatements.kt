@@ -201,4 +201,23 @@ internal class ReturnStatements {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<FunctionCompletesDespiteNever>()
 	}
+
+	@Test
+	fun `converts value to match the return type if possible`() {
+		val sourceCode =
+			"""
+				Int class
+				Float class {
+					converting init(value: Int)
+				}
+				Bottle class {
+					val height: Int
+					to getHeight(): Float {
+						return height
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ReturnValueTypeMismatch>()
+	}
 }

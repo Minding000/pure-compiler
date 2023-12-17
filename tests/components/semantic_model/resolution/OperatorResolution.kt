@@ -13,6 +13,7 @@ import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
 import logger.issues.resolution.NotFound
 import logger.issues.resolution.SignatureAmbiguity
+import logger.issues.resolution.SignatureMismatch
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -555,5 +556,22 @@ internal class OperatorResolution {
 		lintResult.assertIssueDetected<WhereClauseUnfulfilled>(
 			"Operator '[]: Element' cannot be accessed on object of type 'ParachuteList'," +
 				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
+	}
+
+	@Test
+	fun `converts supplied parameters to match signature if possible`() {
+		val sourceCode =
+			"""
+				Int class
+				Float class {
+					converting init(value: Int)
+				}
+				Bottle object {
+					operator +=(volume: Float)
+				}
+				Bottle += Int()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
 	}
 }

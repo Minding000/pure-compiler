@@ -410,4 +410,21 @@ internal class FunctionResolution {
 			"Function 'sum()' cannot be accessed on object of type 'ParachuteList'," +
 				" because the condition 'Element is specific Addable' is not met.", Severity.ERROR)
 	}
+
+	@Test
+	fun `converts supplied parameters to match signature if possible`() {
+		val sourceCode =
+			"""
+				Int class
+				Float class {
+					converting init(value: Int)
+				}
+				Bottle object {
+					to setHeight(height: Float)
+				}
+				Bottle.setHeight(Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
+	}
 }

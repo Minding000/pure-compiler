@@ -15,9 +15,8 @@ internal class Loop {
 			SimplestApp object {
 				to run() {
 					var a = 1
-					loop {
+					loop
 						a = 2
-					}
 				}
 			}
 		""".trimIndent()
@@ -82,9 +81,8 @@ internal class Loop {
 			SimplestApp object {
 				to run() {
 					var x = yes
-					loop while x {
+					loop while x
 						x = no
-					}
 				}
 			}
 			""".trimIndent()
@@ -119,9 +117,8 @@ internal class Loop {
 				}
 				to sum(...numbers: ...Int): Int {
 					var sum = 0
-					loop over numbers as number {
+					loop over numbers as number
 						sum += number
-					}
 					return sum
 				}
 			}
@@ -139,9 +136,8 @@ internal class Loop {
 				}
 				to countParameters(...numbers: ...Int): Int {
 					var parameterCount = 0
-					loop over numbers as index, number {
+					loop over numbers as index, number
 						parameterCount = index + 1
-					}
 					return parameterCount
 				}
 			}
@@ -161,6 +157,7 @@ internal class Loop {
 				}
 				to sum(numbers: <Int>List): Int {
 					var sum = 0
+//					return numbers.head?.element ?? -3
 					loop over numbers as number
 						sum += number
 					return sum

@@ -5,10 +5,12 @@ import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
+import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import logger.issues.resolution.ConversionAmbiguity
 import logger.issues.returns.RedundantReturnValue
 import logger.issues.returns.ReturnStatementMissingValue
 import logger.issues.returns.ReturnStatementOutsideOfCallable
@@ -18,6 +20,7 @@ class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val val
 	override val isInterruptingExecution = true
 	private var targetFunction: FunctionImplementation? = null
 	private var targetComputedProperty: ComputedPropertyDeclaration? = null
+	private var conversion: InitializerDefinition? = null
 
 	init {
 		addSemanticModels(value)
@@ -75,8 +78,18 @@ class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val val
 				value.setInferredType(returnType)
 			} else {
 				val valueType = value.type
-				if(valueType != null)
+				if(valueType != null) {
+					val conversions = returnType.getConversionsFrom(valueType)
+					if(conversions.isNotEmpty()) {
+						if(conversions.size > 1) {
+							context.addIssue(ConversionAmbiguity(source, valueType, returnType, conversions))
+							return
+						}
+						conversion = conversions.first()
+						return
+					}
 					context.addIssue(ReturnValueTypeMismatch(source, valueType, returnType))
+				}
 			}
 		}
 	}

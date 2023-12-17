@@ -222,4 +222,22 @@ internal class InitializerResolution {
 			(functionCall.function as? VariableValue)?.name == "Bottle" }
 		assertEquals("Bottle(...Int)", initializerCall?.targetInitializer?.toString())
 	}
+
+	@Test
+	fun `converts supplied parameters to match signature if possible`() {
+		val sourceCode =
+			"""
+				Int class
+				Float class {
+					converting init(value: Int)
+				}
+				Bottle class {
+					val height: Float
+					init(height)
+				}
+				Bottle(Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+	}
 }

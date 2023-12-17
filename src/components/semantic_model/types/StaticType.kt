@@ -86,13 +86,15 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 			//TODO specialized issue if local type parameter can't be determined for any initializer, but al least one exists (same for functions)
 			val localTypeSubstitutions = initializer.getLocalTypeSubstitutions(globalTypeSubstitutions, suppliedLocalTypes,
 				suppliedValues) ?: continue
-			if(initializer.accepts(globalTypeSubstitutions, localTypeSubstitutions, suppliedValues))
-				matches.add(Match(initializer, globalTypeSubstitutions))
+			val conversions = HashMap<Value, InitializerDefinition>()
+			if(initializer.accepts(globalTypeSubstitutions, localTypeSubstitutions, suppliedValues, conversions))
+				matches.add(Match(initializer, globalTypeSubstitutions, conversions))
 		}
 		return matches
 	}
 
-	class Match(val initializer: InitializerDefinition, val globalTypeSubstitutions: Map<TypeDeclaration, Type>)
+	class Match(val initializer: InitializerDefinition, val globalTypeSubstitutions: Map<TypeDeclaration, Type>,
+		val conversions: Map<Value, InitializerDefinition>)
 
 	override fun equals(other: Any?): Boolean {
 		if(other !is StaticType)

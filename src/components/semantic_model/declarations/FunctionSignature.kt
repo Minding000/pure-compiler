@@ -12,6 +12,7 @@ import components.semantic_model.values.Operator
 import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
+import logger.issues.resolution.ConversionAmbiguity
 import util.combine
 import java.util.*
 import kotlin.math.max
@@ -97,13 +98,26 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		return specificSignature
 	}
 
-	fun accepts(localTypeSubstitutions: Map<TypeDeclaration, Type>, suppliedValues: List<Value>): Boolean {
+	fun accepts(localTypeSubstitutions: Map<TypeDeclaration, Type>, suppliedValues: List<Value>,
+				conversions: MutableMap<Value, InitializerDefinition>): Boolean {
 		assert(suppliedValues.size >= fixedParameterTypes.size)
 
 		for(parameterIndex in suppliedValues.indices) {
-			val parameterType = getParameterTypeAt(parameterIndex)?.withTypeSubstitutions(localTypeSubstitutions)
-			if(!suppliedValues[parameterIndex].isAssignableTo(parameterType))
+			val parameterType = getParameterTypeAt(parameterIndex)?.withTypeSubstitutions(localTypeSubstitutions) ?: return false
+			val suppliedValue = suppliedValues[parameterIndex]
+			if(!suppliedValue.isAssignableTo(parameterType)) {
+				val suppliedType = suppliedValue.type ?: return false
+				val possibleConversions = parameterType.getConversionsFrom(suppliedType)
+				if(possibleConversions.isNotEmpty()) {
+					if(possibleConversions.size > 1) {
+						context.addIssue(ConversionAmbiguity(source, suppliedType, parameterType, possibleConversions))
+						return false
+					}
+					conversions[suppliedValue] = possibleConversions.first()
+					continue
+				}
 				return false
+			}
 		}
 		return true
 	}

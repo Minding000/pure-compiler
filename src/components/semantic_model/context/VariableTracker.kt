@@ -56,7 +56,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 	}
 
 	fun getCurrentTypeOf(declaration: ValueDeclaration?): Type? {
-		return getCommonType(currentState.lastVariableUsages[declaration ?: return null] ?: return null, declaration)
+		return getCommonType(currentState.lastVariableUsages[declaration ?: return null] ?: return declaration.type, declaration)
 	}
 
 	private fun getCommonType(usages: Collection<VariableUsage>, semanticModel: SemanticModel): Type? {

@@ -80,18 +80,15 @@ object TestUtil {
 		val program = LlvmProgram(TEST_PROJECT_NAME)
 		try {
 			program.loadSemanticModel(lintResult.program, entryPointPath)
-			program.verify()
-			program.compile()
-			println("----------")
 			val intermediateRepresentation = program.getIntermediateRepresentation()
 			println(intermediateRepresentation)
+			println("----------")
+			program.verify()
+			program.compile()
 			println("----------")
 			printDiagnostics(intermediateRepresentation)
 			println("----------")
 			return program.run()
-		} catch(exception: Exception) {
-			println(program.getIntermediateRepresentation())
-			throw exception
 		} finally {
 			program.dispose()
 		}

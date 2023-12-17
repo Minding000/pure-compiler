@@ -84,4 +84,24 @@ internal class ComputedProperties {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
 		assertEquals(6, Llvm.castToSignedInteger(result))
 	}
+
+	@Test
+	fun `unwraps primitive object returned from generic getter`() {
+		val sourceCode = """
+			referencing Pure
+			Container class {
+				containing Element
+				var content: Element
+				init(content)
+			}
+			SimplestApp object {
+				to getFortyOne(): Int {
+					val container = Container(41)
+					return container.content
+				}
+			}
+		""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFortyOne", true)
+		assertEquals(41, Llvm.castToSignedInteger(result))
+	}
 }

@@ -29,7 +29,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 
 	override fun determineTypes() {
 		super.determineTypes()
-		val leftType = left.type ?: return
+		var leftType = left.type ?: return
 		val rightType = right.type ?: return
 		if(kind == Operator.Kind.DOUBLE_QUESTION_MARK) {
 			if(SpecialType.NULL.matches(leftType)) {
@@ -40,6 +40,12 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				addSemanticModels(type)
 			}
 			return
+		}
+		if(kind == Operator.Kind.EQUAL_TO || kind == Operator.Kind.NOT_EQUAL_TO || kind == Operator.Kind.IDENTICAL_TO
+			|| kind == Operator.Kind.NOT_IDENTICAL_TO) {
+			//TODO fix: comparing with null as target leads to crash (write tests!)
+			if(leftType is OptionalType)
+				leftType = leftType.baseType
 		}
 		try {
 			val match = leftType.interfaceScope.getOperator(kind, right)

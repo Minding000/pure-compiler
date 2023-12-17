@@ -9,7 +9,7 @@ object IdentifiableNatives {
 
 	fun load(context: Context) {
 		this.context = context
-		context.registerNativeImplementation("Identifiable === Any: Bool", ::identicalTo)
+		context.registerNativeImplementation("Identifiable === Any?: Bool", ::identicalTo)
 	}
 
 	private fun identicalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
