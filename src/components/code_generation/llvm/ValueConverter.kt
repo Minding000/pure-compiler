@@ -43,6 +43,7 @@ object ValueConverter {
 			// - bool
 			// - byte
 			if(SpecialType.INTEGER.matches(sourceType)) {
+				//TODO support unboxing and wrapping (like the opposite 'unwrapAndBox' below)
 				return wrapInteger(context, constructor, sourceValue)
 			} else {
 				throw CompilerError(source, "Unknown primitive type '$sourceType'.")

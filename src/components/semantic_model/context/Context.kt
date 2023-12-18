@@ -123,6 +123,7 @@ class Context {
 		ArrayNatives.load(this)
 		BoolNatives.load(this)
 		ByteNatives.load(this)
+		CliNatives.load(this)
 		FloatNatives.load(this)
 		IdentifiableNatives.load(this)
 		IntNatives.load(this)

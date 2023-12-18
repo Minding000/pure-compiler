@@ -8,7 +8,7 @@ object Helper {
 		}
 	}
 
-	fun printHelp() {
+	private fun printHelp() {
 		println("List of sub-commands:")
 		println(" - build")
 		println(" - help")

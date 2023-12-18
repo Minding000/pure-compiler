@@ -57,8 +57,7 @@ object ArrayNatives {
 	private fun get(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectBlock(llvmFunctionValue, "entrypoint")
 		val thisObjectPointer = context.getThisParameter(constructor)
-		val thisPropertyPointer = constructor.buildGetPropertyPointer(
-			context.arrayTypeDeclaration?.llvmType, thisObjectPointer,
+		val thisPropertyPointer = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, thisObjectPointer,
 			context.arrayValueIndex, "_propertyPointer")
 		val indexValue = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val elementPointer = constructor.buildGetArrayElementPointer(constructor.pointerType, thisPropertyPointer, indexValue,
@@ -70,8 +69,7 @@ object ArrayNatives {
 	private fun set(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectBlock(llvmFunctionValue, "entrypoint")
 		val thisObjectPointer = context.getThisParameter(constructor)
-		val thisPropertyPointer = constructor.buildGetPropertyPointer(
-			context.arrayTypeDeclaration?.llvmType, thisObjectPointer,
+		val thisPropertyPointer = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, thisObjectPointer,
 			context.arrayValueIndex, "_propertyPointer")
 		val indexValue = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val valueValue = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET + 1)
