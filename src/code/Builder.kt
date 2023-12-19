@@ -18,6 +18,32 @@ object Builder {
 	private const val PRINT_SOURCE_CODE = false
 	private const val PRINT_AST = false
 
+	fun run(path: String, entryPointPath: String) {
+		try {
+			val project = loadProject(path)
+			loadRequiredModules(project)
+			if(PRINT_SOURCE_CODE) {
+				println("----- Source code: -----")
+				println(project)
+			}
+			val abstractSyntaxTree = SyntaxTreeGenerator(project).parseProgram()
+			if(PRINT_AST) {
+				println("----- Abstract syntax tree: -----")
+				println(abstractSyntaxTree)
+			}
+			val semanticModelGenerator = SemanticModelGenerator(project.context)
+			val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree)
+			project.context.logger.printReport(Severity.INFO)
+			println("----- JIT output: -----")
+			LlvmCompiler.buildAndRun(project, semanticModel, entryPointPath)
+			println("Done.")
+		} catch(e: UserError) {
+			println("Failed to compile: ${e.message}")
+			if(Main.DEBUG)
+				e.printStackTrace()
+		}
+	}
+
 	fun build(path: String, entryPointPath: String) {
 		try {
 			val project = loadProject(path)
@@ -31,33 +57,11 @@ object Builder {
 				println("----- Abstract syntax tree: -----")
 				println(abstractSyntaxTree)
 			}
-			println("----- Messages: -----")
 			val semanticModelGenerator = SemanticModelGenerator(project.context)
 			val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree)
 			project.context.logger.printReport(Severity.INFO)
-			println("----- JIT output: -----")
-			LlvmCompiler.buildAndRun(project, semanticModel, entryPointPath)
-			/*
-			if(Main.DEBUG) {
-				println("----- Intermediate code: -----")
-				println(PythonCompiler.compile(InstructionGenerator().generateInstructions(program), true))
-			}
-			println("----- Optimizing: -----")
-			val instructions = InstructionGenerator().generateInstructions(program)
-			InstructionOptimizer(instructions).optimize()
-			println("----- Compiled python code: -----")
-			val pythonCode = PythonCompiler.compile(instructions)
-			println(pythonCode)
-			println("-----")
-			// Write output file
-			println("Creating output file...")
-			val targetFileName = "${project.name}.py"
-			val targetFile = File(project.targetPath, targetFileName)
-			targetFile.createNewFile()
-			targetFile.printWriter().use { out ->
-				out.write(pythonCode)
-			}
-			*/
+			println("----- Build output: -----")
+			LlvmCompiler.build(project, semanticModel, entryPointPath)
 			println("Done.")
 		} catch(e: UserError) {
 			println("Failed to compile: ${e.message}")

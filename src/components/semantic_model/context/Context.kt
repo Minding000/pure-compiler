@@ -64,6 +64,8 @@ class Context {
 	private val nativeImplementations = HashMap<String, (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit>()
 
 	companion object {
+		const val DEBUG_MODE = false
+
 		const val CLASS_DEFINITION_PROPERTY_INDEX = 0
 		const val PARENT_PROPERTY_INDEX = 1
 		const val CONSTANT_COUNT_PROPERTY_INDEX = 0
@@ -143,16 +145,25 @@ class Context {
 		compileImplementation(constructor, llvmValue)
 	}
 
+	fun printDebugMessage(message: String) {
+		if(DEBUG_MODE)
+			println(message)
+	}
+
 	fun printDebugMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
-		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("debugFormat", "$formatString\n")
-		constructor.buildFunctionCall(llvmPrintFunctionType, llvmPrintFunction, listOf(formatStringGlobal, *values), "debugPrintCall")
-		constructor.buildFunctionCall(llvmFlushFunctionType, llvmFlushFunction, listOf(constructor.nullPointer), "debugFlushCall")
-//		constructor.buildFunctionCall(llvmSleepFunctionType, llvmSleepFunction, listOf(constructor.buildUnsignedInt32(1000)))
+		if(DEBUG_MODE)
+			printMessage(constructor, formatString, *values)
 	}
 
 	fun panic(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
-		printDebugMessage(constructor, formatString, *values)
+		printMessage(constructor, formatString, *values)
 		val exitCode = constructor.buildInt32(1)
 		constructor.buildFunctionCall(llvmExitFunctionType, llvmExitFunction, listOf(exitCode))
+	}
+
+	private fun printMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
+		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("staticFormatString", "$formatString\n")
+		constructor.buildFunctionCall(llvmPrintFunctionType, llvmPrintFunction, listOf(formatStringGlobal, *values), "_ignore")
+		constructor.buildFunctionCall(llvmFlushFunctionType, llvmFlushFunction, listOf(constructor.nullPointer), "_ignore")
 	}
 }

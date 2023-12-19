@@ -7,9 +7,9 @@ import util.TestUtil
 internal class SimplestProject {
 
 	@Test
-	fun testParsing() {
+	fun `runs without errors`() {
 		TestUtil.recordErrorStream()
-		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Simplest\\Main.pure", "Main:SimplestApp.getFive"))
+		Main.main(arrayOf("run", "D:\\Daten\\Projekte\\Pure\\Example projects\\Simplest\\Main.pure", "Main:SimplestApp.getFive"))
 		TestUtil.assertErrorStreamEmpty()
 	}
 }

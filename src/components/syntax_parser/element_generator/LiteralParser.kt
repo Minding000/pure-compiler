@@ -58,6 +58,8 @@ class LiteralParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gener
 	 *   <string>
 	 */
 	fun parseStringLiteral(): StringLiteral {
-		return StringLiteral(consume(WordAtom.STRING_LITERAL))
+		val word = consume(WordAtom.STRING_LITERAL)
+		val value = word.getValue()
+		return StringLiteral(word, value.substring(1, value.length - 1))
 	}
 }

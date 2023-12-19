@@ -389,7 +389,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 
 	private fun buildLlvmClassInitializer(constructor: LlvmConstructor, staticMembers: List<ValueDeclaration>,
 										  properties: List<ValueDeclaration>, functions: List<LlvmMemberFunction>) {
-		println("'$name' class initializer:")
+		context.printDebugMessage("'$name' class initializer:")
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectBlock(llvmClassInitializer, "entrypoint")
 		for(typeDeclaration in scope.typeDeclarations.values) {
@@ -409,7 +409,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			val memberId = context.memberIdentities.getId(memberDeclaration.name)
 			val structMemberIndex = memberIndex + FIXED_STATIC_PROPERTY_COUNT
 			val memberOffset = constructor.getMemberOffsetInBytes(llvmStaticType, structMemberIndex)
-			println("Mapping static member '${memberDeclaration.name}' to ID '$memberId' with offset '$memberOffset'.")
+			context.printDebugMessage("Mapping static member '${memberDeclaration.name}' to ID '$memberId' with offset '$memberOffset'.")
 			val memberIndexValue = constructor.buildInt32(memberIndex)
 			val idLocation = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, staticMemberIdArrayAddress, memberIndexValue, "staticMemberIdLocation")
 			val offsetLocation = constructor.buildGetArrayElementPointer(context.llvmMemberOffsetType, staticMemberOffsetArrayAddress, memberIndexValue, "staticMemberOffsetLocation")
@@ -425,7 +425,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			val memberId = context.memberIdentities.getId(property.name)
 			val structMemberIndex = memberIndex + fixedPropertyCount
 			val memberOffset = constructor.getMemberOffsetInBytes(llvmType, structMemberIndex)
-			println("Mapping property '${property.name}' to ID '$memberId' with offset '$memberOffset'.")
+			context.printDebugMessage("Mapping property '${property.name}' to ID '$memberId' with offset '$memberOffset'.")
 			val memberIndexValue = constructor.buildInt32(memberIndex)
 			val idLocation = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, propertyIdArrayAddress, memberIndexValue, "propertyIdLocation")
 			val offsetLocation = constructor.buildGetArrayElementPointer(context.llvmMemberOffsetType, propertyOffsetArrayAddress, memberIndexValue, "propertyOffsetLocation")
@@ -436,7 +436,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		}
 		for((memberIndex, function) in functions.withIndex()) {
 			val memberId = context.memberIdentities.getId(function.identifier)
-			println("Mapping function '${function.identifier}' to ID '$memberId'.")
+			context.printDebugMessage("Mapping function '${function.identifier}' to ID '$memberId'.")
 			val memberIndexValue = constructor.buildInt32(memberIndex)
 			val idLocation = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, functionIdArrayAddress, memberIndexValue, "functionIdLocation")
 			val addressLocation = constructor.buildGetArrayElementPointer(context.llvmMemberAddressType, functionAddressArrayAddress, memberIndexValue, "functionAddressLocation")

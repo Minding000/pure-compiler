@@ -69,7 +69,6 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	 * Compiles code to LLVM IR.
 	 */
 	fun compile(constructor: LlvmConstructor, userEntryPointPath: String? = null): LlvmValue {
-		constructor.setTargetTriple("x86_64-pc-windows")
 		addPrintFunction(constructor)
 		addFlushFunction(constructor)
 		addSleepFunction(constructor)
@@ -109,7 +108,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 									   userEntryPointFunction: FunctionImplementation?): LlvmValue {
 		val entryPointType = constructor.buildFunctionType(emptyList(),
 			userEntryPointFunction?.signature?.returnType?.getLlvmType(constructor) ?: constructor.voidType)
-		val globalEntryPoint = constructor.buildFunction("entrypoint", entryPointType)
+		val globalEntryPoint = constructor.buildFunction("main", entryPointType)
 		constructor.createAndSelectBlock(globalEntryPoint, "entrypoint")
 
 		context.printDebugMessage(constructor, "Starting program...")
@@ -123,19 +122,12 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
 			parameters.add(exceptionAddressLocation)
 			if(userEntryPointObject != null) {
-				val objectAddress = constructor.buildLoad(
-					userEntryPointObject.type?.getLlvmType(constructor),
-					userEntryPointObject.llvmLocation,
-					"objectAddress"
-				)
+				val objectAddress = constructor.buildLoad(userEntryPointObject.type?.getLlvmType(constructor),
+					userEntryPointObject.llvmLocation, "objectAddress")
 				parameters.add(objectAddress)
 			}
-			result = constructor.buildFunctionCall(
-				userEntryPointFunction.signature.getLlvmType(constructor),
-				userEntryPointFunction.llvmValue,
-				parameters,
-				if(returnsVoid) "" else "programResult"
-			)
+			result = constructor.buildFunctionCall(userEntryPointFunction.signature.getLlvmType(constructor),
+				userEntryPointFunction.llvmValue, parameters, if(returnsVoid) "" else "programResult")
 			//TODO check for uncaught exception (exceptionAddressLocation)
 			if(returnsVoid)
 				result = null

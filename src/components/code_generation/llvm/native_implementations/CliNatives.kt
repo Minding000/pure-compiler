@@ -16,9 +16,13 @@ object CliNatives {
 		constructor.createAndSelectBlock(llvmFunctionValue, "entrypoint")
 		val string = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val bytesProperty = context.resolveMember(constructor, context.stringTypeDeclaration?.llvmType, string, "bytes")
-		val arrayPointer = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, bytesProperty,
-			context.arrayValueIndex, "_arrayPointer")
+		val bytesPointer = constructor.buildLoad(constructor.pointerType, bytesProperty, "bytesPointer")
+		val arrayProperty = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, bytesPointer,
+			context.arrayValueIndex, "_arrayProperty")
+		val arrayPointer = constructor.buildLoad(constructor.pointerType, arrayProperty, "arrayPointer")
 		constructor.buildFunctionCall(context.llvmPrintFunctionType, context.llvmPrintFunction, listOf(arrayPointer), "_ignore")
+		constructor.buildFunctionCall(context.llvmFlushFunctionType, context.llvmFlushFunction, listOf(constructor.nullPointer),
+			"_ignore")
 		constructor.buildReturn()
 	}
 }

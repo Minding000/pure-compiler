@@ -8,6 +8,15 @@ import source_structure.Project
  */
 object LlvmCompiler {
 
+	fun build(project: Project, semanticModel: Program, entryPointPath: String) {
+		val program = LlvmProgram(project.name)
+		program.loadSemanticModel(semanticModel, entryPointPath)
+		program.verify()
+		program.compile()
+		program.writeTo("output.o")
+		program.dispose()
+	}
+
 	fun buildAndRun(project: Project, semanticModel: Program, entryPointPath: String) {
 		val program = LlvmProgram(project.name)
 		program.loadSemanticModel(semanticModel, entryPointPath)

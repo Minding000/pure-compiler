@@ -8,9 +8,9 @@ import util.TestUtil
 internal class CalculatorProject {
 
 	@Disabled @Test
-	fun testParsing() {
+	fun `runs without errors`() {
 		TestUtil.recordErrorStream()
-		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Calculator"))
+		Main.main(arrayOf("run", "D:\\Daten\\Projekte\\Pure\\Example projects\\Calculator"))
 		TestUtil.assertErrorStreamEmpty()
 	}
 }

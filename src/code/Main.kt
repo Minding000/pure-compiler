@@ -10,6 +10,19 @@ object Main {
 			return
 		}
 		when(val subCommand = args.first()) {
+			"run" -> {
+				if(args.size < 3) {
+					System.err.println("Too few arguments.")
+					Helper.help("run")
+					return
+				}
+				if(args.size > 3) {
+					System.err.println("Too many arguments.")
+					Helper.help("run")
+					return
+				}
+				Builder.run(args[1], args[2])
+			}
 			"build" -> {
 				if(args.size < 3) {
 					System.err.println("Too few arguments.")
