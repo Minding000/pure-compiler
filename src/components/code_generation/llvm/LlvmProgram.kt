@@ -6,6 +6,7 @@ import org.bytedeco.javacpp.BytePointer
 import org.bytedeco.llvm.LLVM.LLVMTargetRef
 import org.bytedeco.llvm.LLVM.LLVMValueRef
 import org.bytedeco.llvm.global.LLVM.*
+import util.ExitCode
 
 class LlvmProgram(name: String) {
 	val targetTriple = "x86_64-pc-windows"
@@ -41,7 +42,10 @@ class LlvmProgram(name: String) {
 		LLVMDisposePassManager(passManager)
 	}
 
-	fun writeTo(path: String) {
+	fun writeTo() {
+		val objectFilePath = ".\\out\\program.o"
+		val executableFilePath = ".\\out\\program.exe"
+
 		LLVMInitializeAllTargetInfos()
 		LLVMInitializeAllTargets()
 		LLVMInitializeAllTargetMCs()
@@ -56,25 +60,21 @@ class LlvmProgram(name: String) {
 		}
 		val cpu = "generic"
 		val features = ""
-		val optimizationLevel = 3
-		val targetMachine = LLVMCreateTargetMachine(target, targetTriple, cpu, features, optimizationLevel, LLVMRelocPIC,
+		val targetMachine = LLVMCreateTargetMachine(target, targetTriple, cpu, features, Llvm.OptimizationLevel.DEBUGGABLE, LLVMRelocPIC,
 			LLVMCodeModelDefault)
 		val dataLayout = LLVMCreateTargetDataLayout(targetMachine)
 		val dataLayoutPointer = BytePointer(dataLayout)
 		LLVMSetDataLayout(constructor.module, dataLayoutPointer)
-		if(LLVMTargetMachineEmitToFile(targetMachine, constructor.module, path, LLVMObjectFile, error) != Llvm.OK) {
+		if(LLVMTargetMachineEmitToFile(targetMachine, constructor.module, objectFilePath, LLVMObjectFile, error) != Llvm.OK) {
 			LLVMDisposeMessage(error)
 			throw CompilerError("Failed get LLVM target from target triple.")
 		}
 		// see: https://stackoverflow.com/questions/64413414/unresolved-external-symbol-printf-in-windows-x64-assembly-programming-with-nasm
-		val process = ProcessBuilder("D:\\Programme\\LLVM\\bin\\lld-link.exe", path, "/out:output.exe", "/subsystem:console",
-			"/defaultlib:msvcrt", "legacy_stdio_definitions.lib")
-		val x = process.start()
-		val exitCode = x.onExit().join().exitValue()
-		if(exitCode == 0)
-			println("Successfully linked.")
-		else
-			println("Failed to link! #$exitCode")
+		val process = ProcessBuilder("D:\\Programme\\LLVM\\bin\\lld-link.exe", objectFilePath, "/out:$executableFilePath",
+			"/subsystem:console", "/defaultlib:msvcrt", "legacy_stdio_definitions.lib").start()
+		val exitCode = process.onExit().join().exitValue()
+		if(exitCode != ExitCode.SUCCESS)
+			throw CompilerError("Failed to link object file. Exit code #$exitCode")
 	}
 
 	fun getIntermediateRepresentation(): String {

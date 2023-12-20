@@ -1,10 +1,13 @@
 package code
 
+import logger.Severity
+
 object Helper {
 	fun help(input: String? = null) {
 		when(input) {
 			"run" -> println("Usage: run <path> <entrypoint>")
 			"build" -> println("Usage: build <path> <entrypoint>")
+			"print" -> println("Usage: print source|ast|llvm-ir <path> <entrypoint>")
 			else -> printHelp()
 		}
 	}
@@ -13,6 +16,11 @@ object Helper {
 		println("List of sub-commands:")
 		println(" - run")
 		println(" - build")
-		println(" - help")
+		println(" - print")
+		println(" - help [<sub-command>]")
+		println("List of options:")
+		println(" - --compile-time-debug-output")
+		println(" - --runtime-debug-output")
+		println(" - --log-level ${Severity.values().joinToString("|") { severity -> severity.name.lowercase() }}")
 	}
 }

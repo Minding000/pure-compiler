@@ -42,13 +42,15 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 	}
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		//TODO initialize Array.size property
 		val newByteArrayAddress = constructor.buildHeapAllocation(context.arrayTypeDeclaration?.llvmType, "newByteArrayAddress")
 		val arrayClassDefinitionPointer = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, newByteArrayAddress,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "arrayClassDefinitionPointer")
 		val arrayClassDefinitionAddress = context.arrayTypeDeclaration?.llvmClassDefinitionAddress
 			?: throw CompilerError(source, "Missing array type declaration.")
 		constructor.buildStore(arrayClassDefinitionAddress, arrayClassDefinitionPointer)
+		val arraySizeAddress = context.resolveMember(constructor, context.arrayTypeDeclaration?.llvmType, newByteArrayAddress,
+			"size")
+		constructor.buildStore(constructor.buildInt32(value.length + 1), arraySizeAddress)
 
 		val arrayValuePointer = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, newByteArrayAddress,
 			context.arrayValueIndex, "arrayValuePointer")

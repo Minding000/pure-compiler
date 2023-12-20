@@ -1,5 +1,6 @@
 package components.semantic_model.context
 
+import code.Main
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
@@ -64,8 +65,6 @@ class Context {
 	private val nativeImplementations = HashMap<String, (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit>()
 
 	companion object {
-		const val DEBUG_MODE = false
-
 		const val CLASS_DEFINITION_PROPERTY_INDEX = 0
 		const val PARENT_PROPERTY_INDEX = 1
 		const val CONSTANT_COUNT_PROPERTY_INDEX = 0
@@ -139,19 +138,18 @@ class Context {
 	}
 
 	fun compileNativeImplementation(constructor: LlvmConstructor, identifier: String, llvmValue: LlvmValue) {
-		//TODO throw error
-		val compileImplementation = nativeImplementations[identifier] ?: return
-		//	?: throw CompilerError("Missing native implementation for identifier '$identifier'.")
+		val compileImplementation = nativeImplementations[identifier]
+			?: throw CompilerError("Missing native implementation for identifier '$identifier'.")
 		compileImplementation(constructor, llvmValue)
 	}
 
 	fun printDebugMessage(message: String) {
-		if(DEBUG_MODE)
+		if(Main.shouldPrintCompileTimeDebugOutput)
 			println(message)
 	}
 
 	fun printDebugMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
-		if(DEBUG_MODE)
+		if(Main.shouldPrintRuntimeDebugOutput)
 			printMessage(constructor, formatString, *values)
 	}
 

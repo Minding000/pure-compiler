@@ -40,6 +40,12 @@ object Llvm {
 		const val EQUAL_TO = LLVMRealOEQ
 		const val NOT_EQUAL_TO = LLVMRealONE
 	}
+	object OptimizationLevel {
+		const val MINIMAL = 0
+		const val DEBUGGABLE = 1
+		const val MEDIUM = 2
+		const val MAXIMAL = 3
+	}
 
 	fun createContext(): LlvmContext = LLVMContextCreate()
 

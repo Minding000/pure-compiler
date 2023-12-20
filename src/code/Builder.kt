@@ -2,10 +2,10 @@ package code
 
 import components.code_generation.llvm.LlvmCompiler
 import components.semantic_model.context.SemanticModelGenerator
+import components.semantic_model.general.Program
 import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import errors.internal.CompilerError
 import errors.user.UserError
-import logger.Severity
 import source_structure.Module
 import source_structure.Project
 import java.io.File
@@ -15,59 +15,59 @@ import java.util.*
 
 object Builder {
 	private const val LANG_MODULE_PATH = "D:\\Daten\\Projekte\\Pure\\packages\\lang"
-	private const val PRINT_SOURCE_CODE = false
-	private const val PRINT_AST = false
+	val PRINT_SUBJECTS = listOf("source", "ast", "llvm-ir")
 
 	fun run(path: String, entryPointPath: String) {
 		try {
 			val project = loadProject(path)
-			loadRequiredModules(project)
-			if(PRINT_SOURCE_CODE) {
-				println("----- Source code: -----")
-				println(project)
-			}
-			val abstractSyntaxTree = SyntaxTreeGenerator(project).parseProgram()
-			if(PRINT_AST) {
-				println("----- Abstract syntax tree: -----")
-				println(abstractSyntaxTree)
-			}
-			val semanticModelGenerator = SemanticModelGenerator(project.context)
-			val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree)
-			project.context.logger.printReport(Severity.INFO)
+			val semanticModel = createSemanticModel(project)
 			println("----- JIT output: -----")
 			LlvmCompiler.buildAndRun(project, semanticModel, entryPointPath)
-			println("Done.")
-		} catch(e: UserError) {
-			println("Failed to compile: ${e.message}")
-			if(Main.DEBUG)
-				e.printStackTrace()
+		} catch(error: UserError) {
+			println("Failed to compile: ${error.message}")
+			if(Main.shouldPrintCompileTimeDebugOutput)
+				error.printStackTrace()
 		}
 	}
 
 	fun build(path: String, entryPointPath: String) {
 		try {
 			val project = loadProject(path)
-			loadRequiredModules(project)
-			if(PRINT_SOURCE_CODE) {
-				println("----- Source code: -----")
-				println(project)
-			}
-			val abstractSyntaxTree = SyntaxTreeGenerator(project).parseProgram()
-			if(PRINT_AST) {
-				println("----- Abstract syntax tree: -----")
-				println(abstractSyntaxTree)
-			}
-			val semanticModelGenerator = SemanticModelGenerator(project.context)
-			val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree)
-			project.context.logger.printReport(Severity.INFO)
+			val semanticModel = createSemanticModel(project)
 			println("----- Build output: -----")
 			LlvmCompiler.build(project, semanticModel, entryPointPath)
-			println("Done.")
-		} catch(e: UserError) {
-			println("Failed to compile: ${e.message}")
-			if(Main.DEBUG)
-				e.printStackTrace()
+		} catch(error: UserError) {
+			println("Failed to compile: ${error.message}")
+			if(Main.shouldPrintCompileTimeDebugOutput)
+				error.printStackTrace()
 		}
+	}
+
+	fun print(subject: String, path: String, entryPointPath: String) {
+		val project = loadProject(path)
+		loadRequiredModules(project)
+		if(subject == "source") {
+			println(project)
+			return
+		}
+		val abstractSyntaxTree = SyntaxTreeGenerator(project).parseProgram()
+		if(subject == "ast") {
+			println(abstractSyntaxTree)
+			return
+		}
+		val semanticModelGenerator = SemanticModelGenerator(project.context)
+		val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree)
+		val intermediateRepresentation = LlvmCompiler.getIntermediateRepresentation(project, semanticModel, entryPointPath)
+		println(intermediateRepresentation)
+	}
+
+	private fun createSemanticModel(project: Project): Program {
+		loadRequiredModules(project)
+		val abstractSyntaxTree = SyntaxTreeGenerator(project).parseProgram()
+		val semanticModelGenerator = SemanticModelGenerator(project.context)
+		val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree)
+		project.context.logger.printReport(Main.logLevel)
+		return semanticModel
 	}
 
 	private fun loadProject(path: String): Project {

@@ -237,7 +237,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.buildJump(loopBlock)
 		constructor.select(loopBlock)
 		val currentIndex = constructor.buildLoad(context.llvmMemberIndexType, indexVariableLocation, "currentIndex")
-		if(Main.DEBUG) {
+		if(Main.shouldPrintRuntimeDebugOutput) {
 			val outOfBounds = constructor.buildSignedIntegerEqualTo(currentIndex, memberCount, "boundsCheck")
 			val panicBlock = constructor.createBlock(function, "panic")
 			val idCheckBlock = constructor.createBlock(function, "idCheck")
@@ -293,7 +293,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.buildJump(loopBlock)
 		constructor.select(loopBlock)
 		val currentIndex = constructor.buildLoad(context.llvmMemberIndexType, indexVariableLocation, "currentIndex")
-		if(Main.DEBUG) {
+		if(Main.shouldPrintRuntimeDebugOutput) {
 			val outOfBounds = constructor.buildSignedIntegerEqualTo(currentIndex, functionCount, "boundsCheck")
 			val panicBlock = constructor.createBlock(function, "panic")
 			val idCheckBlock = constructor.createBlock(function, "idCheck")
