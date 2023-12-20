@@ -289,7 +289,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		if(isAbstract)
 			return
 		val previousBlock = constructor.getCurrentBlock()
-		constructor.createAndSelectBlock(llvmValue, "entrypoint")
+		constructor.createAndSelectEntrypointBlock(llvmValue)
 		val thisValue = constructor.getParameter(llvmValue, Context.THIS_PARAMETER_INDEX)
 		if(parentTypeDeclaration.isBound) {
 			val parentValue = constructor.getParameter(llvmValue, Context.PARENT_PARAMETER_OFFSET)
@@ -324,21 +324,21 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		//TODO create different initializers for Array
 		//TODO consider moving this code to 'code_generation/llvm/native_implementations'
 		if(SpecialType.BOOLEAN.matches(parentTypeDeclaration)) {
-			val booleanValuePointer = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
-				context.booleanValueIndex, "booleanValuePointer")
-			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), booleanValuePointer)
+			val valueProperty = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
+				context.booleanValueIndex, "valueProperty")
+			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), valueProperty)
 		} else if(SpecialType.BYTE.matches(parentTypeDeclaration)) {
-			val byteValuePointer = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
-				context.byteValueIndex, "byteValuePointer")
-			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), byteValuePointer)
+			val valueProperty = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
+				context.byteValueIndex, "valueProperty")
+			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), valueProperty)
 		} else if(SpecialType.INTEGER.matches(parentTypeDeclaration)) {
-			val integerValuePointer = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
-				context.integerValueIndex, "integerValuePointer")
-			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), integerValuePointer)
+			val valueProperty = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
+				context.integerValueIndex, "valueProperty")
+			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), valueProperty)
 		} else if(SpecialType.FLOAT.matches(parentTypeDeclaration)) {
-			val floatValuePointer = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
-				context.floatValueIndex, "floatValuePointer")
-			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), floatValuePointer)
+			val valueProperty = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue,
+				context.floatValueIndex, "valueProperty")
+			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), valueProperty)
 		}
 	}
 
@@ -350,9 +350,9 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			val trivialInitializer = (superTypeDeclaration?.staticValueDeclaration?.type as? StaticType)?.getInitializer()?.initializer
 				?: throw CompilerError(source, "Default initializer in class '${parentTypeDeclaration.name}'" +
 					" with super class '${superTypeDeclaration?.name}' without trivial initializer.")
-			val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+			val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 			constructor.buildFunctionCall(trivialInitializer.llvmType, trivialInitializer.llvmValue,
-				listOf(exceptionAddressLocation, thisValue))
+				listOf(exceptionAddress, thisValue))
 			//TODO if exception exists
 			// resume raise
 		}

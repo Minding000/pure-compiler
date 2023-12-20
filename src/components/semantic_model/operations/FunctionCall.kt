@@ -164,14 +164,14 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
 
 		//TODO reuse pointer provided by caller?
-		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 
 		val functionSignature = targetSignature
 		val returnValue = if(functionSignature == null) {
 			val initializerDefinition = targetInitializer ?: throw CompilerError(source, "Function call is missing a target.")
-			createLlvmInitializerCall(constructor, initializerDefinition, exceptionAddressLocation)
+			createLlvmInitializerCall(constructor, initializerDefinition, exceptionAddress)
 		} else {
-			createLlvmFunctionCall(constructor, functionSignature, exceptionAddressLocation)
+			createLlvmFunctionCall(constructor, functionSignature, exceptionAddress)
 		}
 
 		//TODO if exception exists
@@ -183,7 +183,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	}
 
 	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature,
-									   exceptionAddressLocation: LlvmValue): LlvmValue {
+									   exceptionAddress: LlvmValue): LlvmValue {
 		val parameters = LinkedList<LlvmValue>()
 		for((index, valueParameter) in valueParameters.withIndex())
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
@@ -221,13 +221,13 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 					"${functionName}${signature.original.toString(false)}")
 			}
 		}
-		parameters.addFirst(exceptionAddressLocation)
+		parameters.addFirst(exceptionAddress)
 		val resultName = if(SpecialType.NOTHING.matches(signature.returnType)) "" else getSignature()
 		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, resultName)
 	}
 
 	private fun createLlvmInitializerCall(constructor: LlvmConstructor, initializer: InitializerDefinition,
-										  exceptionAddressLocation: LlvmValue): LlvmValue {
+										  exceptionAddress: LlvmValue): LlvmValue {
 		val parameters = LinkedList<LlvmValue?>()
 		for((index, valueParameter) in valueParameters.withIndex())
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
@@ -242,22 +242,23 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		val isPrimaryCall = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
 		return if(isPrimaryCall) {
 			val typeDeclaration = initializer.parentTypeDeclaration
-			val newObjectAddress = constructor.buildHeapAllocation(typeDeclaration.llvmType, "newObjectAddress")
-			val classDefinitionPointer = constructor.buildGetPropertyPointer(typeDeclaration.llvmType, newObjectAddress,
-				Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
-			constructor.buildStore(typeDeclaration.llvmClassDefinitionAddress, classDefinitionPointer)
-			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddressLocation)
-			parameters.add(Context.THIS_PARAMETER_INDEX, newObjectAddress)
+			val newObject = constructor.buildHeapAllocation(typeDeclaration.llvmType, "newObject")
+			val classDefinitionProperty = constructor.buildGetPropertyPointer(typeDeclaration.llvmType, newObject,
+				Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionProperty")
+			constructor.buildStore(typeDeclaration.llvmClassDefinition, classDefinitionProperty)
+			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
+			parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
 			if(typeDeclaration.isBound) {
 				val parent = (function as? MemberAccess)?.target?.getLlvmValue(constructor) ?: context.getThisParameter(constructor)
 				parameters.add(Context.PARENT_PARAMETER_OFFSET, parent)
 			}
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
-			newObjectAddress
+			newObject
 		} else {
-			parameters.addFirst(exceptionAddressLocation)
+			parameters.addFirst(exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, context.getThisParameter(constructor))
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
+			constructor.nullPointer
 		}
 	}
 

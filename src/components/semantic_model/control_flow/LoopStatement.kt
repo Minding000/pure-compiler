@@ -115,19 +115,19 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			variableDeclaration.compile(constructor)
 		val function = constructor.getParentFunction()
 		val elementCount = constructor.getLastParameter(function)
-		val elementList = constructor.buildStackAllocation(context.variadicParameterListStruct, "_overGeneratorElementList")
+		val elementList = constructor.buildStackAllocation(context.variadicParameterListStruct, "_overGenerator_elementList")
 		constructor.buildFunctionCall(context.llvmVariableParameterIterationStartFunctionType,
 			context.llvmVariableParameterIterationStartFunction, listOf(elementList))
 		val indexType = constructor.i32Type
-		val indexLocation = generator.currentIndexVariable?.llvmLocation
-			?: constructor.buildStackAllocation(indexType, "_overGeneratorIndexLocation")
-		constructor.buildStore(constructor.buildInt32(0), indexLocation)
+		val indexVariable = generator.currentIndexVariable?.llvmLocation
+			?: constructor.buildStackAllocation(indexType, "_overGenerator_indexVariable")
+		constructor.buildStore(constructor.buildInt32(0), indexVariable)
 		entryBlock = constructor.createBlock(function, "loop_entry")
 		exitBlock = constructor.createBlock(function, "loop_exit")
 		constructor.buildJump(entryBlock)
 		constructor.select(entryBlock)
-		val index = constructor.buildLoad(indexType, indexLocation, "_overGeneratorIndex")
-		val condition = constructor.buildSignedIntegerLessThan(index, elementCount, "_overGeneratorCondition")
+		val index = constructor.buildLoad(indexType, indexVariable, "_overGenerator_index")
+		val condition = constructor.buildSignedIntegerLessThan(index, elementCount, "_overGenerator_condition")
 		val bodyBlock = constructor.createBlock(function, "loop_body")
 		constructor.buildJump(condition, bodyBlock, exitBlock)
 		constructor.select(bodyBlock)
@@ -135,19 +135,20 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		if(valueVariable != null) {
 			// Variadic parameters are always 64bits in size (at least on Windows).
 			// See: https://discourse.llvm.org/t/va-arg-on-windows-64/40780
-			val elementMemory = constructor.getCurrentVariadicElement(elementList, constructor.i64Type, "_overGeneratorElementMemory")
+			val elementMemory = constructor.getCurrentVariadicElement(elementList, constructor.i64Type,
+				"_overGenerator_elementMemory")
 			val elementType = pluralType.baseType.getLlvmType(constructor)
 			val element = if(elementType == constructor.pointerType)
-				constructor.buildCastFromIntegerToPointer(elementMemory, "_overGeneratorElement")
+				constructor.buildCastFromIntegerToPointer(elementMemory, "_overGenerator_element")
 			else
-				constructor.changeTypeAllowingDataLoss(elementMemory, elementType, "_overGeneratorElement")
+				constructor.changeTypeAllowingDataLoss(elementMemory, elementType, "_overGenerator_element")
 			constructor.buildStore(element, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)
 		if(!body.isInterruptingExecution) {
 			//TODO fix: should be called on 'next' statement
-			val newIndex = constructor.buildIntegerAddition(index, constructor.buildInt32(1), "_newOverGeneratorIndex")
-			constructor.buildStore(newIndex, indexLocation)
+			val newIndex = constructor.buildIntegerAddition(index, constructor.buildInt32(1), "_overGenerator_newIndex")
+			constructor.buildStore(newIndex, indexVariable)
 			constructor.buildJump(entryBlock)
 		}
 		constructor.select(exitBlock)
@@ -180,9 +181,9 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		}
 		val createIteratorAddress = context.resolveFunction(constructor, iterableLlvmType, iterableLlvmValue,
 			"createIterator(): <Element>List.Iterator") //TODO change function IDs: exclude return type
-		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		val iteratorLlvmValue = constructor.buildFunctionCall(iteratorCreationSignature?.getLlvmType(constructor), createIteratorAddress,
-			listOf(exceptionAddressLocation, iterableLlvmValue), "iterator")
+			listOf(exceptionAddress, iterableLlvmValue), "iterator")
 		//TODO if exception exists
 		// check for optional try (normal and force try have no effect)
 		// check for catch
@@ -233,7 +234,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			//TODO fix: should be called on 'next' statement
 			val advanceFunctionAddress = context.resolveFunction(constructor, iteratorLlvmType, iteratorLlvmValue, "advance()")
 			constructor.buildFunctionCall(iteratorAdvanceSignature?.getLlvmType(constructor), advanceFunctionAddress,
-				listOf(exceptionAddressLocation, iteratorLlvmValue))
+				listOf(exceptionAddress, iteratorLlvmValue))
 			//TODO if exception exists
 			// check for optional try (normal and force try have no effect)
 			// check for catch
@@ -247,9 +248,9 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 	private fun buildGetterCall(constructor: LlvmConstructor, targetType: LlvmType?, targetValue: LlvmValue,
 								computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
 		val functionAddress = context.resolveFunction(constructor, targetType, targetValue, computedPropertyDeclaration.getterIdentifier)
-		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		return constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
-			listOf(exceptionAddressLocation, targetValue), "_computedPropertyGetterResult")
+			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
 		//TODO if exception exists
 		// check for optional try (normal and force try have no effect)
 		// check for catch

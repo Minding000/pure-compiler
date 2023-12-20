@@ -16,44 +16,42 @@ object BoolNatives {
 	}
 
 	private fun unwrap(constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue): LlvmValue {
-		val thisPropertyPointer = constructor.buildGetPropertyPointer(
-			context.booleanTypeDeclaration?.llvmType, wrappedLlvmValue,
-			context.booleanValueIndex, "_thisPropertyPointer")
-		return constructor.buildLoad(constructor.booleanType, thisPropertyPointer, "_thisPrimitiveValue")
+		val boolValueProperty = constructor.buildGetPropertyPointer(context.booleanTypeDeclaration?.llvmType, wrappedLlvmValue,
+			context.booleanValueIndex, "_valueProperty")
+		return constructor.buildLoad(constructor.booleanType, boolValueProperty, "_value")
 	}
 
 	private fun negate(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
-		constructor.createAndSelectBlock(llvmFunctionValue, "entrypoint")
-		val thisPrimitiveValue = unwrap(constructor, context.getThisParameter(constructor))
-		val result = constructor.buildBooleanNegation(thisPrimitiveValue, "_negationResult")
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisPrimitiveBool = unwrap(constructor, context.getThisParameter(constructor))
+		val result = constructor.buildBooleanNegation(thisPrimitiveBool, "negationResult")
 		constructor.buildReturn(result)
 	}
 
 	private fun and(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
-		constructor.createAndSelectBlock(llvmFunctionValue, "entrypoint")
-		val thisPrimitiveValue = unwrap(constructor, context.getThisParameter(constructor))
-		val parameterValue = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
-		val result = constructor.buildAnd(thisPrimitiveValue, parameterValue, "_andResult")
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisPrimitiveBool = unwrap(constructor, context.getThisParameter(constructor))
+		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val result = constructor.buildAnd(thisPrimitiveBool, parameterPrimitiveBool, "andResult")
 		constructor.buildReturn(result)
 	}
 
 	private fun or(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
-		constructor.createAndSelectBlock(llvmFunctionValue, "entrypoint")
-		val thisPrimitiveValue = unwrap(constructor, context.getThisParameter(constructor))
-		val parameterValue = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
-		val result = constructor.buildOr(thisPrimitiveValue, parameterValue, "_orResult")
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisPrimitiveBool = unwrap(constructor, context.getThisParameter(constructor))
+		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val result = constructor.buildOr(thisPrimitiveBool, parameterPrimitiveBool, "orResult")
 		constructor.buildReturn(result)
 	}
 
 	private fun toggle(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
-		constructor.createAndSelectBlock(llvmFunctionValue, "entrypoint")
-		val thisObjectPointer = context.getThisParameter(constructor)
-		val thisPropertyPointer = constructor.buildGetPropertyPointer(
-			context.booleanTypeDeclaration?.llvmType, thisObjectPointer,
-			context.booleanValueIndex, "_thisPropertyPointer")
-		val thisPrimitiveValue = constructor.buildLoad(constructor.booleanType, thisPropertyPointer, "_thisPrimitiveValue")
-		val result = constructor.buildBooleanNegation(thisPrimitiveValue, "_negationResult")
-		constructor.buildStore(result, thisPropertyPointer)
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisBool = context.getThisParameter(constructor)
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.booleanTypeDeclaration?.llvmType, thisBool,
+			context.booleanValueIndex, "thisValueProperty")
+		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
+		val result = constructor.buildBooleanNegation(thisPrimitiveBool, "negationResult")
+		constructor.buildStore(result, thisValueProperty)
 		constructor.buildReturn()
 	}
 }

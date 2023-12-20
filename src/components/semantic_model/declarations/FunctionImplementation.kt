@@ -205,7 +205,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 			constructor.select(previousBlock)
 			return
 		}
-		constructor.createAndSelectBlock(llvmValue, "entrypoint")
+		constructor.createAndSelectEntrypointBlock(llvmValue)
 		super.compile(constructor)
 		if(body?.isInterruptingExecution != true)
 			constructor.buildReturn()

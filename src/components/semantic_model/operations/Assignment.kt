@@ -2,7 +2,6 @@ package components.semantic_model.operations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
-import components.semantic_model.context.Context
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.ComputedPropertyDeclaration
@@ -160,8 +159,8 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 	private fun buildSetterCall(constructor: LlvmConstructor, declaration: ComputedPropertyDeclaration, targetValue: LlvmValue,
 								sourceValue: LlvmValue) {
 		val parameters = LinkedList<LlvmValue>()
-		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
-		parameters.add(exceptionAddressLocation)
+		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
+		parameters.add(exceptionAddress)
 		parameters.add(targetValue)
 		parameters.add(sourceValue)
 		val functionAddress = context.resolveFunction(constructor, declaration.parentTypeDeclaration.llvmType, targetValue,
@@ -183,17 +182,12 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 				?: throw CompilerError(source, "Encountered member signature without implementation.")
 			implementation.llvmValue
 		} else {
-			val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(signature.parentDefinition?.llvmType,
-				targetValue, Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-			val classDefinitionAddress = constructor.buildLoad(constructor.pointerType, classDefinitionAddressLocation,
-				"classDefinitionAddress")
-			val id = context.memberIdentities.getId(signature.original.toString(false, Operator.Kind.BRACKETS_SET))
-			constructor.buildFunctionCall(context.llvmFunctionAddressFunctionType, context.llvmFunctionAddressFunction,
-				listOf(classDefinitionAddress, constructor.buildInt32(id)), "indexOperatorAddress")
+			context.resolveFunction(constructor, signature.parentDefinition?.llvmType, targetValue,
+				signature.original.toString(false, Operator.Kind.BRACKETS_SET))
 		}
-		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		val parameters = LinkedList<LlvmValue>()
-		parameters.add(exceptionAddressLocation)
+		parameters.add(exceptionAddress)
 		parameters.add(targetValue)
 		for(index in indexAccess.indices)
 			parameters.add(index.getLlvmValue(constructor))

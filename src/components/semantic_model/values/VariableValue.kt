@@ -142,9 +142,9 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		val targetValue = context.getThisParameter(constructor)
 		val functionAddress = context.resolveFunction(constructor, computedPropertyDeclaration.parentTypeDeclaration.llvmType, targetValue,
 			computedPropertyDeclaration.getterIdentifier)
-		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		return constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
-			listOf(exceptionAddressLocation, targetValue), "_computedPropertyGetterResult")
+			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
 		//TODO if exception exists
 		// check for optional try (normal and force try have no effect)
 		// check for catch

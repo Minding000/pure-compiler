@@ -108,12 +108,12 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		val previousBlock = constructor.getCurrentBlock()
 		val llvmGetterValue = llvmGetterValue
 		if(llvmGetterValue != null && getterErrorHandlingContext != null) {
-			constructor.createAndSelectBlock(llvmGetterValue, "entrypoint")
+			constructor.createAndSelectEntrypointBlock(llvmGetterValue)
 			getterErrorHandlingContext.compile(constructor)
 		}
 		val llvmSetterValue = llvmSetterValue
 		if(llvmSetterValue != null && setterErrorHandlingContext != null) {
-			constructor.createAndSelectBlock(llvmSetterValue, "entrypoint")
+			constructor.createAndSelectEntrypointBlock(llvmSetterValue)
 			setterErrorHandlingContext.compile(constructor)
 			if(!setterErrorHandlingContext.isInterruptingExecution)
 				constructor.buildReturn()

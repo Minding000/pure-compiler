@@ -109,8 +109,15 @@ class LlvmConstructor(name: String) {
 		LLVMAddAttributeAtIndex(function, LLVMAttributeReturnIndex, attribute)
 	}
 
-	fun buildFunctionCall(functionType: LlvmType?, function: LlvmValue, parameters: List<LlvmValue?> = emptyList(),
-						  name: String = ""): LlvmValue {
+	fun buildFunctionCall(functionType: LlvmType?, function: LlvmValue, parameters: List<LlvmValue?> = emptyList()) {
+		if(functionType == null)
+			throw CompilerError("Missing function type in function call.")
+		val name = if(LLVMGetReturnType(functionType) == voidType) "" else "__ignored"
+		buildFunctionCall(functionType, function, parameters, name)
+	}
+
+	fun buildFunctionCall(functionType: LlvmType?, function: LlvmValue, parameters: List<LlvmValue?> = emptyList(), name: String):
+		LlvmValue {
 		if(functionType == null)
 			throw CompilerError("Missing function type in function call '$name'.")
 		return LLVMBuildCall2(builder, functionType, function, parameters.toLlvmList(), parameters.size, name)
@@ -122,6 +129,10 @@ class LlvmConstructor(name: String) {
 
 	fun createBlock(function: LlvmValue, name: String): LlvmBlock {
 		return LLVMAppendBasicBlockInContext(context, function, name)
+	}
+
+	fun createAndSelectEntrypointBlock(function: LlvmValue) {
+		createAndSelectBlock(function, "entrypoint")
 	}
 
 	fun createAndSelectBlock(function: LlvmValue, name: String): LlvmBlock {

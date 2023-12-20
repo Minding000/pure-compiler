@@ -42,31 +42,30 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 	}
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		val newByteArrayAddress = constructor.buildHeapAllocation(context.arrayTypeDeclaration?.llvmType, "newByteArrayAddress")
-		val arrayClassDefinitionPointer = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, newByteArrayAddress,
-			Context.CLASS_DEFINITION_PROPERTY_INDEX, "arrayClassDefinitionPointer")
-		val arrayClassDefinitionAddress = context.arrayTypeDeclaration?.llvmClassDefinitionAddress
+		val byteArray = constructor.buildHeapAllocation(context.arrayTypeDeclaration?.llvmType, "_byteArray")
+		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, byteArray,
+			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_arrayClassDefinitionProperty")
+		val arrayClassDefinition = context.arrayTypeDeclaration?.llvmClassDefinition
 			?: throw CompilerError(source, "Missing array type declaration.")
-		constructor.buildStore(arrayClassDefinitionAddress, arrayClassDefinitionPointer)
-		val arraySizeAddress = context.resolveMember(constructor, context.arrayTypeDeclaration?.llvmType, newByteArrayAddress,
-			"size")
-		constructor.buildStore(constructor.buildInt32(value.length + 1), arraySizeAddress)
+		constructor.buildStore(arrayClassDefinition, arrayClassDefinitionProperty)
+		val arraySizeProperty = context.resolveMember(constructor, context.arrayTypeDeclaration?.llvmType, byteArray, "size")
+		constructor.buildStore(constructor.buildInt32(value.length + 1), arraySizeProperty)
 
-		val arrayValuePointer = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, newByteArrayAddress,
-			context.arrayValueIndex, "arrayValuePointer")
-		val stringByteArray = constructor.buildGlobalAsciiCharArray("asciiStringValue", value)
-		constructor.buildStore(stringByteArray, arrayValuePointer)
+		val arrayValueProperty = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, byteArray,
+			context.arrayValueIndex, "_arrayValueProperty")
+		val nullTerminatedCharArray = constructor.buildGlobalAsciiCharArray("_asciiStringLiteral", value)
+		constructor.buildStore(nullTerminatedCharArray, arrayValueProperty)
 
-		val newStringAddress = constructor.buildHeapAllocation(context.stringTypeDeclaration?.llvmType, "newStringAddress")
-		val stringClassDefinitionPointer = constructor.buildGetPropertyPointer(context.stringTypeDeclaration?.llvmType, newStringAddress,
-			Context.CLASS_DEFINITION_PROPERTY_INDEX, "stringClassDefinitionPointer")
-		val stringClassDefinitionAddress = context.stringTypeDeclaration?.llvmClassDefinitionAddress
+		val stringAddress = constructor.buildHeapAllocation(context.stringTypeDeclaration?.llvmType, "_stringAddress")
+		val stringClassDefinitionProperty = constructor.buildGetPropertyPointer(context.stringTypeDeclaration?.llvmType, stringAddress,
+			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_stringClassDefinitionProperty")
+		val stringClassDefinition = context.stringTypeDeclaration?.llvmClassDefinition
 			?: throw CompilerError(source, "Missing string type declaration.")
-		constructor.buildStore(stringClassDefinitionAddress, stringClassDefinitionPointer)
-		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
-		val parameters = listOf(exceptionAddressLocation, newStringAddress, newByteArrayAddress)
+		constructor.buildStore(stringClassDefinition, stringClassDefinitionProperty)
+		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
+		val parameters = listOf(exceptionAddress, stringAddress, byteArray)
 		constructor.buildFunctionCall(context.llvmStringByteArrayInitializerType, context.llvmStringByteArrayInitializer, parameters)
-		return newStringAddress
+		return stringAddress
 	}
 
 	override fun hashCode(): Int {

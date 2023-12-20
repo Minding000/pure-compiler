@@ -95,25 +95,23 @@ class Context {
 
 	fun resolveMember(constructor: LlvmConstructor, targetStructType: LlvmType?, targetLocation: LlvmValue, memberIdentifier: String,
 					  isStaticMember: Boolean = false): LlvmValue {
-		val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(targetStructType, targetLocation,
-			CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-		val classDefinitionAddress = constructor.buildLoad(constructor.pointerType,classDefinitionAddressLocation,
-			"classDefinitionAddress")
+		val classDefinitionProperty = constructor.buildGetPropertyPointer(targetStructType, targetLocation, CLASS_DEFINITION_PROPERTY_INDEX,
+			"_classDefinitionProperty")
+		val classDefinition = constructor.buildLoad(constructor.pointerType, classDefinitionProperty, "_classDefinition")
 		val resolutionFunctionType = if(isStaticMember) llvmConstantOffsetFunctionType else llvmPropertyOffsetFunctionType
 		val resolutionFunction = if(isStaticMember) llvmConstantOffsetFunction else llvmPropertyOffsetFunction
 		val memberOffset = constructor.buildFunctionCall(resolutionFunctionType, resolutionFunction,
-			listOf(classDefinitionAddress, constructor.buildInt32(memberIdentities.getId(memberIdentifier))), "memberOffset")
-		return constructor.buildGetArrayElementPointer(constructor.byteType, targetLocation, memberOffset, "memberAddress")
+			listOf(classDefinition, constructor.buildInt32(memberIdentities.getId(memberIdentifier))), "_memberOffset")
+		return constructor.buildGetArrayElementPointer(constructor.byteType, targetLocation, memberOffset, "_memberAddress")
 	}
 
 	fun resolveFunction(constructor: LlvmConstructor, targetStructType: LlvmType?, targetLocation: LlvmValue,
 						signatureIdentifier: String): LlvmValue {
-		val classDefinitionAddressLocation = constructor.buildGetPropertyPointer(targetStructType, targetLocation,
-			CLASS_DEFINITION_PROPERTY_INDEX, "classDefinition")
-		val classDefinitionAddress = constructor.buildLoad(constructor.pointerType, classDefinitionAddressLocation,
-			"classDefinitionAddress")
+		val classDefinitionProperty = constructor.buildGetPropertyPointer(targetStructType, targetLocation, CLASS_DEFINITION_PROPERTY_INDEX,
+			"classDefinitionProperty")
+		val classDefinition = constructor.buildLoad(constructor.pointerType, classDefinitionProperty, "_classDefinition")
 		return constructor.buildFunctionCall(llvmFunctionAddressFunctionType, llvmFunctionAddressFunction,
-			listOf(classDefinitionAddress, constructor.buildInt32(memberIdentities.getId(signatureIdentifier))), "functionAddress")
+			listOf(classDefinition, constructor.buildInt32(memberIdentities.getId(signatureIdentifier))), "_functionAddress")
 	}
 
 	fun getThisParameter(constructor: LlvmConstructor): LlvmValue {
@@ -160,8 +158,8 @@ class Context {
 	}
 
 	private fun printMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
-		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("staticFormatString", "$formatString\n")
-		constructor.buildFunctionCall(llvmPrintFunctionType, llvmPrintFunction, listOf(formatStringGlobal, *values), "_ignore")
-		constructor.buildFunctionCall(llvmFlushFunctionType, llvmFlushFunction, listOf(constructor.nullPointer), "_ignore")
+		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("pure_debug_formatString", "$formatString\n")
+		constructor.buildFunctionCall(llvmPrintFunctionType, llvmPrintFunction, listOf(formatStringGlobal, *values))
+		constructor.buildFunctionCall(llvmFlushFunctionType, llvmFlushFunction, listOf(constructor.nullPointer))
 	}
 }

@@ -38,8 +38,8 @@ class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
-		val exceptionAddressLocation = constructor.getParameter(constructor.getParentFunction(), Context.EXCEPTION_PARAMETER_INDEX)
-		constructor.buildStore(value.getLlvmValue(constructor), exceptionAddressLocation)
+		val exceptionAddress = constructor.getParameter(constructor.getParentFunction(), Context.EXCEPTION_PARAMETER_INDEX)
+		constructor.buildStore(value.getLlvmValue(constructor), exceptionAddress)
 		val returnType = getReturnType()
 		if(SpecialType.NOTHING.matches(returnType)) {
 			constructor.buildReturn()

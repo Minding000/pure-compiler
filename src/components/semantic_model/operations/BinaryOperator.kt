@@ -304,8 +304,8 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		val typeDefinition = signature.parentDefinition
 		val targetValue = left.getLlvmValue(constructor)
 		val parameters = LinkedList<LlvmValue>()
-		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
-		parameters.add(exceptionAddressLocation)
+		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
+		parameters.add(exceptionAddress)
 		parameters.add(targetValue)
 		parameters.add(right.getLlvmValue(constructor))
 		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
@@ -326,12 +326,12 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		if(leftType !is OptionalType)
 			return leftValue
 		val resultType = type?.getLlvmType(constructor)
-		val result = constructor.buildStackAllocation(resultType, "_nullCoalescenceResultVariable")
+		val result = constructor.buildStackAllocation(resultType, "_nullCoalescence_resultVariable")
 		val function = constructor.getParentFunction()
-		val valueBlock = constructor.createBlock(function, "nullCoalescenceValueBlock")
-		val nullBlock = constructor.createBlock(function, "nullCoalescenceNullBlock")
-		val resultBlock = constructor.createBlock(function, "nullCoalescenceResultBlock")
-		constructor.buildJump(constructor.buildIsNull(leftValue, "_isLeftNull"), nullBlock, valueBlock)
+		val valueBlock = constructor.createBlock(function, "nullCoalescence_valueBlock")
+		val nullBlock = constructor.createBlock(function, "nullCoalescence_nullBlock")
+		val resultBlock = constructor.createBlock(function, "nullCoalescence_resultBlock")
+		constructor.buildJump(constructor.buildIsNull(leftValue, "_nullCoalescence_isLeftNull"), nullBlock, valueBlock)
 		constructor.select(nullBlock)
 		constructor.buildStore(rightValue, result)
 		constructor.buildJump(resultBlock)
@@ -341,6 +341,6 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		constructor.buildStore(leftValue, result)
 		constructor.buildJump(resultBlock)
 		constructor.select(resultBlock)
-		return constructor.buildLoad(resultType, result, "_nullCoalescenceResult")
+		return constructor.buildLoad(resultType, result, "_nullCoalescence_result")
 	}
 }

@@ -13,10 +13,10 @@ object NullNatives {
 	}
 
 	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
-		constructor.createAndSelectBlock(llvmFunctionValue, "entrypoint")
-		val thisValue = context.getThisParameter(constructor)
-		val parameterValue = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
-		val result = constructor.buildSignedIntegerEqualTo(thisValue, parameterValue, "_equalsResult")
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisNull = context.getThisParameter(constructor)
+		val parameterAny = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val result = constructor.buildSignedIntegerEqualTo(thisNull, parameterAny, "equalsResult")
 		constructor.buildReturn(result)
 	}
 }

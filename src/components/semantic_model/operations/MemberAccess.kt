@@ -124,12 +124,12 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		return if(isOptional) {
 			val resultLlvmType = constructor.pointerType
 			val targetValue = target.getLlvmValue(constructor)
-			val result = constructor.buildStackAllocation(resultLlvmType, "_optionalMemberAccessResultVariable")
+			val result = constructor.buildStackAllocation(resultLlvmType, "_optionalMemberAccess_resultVariable")
 			val function = constructor.getParentFunction()
-			val valueBlock = constructor.createBlock(function, "_optionalMemberAccessValueBlock")
-			val nullBlock = constructor.createBlock(function, "_optionalMemberAccessNullBlock")
-			val resultBlock = constructor.createBlock(function, "_optionalMemberAccessResultBlock")
-			constructor.buildJump(constructor.buildIsNull(targetValue, "_isTargetNull"), nullBlock, valueBlock)
+			val valueBlock = constructor.createBlock(function, "_optionalMemberAccess_valueBlock")
+			val nullBlock = constructor.createBlock(function, "_optionalMemberAccess_nullBlock")
+			val resultBlock = constructor.createBlock(function, "_optionalMemberAccess_resultBlock")
+			constructor.buildJump(constructor.buildIsNull(targetValue, "_optionalMemberAccess_isTargetNull"), nullBlock, valueBlock)
 			constructor.select(nullBlock)
 			constructor.buildStore(constructor.nullPointer, result)
 			constructor.buildJump(resultBlock)
@@ -138,7 +138,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			constructor.buildStore(memberValue, result)
 			constructor.buildJump(resultBlock)
 			constructor.select(resultBlock)
-			constructor.buildLoad(resultLlvmType, result, "_optionalMemberAccessResult")
+			constructor.buildLoad(resultLlvmType, result, "_optionalMemberAccess_result")
 		} else {
 			getMemberValue(constructor)
 		}
@@ -163,9 +163,9 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		val targetValue = target.getLlvmValue(constructor)
 		val functionAddress = context.resolveFunction(constructor, computedPropertyDeclaration.parentTypeDeclaration.llvmType, targetValue,
 			computedPropertyDeclaration.getterIdentifier)
-		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		return constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
-			listOf(exceptionAddressLocation, targetValue), "_computedPropertyGetterResult")
+			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
 		//TODO if exception exists
 		// check for optional try (normal and force try have no effect)
 		// check for catch

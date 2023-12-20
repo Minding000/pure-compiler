@@ -61,6 +61,6 @@ class HasValueCheck(override val source: HasValueCheckSyntaxTree, scope: Scope, 
 		//TODO also mind OrUnionType containing Null type everywhere where OptionalType is used
 		if(subject.type !is OptionalType)
 			return constructor.buildBoolean(true)
-		return constructor.buildIsNotNull(subject.getLlvmValue(constructor), "_hasValueCheckResult")
+		return constructor.buildIsNotNull(subject.getLlvmValue(constructor), "_hasValueCheck_result")
 	}
 }

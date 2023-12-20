@@ -60,12 +60,13 @@ object ValueConverter {
 				if(targetType is OptionalType) {
 					val sourceLlvmType = sourceType?.getLlvmType(constructor)
 					if(sourceType is OptionalType) {
-						val result = constructor.buildStackAllocation(sourceLlvmType, "_unwrapAndBoxResultVariable")
+						val result = constructor.buildStackAllocation(sourceLlvmType, "_unwrapAndBox_resultVariable")
 						val function = constructor.getParentFunction()
-						val valueBlock = constructor.createBlock(function, "_unwrapAndBoxValueBlock")
-						val nullBlock = constructor.createBlock(function, "_unwrapAndBoxNullBlock")
-						val resultBlock = constructor.createBlock(function, "_unwrapAndBoxResultBlock")
-						constructor.buildJump(constructor.buildIsNull(sourceValue, "_isSourceNull"), nullBlock, valueBlock)
+						val valueBlock = constructor.createBlock(function, "_unwrapAndBox_valueBlock")
+						val nullBlock = constructor.createBlock(function, "_unwrapAndBox_nullBlock")
+						val resultBlock = constructor.createBlock(function, "_unwrapAndBox_resultBlock")
+						constructor.buildJump(constructor.buildIsNull(sourceValue, "_unwrapAndBox_isSourceNull"), nullBlock,
+							valueBlock)
 						constructor.select(nullBlock)
 						constructor.buildStore(constructor.nullPointer, result)
 						constructor.buildJump(resultBlock)
@@ -89,18 +90,18 @@ object ValueConverter {
 			return constructor.buildCastFromSignedIntegerToFloat(sourceValue, "_castPrimitive")
 		}
 		if(conversion != null) {
-			val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+			val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 			val typeDeclaration = conversion.parentTypeDeclaration
-			val newObjectAddress = constructor.buildHeapAllocation(typeDeclaration.llvmType, "newObjectAddress")
-			val classDefinitionPointer = constructor.buildGetPropertyPointer(typeDeclaration.llvmType, newObjectAddress,
-				Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionPointer")
-			constructor.buildStore(typeDeclaration.llvmClassDefinitionAddress, classDefinitionPointer)
+			val newObject = constructor.buildHeapAllocation(typeDeclaration.llvmType, "_newObject")
+			val classDefinitionProperty = constructor.buildGetPropertyPointer(typeDeclaration.llvmType, newObject,
+				Context.CLASS_DEFINITION_PROPERTY_INDEX, "_classDefinitionProperty")
+			constructor.buildStore(typeDeclaration.llvmClassDefinition, classDefinitionProperty)
 			val parameters = LinkedList<LlvmValue?>()
-			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddressLocation)
-			parameters.add(Context.THIS_PARAMETER_INDEX, newObjectAddress)
+			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
+			parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
 			parameters.add(sourceValue)
 			constructor.buildFunctionCall(conversion.llvmType, conversion.llvmValue, parameters)
-			return newObjectAddress
+			return newObject
 		}
 		return sourceValue
 	}
@@ -116,21 +117,21 @@ object ValueConverter {
 	}
 
 	fun wrapInteger(context: Context, constructor: LlvmConstructor, primitiveLlvmValue: LlvmValue): LlvmValue {
-		val newIntegerAddress = constructor.buildHeapAllocation(context.integerTypeDeclaration?.llvmType, "newIntegerAddress")
-		val integerClassDefinitionPointer = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType,
-			newIntegerAddress, Context.CLASS_DEFINITION_PROPERTY_INDEX, "integerClassDefinitionPointer")
-		val integerClassDefinitionAddress = context.integerTypeDeclaration?.llvmClassDefinitionAddress
+		val integer = constructor.buildHeapAllocation(context.integerTypeDeclaration?.llvmType, "_integer")
+		val classDefinitionProperty = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, integer,
+			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_classDefinitionProperty")
+		val classDefinition = context.integerTypeDeclaration?.llvmClassDefinition
 			?: throw CompilerError("Missing integer type declaration.")
-		constructor.buildStore(integerClassDefinitionAddress, integerClassDefinitionPointer)
-		val valuePointer = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, newIntegerAddress,
-			context.integerValueIndex, "valuePointer")
-		constructor.buildStore(primitiveLlvmValue, valuePointer)
-		return newIntegerAddress
+		constructor.buildStore(classDefinition, classDefinitionProperty)
+		val valueProperty = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, integer,
+			context.integerValueIndex, "_valueProperty")
+		constructor.buildStore(primitiveLlvmValue, valueProperty)
+		return integer
 	}
 
 	fun unwrapInteger(context: Context, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue): LlvmValue {
-		val propertyPointer = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, wrappedLlvmValue,
-			context.integerValueIndex, "_propertyPointer")
-		return constructor.buildLoad(constructor.i32Type, propertyPointer, "_primitiveValue")
+		val valueProperty = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, wrappedLlvmValue,
+			context.integerValueIndex, "_valueProperty")
+		return constructor.buildLoad(constructor.i32Type, valueProperty, "_value")
 	}
 }

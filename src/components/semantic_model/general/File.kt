@@ -65,7 +65,7 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		constructor.createAndSelectBlock(llvmInitializerValue, "entrypoint")
+		constructor.createAndSelectEntrypointBlock(llvmInitializerValue)
 		for(typeDeclaration in scope.typeDeclarations.values) {
 			if(typeDeclaration.isDefinition)
 				constructor.buildFunctionCall(typeDeclaration.llvmClassInitializerType, typeDeclaration.llvmClassInitializer)

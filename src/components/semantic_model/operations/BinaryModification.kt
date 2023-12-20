@@ -144,9 +144,9 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature) {
 		val typeDefinition = signature.parentDefinition
 		val targetValue = target.getLlvmValue(constructor)
-		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		val parameters = LinkedList<LlvmValue>()
-		parameters.add(exceptionAddressLocation)
+		parameters.add(exceptionAddress)
 		parameters.add(targetValue)
 		parameters.add(modifier.getLlvmValue(constructor))
 		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,

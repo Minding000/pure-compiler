@@ -13,16 +13,15 @@ object CliNatives {
 	}
 
 	private fun writeLine(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
-		constructor.createAndSelectBlock(llvmFunctionValue, "entrypoint")
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val string = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val bytesProperty = context.resolveMember(constructor, context.stringTypeDeclaration?.llvmType, string, "bytes")
-		val bytesPointer = constructor.buildLoad(constructor.pointerType, bytesProperty, "bytesPointer")
-		val arrayProperty = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, bytesPointer,
-			context.arrayValueIndex, "_arrayProperty")
-		val arrayPointer = constructor.buildLoad(constructor.pointerType, arrayProperty, "arrayPointer")
-		constructor.buildFunctionCall(context.llvmPrintFunctionType, context.llvmPrintFunction, listOf(arrayPointer), "_ignore")
-		constructor.buildFunctionCall(context.llvmFlushFunctionType, context.llvmFlushFunction, listOf(constructor.nullPointer),
-			"_ignore")
+		val byteArray = constructor.buildLoad(constructor.pointerType, bytesProperty, "byteArray")
+		val arrayValueProperty = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, byteArray,
+			context.arrayValueIndex, "arrayValueProperty")
+		val primitiveArray = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "primitiveArray")
+		constructor.buildFunctionCall(context.llvmPrintFunctionType, context.llvmPrintFunction, listOf(primitiveArray))
+		constructor.buildFunctionCall(context.llvmFlushFunctionType, context.llvmFlushFunction, listOf(constructor.nullPointer))
 		constructor.buildReturn()
 	}
 }

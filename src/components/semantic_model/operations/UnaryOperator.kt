@@ -104,9 +104,9 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
 		val typeDefinition = signature.parentDefinition
 		val targetValue = subject.getLlvmValue(constructor)
-		val exceptionAddressLocation = constructor.buildStackAllocation(constructor.pointerType, "exceptionAddress")
+		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		val parameters = LinkedList<LlvmValue>()
-		parameters.add(exceptionAddressLocation)
+		parameters.add(exceptionAddress)
 		parameters.add(targetValue)
 		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
 			signature.original.toString(false, kind))
