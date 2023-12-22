@@ -2,8 +2,8 @@ package components.semantic_model.general
 
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
 

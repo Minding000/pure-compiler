@@ -1,8 +1,8 @@
 package components.semantic_model.types
 
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.operations.FunctionCall
 import components.semantic_model.operations.InstanceAccess
-import components.semantic_model.values.ValueDeclaration
 import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
 import util.TestUtil

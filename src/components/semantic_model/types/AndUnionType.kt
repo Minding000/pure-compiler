@@ -4,7 +4,6 @@ import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.*
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Value
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
 

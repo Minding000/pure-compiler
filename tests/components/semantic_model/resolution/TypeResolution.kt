@@ -1,9 +1,9 @@
 package components.semantic_model.resolution
 
 import components.semantic_model.declarations.PropertyDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.operations.MemberAccess
 import components.semantic_model.types.ObjectType
-import components.semantic_model.values.ValueDeclaration
 import logger.issues.declaration.TypeParameterCountMismatch
 import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test

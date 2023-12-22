@@ -1,6 +1,5 @@
 package components.semantic_model.declarations
 
-import components.semantic_model.values.LocalVariableDeclaration
 import components.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable

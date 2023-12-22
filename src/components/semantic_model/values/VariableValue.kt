@@ -5,14 +5,10 @@ import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
-import components.semantic_model.declarations.ComputedPropertyDeclaration
-import components.semantic_model.declarations.PropertyDeclaration
-import components.semantic_model.declarations.TypeDeclaration
-import components.semantic_model.declarations.WhereClauseCondition
+import components.semantic_model.declarations.*
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.ObjectType
-import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
@@ -59,7 +55,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 			return
 		val declaration = declaration
 		if(declaration is LocalVariableDeclaration) {
-			if(declaration.type !is StaticType && !usage.isPreviouslyInitialized())
+			if(!usage.isPreviouslyInitialized())
 				context.addIssue(NotInitialized(source, "Local variable", name))
 		} else if(declaration is PropertyDeclaration) {
 			if(tracker.isInitializer && !declaration.isStatic && declaration.value == null && !usage.isPreviouslyInitialized())

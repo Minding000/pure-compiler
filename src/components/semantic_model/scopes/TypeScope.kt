@@ -6,7 +6,6 @@ import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Function
 import components.semantic_model.values.InterfaceMember
-import components.semantic_model.values.ValueDeclaration
 import errors.internal.CompilerError
 import logger.issues.declaration.AbstractMemberInNonAbstractTypeDefinition
 import logger.issues.declaration.ObjectInitializerTakingParameters

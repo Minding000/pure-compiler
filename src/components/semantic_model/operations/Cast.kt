@@ -6,6 +6,7 @@ import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.control_flow.IfStatement
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.LiteralType
 import components.semantic_model.types.OptionalType

@@ -1,7 +1,7 @@
 package components.semantic_model.scopes
 
 import components.semantic_model.declarations.TypeDeclaration
-import components.semantic_model.values.ValueDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 
 abstract class MutableScope: Scope() {
 

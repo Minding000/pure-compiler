@@ -6,9 +6,7 @@ import components.semantic_model.scopes.TypeScope
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
-import components.semantic_model.values.LocalVariableDeclaration
 import components.semantic_model.values.Value
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?,
@@ -27,7 +25,7 @@ class Object(override val source: TypeDefinitionSyntaxTree, name: String, scope:
 		return if(targetScope is TypeScope)
 			PropertyDeclaration(source, targetScope, name, type, value, !isBound)
 		else
-			LocalVariableDeclaration(source, targetScope, name, type, value)
+			GlobalValueDeclaration(source, targetScope, name, type, value)
 	}
 
 	override fun declare() {

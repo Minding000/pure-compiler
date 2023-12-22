@@ -1,6 +1,6 @@
 package components.semantic_model.types
 
-import components.semantic_model.values.ValueDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.declaration.TypeParameterCountMismatch

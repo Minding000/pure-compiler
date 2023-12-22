@@ -2,9 +2,9 @@ package components.semantic_model.scopes
 
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.types.Type
 import components.semantic_model.values.Instance
-import components.semantic_model.values.ValueDeclaration
 
 class InterfaceScope(val isStatic: Boolean = false): Scope() {
 	lateinit var type: Type

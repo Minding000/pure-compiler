@@ -4,8 +4,8 @@ import components.semantic_model.control_flow.LoopStatement
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.general.SemanticModel
-import components.semantic_model.values.ValueDeclaration
 import components.semantic_model.values.VariableValue
 import logger.issues.declaration.Redeclaration
 

@@ -1,11 +1,11 @@
 package components.semantic_model.context
 
 import components.semantic_model.declarations.PropertyDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.types.Type
 import components.semantic_model.values.LiteralValue
 import components.semantic_model.values.Value
-import components.semantic_model.values.ValueDeclaration
 import components.semantic_model.values.VariableValue
 import logger.issues.initialization.ConstantReassignment
 import util.combine

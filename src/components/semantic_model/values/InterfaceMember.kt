@@ -2,6 +2,7 @@ package components.semantic_model.values
 
 import components.semantic_model.declarations.MemberDeclaration
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode

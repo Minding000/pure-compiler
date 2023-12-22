@@ -7,9 +7,9 @@ import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.Object
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Function
-import components.semantic_model.values.ValueDeclaration
 import errors.internal.CompilerError
 import errors.user.UserError
 import java.util.*

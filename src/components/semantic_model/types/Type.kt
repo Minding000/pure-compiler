@@ -8,7 +8,6 @@ import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Value
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 

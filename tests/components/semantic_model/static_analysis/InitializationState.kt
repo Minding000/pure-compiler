@@ -47,6 +47,17 @@ internal class InitializationState {
 	}
 
 	@Test
+	fun `allows use of global values`() {
+		val sourceCode =
+			"""
+				Int
+				Int object
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotInitialized>()
+	}
+
+	@Test
 	fun `disallows use of uninitialized local variables`() {
 		val sourceCode =
 			"""

@@ -5,7 +5,6 @@ import components.code_generation.llvm.LlvmType
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.*
 import components.semantic_model.scopes.Scope
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.declaration.TypeParameterCountMismatch
 import logger.issues.declaration.TypeParameterNotAssignable

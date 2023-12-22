@@ -3,7 +3,6 @@ package components.semantic_model.declarations
 import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.scopes.BlockScope
 import components.semantic_model.types.Type
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.GeneratorDefinition as GeneratorDefinitionSyntaxTree
 
 class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, override val scope: BlockScope, name: String,

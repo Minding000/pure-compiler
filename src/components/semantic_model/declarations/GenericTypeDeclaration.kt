@@ -3,8 +3,6 @@ package components.semantic_model.declarations
 import components.semantic_model.scopes.TypeScope
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
-import components.semantic_model.values.LocalVariableDeclaration
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
 class GenericTypeDeclaration(override val source: ParameterSyntaxTree, name: String, scope: TypeScope, superType: Type?):
@@ -21,7 +19,7 @@ class GenericTypeDeclaration(override val source: ParameterSyntaxTree, name: Str
 		staticValueDeclaration = if(targetScope is TypeScope)
 			PropertyDeclaration(source, targetScope, name, staticType)
 		else
-			LocalVariableDeclaration(source, targetScope, name, staticType)
+			GlobalValueDeclaration(source, targetScope, name, staticType)
 		return staticValueDeclaration
 	}
 

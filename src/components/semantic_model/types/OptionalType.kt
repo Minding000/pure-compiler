@@ -6,9 +6,9 @@ import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Value
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
 class OptionalType(override val source: SyntaxTreeNode, scope: Scope, val baseType: Type): Type(source, scope) {

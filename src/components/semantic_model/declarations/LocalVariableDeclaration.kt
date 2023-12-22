@@ -1,9 +1,10 @@
-package components.semantic_model.values
+package components.semantic_model.declarations
 
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
+import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 

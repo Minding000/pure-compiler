@@ -5,7 +5,6 @@ import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.Type
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.declaration.PropertyParameterMismatch
 import logger.issues.declaration.PropertyParameterOutsideOfInitializer

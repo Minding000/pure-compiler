@@ -1,10 +1,6 @@
-package components.semantic_model.values
+package components.semantic_model.declarations
 
 import components.code_generation.llvm.LlvmConstructor
-import components.semantic_model.declarations.ComputedPropertyDeclaration
-import components.semantic_model.declarations.InitializerDefinition
-import components.semantic_model.declarations.TypeDeclaration
-import components.semantic_model.declarations.WhereClauseCondition
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.FileScope
 import components.semantic_model.scopes.MutableScope
@@ -12,6 +8,9 @@ import components.semantic_model.scopes.TypeScope
 import components.semantic_model.types.OptionalType
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
+import components.semantic_model.values.Function
+import components.semantic_model.values.Value
+import components.semantic_model.values.VariableValue
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.declaration.DeclarationMissingTypeOrValue

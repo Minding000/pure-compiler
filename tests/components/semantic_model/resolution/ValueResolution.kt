@@ -3,7 +3,7 @@ package components.semantic_model.resolution
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.Parameter
 import components.semantic_model.declarations.PropertyDeclaration
-import components.semantic_model.values.ValueDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.access.WhereClauseUnfulfilled

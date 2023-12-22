@@ -3,8 +3,8 @@ package components.semantic_model.types
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 
 class PluralType(override val source: SyntaxTreeNode, scope: Scope, val baseType: Type): Type(source, scope) {

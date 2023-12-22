@@ -2,8 +2,8 @@ package components.semantic_model.types
 
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.TypeParameter as TypeParameterSyntaxTree
 
 class TypeParameter(override val source: TypeParameterSyntaxTree, scope: Scope, val mode: Mode, val baseType: Type): Type(source, scope) {

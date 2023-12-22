@@ -13,7 +13,6 @@ import components.semantic_model.types.AndUnionType
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.Type
 import components.semantic_model.values.InterfaceMember
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.declaration.*

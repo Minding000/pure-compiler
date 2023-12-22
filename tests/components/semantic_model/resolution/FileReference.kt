@@ -1,8 +1,8 @@
 package components.semantic_model.resolution
 
 import components.semantic_model.context.SemanticModelGenerator
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.types.ObjectType
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import org.junit.jupiter.api.Test
 import source_structure.Module

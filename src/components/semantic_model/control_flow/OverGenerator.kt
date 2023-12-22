@@ -2,15 +2,15 @@ package components.semantic_model.control_flow
 
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
+import components.semantic_model.declarations.LocalVariableDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.FunctionType
 import components.semantic_model.types.LiteralType
 import components.semantic_model.types.PluralType
 import components.semantic_model.types.Type
-import components.semantic_model.values.LocalVariableDeclaration
 import components.semantic_model.values.Value
-import components.semantic_model.values.ValueDeclaration
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.loops.NotIterable
 import logger.issues.loops.PluralTypeIteratorDeclaration

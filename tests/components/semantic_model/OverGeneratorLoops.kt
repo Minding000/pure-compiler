@@ -1,8 +1,8 @@
 package components.semantic_model
 
 import components.semantic_model.context.SpecialType
+import components.semantic_model.declarations.LocalVariableDeclaration
 import components.semantic_model.types.ObjectType
-import components.semantic_model.values.LocalVariableDeclaration
 import logger.issues.declaration.DeclarationMissingTypeOrValue
 import org.junit.jupiter.api.Test
 import util.TestUtil

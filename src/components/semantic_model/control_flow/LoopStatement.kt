@@ -4,12 +4,12 @@ import components.code_generation.llvm.*
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.ComputedPropertyDeclaration
+import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.BlockScope
 import components.semantic_model.types.*
 import components.semantic_model.values.BooleanLiteral
-import components.semantic_model.values.ValueDeclaration
 import errors.internal.CompilerError
 import components.syntax_parser.syntax_tree.control_flow.LoopStatement as LoopStatementSyntaxTree
 

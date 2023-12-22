@@ -5,8 +5,6 @@ import components.semantic_model.scopes.TypeScope
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
-import components.semantic_model.values.LocalVariableDeclaration
-import components.semantic_model.values.ValueDeclaration
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?, superType: Type?,
@@ -23,7 +21,7 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 		staticValueDeclaration = if(targetScope is TypeScope)
 			PropertyDeclaration(source, targetScope, name, staticType, null, !isBound)
 		else
-			LocalVariableDeclaration(source, targetScope, name, staticType)
+			GlobalValueDeclaration(source, targetScope, name, staticType)
 		return staticValueDeclaration
 	}
 

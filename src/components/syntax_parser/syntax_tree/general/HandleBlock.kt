@@ -1,7 +1,7 @@
 package components.syntax_parser.syntax_tree.general
 
+import components.semantic_model.declarations.LocalVariableDeclaration
 import components.semantic_model.scopes.MutableScope
-import components.semantic_model.values.LocalVariableDeclaration
 import components.syntax_parser.syntax_tree.literals.Identifier
 import source_structure.Position
 import components.semantic_model.general.HandleBlock as SemanticHandleBlockModel
