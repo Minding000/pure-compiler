@@ -85,6 +85,9 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 	}
 
 	fun isLlvmPrimitive(): Boolean {
-		return SpecialType.BOOLEAN.matches(this) || SpecialType.INTEGER.matches(this) || SpecialType.FLOAT.matches(this)
+		return SpecialType.BOOLEAN.matches(this)
+			|| SpecialType.BYTE.matches(this)
+			|| SpecialType.INTEGER.matches(this)
+			|| SpecialType.FLOAT.matches(this)
 	}
 }

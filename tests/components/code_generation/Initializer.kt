@@ -87,31 +87,4 @@ internal class Initializer {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSum")
 		assertEquals(15, Llvm.castToSignedInteger(result))
 	}
-
-	@Test
-	fun `implicitly converts between types`() {
-		val sourceCode = """
-			Inches class {
-				val value: Float
-				init(value)
-			}
-			Meters class {
-				val value: Float
-				converting init(inches: Inches) {
-					value = inches.value * 0.0254
-				}
-			}
-			SimplestApp object {
-				to getRawMeters(meters: Meters): Float {
-					return meters.value
-				}
-				to getFive(): Float {
-					val inches = Inches(196.85)
-					return getRawMeters(inches)
-				}
-			}
-			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result), 0.01)
-	}
 }

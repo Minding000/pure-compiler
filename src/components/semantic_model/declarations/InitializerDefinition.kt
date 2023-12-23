@@ -3,6 +3,7 @@ package components.semantic_model.declarations
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
@@ -306,8 +307,10 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		for(memberDeclaration in parentTypeDeclaration.properties) {
 			val memberValue = memberDeclaration.value
 			if(memberValue != null) {
+				val convertedValue = ValueConverter.convertIfRequired(memberDeclaration, constructor, memberValue.getLlvmValue(constructor),
+					memberValue.type, memberDeclaration.type, memberDeclaration.conversion)
 				val memberAddress = context.resolveMember(constructor, parentTypeDeclaration.llvmType, thisValue, memberDeclaration.name)
-				constructor.buildStore(memberValue.getLlvmValue(constructor), memberAddress)
+				constructor.buildStore(convertedValue, memberAddress)
 			}
 		}
 		if(isNative)

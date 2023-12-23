@@ -264,6 +264,7 @@ class LlvmConstructor(name: String) {
 
 	fun buildCastFromBooleanToByte(boolean: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, boolean, byteType, name)
 	fun buildCastFromIntegerToByte(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, byteType, name)
+	fun buildCastFromByteToInteger(byte: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, byte, i32Type, name)
 
 	fun buildCastFromSignedIntegerToFloat(integer: LlvmValue, name: String): LlvmValue = LLVMBuildSIToFP(builder, integer, floatType, name)
 

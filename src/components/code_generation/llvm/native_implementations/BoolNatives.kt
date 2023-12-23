@@ -2,6 +2,7 @@ package components.code_generation.llvm.native_implementations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.Context
 
 object BoolNatives {
@@ -15,22 +16,16 @@ object BoolNatives {
 		context.registerNativeImplementation("Bool.toggle()", ::toggle)
 	}
 
-	private fun unwrap(constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue): LlvmValue {
-		val boolValueProperty = constructor.buildGetPropertyPointer(context.booleanTypeDeclaration?.llvmType, wrappedLlvmValue,
-			context.booleanValueIndex, "_valueProperty")
-		return constructor.buildLoad(constructor.booleanType, boolValueProperty, "_value")
-	}
-
 	private fun negate(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisPrimitiveBool = unwrap(constructor, context.getThisParameter(constructor))
+		val thisPrimitiveBool = ValueConverter.unwrapBool(context, constructor, context.getThisParameter(constructor))
 		val result = constructor.buildBooleanNegation(thisPrimitiveBool, "negationResult")
 		constructor.buildReturn(result)
 	}
 
 	private fun and(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisPrimitiveBool = unwrap(constructor, context.getThisParameter(constructor))
+		val thisPrimitiveBool = ValueConverter.unwrapBool(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildAnd(thisPrimitiveBool, parameterPrimitiveBool, "andResult")
 		constructor.buildReturn(result)
@@ -38,7 +33,7 @@ object BoolNatives {
 
 	private fun or(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisPrimitiveBool = unwrap(constructor, context.getThisParameter(constructor))
+		val thisPrimitiveBool = ValueConverter.unwrapBool(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildOr(thisPrimitiveBool, parameterPrimitiveBool, "orResult")
 		constructor.buildReturn(result)

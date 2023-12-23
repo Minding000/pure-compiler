@@ -24,7 +24,7 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 	private var hasDeterminedTypes = false
 	open val value = value
 	val usages = LinkedList<VariableValue>()
-	private var conversion: InitializerDefinition? = null
+	var conversion: InitializerDefinition? = null
 	lateinit var llvmLocation: LLVMValueRef
 
 	init {
