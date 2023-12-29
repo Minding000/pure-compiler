@@ -27,41 +27,17 @@ object ValueConverter {
 						  conversion: InitializerDefinition? = null): LlvmValue {
 		//TODO test (un-)box / (un-)wrap + cast
 		//TODO test (un-)box / (un-)wrap + conversion
-		if(sourceType?.isLlvmPrimitive() == true && targetType is OptionalType)
+
+		if(sourceType?.isLlvmPrimitive() == true && targetType is OptionalType && targetType.baseType.isLlvmPrimitive())
 			return boxPrimitive(constructor, sourceValue, sourceType.getLlvmType(constructor))
-		if(sourceType is OptionalType && targetType?.isLlvmPrimitive() == true)
+		if(sourceType is OptionalType && sourceType.baseType.isLlvmPrimitive() && targetType?.isLlvmPrimitive() == true)
 			return unboxPrimitive(constructor, sourceValue, targetType.getLlvmType(constructor))
 		val sourceBaseType = if(sourceType is OptionalType) sourceType.baseType else sourceType
 		val targetBaseType = if(targetType is OptionalType) targetType.baseType else targetType
-		if(sourceType?.isLlvmPrimitive() == true && targetType?.isLlvmPrimitive() == false) {
-			//TODO support unboxing and wrapping (like the opposite 'unwrapAndBox' below)
-			return wrap(model, constructor, sourceValue, sourceType)
-		}
-		if(sourceBaseType?.isLlvmPrimitive() == false && targetBaseType?.isLlvmPrimitive() == true) {
-			if(targetType !is OptionalType)
-				return unwrap(model, constructor, sourceValue, targetBaseType)
-			val sourceLlvmType = sourceType?.getLlvmType(constructor)
-			if(sourceType is OptionalType) {
-				val result = constructor.buildStackAllocation(sourceLlvmType, "_unwrapAndBox_resultVariable")
-				val function = constructor.getParentFunction()
-				val valueBlock = constructor.createBlock(function, "_unwrapAndBox_valueBlock")
-				val nullBlock = constructor.createBlock(function, "_unwrapAndBox_nullBlock")
-				val resultBlock = constructor.createBlock(function, "_unwrapAndBox_resultBlock")
-				constructor.buildJump(constructor.buildIsNull(sourceValue, "_unwrapAndBox_isSourceNull"), nullBlock, valueBlock)
-				constructor.select(nullBlock)
-				constructor.buildStore(constructor.nullPointer, result)
-				constructor.buildJump(resultBlock)
-				constructor.select(valueBlock)
-				val primitiveValue = unwrap(model, constructor, sourceValue, targetBaseType)
-				constructor.buildStore(boxPrimitive(constructor, primitiveValue, sourceLlvmType), result)
-				constructor.buildJump(resultBlock)
-				constructor.select(resultBlock)
-				return result
-			} else {
-				val primitiveValue = unwrap(model, constructor, sourceValue, targetBaseType)
-				return boxPrimitive(constructor, primitiveValue, sourceLlvmType)
-			}
-		}
+		if(sourceBaseType?.isLlvmPrimitive() == true && targetBaseType?.isLlvmPrimitive() == false)
+			return wrapAndUnboxIfRequired(model, constructor, sourceValue, sourceType)
+		if(sourceBaseType?.isLlvmPrimitive() == false && targetBaseType?.isLlvmPrimitive() == true)
+			return unwrapAndBoxIfRequired(model, constructor, sourceValue, sourceType, targetType)
 		if((SpecialType.BYTE.matches(sourceType) || SpecialType.INTEGER.matches(sourceType)) && SpecialType.FLOAT.matches(targetType))
 			return constructor.buildCastFromSignedIntegerToFloat(sourceValue, "_castPrimitive")
 		if(SpecialType.BYTE.matches(sourceType) && SpecialType.INTEGER.matches(targetType))
@@ -69,6 +45,54 @@ object ValueConverter {
 		if(conversion != null)
 			return buildConversion(constructor, sourceValue, conversion)
 		return sourceValue
+	}
+
+	private fun wrapAndUnboxIfRequired(model: SemanticModel, constructor: LlvmConstructor, sourceValue: LlvmValue,
+									   sourceType: Type?): LlvmValue {
+		if(sourceType !is OptionalType)
+			return wrap(model, constructor, sourceValue, sourceType)
+		val resultVariable = constructor.buildStackAllocation(constructor.pointerType, "_unboxAndWrap_resultVariable")
+		val function = constructor.getParentFunction()
+		val valueBlock = constructor.createBlock(function, "_unboxAndWrap_valueBlock")
+		val nullBlock = constructor.createBlock(function, "_unboxAndWrap_nullBlock")
+		val resultBlock = constructor.createBlock(function, "_unboxAndWrap_resultBlock")
+		constructor.buildJump(constructor.buildIsNull(sourceValue, "_unboxAndWrap_isSourceNull"), nullBlock, valueBlock)
+		constructor.select(nullBlock)
+		constructor.buildStore(constructor.nullPointer, resultVariable)
+		constructor.buildJump(resultBlock)
+		constructor.select(valueBlock)
+		val primitiveValue = unboxPrimitive(constructor, sourceValue, sourceType.baseType.getLlvmType(constructor))
+		constructor.buildStore(wrap(model, constructor, primitiveValue, sourceType.baseType), resultVariable)
+		constructor.buildJump(resultBlock)
+		constructor.select(resultBlock)
+		return constructor.buildLoad(constructor.pointerType, resultVariable, "_unboxAndWrap_result")
+	}
+
+	private fun unwrapAndBoxIfRequired(model: SemanticModel, constructor: LlvmConstructor, sourceValue: LlvmValue, sourceType: Type?,
+									   targetType: Type?): LlvmValue {
+		if(targetType !is OptionalType)
+			return unwrap(model, constructor, sourceValue, targetType)
+		val sourceLlvmType = sourceType?.getLlvmType(constructor)
+		if(sourceType is OptionalType) {
+			val resultVariable = constructor.buildStackAllocation(sourceLlvmType, "_unwrapAndBox_resultVariable")
+			val function = constructor.getParentFunction()
+			val valueBlock = constructor.createBlock(function, "_unwrapAndBox_valueBlock")
+			val nullBlock = constructor.createBlock(function, "_unwrapAndBox_nullBlock")
+			val resultBlock = constructor.createBlock(function, "_unwrapAndBox_resultBlock")
+			constructor.buildJump(constructor.buildIsNull(sourceValue, "_unwrapAndBox_isSourceNull"), nullBlock, valueBlock)
+			constructor.select(nullBlock)
+			constructor.buildStore(constructor.nullPointer, resultVariable)
+			constructor.buildJump(resultBlock)
+			constructor.select(valueBlock)
+			val primitiveValue = unwrap(model, constructor, sourceValue, targetType.baseType)
+			constructor.buildStore(boxPrimitive(constructor, primitiveValue, sourceLlvmType), resultVariable)
+			constructor.buildJump(resultBlock)
+			constructor.select(resultBlock)
+			return constructor.buildLoad(sourceLlvmType, resultVariable, "_unwrapAndBox_result")
+		} else {
+			val primitiveValue = unwrap(model, constructor, sourceValue, targetType.baseType)
+			return boxPrimitive(constructor, primitiveValue, sourceLlvmType)
+		}
 	}
 
 	private fun buildConversion(constructor: LlvmConstructor, sourceValue: LlvmValue, conversion: InitializerDefinition): LlvmValue {

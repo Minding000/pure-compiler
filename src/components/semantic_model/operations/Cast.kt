@@ -2,6 +2,7 @@ package components.semantic_model.operations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
@@ -72,7 +73,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 				staticValue = BooleanLiteral(this, operator == Operator.NEGATED_CAST_CONDITION)
 		} else if(operator == Operator.SAFE_CAST) {
 			staticValue = subject.getComputedValue()
-		} else if(operator == Operator.THROWING_CAST) {
+		} else if(operator == Operator.RAISING_CAST) {
 			staticValue = subject.getComputedValue()
 			//TODO propagate 'isInterruptingExecution' property from expressions to statements in the 'SemanticModel' class
 			isInterruptingExecution = isCastNeverSuccessful
@@ -129,21 +130,44 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 	}
 
 	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+
 		//TODO implement special cases:
 		// - Cast from optional primitive to primitive: unbox and check
 		// - Cast from primitive to optional primitive: box
 		// - Cast from primitive to pointer type: construct wrapper
 		// - Cast from pointer type to primitive: destruct wrapper
+		// -
 		// - Cast from primitive to primitive: LLVM cast (could be combined with casts above)
 		// - Cast null value (no type info)
-		return subject.getLlvmValue(constructor)
+
+
+		val subjectValue = subject.getLlvmValue(constructor)
+		when(operator) {
+			Operator.SAFE_CAST -> {
+				return ValueConverter.convertIfRequired(this, constructor, subjectValue, subject.type, referenceType)
+			}
+			Operator.OPTIONAL_CAST -> {
+				//TODO check if value can be converted
+				// else: return null pointer
+				return ValueConverter.convertIfRequired(this, constructor, subjectValue, subject.type, referenceType)
+			}
+			Operator.RAISING_CAST -> {
+				//TODO check if value can be converted
+				// else: raise
+				return ValueConverter.convertIfRequired(this, constructor, subjectValue, subject.type, referenceType)
+			}
+			Operator.CAST_CONDITION, Operator.NEGATED_CAST_CONDITION -> {
+				//TODO check if value can be converted and return check result
+				return constructor.buildBoolean(true)
+			}
+		}
 	}
 
 	enum class Operator(val stringRepresentation: String, val isConditional: Boolean = false,
 						val returnsBoolean: Boolean = false) {
 		SAFE_CAST("as"),
 		OPTIONAL_CAST("as?", true),
-		THROWING_CAST("as!", true),
+		RAISING_CAST("as!", true),
 		CAST_CONDITION("is", true, true),
 		NEGATED_CAST_CONDITION("is!", true, true)
 	}
