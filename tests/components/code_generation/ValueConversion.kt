@@ -218,4 +218,22 @@ internal class ValueConversion {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", true)
 		assertEquals(99, Llvm.castToSignedInteger(result))
 	}
+
+	@Test
+	fun `implicitly converts function call parameter`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				val source: Byte = 94
+				to plusFive(target: Int): Int {
+					return target + 5
+				}
+				to getNinetyNine(): Int {
+					return plusFive(source)
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", true)
+		assertEquals(99, Llvm.castToSignedInteger(result))
+	}
 }

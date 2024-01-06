@@ -129,7 +129,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 		}
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 
 		//TODO implement special cases:
 		// - Cast from optional primitive to primitive: unbox and check

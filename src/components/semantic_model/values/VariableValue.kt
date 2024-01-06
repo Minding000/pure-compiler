@@ -102,12 +102,11 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 				val parentProperty = constructor.buildGetPropertyPointer(currentTypeDeclaration.llvmType, currentValue,
 					Context.PARENT_PROPERTY_INDEX, "_parentProperty")
 				currentValue = constructor.buildLoad(constructor.pointerType, parentProperty, "_parent")
-				currentTypeDeclaration = currentTypeDeclaration.parent?.scope?.getSurroundingTypeDeclaration()
+				currentTypeDeclaration = currentTypeDeclaration.parentTypeDeclaration
 					?: throw CompilerError(source,
 					"Type declaration of property referenced by variable value not found in its surrounding type declaration.")
 			}
-			context.resolveMember(constructor, declaration.parentTypeDeclaration.llvmType, currentValue, name,
-				(declaration as? InterfaceMember)?.isStatic ?: false)
+			context.resolveMember(constructor, currentValue, name, (declaration as? InterfaceMember)?.isStatic ?: false)
 		} else {
 			declaration?.llvmLocation
 		}
@@ -123,7 +122,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		return false
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val declaration = declaration
 		if(declaration is ComputedPropertyDeclaration) {
 			val setStatement = declaration.setter
@@ -135,16 +134,13 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 	}
 
 	private fun buildGetterCall(constructor: LlvmConstructor, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
+		val exceptionAddress = context.getExceptionParameter(constructor)
 		val targetValue = context.getThisParameter(constructor)
-		val functionAddress = context.resolveFunction(constructor, computedPropertyDeclaration.parentTypeDeclaration.llvmType, targetValue,
-			computedPropertyDeclaration.getterIdentifier)
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
-		return constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
+		val functionAddress = context.resolveFunction(constructor, targetValue, computedPropertyDeclaration.getterIdentifier)
+		val returnValue = constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
 			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
-		//TODO if exception exists
-		// check for optional try (normal and force try have no effect)
-		// check for catch
-		// resume raise
+		context.continueRaise()
+		return returnValue
 	}
 
 	override fun hashCode(): Int {

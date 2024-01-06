@@ -2,10 +2,13 @@ package components.semantic_model.types
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
+import components.code_generation.llvm.LlvmValue
+import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.*
 import components.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import errors.internal.CompilerError
 import logger.issues.declaration.TypeParameterCountMismatch
 import logger.issues.declaration.TypeParameterNotAssignable
 import logger.issues.resolution.NotFound
@@ -271,5 +274,42 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 		if(SpecialType.NEVER.matches(this))
 			return constructor.voidType
 		return constructor.pointerType
+	}
+
+	fun getStaticLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		val thisValue = context.getThisParameter(constructor)
+		val typeDeclaration = getTypeDeclaration()
+		if(typeDeclaration is GenericTypeDeclaration) {
+			var currentTypeDeclaration = scope.getSurroundingTypeDeclaration()
+				?: throw CompilerError(source, "Encountered generic type outside of type declaration.")
+			var targetValue = thisValue
+			while(!isDeclaredIn(typeDeclaration, currentTypeDeclaration)) {
+				if(!currentTypeDeclaration.isBound)
+					throw CompilerError(source,
+						"Type declaration of generic type referenced by super type not found in the type declaration.")
+				val parentProperty = constructor.buildGetPropertyPointer(currentTypeDeclaration.llvmType, targetValue,
+					Context.PARENT_PROPERTY_INDEX, "_parentProperty")
+				targetValue = constructor.buildLoad(constructor.pointerType, parentProperty, "_parent")
+				currentTypeDeclaration = currentTypeDeclaration.parentTypeDeclaration
+					?: throw CompilerError(source,
+						"Type declaration of generic type referenced by super type not found in the type declaration.")
+			}
+			val typeProperty = context.resolveMember(constructor, targetValue, typeDeclaration.name)
+			return constructor.buildLoad(constructor.pointerType, typeProperty,
+				"${typeDeclaration.getFullName()}_Type")
+		} else {
+			return typeDeclaration?.staticValueDeclaration?.llvmLocation
+				?: throw CompilerError(source, "Type declaration is missing a static type declaration.")
+		}
+	}
+
+	private fun isDeclaredIn(genericType: TypeDeclaration, typeDeclaration: TypeDeclaration): Boolean {
+		if(genericType.parentTypeDeclaration == typeDeclaration)
+			return true
+		for(superType in typeDeclaration.getDirectSuperTypes()) {
+			if(isDeclaredIn(genericType, superType.getTypeDeclaration() ?: continue))
+				return true
+		}
+		return false
 	}
 }

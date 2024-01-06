@@ -13,9 +13,12 @@ import components.semantic_model.values.Instance as SemanticInstanceModel
 class Instance(val identifier: Identifier, val parameters: List<ValueSyntaxTreeNode>, end: Position):
 	SyntaxTreeNode(identifier.start, end) {
 	var isAbstract = false
+	var isOverriding = false
+	var isNative = false
 
 	override fun toSemanticModel(scope: MutableScope): SemanticInstanceModel {
-		return SemanticInstanceModel(this, scope, identifier.getValue(), parameters.toSemanticValueModels(scope), isAbstract)
+		return SemanticInstanceModel(this, scope, identifier.getValue(), parameters.toSemanticValueModels(scope), isAbstract,
+			isOverriding, isNative)
 	}
 
 	override fun toString(): String {

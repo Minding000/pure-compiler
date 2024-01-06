@@ -60,15 +60,18 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)
-		llvmInitializerType = constructor.buildFunctionType()
+		llvmInitializerType = constructor.buildFunctionType(listOf(constructor.pointerType))
 		llvmInitializerValue = constructor.buildFunction("${file.name}_FileInitializer", llvmInitializerType)
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
 		constructor.createAndSelectEntrypointBlock(llvmInitializerValue)
 		for(typeDeclaration in scope.typeDeclarations.values) {
-			if(typeDeclaration.isDefinition)
-				constructor.buildFunctionCall(typeDeclaration.llvmClassInitializerType, typeDeclaration.llvmClassInitializer)
+			if(typeDeclaration.isDefinition) {
+				constructor.buildFunctionCall(typeDeclaration.llvmClassInitializerType, typeDeclaration.llvmClassInitializer,
+					listOf(context.getExceptionParameter(constructor)))
+				context.continueRaise()
+			}
 		}
 		super.compile(constructor)
 		constructor.buildReturn()

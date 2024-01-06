@@ -163,8 +163,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		parameters.add(exceptionAddress)
 		parameters.add(targetValue)
 		parameters.add(sourceValue)
-		val functionAddress = context.resolveFunction(constructor, declaration.parentTypeDeclaration.llvmType, targetValue,
-			declaration.setterIdentifier)
+		val functionAddress = context.resolveFunction(constructor, targetValue, declaration.setterIdentifier)
 		constructor.buildFunctionCall(declaration.llvmSetterType, functionAddress, parameters)
 		//TODO if exception exists
 		// check for optional try (normal and force try have no effect)
@@ -182,20 +181,16 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 				?: throw CompilerError(source, "Encountered member signature without implementation.")
 			implementation.llvmValue
 		} else {
-			context.resolveFunction(constructor, signature.parentDefinition?.llvmType, targetValue,
+			context.resolveFunction(constructor, targetValue,
 				signature.original.toString(false, Operator.Kind.BRACKETS_SET))
 		}
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		val parameters = LinkedList<LlvmValue>()
-		parameters.add(exceptionAddress)
+		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)
 		for(index in indexAccess.indices)
 			parameters.add(index.getLlvmValue(constructor))
 		parameters.add(value)
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), indexOperatorAddress, parameters)
-		//TODO if exception exists
-		// check for optional try (normal and force try have no effect)
-		// check for catch
-		// resume raise
+		context.continueRaise()
 	}
 }

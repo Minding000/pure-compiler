@@ -41,14 +41,14 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 		addSemanticModels(type)
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val byteArray = constructor.buildHeapAllocation(context.arrayTypeDeclaration?.llvmType, "_byteArray")
 		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, byteArray,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_arrayClassDefinitionProperty")
 		val arrayClassDefinition = context.arrayTypeDeclaration?.llvmClassDefinition
 			?: throw CompilerError(source, "Missing array type declaration.")
 		constructor.buildStore(arrayClassDefinition, arrayClassDefinitionProperty)
-		val arraySizeProperty = context.resolveMember(constructor, context.arrayTypeDeclaration?.llvmType, byteArray, "size")
+		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(constructor.buildInt32(value.length + 1), arraySizeProperty)
 
 		val arrayValueProperty = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, byteArray,

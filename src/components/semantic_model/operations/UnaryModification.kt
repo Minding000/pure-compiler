@@ -88,6 +88,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
+		//TODO same for byte type
 		if(SpecialType.INTEGER.matches(target.type)) {
 			val targetValue = target.getLlvmValue(constructor)
 			val modifierValue = constructor.buildInt32(STEP_SIZE.longValueExact())
@@ -105,18 +106,13 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 	}
 
 	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature) {
-		val typeDefinition = signature.parentDefinition
 		val targetValue = target.getLlvmValue(constructor)
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		val parameters = LinkedList<LlvmValue>()
-		parameters.add(exceptionAddress)
+		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)
-		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
+		val functionAddress = context.resolveFunction(constructor, targetValue,
 			signature.original.toString(false, kind))
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
-		//TODO if exception exists
-		// check for optional try (normal and force try have no effect)
-		// check for catch
-		// resume raise
+		context.continueRaise()
 	}
 }

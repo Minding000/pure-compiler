@@ -77,7 +77,7 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 		return false
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		return context.getThisParameter(constructor)
 	}
 }

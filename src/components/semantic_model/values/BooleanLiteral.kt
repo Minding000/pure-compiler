@@ -19,7 +19,7 @@ class BooleanLiteral(override val source: SyntaxTreeNode, scope: Scope, val valu
 		addSemanticModels(type)
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		return constructor.buildBoolean(value)
 	}
 

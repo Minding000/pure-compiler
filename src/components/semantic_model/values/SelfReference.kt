@@ -59,7 +59,7 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 		return false
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		var currentValue = context.getThisParameter(constructor)
 		if(specifier != null) {
 			val specifiedTypeDeclaration = typeDeclaration

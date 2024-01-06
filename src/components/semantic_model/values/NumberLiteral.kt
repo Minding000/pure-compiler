@@ -13,33 +13,36 @@ import util.isRepresentedAsAnInteger
 import java.math.BigDecimal
 
 class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value: BigDecimal): LiteralValue(source, scope) {
-	private var isInteger = value.isRepresentedAsAnInteger()
 
 	constructor(parent: SemanticModel, value: BigDecimal): this(parent.source, parent.scope, value) {
 		(type as? LiteralType)?.determineTypes()
 	}
 
 	init {
-		type = LiteralType(source, scope, if(isInteger) SpecialType.INTEGER else SpecialType.FLOAT)
+		type = LiteralType(source, scope, if(value.isRepresentedAsAnInteger()) SpecialType.INTEGER else SpecialType.FLOAT)
 		addSemanticModels(type)
 	}
 
 	override fun isAssignableTo(targetType: Type?): Boolean {
 		if(targetType == null)
 			return false
-		return (type?.isAssignableTo(targetType) ?: false) || SpecialType.FLOAT.matches(targetType)
+		return (type?.isAssignableTo(targetType) ?: false) || SpecialType.BYTE.matches(targetType) || SpecialType.FLOAT.matches(targetType)
 	}
 
 	override fun setInferredType(inferredType: Type?) {
 		val inferredBaseType = if(inferredType is OptionalType) inferredType.baseType else inferredType
-		if(SpecialType.FLOAT.matches(inferredBaseType)) {
+		if(SpecialType.BYTE.matches(inferredBaseType) || SpecialType.FLOAT.matches(inferredBaseType))
 			type = inferredBaseType
-			isInteger = false
-		}
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		return if(isInteger)
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		return createLlvmValue(constructor, value)
+	}
+
+	fun createLlvmValue(constructor: LlvmConstructor, value: BigDecimal): LlvmValue {
+		return if(SpecialType.BYTE.matches(type))
+			constructor.buildByte(value.longValueExact())
+		else if(SpecialType.INTEGER.matches(type))
 			constructor.buildInt32(value.longValueExact())
 		else
 			constructor.buildFloat(value.toDouble())

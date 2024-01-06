@@ -97,14 +97,14 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 	fun getLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		var llvmValue = llvmValue
 		if(llvmValue == null) {
-			llvmValue = createLlvmValue(constructor)
+			llvmValue = buildLlvmValue(constructor)
 			this.llvmValue = llvmValue
 		}
 		return llvmValue
 	}
 
-	protected open fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		TODO("${source.getStartString()}: '${javaClass.simpleName}.createLlvmValue' is not implemented yet.")
+	open fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		TODO("${source.getStartString()}: '${javaClass.simpleName}.buildLlvmValue' is not implemented yet.")
 	}
 
 	override fun hashCode(): Int {

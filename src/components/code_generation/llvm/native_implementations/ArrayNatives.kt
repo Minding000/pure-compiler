@@ -23,13 +23,13 @@ object ArrayNatives {
 		val thisValueProperty = constructor.buildGetPropertyPointer(arrayType, thisArray, context.arrayValueIndex,
 			"thisValueProperty")
 		val thisValue = constructor.buildLoad(constructor.pointerType, thisValueProperty, "thisValue")
-		val thisSizeProperty = context.resolveMember(constructor, arrayType, thisArray, "size")
+		val thisSizeProperty = context.resolveMember(constructor, thisArray, "size")
 		val thisSize = constructor.buildLoad(constructor.i32Type, thisSizeProperty, "thisSize")
 		val parameterArray = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val parameterValueProperty = constructor.buildGetPropertyPointer(arrayType, parameterArray, context.arrayValueIndex,
 			"parameterValueProperty")
 		val parameterValue = constructor.buildLoad(constructor.pointerType, parameterValueProperty, "parameterValue")
-		val parameterSizeProperty = context.resolveMember(constructor, arrayType, parameterArray, "size")
+		val parameterSizeProperty = context.resolveMember(constructor, parameterArray, "size")
 		val parameterSize = constructor.buildLoad(constructor.i32Type, parameterSizeProperty, "parameterSize")
 		val combinedArray = constructor.buildHeapAllocation(arrayType, "combinedArray")
 		val combinedArrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayType, combinedArray,
@@ -37,7 +37,7 @@ object ArrayNatives {
 		val arrayClassDefinition = context.arrayTypeDeclaration?.llvmClassDefinition
 			?: throw CompilerError("Missing array type declaration.")
 		constructor.buildStore(arrayClassDefinition, combinedArrayClassDefinitionProperty)
-		val combinedArraySizeProperty = context.resolveMember(constructor, arrayType, combinedArray, "size")
+		val combinedArraySizeProperty = context.resolveMember(constructor, combinedArray, "size")
 		val combinedSize = constructor.buildIntegerAddition(thisSize, parameterSize, "combinedSize")
 		constructor.buildStore(combinedSize, combinedArraySizeProperty)
 		val combinedValue = constructor.buildHeapArrayAllocation(constructor.pointerType, combinedSize, "combinedValue")

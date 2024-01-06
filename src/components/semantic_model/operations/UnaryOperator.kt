@@ -7,6 +7,7 @@ import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.ObjectType
+import components.semantic_model.types.Type
 import components.semantic_model.values.BooleanLiteral
 import components.semantic_model.values.NumberLiteral
 import components.semantic_model.values.Operator
@@ -40,6 +41,22 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
 			error.log(source, "operator", "$kind$subjectType")
+		}
+	}
+
+	override fun isAssignableTo(targetType: Type?): Boolean {
+		//TODO same for boolean literal? e.g. val infer = !true
+		if(kind == Operator.Kind.MINUS && subject is NumberLiteral)
+			return subject.isAssignableTo(targetType)
+		return super.isAssignableTo(targetType)
+	}
+
+	override fun setInferredType(inferredType: Type?) {
+		if(kind == Operator.Kind.MINUS && subject is NumberLiteral) {
+			subject.setInferredType(inferredType)
+			type = subject.type
+		} else {
+			super.setInferredType(inferredType)
 		}
 	}
 
@@ -84,13 +101,15 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		}
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		if(kind == Operator.Kind.MINUS && subject is NumberLiteral)
+			return subject.createLlvmValue(constructor, subject.value.negate())
 		val resultName = "_unaryOperatorResult"
 		val llvmValue = subject.getLlvmValue(constructor)
 		if(SpecialType.BOOLEAN.matches(subject.type)) {
 			if(kind == Operator.Kind.EXCLAMATION_MARK)
 				return constructor.buildBooleanNegation(llvmValue, resultName)
-		} else if(SpecialType.INTEGER.matches(subject.type)) {
+		} else if(SpecialType.BYTE.matches(subject.type) || SpecialType.INTEGER.matches(subject.type)) {
 			if(kind == Operator.Kind.MINUS)
 				return constructor.buildIntegerNegation(llvmValue, resultName)
 		} else if(SpecialType.FLOAT.matches(subject.type)) {
@@ -102,18 +121,14 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 	}
 
 	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
-		val typeDefinition = signature.parentDefinition
 		val targetValue = subject.getLlvmValue(constructor)
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		val parameters = LinkedList<LlvmValue>()
-		parameters.add(exceptionAddress)
+		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)
-		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
+		val functionAddress = context.resolveFunction(constructor, targetValue,
 			signature.original.toString(false, kind))
-		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_unaryOperatorResult")
-		//TODO if exception exists
-		// check for optional try (normal and force try have no effect)
-		// check for catch
-		// resume raise
+		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_unaryOperatorResult")
+		context.continueRaise()
+		return returnValue
 	}
 }

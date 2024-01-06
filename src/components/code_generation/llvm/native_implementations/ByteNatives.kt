@@ -10,6 +10,8 @@ object ByteNatives {
 
 	fun load(context: Context) {
 		this.context = context
+		context.registerNativeInstance("Byte.ZERO: Self", ::zero)
+		context.registerNativeInstance("Byte.ONE: Self", ::one)
 		context.registerNativeImplementation("Byte++", ::increment)
 		context.registerNativeImplementation("Byte--", ::decrement)
 		context.registerNativeImplementation("Byte-: Self", ::negative)
@@ -25,6 +27,14 @@ object ByteNatives {
 		context.registerNativeImplementation("Byte > Self: Bool", ::greaterThan)
 		context.registerNativeImplementation("Byte <= Self: Bool", ::lessThanOrEqualTo)
 		context.registerNativeImplementation("Byte >= Self: Bool", ::greaterThanOrEqualTo)
+	}
+
+	private fun zero(constructor: LlvmConstructor): LlvmValue {
+		return constructor.buildByte(0)
+	}
+
+	private fun one(constructor: LlvmConstructor): LlvmValue {
+		return constructor.buildByte(1)
 	}
 
 	private fun increment(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {

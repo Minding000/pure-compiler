@@ -4,52 +4,52 @@ import logger.issues.modifiers.DisallowedModifier
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
-internal class OverridingModifier {
+internal class NativeModifier {
 
 	@Test
-	fun `is not allowed on classes`() {
-		val sourceCode = "overriding Goldfish class"
+	fun `is allowed on classes`() {
+		val sourceCode = "native Goldfish class"
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<DisallowedModifier>()
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test
-	fun `is not allowed on objects`() {
-		val sourceCode = "overriding Earth object"
+	fun `is allowed on objects`() {
+		val sourceCode = "native Earth object"
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<DisallowedModifier>()
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test
 	fun `is not allowed on enums`() {
-		val sourceCode = "overriding Tire enum"
+		val sourceCode = "native Tire enum"
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<DisallowedModifier>()
 	}
 
 	@Test
-	fun `is allowed on properties`() {
+	fun `is not allowed on properties`() {
 		val sourceCode =
 			"""
 				Goldfish class {
-					overriding val brain: Brain
+					native val brain: Brain
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueNotDetected<DisallowedModifier>()
+		lintResult.assertIssueDetected<DisallowedModifier>()
 	}
 
 	@Test
-	fun `is allowed on computed properties`() {
+	fun `is not allowed on computed properties`() {
 		val sourceCode =
 			"""
 				Goldfish class {
-					overriding computed name: String
+					native computed name: String
 						gets "Bernd"
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueNotDetected<DisallowedModifier>()
+		lintResult.assertIssueDetected<DisallowedModifier>()
 	}
 
 	@Test
@@ -57,7 +57,7 @@ internal class OverridingModifier {
 		val sourceCode =
 			"""
 				Int class {
-					overriding instances ZERO
+					native instances ZERO
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -69,7 +69,7 @@ internal class OverridingModifier {
 		val sourceCode =
 			"""
 				Dictionary class {
-					overriding init()
+					native init()
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -81,7 +81,7 @@ internal class OverridingModifier {
 		val sourceCode =
 			"""
 				Goldfish class {
-					overriding to swim()
+					native to swim()
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -93,7 +93,7 @@ internal class OverridingModifier {
 		val sourceCode =
 			"""
 				Goldfish class {
-					overriding operator ++
+					native operator ++
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

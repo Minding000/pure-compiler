@@ -82,30 +82,27 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		}
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val signature = targetSignature?.original ?: throw CompilerError(source, "Index access is missing a target.")
 		return createLlvmFunctionCall(constructor, signature)
 	}
 
 	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
-		val typeDefinition = signature.parentDefinition
 		val targetValue = target.getLlvmValue(constructor)
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		val parameters = LinkedList<LlvmValue>()
-		parameters.add(exceptionAddress)
+		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)
 		for(index in indices)
 			parameters.add(index.getLlvmValue(constructor))
 		val sourceExpression = sourceExpression
 		if(sourceExpression != null)
 			parameters.add(sourceExpression.getLlvmValue(constructor))
-		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
+		val functionAddress = context.resolveFunction(constructor, targetValue,
 			signature.original.toString(false, getOperatorKind()))
-		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_indexAccess_result")
-		//TODO if exception exists
-		// check for optional try (normal and force try have no effect)
-		// check for catch
-		// resume raise
+		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,
+			"_indexAccess_result")
+		context.continueRaise()
+		return returnValue
 	}
 
 	private fun getSignature(targetType: Type, includeParentType: Boolean = true): String {

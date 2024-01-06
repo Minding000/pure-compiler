@@ -32,6 +32,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	var targetInitializer: InitializerDefinition? = null
 	var targetSignature: FunctionSignature? = null
 	var conversions: Map<Value, InitializerDefinition>? = null
+	val globalTypeParameters = LinkedList<Type>()
 
 	init {
 		addSemanticModels(typeParameters, valueParameters)
@@ -68,6 +69,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			this.type = type
 			targetInitializer = match.initializer
 			conversions = match.conversions
+			for((_, typeParameter) in match.globalTypeSubstitutions)
+				this.globalTypeParameters.add(typeParameter)
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "initializer", getSignature())
 		}
@@ -158,33 +161,25 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		createLlvmValue(constructor)
+		buildLlvmValue(constructor)
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
-
-		//TODO reuse pointer provided by caller?
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
-
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		val exceptionAddress = context.getExceptionParameter(constructor)
 		val functionSignature = targetSignature
 		val returnValue = if(functionSignature == null) {
 			val initializerDefinition = targetInitializer ?: throw CompilerError(source, "Function call is missing a target.")
-			createLlvmInitializerCall(constructor, initializerDefinition, exceptionAddress)
+			buildLlvmInitializerCall(constructor, initializerDefinition, exceptionAddress)
 		} else {
-			createLlvmFunctionCall(constructor, functionSignature, exceptionAddress)
+			buildLlvmFunctionCall(constructor, functionSignature, exceptionAddress)
 		}
-
-		//TODO if exception exists
-		// check for optional try (normal and force try have no effect)
-		// check for catch
-		// resume raise
-
+		context.continueRaise()
 		return returnValue
 	}
 
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature,
-									   exceptionAddress: LlvmValue): LlvmValue {
+	private fun buildLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, exceptionAddress: LlvmValue): LlvmValue {
 		val parameters = LinkedList<LlvmValue>()
+		//TODO add local type parameters
 		for((index, valueParameter) in valueParameters.withIndex())
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
 				valueParameter.type, targetSignature?.getParameterTypeAt(index), conversions?.get(valueParameter)))
@@ -217,7 +212,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			} else {
 				val functionName = (((function as? MemberAccess)?.member ?: function) as? VariableValue)?.name
 					?: throw CompilerError(source, "Failed to determine name of member function.")
-				context.resolveFunction(constructor, typeDefinition.llvmType, targetValue,
+				context.resolveFunction(constructor, targetValue,
 					"${functionName}${signature.original.toString(false)}")
 			}
 		}
@@ -226,12 +221,14 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, resultName)
 	}
 
-	private fun createLlvmInitializerCall(constructor: LlvmConstructor, initializer: InitializerDefinition,
-										  exceptionAddress: LlvmValue): LlvmValue {
+	private fun buildLlvmInitializerCall(constructor: LlvmConstructor, initializer: InitializerDefinition,
+										 exceptionAddress: LlvmValue): LlvmValue {
+		val isPrimaryCall = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
 		val parameters = LinkedList<LlvmValue?>()
+		//TODO add local type parameters
 		for((index, valueParameter) in valueParameters.withIndex())
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
-				valueParameter.type, targetInitializer?.getParameterTypeAt(index), conversions?.get(valueParameter)))
+				valueParameter.type, initializer.getParameterTypeAt(index), conversions?.get(valueParameter)))
 		if(initializer.isVariadic) {
 			val fixedParameterCount = initializer.fixedParameters.size
 			val variadicParameterCount = parameters.size - fixedParameterCount
@@ -239,27 +236,45 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		}
 		//TODO primary initializer calls should also be resolved dynamically (for generic type initialization)
 		// - unless the variable definition is a specific type already (or can be traced to it)
-		val isPrimaryCall = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
 		return if(isPrimaryCall) {
 			val typeDeclaration = initializer.parentTypeDeclaration
 			val newObject = constructor.buildHeapAllocation(typeDeclaration.llvmType, "newObject")
 			val classDefinitionProperty = constructor.buildGetPropertyPointer(typeDeclaration.llvmType, newObject,
 				Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionProperty")
 			constructor.buildStore(typeDeclaration.llvmClassDefinition, classDefinitionProperty)
+			buildLlvmCommonPreInitializerCall(constructor, initializer.parentTypeDeclaration, exceptionAddress, newObject)
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
-			if(typeDeclaration.isBound) {
-				val parent = (function as? MemberAccess)?.target?.getLlvmValue(constructor) ?: context.getThisParameter(constructor)
-				parameters.add(Context.PARENT_PARAMETER_OFFSET, parent)
-			}
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
 			newObject
 		} else {
-			parameters.addFirst(exceptionAddress)
+			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, context.getThisParameter(constructor))
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
 			constructor.nullPointer
 		}
+	}
+
+	private fun buildLlvmCommonPreInitializerCall(constructor: LlvmConstructor, typeDeclaration: TypeDeclaration,
+												  exceptionAddress: LlvmValue, newObject: LlvmValue) {
+		val parameters = LinkedList<LlvmValue?>()
+		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
+		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
+		if(typeDeclaration.isBound) {
+			val parent = (function as? MemberAccess)?.target?.getLlvmValue(constructor) ?: context.getThisParameter(constructor)
+			parameters.add(Context.PARENT_PARAMETER_OFFSET, parent)
+		}
+		//TODO how are complex types passed? e.g. <Int, Byte>Map or Int? or Int | Cat
+		// What are they used for?
+		// -> type check (could be limited to ObjectType)
+		// -> instantiation (only works with ObjectTypes, may include generic types)
+		for(typeParameter in globalTypeParameters) {
+			val objectType = typeParameter.effectiveType as? ObjectType
+				?: throw CompilerError(typeParameter.source, "Only object types are allowed as type parameters.")
+			parameters.add(objectType.getStaticLlvmValue(constructor))
+		}
+		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
+		context.continueRaise()
 	}
 
 	private fun getSignature(includeParentType: Boolean = true): String {

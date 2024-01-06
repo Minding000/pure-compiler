@@ -19,7 +19,7 @@ class NullLiteral(override val source: SyntaxTreeNode, scope: Scope): LiteralVal
 		addSemanticModels(type)
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		return constructor.nullPointer
 	}
 

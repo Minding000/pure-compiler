@@ -204,7 +204,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		}
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		if(kind == Operator.Kind.DOUBLE_QUESTION_MARK)
 			return getNullCoalescenceResult(constructor)
 		val resultName = "_binaryOperatorResult"
@@ -301,20 +301,17 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 	}
 
 	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
-		val typeDefinition = signature.parentDefinition
 		val targetValue = left.getLlvmValue(constructor)
 		val parameters = LinkedList<LlvmValue>()
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
-		parameters.add(exceptionAddress)
+		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)
 		parameters.add(right.getLlvmValue(constructor))
-		val functionAddress = context.resolveFunction(constructor, typeDefinition?.llvmType, targetValue,
+		val functionAddress = context.resolveFunction(constructor, targetValue,
 			signature.original.toString(false, kind))
-		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_binaryOperatorResult")
-		//TODO if exception exists
-		// check for optional try (normal and force try have no effect)
-		// check for catch
-		// resume raise
+		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,
+			"_binaryOperatorResult")
+		context.continueRaise()
+		return returnValue
 	}
 
 	private fun getNullCoalescenceResult(constructor: LlvmConstructor): LlvmValue {

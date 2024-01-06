@@ -2,7 +2,6 @@ package components.semantic_model.operations
 
 import components.semantic_model.context.SpecialType
 import components.semantic_model.values.NumberLiteral
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import java.math.BigDecimal
@@ -19,8 +18,8 @@ internal class NumberLiterals {
 				234324
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(SpecialType.INTEGER.matches(variableType))
+		val literalType = lintResult.find<NumberLiteral>()?.type
+		assertTrue(SpecialType.INTEGER.matches(literalType), "Unexpected type '$literalType'")
 	}
 
 	@Test
@@ -30,20 +29,8 @@ internal class NumberLiterals {
 				0
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(SpecialType.INTEGER.matches(variableType))
-	}
-
-	@Disabled
-	@Test
-	fun `assigns integer type to negative whole number`() {
-		val sourceCode =
-			"""
-				-6876
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode, true)
-		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(SpecialType.INTEGER.matches(variableType))
+		val literalType = lintResult.find<NumberLiteral>()?.type
+		assertTrue(SpecialType.INTEGER.matches(literalType), "Unexpected type '$literalType'")
 	}
 
 	@Test
@@ -53,8 +40,8 @@ internal class NumberLiterals {
 				6534.75456
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(SpecialType.FLOAT.matches(variableType))
+		val literalType = lintResult.find<NumberLiteral>()?.type
+		assertTrue(SpecialType.FLOAT.matches(literalType), "Unexpected type '$literalType'")
 	}
 
 	@Test
@@ -64,32 +51,56 @@ internal class NumberLiterals {
 				0.00
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(SpecialType.FLOAT.matches(variableType))
+		val literalType = lintResult.find<NumberLiteral>()?.type
+		assertTrue(SpecialType.FLOAT.matches(literalType), "Unexpected type '$literalType'")
 	}
 
-	@Disabled
 	@Test
-	fun `assigns float type to negative decimal number`() {
+	fun `assigns byte type to whole number in byte expression`() {
 		val sourceCode =
 			"""
-				-67.96
+				referencing Pure
+				val number: Byte = 54
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(SpecialType.FLOAT.matches(variableType))
+		val literalType = lintResult.find<NumberLiteral>()?.type
+		assertTrue(SpecialType.BYTE.matches(literalType), "Unexpected type '$literalType'")
 	}
 
 	@Test
-	fun `assigns float type to whole number in integer expression`() {
+	fun `assigns byte type to negative whole number in byte expression`() {
+		val sourceCode =
+			"""
+				referencing Pure
+				val number: Byte = -54
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		val literalType = lintResult.find<NumberLiteral>()?.type
+		assertTrue(SpecialType.BYTE.matches(literalType), "Unexpected type '$literalType'")
+	}
+
+	@Test
+	fun `assigns float type to whole number in float expression`() {
 		val sourceCode =
 			"""
 				referencing Pure
 				val number: Float = 54
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val variableType = lintResult.find<NumberLiteral>()?.type
-		assertTrue(SpecialType.FLOAT.matches(variableType))
+		val literalType = lintResult.find<NumberLiteral>()?.type
+		assertTrue(SpecialType.FLOAT.matches(literalType), "Unexpected type '$literalType'")
+	}
+
+	@Test
+	fun `assigns float type to negative whole number in float expression`() {
+		val sourceCode =
+			"""
+				referencing Pure
+				val number: Float = -54
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		val literalType = lintResult.find<NumberLiteral>()?.type
+		assertTrue(SpecialType.FLOAT.matches(literalType), "Unexpected type '$literalType'")
 	}
 
 	@Test

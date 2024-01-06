@@ -62,6 +62,7 @@ class Context {
 	lateinit var llvmStringByteArrayInitializerType: LlvmType
 	lateinit var llvmStringByteArrayInitializer: LlvmValue
 	val memberIdentities = IdentityMap<String>()
+	private val nativeInstances = HashMap<String, (constructor: LlvmConstructor) -> LlvmValue>()
 	private val nativeImplementations = HashMap<String, (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit>()
 
 	companion object {
@@ -93,11 +94,24 @@ class Context {
 			surroundingLoop.mutatedVariables.add(declaration)
 	}
 
-	fun resolveMember(constructor: LlvmConstructor, targetStructType: LlvmType?, targetLocation: LlvmValue, memberIdentifier: String,
+	fun getExceptionParameter(constructor: LlvmConstructor, function: LlvmValue = constructor.getParentFunction()): LlvmValue {
+		return constructor.getParameter(function, EXCEPTION_PARAMETER_INDEX)
+	}
+
+	fun getThisParameter(constructor: LlvmConstructor, function: LlvmValue = constructor.getParentFunction()): LlvmValue {
+		return constructor.getParameter(function, THIS_PARAMETER_INDEX)
+	}
+
+	fun continueRaise() {
+		//TODO if exception exists
+		// check for optional try (normal and force try have no effect)
+		// check for catch
+		// resume raise
+	}
+
+	fun resolveMember(constructor: LlvmConstructor, targetLocation: LlvmValue, memberIdentifier: String,
 					  isStaticMember: Boolean = false): LlvmValue {
-		val classDefinitionProperty = constructor.buildGetPropertyPointer(targetStructType, targetLocation, CLASS_DEFINITION_PROPERTY_INDEX,
-			"_classDefinitionProperty")
-		val classDefinition = constructor.buildLoad(constructor.pointerType, classDefinitionProperty, "_classDefinition")
+		val classDefinition = getClassDefinition(constructor, targetLocation)
 		val resolutionFunctionType = if(isStaticMember) llvmConstantOffsetFunctionType else llvmPropertyOffsetFunctionType
 		val resolutionFunction = if(isStaticMember) llvmConstantOffsetFunction else llvmPropertyOffsetFunction
 		val memberOffset = constructor.buildFunctionCall(resolutionFunctionType, resolutionFunction,
@@ -105,17 +119,16 @@ class Context {
 		return constructor.buildGetArrayElementPointer(constructor.byteType, targetLocation, memberOffset, "_memberAddress")
 	}
 
-	fun resolveFunction(constructor: LlvmConstructor, targetStructType: LlvmType?, targetLocation: LlvmValue,
-						signatureIdentifier: String): LlvmValue {
-		val classDefinitionProperty = constructor.buildGetPropertyPointer(targetStructType, targetLocation, CLASS_DEFINITION_PROPERTY_INDEX,
-			"classDefinitionProperty")
-		val classDefinition = constructor.buildLoad(constructor.pointerType, classDefinitionProperty, "_classDefinition")
+	fun resolveFunction(constructor: LlvmConstructor, targetLocation: LlvmValue, signatureIdentifier: String): LlvmValue {
+		val classDefinition = getClassDefinition(constructor, targetLocation)
 		return constructor.buildFunctionCall(llvmFunctionAddressFunctionType, llvmFunctionAddressFunction,
 			listOf(classDefinition, constructor.buildInt32(memberIdentities.getId(signatureIdentifier))), "_functionAddress")
 	}
 
-	fun getThisParameter(constructor: LlvmConstructor): LlvmValue {
-		return constructor.getParameter(constructor.getParentFunction(), THIS_PARAMETER_INDEX)
+	private fun getClassDefinition(constructor: LlvmConstructor, targetObject: LlvmValue): LlvmValue {
+		// The class definition property is the first property, so it can be accessed without GEP
+		val classDefinitionProperty = targetObject
+		return constructor.buildLoad(constructor.pointerType, classDefinitionProperty, "_classDefinition")
 	}
 
 	fun loadNativeImplementations() {
@@ -127,6 +140,18 @@ class Context {
 		IdentifiableNatives.load(this)
 		IntNatives.load(this)
 		NullNatives.load(this)
+	}
+
+	fun registerNativeInstance(identifier: String, instance: (constructor: LlvmConstructor) -> LlvmValue) {
+		val existingInstance = nativeInstances.putIfAbsent(identifier, instance)
+		if(existingInstance != null)
+			throw CompilerError("Duplicate native instance for identifier '$identifier'.")
+	}
+
+	fun getNativeInstanceValue(constructor: LlvmConstructor, identifier: String): LlvmValue {
+		val getInstanceValue = nativeInstances[identifier]
+			?: throw CompilerError("Missing native instance for identifier '$identifier'.")
+		return getInstanceValue(constructor)
 	}
 
 	fun registerNativeImplementation(identifier: String, implementation: (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit) {

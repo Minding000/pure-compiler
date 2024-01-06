@@ -13,7 +13,7 @@ internal class TypeDefinitions {
 			""".trimIndent()
 		val intermediateRepresentation = TestUtil.getIntermediateRepresentation(sourceCode)
 		assertContains(intermediateRepresentation, """
-			define void @SimplestApp_ClassInitializer() {
+			define void @SimplestApp_ClassInitializer(ptr %0) {
 			entrypoint:
 			  %staticMemberIdArray = tail call ptr @malloc(i32 0)
 			  %staticMemberOffsetArray = tail call ptr @malloc(i32 0)
@@ -30,19 +30,24 @@ internal class TypeDefinitions {
 			  ret void
 			}
 
+			define void @SimplestApp_CommonPreInitializer(ptr %0, ptr %1) {
+			entrypoint:
+			  ret void
+			}
+
 			define void @SimplestApp_Initializer(ptr %0, ptr %1) {
 			entrypoint:
 			  ret void
 			}
 
-			define void @Test_FileInitializer() {
+			define void @Test_FileInitializer(ptr %0) {
 			entrypoint:
-			  call void @SimplestApp_ClassInitializer()
-			  %__exceptionAddress = alloca ptr, align 8
+			  call void @SimplestApp_ClassInitializer(ptr %0)
 			  %newObject = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%SimplestApp_ClassStruct, ptr null, i32 1) to i32))
 			  %classDefinitionProperty = getelementptr inbounds %SimplestApp_ClassStruct, ptr %newObject, i32 0, i32 0
 			  store ptr @SimplestApp_ClassDefinition, ptr %classDefinitionProperty, align 8
-			  call void @SimplestApp_Initializer(ptr %__exceptionAddress, ptr %newObject)
+			  call void @SimplestApp_CommonPreInitializer(ptr %0, ptr %newObject)
+			  call void @SimplestApp_Initializer(ptr %0, ptr %newObject)
 			  store ptr %newObject, ptr @SimplestApp_Global, align 8
 			  ret void
 			}
@@ -59,7 +64,7 @@ internal class TypeDefinitions {
 			""".trimIndent()
 		val intermediateRepresentation = TestUtil.getIntermediateRepresentation(sourceCode)
 		assertContains(intermediateRepresentation, """
-			define void @SimplestApp_ClassInitializer() {
+			define void @SimplestApp_ClassInitializer(ptr %0) {
 			entrypoint:
 			  %staticMemberIdArray = tail call ptr @malloc(i32 0)
 			  %staticMemberOffsetArray = tail call ptr @malloc(i32 0)
@@ -84,6 +89,15 @@ internal class TypeDefinitions {
 			  ret void
 			}
 
+			define void @SimplestApp_CommonPreInitializer(ptr %0, ptr %1) {
+			entrypoint:
+			  %_classDefinition = load ptr, ptr %1, align 8
+			  %_memberOffset = call i32 @pure_runtime_getPropertyOffset(ptr %_classDefinition, i32 2)
+			  %_memberAddress = getelementptr i8, ptr %1, i32 %_memberOffset
+			  store i32 62, ptr %_memberAddress, align 4
+			  ret void
+			}
+
 			define void @"run()"(ptr %0, ptr %1) {
 			entrypoint:
 			  ret void
@@ -91,22 +105,17 @@ internal class TypeDefinitions {
 
 			define void @SimplestApp_Initializer(ptr %0, ptr %1) {
 			entrypoint:
-			  %_classDefinitionProperty = getelementptr inbounds %SimplestApp_ClassStruct, ptr %1, i32 0, i32 0
-			  %_classDefinition = load ptr, ptr %_classDefinitionProperty, align 8
-			  %_memberOffset = call i32 @pure_runtime_getPropertyOffset(ptr %_classDefinition, i32 2)
-			  %_memberAddress = getelementptr i8, ptr %1, i32 %_memberOffset
-			  store i32 62, ptr %_memberAddress, align 4
 			  ret void
 			}
 
-			define void @Test_FileInitializer() {
+			define void @Test_FileInitializer(ptr %0) {
 			entrypoint:
-			  call void @SimplestApp_ClassInitializer()
-			  %__exceptionAddress = alloca ptr, align 8
+			  call void @SimplestApp_ClassInitializer(ptr %0)
 			  %newObject = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%SimplestApp_ClassStruct, ptr null, i32 1) to i32))
 			  %classDefinitionProperty = getelementptr inbounds %SimplestApp_ClassStruct, ptr %newObject, i32 0, i32 0
 			  store ptr @SimplestApp_ClassDefinition, ptr %classDefinitionProperty, align 8
-			  call void @SimplestApp_Initializer(ptr %__exceptionAddress, ptr %newObject)
+			  call void @SimplestApp_CommonPreInitializer(ptr %0, ptr %newObject)
+			  call void @SimplestApp_Initializer(ptr %0, ptr %newObject)
 			  store ptr %newObject, ptr @SimplestApp_Global, align 8
 			  ret void
 			}
@@ -123,7 +132,7 @@ internal class TypeDefinitions {
 			""".trimIndent()
 		val intermediateRepresentation = TestUtil.getIntermediateRepresentation(sourceCode)
 		assertContains(intermediateRepresentation, """
-			define void @Application_ClassInitializer() {
+			define void @Application_ClassInitializer(ptr %0) {
 			entrypoint:
 			  %staticMemberIdArray = tail call ptr @malloc(i32 0)
 			  %staticMemberOffsetArray = tail call ptr @malloc(i32 0)
@@ -144,24 +153,28 @@ internal class TypeDefinitions {
 			  ret void
 			}
 
-			define void @Application_Initializer(ptr %0, ptr %1) {
+			define void @Application_CommonPreInitializer(ptr %0, ptr %1) {
 			entrypoint:
-			  %_classDefinitionProperty = getelementptr inbounds %Application_ClassStruct, ptr %1, i32 0, i32 0
-			  %_classDefinition = load ptr, ptr %_classDefinitionProperty, align 8
+			  %_classDefinition = load ptr, ptr %1, align 8
 			  %_memberOffset = call i32 @pure_runtime_getPropertyOffset(ptr %_classDefinition, i32 1)
 			  %_memberAddress = getelementptr i8, ptr %1, i32 %_memberOffset
 			  store float 0x4058F999A0000000, ptr %_memberAddress, align 4
 			  ret void
 			}
 
-			define void @Test_FileInitializer() {
+			define void @Application_Initializer(ptr %0, ptr %1) {
 			entrypoint:
-			  call void @Application_ClassInitializer()
-			  %__exceptionAddress = alloca ptr, align 8
+			  ret void
+			}
+
+			define void @Test_FileInitializer(ptr %0) {
+			entrypoint:
+			  call void @Application_ClassInitializer(ptr %0)
 			  %newObject = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%Application_ClassStruct, ptr null, i32 1) to i32))
 			  %classDefinitionProperty = getelementptr inbounds %Application_ClassStruct, ptr %newObject, i32 0, i32 0
 			  store ptr @Application_ClassDefinition, ptr %classDefinitionProperty, align 8
-			  call void @Application_Initializer(ptr %__exceptionAddress, ptr %newObject)
+			  call void @Application_CommonPreInitializer(ptr %0, ptr %newObject)
+			  call void @Application_Initializer(ptr %0, ptr %newObject)
 			  store ptr %newObject, ptr @app_Global, align 8
 			  ret void
 			}
@@ -178,7 +191,7 @@ internal class TypeDefinitions {
 			""".trimIndent()
 		val intermediateRepresentation = TestUtil.getIntermediateRepresentation(sourceCode)
 		assertContains(intermediateRepresentation, """
-			define void @InternetProtocol_ClassInitializer() {
+			define void @InternetProtocol_ClassInitializer(ptr %0) {
 			entrypoint:
 			  %staticMemberIdArray = tail call ptr @malloc(i32 mul (i32 ptrtoint (ptr getelementptr (i32, ptr null, i32 1) to i32), i32 2))
 			  %staticMemberOffsetArray = tail call ptr @malloc(i32 mul (i32 ptrtoint (ptr getelementptr (i32, ptr null, i32 1) to i32), i32 2))
@@ -200,6 +213,23 @@ internal class TypeDefinitions {
 			  store ptr %propertyOffsetArray, ptr getelementptr inbounds (%pure_runtime_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 5), align 8
 			  store ptr %functionIdArray, ptr getelementptr inbounds (%pure_runtime_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 7), align 8
 			  store ptr %functionAddressArray, ptr getelementptr inbounds (%pure_runtime_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 8), align 8
+			  %InternetProtocol_IPv6_Instance = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%InternetProtocol_ClassStruct, ptr null, i32 1) to i32))
+			  %classDefinitionProperty = getelementptr inbounds %InternetProtocol_ClassStruct, ptr %InternetProtocol_IPv6_Instance, i32 0, i32 0
+			  store ptr @InternetProtocol_ClassDefinition, ptr %classDefinitionProperty, align 8
+			  call void @InternetProtocol_CommonPreInitializer(ptr %0, ptr %InternetProtocol_IPv6_Instance)
+			  call void @InternetProtocol_Initializer(ptr %0, ptr %InternetProtocol_IPv6_Instance)
+			  store ptr %InternetProtocol_IPv6_Instance, ptr getelementptr (i8, ptr @InternetProtocol_StaticObject, i32 8), align 8
+			  %InternetProtocol_IPv4_Instance = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%InternetProtocol_ClassStruct, ptr null, i32 1) to i32))
+			  %classDefinitionProperty3 = getelementptr inbounds %InternetProtocol_ClassStruct, ptr %InternetProtocol_IPv4_Instance, i32 0, i32 0
+			  store ptr @InternetProtocol_ClassDefinition, ptr %classDefinitionProperty3, align 8
+			  call void @InternetProtocol_CommonPreInitializer(ptr %0, ptr %InternetProtocol_IPv4_Instance)
+			  call void @InternetProtocol_Initializer(ptr %0, ptr %InternetProtocol_IPv4_Instance)
+			  store ptr %InternetProtocol_IPv4_Instance, ptr getelementptr (i8, ptr @InternetProtocol_StaticObject, i32 16), align 8
+			  ret void
+			}
+
+			define void @InternetProtocol_CommonPreInitializer(ptr %0, ptr %1) {
+			entrypoint:
 			  ret void
 			}
 
@@ -208,12 +238,11 @@ internal class TypeDefinitions {
 			  ret void
 			}
 
-			define void @Test_FileInitializer() {
+			define void @Test_FileInitializer(ptr %0) {
 			entrypoint:
-			  call void @InternetProtocol_ClassInitializer()
+			  call void @InternetProtocol_ClassInitializer(ptr %0)
 			  %InternetProtocol = load ptr, ptr @InternetProtocol_StaticObject, align 8
-			  %_classDefinitionProperty = getelementptr inbounds %InternetProtocol_StaticStruct, ptr %InternetProtocol, i32 0, i32 0
-			  %_classDefinition = load ptr, ptr %_classDefinitionProperty, align 8
+			  %_classDefinition = load ptr, ptr %InternetProtocol, align 8
 			  %_memberOffset = call i32 @pure_runtime_getConstantOffset(ptr %_classDefinition, i32 2)
 			  %_memberAddress = getelementptr i8, ptr %InternetProtocol, i32 %_memberOffset
 			  %member = load ptr, ptr %_memberAddress, align 8

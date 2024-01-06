@@ -3,11 +3,13 @@ package components.semantic_model.declarations
 import components.semantic_model.scopes.TypeScope
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
+import kotlin.properties.Delegates
 import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
 class GenericTypeDeclaration(override val source: ParameterSyntaxTree, name: String, scope: TypeScope, superType: Type?):
 	TypeDeclaration(source, name, scope, null, superType) {
 	override val isDefinition = false
+	var index by Delegates.notNull<Int>()
 
 	init {
 		scope.typeDeclaration = this

@@ -191,6 +191,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		if(isAbstract)
 			return
 		super.declare(constructor)
+		//TODO add local type parameters
 		for(index in parameters.indices)
 			parameters[index].index = index + Context.VALUE_PARAMETER_OFFSET
 		llvmValue = constructor.buildFunction(memberIdentifier, signature.getLlvmType(constructor))

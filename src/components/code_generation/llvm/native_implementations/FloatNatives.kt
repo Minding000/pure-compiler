@@ -10,6 +10,8 @@ object FloatNatives {
 
 	fun load(context: Context) {
 		this.context = context
+		context.registerNativeInstance("Float.ZERO: Self", ::zero)
+		context.registerNativeInstance("Float.ONE: Self", ::one)
 		context.registerNativeImplementation("Float-: Self", ::negative)
 		context.registerNativeImplementation("Float + Self: Self", ::plus)
 		context.registerNativeImplementation("Float - Self: Self", ::minus)
@@ -23,6 +25,14 @@ object FloatNatives {
 		context.registerNativeImplementation("Float > Self: Bool", ::greaterThan)
 		context.registerNativeImplementation("Float <= Self: Bool", ::lessThanOrEqualTo)
 		context.registerNativeImplementation("Float >= Self: Bool", ::greaterThanOrEqualTo)
+	}
+
+	private fun zero(constructor: LlvmConstructor): LlvmValue {
+		return constructor.buildFloat(0.0)
+	}
+
+	private fun one(constructor: LlvmConstructor): LlvmValue {
+		return constructor.buildFloat(1.0)
 	}
 
 	private fun negative(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {

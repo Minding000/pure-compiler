@@ -105,22 +105,11 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			throw CompilerError(source, "Member access references invalid member of type '${member.javaClass.simpleName}'.")
 		if(member.declaration is ComputedPropertyDeclaration)
 			throw CompilerError(source, "Computed properties do not have a location.")
-		val targetValue = target.getLlvmValue(constructor)
-		var targetType = target.type
-		if(targetType is OptionalType)
-			targetType = targetType.baseType
-		val llvmTargetType = when(targetType) {
-			is ObjectType -> targetType.getTypeDeclaration()?.llvmType
-			is StaticType -> targetType.typeDeclaration.llvmStaticType
-			//TODO support member accesses on union types
-			else -> throw CompilerError(source,
-				"Member access target of type '${targetType?.javaClass?.simpleName}' is not an object or class.")
-		}
-		return context.resolveMember(constructor, llvmTargetType, targetValue, member.name,
+		return context.resolveMember(constructor, target.getLlvmValue(constructor), member.name,
 			(member.declaration as? InterfaceMember)?.isStatic ?: false)
 	}
 
-	override fun createLlvmValue(constructor: LlvmConstructor): LlvmValue {
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		return if(isOptional) {
 			val resultLlvmType = constructor.pointerType
 			val targetValue = target.getLlvmValue(constructor)
@@ -161,14 +150,11 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 
 	private fun buildGetterCall(constructor: LlvmConstructor, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
 		val targetValue = target.getLlvmValue(constructor)
-		val functionAddress = context.resolveFunction(constructor, computedPropertyDeclaration.parentTypeDeclaration.llvmType, targetValue,
-			computedPropertyDeclaration.getterIdentifier)
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
-		return constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
+		val functionAddress = context.resolveFunction(constructor, targetValue, computedPropertyDeclaration.getterIdentifier)
+		val exceptionAddress = context.getExceptionParameter(constructor)
+		val returnValue = constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
 			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
-		//TODO if exception exists
-		// check for optional try (normal and force try have no effect)
-		// check for catch
-		// resume raise
+		context.continueRaise()
+		return returnValue
 	}
 }

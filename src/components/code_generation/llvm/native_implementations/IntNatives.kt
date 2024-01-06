@@ -10,6 +10,8 @@ object IntNatives {
 
 	fun load(context: Context) {
 		this.context = context
+		context.registerNativeInstance("Int.ZERO: Self", ::zero)
+		context.registerNativeInstance("Int.ONE: Self", ::one)
 		context.registerNativeImplementation("Int++", ::increment)
 		context.registerNativeImplementation("Int--", ::decrement)
 		context.registerNativeImplementation("Int-: Self", ::negative)
@@ -25,6 +27,14 @@ object IntNatives {
 		context.registerNativeImplementation("Int > Self: Bool", ::greaterThan)
 		context.registerNativeImplementation("Int <= Self: Bool", ::lessThanOrEqualTo)
 		context.registerNativeImplementation("Int >= Self: Bool", ::greaterThanOrEqualTo)
+	}
+
+	private fun zero(constructor: LlvmConstructor): LlvmValue {
+		return constructor.buildInt32(0)
+	}
+
+	private fun one(constructor: LlvmConstructor): LlvmValue {
+		return constructor.buildInt32(1)
 	}
 
 	private fun increment(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {

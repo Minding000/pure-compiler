@@ -15,14 +15,18 @@ class InstanceList(start: Position, private val instances: List<Instance>):
 	override var parent: ModifierSection? = null
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.OVERRIDING, WordAtom.NATIVE)
 	}
 
 	override fun toSemanticModel(scope: MutableScope, semanticModels: MutableList<SemanticModel>) {
 		parent?.validate(ALLOWED_MODIFIER_TYPES)
 		val isAbstract = parent?.containsModifier(WordAtom.ABSTRACT) ?: false
+		val isOverriding = parent?.containsModifier(WordAtom.OVERRIDING) ?: false
+		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
 		for(instance in instances) {
 			instance.isAbstract = isAbstract
+			instance.isOverriding = isOverriding
+			instance.isNative = isNative
 			instance.toSemanticModel(scope, semanticModels)
 		}
 	}

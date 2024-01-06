@@ -116,15 +116,14 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.createAndSelectEntrypointBlock(globalEntryPoint)
 
 		context.printDebugMessage(constructor, "Starting program...")
+		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		for(file in files)
-			constructor.buildFunctionCall(file.llvmInitializerType, file.llvmInitializerValue)
+			constructor.buildFunctionCall(file.llvmInitializerType, file.llvmInitializerValue, listOf(exceptionAddress))
 		context.printDebugMessage(constructor, "File initializers completed.")
 		var result: LlvmValue? = null
 		if(userEntryPointFunction != null) {
 			val returnsVoid = SpecialType.NOTHING.matches(userEntryPointFunction.signature.returnType)
 			val parameters = LinkedList<LlvmValue>()
-			val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType,
-				"__exceptionAddress")
 			parameters.add(exceptionAddress)
 			if(userEntryPointObject != null) {
 				val objectAddress = constructor.buildLoad(userEntryPointObject.type?.getLlvmType(constructor),

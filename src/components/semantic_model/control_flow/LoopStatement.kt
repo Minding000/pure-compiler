@@ -1,6 +1,9 @@
 package components.semantic_model.control_flow
 
-import components.code_generation.llvm.*
+import components.code_generation.llvm.LlvmBlock
+import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.ComputedPropertyDeclaration
@@ -8,7 +11,9 @@ import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.BlockScope
-import components.semantic_model.types.*
+import components.semantic_model.types.FunctionType
+import components.semantic_model.types.PluralType
+import components.semantic_model.types.Type
 import components.semantic_model.values.BooleanLiteral
 import errors.internal.CompilerError
 import components.syntax_parser.syntax_tree.control_flow.LoopStatement as LoopStatementSyntaxTree
@@ -165,7 +170,6 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		val iteratorCreationMatch = (iteratorCreationPropertyType as? FunctionType)?.getSignature()
 		val iteratorCreationSignature = iteratorCreationMatch?.signature
 		val iteratorType = iteratorCreationMatch?.returnType
-		val iteratorLlvmType = (iteratorType as? ObjectType)?.getTypeDeclaration()?.llvmType
 		val iteratorAdvancePropertyType = iteratorType?.getValueDeclaration("advance")?.type
 		val iteratorAdvanceSignature = (iteratorAdvancePropertyType as? FunctionType)?.getSignature()?.signature
 		val iteratorIsDoneComputedProperty = iteratorType?.getValueDeclaration("isDone")?.declaration as? ComputedPropertyDeclaration
@@ -174,27 +178,22 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		val function = constructor.getParentFunction()
 		//TODO support looping over union types
 		val iterableLlvmValue = generator.iterable.getLlvmValue(constructor)
-		val iterableLlvmType = when(iterableType) {
-			is ObjectType -> iterableType.getTypeDeclaration()?.llvmType
-			is SelfType -> iterableType.typeDeclaration?.llvmType
-			else -> null
-		}
-		val createIteratorAddress = context.resolveFunction(constructor, iterableLlvmType, iterableLlvmValue,
-			"createIterator(): <Element>List.Iterator") //TODO change function IDs: exclude return type
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
+		val createIteratorAddress = context.resolveFunction(
+			constructor,
+			iterableLlvmValue,
+			"createIterator(): <Element>List.Iterator"
+		) //TODO change function IDs: exclude return type
+		val exceptionAddress = context.getExceptionParameter(constructor)
 		val iteratorLlvmValue = constructor.buildFunctionCall(iteratorCreationSignature?.getLlvmType(constructor), createIteratorAddress,
 			listOf(exceptionAddress, iterableLlvmValue), "iterator")
-		//TODO if exception exists
-		// check for optional try (normal and force try have no effect)
-		// check for catch
-		// resume raise
+		context.continueRaise()
 		entryBlock = constructor.createBlock(function, "loop_entry")
 		exitBlock = constructor.createBlock(function, "loop_exit")
 		context.printDebugMessage(constructor, "Iterator created (${generator.source.getStartString()})")
 		constructor.buildJump(entryBlock)
 		constructor.select(entryBlock)
 		context.printDebugMessage(constructor, "Loop entry block")
-		val condition = buildGetterCall(constructor, iteratorLlvmType, iteratorLlvmValue, iteratorIsDoneComputedProperty)
+		val condition = buildGetterCall(constructor, exceptionAddress, iteratorLlvmValue, iteratorIsDoneComputedProperty)
 		val bodyBlock = constructor.createBlock(function, "loop_body")
 		constructor.buildJump(condition, exitBlock, bodyBlock)
 		constructor.select(bodyBlock)
@@ -204,7 +203,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			val iteratorCurrentIndexComputedProperty = iteratorType.getValueDeclaration("currentIndex")
 				?.declaration as? ComputedPropertyDeclaration
 				?: throw CompilerError(source, "'Iterator.currentIndex' computed property not found.")
-			val currentIndexValue = buildGetterCall(constructor, iteratorLlvmType, iteratorLlvmValue, iteratorCurrentIndexComputedProperty)
+			val currentIndexValue = buildGetterCall(constructor, exceptionAddress, iteratorLlvmValue, iteratorCurrentIndexComputedProperty)
 			val convertedValue = ValueConverter.convertIfRequired(this, constructor, currentIndexValue,
 				iteratorCurrentIndexComputedProperty.type, generator.currentIndexVariable?.type)
 			constructor.buildStore(convertedValue, indexVariable.llvmLocation)
@@ -214,7 +213,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			val iteratorCurrentKeyComputedProperty = iteratorType.getValueDeclaration("currentKey")
 				?.declaration as? ComputedPropertyDeclaration
 				?: throw CompilerError(source, "'Iterator.currentKey' computed property not found.")
-			val currentKeyValue = buildGetterCall(constructor, iteratorLlvmType, iteratorLlvmValue, iteratorCurrentKeyComputedProperty)
+			val currentKeyValue = buildGetterCall(constructor, exceptionAddress, iteratorLlvmValue, iteratorCurrentKeyComputedProperty)
 			val convertedValue = ValueConverter.convertIfRequired(this, constructor, currentKeyValue,
 				iteratorCurrentKeyComputedProperty.type, generator.currentKeyVariable?.type)
 			constructor.buildStore(convertedValue, keyVariable.llvmLocation)
@@ -224,7 +223,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			val iteratorCurrentValueComputedProperty = iteratorType.getValueDeclaration("currentValue")
 				?.declaration as? ComputedPropertyDeclaration
 				?: throw CompilerError(source, "'Iterator.currentValue' computed property not found.")
-			val currentValueValue = buildGetterCall(constructor, iteratorLlvmType, iteratorLlvmValue, iteratorCurrentValueComputedProperty)
+			val currentValueValue = buildGetterCall(constructor, exceptionAddress, iteratorLlvmValue, iteratorCurrentValueComputedProperty)
 			val convertedValue = ValueConverter.convertIfRequired(this, constructor, currentValueValue,
 				iteratorCurrentValueComputedProperty.type, generator.currentValueVariable?.type)
 			constructor.buildStore(convertedValue, valueVariable.llvmLocation)
@@ -232,29 +231,23 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		body.compile(constructor)
 		if(!body.isInterruptingExecution) {
 			//TODO fix: should be called on 'next' statement
-			val advanceFunctionAddress = context.resolveFunction(constructor, iteratorLlvmType, iteratorLlvmValue, "advance()")
+			val advanceFunctionAddress = context.resolveFunction(constructor, iteratorLlvmValue, "advance()")
 			constructor.buildFunctionCall(iteratorAdvanceSignature?.getLlvmType(constructor), advanceFunctionAddress,
 				listOf(exceptionAddress, iteratorLlvmValue))
-			//TODO if exception exists
-			// check for optional try (normal and force try have no effect)
-			// check for catch
-			// resume raise
+			context.continueRaise()
 			constructor.buildJump(entryBlock)
 		}
 		constructor.select(exitBlock)
 		context.printDebugMessage(constructor, "Loop exit block")
 	}
 
-	private fun buildGetterCall(constructor: LlvmConstructor, targetType: LlvmType?, targetValue: LlvmValue,
+	private fun buildGetterCall(constructor: LlvmConstructor, exceptionAddress: LlvmValue, targetValue: LlvmValue,
 								computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
-		val functionAddress = context.resolveFunction(constructor, targetType, targetValue, computedPropertyDeclaration.getterIdentifier)
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
-		return constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
+		val functionAddress = context.resolveFunction(constructor, targetValue, computedPropertyDeclaration.getterIdentifier)
+		val returnValue = constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
 			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
-		//TODO if exception exists
-		// check for optional try (normal and force try have no effect)
-		// check for catch
-		// resume raise
+		context.continueRaise()
+		return returnValue
 	}
 
 	fun jumpToNextIteration(constructor: LlvmConstructor) {
