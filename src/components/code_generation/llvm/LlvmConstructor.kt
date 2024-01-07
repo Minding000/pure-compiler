@@ -18,6 +18,8 @@ class LlvmConstructor(name: String) {
 	val pointerType = Llvm.createPointerType(context)
 	val nullPointer = LLVMConstPointerNull(pointerType)
 
+	val debug = LlvmDebugInfoConstructor(module)
+
 	fun setTargetTriple(targetTriple: String) {
 		LLVMSetTarget(module, targetTriple)
 	}

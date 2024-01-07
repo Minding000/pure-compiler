@@ -23,6 +23,7 @@ class LlvmProgram(name: String) {
 	fun loadSemanticModel(program: Program, entryPointPath: String? = null) {
 		constructor.setTargetTriple(targetTriple)
 		entrypoint = program.compile(constructor, entryPointPath)
+		constructor.debug.finish()
 	}
 
 	fun verify() {
