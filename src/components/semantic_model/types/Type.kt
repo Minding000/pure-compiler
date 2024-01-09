@@ -1,6 +1,7 @@
 package components.semantic_model.types
 
 import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmDebugInfoMetadata
 import components.code_generation.llvm.LlvmType
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.*
@@ -16,6 +17,7 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 	private var hasResolvedDeclarations = false
 	var effectiveType = this
 	private var cachedLlvmType: LlvmType? = null
+	private var cachedLlvmMetadata: LlvmDebugInfoMetadata? = null
 
 	init {
 		interfaceScope.type = this
@@ -82,6 +84,19 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 
 	protected open fun createLlvmType(constructor: LlvmConstructor): LlvmType { //TODO use 'abstract' modifier when done
 		TODO("${source.getStartString()}: '${javaClass.simpleName}.createLlvmType' is not implemented yet.")
+	}
+
+	fun getLlvmMetadata(constructor: LlvmConstructor): LlvmDebugInfoMetadata {
+		var llvmMetadata = cachedLlvmMetadata
+		if(llvmMetadata == null) {
+			llvmMetadata = createLlvmMetadata(constructor)
+			this.cachedLlvmMetadata = llvmMetadata
+		}
+		return llvmMetadata
+	}
+
+	protected open fun createLlvmMetadata(constructor: LlvmConstructor): LlvmDebugInfoMetadata { //TODO use 'abstract' modifier when done
+		TODO("${source.getStartString()}: '${javaClass.simpleName}.createLlvmMetadata' is not implemented yet.")
 	}
 
 	fun isLlvmPrimitive(): Boolean {

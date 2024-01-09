@@ -1,6 +1,7 @@
 package components.semantic_model.types
 
 import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmDebugInfoMetadata
 import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.Context
@@ -261,19 +262,31 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 	}
 
 	override fun createLlvmType(constructor: LlvmConstructor): LlvmType {
-		if(SpecialType.FLOAT.matches(this))
-			return constructor.floatType
-		if(SpecialType.INTEGER.matches(this))
-			return constructor.i32Type
-		if(SpecialType.BYTE.matches(this))
-			return constructor.byteType
 		if(SpecialType.BOOLEAN.matches(this))
 			return constructor.booleanType
+		if(SpecialType.BYTE.matches(this))
+			return constructor.byteType
+		if(SpecialType.INTEGER.matches(this))
+			return constructor.i32Type
+		if(SpecialType.FLOAT.matches(this))
+			return constructor.floatType
 		if(SpecialType.NOTHING.matches(this))
 			return constructor.voidType
 		if(SpecialType.NEVER.matches(this))
 			return constructor.voidType
 		return constructor.pointerType
+	}
+
+	override fun createLlvmMetadata(constructor: LlvmConstructor): LlvmDebugInfoMetadata {
+		if(SpecialType.BOOLEAN.matches(this))
+			return constructor.debug.booleanType
+		if(SpecialType.BYTE.matches(this))
+			return constructor.debug.byteType
+		if(SpecialType.INTEGER.matches(this))
+			return constructor.debug.i32Type
+		if(SpecialType.FLOAT.matches(this))
+			return constructor.debug.floatType
+		return constructor.debug.createType(getTypeDeclaration()?.getLlvmMetadata(constructor))
 	}
 
 	fun getStaticLlvmValue(constructor: LlvmConstructor): LlvmValue {

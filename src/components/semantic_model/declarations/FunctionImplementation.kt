@@ -211,6 +211,18 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		if(body?.isInterruptingExecution != true)
 			constructor.buildReturn()
 		constructor.select(previousBlock)
+
+	}
+
+	//TODO add debug info
+	@Suppress("unused")
+	private fun addDebugInfo(constructor: LlvmConstructor) {
+		val file = constructor.debug.createFile("test.pure", ".")
+		val parent = file
+		val parameterMetadata = parameters.map { parameter -> parameter.type?.getLlvmMetadata(constructor) }
+		val typeMetadata = constructor.debug.createFunctionType(file, parameterMetadata)
+		val metadata = constructor.debug.createFunction(parent, toString(), file, typeMetadata)
+		constructor.debug.attach(metadata, llvmValue)
 	}
 
 	override fun toString(): String {

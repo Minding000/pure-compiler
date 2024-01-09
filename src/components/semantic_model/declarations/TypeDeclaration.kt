@@ -1,9 +1,6 @@
 package components.semantic_model.declarations
 
-import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmType
-import components.code_generation.llvm.LlvmValue
-import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.*
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
@@ -45,6 +42,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	lateinit var llvmCommonPreInitializer: LlvmValue
 	lateinit var llvmCommonPreInitializerType: LlvmType
 	lateinit var llvmStaticType: LlvmType
+	private var cachedLlvmMetadata: LlvmDebugInfoMetadata? = null
 
 	companion object {
 		const val FIXED_STATIC_PROPERTY_COUNT = 1
@@ -596,6 +594,16 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		}
 		constructor.buildReturn()
 		constructor.select(previousBlock)
+	}
+
+	fun getLlvmMetadata(constructor: LlvmConstructor): LlvmDebugInfoMetadata {
+		var llvmMetadata = cachedLlvmMetadata
+		if(llvmMetadata == null) {
+			val file = constructor.debug.createFile("test.pure", ".")
+			llvmMetadata = constructor.debug.createTypeDeclaration(file, name, file, 0, 0, 0)
+			this.cachedLlvmMetadata = llvmMetadata
+		}
+		return llvmMetadata
 	}
 
 	override fun toString(): String {
