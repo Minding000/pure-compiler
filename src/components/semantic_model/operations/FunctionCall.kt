@@ -91,10 +91,6 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				returnType = returnType?.getLocalType(this, targetType)
 			setUnextendedType(returnType)
 			registerSelfTypeUsages(match.signature)
-			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
-				&& targetType?.isMemberAccessible(match.signature, true) == false)
-				context.addIssue(AbstractMonomorphicAccess(source, "function",
-					match.signature.toString(false), targetType))
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "function", getSignature())
 		}
@@ -142,6 +138,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		super.validate()
 		validateCallToSpecificFunction()
 		validateWhereClauseConditions()
+		validateMonomorphicAccess()
 	}
 
 	private fun validateCallToSpecificFunction() {
@@ -158,6 +155,15 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				context.addIssue(WhereClauseUnfulfilled(source, "Function", getSignature(false), targetType,
 					condition))
 		}
+	}
+
+	private fun validateMonomorphicAccess() {
+		val signature = targetSignature ?: return
+		val targetType = getTargetType() ?: return
+		if(signature.associatedImplementation?.isAbstract == true && signature.associatedImplementation.isMonomorphic
+			&& !targetType.isMemberAccessible(signature, true))
+			context.addIssue(AbstractMonomorphicAccess(source, "function",
+				signature.toString(false), targetType))
 	}
 
 	override fun compile(constructor: LlvmConstructor) {

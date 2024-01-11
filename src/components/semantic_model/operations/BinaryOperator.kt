@@ -55,10 +55,6 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			}
 			targetSignature = match.signature
 			setUnextendedType(match.returnType.getLocalType(this, leftType))
-			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
-				&& !leftType.isMemberAccessible(match.signature, true))
-				context.addIssue(AbstractMonomorphicAccess(source, "operator",
-					match.signature.toString(false, kind), leftType))
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
 			error.log(source, "operator", "$leftType $kind ${right.type}")
@@ -191,6 +187,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 	override fun validate() {
 		super.validate()
 		validateWhereClauseConditions()
+		validateMonomorphicAccess()
 	}
 
 	private fun validateWhereClauseConditions() {
@@ -202,6 +199,15 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				context.addIssue(WhereClauseUnfulfilled(source, "Operator",
 					signature.original.toString(false, kind), leftType, condition))
 		}
+	}
+
+	private fun validateMonomorphicAccess() {
+		val signature = targetSignature ?: return
+		val leftType = left.type ?: return
+		if(signature.associatedImplementation?.isAbstract == true && signature.associatedImplementation.isMonomorphic
+			&& !leftType.isMemberAccessible(signature, true))
+			context.addIssue(AbstractMonomorphicAccess(source, "operator",
+				signature.toString(false, kind), leftType))
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {

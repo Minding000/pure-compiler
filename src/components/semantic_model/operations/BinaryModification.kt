@@ -40,10 +40,6 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 				return
 			}
 			targetSignature = match.signature
-			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
-				&& !valueType.isMemberAccessible(match.signature, true))
-				context.addIssue(AbstractMonomorphicAccess(source, "operator",
-					match.signature.toString(false, kind), valueType))
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
 			error.log(source, "operator", "$valueType $kind ${modifier.type}")
@@ -77,6 +73,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 	override fun validate() {
 		super.validate()
 		validateWhereClauseConditions()
+		validateMonomorphicAccess()
 	}
 
 	private fun validateWhereClauseConditions() {
@@ -88,6 +85,15 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 				context.addIssue(WhereClauseUnfulfilled(source, "Operator",
 					signature.original.toString(false, kind), targetType, condition))
 		}
+	}
+
+	private fun validateMonomorphicAccess() {
+		val signature = targetSignature ?: return
+		val valueType = target.type ?: return
+		if(signature.associatedImplementation?.isAbstract == true && signature.associatedImplementation.isMonomorphic
+			&& !valueType.isMemberAccessible(signature, true))
+			context.addIssue(AbstractMonomorphicAccess(source, "operator",
+				signature.toString(false, kind), valueType))
 	}
 
 	override fun compile(constructor: LlvmConstructor) {

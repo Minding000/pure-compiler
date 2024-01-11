@@ -40,10 +40,6 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 			}
 			targetSignature = match.signature
 			setUnextendedType(match.returnType.getLocalType(this, targetType))
-			if(match.signature.associatedImplementation?.isAbstract == true && match.signature.associatedImplementation.isMonomorphic
-				&& !targetType.isMemberAccessible(match.signature, true))
-				context.addIssue(AbstractMonomorphicAccess(source, "operator",
-					match.signature.toString(false, getOperatorKind()), targetType))
 		} catch(error: SignatureResolutionAmbiguityError) {
 			error.log(source, "operator", getSignature(targetType))
 		}
@@ -63,6 +59,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	override fun validate() {
 		super.validate()
 		validateWhereClauseConditions()
+		validateMonomorphicAccess()
 	}
 
 	private fun validateWhereClauseConditions() {
@@ -74,6 +71,15 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 				context.addIssue(WhereClauseUnfulfilled(source, "Operator",
 					signature.original.toString(false, getOperatorKind()), targetType, condition))
 		}
+	}
+
+	private fun validateMonomorphicAccess() {
+		val signature = targetSignature ?: return
+		val targetType = target.type ?: return
+		if(signature.associatedImplementation?.isAbstract == true && signature.associatedImplementation.isMonomorphic
+			&& !targetType.isMemberAccessible(signature, true))
+			context.addIssue(AbstractMonomorphicAccess(source, "operator",
+				signature.toString(false, getOperatorKind()), targetType))
 	}
 
 	fun filterForPossibleTargetTypes(availableTypes: List<ObjectType>): List<ObjectType> {
