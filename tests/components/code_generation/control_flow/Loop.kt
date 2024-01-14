@@ -1,4 +1,4 @@
-package components.code_generation
+package components.code_generation.control_flow
 
 import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test

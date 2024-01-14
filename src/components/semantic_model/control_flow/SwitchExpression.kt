@@ -1,5 +1,7 @@
 package components.semantic_model.control_flow
 
+import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.general.SemanticModel
@@ -12,10 +14,10 @@ import logger.issues.switches.DuplicateCase
 import logger.issues.switches.NoCases
 import logger.issues.switches.RedundantElse
 import java.util.*
-import components.syntax_parser.syntax_tree.control_flow.SwitchStatement as SwitchStatementSyntaxTree
+import components.syntax_parser.syntax_tree.control_flow.SwitchExpression as SwitchStatementSyntaxTree
 
-class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Scope, val subject: Value, val cases: List<Case>,
-					  val elseBranch: SemanticModel?): SemanticModel(source, scope) {
+class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Scope, val subject: Value, val cases: List<Case>,
+					   val elseBranch: SemanticModel?): Value(source, scope) {
 	override var isInterruptingExecution = false
 
 	init {
@@ -132,5 +134,15 @@ class SwitchStatement(override val source: SwitchStatementSyntaxTree, scope: Sco
 //			return true
 //		}
 		return false
+	}
+
+	//TODO compile switch statements
+	override fun compile(constructor: LlvmConstructor) {
+		super.compile(constructor)
+	}
+
+	//TODO compile switch expressions
+	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
+		return super.buildLlvmValue(constructor)
 	}
 }

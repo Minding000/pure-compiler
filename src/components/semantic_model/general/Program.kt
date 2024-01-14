@@ -363,31 +363,35 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	fun getEntryPoint(entryPointPath: String): Pair<ValueDeclaration?, FunctionImplementation> {
-		val pathSections = entryPointPath.split(":")
-		if(pathSections.size != 2)
-			throw UserError("Malformed entry point path '$entryPointPath'.")
-		val (filePath, functionPath) = pathSections
-		val file = getFile(filePath.split(".")) ?: throw UserError("File '$filePath' not found.")
-		val functionPathParts = functionPath.split(".").toMutableList()
-		val functionName = functionPathParts.removeLast()
-		var scope: Scope = file.scope
-		var objectDefinition: Object? = null
-		for(objectName in functionPathParts) {
-			objectDefinition = scope.getTypeDeclaration(objectName) as? Object ?: throw UserError("Object '$objectName' not found.")
-			if(objectDefinition.isBound)
-				throw UserError("Object '$objectName' is bound.")
-			scope = objectDefinition.scope
+		try {
+			val pathSections = entryPointPath.split(":")
+			if(pathSections.size != 2)
+				throw UserError("Malformed entry point path '$entryPointPath'.")
+			val (filePath, functionPath) = pathSections
+			val file = getFile(filePath.split(".")) ?: throw UserError("File '$filePath' not found.")
+			val functionPathParts = functionPath.split(".").toMutableList()
+			val functionName = functionPathParts.removeLast()
+			var scope: Scope = file.scope
+			var objectDefinition: Object? = null
+			for(objectName in functionPathParts) {
+				objectDefinition = scope.getTypeDeclaration(objectName) as? Object ?: throw UserError("Object '$objectName' not found.")
+				if(objectDefinition.isBound)
+					throw UserError("Object '$objectName' is bound.")
+				scope = objectDefinition.scope
+			}
+			val functionVariable = scope.getValueDeclaration(functionName)?.declaration
+				?: throw UserError("Function '$functionName' not found.")
+			val function = functionVariable.value as? Function ?: throw UserError("Variable '$functionName' is not a function.")
+			val functionImplementation = function.implementations.find { functionImplementation ->
+				!functionImplementation.signature.requiresParameters() }
+				?: throw UserError("Function '$functionName' has no overload without parameters.")
+			var objectValue: ValueDeclaration? = null
+			if(objectDefinition != null)
+				objectValue = (objectDefinition.parentTypeDeclaration?.scope ?: objectDefinition.scope)
+					.getValueDeclaration(objectDefinition.name)?.declaration
+			return Pair(objectValue, functionImplementation)
+		} catch(error: UserError) {
+			throw UserError("Failed to locate entrypoint: ${error.message}")
 		}
-		val functionVariable = scope.getValueDeclaration(functionName)?.declaration
-			?: throw UserError("Function '$functionName' not found.")
-		val function = functionVariable.value as? Function ?: throw UserError("Variable '$functionName' is not a function.")
-		val functionImplementation = function.implementations.find { functionImplementation ->
-			!functionImplementation.signature.requiresParameters() }
-			?: throw UserError("Function '$functionName' has no overload without parameters.")
-		var objectValue: ValueDeclaration? = null
-		if(objectDefinition != null)
-			objectValue = (objectDefinition.parentTypeDeclaration?.scope ?: objectDefinition.scope)
-				.getValueDeclaration(objectDefinition.name)?.declaration
-		return Pair(objectValue, functionImplementation)
 	}
 }

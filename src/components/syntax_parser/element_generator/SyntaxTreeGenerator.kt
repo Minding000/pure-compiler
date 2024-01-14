@@ -26,6 +26,8 @@ class SyntaxTreeGenerator(val project: Project): Generator() {
 
 	override fun getCurrentPosition(): Position = wordGenerator.getCurrentPosition()
 
+	//TODO add parser error suggestions e.g. unexpected 'WHILE'. Did you forget to precede it with 'loop'?
+	//TODO add missing brace detection based on indentation e.g. <above all errors for this file:> It seems like you are missing a brace at 11:2.
 	override fun consume(type: WordDescriptor): Word {
 		val consumedWord = getCurrentWord(type)
 		if(!type.includes(consumedWord.type))

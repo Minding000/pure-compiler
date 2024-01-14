@@ -1,4 +1,4 @@
-package components.code_generation
+package components.code_generation.control_flow
 
 import org.junit.jupiter.api.Test
 import util.TestUtil

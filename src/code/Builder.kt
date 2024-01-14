@@ -24,7 +24,7 @@ object Builder {
 			println("----- JIT output: -----")
 			LlvmCompiler.buildAndRun(project, semanticModel, entryPointPath)
 		} catch(error: UserError) {
-			println("Failed to compile: ${error.message}")
+			System.err.println("Failed to compile: ${error.message}")
 			if(Main.shouldPrintCompileTimeDebugOutput)
 				error.printStackTrace()
 		}
@@ -37,7 +37,7 @@ object Builder {
 			println("----- Build output: -----")
 			LlvmCompiler.build(project, semanticModel, entryPointPath)
 		} catch(error: UserError) {
-			println("Failed to compile: ${error.message}")
+			System.err.println("Failed to compile: ${error.message}")
 			if(Main.shouldPrintCompileTimeDebugOutput)
 				error.printStackTrace()
 		}
@@ -74,15 +74,22 @@ object Builder {
 		try {
 			val source = File(path)
 			val project = Project(source.nameWithoutExtension)
-			val mainModule = Module(project, "Main")
+			val projectModule = Module(project, project.name)
 			if(source.isFile) {
 				project.targetPath = source.parent
-				addFile(mainModule, LinkedList(), source)
+				addFile(projectModule, LinkedList(), source)
 			} else {
 				project.targetPath = path
-				addDirectory(mainModule, LinkedList(), source)
+				val files = source.listFiles()
+					?: throw IOException("Failed to list directory contents of '${source.name}' at '${source.path}'.")
+				for(file in files) {
+					if(file.isFile)
+						addFile(projectModule, LinkedList(), file)
+					else
+						addDirectory(projectModule, LinkedList(), file)
+				}
 			}
-			project.addModule(mainModule)
+			project.addModule(projectModule)
 			return project
 		} catch(cause: IOException) {
 			throw CompilerError("Failed to load project.", cause)
@@ -102,11 +109,10 @@ object Builder {
 		val childPathParts = LinkedList(parts)
 		childPathParts.add(directory.name)
 		for(file in files) {
-			if(file.isFile) {
+			if(file.isFile)
 				addFile(module, childPathParts, file)
-			} else {
+			else
 				addDirectory(module, childPathParts, file)
-			}
 		}
 	}
 

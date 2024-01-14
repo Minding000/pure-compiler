@@ -1,5 +1,6 @@
 package components.semantic_model.static_analysis
 
+import components.semantic_model.control_flow.IfExpression
 import components.semantic_model.operations.BinaryOperator
 import components.semantic_model.operations.UnaryOperator
 import components.semantic_model.values.BooleanLiteral
@@ -217,5 +218,17 @@ internal class StaticOperatorEvaluation {
 		val staticResult = lintResult.find<BinaryOperator>()?.getComputedValue()
 		assertIs<BooleanLiteral>(staticResult)
 		assertEquals(true, staticResult.value)
+	}
+
+	@Test
+	fun `calculates result of if expressions`() {
+		val sourceCode =
+			"""
+				val x = if 2 == 3 50 else 45
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val staticResult = lintResult.find<IfExpression>()?.getComputedValue()
+		assertIs<NumberLiteral>(staticResult)
+		assertEquals(45, staticResult.value.toInt())
 	}
 }

@@ -6,7 +6,7 @@ import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
-import components.semantic_model.control_flow.IfStatement
+import components.semantic_model.control_flow.IfExpression
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.LiteralType
@@ -106,20 +106,20 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 			context.addIssue(CastVariableWithoutIs(source))
 			return
 		}
-		val ifStatement = parent as? IfStatement
-		if(ifStatement == null) {
+		val ifExpression = parent as? IfExpression
+		if(ifExpression == null) {
 			context.addIssue(CastVariableOutsideOfIfStatement(source))
 			return
 		}
 		//TODO handle this using data-flow instead
 		val isVariableAccessibleAfterIfStatement =
-			(operator == Operator.CAST_CONDITION && ifStatement.negativeBranch?.isInterruptingExecution == true)
-				|| (operator == Operator.NEGATED_CAST_CONDITION && ifStatement.positiveBranch.isInterruptingExecution)
+			(operator == Operator.CAST_CONDITION && ifExpression.negativeBranch?.isInterruptingExecution == true)
+				|| (operator == Operator.NEGATED_CAST_CONDITION && ifExpression.positiveBranch.isInterruptingExecution)
 		for(usage in variableDeclaration.usages) {
-			if(ifStatement.positiveBranch.contains(usage)) {
+			if(ifExpression.positiveBranch.contains(usage)) {
 				if(operator == Operator.NEGATED_CAST_CONDITION)
 					context.addIssue(NegatedCastVariableAccessInPositiveBranch(usage.source))
-			} else if(ifStatement.negativeBranch?.contains(usage) == true) {
+			} else if(ifExpression.negativeBranch?.contains(usage) == true) {
 				if(operator == Operator.CAST_CONDITION)
 					context.addIssue(CastVariableAccessInNegativeBranch(usage.source))
 			} else {

@@ -3,18 +3,25 @@ package components.semantic_model.operations
 import components.semantic_model.context.SpecialType
 import components.semantic_model.control_flow.Try
 import components.semantic_model.declarations.Class
-import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.declarations.LocalVariableDeclaration
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.OptionalType
 import components.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.access.GuaranteedAccessWithHasValueCheck
 import logger.issues.access.OptionalAccessWithoutHasValueCheck
-import logger.issues.constant_conditions.*
+import logger.issues.constant_conditions.StaticHasValueCheckResult
+import logger.issues.constant_conditions.TypeSpecificationOutsideOfInitializerCall
+import logger.issues.if_expressions.ExpressionNeverReturns
+import logger.issues.if_expressions.MissingElse
+import logger.issues.if_expressions.MissingValue
 import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
 import util.TestUtil
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 internal class Expressions {
 
@@ -107,249 +114,6 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<GuaranteedAccessWithHasValueCheck>(
 			"Optional member access on guaranteed type 'Star' is unnecessary.", Severity.WARNING)
-	}
-
-	@Test
-	fun `returns new type after force cast`() {
-		val sourceCode =
-			"""
-				Vehicle class
-				Bus class: Vehicle
-				Cinema class
-				val roomWithSeats: Bus|Cinema = Bus()
-				roomWithSeats as! Vehicle
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val vehicleClass = lintResult.find<TypeDeclaration> { typeDefinition -> typeDefinition.name == "Vehicle" }
-		val cast = lintResult.find<Cast>()
-		assertEquals(vehicleClass, (cast?.type as? ObjectType)?.getTypeDeclaration())
-	}
-
-	@Test
-	fun `returns boolean type for conditional casts`() {
-		val sourceCode =
-			"""
-				Vehicle class
-				Bus class: Vehicle
-				Cinema class
-				val roomWithSeats: Bus|Cinema = Bus()
-				val isRoomVehicle = roomWithSeats is Vehicle
-				val isRoomNotVehicle = roomWithSeats is! Vehicle
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val positiveCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.CAST_CONDITION }
-		val negativeCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.NEGATED_CAST_CONDITION }
-		assertTrue(SpecialType.BOOLEAN.matches(positiveCast?.type))
-		assertTrue(SpecialType.BOOLEAN.matches(negativeCast?.type))
-	}
-
-	@Test
-	fun `declares variable in conditional casts without negation`() {
-		val sourceCode =
-			"""
-				Vehicle class
-				Bus class: Vehicle
-				Cinema class
-				val roomWithSeats: Bus|Cinema = Bus()
-				if roomWithSeats is vehicle: Vehicle {
-					vehicle
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val castVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "vehicle" }
-		assertNotNull(castVariable?.type)
-	}
-
-	@Test
-	fun `declares variable in conditional casts with negation`() {
-		val sourceCode =
-			"""
-				Vehicle class
-				Bus class: Vehicle
-				Cinema class
-				val roomWithSeats: Bus|Cinema = Bus()
-				loop {
-					if roomWithSeats is! vehicle: Vehicle
-						break
-					vehicle
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val castVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "vehicle" }
-		assertNotNull(castVariable?.type)
-	}
-
-	@Test
-	fun `cast variable is not available before cast`() {
-		val sourceCode =
-			"""
-				Car class
-				{
-					val something: Car
-					car
-					if something is car: Car {}
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
-		assertNotNull(variableValue)
-		assertNull(variableValue.declaration)
-	}
-
-	@Test
-	fun `cast variable is not available in negative branch`() {
-		val sourceCode =
-			"""
-				Car class
-				val something: Car
-				if something is car: Car {
-				} else {
-					car
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<CastVariableAccessInNegativeBranch>(
-			"Cannot access cast variable in negative branch.", Severity.ERROR)
-	}
-
-	@Test
-	fun `cast variable is not available after if statement`() {
-		val sourceCode =
-			"""
-				Car class
-				val something: Car
-				if something is car: Car {}
-				car
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<CastVariableAccessAfterIfStatement>(
-			"Cannot access cast variable after if statement.", Severity.ERROR)
-	}
-
-	@Test
-	fun `cast variable is available after if statement if negative branch interrupts execution`() {
-		val sourceCode =
-			"""
-				Car class
-				val something: Car
-				loop {
-					if something is car: Car {
-					} else {
-						break
-					}
-					car
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
-		assertNotNull(variableValue)
-		assertNotNull(variableValue.declaration)
-	}
-
-	@Test
-	fun `negated cast variable is not available before cast`() {
-		val sourceCode =
-			"""
-				Car class
-				{
-					val something: Car
-					car
-					if something is! car: Car {}
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
-		assertNotNull(variableValue)
-		assertNull(variableValue.declaration)
-	}
-
-	@Test
-	fun `negated cast variable is not available in positive branch`() {
-		val sourceCode =
-			"""
-				Car class
-				val something: Car
-				if something is! car: Car {
-					car
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<NegatedCastVariableAccessInPositiveBranch>(
-			"Cannot access negated cast variable in positive branch.", Severity.ERROR)
-	}
-
-	@Test
-	fun `negated cast variable is not available after if statement`() {
-		val sourceCode =
-			"""
-				Car class
-				val something: Car
-				if something is! car: Car {}
-				car
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<CastVariableAccessAfterIfStatement>(
-			"Cannot access cast variable after if statement.", Severity.ERROR)
-	}
-
-	@Test
-	fun `negated cast variable is available after if statement if positive branch interrupts execution`() {
-		val sourceCode =
-			"""
-				Car class
-				val something: Car
-				loop {
-					if something is car: Car
-						break
-					car
-				}
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
-		assertNotNull(variableValue)
-		assertNotNull(variableValue.declaration)
-	}
-
-	@Test
-	fun `returns optional new type after optional cast`() {
-		val sourceCode =
-			"""
-				Vehicle class
-				Bus class: Vehicle
-				Cinema class
-				val roomWithSeats: Bus|Cinema = Bus()
-				roomWithSeats as? Vehicle
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val vehicleClass = lintResult.find<TypeDeclaration> { typeDefinition -> typeDefinition.name == "Vehicle" }
-		val cast = lintResult.find<Cast>()
-		val castResultType = cast?.type as? OptionalType
-		assertNotNull(castResultType)
-		assertEquals(vehicleClass, (castResultType.baseType as? ObjectType)?.getTypeDeclaration())
-	}
-
-	@Test
-	fun `detects missing casts conditions`() {
-		val sourceCode =
-			"""
-				Orange class
-				Apple object
-				Apple as Orange
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<UnsafeSafeCast>("Cannot safely cast 'Apple' to 'Orange'.", Severity.ERROR)
-	}
-
-	@Test
-	fun `detects unnecessary cast conditions`() {
-		val sourceCode =
-			"""
-				Fruit class
-				Apple object: Fruit
-				Apple as? Fruit
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<ConditionalCastIsSafe>("Cast from 'Apple' to 'Fruit' is safe.", Severity.WARNING)
 	}
 
 	@Test
@@ -485,5 +249,61 @@ internal class Expressions {
 		val nullCoalescenceOperator = lintResult.find<BinaryOperator>()
 		assertNotNull(nullCoalescenceOperator)
 		assertEquals("Bool", nullCoalescenceOperator.type.toString())
+	}
+
+	//TODO write similar tests for switch expressions
+
+	@Test
+	fun `allows if with else in expression`() {
+		val sourceCode =
+			"""
+				val y = if yes 10 else 2
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingElse>()
+		lintResult.assertIssueNotDetected<MissingValue>()
+		lintResult.assertIssueNotDetected<ExpressionNeverReturns>()
+	}
+
+	@Test
+	fun `detects if without else in expression`() {
+		val sourceCode =
+			"""
+				val y = if yes 10
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<MissingElse>("The if expression is missing an else branch.", Severity.ERROR)
+	}
+
+	@Test
+	fun `detects if branch without value in expression`() {
+		val sourceCode =
+			"""
+				val y = 1
+				y = if yes 10 else y = 2
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<MissingValue>("This branch of the if expression is missing a value.", Severity.ERROR)
+	}
+
+	@Test
+	fun `detects if expression that never returns`() {
+		val sourceCode =
+			"""
+				val y = if yes return 2 else return 3
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<ExpressionNeverReturns>("This expression never returns a value.", Severity.ERROR)
+	}
+
+	@Test
+	fun `if expressions return a value`() {
+		val sourceCode =
+			"""
+				val y = if yes 10 else 2
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val variableDeclarationType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "y" }?.type
+		assertEquals("Int", variableDeclarationType.toString())
 	}
 }

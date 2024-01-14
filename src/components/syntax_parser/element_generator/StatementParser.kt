@@ -87,7 +87,8 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 	 * Statement:
 	 *   <StatementSection>
 	 *   <FileReference>
-	 *   <IfStatement>
+	 *   <IfExpression>
+	 *   <SwitchExpression>
 	 *   <ReturnStatement>
 	 *   <YieldStatement>
 	 *   <RaiseStatement>
@@ -104,15 +105,15 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 	 *   <Expression> = <Expression>[ = <Expression>]...
 	 *   <Expression> <binary-modification> <Expression>
 	 */
-	private fun parseStatement(): SyntaxTreeNode {
+	fun parseStatement(): SyntaxTreeNode {
 		if(currentWord?.type == WordAtom.OPENING_BRACE)
 			return parseStatementSection()
 		if(currentWord?.type == WordAtom.REFERENCING)
 			return parseFileReference()
 		if(currentWord?.type == WordAtom.IF)
-			return parseIfStatement()
+			return expressionParser.parseIfExpression(false)
 		if(currentWord?.type == WordAtom.SWITCH)
-			return parseSwitchStatement()
+			return expressionParser.parseSwitchExpression(false)
 		if(currentWord?.type == WordAtom.RETURN)
 			return parseReturnStatement()
 		if(currentWord?.type == WordAtom.YIELD)
@@ -136,7 +137,7 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 		if(currentWord?.type == WordAtom.GENERATOR)
 			return parseGeneratorDefinition()
 
-		val expression = expressionParser.parseExpression()
+		val expression = parseExpression()
 		if(isExpressionAssignable(expression)) {
 			if(currentWord?.type == WordAtom.ASSIGNMENT) {
 				val targets = LinkedList<ValueSyntaxTreeNode>()
@@ -144,13 +145,13 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 				do {
 					consume(WordAtom.ASSIGNMENT)
 					targets.add(lastExpression)
-					lastExpression = expressionParser.parseExpression()
+					lastExpression = parseExpression()
 				} while(isExpressionAssignable(lastExpression) && currentWord?.type == WordAtom.ASSIGNMENT)
 				return Assignment(targets, lastExpression)
 			}
 			if(WordType.BINARY_MODIFICATION.includes(currentWord?.type)) {
 				val operator = expressionParser.parseOperator(WordType.BINARY_MODIFICATION)
-				val value = expressionParser.parseExpression()
+				val value = parseExpression()
 				return BinaryModification(expression, value, operator)
 			}
 			if(WordType.UNARY_MODIFICATION.includes(currentWord?.type)) {
@@ -205,72 +206,6 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 		consume(WordAtom.AS)
 		val localName = parseIdentifier()
 		return ReferenceAlias(originalName, localName)
-	}
-
-	/**
-	 * IfStatement:
-	 *   if <Expression>
-	 *       <Statement>
-	 *   [else
-	 *   	 <Statement>]
-	 */
-	private fun parseIfStatement(): IfStatement {
-		val start = consume(WordAtom.IF).start
-		val condition = parseExpression()
-		consumeLineBreaks()
-		val positiveBranch = parseStatement()
-		consumeLineBreaks()
-		var negativeBranch: SyntaxTreeNode? = null
-		if(currentWord?.type == WordAtom.ELSE) {
-			consume(WordAtom.ELSE)
-			consumeLineBreaks()
-			negativeBranch = parseStatement()
-		}
-		return IfStatement(condition, positiveBranch, negativeBranch, start,
-			negativeBranch?.end ?: positiveBranch.end)
-	}
-
-	/**
-	 * SwitchStatement:
-	 *   switch <Expression> {
-	 *       <Expression>: <Statement>
-	 *       [else: <Statement>]
-	 *   }
-	 */
-	private fun parseSwitchStatement(isExpression: Boolean = false): SwitchStatement {
-		val start = consume(WordAtom.SWITCH).start
-		val subject = parseExpression()
-		consume(WordAtom.OPENING_BRACE)
-		consumeLineBreaks()
-		val cases = LinkedList<Case>()
-		var elseResult: SyntaxTreeNode? = null
-		while(currentWord?.type !== WordAtom.CLOSING_BRACE) {
-			consumeLineBreaks()
-			if(currentWord?.type == WordAtom.ELSE) {
-				consume(WordAtom.ELSE)
-				consume(WordAtom.COLON)
-				consumeLineBreaks()
-				elseResult = if(isExpression) parseExpression() else parseStatement()
-				break
-			}
-			cases.add(parseCase(isExpression))
-			consumeLineBreaks()
-		}
-		consumeLineBreaks()
-		val end = consume(WordAtom.CLOSING_BRACE).end
-		return SwitchStatement(subject, cases, elseResult, start, end)
-	}
-
-	/**
-	 * Case:
-	 *   <Expression>: <Statement>
-	 */
-	private fun parseCase(isExpression: Boolean): Case {
-		val condition = parseExpression()
-		consume(WordAtom.COLON)
-		consumeLineBreaks()
-		val result = if(isExpression) parseExpression() else parseStatement()
-		return Case(condition, result)
 	}
 
 	/**

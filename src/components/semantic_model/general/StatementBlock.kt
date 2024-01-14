@@ -40,6 +40,7 @@ class StatementBlock(override val source: SyntaxTreeNode, override val scope: Bl
 	override fun compile(constructor: LlvmConstructor) {
 		for(statement in statements) {
 			statement.compile(constructor)
+			//TODO also break, if statement never returns (e.g. if statement) based on LLVM rules, not static evaluation
 			if(statement is BreakStatement || statement is NextStatement || statement is ReturnStatement)
 				break
 		}

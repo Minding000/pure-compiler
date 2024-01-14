@@ -8,17 +8,16 @@ import util.indent
 import util.toLines
 import java.util.*
 import components.semantic_model.control_flow.Case as SemanticCaseModel
-import components.semantic_model.control_flow.SwitchStatement as SemanticSwitchStatementModel
+import components.semantic_model.control_flow.SwitchExpression as SemanticSwitchExpressionModel
 
-class SwitchStatement(private val subject: ValueSyntaxTreeNode, private val cases: LinkedList<Case>, private val elseBranch: SyntaxTreeNode?,
-					  start: Position, end: Position): SyntaxTreeNode(start, end) {
+class SwitchExpression(private val subject: ValueSyntaxTreeNode, private val cases: LinkedList<Case>,
+					   private val elseBranch: SyntaxTreeNode?, start: Position, end: Position): ValueSyntaxTreeNode(start, end) {
 
-	override fun toSemanticModel(scope: MutableScope): SemanticSwitchStatementModel {
+	override fun toSemanticModel(scope: MutableScope): SemanticSwitchExpressionModel {
 		val cases = LinkedList<SemanticCaseModel>()
 		for(case in this.cases)
 			cases.add(case.toSemanticModel(scope))
-		return SemanticSwitchStatementModel(this, scope, subject.toSemanticModel(scope), cases,
-			elseBranch?.toSemanticModel(scope))
+		return SemanticSwitchExpressionModel(this, scope, subject.toSemanticModel(scope), cases, elseBranch?.toSemanticModel(scope))
 	}
 
 	override fun toString(): String {

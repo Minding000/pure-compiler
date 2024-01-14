@@ -29,7 +29,7 @@ internal class ControlFlow {
 	fun `parses if statements with else branch`() {
 		val sourceCode = """
 			var x: Int
-			if 5
+			if yes
 				x = 3
 			else
 				x = 2
@@ -39,7 +39,7 @@ internal class ControlFlow {
 				VariableSection [ var ] {
 					LocalVariableDeclaration { Identifier { x }: ObjectType { Identifier { Int } } }
 				}
-				If [ NumberLiteral { 5 } ] {
+				If [ BooleanLiteral { yes } ] {
 					Assignment {
 						Identifier { x }
 						= NumberLiteral { 3 }
@@ -49,6 +49,24 @@ internal class ControlFlow {
 						Identifier { x }
 						= NumberLiteral { 2 }
 					}
+				}
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses if expressions`() {
+		val sourceCode = """
+			var x = if no 3 else 2
+			""".trimIndent()
+		val expected =
+			"""
+				VariableSection [ var ] {
+					LocalVariableDeclaration { Identifier { x } = If [ BooleanLiteral { no } ] {
+						NumberLiteral { 3 }
+					} Else {
+						NumberLiteral { 2 }
+					} }
 				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
@@ -253,6 +271,36 @@ internal class ControlFlow {
 					} ] {
 						StringLiteral { "Failure" }
 					}
+				}
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses switch expressions`() {
+		val sourceCode = """
+			val status = switch x {
+				ExitCode.SUCCESS:
+					"Success"
+				ExitCode.FAILURE:
+					"Failure"
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				VariableSection [ val ] {
+					LocalVariableDeclaration { Identifier { status } = Switch [ Identifier { x } ] {
+						Case [ MemberAccess {
+							Identifier { ExitCode }.Identifier { SUCCESS }
+						} ] {
+							StringLiteral { "Success" }
+						}
+						Case [ MemberAccess {
+							Identifier { ExitCode }.Identifier { FAILURE }
+						} ] {
+							StringLiteral { "Failure" }
+						}
+					} }
 				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
