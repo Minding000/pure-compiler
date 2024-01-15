@@ -107,9 +107,9 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
-		for(member in scope.memberDeclarations) {
-			if(member is FunctionImplementation)
-				member.analyseDataFlow(tracker)
+		for(semanticModel in semanticModels) {
+			if(semanticModel !is InitializerDefinition)
+				semanticModel.analyseDataFlow(tracker)
 		}
 		if(!hasCircularInheritance) {
 			for(initializer in scope.initializers)

@@ -146,7 +146,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		var someBlocksCompleteWithoutReturning = false
 		var mainBlockCompletesWithoutReturning = true
 		for(statement in body.mainBlock.statements) {
-			if(statement.isInterruptingExecution) {
+			if(statement.isInterruptingExecutionBasedOnStructure) {
 				mainBlockCompletesWithoutReturning = false
 				break
 			}
@@ -157,7 +157,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 			for(handleBlock in body.handleBlocks) {
 				var handleBlockCompletesWithoutReturning = true
 				for(statement in handleBlock.block.statements) {
-					if(statement.isInterruptingExecution) {
+					if(statement.isInterruptingExecutionBasedOnStructure) {
 						handleBlockCompletesWithoutReturning = false
 						break
 					}
@@ -208,7 +208,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		}
 		constructor.createAndSelectEntrypointBlock(llvmValue)
 		super.compile(constructor)
-		if(body?.isInterruptingExecution != true)
+		if(body?.isInterruptingExecutionBasedOnStructure != true)
 			constructor.buildReturn()
 		constructor.select(previousBlock)
 

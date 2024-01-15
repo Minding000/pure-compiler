@@ -203,6 +203,30 @@ internal class DataFlowAnalysis {
 	}
 
 	@Test
+	fun `works with raises`() {
+		val sourceCode = """
+			Processor object {
+				to process() {
+					val a: Int?
+					if !a?
+						raise yes
+					a
+				}
+			}
+		""".trimIndent()
+		val report = """
+			start -> 3
+			3: declaration -> 4 (Int?, null)
+			4: read -> 4, 4 (Int?, null)
+			4: hint -> 6 (Int, null)
+			4: hint -> end (Null, null)
+			6: read -> end (Int, null)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertStringEquals(report, tracker.childTrackers["Processor.process()"]?.getReportFor("a"))
+	}
+
+	@Test
 	fun `works with handle blocks`() {
 		val sourceCode = """
 			var a = 10

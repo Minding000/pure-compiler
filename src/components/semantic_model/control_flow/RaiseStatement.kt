@@ -3,6 +3,7 @@ package components.semantic_model.control_flow
 import components.code_generation.llvm.LlvmConstructor
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
+import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.general.SemanticModel
@@ -13,7 +14,8 @@ import errors.internal.CompilerError
 import components.syntax_parser.syntax_tree.control_flow.RaiseStatement as RaiseStatementSyntaxTree
 
 class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope, val value: Value): SemanticModel(source, scope) {
-	override val isInterruptingExecution = true
+	override val isInterruptingExecutionBasedOnStructure = true
+	override val isInterruptingExecutionBasedOnStaticEvaluation = true
 	private var targetComputedProperty: ComputedPropertyDeclaration? = null
 	private var targetFunction: FunctionImplementation? = null
 
@@ -34,6 +36,11 @@ class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope
 			throw CompilerError(source, "Raise statement outside of function.")
 		}
 		targetFunction = surroundingFunction
+	}
+
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		value.analyseDataFlow(tracker)
+		tracker.registerRaiseStatement()
 	}
 
 	override fun compile(constructor: LlvmConstructor) {

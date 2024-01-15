@@ -570,4 +570,39 @@ internal class InitializationState {
 		lintResult.assertIssueNotDetected<NotInitialized>()
 		lintResult.assertIssueNotDetected<UninitializedProperties>()
 	}
+
+	@Test
+	fun `discerns initializers of current and parent class`() {
+		val sourceCode =
+			"""
+				Int class
+				Map class {
+					val size: Int
+					init(size)
+					bound EnemySpawn class {
+						init {
+							size
+						}
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotInitialized>()
+	}
+
+	@Test
+	fun `doesn't require computed properties to be initialized`() {
+		val sourceCode =
+			"""
+				Int class
+				Map class {
+					computed size: Int gets {
+						return Int()
+					}
+					init
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<UninitializedProperties>()
+	}
 }

@@ -9,7 +9,8 @@ import components.syntax_parser.syntax_tree.control_flow.BreakStatement as Break
 
 class BreakStatement(override val source: BreakStatementSyntaxTree, scope: Scope): SemanticModel(source, scope) {
 	private var targetLoop: LoopStatement? = null
-	override val isInterruptingExecution = true
+	override val isInterruptingExecutionBasedOnStructure = true
+	override val isInterruptingExecutionBasedOnStaticEvaluation = true
 
 	override fun determineTypes() {
 		super.determineTypes()

@@ -15,8 +15,8 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 		get() = source.context
 	open var parent: SemanticModel? = null
 	val semanticModels = LinkedList<SemanticModel>()
-	open val isInterruptingExecution = false
-	//open val isInterruptingExecutionBasedOnStaticEvaluation = false
+	open val isInterruptingExecutionBasedOnStructure = false
+	open val isInterruptingExecutionBasedOnStaticEvaluation = false
 
 	fun addSemanticModels(vararg newSemanticModels: SemanticModel?) {
 		newModel@for(newSemanticModel in newSemanticModels) {

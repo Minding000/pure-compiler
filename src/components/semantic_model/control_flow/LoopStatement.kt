@@ -20,7 +20,8 @@ import components.syntax_parser.syntax_tree.control_flow.LoopStatement as LoopSt
 
 class LoopStatement(override val source: LoopStatementSyntaxTree, override val scope: BlockScope, val generator: SemanticModel?,
 					val body: ErrorHandlingContext): SemanticModel(source, scope) {
-	override var isInterruptingExecution = false
+	override var isInterruptingExecutionBasedOnStructure = false
+	override var isInterruptingExecutionBasedOnStaticEvaluation = false
 	var mightGetBrokenOutOf = false
 	private val hasFiniteGenerator: Boolean
 		get() {
@@ -77,13 +78,15 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		tracker.addVariableStates(tracker.breakStatementStates)
 		tracker.breakStatementStates.clear()
 		tracker.currentState.removeReferencePoint(loopReferencePoint)
+		if(!(hasFiniteGenerator || mightGetBrokenOutOf)) {
+			isInterruptingExecutionBasedOnStructure = true
+			isInterruptingExecutionBasedOnStaticEvaluation = true
+		}
 	}
 
 	override fun validate() {
 		super.validate()
 		scope.validate()
-		if(!(hasFiniteGenerator || mightGetBrokenOutOf))
-			isInterruptingExecution = true
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
@@ -107,7 +110,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			constructor.select(bodyBlock)
 		}
 		body.compile(constructor)
-		if(!body.isInterruptingExecution)
+		if(!body.isInterruptingExecutionBasedOnStructure)
 			constructor.buildJump(entryBlock)
 		if(generator is WhileGenerator || mightGetBrokenOutOf) {
 			constructor.addBlockToFunction(function, exitBlock)
@@ -150,7 +153,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			constructor.buildStore(element, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)
-		if(!body.isInterruptingExecution) {
+		if(!body.isInterruptingExecutionBasedOnStructure) {
 			//TODO fix: should be called on 'next' statement
 			val newIndex = constructor.buildIntegerAddition(index, constructor.buildInt32(1), "_overGenerator_newIndex")
 			constructor.buildStore(newIndex, indexVariable)
@@ -229,7 +232,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			constructor.buildStore(convertedValue, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)
-		if(!body.isInterruptingExecution) {
+		if(!body.isInterruptingExecutionBasedOnStructure) {
 			//TODO fix: should be called on 'next' statement
 			val advanceFunctionAddress = context.resolveFunction(constructor, iteratorLlvmValue, "advance()")
 			constructor.buildFunctionCall(iteratorAdvanceSignature?.getLlvmType(constructor), advanceFunctionAddress,

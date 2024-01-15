@@ -20,7 +20,8 @@ import components.syntax_parser.syntax_tree.control_flow.IfExpression as IfState
 
 class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val condition: Value, val positiveBranch: SemanticModel,
 				   val negativeBranch: SemanticModel?, val isPartOfExpression: Boolean): Value(source, scope) {
-	override var isInterruptingExecution = false
+	override var isInterruptingExecutionBasedOnStructure = false
+	override var isInterruptingExecutionBasedOnStaticEvaluation = false
 	private var isConditionAlwaysTrue = false
 	private var isConditionAlwaysFalse = false
 
@@ -69,6 +70,15 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 			if(isConditionAlwaysFalse)
 				staticValue = (negativeBranch as? Value)?.getComputedValue()
 		}
+		evaluateExecutionFlow()
+	}
+
+	private fun evaluateExecutionFlow() {
+		isInterruptingExecutionBasedOnStructure = positiveBranch.isInterruptingExecutionBasedOnStructure
+			&& negativeBranch?.isInterruptingExecutionBasedOnStructure == true
+		isInterruptingExecutionBasedOnStaticEvaluation = (isConditionAlwaysTrue && positiveBranch.isInterruptingExecutionBasedOnStaticEvaluation) ||
+			(isConditionAlwaysFalse && negativeBranch?.isInterruptingExecutionBasedOnStaticEvaluation == true) ||
+			(positiveBranch.isInterruptingExecutionBasedOnStaticEvaluation && negativeBranch?.isInterruptingExecutionBasedOnStaticEvaluation == true)
 	}
 
 	override fun validate() {
@@ -78,9 +88,6 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 			for(semanticModel in semanticModels)
 				semanticModel.validate()
 		}
-		isInterruptingExecution = (isConditionAlwaysTrue && positiveBranch.isInterruptingExecution) ||
-			(isConditionAlwaysFalse && negativeBranch?.isInterruptingExecution == true) ||
-			(positiveBranch.isInterruptingExecution && negativeBranch?.isInterruptingExecution == true)
 		validateElseBranchExistence()
 		validateValueExistence()
 	}
@@ -95,16 +102,16 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 	private fun validateValueExistence() {
 		if(!isPartOfExpression)
 			return
-		if(positiveBranch.isInterruptingExecution && negativeBranch?.isInterruptingExecution == true) {
+		if(isInterruptingExecutionBasedOnStructure) {
 			context.addIssue(ExpressionNeverReturns(source))
 			return
 		}
 		val lastStatementInPositiveBranch = getLastStatement(positiveBranch)
-		if(!(lastStatementInPositiveBranch is Value || lastStatementInPositiveBranch?.isInterruptingExecution == true))
+		if(!(lastStatementInPositiveBranch is Value || lastStatementInPositiveBranch?.isInterruptingExecutionBasedOnStructure == true))
 			context.addIssue(MissingValue(positiveBranch.source))
 		if(negativeBranch != null) {
 			val lastStatementInNegativeBranch = getLastStatement(negativeBranch)
-			if(!(lastStatementInNegativeBranch is Value || lastStatementInNegativeBranch?.isInterruptingExecution == true))
+			if(!(lastStatementInNegativeBranch is Value || lastStatementInNegativeBranch?.isInterruptingExecutionBasedOnStructure == true))
 				context.addIssue(MissingValue(negativeBranch.source))
 		}
 	}
@@ -124,13 +131,13 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 		constructor.buildJump(condition, trueBlock, falseBlock)
 		constructor.select(trueBlock)
 		positiveBranch.compile(constructor)
-		if(!positiveBranch.isInterruptingExecution)
+		if(!positiveBranch.isInterruptingExecutionBasedOnStructure)
 			constructor.buildJump(exitBlock)
 		constructor.select(falseBlock)
 		negativeBranch?.compile(constructor)
-		if(negativeBranch?.isInterruptingExecution != true)
+		if(negativeBranch?.isInterruptingExecutionBasedOnStructure != true)
 			constructor.buildJump(exitBlock)
-		if(!(positiveBranch.isInterruptingExecution && negativeBranch?.isInterruptingExecution == true)) {
+		if(!isInterruptingExecutionBasedOnStructure) {
 			constructor.addBlockToFunction(function, exitBlock)
 			constructor.select(exitBlock)
 		}
@@ -150,7 +157,7 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 		constructor.select(falseBlock)
 		val negativeBranch = negativeBranch ?: throw CompilerError(source, "If expression is missing a negative branch.")
 		compileBranch(constructor, negativeBranch, result, exitBlock)
-		if(!(positiveBranch.isInterruptingExecution && negativeBranch.isInterruptingExecution)) {
+		if(!isInterruptingExecutionBasedOnStructure) {
 			constructor.addBlockToFunction(function, exitBlock)
 			constructor.select(exitBlock)
 		}
@@ -158,7 +165,7 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 	}
 
 	private fun compileBranch(constructor: LlvmConstructor, branch: SemanticModel, result: LlvmValue, exitBlock: LlvmBlock) {
-		if(branch.isInterruptingExecution) {
+		if(branch.isInterruptingExecutionBasedOnStructure) {
 			branch.compile(constructor)
 			return
 		}

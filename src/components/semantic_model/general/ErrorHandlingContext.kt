@@ -10,7 +10,8 @@ import java.util.*
 class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, val mainBlock: StatementBlock,
 						   val handleBlocks: List<HandleBlock> = emptyList(), val alwaysBlock: StatementBlock? = null):
 	SemanticModel(source, scope) {
-	override var isInterruptingExecution = false
+	override var isInterruptingExecutionBasedOnStructure = false
+	override var isInterruptingExecutionBasedOnStaticEvaluation = false
 
 	init {
 		addSemanticModels(mainBlock, alwaysBlock)
@@ -56,22 +57,21 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 			tracker.currentState.removeReferencePoint(alwaysBlockReferencePoint)
 			tracker.setVariableStates(completeExecutionState)
 		}
+		evaluateExecutionFlow()
 	}
 
-	override fun validate() {
-		super.validate()
-		isInterruptingExecution = mainBlock.isInterruptingExecution
-		if(isInterruptingExecution) {
-			for(handleBlock in handleBlocks) {
-				if(!handleBlock.isInterruptingExecution) {
-					isInterruptingExecution = false
-					break
-				}
-			}
-		}
+	private fun evaluateExecutionFlow() {
+		isInterruptingExecutionBasedOnStructure = mainBlock.isInterruptingExecutionBasedOnStructure
+		isInterruptingExecutionBasedOnStaticEvaluation = mainBlock.isInterruptingExecutionBasedOnStaticEvaluation
+		if(isInterruptingExecutionBasedOnStructure)
+			isInterruptingExecutionBasedOnStructure = handleBlocks.all(SemanticModel::isInterruptingExecutionBasedOnStructure)
+		if(isInterruptingExecutionBasedOnStaticEvaluation)
+			isInterruptingExecutionBasedOnStaticEvaluation = handleBlocks.all(SemanticModel::isInterruptingExecutionBasedOnStaticEvaluation)
 		if(alwaysBlock != null) {
-			if(alwaysBlock.isInterruptingExecution)
-				isInterruptingExecution = true
+			if(alwaysBlock.isInterruptingExecutionBasedOnStructure)
+				isInterruptingExecutionBasedOnStructure = true
+			if(alwaysBlock.isInterruptingExecutionBasedOnStaticEvaluation)
+				isInterruptingExecutionBasedOnStaticEvaluation = true
 		}
 	}
 }

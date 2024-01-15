@@ -17,7 +17,8 @@ import logger.issues.returns.ReturnStatementOutsideOfCallable
 import logger.issues.returns.ReturnValueTypeMismatch
 
 class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val value: Value?): SemanticModel(source, scope) {
-	override val isInterruptingExecution = true
+	override val isInterruptingExecutionBasedOnStructure = true
+	override val isInterruptingExecutionBasedOnStaticEvaluation = true
 	private var targetFunction: FunctionImplementation? = null
 	private var targetComputedProperty: ComputedPropertyDeclaration? = null
 	private var conversion: InitializerDefinition? = null

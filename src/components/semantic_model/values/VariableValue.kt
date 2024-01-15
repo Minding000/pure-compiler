@@ -58,8 +58,10 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 			if(!usage.isPreviouslyInitialized())
 				context.addIssue(NotInitialized(source, "Local variable", name))
 		} else if(declaration is PropertyDeclaration) {
-			if(tracker.isInitializer && !declaration.isStatic && declaration.value == null && !usage.isPreviouslyInitialized())
-				context.addIssue(NotInitialized(source, "Property", name))
+			if(tracker.isInitializer && !declaration.isStatic && declaration.value == null && !usage.isPreviouslyInitialized()) {
+				if(declaration.parentTypeDeclaration == scope.getSurroundingTypeDeclaration())
+					context.addIssue(NotInitialized(source, "Property", name))
+			}
 		}
 		computeValue(tracker)
 	}

@@ -18,7 +18,8 @@ import components.syntax_parser.syntax_tree.control_flow.SwitchExpression as Swi
 
 class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Scope, val subject: Value, val cases: List<Case>,
 					   val elseBranch: SemanticModel?): Value(source, scope) {
-	override var isInterruptingExecution = false
+	override var isInterruptingExecutionBasedOnStructure = false
+	override var isInterruptingExecutionBasedOnStaticEvaluation = false
 
 	init {
 		addSemanticModels(subject, elseBranch)
@@ -61,6 +62,17 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 		}
 		elseBranch?.analyseDataFlow(tracker)
 		tracker.addVariableStates(caseStates)
+		evaluateExecutionFlow()
+	}
+
+	private fun evaluateExecutionFlow() {
+		val areAllBranchesInterruptingExecutionBasedOnStructure = cases.all { case -> case.result.isInterruptingExecutionBasedOnStructure }
+			&& elseBranch?.isInterruptingExecutionBasedOnStructure ?: true
+		isInterruptingExecutionBasedOnStructure = areAllBranchesInterruptingExecutionBasedOnStructure && isExhaustive()
+		val areAllBranchesInterruptingExecutionBasedOnStaticEvaluation = cases.all { case -> case.result.isInterruptingExecutionBasedOnStaticEvaluation }
+			&& elseBranch?.isInterruptingExecutionBasedOnStaticEvaluation ?: true
+		isInterruptingExecutionBasedOnStaticEvaluation = (getBranchForValue(subject.getComputedValue())?.isInterruptingExecutionBasedOnStaticEvaluation ?: false)
+			|| (isExhaustive() && areAllBranchesInterruptingExecutionBasedOnStaticEvaluation)
 	}
 
 	override fun validate() {
@@ -68,10 +80,6 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 		validateEmptySwitch()
 		validateUniqueCases()
 		validateRedundantElseBranch()
-		val areAllBranchesInterruptingExecution = cases.all { case -> case.result.isInterruptingExecution }
-			&& elseBranch?.isInterruptingExecution ?: true
-		isInterruptingExecution = (getBranchForValue(subject.getComputedValue())?.isInterruptingExecution ?: false)
-			|| (isExhaustive() && areAllBranchesInterruptingExecution)
 	}
 
 	private fun validateEmptySwitch() {

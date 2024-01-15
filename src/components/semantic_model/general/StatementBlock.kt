@@ -1,22 +1,27 @@
 package components.semantic_model.general
 
 import components.code_generation.llvm.LlvmConstructor
-import components.semantic_model.control_flow.BreakStatement
-import components.semantic_model.control_flow.NextStatement
-import components.semantic_model.control_flow.ReturnStatement
+import components.semantic_model.context.VariableTracker
 import components.semantic_model.scopes.BlockScope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.constant_conditions.UnreachableStatement
 
 class StatementBlock(override val source: SyntaxTreeNode, override val scope: BlockScope, val statements: List<SemanticModel>):
 	SemanticModel(source, scope) {
-	override var isInterruptingExecution = false
+	override var isInterruptingExecutionBasedOnStructure = false
+	override var isInterruptingExecutionBasedOnStaticEvaluation = false
 
 	init {
 		addSemanticModels(statements)
 	}
 
 	constructor(source: SyntaxTreeNode, scope: BlockScope, statement: SemanticModel): this(source, scope, listOf(statement))
+
+	override fun analyseDataFlow(tracker: VariableTracker) {
+		super.analyseDataFlow(tracker)
+		isInterruptingExecutionBasedOnStructure = statements.any(SemanticModel::isInterruptingExecutionBasedOnStructure)
+		isInterruptingExecutionBasedOnStaticEvaluation = statements.any(SemanticModel::isInterruptingExecutionBasedOnStaticEvaluation)
+	}
 
 	override fun validate() {
 		super.validate()
@@ -25,23 +30,21 @@ class StatementBlock(override val source: SyntaxTreeNode, override val scope: Bl
 	}
 
 	private fun validateUnreachableStatements() {
-		var isCodeReachable = true
+		var isCodeReachableBasedOnStaticEvaluation = true
 		for(statement in statements) {
-			if(!isCodeReachable) {
+			if(!isCodeReachableBasedOnStaticEvaluation) {
 				context.addIssue(UnreachableStatement(statement.source))
 				continue
 			}
-			if(statement.isInterruptingExecution)
-				isCodeReachable = false
+			if(statement.isInterruptingExecutionBasedOnStaticEvaluation)
+				isCodeReachableBasedOnStaticEvaluation = false
 		}
-		isInterruptingExecution = !isCodeReachable
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
 		for(statement in statements) {
 			statement.compile(constructor)
-			//TODO also break, if statement never returns (e.g. if statement) based on LLVM rules, not static evaluation
-			if(statement is BreakStatement || statement is NextStatement || statement is ReturnStatement)
+			if(statement.isInterruptingExecutionBasedOnStructure)
 				break
 		}
 	}

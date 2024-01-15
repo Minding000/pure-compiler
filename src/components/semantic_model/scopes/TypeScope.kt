@@ -45,7 +45,10 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 		if(superScope != null)
 			propertiesToBeInitialized.addAll(superScope.getPropertiesToBeInitialized())
 		propertiesToBeInitialized.addAll(memberDeclarations.filterIsInstance<PropertyDeclaration>().filter { member ->
-			!member.isStatic && member.type !is StaticType && !member.isAbstract && member.value == null })
+			if(member.isStatic || member.type is StaticType || member.isAbstract || member is ComputedPropertyDeclaration)
+				return@filter false
+			return@filter member.value == null
+		})
 		return propertiesToBeInitialized
 	}
 

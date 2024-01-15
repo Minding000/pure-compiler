@@ -8,8 +8,9 @@ import logger.issues.loops.NextStatementOutsideOfLoop
 import components.syntax_parser.syntax_tree.control_flow.NextStatement as NextStatementSyntaxTree
 
 class NextStatement(override val source: NextStatementSyntaxTree, scope: Scope): SemanticModel(source, scope) {
+	override val isInterruptingExecutionBasedOnStructure = true
+	override val isInterruptingExecutionBasedOnStaticEvaluation = true
 	private var targetLoop: LoopStatement? = null
-	override val isInterruptingExecution = true
 
 	override fun determineTypes() {
 		super.determineTypes()

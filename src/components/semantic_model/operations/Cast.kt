@@ -18,7 +18,7 @@ import components.syntax_parser.syntax_tree.operations.Cast as CastSyntaxTree
 
 class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value, val variableDeclaration: ValueDeclaration?,
 		   val referenceType: Type, val operator: Operator): Value(source, scope) {
-	override var isInterruptingExecution = false
+	override var isInterruptingExecutionBasedOnStaticEvaluation = false
 	private val isCastAlwaysSuccessful: Boolean
 		get() = subject.getComputedType()?.isAssignableTo(referenceType) ?: false
 	private val isCastNeverSuccessful: Boolean
@@ -76,7 +76,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 		} else if(operator == Operator.RAISING_CAST) {
 			staticValue = subject.getComputedValue()
 			//TODO propagate 'isInterruptingExecution' property from expressions to statements in the 'SemanticModel' class
-			isInterruptingExecution = isCastNeverSuccessful
+			isInterruptingExecutionBasedOnStaticEvaluation = isCastNeverSuccessful
 		} else if(operator == Operator.OPTIONAL_CAST) {
 			if(isCastAlwaysSuccessful)
 				staticValue = subject.getComputedValue()
@@ -113,8 +113,8 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 		}
 		//TODO handle this using data-flow instead
 		val isVariableAccessibleAfterIfStatement =
-			(operator == Operator.CAST_CONDITION && ifExpression.negativeBranch?.isInterruptingExecution == true)
-				|| (operator == Operator.NEGATED_CAST_CONDITION && ifExpression.positiveBranch.isInterruptingExecution)
+			(operator == Operator.CAST_CONDITION && ifExpression.negativeBranch?.isInterruptingExecutionBasedOnStructure == true)
+				|| (operator == Operator.NEGATED_CAST_CONDITION && ifExpression.positiveBranch.isInterruptingExecutionBasedOnStructure)
 		for(usage in variableDeclaration.usages) {
 			if(ifExpression.positiveBranch.contains(usage)) {
 				if(operator == Operator.NEGATED_CAST_CONDITION)

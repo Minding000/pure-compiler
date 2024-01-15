@@ -10,10 +10,7 @@ import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.*
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.*
-import components.semantic_model.values.InitializerReference
-import components.semantic_model.values.SuperReference
-import components.semantic_model.values.Value
-import components.semantic_model.values.VariableValue
+import components.semantic_model.values.*
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
@@ -120,6 +117,10 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
 		staticValue = this
+		if(function is MemberAccess && function.target !is SelfReference && function.target !is SuperReference)
+			return
+		if(function.type?.effectiveType is StaticType && !(function is MemberAccess && function.target is SuperReference))
+			return
 		val targetImplementation = targetInitializer ?: targetSignature?.associatedImplementation ?: return
 		//TODO also track required and initialized properties for operators (IndexAccess, BinaryOperator, etc.)
 		val requiredButUninitializedProperties = LinkedList<PropertyDeclaration>()

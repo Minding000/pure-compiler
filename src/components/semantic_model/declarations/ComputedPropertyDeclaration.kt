@@ -115,7 +115,7 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		if(llvmSetterValue != null && setterErrorHandlingContext != null) {
 			constructor.createAndSelectEntrypointBlock(llvmSetterValue)
 			setterErrorHandlingContext.compile(constructor)
-			if(!setterErrorHandlingContext.isInterruptingExecution)
+			if(!setterErrorHandlingContext.isInterruptingExecutionBasedOnStructure)
 				constructor.buildReturn()
 		}
 		constructor.select(previousBlock)

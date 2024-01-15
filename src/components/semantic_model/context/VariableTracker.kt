@@ -25,6 +25,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 	val nextStatementStates = LinkedList<VariableState>()
 	val breakStatementStates = LinkedList<VariableState>()
 	private val returnStatementStates = LinkedList<VariableState>()
+	private val raiseStatementStates = LinkedList<VariableState>()
 
 	fun setVariableStates(vararg variableStates: VariableState) {
 		currentState.lastVariableUsages.clear()
@@ -153,6 +154,11 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		currentState.lastVariableUsages.clear()
 	}
 
+	fun registerRaiseStatement() {
+		raiseStatementStates.add(currentState.copy())
+		currentState.lastVariableUsages.clear()
+	}
+
 	fun linkBackTo(referencePoint: VariableState.ReferencePoint) {
 		link(currentState, referencePoint)
 	}
@@ -177,6 +183,8 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 
 	fun calculateEndState() {
 		addVariableStates(returnStatementStates)
+		//TODO raised error may be caught immediately
+		addVariableStates(raiseStatementStates)
 		for((declaration, usages) in currentState.lastVariableUsages) {
 			val end = VariableUsage(listOf(VariableUsage.Kind.END), declaration)
 			ends[declaration] = end
