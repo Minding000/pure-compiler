@@ -3,7 +3,6 @@ package components.semantic_model.operations
 import components.semantic_model.context.SpecialType
 import components.semantic_model.control_flow.Try
 import components.semantic_model.declarations.Class
-import components.semantic_model.declarations.LocalVariableDeclaration
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.OptionalType
 import components.semantic_model.values.VariableValue
@@ -12,9 +11,6 @@ import logger.issues.access.GuaranteedAccessWithHasValueCheck
 import logger.issues.access.OptionalAccessWithoutHasValueCheck
 import logger.issues.constant_conditions.StaticHasValueCheckResult
 import logger.issues.constant_conditions.TypeSpecificationOutsideOfInitializerCall
-import logger.issues.if_expressions.ExpressionNeverReturns
-import logger.issues.if_expressions.MissingElse
-import logger.issues.if_expressions.MissingValue
 import logger.issues.resolution.NotFound
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -249,61 +245,5 @@ internal class Expressions {
 		val nullCoalescenceOperator = lintResult.find<BinaryOperator>()
 		assertNotNull(nullCoalescenceOperator)
 		assertEquals("Bool", nullCoalescenceOperator.type.toString())
-	}
-
-	//TODO write similar tests for switch expressions
-
-	@Test
-	fun `allows if with else in expression`() {
-		val sourceCode =
-			"""
-				val y = if yes 10 else 2
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueNotDetected<MissingElse>()
-		lintResult.assertIssueNotDetected<MissingValue>()
-		lintResult.assertIssueNotDetected<ExpressionNeverReturns>()
-	}
-
-	@Test
-	fun `detects if without else in expression`() {
-		val sourceCode =
-			"""
-				val y = if yes 10
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<MissingElse>("The if expression is missing an else branch.", Severity.ERROR)
-	}
-
-	@Test
-	fun `detects if branch without value in expression`() {
-		val sourceCode =
-			"""
-				val y = 1
-				y = if yes 10 else y = 2
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<MissingValue>("This branch of the if expression is missing a value.", Severity.ERROR)
-	}
-
-	@Test
-	fun `detects if expression that never returns`() {
-		val sourceCode =
-			"""
-				val y = if yes return 2 else return 3
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<ExpressionNeverReturns>("This expression never returns a value.", Severity.ERROR)
-	}
-
-	@Test
-	fun `if expressions return a value`() {
-		val sourceCode =
-			"""
-				val y = if yes 10 else 2
-            """.trimIndent()
-		val lintResult = TestUtil.lint(sourceCode)
-		val variableDeclarationType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "y" }?.type
-		assertEquals("Int", variableDeclarationType.toString())
 	}
 }

@@ -4,11 +4,17 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
+import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
+import components.semantic_model.types.OrUnionType
+import components.semantic_model.types.Type
 import components.semantic_model.values.BooleanLiteral
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
+import logger.issues.expressions.BranchMissesValue
+import logger.issues.expressions.ExpressionMissesElse
+import logger.issues.expressions.ExpressionNeverReturns
 import logger.issues.switches.CaseTypeMismatch
 import logger.issues.switches.DuplicateCase
 import logger.issues.switches.NoCases
@@ -17,9 +23,13 @@ import java.util.*
 import components.syntax_parser.syntax_tree.control_flow.SwitchExpression as SwitchStatementSyntaxTree
 
 class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Scope, val subject: Value, val cases: List<Case>,
-					   val elseBranch: SemanticModel?): Value(source, scope) {
+					   val elseBranch: SemanticModel?, val isPartOfExpression: Boolean): Value(source, scope) {
 	override var isInterruptingExecutionBasedOnStructure = false
 	override var isInterruptingExecutionBasedOnStaticEvaluation = false
+
+	companion object {
+		const val EXPRESSION_TYPE = "switch"
+	}
 
 	init {
 		addSemanticModels(subject, elseBranch)
@@ -29,6 +39,23 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 	override fun determineTypes() {
 		super.determineTypes()
 		inferCaseConditionTypes()
+		if(!isPartOfExpression)
+			return
+		val types = LinkedList<Type>()
+		for(case in cases) {
+			val lastStatementInCaseBranch = getLastStatement(case.result)
+			val caseBranchType = (lastStatementInCaseBranch as? Value)?.type
+			if(caseBranchType != null)
+				types.add(caseBranchType)
+		}
+		if(elseBranch != null) {
+			val lastStatementInElseBranch = getLastStatement(elseBranch)
+			val elseBranchType = (lastStatementInElseBranch as? Value)?.type
+			if(elseBranchType != null)
+				types.add(elseBranchType)
+		}
+		if(types.isNotEmpty())
+			type = OrUnionType(source, scope, types).simplified()
 	}
 
 	private fun inferCaseConditionTypes() {
@@ -80,6 +107,8 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 		validateEmptySwitch()
 		validateUniqueCases()
 		validateRedundantElseBranch()
+		validateElseBranchExistence()
+		validateValueExistence()
 	}
 
 	private fun validateEmptySwitch() {
@@ -103,6 +132,38 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 	private fun validateRedundantElseBranch() {
 		if(elseBranch != null && isExhaustiveWithoutElseBranch())
 			context.addIssue(RedundantElse(elseBranch.source))
+	}
+
+	private fun validateElseBranchExistence() {
+		if(!isPartOfExpression)
+			return
+		if(elseBranch == null && !isExhaustiveWithoutElseBranch())
+			context.addIssue(ExpressionMissesElse(source, EXPRESSION_TYPE))
+	}
+
+	private fun validateValueExistence() {
+		if(!isPartOfExpression)
+			return
+		if(isInterruptingExecutionBasedOnStructure) {
+			context.addIssue(ExpressionNeverReturns(source, EXPRESSION_TYPE))
+			return
+		}
+		for(case in cases) {
+			val lastStatementInCaseBranch = getLastStatement(case.result)
+			if(!(lastStatementInCaseBranch is Value || lastStatementInCaseBranch?.isInterruptingExecutionBasedOnStructure == true))
+				context.addIssue(BranchMissesValue(case.result.source, EXPRESSION_TYPE))
+		}
+		if(elseBranch != null) {
+			val lastStatementInElseBranch = getLastStatement(elseBranch)
+			if(!(lastStatementInElseBranch is Value || lastStatementInElseBranch?.isInterruptingExecutionBasedOnStructure == true))
+				context.addIssue(BranchMissesValue(elseBranch.source, EXPRESSION_TYPE))
+		}
+	}
+
+	private fun getLastStatement(branch: SemanticModel): SemanticModel? {
+		if(branch is ErrorHandlingContext)
+			return branch.mainBlock.statements.lastOrNull()
+		return branch
 	}
 
 	private fun getBranchForValue(value: Value?): SemanticModel? {

@@ -12,9 +12,9 @@ import components.semantic_model.types.Type
 import components.semantic_model.values.BooleanLiteral
 import components.semantic_model.values.Value
 import errors.internal.CompilerError
-import logger.issues.if_expressions.ExpressionNeverReturns
-import logger.issues.if_expressions.MissingElse
-import logger.issues.if_expressions.MissingValue
+import logger.issues.expressions.BranchMissesValue
+import logger.issues.expressions.ExpressionMissesElse
+import logger.issues.expressions.ExpressionNeverReturns
 import java.util.*
 import components.syntax_parser.syntax_tree.control_flow.IfExpression as IfStatementSyntaxTree
 
@@ -24,6 +24,10 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 	override var isInterruptingExecutionBasedOnStaticEvaluation = false
 	private var isConditionAlwaysTrue = false
 	private var isConditionAlwaysFalse = false
+
+	companion object {
+		const val EXPRESSION_TYPE = "if"
+	}
 
 	init {
 		addSemanticModels(condition, positiveBranch, negativeBranch)
@@ -96,23 +100,23 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 		if(!isPartOfExpression)
 			return
 		if(negativeBranch == null)
-			context.addIssue(MissingElse(source))
+			context.addIssue(ExpressionMissesElse(source, EXPRESSION_TYPE))
 	}
 
 	private fun validateValueExistence() {
 		if(!isPartOfExpression)
 			return
 		if(isInterruptingExecutionBasedOnStructure) {
-			context.addIssue(ExpressionNeverReturns(source))
+			context.addIssue(ExpressionNeverReturns(source, EXPRESSION_TYPE))
 			return
 		}
 		val lastStatementInPositiveBranch = getLastStatement(positiveBranch)
 		if(!(lastStatementInPositiveBranch is Value || lastStatementInPositiveBranch?.isInterruptingExecutionBasedOnStructure == true))
-			context.addIssue(MissingValue(positiveBranch.source))
+			context.addIssue(BranchMissesValue(positiveBranch.source, EXPRESSION_TYPE))
 		if(negativeBranch != null) {
 			val lastStatementInNegativeBranch = getLastStatement(negativeBranch)
 			if(!(lastStatementInNegativeBranch is Value || lastStatementInNegativeBranch?.isInterruptingExecutionBasedOnStructure == true))
-				context.addIssue(MissingValue(negativeBranch.source))
+				context.addIssue(BranchMissesValue(negativeBranch.source, EXPRESSION_TYPE))
 		}
 	}
 

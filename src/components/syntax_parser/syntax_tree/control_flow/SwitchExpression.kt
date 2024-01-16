@@ -11,13 +11,15 @@ import components.semantic_model.control_flow.Case as SemanticCaseModel
 import components.semantic_model.control_flow.SwitchExpression as SemanticSwitchExpressionModel
 
 class SwitchExpression(private val subject: ValueSyntaxTreeNode, private val cases: LinkedList<Case>,
-					   private val elseBranch: SyntaxTreeNode?, start: Position, end: Position): ValueSyntaxTreeNode(start, end) {
+					   private val elseBranch: SyntaxTreeNode?, private val isPartOfExpression: Boolean, start: Position, end: Position):
+	ValueSyntaxTreeNode(start, end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticSwitchExpressionModel {
 		val cases = LinkedList<SemanticCaseModel>()
 		for(case in this.cases)
 			cases.add(case.toSemanticModel(scope))
-		return SemanticSwitchExpressionModel(this, scope, subject.toSemanticModel(scope), cases, elseBranch?.toSemanticModel(scope))
+		return SemanticSwitchExpressionModel(this, scope, subject.toSemanticModel(scope), cases, elseBranch?.toSemanticModel(scope),
+			isPartOfExpression)
 	}
 
 	override fun toString(): String {
