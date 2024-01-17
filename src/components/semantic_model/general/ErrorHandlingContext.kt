@@ -4,6 +4,7 @@ import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
+import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
 
@@ -73,5 +74,13 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 			if(alwaysBlock.isInterruptingExecutionBasedOnStaticEvaluation)
 				isInterruptingExecutionBasedOnStaticEvaluation = true
 		}
+	}
+
+	fun getLastStatement(): SemanticModel? {
+		return mainBlock.statements.lastOrNull()
+	}
+
+	fun getValue(): Value? {
+		return getLastStatement() as? Value
 	}
 }

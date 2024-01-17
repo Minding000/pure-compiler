@@ -9,13 +9,13 @@ import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.OptionalType
-import components.semantic_model.types.OrUnionType
 import components.semantic_model.values.*
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.access.AbstractMonomorphicAccess
 import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.resolution.NotFound
+import util.combineOrUnion
 import java.util.*
 import components.syntax_parser.syntax_tree.operations.BinaryOperator as BinaryOperatorSyntaxTree
 
@@ -36,7 +36,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				type = rightType
 			} else {
 				val nonOptionalLeftType = if(leftType is OptionalType) leftType.baseType else leftType
-				type = OrUnionType(source, scope, listOf(nonOptionalLeftType, rightType)).simplified()
+				type = listOf(nonOptionalLeftType, rightType).combineOrUnion(this)
 				addSemanticModels(type)
 			}
 			return

@@ -8,9 +8,9 @@ import components.semantic_model.context.VariableUsage
 import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
-import components.semantic_model.types.OrUnionType
 import components.semantic_model.types.Type
 import components.semantic_model.values.BooleanLiteral
+import components.semantic_model.values.LiteralValue
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
 import errors.internal.CompilerError
@@ -21,11 +21,12 @@ import logger.issues.switches.CaseTypeMismatch
 import logger.issues.switches.DuplicateCase
 import logger.issues.switches.NoCases
 import logger.issues.switches.RedundantElse
+import util.combineOrUnion
 import java.util.*
 import components.syntax_parser.syntax_tree.control_flow.SwitchExpression as SwitchStatementSyntaxTree
 
 class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Scope, val subject: Value, val cases: List<Case>,
-					   val elseBranch: SemanticModel?, val isPartOfExpression: Boolean): Value(source, scope) {
+					   val elseBranch: ErrorHandlingContext?, val isPartOfExpression: Boolean): Value(source, scope) {
 	override var isInterruptingExecutionBasedOnStructure = false
 	override var isInterruptingExecutionBasedOnStaticEvaluation = false
 
@@ -45,19 +46,17 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 			return
 		val types = LinkedList<Type>()
 		for(case in cases) {
-			val lastStatementInCaseBranch = getLastStatement(case.result)
-			val caseBranchType = (lastStatementInCaseBranch as? Value)?.type
+			val caseBranchType = case.result.getValue()?.type
 			if(caseBranchType != null)
 				types.add(caseBranchType)
 		}
 		if(elseBranch != null) {
-			val lastStatementInElseBranch = getLastStatement(elseBranch)
-			val elseBranchType = (lastStatementInElseBranch as? Value)?.type
+			val elseBranchType = elseBranch.getValue()?.type
 			if(elseBranchType != null)
 				types.add(elseBranchType)
 		}
 		if(types.isNotEmpty())
-			type = OrUnionType(source, scope, types).simplified()
+			type = types.combineOrUnion(this)
 	}
 
 	private fun inferCaseConditionTypes() {
@@ -91,7 +90,31 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 		}
 		elseBranch?.analyseDataFlow(tracker)
 		tracker.addVariableStates(caseStates)
+		if(isPartOfExpression)
+			computeStaticValue()
 		evaluateExecutionFlow()
+	}
+
+	private fun computeStaticValue() {
+		val subjectValue = subject.getComputedValue() as? LiteralValue
+		if(subjectValue != null) {
+			var areAllCasesAlwaysFalse = true
+			for(case in cases) {
+				val caseValue = case.condition.getComputedValue() as? LiteralValue
+				if(caseValue == null) {
+					areAllCasesAlwaysFalse = false
+					continue
+				}
+				val isAlwaysTrue = subjectValue == caseValue
+				if(isAlwaysTrue) {
+					areAllCasesAlwaysFalse = false
+					staticValue = case.result.getValue()?.getComputedValue()
+					break
+				}
+			}
+			if(areAllCasesAlwaysFalse)
+				staticValue = elseBranch?.getValue()?.getComputedValue()
+		}
 	}
 
 	private fun evaluateExecutionFlow() {
@@ -151,26 +174,20 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 			return
 		}
 		for(case in cases) {
-			val lastStatementInCaseBranch = getLastStatement(case.result)
+			val lastStatementInCaseBranch = case.result.getLastStatement()
 			if(!(lastStatementInCaseBranch is Value || lastStatementInCaseBranch?.isInterruptingExecutionBasedOnStructure == true))
 				context.addIssue(BranchMissesValue(case.result.source, EXPRESSION_TYPE))
 		}
 		if(elseBranch != null) {
-			val lastStatementInElseBranch = getLastStatement(elseBranch)
+			val lastStatementInElseBranch = elseBranch.getLastStatement()
 			if(!(lastStatementInElseBranch is Value || lastStatementInElseBranch?.isInterruptingExecutionBasedOnStructure == true))
 				context.addIssue(BranchMissesValue(elseBranch.source, EXPRESSION_TYPE))
 		}
 	}
 
-	private fun getLastStatement(branch: SemanticModel): SemanticModel? {
-		if(branch is ErrorHandlingContext)
-			return branch.mainBlock.statements.lastOrNull()
-		return branch
-	}
-
 	private fun getBranchForValue(value: Value?): SemanticModel? {
 		for(case in cases) {
-			if(case.condition.getComputedValue() == value)
+			if(case.condition.getComputedValue() as? LiteralValue == value)
 				return case.result
 		}
 		return null
@@ -295,31 +312,20 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 		return constructor.buildBooleanEqualTo(leftValue, rightValue, "switch_case_condition_result")
 	}
 
-	private fun compileBranch(constructor: LlvmConstructor, branch: SemanticModel, result: LlvmValue, exitBlock: LlvmBlock) {
+	private fun compileBranch(constructor: LlvmConstructor, branch: ErrorHandlingContext, result: LlvmValue, exitBlock: LlvmBlock) {
 		if(branch.isInterruptingExecutionBasedOnStructure) {
 			branch.compile(constructor)
 			return
 		}
-		when(branch) {
-			is ErrorHandlingContext -> {
-				val statements = branch.mainBlock.statements
-				val lastStatementIndex = statements.size - 1
-				for((statementIndex, statement) in statements.withIndex()) {
-					if(statementIndex == lastStatementIndex) {
-						val value = statement as? Value ?: throw CompilerError(statement.source,
-							"Last statement in switch expression branch block doesn't provide a value.")
-						constructor.buildStore(value.getLlvmValue(constructor), result)
-					} else {
-						statement.compile(constructor)
-					}
-				}
-			}
-			is Value -> {
-				constructor.buildStore(branch.getLlvmValue(constructor), result)
-			}
-			else -> {
-				throw CompilerError(branch.source,
-					"Branch of switch expression doesn't return a value and doesn't interrupt execution.")
+		val statements = branch.mainBlock.statements
+		val lastStatementIndex = statements.size - 1
+		for((statementIndex, statement) in statements.withIndex()) {
+			if(statementIndex == lastStatementIndex) {
+				val value = statement as? Value ?: throw CompilerError(statement.source,
+					"Last statement in switch expression branch block doesn't provide a value.")
+				constructor.buildStore(value.getLlvmValue(constructor), result)
+			} else {
+				statement.compile(constructor)
 			}
 		}
 		constructor.buildJump(exitBlock)

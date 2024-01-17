@@ -8,7 +8,7 @@ import components.semantic_model.values.LiteralValue
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
 import logger.issues.initialization.ConstantReassignment
-import util.combine
+import util.combineOrUnion
 import java.util.*
 
 typealias UsagesByVariable = HashMap<ValueDeclaration, MutableSet<VariableUsage>>
@@ -67,7 +67,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 			if(type == null)
 				type = usageType
 			else if(!type.accepts(usageType))
-				type = listOf(type, usageType).combine(semanticModel)
+				type = listOf(type, usageType).combineOrUnion(semanticModel)
 		}
 		return type
 	}

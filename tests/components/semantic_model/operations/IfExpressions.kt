@@ -37,8 +37,8 @@ internal class IfExpressions {
 	fun `detects if branch without value in expression`() {
 		val sourceCode =
 			"""
-				val y = 1
-				y = if yes 10 else y = 2
+				var y = 1
+				y = if yes 10 else val z = 2
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<BranchMissesValue>("This branch of the if expression is missing a value.", Severity.ERROR)

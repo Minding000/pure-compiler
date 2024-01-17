@@ -330,7 +330,7 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 
 	/**
 	 * StatementBlock:
-	 *   { [<Statement>\n]... }
+	 *   { [<Statement>]... }
 	 */
 	private fun parseStatementBlock(previousStart: Position? = null): StatementBlock {
 		var start = consume(WordAtom.OPENING_BRACE).start

@@ -7,10 +7,7 @@ import components.syntax_parser.syntax_tree.control_flow.*
 import components.syntax_parser.syntax_tree.definitions.LambdaFunctionDefinition
 import components.syntax_parser.syntax_tree.definitions.Operator
 import components.syntax_parser.syntax_tree.definitions.TypeSpecification
-import components.syntax_parser.syntax_tree.general.ForeignLanguageExpression
-import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
-import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
-import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
+import components.syntax_parser.syntax_tree.general.*
 import components.syntax_parser.syntax_tree.literals.*
 import components.syntax_parser.syntax_tree.operations.BinaryOperator
 import components.syntax_parser.syntax_tree.operations.Cast
@@ -67,21 +64,21 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 	/**
 	 * IfExpression:
 	 *   if <Expression>
-	 *       <Statement>
+	 *       <StatementSection>
 	 *   [else
-	 *   	 <Statement>]
+	 *   	 <StatementSection>]
 	 */
 	fun parseIfExpression(isPartOfExpression: Boolean = true): IfExpression {
 		val start = consume(WordAtom.IF).start
 		val condition = parseExpression()
 		consumeLineBreaks()
-		val positiveBranch = statementParser.parseStatement()
+		val positiveBranch = statementParser.parseStatementSection()
 		consumeLineBreaks()
-		var negativeBranch: SyntaxTreeNode? = null
+		var negativeBranch: StatementSection? = null
 		if(currentWord?.type == WordAtom.ELSE) {
 			consume(WordAtom.ELSE)
 			consumeLineBreaks()
-			negativeBranch = statementParser.parseStatement()
+			negativeBranch = statementParser.parseStatementSection()
 		}
 		return IfExpression(condition, positiveBranch, negativeBranch, isPartOfExpression, start,
 			negativeBranch?.end ?: positiveBranch.end)
@@ -90,8 +87,8 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 	/**
 	 * SwitchExpression:
 	 *   switch <Expression> {
-	 *       <Expression>: <Statement>
-	 *       [else: <Statement>]
+	 *       [<Case>]...
+	 *       [else: <StatementSection>]
 	 *   }
 	 */
 	fun parseSwitchExpression(isPartOfExpression: Boolean = true): SwitchExpression {
@@ -100,14 +97,14 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 		consume(WordAtom.OPENING_BRACE)
 		consumeLineBreaks()
 		val cases = LinkedList<Case>()
-		var elseResult: SyntaxTreeNode? = null
+		var elseResult: StatementSection? = null
 		while(currentWord?.type !== WordAtom.CLOSING_BRACE) {
 			consumeLineBreaks()
 			if(currentWord?.type == WordAtom.ELSE) {
 				consume(WordAtom.ELSE)
 				consume(WordAtom.COLON)
 				consumeLineBreaks()
-				elseResult = statementParser.parseStatement()
+				elseResult = statementParser.parseStatementSection()
 				consumeLineBreaks()
 				break
 			}
@@ -120,13 +117,13 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 
 	/**
 	 * Case:
-	 *   <Expression>: <Statement>
+	 *   <Expression>: <StatementSection>
 	 */
 	private fun parseCase(): Case {
 		val condition = parseExpression()
 		consume(WordAtom.COLON)
 		consumeLineBreaks()
-		return Case(condition, statementParser.parseStatement())
+		return Case(condition, statementParser.parseStatementSection())
 	}
 
 	/**

@@ -1,7 +1,7 @@
 package components.syntax_parser.syntax_tree.control_flow
 
 import components.semantic_model.scopes.MutableScope
-import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import components.syntax_parser.syntax_tree.general.StatementSection
 import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import source_structure.Position
 import util.indent
@@ -11,7 +11,7 @@ import components.semantic_model.control_flow.Case as SemanticCaseModel
 import components.semantic_model.control_flow.SwitchExpression as SemanticSwitchExpressionModel
 
 class SwitchExpression(private val subject: ValueSyntaxTreeNode, private val cases: LinkedList<Case>,
-					   private val elseBranch: SyntaxTreeNode?, private val isPartOfExpression: Boolean, start: Position, end: Position):
+					   private val elseBranch: StatementSection?, private val isPartOfExpression: Boolean, start: Position, end: Position):
 	ValueSyntaxTreeNode(start, end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticSwitchExpressionModel {

@@ -42,10 +42,9 @@ internal class SwitchExpressions {
 	fun `detects switch branch without value in expression`() {
 		val sourceCode =
 			"""
-				val y = 1
 				val y = switch x {
 					ExitCode.SUCCESS: 1
-					else: y = 2
+					else: val z = 2
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

@@ -40,15 +40,19 @@ internal class ControlFlow {
 					LocalVariableDeclaration { Identifier { x }: ObjectType { Identifier { Int } } }
 				}
 				If [ BooleanLiteral { yes } ] {
-					Assignment {
-						Identifier { x }
-						= NumberLiteral { 3 }
-					}
+					StatementSection { StatementBlock {
+						Assignment {
+							Identifier { x }
+							= NumberLiteral { 3 }
+						}
+					} }
 				} Else {
-					Assignment {
-						Identifier { x }
-						= NumberLiteral { 2 }
-					}
+					StatementSection { StatementBlock {
+						Assignment {
+							Identifier { x }
+							= NumberLiteral { 2 }
+						}
+					} }
 				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
@@ -63,9 +67,13 @@ internal class ControlFlow {
 			"""
 				VariableSection [ var ] {
 					LocalVariableDeclaration { Identifier { x } = If [ BooleanLiteral { no } ] {
-						NumberLiteral { 3 }
+						StatementSection { StatementBlock {
+							NumberLiteral { 3 }
+						} }
 					} Else {
-						NumberLiteral { 2 }
+						StatementSection { StatementBlock {
+							NumberLiteral { 2 }
+						} }
 					} }
 				}
             """.trimIndent()
@@ -239,10 +247,14 @@ internal class ControlFlow {
 					Case [ MemberAccess {
 						Identifier { ExitCode }.Identifier { SUCCESS }
 					} ] {
-						StringLiteral { "Success" }
+						StatementSection { StatementBlock {
+							StringLiteral { "Success" }
+						} }
 					}
 				} Else {
-					StringLiteral { "Failed" }
+					StatementSection { StatementBlock {
+						StringLiteral { "Failed" }
+					} }
 				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
@@ -264,12 +276,16 @@ internal class ControlFlow {
 					Case [ MemberAccess {
 						Identifier { ExitCode }.Identifier { SUCCESS }
 					} ] {
-						StringLiteral { "Success" }
+						StatementSection { StatementBlock {
+							StringLiteral { "Success" }
+						} }
 					}
 					Case [ MemberAccess {
 						Identifier { ExitCode }.Identifier { FAILURE }
 					} ] {
-						StringLiteral { "Failure" }
+						StatementSection { StatementBlock {
+							StringLiteral { "Failure" }
+						} }
 					}
 				}
             """.trimIndent()
@@ -293,12 +309,16 @@ internal class ControlFlow {
 						Case [ MemberAccess {
 							Identifier { ExitCode }.Identifier { SUCCESS }
 						} ] {
-							StringLiteral { "Success" }
+							StatementSection { StatementBlock {
+								StringLiteral { "Success" }
+							} }
 						}
 						Case [ MemberAccess {
 							Identifier { ExitCode }.Identifier { FAILURE }
 						} ] {
-							StringLiteral { "Failure" }
+							StatementSection { StatementBlock {
+								StringLiteral { "Failure" }
+							} }
 						}
 					} }
 				}

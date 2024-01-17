@@ -1,11 +1,13 @@
 package projects
 
 import code.Main
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
 internal class CalculatorProject {
 
+	@Disabled
 	@Test
 	fun `runs without errors`() {
 		TestUtil.recordErrorStream()

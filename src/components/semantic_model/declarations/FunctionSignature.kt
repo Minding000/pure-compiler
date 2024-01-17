@@ -13,7 +13,7 @@ import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.resolution.ConversionAmbiguity
-import util.combine
+import util.combineOrUnion
 import java.util.*
 import kotlin.math.max
 
@@ -77,7 +77,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		}
 		if(inferredTypes.isEmpty())
 			return null
-		return inferredTypes.combine(this)
+		return inferredTypes.combineOrUnion(this)
 	}
 
 	fun withTypeSubstitutions(typeSubstitutions: Map<TypeDeclaration, Type>): FunctionSignature {

@@ -8,6 +8,7 @@ import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import util.combineOrUnion
 import java.util.*
 
 class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: List<Type>): Type(source, scope) {
@@ -24,40 +25,11 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 	}
 
 	override fun simplified(): Type {
-		val simplifiedFlattenedTypes = LinkedList<Type>()
-		for(type in types) {
-			val simplifiedType = type.simplified()
-			if(simplifiedType is OrUnionType) {
-				for(part in simplifiedType.types)
-					simplifiedFlattenedTypes.add(part)
-				continue
-			}
-			simplifiedFlattenedTypes.add(type)
-		}
-		val simplifiedUniqueTypes = HashSet<Type>()
-		uniqueTypeSearch@for(type in simplifiedFlattenedTypes) {
-			for(otherType in simplifiedFlattenedTypes) {
-				if(otherType == type)
-					continue
-				if(otherType.accepts(type))
-					continue@uniqueTypeSearch
-			}
-			simplifiedUniqueTypes.add(type)
-		}
-		if(simplifiedUniqueTypes.size == 1)
-			return simplifiedUniqueTypes.first()
-		val isOptional = simplifiedUniqueTypes.removeIf { type -> SpecialType.NULL.matches(type) }
-		var simplifiedType = if(simplifiedUniqueTypes.size == 1)
-			simplifiedUniqueTypes.first()
-		else
-			OrUnionType(source, scope, simplifiedUniqueTypes.toList())
-		if(isOptional)
-			simplifiedType = OptionalType(source, scope, simplifiedType)
-		return simplifiedType
+		return types.combineOrUnion(this)
 	}
 
 	override fun getLocalType(value: Value, sourceType: Type): Type {
-		return OrUnionType(source, scope, types.map { type -> type.getLocalType(value, sourceType) }).simplified()
+		return types.map { type -> type.getLocalType(value, sourceType) }.combineOrUnion(this)
 	}
 
 	override fun isMemberAccessible(signature: FunctionSignature, requireSpecificType: Boolean): Boolean {

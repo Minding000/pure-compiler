@@ -1,6 +1,7 @@
 package components.semantic_model.static_analysis
 
 import components.semantic_model.control_flow.IfExpression
+import components.semantic_model.control_flow.SwitchExpression
 import components.semantic_model.operations.BinaryOperator
 import components.semantic_model.operations.UnaryOperator
 import components.semantic_model.values.BooleanLiteral
@@ -228,6 +229,21 @@ internal class StaticOperatorEvaluation {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val staticResult = lintResult.find<IfExpression>()?.getComputedValue()
+		assertIs<NumberLiteral>(staticResult)
+		assertEquals(45, staticResult.value.toInt())
+	}
+
+	@Test
+	fun `calculates result of switch expressions`() {
+		val sourceCode =
+			"""
+				val x = switch 2 {
+					3: 3
+					else: 45
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val staticResult = lintResult.find<SwitchExpression>()?.getComputedValue()
 		assertIs<NumberLiteral>(staticResult)
 		assertEquals(45, staticResult.value.toInt())
 	}

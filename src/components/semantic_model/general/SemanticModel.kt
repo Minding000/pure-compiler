@@ -24,6 +24,7 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 				newSemanticModel.parent = this
 				for(existingSemanticModel in semanticModels) {
 					if(existingSemanticModel === newSemanticModel) {
+						//TODO shouldn't this be a compiler error instead?
 						context.addIssue(DuplicateChildModel(newSemanticModel))
 						continue@newModel
 					}

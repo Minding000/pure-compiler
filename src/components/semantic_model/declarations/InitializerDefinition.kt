@@ -20,7 +20,7 @@ import logger.issues.declaration.MultipleVariadicParameters
 import logger.issues.initialization.UninitializedProperties
 import logger.issues.modifiers.*
 import logger.issues.resolution.ConversionAmbiguity
-import util.combine
+import util.combineOrUnion
 import util.stringifyTypes
 import java.util.*
 import kotlin.math.max
@@ -109,7 +109,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		}
 		if(inferredTypes.isEmpty())
 			return null
-		return inferredTypes.combine(this)
+		return inferredTypes.combineOrUnion(this)
 	}
 
 	//TODO support labeled input values (same for functions)

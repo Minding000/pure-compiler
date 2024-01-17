@@ -23,10 +23,13 @@ class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types:
 	override fun simplified(): Type {
 		if(types.size == 1)
 			return types.first().simplified()
+		//TODO flatten and unions
+		//TODO de-duplicate and unions
 		return AndUnionType(source, scope, types.map(Type::simplified))
 	}
 
 	override fun getLocalType(value: Value, sourceType: Type): Type {
+		//TODO call combine function directly instead of creating an intermediate type
 		return AndUnionType(source, scope, types.map { type -> type.getLocalType(value, sourceType) }).simplified()
 	}
 

@@ -22,7 +22,9 @@ internal class Generators {
 					If [ BinaryOperator {
 						Identifier { index } Operator { == } NumberLiteral { 1 }
 					} ] {
-						Return { Yield { Identifier { index } NumberLiteral { 1 } } }
+						StatementSection { StatementBlock {
+							Return { Yield { Identifier { index } NumberLiteral { 1 } } }
+						} }
 					}
 					Return { Yield { Identifier { index } BinaryOperator {
 						Identifier { index } Operator { + } FunctionCall [ This ] {

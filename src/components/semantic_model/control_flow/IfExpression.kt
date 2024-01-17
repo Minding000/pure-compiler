@@ -5,9 +5,7 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.general.ErrorHandlingContext
-import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
-import components.semantic_model.types.OrUnionType
 import components.semantic_model.types.Type
 import components.semantic_model.values.BooleanLiteral
 import components.semantic_model.values.Value
@@ -15,11 +13,12 @@ import errors.internal.CompilerError
 import logger.issues.expressions.BranchMissesValue
 import logger.issues.expressions.ExpressionMissesElse
 import logger.issues.expressions.ExpressionNeverReturns
+import util.combineOrUnion
 import java.util.*
 import components.syntax_parser.syntax_tree.control_flow.IfExpression as IfStatementSyntaxTree
 
-class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val condition: Value, val positiveBranch: SemanticModel,
-				   val negativeBranch: SemanticModel?, val isPartOfExpression: Boolean): Value(source, scope) {
+class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val condition: Value, val positiveBranch: ErrorHandlingContext,
+				   val negativeBranch: ErrorHandlingContext?, val isPartOfExpression: Boolean): Value(source, scope) {
 	override var isInterruptingExecutionBasedOnStructure = false
 	override var isInterruptingExecutionBasedOnStaticEvaluation = false
 	private var isConditionAlwaysTrue = false
@@ -38,18 +37,16 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 		if(!isPartOfExpression)
 			return
 		val types = LinkedList<Type>()
-		val lastStatementInPositiveBranch = getLastStatement(positiveBranch)
-		val positiveBranchType = (lastStatementInPositiveBranch as? Value)?.type
+		val positiveBranchType = positiveBranch.getValue()?.type
 		if(positiveBranchType != null)
 			types.add(positiveBranchType)
 		if(negativeBranch != null) {
-			val lastStatementInNegativeBranch = getLastStatement(negativeBranch)
-			val negativeBranchType = (lastStatementInNegativeBranch as? Value)?.type
+			val negativeBranchType = negativeBranch.getValue()?.type
 			if(negativeBranchType != null)
 				types.add(negativeBranchType)
 		}
 		if(types.isNotEmpty())
-			type = OrUnionType(source, scope, types).simplified()
+			type = types.combineOrUnion(this)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -68,13 +65,16 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 			isConditionAlwaysTrue = staticResult == true
 			isConditionAlwaysFalse = staticResult == false
 		}
-		if(isPartOfExpression) {
-			if(isConditionAlwaysTrue)
-				staticValue = (positiveBranch as? Value)?.getComputedValue()
-			if(isConditionAlwaysFalse)
-				staticValue = (negativeBranch as? Value)?.getComputedValue()
-		}
+		if(isPartOfExpression)
+			computeStaticValue()
 		evaluateExecutionFlow()
+	}
+
+	private fun computeStaticValue() {
+		if(isConditionAlwaysTrue)
+			staticValue = positiveBranch.getValue()?.getComputedValue()
+		if(isConditionAlwaysFalse)
+			staticValue = negativeBranch?.getValue()?.getComputedValue()
 	}
 
 	private fun evaluateExecutionFlow() {
@@ -110,20 +110,14 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 			context.addIssue(ExpressionNeverReturns(source, EXPRESSION_TYPE))
 			return
 		}
-		val lastStatementInPositiveBranch = getLastStatement(positiveBranch)
+		val lastStatementInPositiveBranch = positiveBranch.getLastStatement()
 		if(!(lastStatementInPositiveBranch is Value || lastStatementInPositiveBranch?.isInterruptingExecutionBasedOnStructure == true))
 			context.addIssue(BranchMissesValue(positiveBranch.source, EXPRESSION_TYPE))
 		if(negativeBranch != null) {
-			val lastStatementInNegativeBranch = getLastStatement(negativeBranch)
+			val lastStatementInNegativeBranch = negativeBranch.getLastStatement()
 			if(!(lastStatementInNegativeBranch is Value || lastStatementInNegativeBranch?.isInterruptingExecutionBasedOnStructure == true))
 				context.addIssue(BranchMissesValue(negativeBranch.source, EXPRESSION_TYPE))
 		}
-	}
-
-	private fun getLastStatement(branch: SemanticModel): SemanticModel? {
-		if(branch is ErrorHandlingContext)
-			return branch.mainBlock.statements.lastOrNull()
-		return branch
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
@@ -168,31 +162,20 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 		return constructor.buildLoad(resultLlvmType, result, "if_result")
 	}
 
-	private fun compileBranch(constructor: LlvmConstructor, branch: SemanticModel, result: LlvmValue, exitBlock: LlvmBlock) {
+	private fun compileBranch(constructor: LlvmConstructor, branch: ErrorHandlingContext, result: LlvmValue, exitBlock: LlvmBlock) {
 		if(branch.isInterruptingExecutionBasedOnStructure) {
 			branch.compile(constructor)
 			return
 		}
-		when(branch) {
-			is ErrorHandlingContext -> {
-				val statements = branch.mainBlock.statements
-				val lastStatementIndex = statements.size - 1
-				for((statementIndex, statement) in statements.withIndex()) {
-					if(statementIndex == lastStatementIndex) {
-						val value = statement as? Value ?: throw CompilerError(statement.source,
-							"Last statement in if expression branch block doesn't provide a value.")
-						constructor.buildStore(value.getLlvmValue(constructor), result)
-					} else {
-						statement.compile(constructor)
-					}
-				}
-			}
-			is Value -> {
-				constructor.buildStore(branch.getLlvmValue(constructor), result)
-			}
-			else -> {
-				throw CompilerError(branch.source,
-					"Branch of if expression doesn't return a value and doesn't interrupt execution.")
+		val statements = branch.mainBlock.statements
+		val lastStatementIndex = statements.size - 1
+		for((statementIndex, statement) in statements.withIndex()) {
+			if(statementIndex == lastStatementIndex) {
+				val value = statement as? Value ?: throw CompilerError(statement.source,
+					"Last statement in if expression branch block doesn't provide a value.")
+				constructor.buildStore(value.getLlvmValue(constructor), result)
+			} else {
+				statement.compile(constructor)
 			}
 		}
 		constructor.buildJump(exitBlock)
