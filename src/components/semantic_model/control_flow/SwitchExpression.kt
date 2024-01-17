@@ -1,5 +1,6 @@
 package components.semantic_model.control_flow
 
+import components.code_generation.llvm.LlvmBlock
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.VariableTracker
@@ -12,6 +13,7 @@ import components.semantic_model.types.Type
 import components.semantic_model.values.BooleanLiteral
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
+import errors.internal.CompilerError
 import logger.issues.expressions.BranchMissesValue
 import logger.issues.expressions.ExpressionMissesElse
 import logger.issues.expressions.ExpressionNeverReturns
@@ -205,13 +207,121 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 		return false
 	}
 
-	//TODO compile switch statements
 	override fun compile(constructor: LlvmConstructor) {
-		super.compile(constructor)
+		val function = constructor.getParentFunction()
+		val elseBlock = constructor.createBlock(function, "switch_elseBlock")
+		val exitBlock = constructor.createBlock("switch_exitBlock")
+		if(cases.isNotEmpty()) {
+			val targetBlocks = LinkedList<LlvmBlock>()
+			for(case in cases)
+				targetBlocks.add(constructor.createBlock(function, "switch_caseConditionBlock"))
+			targetBlocks.add(elseBlock)
+			val subjectValue = subject.getLlvmValue(constructor)
+			constructor.buildJump(targetBlocks.first())
+			for((caseIndex, case) in cases.withIndex()) {
+				val condition = buildEquals(constructor, case.condition.getLlvmValue(constructor), subjectValue)
+				val currentConditionBlock = targetBlocks[caseIndex]
+				val nextTargetBlock = targetBlocks[caseIndex + 1]
+				constructor.select(currentConditionBlock)
+				val caseBodyBlock = constructor.createBlock(function, "switch_caseBodyBlock")
+				constructor.buildJump(condition, caseBodyBlock, nextTargetBlock)
+				constructor.select(caseBodyBlock)
+				case.result.compile(constructor)
+				if(!case.result.isInterruptingExecutionBasedOnStructure)
+					constructor.buildJump(exitBlock)
+			}
+			constructor.select(elseBlock)
+		}
+		if(elseBranch == null) {
+			if(isInterruptingExecutionBasedOnStructure) {
+				context.panic(constructor, "Exhaustive switch statement did not match any case!")
+				constructor.markAsUnreachable()
+			}
+		} else {
+			elseBranch.compile(constructor)
+		}
+		if(!isInterruptingExecutionBasedOnStructure) {
+			if(elseBranch?.isInterruptingExecutionBasedOnStructure != true)
+				constructor.buildJump(exitBlock)
+			constructor.addBlockToFunction(function, exitBlock)
+			constructor.select(exitBlock)
+		}
 	}
 
-	//TODO compile switch expressions
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		return super.buildLlvmValue(constructor)
+		val resultLlvmType = type?.getLlvmType(constructor)
+		val result = constructor.buildStackAllocation(resultLlvmType, "switch_resultVariable")
+		val function = constructor.getParentFunction()
+		val elseBlock = constructor.createBlock(function, "switch_elseBlock")
+		val exitBlock = constructor.createBlock("switch_exitBlock")
+		if(cases.isNotEmpty()) {
+			val targetBlocks = LinkedList<LlvmBlock>()
+			for(case in cases)
+				targetBlocks.add(constructor.createBlock(function, "switch_caseConditionBlock"))
+			targetBlocks.add(elseBlock)
+			val subjectValue = subject.getLlvmValue(constructor)
+			constructor.buildJump(targetBlocks.first())
+			for((caseIndex, case) in cases.withIndex()) {
+				val condition = buildEquals(constructor, case.condition.getLlvmValue(constructor), subjectValue)
+				val currentConditionBlock = targetBlocks[caseIndex]
+				val nextTargetBlock = targetBlocks[caseIndex + 1]
+				constructor.select(currentConditionBlock)
+				val caseBodyBlock = constructor.createBlock(function, "switch_caseBodyBlock")
+				constructor.buildJump(condition, caseBodyBlock, nextTargetBlock)
+				constructor.select(caseBodyBlock)
+				compileBranch(constructor, case.result, result, exitBlock)
+			}
+			constructor.select(elseBlock)
+		}
+		if(elseBranch == null) {
+			if(isInterruptingExecutionBasedOnStructure) {
+				context.panic(constructor, "Exhaustive switch statement did not match any case!")
+				constructor.markAsUnreachable()
+			} else {
+				constructor.buildJump(exitBlock)
+			}
+		} else {
+			compileBranch(constructor, elseBranch, result, exitBlock)
+		}
+		if(!isInterruptingExecutionBasedOnStructure) {
+			constructor.addBlockToFunction(function, exitBlock)
+			constructor.select(exitBlock)
+		}
+		return constructor.buildLoad(resultLlvmType, result, "switch_result")
+	}
+
+	private fun buildEquals(constructor: LlvmConstructor, leftValue: LlvmValue, rightValue: LlvmValue): LlvmValue {
+		//TODO this check needs to work for any type
+		return constructor.buildBooleanEqualTo(leftValue, rightValue, "switch_case_condition_result")
+	}
+
+	private fun compileBranch(constructor: LlvmConstructor, branch: SemanticModel, result: LlvmValue, exitBlock: LlvmBlock) {
+		if(branch.isInterruptingExecutionBasedOnStructure) {
+			branch.compile(constructor)
+			return
+		}
+		when(branch) {
+			is ErrorHandlingContext -> {
+				val statements = branch.mainBlock.statements
+				val lastStatementIndex = statements.size - 1
+				for((statementIndex, statement) in statements.withIndex()) {
+					if(statementIndex == lastStatementIndex) {
+						val value = statement as? Value ?: throw CompilerError(statement.source,
+							"Last statement in switch expression branch block doesn't provide a value.")
+						constructor.buildStore(value.getLlvmValue(constructor), result)
+					} else {
+						statement.compile(constructor)
+					}
+				}
+			}
+			is Value -> {
+				constructor.buildStore(branch.getLlvmValue(constructor), result)
+			}
+			else -> {
+				throw CompilerError(branch.source,
+					"Branch of switch expression doesn't return a value and doesn't interrupt execution.")
+			}
+		}
+		constructor.buildJump(exitBlock)
 	}
 }
