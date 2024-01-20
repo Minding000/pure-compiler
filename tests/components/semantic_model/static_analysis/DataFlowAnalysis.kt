@@ -352,13 +352,14 @@ internal class DataFlowAnalysis {
 	@Test
 	fun `works with member accesses`() {
 		val sourceCode = """
-			val a: Int
-			a.b = 2
+			val a: Point
+			if a.b
+				c = 3
 		""".trimIndent()
 		val report = """
 			start -> 1
-			1: declaration -> 2 (Int, null)
-			2: read -> end (Int, null)
+			1: declaration -> 2 (Point, null)
+			2: read -> end (Point, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertStringEquals(report, tracker.getReportFor("a"))

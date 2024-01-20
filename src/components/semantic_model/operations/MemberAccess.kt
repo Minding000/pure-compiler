@@ -49,6 +49,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			//TODO write test to make sure this is fine
 			(member as? VariableValue)?.computeValue(tracker)
 		}
+		setEndStates(tracker)
 		val computedTargetType = target.getComputedType()
 		if(computedTargetType != null) {
 			if(isTypePotentiallyNull(computedTargetType)) {
