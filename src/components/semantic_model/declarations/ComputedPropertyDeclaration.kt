@@ -24,8 +24,9 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 								  val whereClauseConditions: List<WhereClauseCondition>, isOverriding: Boolean, isAbstract: Boolean,
 								  val getterScope: BlockScope, val setterScope: BlockScope, getter: SemanticModel?,
 								  val setter: SemanticModel?):
-	PropertyDeclaration(source, scope, name, type, getter as? Value, false, isAbstract, setter == null, false,
+	PropertyDeclaration(source, scope, name, type, null, false, isAbstract, setter == null, false,
 		isOverriding) {
+	override val value: Value? = getter as? Value
 	val getterIdentifier
 		get() = "get $memberIdentifier"
 	val setterIdentifier
