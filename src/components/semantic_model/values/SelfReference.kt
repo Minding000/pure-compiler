@@ -14,7 +14,7 @@ import components.syntax_parser.syntax_tree.literals.SelfReference as SelfRefere
 
 open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Scope, private val specifier: ObjectType?):
 	Value(source, scope) {
-	private var typeDeclaration: TypeDeclaration? = null
+	var typeDeclaration: TypeDeclaration? = null
 
 	init {
 		addSemanticModels(specifier)

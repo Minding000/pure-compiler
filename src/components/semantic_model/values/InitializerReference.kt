@@ -1,5 +1,6 @@
 package components.semantic_model.values
 
+import components.semantic_model.operations.MemberAccess
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.StaticType
@@ -14,7 +15,11 @@ open class InitializerReference(override val source: InitializerReferenceSyntaxT
 		if(scope is InterfaceScope && scope.type is StaticType) {
 			type = scope.type
 		} else {
-			val surroundingDefinition = scope.getSurroundingTypeDeclaration()
+			val parent = parent
+			val surroundingDefinition = if(parent is MemberAccess && parent.target is SelfReference)
+				parent.target.typeDeclaration
+			else
+				scope.getSurroundingTypeDeclaration()
 			if(surroundingDefinition == null || !isInInitializer()) {
 				context.addIssue(InitializerReferenceOutsideOfInitializer(source))
 			} else {

@@ -138,6 +138,7 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 			return parseGeneratorDefinition()
 
 		val expression = parseExpression()
+		//TODO also allow operators on self references
 		if(isExpressionAssignable(expression)) {
 			if(currentWord?.type == WordAtom.ASSIGNMENT) {
 				val targets = LinkedList<ValueSyntaxTreeNode>()
