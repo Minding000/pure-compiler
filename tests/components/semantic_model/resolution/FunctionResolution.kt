@@ -285,6 +285,25 @@ internal class FunctionResolution {
 	}
 
 	@Test
+	fun `resolves the most specific signature considering the number of required conversions`() {
+		val sourceCode =
+			"""
+				Cup class
+				Bowl class {
+					converting init(cup: Cup)
+				}
+				Bottle object {
+					to setSource(cup: Cup)
+					to setSource(bowl: Bowl)
+				}
+				Bottle.setSource(Cup())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
+		assertEquals("(Cup) =>|", functionCall?.targetSignature.toString())
+	}
+
+	@Test
 	fun `allows accessing functions without where clause`() {
 		val sourceCode = """
 			abstract Addable class

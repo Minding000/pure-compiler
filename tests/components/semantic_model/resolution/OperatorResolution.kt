@@ -360,6 +360,25 @@ internal class OperatorResolution {
 	}
 
 	@Test
+	fun `resolves the most specific signature considering the number of required conversions`() {
+		val sourceCode =
+			"""
+				Cup class
+				Bowl class {
+					converting init(cup: Cup)
+				}
+				Bottle object {
+					operator +=(cup: Cup)
+					operator +=(bowl: Bowl)
+				}
+				Bottle += Cup()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val operatorCall = lintResult.find<BinaryModification>()
+		assertEquals("(Cup) =>|", operatorCall?.targetSignature.toString())
+	}
+
+	@Test
 	fun `allows accessing operators without where clause`() {
 		val sourceCode = """
 			abstract Addable class

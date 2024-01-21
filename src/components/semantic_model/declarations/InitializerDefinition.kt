@@ -3,6 +3,7 @@ package components.semantic_model.declarations
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
+import components.semantic_model.context.ComparisonResult
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
@@ -141,23 +142,30 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		return true
 	}
 
-	fun isMoreSpecificThan(otherInitializerDefinition: InitializerDefinition): Boolean {
+	fun compareSpecificity(otherInitializerDefinition: InitializerDefinition): ComparisonResult {
 		for(parameterIndex in 0 until max(fixedParameters.size, otherInitializerDefinition.fixedParameters.size)) {
-			val parameterType = getParameterTypeAt(parameterIndex) ?: return false
-			val otherParameterType = otherInitializerDefinition.getParameterTypeAt(parameterIndex) ?: return true
-			if(parameterType != otherParameterType)
-				return otherParameterType.accepts(parameterType)
+			val parameterType = getParameterTypeAt(parameterIndex) ?: continue
+			val otherParameterType = otherInitializerDefinition.getParameterTypeAt(parameterIndex) ?: continue
+			if(parameterType != otherParameterType) {
+				if(otherParameterType.accepts(parameterType)) return ComparisonResult.HIGHER
+				if(parameterType.accepts(otherParameterType)) return ComparisonResult.LOWER
+			}
 		}
 		val otherVariadicParameter = otherInitializerDefinition.variadicParameter
-		if(otherVariadicParameter != null) {
+		if(otherVariadicParameter == null) {
+			if(variadicParameter != null)
+				return ComparisonResult.LOWER
+		} else {
 			if(variadicParameter == null)
-				return true
-			val variadicParameterType = variadicParameter.type ?: return false
-			val otherVariadicParameterType = otherVariadicParameter.type ?: return true
-			if(variadicParameterType != otherVariadicParameterType)
-				return otherVariadicParameterType.accepts(variadicParameterType)
+				return ComparisonResult.HIGHER
+			val variadicParameterType = variadicParameter.type ?: return ComparisonResult.SAME
+			val otherVariadicParameterType = otherVariadicParameter.type ?: return ComparisonResult.SAME
+			if(variadicParameterType != otherVariadicParameterType) {
+				if(otherVariadicParameterType.accepts(variadicParameterType)) return ComparisonResult.HIGHER
+				if(otherVariadicParameterType.accepts(variadicParameterType)) return ComparisonResult.LOWER
+			}
 		}
-		return false
+		return ComparisonResult.SAME
 	}
 
 	fun fulfillsInheritanceRequirementsOf(superInitializer: InitializerDefinition): Boolean {

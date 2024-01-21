@@ -2,6 +2,7 @@ package components.semantic_model.types
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
+import components.semantic_model.context.ComparisonResult
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.declarations.ValueDeclaration
@@ -64,7 +65,7 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 			for(otherMatch in matches) {
 				if(otherMatch == match)
 					continue
-				if(!match.initializer.isMoreSpecificThan(otherMatch.initializer))
+				if(match.compareSpecificity(otherMatch) != ComparisonResult.HIGHER)
 					continue@specificityPrecedenceLoop
 			}
 			for(parameterIndex in suppliedValues.indices) {
@@ -94,7 +95,23 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 	}
 
 	class Match(val initializer: InitializerDefinition, val globalTypeSubstitutions: Map<TypeDeclaration, Type>,
-		val conversions: Map<Value, InitializerDefinition>)
+		val conversions: Map<Value, InitializerDefinition>) {
+
+		fun compareSpecificity(otherMatch: Match): ComparisonResult {
+			val initializerComparisonResult = initializer.compareSpecificity(otherMatch.initializer)
+			if(initializerComparisonResult != ComparisonResult.SAME)
+				return initializerComparisonResult
+			if(conversions.size < otherMatch.conversions.size)
+				return ComparisonResult.HIGHER
+			if(conversions.size > otherMatch.conversions.size)
+				return ComparisonResult.LOWER
+			if(!initializer.isConverting && otherMatch.initializer.isConverting)
+				return ComparisonResult.HIGHER
+			if(initializer.isConverting && !otherMatch.initializer.isConverting)
+				return ComparisonResult.LOWER
+			return ComparisonResult.SAME
+		}
+	}
 
 	override fun equals(other: Any?): Boolean {
 		if(other !is StaticType)

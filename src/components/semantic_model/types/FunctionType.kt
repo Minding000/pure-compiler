@@ -1,5 +1,6 @@
 package components.semantic_model.types
 
+import components.semantic_model.context.ComparisonResult
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.declarations.InitializerDefinition
@@ -68,7 +69,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 			for(otherMatch in matches) {
 				if(otherMatch === match)
 					continue
-				if(!match.signature.isMoreSpecificThan(otherMatch.signature))
+				if(match.compareSpecificity(otherMatch) != ComparisonResult.HIGHER)
 					continue@specificityPrecedenceLoop
 			}
 			for(parameterIndex in suppliedValues.indices) {
@@ -191,5 +192,16 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 	class Match(val signature: FunctionSignature, val localTypeSubstitutions: Map<TypeDeclaration, Type>,
 				val conversions: Map<Value, InitializerDefinition>) {
 		val returnType = signature.returnType.withTypeSubstitutions(localTypeSubstitutions)
+
+		fun compareSpecificity(otherMatch: Match): ComparisonResult {
+			val signatureComparisonResult = signature.compareSpecificity(otherMatch.signature)
+			if(signatureComparisonResult != ComparisonResult.SAME)
+				return signatureComparisonResult
+			if(conversions.size < otherMatch.conversions.size)
+				return ComparisonResult.HIGHER
+			if(conversions.size > otherMatch.conversions.size)
+				return ComparisonResult.LOWER
+			return ComparisonResult.SAME
+		}
 	}
 }

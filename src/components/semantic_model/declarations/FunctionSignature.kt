@@ -2,6 +2,7 @@ package components.semantic_model.declarations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
+import components.semantic_model.context.ComparisonResult
 import components.semantic_model.context.SpecialType
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.BlockScope
@@ -140,21 +141,28 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		return superFunctionSignature?.overrides(otherSignature) ?: false
 	}
 
-	fun isMoreSpecificThan(otherSignature: FunctionSignature): Boolean {
+	fun compareSpecificity(otherSignature: FunctionSignature): ComparisonResult {
 		for(parameterIndex in 0 until max(fixedParameterTypes.size, otherSignature.fixedParameterTypes.size)) {
-			val parameterType = getParameterTypeAt(parameterIndex) ?: return false
-			val otherParameterType = otherSignature.getParameterTypeAt(parameterIndex) ?: return true
-			if(parameterType != otherParameterType)
-				return otherParameterType.accepts(parameterType)
+			val parameterType = getParameterTypeAt(parameterIndex) ?: continue
+			val otherParameterType = otherSignature.getParameterTypeAt(parameterIndex) ?: continue
+			if(parameterType != otherParameterType) {
+				if(otherParameterType.accepts(parameterType)) return ComparisonResult.HIGHER
+				if(parameterType.accepts(otherParameterType)) return ComparisonResult.LOWER
+			}
 		}
 		val otherVariadicParameterType = otherSignature.variadicParameterType
-		if(otherVariadicParameterType != null) {
+		if(otherVariadicParameterType == null) {
+			if(variadicParameterType != null)
+				return ComparisonResult.LOWER
+		} else {
 			if(variadicParameterType == null)
-				return true
-			if(variadicParameterType != otherVariadicParameterType)
-				return otherVariadicParameterType.accepts(variadicParameterType)
+				return ComparisonResult.HIGHER
+			if(variadicParameterType != otherVariadicParameterType) {
+				if(otherVariadicParameterType.accepts(variadicParameterType)) return ComparisonResult.HIGHER
+				if(variadicParameterType.accepts(otherVariadicParameterType)) return ComparisonResult.LOWER
+			}
 		}
-		return false
+		return ComparisonResult.SAME
 	}
 
 	fun hasSameParameterTypesAs(otherSignature: FunctionSignature): Boolean {

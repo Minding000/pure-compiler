@@ -185,7 +185,7 @@ internal class InitializerResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function as? VariableValue)?.name == "Bottle" }
-		assertEquals("Bottle(Int)", initializerCall?.targetInitializer?.toString())
+		assertEquals("Bottle(Int)", initializerCall?.targetInitializer.toString())
 	}
 
 	@Test
@@ -202,7 +202,7 @@ internal class InitializerResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function as? VariableValue)?.name == "Bottle" }
-		assertEquals("Bottle(Int)", initializerCall?.targetInitializer?.toString())
+		assertEquals("Bottle(Int)", initializerCall?.targetInitializer.toString())
 	}
 
 	@Test
@@ -220,7 +220,45 @@ internal class InitializerResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function as? VariableValue)?.name == "Bottle" }
-		assertEquals("Bottle(...Int)", initializerCall?.targetInitializer?.toString())
+		assertEquals("Bottle(...Int)", initializerCall?.targetInitializer.toString())
+	}
+
+	@Test
+	fun `resolves the most specific signature considering the number of required conversions`() {
+		val sourceCode =
+			"""
+				Cup class
+				Bowl class {
+					converting init(cup: Cup)
+				}
+				Bottle class {
+					init(cup: Cup)
+					init(bowl: Bowl)
+				}
+				Bottle(Cup())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function as? VariableValue)?.name == "Bottle" }
+		assertEquals("Bottle(Cup)", initializerCall?.targetInitializer.toString())
+	}
+
+	@Test
+	fun `resolves the most specific signature considering whether the target initializer is converting`() {
+		val sourceCode =
+			"""
+				Glass class
+				Bottle class {
+					converting init(glass: Glass)
+					init(other: Bottle)
+				}
+				GlassBottle object: Glass & Bottle
+				Bottle(GlassBottle)
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
+			(functionCall.function as? VariableValue)?.name == "Bottle" }
+		assertEquals("Bottle(Bottle)", initializerCall?.targetInitializer?.toString())
 	}
 
 	@Test
