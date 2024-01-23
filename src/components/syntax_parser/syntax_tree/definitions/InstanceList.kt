@@ -9,6 +9,8 @@ import components.tokenizer.WordAtom
 import source_structure.Position
 import util.indent
 import util.toLines
+import java.util.*
+import components.semantic_model.values.Instance as SemanticInstanceModel
 
 class InstanceList(start: Position, private val instances: List<Instance>):
 	MetaSyntaxTreeNode(start, instances.last().end), ModifierSectionChild {
@@ -19,16 +21,22 @@ class InstanceList(start: Position, private val instances: List<Instance>):
 	}
 
 	override fun toSemanticModel(scope: MutableScope, semanticModels: MutableList<SemanticModel>) {
+		semanticModels.addAll(toSemanticInstanceModels(scope))
+	}
+
+	fun toSemanticInstanceModels(scope: MutableScope): List<SemanticInstanceModel> {
 		parent?.validate(ALLOWED_MODIFIER_TYPES)
 		val isAbstract = parent?.containsModifier(WordAtom.ABSTRACT) ?: false
 		val isOverriding = parent?.containsModifier(WordAtom.OVERRIDING) ?: false
 		val isNative = parent?.containsModifier(WordAtom.NATIVE) ?: false
+		val semanticInstanceModels = LinkedList<SemanticInstanceModel>()
 		for(instance in instances) {
 			instance.isAbstract = isAbstract
 			instance.isOverriding = isOverriding
 			instance.isNative = isNative
-			instance.toSemanticModel(scope, semanticModels)
+			semanticInstanceModels.add(instance.toSemanticModel(scope))
 		}
+		return semanticInstanceModels
 	}
 
 	override fun toString(): String {

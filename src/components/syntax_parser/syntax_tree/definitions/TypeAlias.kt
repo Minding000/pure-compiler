@@ -8,20 +8,27 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
 import source_structure.Position
+import util.indent
+import util.toLines
 import components.semantic_model.declarations.TypeAlias as SemanticTypeAliasModel
 
-class TypeAlias(start: Position, private val modifierList: ModifierList?, private val identifier: Identifier,
-				private val type: TypeSyntaxTreeNode): SyntaxTreeNode(start, type.end), ModifierSectionChild {
+class TypeAlias(private val modifierList: ModifierList?, private val identifier: Identifier, private val type: TypeSyntaxTreeNode,
+				private val instanceLists: List<InstanceList>, start: Position, end: Position):
+	SyntaxTreeNode(start, end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
 
 	override fun toSemanticModel(scope: MutableScope): SemanticTypeAliasModel {
 		modifierList?.validate(context)
-		val type = type.toSemanticModel(scope)
 		val typeScope = TypeScope(scope)
-		return SemanticTypeAliasModel(this, identifier.getValue(), type, typeScope)
+		val type = type.toSemanticModel(scope)
+		val instances = instanceLists.flatMap { instanceList -> instanceList.toSemanticInstanceModels(typeScope) }
+		return SemanticTypeAliasModel(this, typeScope, identifier.getValue(), type, instances)
 	}
 
 	override fun toString(): String {
-		return "TypeAlias [ ${if(modifierList == null) "" else "$modifierList "}$identifier ] { $type }"
+		var stringRepresentation = "TypeAlias [ ${if(modifierList == null) "" else "$modifierList "}$identifier = $type ]"
+		if(instanceLists.isNotEmpty())
+			stringRepresentation += " {${instanceLists.toLines().indent()}\n}"
+		return stringRepresentation
 	}
 }

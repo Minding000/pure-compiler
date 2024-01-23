@@ -3,10 +3,11 @@ package components.semantic_model.declarations
 import components.semantic_model.scopes.TypeScope
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.Type
+import components.semantic_model.values.Instance
 import components.syntax_parser.syntax_tree.definitions.TypeAlias as TypeAliasSyntaxTree
 
-class TypeAlias(override val source: TypeAliasSyntaxTree, name: String, val referenceType: Type, scope: TypeScope):
-	TypeDeclaration(source, name, scope, null, null, emptyList(), false) {
+class TypeAlias(override val source: TypeAliasSyntaxTree, scope: TypeScope, name: String, val referenceType: Type,
+				val instances: List<Instance>): TypeDeclaration(source, name, scope) {
 	override val isDefinition = false
 	private var hasDeterminedEffectiveType = false
 	private var effectiveType = referenceType

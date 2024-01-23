@@ -426,7 +426,7 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 
 	/**
 	 * TypeAlias:
-	 *   alias <Identifier> = <Type>
+	 *   alias <Identifier> = <Type>[ { [<InstanceList>]... }]
 	 */
 	private fun parseTypeAlias(modifierList: ModifierList? = null): TypeAlias {
 		var start = consume(WordAtom.TYPE_ALIAS).start
@@ -435,12 +435,29 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 		val identifier = parseIdentifier()
 		consume(WordAtom.ASSIGNMENT)
 		val type = typeParser.parseUnionType()
-		return TypeAlias(start, modifierList, identifier, type)
+		val instanceLists = LinkedList<InstanceList>()
+		val end = if(currentWord?.type == WordAtom.OPENING_BRACE) {
+			consume(WordAtom.OPENING_BRACE)
+			while(currentWord?.type != WordAtom.CLOSING_BRACE) {
+				consumeLineBreaks()
+				if(currentWord?.type == WordAtom.CLOSING_BRACE)
+					break
+				try {
+					instanceLists.add(parseInstanceList())
+				} catch(error: UserError) {
+					handleUserError(error)
+				}
+			}
+			consume(WordAtom.CLOSING_BRACE).end
+		} else {
+			type.end
+		}
+		return TypeAlias(modifierList, identifier, type, instanceLists, start, end)
 	}
 
 	/**
 	 * TypeBody:
-	 *   [{ [<MemberDeclaration>\n]... }]
+	 *   [{ [<MemberDeclaration>]... }]
 	 */
 	private fun parseTypeBody(): TypeBody? {
 		if(currentWord?.type != WordAtom.OPENING_BRACE)

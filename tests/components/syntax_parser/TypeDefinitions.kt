@@ -136,9 +136,33 @@ internal class TypeDefinitions {
             """.trimIndent()
 		val expected =
 			"""
-				TypeAlias [ Identifier { EventHandler } ] { FunctionType { ParameterTypeList {
+				TypeAlias [ Identifier { EventHandler } = FunctionType { ParameterTypeList {
 					ObjectType { Identifier { Event } }
-				} } }
+				} } ]
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses type aliases with instances`() {
+		val sourceCode =
+			"""
+				alias ExitCode = Int {
+					instances SUCCESS(0), ERROR(1)
+				}
+            """.trimIndent()
+		val expected =
+			"""
+				TypeAlias [ Identifier { ExitCode } = ObjectType { Identifier { Int } } ] {
+					InstanceList {
+						Instance [ Identifier { SUCCESS } ] {
+							NumberLiteral { 0 }
+						}
+						Instance [ Identifier { ERROR } ] {
+							NumberLiteral { 1 }
+						}
+					}
+				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
