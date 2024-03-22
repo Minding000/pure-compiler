@@ -8,6 +8,14 @@ import components.semantic_model.types.Type
 import errors.internal.CompilerError
 import java.util.*
 
+@JvmName("combineOrUnionOptional")
+fun List<Type?>.combineOrUnion(context: SemanticModel): Type? {
+	val types = filterNotNull()
+	if(types.isEmpty())
+		return null
+	return types.combineOrUnion(context)
+}
+
 fun List<Type>.combineOrUnion(context: SemanticModel): Type {
 	if(isEmpty())
 		throw CompilerError(context.source, "Cannot combine empty list of types.")

@@ -1,6 +1,7 @@
 package logger
 
 import errors.internal.CompilerError
+import util.uppercaseFirstChar
 import java.util.*
 
 class Logger(private val systemName: String) {
@@ -19,7 +20,7 @@ class Logger(private val systemName: String) {
 	}
 
 	fun printReport(verbosity: Severity, ignoreInternalIssues: Boolean = false) {
-		val capitalizedSystemName = systemName.replaceFirstChar { char -> char.uppercase() }
+		val capitalizedSystemName = systemName.uppercaseFirstChar()
 		val totalIssueTypeCounts = Array(Severity.values().size) { 0 }
 		for(phase in phases) {
 			if(!phase.containsVisibleIssues(verbosity))

@@ -3,6 +3,7 @@ package components.code_generation.llvm
 import org.bytedeco.javacpp.PointerPointer
 import org.bytedeco.llvm.LLVM.*
 import org.bytedeco.llvm.global.LLVM.*
+import util.toLlvmList
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 object Llvm {
@@ -65,13 +66,8 @@ object Llvm {
 	fun createPointerType(context: LlvmContext, addressSpace: Int = DEFAULT_ADDRESS_SPACE_INDEX): LlvmType =
 		LLVMPointerTypeInContext(context, addressSpace)
 
-	fun runFunction(engine: LlvmExecutionEngine, function: LlvmValue): LlvmGenericValue {
-		return runFunction(
-			engine,
-			function,
-			LlvmList(0),
-			0
-		)
+	fun runFunction(engine: LlvmExecutionEngine, function: LlvmValue, parameters: List<LlvmValue?> = emptyList()): LlvmGenericValue {
+		return runFunction(engine, function, parameters.toLlvmList(), parameters.size)
 	}
 
 	fun runFunction(engine: LlvmExecutionEngine, function: LlvmValue, arguments: LlvmList<LlvmValue>,
