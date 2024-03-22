@@ -16,6 +16,7 @@ import java.io.PrintStream
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.fail
 
 object TestUtil {
 	const val TEST_PROJECT_NAME = "Test"
@@ -23,6 +24,9 @@ object TestUtil {
 	const val TEST_FILE_NAME = "Test"
     private val defaultErrorStream = System.err
     private val testErrorStream = ByteArrayOutputStream()
+	private val EXTERNAL_FUNCTIONS = listOf( "i32 @printf(ptr, ...)", "i32 @fflush(ptr)", "void @Sleep(i32)", "void @exit(i32)",
+		"ptr @memcpy(ptr, ptr, i32)", "void @llvm.va_start(ptr)", "void @llvm.va_copy(ptr, ptr)", "void @llvm.va_end(ptr)",
+		"noalias ptr @malloc(i32)")
 
     fun recordErrorStream() {
         System.setErr(PrintStream(testErrorStream))
@@ -54,20 +58,23 @@ object TestUtil {
         return ParseResult(syntaxTreeGenerator, program)
     }
 
-    fun lint(sourceCode: String, includeRequiredModules: Boolean = false): LintResult {
+    fun lint(sourceCode: String, includeRequiredModules: Boolean = false, printReport: Boolean = true): LintResult {
         val parseResult = parse(sourceCode, includeRequiredModules, false)
 		val context = parseResult.syntaxTreeGenerator.project.context
         val semanticModelGenerator = SemanticModelGenerator(context)
         val program = semanticModelGenerator.createSemanticModel(parseResult.program)
-        context.logger.printReport(Severity.INFO, !includeRequiredModules)
+		if(printReport)
+        	context.logger.printReport(Severity.INFO, !includeRequiredModules)
         return LintResult(context, program)
     }
 
     fun getIntermediateRepresentation(sourceCode: String): String {
-		val lintResult = lint(sourceCode)
+		val includeRequiredModules = false
+		val lintResult = lint(sourceCode, includeRequiredModules, false)
 		val program = LlvmProgram(TEST_PROJECT_NAME)
 		try {
 			program.loadSemanticModel(lintResult.program)
+			lintResult.context.logger.printReport(Severity.INFO, !includeRequiredModules)
 			program.verify()
 			return program.getIntermediateRepresentation()
 		} finally {
@@ -76,16 +83,16 @@ object TestUtil {
     }
 
     fun run(sourceCode: String, entryPointPath: String, includeRequiredModules: Boolean = false): LlvmGenericValue {
-		val lintResult = lint(sourceCode, includeRequiredModules)
+		val lintResult = lint(sourceCode, includeRequiredModules, false)
 		val program = LlvmProgram(TEST_PROJECT_NAME)
 		try {
 			program.loadSemanticModel(lintResult.program, entryPointPath)
+			lintResult.context.logger.printReport(Severity.INFO, !includeRequiredModules)
 			val intermediateRepresentation = program.getIntermediateRepresentation()
 			println(intermediateRepresentation)
 			println("----------")
 			program.verify()
 			program.compile()
-			println("----------")
 			printDiagnostics(intermediateRepresentation)
 			println("----------")
 			return program.run()
@@ -95,11 +102,16 @@ object TestUtil {
     }
 
 	private fun printDiagnostics(intermediateRepresentation: String) {
-		println("External functions:")
-		intermediateRepresentation
-			.split("\n")
-			.filter { line -> line.startsWith("declare") }
-			.forEach { line -> println(line) }
+		val declaredFunctions = intermediateRepresentation.split("\n").filter { line -> line.startsWith("declare") }
+		val functionsMissingAnImplementation = declaredFunctions.filter { declaredFunction ->
+			val identifier = declaredFunction.substringAfter("declare ").substringBefore(")") + ")"
+			!EXTERNAL_FUNCTIONS.contains(identifier)
+		}
+		if(functionsMissingAnImplementation.isNotEmpty()) {
+			println("Possibly unimplemented functions (${functionsMissingAnImplementation.size}):")
+			functionsMissingAnImplementation.forEach { function -> println(function) }
+			fail("Encountered unimplemented functions. Check output above for details.")
+		}
 	}
 
 	fun analyseDataFlow(sourceCode: String): VariableTracker {
