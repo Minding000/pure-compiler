@@ -19,6 +19,8 @@ import components.syntax_parser.syntax_tree.access.MemberAccess as MemberAccessS
 
 class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, val target: Value, val member: Value,
 				   val isOptional: Boolean): Value(source, scope) {
+	override val hasGenericType: Boolean
+		get() = member.hasGenericType
 
 	init {
 		addSemanticModels(target, member)
@@ -109,8 +111,9 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			if(instanceLocation != null)
 				return instanceLocation
 		}
+		// Assumption: Primitives don't have properties
 		return context.resolveMember(constructor, target.getLlvmValue(constructor), member.name,
-			(member.declaration as? InterfaceMember)?.isStatic ?: false) //TODO convert optionalPrimitive / primitive to object?
+			(member.declaration as? InterfaceMember)?.isStatic ?: false)
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
@@ -155,7 +158,8 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 	}
 
 	private fun buildGetterCall(constructor: LlvmConstructor, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
-		val targetValue = target.getLlvmValue(constructor) //TODO convert optionalPrimitive / primitive to object?
+		//TODO allow for getter calls on (optional) primitives (similar to function calls on primitives)
+		val targetValue = target.getLlvmValue(constructor)
 		val functionAddress = context.resolveFunction(constructor, targetValue, computedPropertyDeclaration.getterIdentifier)
 		val exceptionAddress = context.getExceptionParameter(constructor)
 		val returnValue = constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,

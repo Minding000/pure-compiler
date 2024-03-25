@@ -221,7 +221,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				implementation.llvmValue
 			}
 		} else if(typeDefinition.isLlvmPrimitive()) {
-			//TODO same for operators
+			//TODO same for operators and getters
+			//TODO does this work for optional primitives?
 			val targetValue = if(function is MemberAccess)
 				function.target.getLlvmValue(constructor)
 			else

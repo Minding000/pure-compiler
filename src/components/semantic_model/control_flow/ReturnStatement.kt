@@ -1,6 +1,7 @@
 package components.semantic_model.control_flow
 
 import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ComputedPropertyDeclaration
@@ -96,6 +97,12 @@ class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val val
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		constructor.buildReturn(value?.getLlvmValue(constructor))
+		if(value == null) {
+			constructor.buildReturn()
+			return
+		}
+		val declaredReturnType = targetFunction?.signature?.returnType ?: targetComputedProperty?.getterReturnType
+		constructor.buildReturn(ValueConverter.convertIfRequired(this, constructor, value.getLlvmValue(constructor),
+			value.effectiveType, value.hasGenericType, declaredReturnType, false, conversion))
 	}
 }
