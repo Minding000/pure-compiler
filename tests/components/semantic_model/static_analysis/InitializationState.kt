@@ -514,7 +514,7 @@ internal class InitializationState {
 	}
 
 	@Test
-	fun `allows initialization of classes with super classes`() {
+	fun `allows for initialization through super initializers`() {
 		val sourceCode =
 			"""
 				Human class {
@@ -553,6 +553,23 @@ internal class InitializationState {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<ConstantReassignment>("'numberOfArms' cannot be reassigned, because it is constant.")
+	}
+
+	@Test
+	fun `allows for initialization through another initializer`() {
+		val sourceCode =
+			"""
+				Human class {
+					val numberOfArms: Int
+					init(numberOfArms)
+					init {
+						init(2)
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ConstantReassignment>()
+		lintResult.assertIssueNotDetected<UninitializedProperties>()
 	}
 
 	@Test

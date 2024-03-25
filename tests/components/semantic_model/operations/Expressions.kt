@@ -31,7 +31,7 @@ internal class Expressions {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val hasValueCheck = lintResult.find<HasValueCheck>()
-		assertTrue(SpecialType.BOOLEAN.matches(hasValueCheck?.type))
+		assertTrue(SpecialType.BOOLEAN.matches(hasValueCheck?.providedType))
 	}
 
 	@Test
@@ -47,7 +47,7 @@ internal class Expressions {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val memberAccess = lintResult.find<MemberAccess>()
-		assertIs<OptionalType>(memberAccess?.type)
+		assertIs<OptionalType>(memberAccess?.providedType)
 	}
 
 	@Test
@@ -63,7 +63,7 @@ internal class Expressions {
 				seat
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "seat" }?.type
+		val variableType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "seat" }?.providedType
 		assertIs<OptionalType>(variableType)
 		assertIs<ObjectType>(variableType.baseType)
 	}
@@ -124,7 +124,7 @@ internal class Expressions {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val typeDefinition = lintResult.find<Class> { `class` -> `class`.name == "PrintResult" }
-		val tryType = lintResult.find<Try>()?.type
+		val tryType = lintResult.find<Try>()?.providedType
 		assertIs<ObjectType>(tryType)
 		assertEquals(typeDefinition, tryType.getTypeDeclaration())
 	}
@@ -141,7 +141,7 @@ internal class Expressions {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val typeDefinition = lintResult.find<Class> { `class` -> `class`.name == "PrintResult" }
-		val tryType = lintResult.find<Try>()?.type
+		val tryType = lintResult.find<Try>()?.providedType
 		assertIs<OptionalType>(tryType)
 		assertEquals(typeDefinition, (tryType.baseType as? ObjectType)?.getTypeDeclaration())
 	}
@@ -218,7 +218,7 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		val nullCoalescenceOperator = lintResult.find<BinaryOperator>()
 		assertNotNull(nullCoalescenceOperator)
-		assertEquals("Bool | Int", nullCoalescenceOperator.type.toString())
+		assertEquals("Bool | Int", nullCoalescenceOperator.providedType.toString())
 	}
 
 	@Test
@@ -232,7 +232,7 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		val nullCoalescenceOperator = lintResult.find<BinaryOperator>()
 		assertNotNull(nullCoalescenceOperator)
-		assertEquals("Bool | Int", nullCoalescenceOperator.type.toString())
+		assertEquals("Bool | Int", nullCoalescenceOperator.providedType.toString())
 	}
 
 	@Test
@@ -244,6 +244,6 @@ internal class Expressions {
 		val lintResult = TestUtil.lint(sourceCode)
 		val nullCoalescenceOperator = lintResult.find<BinaryOperator>()
 		assertNotNull(nullCoalescenceOperator)
-		assertEquals("Bool", nullCoalescenceOperator.type.toString())
+		assertEquals("Bool", nullCoalescenceOperator.providedType.toString())
 	}
 }

@@ -110,7 +110,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 						functions[name] = function
 						val property = PropertyDeclaration(source, typeScope, function.name, null, function, false,
 							function.isAbstract)
-						property.type = function.type
+						property.type = function.providedType
 						members.add(property)
 					}
 					function.addImplementation(member)
@@ -122,7 +122,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 						operators[kind] = operator
 						val property = PropertyDeclaration(operator.source, typeScope, operator.name, null, operator, false,
 							operator.isAbstract)
-						property.type = operator.type
+						property.type = operator.providedType
 						members.add(property)
 					}
 					operator.addImplementation(member)

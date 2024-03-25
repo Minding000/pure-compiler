@@ -1,14 +1,14 @@
-package components.semantic_model.values
+package components.semantic_model.declarations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
 import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.Context
-import components.semantic_model.declarations.InitializerDefinition
-import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.scopes.MutableScope
+import components.semantic_model.types.ObjectType
 import components.semantic_model.types.SelfType
 import components.semantic_model.types.StaticType
+import components.semantic_model.values.Value
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
@@ -28,8 +28,17 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 	}
 
 	override fun determineType() {
-		this.typeDeclaration = scope.getSurroundingTypeDeclaration()
+		typeDeclaration = scope.getSurroundingTypeDeclaration()
 			?: throw CompilerError(source, "Instance outside of type definition.")
+		run {
+			val typeDeclaration = typeDeclaration
+			if(typeDeclaration is TypeAlias) {
+				//TODO this should be an issue instead
+				val effectiveObjectType = typeDeclaration.getEffectiveType() as? ObjectType
+					?: throw CompilerError(source, "Instances are not allowed in inconcrete type aliases.")
+				this.typeDeclaration = effectiveObjectType.getTypeDeclaration() ?: return
+			}
+		}
 		val type = SelfType(typeDeclaration)
 		addSemanticModels(type)
 		this.type = type
@@ -55,35 +64,40 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 	private fun getSignature(): String {
 		var signature = typeDeclaration.name
 		signature += "("
-		signature += valueParameters.joinToString { parameter -> parameter.type.toString() }
+		signature += valueParameters.joinToString { parameter -> parameter.providedType.toString() }
 		signature += ")"
 		return signature
 	}
 
 	fun getLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		if(isNative)
-			return context.getNativeInstanceValue(constructor, "${typeDeclaration.name}.$memberIdentifier")
 		val initializer = initializer ?: throw CompilerError(source, "Missing initializer in instance declaration.")
 		val exceptionAddress = context.getExceptionParameter(constructor)
+		val parameters = LinkedList<LlvmValue?>()
+		for((index, valueParameter) in valueParameters.withIndex())
+			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
+				valueParameter.providedType, initializer.getParameterTypeAt(index), conversions?.get(valueParameter)))
+		if(initializer.isVariadic) {
+			val fixedParameterCount = initializer.fixedParameters.size
+			val variadicParameterCount = parameters.size - fixedParameterCount
+			parameters.add(fixedParameterCount, constructor.buildInt32(variadicParameterCount))
+		}
+		if(initializer.parentTypeDeclaration.isLlvmPrimitive()) {
+			val signature = initializer.toString()
+			if(initializer.isNative)
+				return context.nativeRegistry.inlineNativePrimitiveInitializer(constructor, "$signature: Self", parameters)
+			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
+			return constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters, signature)
+		}
 		val typeDeclaration = initializer.parentTypeDeclaration
 		val instance = constructor.buildHeapAllocation(typeDeclaration.llvmType, "${typeDeclaration.name}_${name}_Instance")
 		val classDefinitionProperty = constructor.buildGetPropertyPointer(typeDeclaration.llvmType, instance,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionProperty")
 		constructor.buildStore(typeDeclaration.llvmClassDefinition, classDefinitionProperty)
 		buildLlvmCommonPreInitializerCall(constructor, typeDeclaration, exceptionAddress, instance)
-		val parameters = LinkedList<LlvmValue?>()
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		parameters.add(Context.THIS_PARAMETER_INDEX, instance)
-		for((index, valueParameter) in valueParameters.withIndex())
-			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
-				valueParameter.type, initializer.getParameterTypeAt(index), conversions?.get(valueParameter)))
-		if(initializer.isVariadic) {
-			val fixedParameterCount = initializer.fixedParameters.size
-			val variadicParameterCount = parameters.size - fixedParameterCount
-			parameters.add(fixedParameterCount, constructor.buildInt32(variadicParameterCount))
-		}
 		constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
-		context.continueRaise()
+		context.continueRaise(constructor)
 		return instance
 	}
 
@@ -93,6 +107,6 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
 		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
-		context.continueRaise()
+		context.continueRaise(constructor)
 	}
 }

@@ -32,6 +32,10 @@ class LlvmConstructor(name: String) {
 		return LLVMGetParam(function, index)
 	}
 
+	fun getParameter(index: Int): LlvmValue {
+		return LLVMGetParam(getParentFunction(), index)
+	}
+
 	fun getLastParameter(function: LlvmValue = getParentFunction()): LlvmValue {
 		return LLVMGetLastParam(function)
 	}
@@ -268,6 +272,8 @@ class LlvmConstructor(name: String) {
 	fun buildCastFromIntegerToByte(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, byteType, name)
 	fun buildCastFromByteToInteger(byte: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, byte, i32Type, name)
 
+	fun buildCastFromIntegerToBoolean(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, booleanType, name)
+
 	fun buildCastFromSignedIntegerToFloat(integer: LlvmValue, name: String): LlvmValue = LLVMBuildSIToFP(builder, integer, floatType, name)
 
 	fun buildIsNull(value: LlvmValue, name: String): LlvmValue = LLVMBuildIsNull(builder, value, name)
@@ -283,6 +289,8 @@ class LlvmConstructor(name: String) {
 
 	fun buildIntegerNegation(value: LlvmValue, name: String): LlvmValue = LLVMBuildNeg(builder, value, name)
 	fun buildIntegerAddition(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildAdd(builder, left, right, name)
+	fun buildIntegerLeftShift(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildShl(builder, left, right, name)
+	fun buildIntegerRightShift(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildAShr(builder, left, right, name)
 	fun buildIntegerSubtraction(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildSub(builder, left, right, name)
 	fun buildIntegerMultiplication(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildMul(builder, left, right, name)
 	fun buildSignedIntegerDivision(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildSDiv(builder, left, right, name)
@@ -298,6 +306,11 @@ class LlvmConstructor(name: String) {
 		LLVMBuildICmp(builder, Llvm.SignedIntegerOperation.EQUAL_TO, left, right, name)
 	fun buildSignedIntegerNotEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.SignedIntegerOperation.NOT_EQUAL_TO, left, right, name)
+
+	fun buildPointerEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
+		LLVMBuildICmp(builder, Llvm.UnsignedIntegerOperation.EQUAL_TO, left, right, name)
+	fun buildPointerNotEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
+		LLVMBuildICmp(builder, Llvm.UnsignedIntegerOperation.NOT_EQUAL_TO, left, right, name)
 
 	fun buildFloatNegation(value: LlvmValue, name: String): LlvmValue = LLVMBuildFNeg(builder, value, name)
 	fun buildFloatAddition(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildFAdd(builder, left, right, name)

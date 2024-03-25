@@ -4,37 +4,39 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
 import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.Context
+import components.semantic_model.context.NativeRegistry
+import errors.internal.CompilerError
 
 object ByteNatives {
 	lateinit var context: Context
 
-	fun load(context: Context) {
-		this.context = context
-		context.registerNativeInstance("Byte.ZERO: Self", ::zero)
-		context.registerNativeInstance("Byte.ONE: Self", ::one)
-		context.registerNativeImplementation("Byte++", ::increment)
-		context.registerNativeImplementation("Byte--", ::decrement)
-		context.registerNativeImplementation("Byte-: Self", ::negative)
-		context.registerNativeImplementation("Byte + Self: Self", ::plus)
-		context.registerNativeImplementation("Byte - Self: Self", ::minus)
-		context.registerNativeImplementation("Byte * Self: Self", ::times)
-		context.registerNativeImplementation("Byte / Self: Self", ::dividedBy)
-		context.registerNativeImplementation("Byte += Self", ::add)
-		context.registerNativeImplementation("Byte -= Self", ::subtract)
-		context.registerNativeImplementation("Byte *= Self", ::multiply)
-		context.registerNativeImplementation("Byte /= Self", ::divide)
-		context.registerNativeImplementation("Byte < Self: Bool", ::lessThan)
-		context.registerNativeImplementation("Byte > Self: Bool", ::greaterThan)
-		context.registerNativeImplementation("Byte <= Self: Bool", ::lessThanOrEqualTo)
-		context.registerNativeImplementation("Byte >= Self: Bool", ::greaterThanOrEqualTo)
+	fun load(registry: NativeRegistry) {
+		context = registry.context
+		registry.registerNativePrimitiveInitializer("Byte(Byte): Self", ::fromByte)
+		registry.registerNativeImplementation("Byte++", ::increment)
+		registry.registerNativeImplementation("Byte--", ::decrement)
+		registry.registerNativeImplementation("Byte-: Self", ::negative)
+		registry.registerNativeImplementation("Byte + Self: Self", ::plus)
+		registry.registerNativeImplementation("Byte - Self: Self", ::minus)
+		registry.registerNativeImplementation("Byte * Self: Self", ::times)
+		registry.registerNativeImplementation("Byte / Self: Self", ::dividedBy)
+		registry.registerNativeImplementation("Byte += Self", ::add)
+		registry.registerNativeImplementation("Byte -= Self", ::subtract)
+		registry.registerNativeImplementation("Byte *= Self", ::multiply)
+		registry.registerNativeImplementation("Byte /= Self", ::divide)
+		registry.registerNativeImplementation("Byte < Self: Bool", ::lessThan)
+		registry.registerNativeImplementation("Byte > Self: Bool", ::greaterThan)
+		registry.registerNativeImplementation("Byte <= Self: Bool", ::lessThanOrEqualTo)
+		registry.registerNativeImplementation("Byte >= Self: Bool", ::greaterThanOrEqualTo)
+		registry.registerNativeImplementation("Byte == Byte: Bool", ::equalTo)
 	}
 
-	private fun zero(constructor: LlvmConstructor): LlvmValue {
-		return constructor.buildByte(0)
-	}
-
-	private fun one(constructor: LlvmConstructor): LlvmValue {
-		return constructor.buildByte(1)
+	private fun fromByte(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+		val name = "Byte(Byte): Self"
+		if(parameters.size != 1)
+			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
+		return firstParameter
 	}
 
 	private fun increment(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
@@ -187,6 +189,17 @@ object ByteNatives {
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
 		val result = constructor.buildSignedIntegerGreaterThanOrEqualTo(thisPrimitiveByte, parameterPrimitiveByte, "comparisonResult")
+		constructor.buildReturn(result)
+	}
+
+	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisByte = context.getThisParameter(constructor)
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteTypeDeclaration?.llvmType, thisByte, context.byteValueIndex,
+			"thisValueProperty")
+		val thisPrimitiveByte = constructor.buildLoad(constructor.byteType, thisValueProperty, "thisPrimitiveByte")
+		val parameterPrimitiveByte = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val result = constructor.buildSignedIntegerEqualTo(thisPrimitiveByte, parameterPrimitiveByte, "equalToResult")
 		constructor.buildReturn(result)
 	}
 }

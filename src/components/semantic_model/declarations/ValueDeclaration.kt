@@ -66,7 +66,7 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 			value.setInferredType(targetType)
 			return
 		}
-		val sourceType = value.type ?: return
+		val sourceType = value.providedType ?: return
 		if(targetType == null) {
 			type = sourceType
 			return
@@ -105,7 +105,7 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		}
 		if(value != null) {
 			val llvmValue = value.getLlvmValue(constructor)
-			val valueType = value.type
+			val valueType = value.providedType
 			if(type is OptionalType && valueType?.isLlvmPrimitive() == true) {
 				val box = constructor.buildHeapAllocation(valueType.getLlvmType(constructor), "_optionalPrimitiveBox")
 				constructor.buildStore(llvmValue, box)

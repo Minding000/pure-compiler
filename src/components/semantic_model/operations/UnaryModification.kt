@@ -36,7 +36,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 	override fun determineTypes() {
 		super.determineTypes()
 		context.registerWrite(target)
-		val targetType = target.type ?: return
+		val targetType = target.providedType ?: return
 		try {
 			val match = targetType.interfaceScope.getOperator(kind)
 			if(match == null) {
@@ -77,7 +77,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 
 	private fun validateWhereClauseConditions() {
 		val signature = targetSignature ?: return
-		val targetType = target.type ?: return
+		val targetType = target.providedType ?: return
 		val typeParameters = (targetType as? ObjectType)?.typeParameters ?: emptyList()
 		for(condition in signature.whereClauseConditions) {
 			if(!condition.isMet(typeParameters))
@@ -88,10 +88,13 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
-		//TODO same for byte type
-		if(SpecialType.INTEGER.matches(target.type)) {
+		val isTargetInteger = SpecialType.INTEGER.matches(target.providedType)
+		if(isTargetInteger || SpecialType.BYTE.matches(target.providedType)) {
 			val targetValue = target.getLlvmValue(constructor)
-			val modifierValue = constructor.buildInt32(STEP_SIZE.longValueExact())
+			val modifierValue = if(isTargetInteger)
+				constructor.buildInt32(STEP_SIZE.longValueExact())
+			else
+				constructor.buildByte(STEP_SIZE.longValueExact())
 			val intermediateResultName = "_modifiedValue"
 			val operation = when(kind) {
 				Operator.Kind.DOUBLE_PLUS -> constructor.buildIntegerAddition(targetValue, modifierValue, intermediateResultName)
@@ -113,6 +116,6 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 		val functionAddress = context.resolveFunction(constructor, targetValue,
 			signature.original.toString(false, kind))
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
-		context.continueRaise()
+		context.continueRaise(constructor)
 	}
 }

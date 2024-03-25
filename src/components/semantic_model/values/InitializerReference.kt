@@ -13,7 +13,7 @@ open class InitializerReference(override val source: InitializerReferenceSyntaxT
 		super.determineTypes()
 		val scope = scope
 		if(scope is InterfaceScope && scope.type is StaticType) {
-			type = scope.type
+			providedType = scope.type
 		} else {
 			val parent = parent
 			val surroundingDefinition = if(parent is MemberAccess && parent.target is SelfReference)
@@ -23,9 +23,9 @@ open class InitializerReference(override val source: InitializerReferenceSyntaxT
 			if(surroundingDefinition == null || !isInInitializer()) {
 				context.addIssue(InitializerReferenceOutsideOfInitializer(source))
 			} else {
-				type = StaticType(surroundingDefinition)
-				type?.determineTypes()
-				addSemanticModels(type)
+				providedType = StaticType(surroundingDefinition)
+				providedType?.determineTypes()
+				addSemanticModels(providedType)
 			}
 		}
 	}

@@ -24,7 +24,6 @@ class SemanticModelGenerator(val context: Context) {
 		semanticProgramModel.analyseDataFlow()
 		logger.addPhase("Validation")
 		semanticProgramModel.validate()
-		logger.addPhase("Done")
 		return semanticProgramModel
 	}
 

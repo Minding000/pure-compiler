@@ -78,7 +78,7 @@ class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val val
 			} else if(value.isAssignableTo(returnType)) {
 				value.setInferredType(returnType)
 			} else {
-				val valueType = value.type
+				val valueType = value.providedType
 				if(valueType != null) {
 					val conversions = returnType.getConversionsFrom(valueType)
 					if(conversions.isNotEmpty()) {

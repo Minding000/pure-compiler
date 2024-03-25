@@ -3,16 +3,17 @@ package components.code_generation.llvm.native_implementations
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.Context
+import components.semantic_model.context.NativeRegistry
 import errors.internal.CompilerError
 
 object ArrayNatives {
 	lateinit var context: Context
 
-	fun load(context: Context) {
-		this.context = context
-		context.registerNativeImplementation("Array + <Element>Array: <Element>Array", ::concatenate)
-		context.registerNativeImplementation("Array[Int]: Element", ::get)
-		context.registerNativeImplementation("Array[Int](Element)", ::set)
+	fun load(registry: NativeRegistry) {
+		context = registry.context
+		registry.registerNativeImplementation("Array + <Element>Array: <Element>Array", ::concatenate)
+		registry.registerNativeImplementation("Array[Int]: Element", ::get)
+		registry.registerNativeImplementation("Array[Int](Element)", ::set)
 	}
 
 	//TODO this function assumes all Arrays store pointers (see offset), but StringLiteral creates Arrays with native chars as elements

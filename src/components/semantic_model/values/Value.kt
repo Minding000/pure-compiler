@@ -12,37 +12,39 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.resolution.MissingType
 
-open class Value(override val source: SyntaxTreeNode, override var scope: Scope, var type: Type? = null): SemanticModel(source, scope) {
+open class Value(override val source: SyntaxTreeNode, override var scope: Scope, var providedType: Type? = null): SemanticModel(source, scope) {
+	val effectiveType: Type? get() = providedType?.effectiveType
 	protected open var staticValue: Value? = null
 	protected var positiveState: VariableTracker.VariableState? = null
 	protected var negativeState: VariableTracker.VariableState? = null
 	private var llvmValue: LlvmValue? = null
+	open val hasGenericType = false
 
 	open fun isAssignableTo(targetType: Type?): Boolean {
-		return type?.let { type -> targetType?.accepts(type) } ?: false
+		return providedType?.let { type -> targetType?.accepts(type) } ?: false
 	}
 
 	fun setUnextendedType(type: Type?) {
 		val surroundingComputedProperty = scope.getSurroundingComputedProperty()
 		var whereClauseCondition = surroundingComputedProperty?.whereClauseConditions?.find { condition -> condition.matches(type) }
 		if(whereClauseCondition != null) {
-			this.type = ObjectType(whereClauseCondition)
-			addSemanticModels(this.type)
+			providedType = ObjectType(whereClauseCondition)
+			addSemanticModels(providedType)
 			return
 		}
 		val surroundingFunction = scope.getSurroundingFunction()
 		whereClauseCondition = surroundingFunction?.signature?.whereClauseConditions?.find { condition -> condition.matches(type) }
 		if(whereClauseCondition != null) {
-			this.type = ObjectType(whereClauseCondition)
-			addSemanticModels(this.type)
+			providedType = ObjectType(whereClauseCondition)
+			addSemanticModels(providedType)
 			return
 		}
-		this.type = type
+		providedType = type
 	}
 
 	open fun setInferredType(inferredType: Type?) {
-		if(type == null) {
-			type = if(inferredType is OptionalType)
+		if(providedType == null) {
+			providedType = if(inferredType is OptionalType)
 				inferredType.baseType
 			else
 				inferredType
@@ -82,11 +84,11 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 	}
 
 	fun getComputedValue(): Value? = staticValue
-	open fun getComputedType(): Type? = getComputedValue()?.type ?: type
+	open fun getComputedType(): Type? = getComputedValue()?.providedType ?: providedType
 
 	override fun validate() {
 		super.validate()
-		if(type == null)
+		if(providedType == null)
 			context.addIssue(MissingType(source))
 	}
 
@@ -108,13 +110,13 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 	}
 
 	override fun hashCode(): Int {
-		return type.hashCode()
+		return providedType.hashCode()
 	}
 
 	override fun equals(other: Any?): Boolean {
 		if(other !is Value)
 			return false
-		return type == other.type
+		return providedType == other.providedType
 	}
 
 	override fun toString(): String {

@@ -1,5 +1,6 @@
 package components.syntax_parser.syntax_tree.definitions
 
+import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.scopes.TypeScope
 import components.syntax_parser.syntax_tree.definitions.sections.ModifierSection
@@ -16,6 +17,12 @@ class TypeAlias(private val modifierList: ModifierList?, private val identifier:
 				private val instanceLists: List<InstanceList>, start: Position, end: Position):
 	SyntaxTreeNode(start, end), ModifierSectionChild {
 	override var parent: ModifierSection? = null
+
+	override fun toSemanticModel(scope: MutableScope, semanticModels: MutableList<SemanticModel>) {
+		val typeAlias = toSemanticModel(scope)
+		semanticModels.add(typeAlias.getValueDeclaration())
+		semanticModels.add(typeAlias)
+	}
 
 	override fun toSemanticModel(scope: MutableScope): SemanticTypeAliasModel {
 		modifierList?.validate(context)

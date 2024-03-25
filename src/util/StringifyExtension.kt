@@ -18,7 +18,7 @@ fun String.stringify(): String {
 
 @JvmName("stringifyValueTypes")
 fun List<Value>.stringifyTypes(): String {
-	return joinToString { value -> value.type.toString() }
+	return joinToString { value -> value.providedType.toString() }
 }
 
 @JvmName("stringifyParameterTypes")

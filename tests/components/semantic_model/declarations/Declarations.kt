@@ -83,6 +83,20 @@ internal class Declarations {
 	}
 
 	@Test
+	fun `allows for equally-named scoped declaration before parent declaration in block scopes`() {
+		val sourceCode =
+			"""
+				if yes {
+					if no
+						var rollbackIndex = 0
+					var rollbackIndex = 0
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<Redeclaration>()
+	}
+
+	@Test
 	fun `allows type declarations`() {
 		val sourceCode =
 			"""
@@ -139,7 +153,7 @@ internal class Declarations {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "error" }
-		assertNotNull(variable?.type)
+		assertNotNull(variable?.providedType)
 	}
 
 	@Test

@@ -23,6 +23,8 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 	var declaration: ValueDeclaration? = null
 	var whereClauseConditions: List<WhereClauseCondition>? = null
 	protected open var staticType: Type? = null
+	override val hasGenericType: Boolean
+		get() = declaration?.type != effectiveType
 
 	constructor(source: Identifier, scope: Scope): this(source, scope, source.getValue())
 
@@ -132,7 +134,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 				return constructor.getLastParameter()
 			return buildGetterCall(constructor, declaration)
 		}
-		return constructor.buildLoad(type?.getLlvmType(constructor), getLlvmLocation(constructor), name)
+		return constructor.buildLoad(providedType?.getLlvmType(constructor), getLlvmLocation(constructor), name)
 	}
 
 	private fun buildGetterCall(constructor: LlvmConstructor, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
@@ -141,7 +143,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		val functionAddress = context.resolveFunction(constructor, targetValue, computedPropertyDeclaration.getterIdentifier)
 		val returnValue = constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
 			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
-		context.continueRaise()
+		context.continueRaise(constructor)
 		return returnValue
 	}
 

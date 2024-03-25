@@ -7,6 +7,8 @@ import components.semantic_model.types.OptionalType
 import components.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.constant_conditions.*
+import logger.issues.declaration.DeclarationMissingTypeOrValue
+import logger.issues.initialization.NotInitialized
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -29,7 +31,7 @@ internal class Casts {
 		val lintResult = TestUtil.lint(sourceCode)
 		val vehicleClass = lintResult.find<TypeDeclaration> { typeDefinition -> typeDefinition.name == "Vehicle" }
 		val cast = lintResult.find<Cast>()
-		assertEquals(vehicleClass, (cast?.type as? ObjectType)?.getTypeDeclaration())
+		assertEquals(vehicleClass, (cast?.providedType as? ObjectType)?.getTypeDeclaration())
 	}
 
 	@Test
@@ -46,8 +48,8 @@ internal class Casts {
 		val lintResult = TestUtil.lint(sourceCode)
 		val positiveCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.CAST_CONDITION }
 		val negativeCast = lintResult.find<Cast> { cast -> cast.operator == Cast.Operator.NEGATED_CAST_CONDITION }
-		assertTrue(SpecialType.BOOLEAN.matches(positiveCast?.type))
-		assertTrue(SpecialType.BOOLEAN.matches(negativeCast?.type))
+		assertTrue(SpecialType.BOOLEAN.matches(positiveCast?.providedType))
+		assertTrue(SpecialType.BOOLEAN.matches(negativeCast?.providedType))
 	}
 
 	@Test
@@ -64,7 +66,7 @@ internal class Casts {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val castVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "vehicle" }
-		assertNotNull(castVariable?.type)
+		assertNotNull(castVariable?.providedType)
 	}
 
 	@Test
@@ -83,7 +85,7 @@ internal class Casts {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val castVariable = lintResult.find<VariableValue> { variableValue -> variableValue.name == "vehicle" }
-		assertNotNull(castVariable?.type)
+		assertNotNull(castVariable?.providedType)
 	}
 
 	@Test
@@ -138,7 +140,7 @@ internal class Casts {
 		val sourceCode =
 			"""
 				Car class
-				val something: Car
+				val something = Car()
 				loop {
 					if something is car: Car {
 					} else {
@@ -151,6 +153,8 @@ internal class Casts {
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
 		assertNotNull(variableValue)
 		assertNotNull(variableValue.declaration)
+		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
+		lintResult.assertIssueNotDetected<NotInitialized>()
 	}
 
 	@Test
@@ -204,7 +208,7 @@ internal class Casts {
 		val sourceCode =
 			"""
 				Car class
-				val something: Car
+				val something = Car()
 				loop {
 					if something is car: Car
 						break
@@ -215,6 +219,8 @@ internal class Casts {
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "car" }
 		assertNotNull(variableValue)
 		assertNotNull(variableValue.declaration)
+		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
+		lintResult.assertIssueNotDetected<NotInitialized>()
 	}
 
 	@Test
@@ -230,7 +236,7 @@ internal class Casts {
 		val lintResult = TestUtil.lint(sourceCode)
 		val vehicleClass = lintResult.find<TypeDeclaration> { typeDefinition -> typeDefinition.name == "Vehicle" }
 		val cast = lintResult.find<Cast>()
-		val castResultType = cast?.type as? OptionalType
+		val castResultType = cast?.providedType as? OptionalType
 		assertNotNull(castResultType)
 		assertEquals(vehicleClass, (castResultType.baseType as? ObjectType)?.getTypeDeclaration())
 	}

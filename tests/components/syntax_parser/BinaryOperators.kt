@@ -130,4 +130,18 @@ internal class BinaryOperators {
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
+
+	@Test
+	fun `parses less than operator when left hand side is a self reference`() {
+		val sourceCode = "this < <Some>ThingElse"
+		val expected =
+			"""
+				BinaryOperator {
+					This Operator { < } TypeSpecification [ TypeList {
+						ObjectType { Identifier { Some } }
+					} ] { Identifier { ThingElse } }
+				}
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
 }

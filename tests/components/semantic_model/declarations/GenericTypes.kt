@@ -104,7 +104,7 @@ internal class GenericTypes {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val variableValueType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "firstElement" }?.type
+		val variableValueType = lintResult.find<VariableValue> { variableValue -> variableValue.name == "firstElement" }?.providedType
 		assertEquals("Int", variableValueType.toString())
 	}
 }

@@ -327,6 +327,6 @@ internal class SuperReference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val superReference = lintResult.find<SuperReference>()
-		assertEquals("Vehicle", superReference?.type.toString())
+		assertEquals("Vehicle", superReference?.providedType.toString())
 	}
 }

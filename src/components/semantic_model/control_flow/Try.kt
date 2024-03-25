@@ -14,8 +14,8 @@ class Try(override val source: TrySyntaxTree, scope: Scope, val expression: Valu
 
 	override fun determineTypes() {
 		super.determineTypes()
-		expression.type?.let { expressionType ->
-			type = if(isOptional)
+		expression.providedType?.let { expressionType ->
+			providedType = if(isOptional)
 				OptionalType(source, scope, expressionType)
 			else
 				expressionType

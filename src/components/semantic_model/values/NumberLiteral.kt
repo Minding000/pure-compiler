@@ -15,24 +15,24 @@ import java.math.BigDecimal
 class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value: BigDecimal): LiteralValue(source, scope) {
 
 	constructor(parent: SemanticModel, value: BigDecimal): this(parent.source, parent.scope, value) {
-		(type as? LiteralType)?.determineTypes()
+		(providedType as? LiteralType)?.determineTypes()
 	}
 
 	init {
-		type = LiteralType(source, scope, if(value.isRepresentedAsAnInteger()) SpecialType.INTEGER else SpecialType.FLOAT)
-		addSemanticModels(type)
+		providedType = LiteralType(source, scope, if(value.isRepresentedAsAnInteger()) SpecialType.INTEGER else SpecialType.FLOAT)
+		addSemanticModels(providedType)
 	}
 
 	override fun isAssignableTo(targetType: Type?): Boolean {
 		if(targetType == null)
 			return false
-		return (type?.isAssignableTo(targetType) ?: false) || SpecialType.BYTE.matches(targetType) || SpecialType.FLOAT.matches(targetType)
+		return (providedType?.isAssignableTo(targetType) ?: false) || SpecialType.BYTE.matches(targetType) || SpecialType.FLOAT.matches(targetType)
 	}
 
 	override fun setInferredType(inferredType: Type?) {
 		val inferredBaseType = if(inferredType is OptionalType) inferredType.baseType else inferredType
 		if(SpecialType.BYTE.matches(inferredBaseType) || SpecialType.FLOAT.matches(inferredBaseType))
-			type = inferredBaseType
+			providedType = inferredBaseType
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
@@ -40,9 +40,9 @@ class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value
 	}
 
 	fun createLlvmValue(constructor: LlvmConstructor, value: BigDecimal): LlvmValue {
-		return if(SpecialType.BYTE.matches(type))
+		return if(SpecialType.BYTE.matches(providedType))
 			constructor.buildByte(value.longValueExact())
-		else if(SpecialType.INTEGER.matches(type))
+		else if(SpecialType.INTEGER.matches(providedType))
 			constructor.buildInt32(value.longValueExact())
 		else
 			constructor.buildFloat(value.toDouble())

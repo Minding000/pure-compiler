@@ -1,4 +1,4 @@
-package components.code_generation
+package components.code_generation.declarations
 
 import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
@@ -86,5 +86,19 @@ internal class Initializer {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSum")
 		assertEquals(15, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `primitive initializer calls return primitive value`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				to getTwo(): Int {
+					return 1 + Int(1)
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo", true)
+		assertEquals(2, Llvm.castToSignedInteger(result))
 	}
 }

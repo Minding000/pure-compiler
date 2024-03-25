@@ -1,0 +1,159 @@
+package components.code_generation.operators
+
+import components.code_generation.llvm.Llvm
+import org.junit.jupiter.api.Test
+import util.TestUtil
+import kotlin.test.assertEquals
+
+internal class BinaryByteOperators {
+
+	@Test
+	fun `compiles byte additions`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Byte {
+					val left: Byte = 2
+					val right: Byte = 3
+					return left + right
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles byte subtractions`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Byte {
+					val left: Byte = 8
+					val right: Byte = 3
+					return left - right
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles byte multiplications`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getTen(): Byte {
+					val left: Byte = 5
+					val right: Byte = 2
+					return left * right
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTen")
+		assertEquals(10, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles byte divisions`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Byte {
+					val left: Byte = 10
+					val right: Byte = 2
+					return left / right
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles byte smaller than`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getNo(): Bool {
+					val left: Byte = 4
+					val right: Byte = 4
+					return left < right
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
+		assertEquals(false, Llvm.castToBoolean(result))
+	}
+
+	@Test
+	fun `compiles byte greater than`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getNo(): Bool {
+					val left: Byte = 4
+					val right: Byte = 4
+					return left > right
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
+		assertEquals(false, Llvm.castToBoolean(result))
+	}
+
+	@Test
+	fun `compiles byte smaller than or equal to`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getYes(): Bool {
+					val left: Byte = 4
+					val right: Byte = 4
+					return left <= right
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
+		assertEquals(true, Llvm.castToBoolean(result))
+	}
+
+	@Test
+	fun `compiles byte greater than or equal to`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getYes(): Bool {
+					val left: Byte = 4
+					val right: Byte = 4
+					return left >= right
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
+		assertEquals(true, Llvm.castToBoolean(result))
+	}
+
+	@Test
+	fun `compiles byte equal to`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getYes(): Bool {
+					val left: Byte = 4
+					val right: Byte = 4
+					return left == right
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
+		assertEquals(true, Llvm.castToBoolean(result))
+	}
+
+	@Test
+	fun `compiles byte not equal to`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getNo(): Bool {
+					val left: Byte = 4
+					val right: Byte = 4
+					return left != right
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
+		assertEquals(false, Llvm.castToBoolean(result))
+	}
+}

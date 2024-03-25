@@ -38,7 +38,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 
 	override fun determineTypes() {
 		super.determineTypes()
-		when(val targetType = function.type?.effectiveType) {
+		when(val targetType = function.effectiveType) {
 			is StaticType -> resolveInitializerCall(targetType)
 			is FunctionType -> resolveFunctionCall(targetType)
 			null -> {}
@@ -61,9 +61,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				return
 			}
 			val type = ObjectType(match.globalTypeSubstitutions.values.toList(), targetType.typeDeclaration)
-			type.determineTypes()
 			addSemanticModels(type)
-			this.type = type
+			providedType = type
 			targetInitializer = match.initializer
 			conversions = match.conversions
 			for((_, typeParameter) in match.globalTypeSubstitutions)
@@ -95,14 +94,14 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 
 	private fun getTargetType(): Type? {
 		//TODO improve 'targetType' determination
-		return (function as? MemberAccess)?.target?.type
+		return (function as? MemberAccess)?.target?.providedType
 	}
 
 	//TODO do the same for initializer calls
 	//TODO do the same for all operator calls
 	private fun registerSelfTypeUsages(signature: FunctionSignature) {
 		for((index, parameter) in valueParameters.withIndex()) {
-			val sourceType = parameter.type
+			val sourceType = parameter.providedType
 			val baseSourceType = if(sourceType is OptionalType) sourceType.baseType else sourceType
 			if(baseSourceType !is SelfType) {
 				val surroundingFunction = scope.getSurroundingFunction()
@@ -119,8 +118,15 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		staticValue = this
 		if(function is MemberAccess && function.target !is SelfReference && function.target !is SuperReference)
 			return
-		if(function.type?.effectiveType is StaticType && !(function is MemberAccess && function.target is SuperReference))
-			return
+		if(function.effectiveType is StaticType) {
+			if(function is MemberAccess) {
+				if(function.member !is InitializerReference)
+					return
+			} else {
+				if(function !is InitializerReference)
+					return
+			}
+		}
 		val targetImplementation = targetInitializer ?: targetSignature?.associatedImplementation ?: return
 		//TODO also track required and initialized properties for operators (IndexAccess, BinaryOperator, etc.)
 		val requiredButUninitializedProperties = LinkedList<PropertyDeclaration>()
@@ -180,22 +186,30 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		} else {
 			buildLlvmFunctionCall(constructor, functionSignature, exceptionAddress)
 		}
-		context.continueRaise()
+		context.continueRaise(constructor)
 		return returnValue
 	}
 
 	private fun buildLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, exceptionAddress: LlvmValue): LlvmValue {
 		val parameters = LinkedList<LlvmValue>()
 		//TODO add local type parameters
-		for((index, valueParameter) in valueParameters.withIndex())
-			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
-				valueParameter.type, targetSignature?.getParameterTypeAt(index), conversions?.get(valueParameter)))
+		for((index, valueParameter) in valueParameters.withIndex()) {
+			if(valueParameter is UnaryOperator && valueParameter.kind == Operator.Kind.TRIPLE_DOT) {
+				TODO("The spread operator is not implemented yet.")
+				//TODO scrap va_lists, because they require a static parameter count
+			} else {
+				val parameterType = targetSignature?.getParameterTypeAt(index)
+				parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
+					valueParameter.providedType, valueParameter.hasGenericType, parameterType,
+					parameterType != targetSignature?.original?.getParameterTypeAt(index), conversions?.get(valueParameter)))
+			}
+		}
 		if(signature.isVariadic) {
 			val fixedParameterCount = signature.fixedParameterTypes.size
 			val variadicParameterCount = parameters.size - fixedParameterCount
 			parameters.add(fixedParameterCount, constructor.buildInt32(variadicParameterCount))
 		}
-		val typeDefinition = signature.parentDefinition
+		val typeDefinition = signature.parentTypeDeclaration
 		val functionAddress = if(typeDefinition == null) {
 			val implementation = signature.associatedImplementation
 			if(implementation == null) {
@@ -206,6 +220,21 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			} else {
 				implementation.llvmValue
 			}
+		} else if(typeDefinition.isLlvmPrimitive()) {
+			//TODO same for operators
+			val targetValue = if(function is MemberAccess)
+				function.target.getLlvmValue(constructor)
+			else
+				context.getThisParameter(constructor)
+			val functionName = (((function as? MemberAccess)?.member ?: function) as? VariableValue)?.name
+				?: throw CompilerError(source, "Failed to determine name of member function.")
+			val primitiveImplementation = context.nativeRegistry.resolvePrimitiveImplementation(
+				"${typeDefinition.name}.${functionName}${signature.original.toString(false)}")
+			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
+			parameters.add(Context.THIS_PARAMETER_INDEX, targetValue)
+			val resultName = if(SpecialType.NOTHING.matches(signature.returnType)) "" else getSignature()
+			return constructor.buildFunctionCall(primitiveImplementation.llvmType, primitiveImplementation.llvmValue, parameters,
+				resultName)
 		} else {
 			val targetValue = if(function is MemberAccess)
 				function.target.getLlvmValue(constructor)
@@ -223,9 +252,9 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 					"${functionName}${signature.original.toString(false)}")
 			}
 		}
-		parameters.addFirst(exceptionAddress)
+		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		val resultName = if(SpecialType.NOTHING.matches(signature.returnType)) "" else getSignature()
-		return constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, resultName)
+		return constructor.buildFunctionCall(signature.original.getLlvmType(constructor), functionAddress, parameters, resultName)
 	}
 
 	private fun buildLlvmInitializerCall(constructor: LlvmConstructor, initializer: InitializerDefinition,
@@ -235,7 +264,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		//TODO add local type parameters
 		for((index, valueParameter) in valueParameters.withIndex())
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
-				valueParameter.type, initializer.getParameterTypeAt(index), conversions?.get(valueParameter)))
+				valueParameter.providedType, initializer.getParameterTypeAt(index), conversions?.get(valueParameter)))
 		if(initializer.isVariadic) {
 			val fixedParameterCount = initializer.fixedParameters.size
 			val variadicParameterCount = parameters.size - fixedParameterCount
@@ -244,6 +273,13 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		//TODO primary initializer calls should also be resolved dynamically (for generic type initialization)
 		// - unless the variable definition is a specific type already (or can be traced to it)
 		return if(isPrimaryCall) {
+			if(initializer.parentTypeDeclaration.isLlvmPrimitive()) {
+				val signature = initializer.toString()
+				if(initializer.isNative)
+					return context.nativeRegistry.inlineNativePrimitiveInitializer(constructor, "$signature: Self", parameters)
+				parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
+				return constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters, signature)
+			}
 			val typeDeclaration = initializer.parentTypeDeclaration
 			val newObject = constructor.buildHeapAllocation(typeDeclaration.llvmType, "newObject")
 			val classDefinitionProperty = constructor.buildGetPropertyPointer(typeDeclaration.llvmType, newObject,
@@ -254,6 +290,12 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
 			newObject
+		} else if(initializer.parentTypeDeclaration.isLlvmPrimitive()) {
+			if(parameters.size != 1)
+				throw CompilerError("Invalid number of arguments passed to '${getSignature()}': ${parameters.size}")
+			val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '${getSignature()}' is null.")
+			constructor.buildReturn(firstParameter)
+			constructor.nullPointer
 		} else {
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, context.getThisParameter(constructor))
@@ -281,7 +323,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			parameters.add(objectType.getStaticLlvmValue(constructor))
 		}
 		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
-		context.continueRaise()
+		context.continueRaise(constructor)
 	}
 
 	private fun getSignature(includeParentType: Boolean = true): String {
@@ -289,7 +331,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		signature += when(function) {
 			is VariableValue -> function.name
 			is TypeSpecification -> function
-			is MemberAccess -> if(includeParentType) "${function.target.type}.${function.member}" else function.member
+			is MemberAccess -> if(includeParentType) "${function.target.providedType}.${function.member}" else function.member
 			else -> "<anonymous function>"
 		}
 		signature += "("
@@ -299,7 +341,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			if(valueParameters.isNotEmpty())
 				signature += " "
 		}
-		signature += valueParameters.joinToString { parameter -> parameter.type.toString() }
+		signature += valueParameters.joinToString { parameter -> parameter.providedType.toString() }
 		signature += ")"
 		return signature
 	}

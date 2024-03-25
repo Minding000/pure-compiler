@@ -6,6 +6,8 @@ import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ComputedPropertyDeclaration
+import components.semantic_model.declarations.InterfaceMember
+import components.semantic_model.declarations.TypeAlias
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.*
 import components.semantic_model.values.*
@@ -24,21 +26,16 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 
 	override fun determineTypes() {
 		target.determineTypes()
-		var targetType = target.type
-		if(targetType != null) {
-			if(targetType is OptionalType)
-				targetType = targetType.baseType
-			member.scope = targetType.interfaceScope
-			member.determineTypes()
-			var memberType = member.type
-			if(memberType != null) {
-				memberType = memberType.getLocalType(this, targetType)
-				type = if(isOptional && memberType !is OptionalType)
-					OptionalType(source, scope, memberType)
-				else
-					memberType
-			}
-		}
+		var targetType = target.providedType ?: return
+		if(targetType is OptionalType)
+			targetType = targetType.baseType
+		member.scope = targetType.interfaceScope
+		member.determineTypes()
+		val memberType = member.providedType?.getLocalType(this, targetType) ?: return
+		providedType = if(isOptional && memberType !is OptionalType)
+			OptionalType(source, scope, memberType)
+		else
+			memberType
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -106,12 +103,19 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			throw CompilerError(source, "Member access references invalid member of type '${member.javaClass.simpleName}'.")
 		if(member.declaration is ComputedPropertyDeclaration)
 			throw CompilerError(source, "Computed properties do not have a location.")
+		val targetType = target.providedType
+		if(targetType is StaticType && targetType.typeDeclaration is TypeAlias) {
+			val instanceLocation = member.getLlvmLocation(constructor)
+			if(instanceLocation != null)
+				return instanceLocation
+		}
 		return context.resolveMember(constructor, target.getLlvmValue(constructor), member.name,
-			(member.declaration as? InterfaceMember)?.isStatic ?: false)
+			(member.declaration as? InterfaceMember)?.isStatic ?: false) //TODO convert optionalPrimitive / primitive to object?
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		return if(isOptional) {
+		val targetType = target.providedType
+		return if(isOptional && !(targetType is StaticType && targetType.typeDeclaration is TypeAlias)) {
 			val resultLlvmType = constructor.pointerType
 			val targetValue = target.getLlvmValue(constructor)
 			val result = constructor.buildStackAllocation(resultLlvmType, "_optionalMemberAccess_resultVariable")
@@ -124,7 +128,9 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			constructor.buildStore(constructor.nullPointer, result)
 			constructor.buildJump(resultBlock)
 			constructor.select(valueBlock)
-			val memberValue = getMemberValue(constructor)
+			var memberValue = getMemberValue(constructor)
+			if(member.effectiveType?.isLlvmPrimitive() == true)
+				memberValue = ValueConverter.boxPrimitive(constructor, memberValue, member.effectiveType?.getLlvmType(constructor))
 			constructor.buildStore(memberValue, result)
 			constructor.buildJump(resultBlock)
 			constructor.select(resultBlock)
@@ -135,27 +141,26 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 	}
 
 	private fun getMemberValue(constructor: LlvmConstructor): LlvmValue {
+		//TODO what about chained member accesses? e.g. player.stats.highScore
 		val declaration = (member as? VariableValue)?.declaration
 		return if(declaration is ComputedPropertyDeclaration) {
 			val setter = declaration.setter
 			if(setter != null && isIn(setter))
 				constructor.getLastParameter()
 			else
-				ValueConverter.convertIfRequired(this, constructor, buildGetterCall(constructor, declaration), declaration.type, type)
+				buildGetterCall(constructor, declaration)
 		} else {
-			val declaredMemberType = declaration?.type ?: member.type
-			ValueConverter.convertIfRequired(this, constructor, constructor.buildLoad(declaredMemberType?.getLlvmType(constructor),
-				getLlvmLocation(constructor), "member"), declaredMemberType, type)
+			constructor.buildLoad(declaration?.type?.getLlvmType(constructor), getLlvmLocation(constructor), "member")
 		}
 	}
 
 	private fun buildGetterCall(constructor: LlvmConstructor, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
-		val targetValue = target.getLlvmValue(constructor)
+		val targetValue = target.getLlvmValue(constructor) //TODO convert optionalPrimitive / primitive to object?
 		val functionAddress = context.resolveFunction(constructor, targetValue, computedPropertyDeclaration.getterIdentifier)
 		val exceptionAddress = context.getExceptionParameter(constructor)
 		val returnValue = constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
 			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
-		context.continueRaise()
+		context.continueRaise(constructor)
 		return returnValue
 	}
 }

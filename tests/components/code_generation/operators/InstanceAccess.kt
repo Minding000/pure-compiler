@@ -55,4 +55,21 @@ internal class InstanceAccess {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo", true)
 		assertEquals(2, Llvm.castToSignedInteger(result))
 	}
+
+	@Test
+	fun `compiles instance accesses on type aliases`() {
+		val sourceCode = """
+			alias ExitCode = Int {
+				instances SUCCESS(0)
+			}
+			SimplestApp object {
+				to getZero(): Int {
+					val exitCode: ExitCode = .SUCCESS
+					return exitCode
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getZero")
+		assertEquals(0, Llvm.castToSignedInteger(result))
+	}
 }

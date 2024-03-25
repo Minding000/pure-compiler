@@ -41,9 +41,9 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 		}
 		val typeDeclaration = typeDeclaration
 		if(typeDeclaration != null) {
-			type = SelfType(typeDeclaration)
-			type?.determineTypes()
-			addSemanticModels(type)
+			providedType = SelfType(typeDeclaration)
+			providedType?.determineTypes()
+			addSemanticModels(providedType)
 		}
 	}
 

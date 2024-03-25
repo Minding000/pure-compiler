@@ -35,14 +35,14 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 			if(target is IndexAccess)
 				continue
 			context.registerWrite(target)
-			val targetType = target.type
+			val targetType = target.providedType
 			if(sourceExpression.isAssignableTo(targetType)) {
 				sourceExpression.setInferredType(targetType)
 				continue
 			}
-			val sourceType = sourceExpression.type ?: continue
+			val sourceType = sourceExpression.providedType ?: continue
 			if(targetType == null) {
-				target.type = sourceType
+				target.providedType = sourceType
 				continue
 			}
 			val conversions = targetType.getConversionsFrom(sourceType)
@@ -60,12 +60,12 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 	}
 
 	private fun registerSelfTypeUsages() {
-		val sourceType = sourceExpression.type
+		val sourceType = sourceExpression.providedType
 		val baseSourceType = if(sourceType is OptionalType) sourceType.baseType else sourceType
 		if(baseSourceType !is SelfType) {
 			val surroundingFunction = scope.getSurroundingFunction()
 			for(target in targets) {
-				val targetType = target.type
+				val targetType = target.providedType
 				val baseTargetType = if(targetType is OptionalType) targetType.baseType else targetType
 				if(baseTargetType is SelfType)
 					surroundingFunction?.usesOwnTypeAsSelf = true
@@ -78,12 +78,12 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		for(target in targets) {
 			when(target) {
 				is VariableValue -> {
-					tracker.add(VariableUsage.Kind.WRITE, target, sourceExpression.type, sourceExpression.getComputedValue())
+					tracker.add(VariableUsage.Kind.WRITE, target, sourceExpression.providedType, sourceExpression.getComputedValue())
 					continue
 				}
 				is MemberAccess -> {
 					if(target.target is SelfReference && target.member is VariableValue) {
-						tracker.add(VariableUsage.Kind.WRITE, target.member, sourceExpression.type, sourceExpression.getComputedValue())
+						tracker.add(VariableUsage.Kind.WRITE, target.member, sourceExpression.providedType, sourceExpression.getComputedValue())
 						continue
 					}
 					if(target.member !is VariableValue || target.member.declaration?.isConstant == true)
@@ -99,7 +99,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
 		val rawLlvmValue = sourceExpression.getLlvmValue(constructor)
-		val sourceType = sourceExpression.type
+		val sourceType = sourceExpression.providedType
 		//TODO fix: source value is calculated even if there's no valid target (member access on null value) (write test!)
 		val pointerLlvmValue = if(sourceType?.isLlvmPrimitive() == true && targets.any { target -> getWriteType(target) is OptionalType }) {
 			val box = constructor.buildHeapAllocation(sourceType.getLlvmType(constructor), "_optionalPrimitiveBox")
@@ -150,10 +150,10 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 
 	private fun getWriteType(value: Value): Type? {
 		if(value is MemberAccess && value.isOptional) {
-			val targetType = value.target.type ?: return null
-			return value.member.type?.getLocalType(value, targetType)
+			val targetType = value.target.providedType ?: return null
+			return value.member.providedType?.getLocalType(value, targetType)
 		}
-		return value.type
+		return value.providedType
 	}
 
 	private fun buildSetterCall(constructor: LlvmConstructor, declaration: ComputedPropertyDeclaration, targetValue: LlvmValue,
@@ -191,6 +191,6 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 			parameters.add(index.getLlvmValue(constructor))
 		parameters.add(value)
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), indexOperatorAddress, parameters)
-		context.continueRaise()
+		context.continueRaise(constructor)
 	}
 }

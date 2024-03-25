@@ -49,7 +49,7 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val selfReferenceType = lintResult.find<SelfReference>()?.type
+		val selfReferenceType = lintResult.find<SelfReference>()?.providedType
 		assertIs<SelfType>(selfReferenceType)
 		assertEquals("Car", selfReferenceType.typeDeclaration?.name)
 	}
@@ -65,7 +65,7 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val selfReferenceType = lintResult.find<SelfReference>()?.type
+		val selfReferenceType = lintResult.find<SelfReference>()?.providedType
 		assertIs<SelfType>(selfReferenceType)
 		assertEquals("Car", selfReferenceType.typeDeclaration?.name)
 	}
@@ -81,7 +81,7 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val selfReferenceType = lintResult.find<SelfReference>()?.type
+		val selfReferenceType = lintResult.find<SelfReference>()?.providedType
 		assertIs<SelfType>(selfReferenceType)
 		assertEquals("FastestCar", selfReferenceType.typeDeclaration?.name)
 	}
@@ -99,7 +99,7 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val selfReferenceType = lintResult.find<SelfReference>()?.type
+		val selfReferenceType = lintResult.find<SelfReference>()?.providedType
 		assertIs<SelfType>(selfReferenceType)
 		assertEquals("Inner", selfReferenceType.typeDeclaration?.name)
 	}
@@ -117,7 +117,7 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val selfReferenceType = lintResult.find<SelfReference>()?.type
+		val selfReferenceType = lintResult.find<SelfReference>()?.providedType
 		assertIs<SelfType>(selfReferenceType)
 		assertEquals("Outer", selfReferenceType.typeDeclaration?.name)
 	}
@@ -136,7 +136,7 @@ internal class SelfReference {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val selfReferenceType = lintResult.find<SelfReference>()?.type
+		val selfReferenceType = lintResult.find<SelfReference>()?.providedType
 		assertIs<SelfType>(selfReferenceType)
 		assertEquals("Middle", selfReferenceType.typeDeclaration?.name)
 	}

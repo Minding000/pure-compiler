@@ -19,6 +19,7 @@ import logger.issues.resolution.NotFound
 import java.util.*
 import components.syntax_parser.syntax_tree.operations.UnaryOperator as UnaryOperatorSyntaxTree
 
+//TODO disallow spread operation (triple dot) outside of parameter list-
 class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, val subject: Value, val kind: Operator.Kind):
 	Value(source, scope) {
 	var targetSignature: FunctionSignature? = null
@@ -29,7 +30,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 
 	override fun determineTypes() {
 		super.determineTypes()
-		val subjectType = subject.type ?: return
+		val subjectType = subject.providedType ?: return
 		try {
 			val match = subjectType.interfaceScope.getOperator(kind)
 			if(match == null) {
@@ -54,7 +55,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 	override fun setInferredType(inferredType: Type?) {
 		if(kind == Operator.Kind.MINUS && subject is NumberLiteral) {
 			subject.setInferredType(inferredType)
-			type = subject.type
+			providedType = subject.providedType
 		} else {
 			super.setInferredType(inferredType)
 		}
@@ -62,7 +63,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
-		if(SpecialType.BOOLEAN.matches(subject.type) && kind == Operator.Kind.EXCLAMATION_MARK) {
+		if(SpecialType.BOOLEAN.matches(subject.providedType) && kind == Operator.Kind.EXCLAMATION_MARK) {
 			positiveState = subject.getNegativeEndState()
 			negativeState = subject.getPositiveEndState()
 		}
@@ -92,7 +93,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 
 	private fun validateWhereClauseConditions() {
 		val signature = targetSignature ?: return
-		val subjectType = subject.type ?: return
+		val subjectType = subject.providedType ?: return
 		val typeParameters = (subjectType as? ObjectType)?.typeParameters ?: emptyList()
 		for(condition in signature.whereClauseConditions) {
 			if(!condition.isMet(typeParameters))
@@ -106,13 +107,13 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 			return subject.createLlvmValue(constructor, subject.value.negate())
 		val resultName = "_unaryOperatorResult"
 		val llvmValue = subject.getLlvmValue(constructor)
-		if(SpecialType.BOOLEAN.matches(subject.type)) {
+		if(SpecialType.BOOLEAN.matches(subject.providedType)) {
 			if(kind == Operator.Kind.EXCLAMATION_MARK)
 				return constructor.buildBooleanNegation(llvmValue, resultName)
-		} else if(SpecialType.BYTE.matches(subject.type) || SpecialType.INTEGER.matches(subject.type)) {
+		} else if(SpecialType.BYTE.matches(subject.providedType) || SpecialType.INTEGER.matches(subject.providedType)) {
 			if(kind == Operator.Kind.MINUS)
 				return constructor.buildIntegerNegation(llvmValue, resultName)
-		} else if(SpecialType.FLOAT.matches(subject.type)) {
+		} else if(SpecialType.FLOAT.matches(subject.providedType)) {
 			if(kind == Operator.Kind.MINUS)
 				return constructor.buildFloatNegation(llvmValue, resultName)
 		}
@@ -127,8 +128,9 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		parameters.add(targetValue)
 		val functionAddress = context.resolveFunction(constructor, targetValue,
 			signature.original.toString(false, kind))
-		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, "_unaryOperatorResult")
-		context.continueRaise()
+		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,
+			"_unaryOperatorResult")
+		context.continueRaise(constructor)
 		return returnValue
 	}
 }

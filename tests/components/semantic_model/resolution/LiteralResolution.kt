@@ -16,7 +16,7 @@ internal class LiteralResolution {
 	fun `loads string literal type`() {
 		val sourceCode = """ "" """
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val stringLiteralType = lintResult.find<StringLiteral>()?.type
+		val stringLiteralType = lintResult.find<StringLiteral>()?.providedType
 		assertIs<ObjectType>(stringLiteralType)
 		assertNotNull(stringLiteralType.getTypeDeclaration())
 	}
@@ -25,7 +25,7 @@ internal class LiteralResolution {
 	fun `loads number literal type`() {
 		val sourceCode = "0"
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val numberLiteralType = lintResult.find<NumberLiteral>()?.type
+		val numberLiteralType = lintResult.find<NumberLiteral>()?.providedType
 		assertIs<ObjectType>(numberLiteralType)
 		assertNotNull(numberLiteralType.getTypeDeclaration())
 	}
@@ -34,7 +34,7 @@ internal class LiteralResolution {
 	fun `loads boolean literal type`() {
 		val sourceCode = "yes"
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val booleanLiteralType = lintResult.find<BooleanLiteral>()?.type
+		val booleanLiteralType = lintResult.find<BooleanLiteral>()?.providedType
 		assertIs<ObjectType>(booleanLiteralType)
 		assertNotNull(booleanLiteralType.getTypeDeclaration())
 	}
@@ -43,7 +43,7 @@ internal class LiteralResolution {
 	fun `loads null literal type`() {
 		val sourceCode = "null"
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val nullLiteralType = lintResult.find<NullLiteral>()?.type
+		val nullLiteralType = lintResult.find<NullLiteral>()?.providedType
 		assertIs<ObjectType>(nullLiteralType)
 		assertNotNull(nullLiteralType.getTypeDeclaration())
 	}

@@ -18,8 +18,8 @@ import components.syntax_parser.syntax_tree.operations.HasValueCheck as HasValue
 class HasValueCheck(override val source: HasValueCheckSyntaxTree, scope: Scope, val subject: Value): Value(source, scope) {
 
 	init {
-		type = LiteralType(source, scope, SpecialType.BOOLEAN)
-		addSemanticModels(subject, type)
+		providedType = LiteralType(source, scope, SpecialType.BOOLEAN)
+		addSemanticModels(subject, providedType)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -28,14 +28,14 @@ class HasValueCheck(override val source: HasValueCheckSyntaxTree, scope: Scope, 
 		val subjectVariableDeclaration = subjectVariable?.declaration
 		if(subjectVariableDeclaration != null) {
 			val commonState = tracker.currentState.copy()
-			val variableType = subjectVariable.type as? OptionalType
+			val variableType = subjectVariable.providedType as? OptionalType
 			if(variableType != null) {
 				tracker.add(VariableUsage.Kind.HINT, subjectVariableDeclaration, this, variableType.baseType)
 				positiveState = tracker.currentState.copy()
 			}
 			tracker.setVariableStates(commonState)
 			val nullLiteral = NullLiteral(this)
-			tracker.add(VariableUsage.Kind.HINT, subjectVariableDeclaration, this, nullLiteral.type, nullLiteral)
+			tracker.add(VariableUsage.Kind.HINT, subjectVariableDeclaration, this, nullLiteral.providedType, nullLiteral)
 			negativeState = tracker.currentState.copy()
 			tracker.setVariableStates(commonState)
 		}
@@ -56,10 +56,10 @@ class HasValueCheck(override val source: HasValueCheckSyntaxTree, scope: Scope, 
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		if(SpecialType.NULL.matches(subject.type))
+		if(SpecialType.NULL.matches(subject.providedType))
 			return constructor.buildBoolean(false)
 		//TODO also mind OrUnionType containing Null type everywhere where OptionalType is used
-		if(subject.type !is OptionalType)
+		if(subject.providedType !is OptionalType)
 			return constructor.buildBoolean(true)
 		return constructor.buildIsNotNull(subject.getLlvmValue(constructor), "_hasValueCheck_result")
 	}

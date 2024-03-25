@@ -3,6 +3,7 @@ package components.semantic_model.context
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.scopes.FileScope
 import components.semantic_model.types.ObjectType
+import components.semantic_model.types.SelfType
 import components.semantic_model.types.Type
 
 enum class SpecialType(val className: String, val pathParts: List<String> = listOf("Pure", "lang", "dataTypes", className)) {
@@ -37,12 +38,16 @@ enum class SpecialType(val className: String, val pathParts: List<String> = list
 	}
 
 	fun matches(type: Type?): Boolean {
+		if(type is SelfType)
+			return matches(type.typeDeclaration)
 		if(type !is ObjectType)
 			return false
 		return type.name == className && type.getTypeDeclaration()?.scope?.enclosingScope == fileScope
 	}
 
-	fun matches(typeDeclaration: TypeDeclaration): Boolean {
+	fun matches(typeDeclaration: TypeDeclaration?): Boolean {
+		if(typeDeclaration == null)
+			return false
 		return typeDeclaration.name == className && typeDeclaration.scope.enclosingScope == fileScope
 	}
 }

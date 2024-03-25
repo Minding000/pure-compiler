@@ -3,7 +3,6 @@ package components.semantic_model.declarations
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.FunctionType
 import components.semantic_model.types.Type
-import components.semantic_model.values.InterfaceMember
 import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.modifiers.OverridingMemberKindMismatch

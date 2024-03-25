@@ -254,6 +254,7 @@ internal class Operators {
 			}
 			LinkedList class: List {
 				overriding operator[index: Int]: Int
+				operator /(id: String): Int
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

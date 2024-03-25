@@ -85,9 +85,8 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		val matches = LinkedList<Match>()
 		for(signature in signatures) {
 			val localTypeSubstitutions = signature.getLocalTypeSubstitutions(suppliedLocalTypes, suppliedValues) ?: continue
-			val conversions = HashMap<Value, InitializerDefinition>()
-			if(signature.accepts(localTypeSubstitutions, suppliedValues, conversions))
-				matches.add(Match(signature, localTypeSubstitutions, conversions))
+			val match = signature.getMatch(localTypeSubstitutions, suppliedValues) ?: continue
+			matches.add(match)
 		}
 		determineSuperType()
 		determineSuperSignatures()
@@ -138,10 +137,8 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 							?: throw CompilerError("Encountered member signature without implementation.")
 						val superImplementation = superSignature.associatedImplementation
 							?: throw CompilerError("Encountered member signature without implementation.")
-						signature.context.addIssue(
-							OverridingFunctionReturnTypeNotAssignable(implementation.source, function.memberType,
-								implementation.toString(), superImplementation.toString())
-						)
+						signature.context.addIssue(OverridingFunctionReturnTypeNotAssignable(implementation.source, function.memberType,
+								implementation.toString(), superImplementation.toString()))
 					}
 					break
 				}
@@ -161,7 +158,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 			return SpecialType.ANY.matches(targetType)
 		signatureAssignabilityCheck@for(requiredSignature in targetType.signatures) {
 			for(availableSignature in signatures) {
-				if(requiredSignature.accepts(availableSignature))
+				if(requiredSignature.getMatch(availableSignature))
 					continue@signatureAssignabilityCheck
 			}
 			return false
@@ -190,7 +187,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 	}
 
 	class Match(val signature: FunctionSignature, val localTypeSubstitutions: Map<TypeDeclaration, Type>,
-				val conversions: Map<Value, InitializerDefinition>) {
+				val conversions: Map<Value, InitializerDefinition>, val numberLiteralTypeScore: Int) {
 		val returnType = signature.returnType.withTypeSubstitutions(localTypeSubstitutions)
 
 		fun compareSpecificity(otherMatch: Match): ComparisonResult {
@@ -200,6 +197,10 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 			if(conversions.size < otherMatch.conversions.size)
 				return ComparisonResult.HIGHER
 			if(conversions.size > otherMatch.conversions.size)
+				return ComparisonResult.LOWER
+			if(numberLiteralTypeScore < otherMatch.numberLiteralTypeScore)
+				return ComparisonResult.HIGHER
+			if(numberLiteralTypeScore > otherMatch.numberLiteralTypeScore)
 				return ComparisonResult.LOWER
 			return ComparisonResult.SAME
 		}

@@ -18,12 +18,12 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, scope:
 
 	override fun determineTypes() {
 		super.determineTypes()
-		val baseType = baseValue.type
+		val baseType = baseValue.providedType
 		if(baseType !is StaticType) {
 			context.addIssue(TypeSpecificationOutsideOfInitializerCall(source))
 			return
 		}
-		type = baseType //TODO actually return <TypeParameters>StaticType here (similar to how ObjectTypes handle type parameters)
+		providedType = baseType //TODO actually return <TypeParameters>StaticType here (similar to how ObjectTypes handle type parameters)
 	}
 
 	override fun toString(): String {

@@ -105,7 +105,7 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 	 *   <Expression> = <Expression>[ = <Expression>]...
 	 *   <Expression> <binary-modification> <Expression>
 	 */
-	fun parseStatement(): SyntaxTreeNode {
+	private fun parseStatement(): SyntaxTreeNode {
 		if(currentWord?.type == WordAtom.OPENING_BRACE)
 			return parseStatementSection()
 		if(currentWord?.type == WordAtom.REFERENCING)

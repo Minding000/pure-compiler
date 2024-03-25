@@ -22,11 +22,19 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 	constructor(source: SyntaxTreeNode, surroundingScope: Scope, name: String): this(source, surroundingScope, null,
 		emptyList(), name)
 
-	constructor(typeDeclaration: TypeDeclaration):
-		this(typeDeclaration.source, typeDeclaration.scope, null, emptyList(), typeDeclaration.name, typeDeclaration)
-
+	/**
+	 * Note: Automatically determines types
+	 */
 	constructor(typeParameters: List<Type>, typeDeclaration: TypeDeclaration):
-		this(typeDeclaration.source, typeDeclaration.scope, null, typeParameters, typeDeclaration.name, typeDeclaration)
+		this(typeDeclaration.source, typeDeclaration.scope, null, typeParameters, typeDeclaration.name, typeDeclaration) {
+		determineTypes()
+	}
+
+	/**
+	 * Note: Automatically determines types
+	 */
+	constructor(typeDeclaration: TypeDeclaration):
+		this(emptyList(), typeDeclaration)
 
 	init {
 		addSemanticModels(enclosingType)
@@ -57,7 +65,7 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 			if(typeDeclaration is GenericTypeDeclaration || typeDeclaration is WhereClauseCondition || typeDeclaration is TypeAlias)
 				return typeDeclaration.superType?.isMemberAccessible(signature, true) == true
 		} else {
-			if(typeDeclaration == signature.original.parentDefinition)
+			if(typeDeclaration == signature.original.parentTypeDeclaration)
 				return true
 			if(typeDeclaration is GenericTypeDeclaration || typeDeclaration is WhereClauseCondition || typeDeclaration is TypeAlias)
 				return typeDeclaration.superType?.isMemberAccessible(signature) == true
@@ -189,7 +197,7 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 			return targetType.accepts(this)
 		if(equals(targetType))
 			return true
-		return typeDeclaration?.getLinkedSuperType()?.isAssignableTo(targetType) ?: false
+		return typeDeclaration?.getLinkedSuperType()?.withTypeSubstitutions(getTypeSubstitutions())?.isAssignableTo(targetType) ?: false
 	}
 
 	override fun getPotentiallyUnimplementedAbstractMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> {

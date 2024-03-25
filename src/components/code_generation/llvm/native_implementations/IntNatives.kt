@@ -4,37 +4,61 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
 import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.Context
+import components.semantic_model.context.NativeRegistry
+import errors.internal.CompilerError
 
 object IntNatives {
 	lateinit var context: Context
 
-	fun load(context: Context) {
-		this.context = context
-		context.registerNativeInstance("Int.ZERO: Self", ::zero)
-		context.registerNativeInstance("Int.ONE: Self", ::one)
-		context.registerNativeImplementation("Int++", ::increment)
-		context.registerNativeImplementation("Int--", ::decrement)
-		context.registerNativeImplementation("Int-: Self", ::negative)
-		context.registerNativeImplementation("Int + Self: Self", ::plus)
-		context.registerNativeImplementation("Int - Self: Self", ::minus)
-		context.registerNativeImplementation("Int * Self: Self", ::times)
-		context.registerNativeImplementation("Int / Self: Self", ::dividedBy)
-		context.registerNativeImplementation("Int += Self", ::add)
-		context.registerNativeImplementation("Int -= Self", ::subtract)
-		context.registerNativeImplementation("Int *= Self", ::multiply)
-		context.registerNativeImplementation("Int /= Self", ::divide)
-		context.registerNativeImplementation("Int < Self: Bool", ::lessThan)
-		context.registerNativeImplementation("Int > Self: Bool", ::greaterThan)
-		context.registerNativeImplementation("Int <= Self: Bool", ::lessThanOrEqualTo)
-		context.registerNativeImplementation("Int >= Self: Bool", ::greaterThanOrEqualTo)
+	fun load(registry: NativeRegistry) {
+		context = registry.context
+		registry.registerNativePrimitiveInitializer("Int(Byte): Self", ::fromByte)
+		registry.registerNativePrimitiveInitializer("Int(Int): Self", ::fromInt)
+		registry.registerNativeImplementation("Int.toThePowerOf(Int): Int", ::toThePowerOf)
+		registry.registerNativeImplementation("Int++", ::increment)
+		registry.registerNativeImplementation("Int--", ::decrement)
+		registry.registerNativeImplementation("Int-: Self", ::negative)
+		registry.registerNativeImplementation("Int + Self: Self", ::plus)
+		registry.registerNativeImplementation("Int - Self: Self", ::minus)
+		registry.registerNativeImplementation("Int * Self: Self", ::times)
+		registry.registerNativeImplementation("Int / Self: Self", ::dividedBy)
+		registry.registerNativeImplementation("Int += Self", ::add)
+		registry.registerNativeImplementation("Int -= Self", ::subtract)
+		registry.registerNativeImplementation("Int *= Self", ::multiply)
+		registry.registerNativeImplementation("Int /= Self", ::divide)
+		registry.registerNativeImplementation("Int < Self: Bool", ::lessThan)
+		registry.registerNativeImplementation("Int > Self: Bool", ::greaterThan)
+		registry.registerNativeImplementation("Int <= Self: Bool", ::lessThanOrEqualTo)
+		registry.registerNativeImplementation("Int >= Self: Bool", ::greaterThanOrEqualTo)
+		registry.registerNativeImplementation("Int == Int: Bool", ::equalTo)
 	}
 
-	private fun zero(constructor: LlvmConstructor): LlvmValue {
-		return constructor.buildInt32(0)
+	private fun fromByte(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+		val name = "Int(Byte): Self"
+		if(parameters.size != 1)
+			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
+		return constructor.buildCastFromByteToInteger(firstParameter, name)
 	}
 
-	private fun one(constructor: LlvmConstructor): LlvmValue {
-		return constructor.buildInt32(1)
+	private fun fromInt(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+		val name = "Int(Int): Self"
+		if(parameters.size != 1)
+			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
+		return firstParameter
+	}
+
+	private fun toThePowerOf(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val exceptionAddress = context.getExceptionParameter(constructor)
+		val thisInt = context.getThisParameter(constructor)
+		val exponent = constructor.getParameter(Context.VALUE_PARAMETER_OFFSET)
+		val parameters = listOf(exceptionAddress, ValueConverter.unwrapInteger(context, constructor, thisInt), exponent)
+		val primitiveImplementation = context.nativeRegistry.resolvePrimitiveImplementation("Int.toThePowerOf(Int): Int")
+		val result = constructor.buildFunctionCall(primitiveImplementation.llvmType, primitiveImplementation.llvmValue, parameters,
+			"result")
+		constructor.buildReturn(result)
 	}
 
 	private fun increment(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
@@ -187,6 +211,17 @@ object IntNatives {
 		val parameterPrimitiveInt = ValueConverter.unwrapInteger(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
 		val result = constructor.buildSignedIntegerGreaterThanOrEqualTo(thisPrimitiveInt, parameterPrimitiveInt, "comparisonResult")
+		constructor.buildReturn(result)
+	}
+
+	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisInt = context.getThisParameter(constructor)
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, thisInt,
+			context.integerValueIndex, "thisValueProperty")
+		val thisPrimitiveInt = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveInt")
+		val parameterPrimitiveInt = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val result = constructor.buildSignedIntegerEqualTo(thisPrimitiveInt, parameterPrimitiveInt, "equalToResult")
 		constructor.buildReturn(result)
 	}
 }

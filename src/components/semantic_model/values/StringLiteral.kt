@@ -37,8 +37,8 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 	//   - at
 
 	init {
-		type = LiteralType(source, scope, SpecialType.STRING)
-		addSemanticModels(type)
+		providedType = LiteralType(source, scope, SpecialType.STRING)
+		addSemanticModels(providedType)
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {

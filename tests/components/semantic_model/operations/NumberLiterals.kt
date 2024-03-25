@@ -2,6 +2,7 @@ package components.semantic_model.operations
 
 import components.semantic_model.context.SpecialType
 import components.semantic_model.values.NumberLiteral
+import logger.issues.resolution.SignatureAmbiguity
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import java.math.BigDecimal
@@ -18,7 +19,7 @@ internal class NumberLiterals {
 				234324
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val literalType = lintResult.find<NumberLiteral>()?.type
+		val literalType = lintResult.find<NumberLiteral>()?.providedType
 		assertTrue(SpecialType.INTEGER.matches(literalType), "Unexpected type '$literalType'")
 	}
 
@@ -29,7 +30,7 @@ internal class NumberLiterals {
 				0
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val literalType = lintResult.find<NumberLiteral>()?.type
+		val literalType = lintResult.find<NumberLiteral>()?.providedType
 		assertTrue(SpecialType.INTEGER.matches(literalType), "Unexpected type '$literalType'")
 	}
 
@@ -40,7 +41,7 @@ internal class NumberLiterals {
 				6534.75456
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val literalType = lintResult.find<NumberLiteral>()?.type
+		val literalType = lintResult.find<NumberLiteral>()?.providedType
 		assertTrue(SpecialType.FLOAT.matches(literalType), "Unexpected type '$literalType'")
 	}
 
@@ -51,7 +52,7 @@ internal class NumberLiterals {
 				0.00
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val literalType = lintResult.find<NumberLiteral>()?.type
+		val literalType = lintResult.find<NumberLiteral>()?.providedType
 		assertTrue(SpecialType.FLOAT.matches(literalType), "Unexpected type '$literalType'")
 	}
 
@@ -63,7 +64,7 @@ internal class NumberLiterals {
 				val number: Byte = 54
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val literalType = lintResult.find<NumberLiteral>()?.type
+		val literalType = lintResult.find<NumberLiteral>()?.providedType
 		assertTrue(SpecialType.BYTE.matches(literalType), "Unexpected type '$literalType'")
 	}
 
@@ -75,7 +76,7 @@ internal class NumberLiterals {
 				val number: Byte = -54
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val literalType = lintResult.find<NumberLiteral>()?.type
+		val literalType = lintResult.find<NumberLiteral>()?.providedType
 		assertTrue(SpecialType.BYTE.matches(literalType), "Unexpected type '$literalType'")
 	}
 
@@ -87,7 +88,7 @@ internal class NumberLiterals {
 				val number: Float = 54
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val literalType = lintResult.find<NumberLiteral>()?.type
+		val literalType = lintResult.find<NumberLiteral>()?.providedType
 		assertTrue(SpecialType.FLOAT.matches(literalType), "Unexpected type '$literalType'")
 	}
 
@@ -99,7 +100,7 @@ internal class NumberLiterals {
 				val number: Float = -54
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
-		val literalType = lintResult.find<NumberLiteral>()?.type
+		val literalType = lintResult.find<NumberLiteral>()?.providedType
 		assertTrue(SpecialType.FLOAT.matches(literalType), "Unexpected type '$literalType'")
 	}
 
@@ -173,5 +174,17 @@ internal class NumberLiterals {
 		val variableValue = lintResult.find<NumberLiteral>()?.getComputedValue()
 		assertIs<NumberLiteral>(variableValue)
 		assertEquals(BigDecimal("1.2e7"), variableValue.value)
+	}
+
+	@Test
+	fun `number literals default to the smallest type when call is ambiguous`() {
+		val sourceCode =
+			"""
+				referencing Pure
+				val typedNumber: Int = 2
+				typedNumber + 1
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode, true)
+		lintResult.assertIssueNotDetected<SignatureAmbiguity>()
 	}
 }

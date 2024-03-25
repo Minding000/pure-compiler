@@ -69,7 +69,7 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 	private fun validateDeclarations() {
 		for((name, valueDeclaration) in valueDeclarations) {
 			val parentValueDeclaration = parentScope.getValueDeclaration(name)?.declaration ?: continue
-			if(parentValueDeclaration.scope is BlockScope) {
+			if(parentValueDeclaration.scope is BlockScope && parentValueDeclaration.isBefore(valueDeclaration)) {
 				valueDeclaration.context.addIssue(Redeclaration(valueDeclaration.source, "value", valueDeclaration.name,
 					parentValueDeclaration.source))
 			}

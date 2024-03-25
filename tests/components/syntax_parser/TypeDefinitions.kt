@@ -128,6 +128,8 @@ internal class TypeDefinitions {
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
+	//TODO change type alias syntax to match other type declaration syntax by moving the 'alias' keyword behind the identifier
+	//TODO support explicit parent type to be declared
 	@Test
 	fun `parses type aliases`() {
 		val sourceCode =

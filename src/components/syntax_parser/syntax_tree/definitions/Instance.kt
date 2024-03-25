@@ -8,7 +8,7 @@ import source_structure.Position
 import util.indent
 import util.toLines
 import util.toSemanticValueModels
-import components.semantic_model.values.Instance as SemanticInstanceModel
+import components.semantic_model.declarations.Instance as SemanticInstanceModel
 
 class Instance(val identifier: Identifier, val parameters: List<ValueSyntaxTreeNode>, end: Position):
 	SyntaxTreeNode(identifier.start, end) {

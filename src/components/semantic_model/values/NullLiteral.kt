@@ -11,12 +11,12 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 class NullLiteral(override val source: SyntaxTreeNode, scope: Scope): LiteralValue(source, scope) {
 
 	constructor(parent: SemanticModel): this(parent.source, parent.scope) {
-		(type as? LiteralType)?.determineTypes()
+		(providedType as? LiteralType)?.determineTypes()
 	}
 
 	init {
-		type = LiteralType(source, scope, SpecialType.NULL)
-		addSemanticModels(type)
+		providedType = LiteralType(source, scope, SpecialType.NULL)
+		addSemanticModels(providedType)
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {

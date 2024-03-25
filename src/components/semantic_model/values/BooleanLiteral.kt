@@ -11,12 +11,12 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 class BooleanLiteral(override val source: SyntaxTreeNode, scope: Scope, val value: Boolean): LiteralValue(source, scope) {
 
 	constructor(parent: SemanticModel, value: Boolean): this(parent.source, parent.scope, value) {
-		(type as? LiteralType)?.determineTypes()
+		(providedType as? LiteralType)?.determineTypes()
 	}
 
 	init {
-		type = LiteralType(source, scope, SpecialType.BOOLEAN)
-		addSemanticModels(type)
+		providedType = LiteralType(source, scope, SpecialType.BOOLEAN)
+		addSemanticModels(providedType)
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {

@@ -32,17 +32,17 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 	override fun determineTypes() {
 		super.determineTypes()
 		context.registerWrite(target)
-		val valueType = target.type ?: return
+		val valueType = target.providedType ?: return
 		try {
 			val match = valueType.interfaceScope.getOperator(kind, listOf(modifier))
 			if(match == null) {
-				context.addIssue(NotFound(source, "Operator", "$valueType $kind ${modifier.type}"))
+				context.addIssue(NotFound(source, "Operator", "$valueType $kind ${modifier.providedType}"))
 				return
 			}
 			targetSignature = match.signature
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
-			error.log(source, "operator", "$valueType $kind ${modifier.type}")
+			error.log(source, "operator", "$valueType $kind ${modifier.providedType}")
 		}
 	}
 
@@ -78,7 +78,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 
 	private fun validateWhereClauseConditions() {
 		val signature = targetSignature ?: return
-		val targetType = target.type ?: return
+		val targetType = target.providedType ?: return
 		val typeParameters = (targetType as? ObjectType)?.typeParameters ?: emptyList()
 		for(condition in signature.whereClauseConditions) {
 			if(!condition.isMet(typeParameters))
@@ -89,7 +89,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 
 	private fun validateMonomorphicAccess() {
 		val signature = targetSignature ?: return
-		val valueType = target.type ?: return
+		val valueType = target.providedType ?: return
 		if(signature.associatedImplementation?.isAbstract == true && signature.associatedImplementation.isMonomorphic
 			&& !valueType.isMemberAccessible(signature, true))
 			context.addIssue(AbstractMonomorphicAccess(source, "operator",
@@ -98,10 +98,10 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
-		val isTargetInteger = SpecialType.INTEGER.matches(target.type)
-		val isTargetPrimitiveNumber = isTargetInteger || SpecialType.FLOAT.matches(target.type)
-		val isModifierInteger = SpecialType.INTEGER.matches(modifier.type)
-		val isModifierPrimitiveNumber = isModifierInteger || SpecialType.FLOAT.matches(modifier.type)
+		val isTargetInteger = SpecialType.INTEGER.matches(target.providedType)
+		val isTargetPrimitiveNumber = isTargetInteger || SpecialType.FLOAT.matches(target.providedType)
+		val isModifierInteger = SpecialType.INTEGER.matches(modifier.providedType)
+		val isModifierPrimitiveNumber = isModifierInteger || SpecialType.FLOAT.matches(modifier.providedType)
 		if(isTargetPrimitiveNumber && isModifierPrimitiveNumber) {
 			val targetValue = target.getLlvmValue(constructor)
 			var modifierValue = modifier.getLlvmValue(constructor)
@@ -156,6 +156,6 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		val functionAddress = context.resolveFunction(constructor, targetValue,
 			signature.original.toString(false, kind))
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
-		context.continueRaise()
+		context.continueRaise(constructor)
 	}
 }

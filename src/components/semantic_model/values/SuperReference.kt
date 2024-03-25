@@ -65,7 +65,7 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 			context.addIssue(SuperReferenceAmbiguity(source, possibleTargetTypes))
 		} else {
 			val intendedType = possibleTargetTypes.first()
-			type = intendedType
+			providedType = intendedType
 		}
 	}
 

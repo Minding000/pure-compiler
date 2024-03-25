@@ -48,21 +48,10 @@ class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope
 		val exceptionAddress = constructor.getParameter(constructor.getParentFunction(), Context.EXCEPTION_PARAMETER_INDEX)
 		constructor.buildStore(value.getLlvmValue(constructor), exceptionAddress)
 		val returnType = getReturnType()
-		if(SpecialType.NOTHING.matches(returnType)) {
+		if(SpecialType.NOTHING.matches(returnType))
 			constructor.buildReturn()
-			return
-		}
-		val nullValue = if(SpecialType.BOOLEAN.matches(returnType))
-			constructor.buildBoolean(false)
-		else if(SpecialType.BYTE.matches(returnType))
-			constructor.buildByte(0)
-		else if(SpecialType.INTEGER.matches(returnType))
-			constructor.buildInt32(0)
-		else if(SpecialType.FLOAT.matches(returnType))
-			constructor.buildFloat(0.0)
 		else
-			constructor.nullPointer
-		constructor.buildReturn(nullValue)
+			constructor.buildReturn(context.getNullValue(constructor, returnType))
 	}
 
 	private fun getReturnType(): Type? {

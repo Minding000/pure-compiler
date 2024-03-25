@@ -1,4 +1,4 @@
-package components.code_generation
+package components.code_generation.general
 
 import org.junit.jupiter.api.Test
 import util.TestUtil

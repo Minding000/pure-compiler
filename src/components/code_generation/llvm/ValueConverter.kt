@@ -3,6 +3,7 @@ package components.code_generation.llvm
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.InitializerDefinition
+import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.types.OptionalType
 import components.semantic_model.types.Type
@@ -23,25 +24,39 @@ object ValueConverter {
 	// - null check target
 	// - return source
 
+	@Deprecated("Provide generics information.")
 	fun convertIfRequired(model: SemanticModel, constructor: LlvmConstructor, sourceValue: LlvmValue, sourceType: Type?, targetType: Type?,
 						  conversion: InitializerDefinition? = null): LlvmValue {
-		//TODO test (un-)box / (un-)wrap + cast
-		//TODO test (un-)box / (un-)wrap + conversion
+		return convertIfRequired(model, constructor, sourceValue, sourceType, false, targetType, false,
+			conversion)
+	}
 
-		if(sourceType?.isLlvmPrimitive() == true && targetType is OptionalType && targetType.baseType.isLlvmPrimitive())
-			return boxPrimitive(constructor, sourceValue, sourceType.getLlvmType(constructor))
-		if(sourceType is OptionalType && sourceType.baseType.isLlvmPrimitive() && targetType?.isLlvmPrimitive() == true)
-			return unboxPrimitive(constructor, sourceValue, targetType.getLlvmType(constructor))
+	fun convertIfRequired(model: SemanticModel, constructor: LlvmConstructor, sourceValue: LlvmValue, sourceType: Type?,
+						  isSourceGeneric: Boolean, targetType: Type?, isTargetGeneric: Boolean,
+						  conversion: InitializerDefinition? = null): LlvmValue {
+
 		val sourceBaseType = if(sourceType is OptionalType) sourceType.baseType else sourceType
 		val targetBaseType = if(targetType is OptionalType) targetType.baseType else targetType
-		if(sourceBaseType?.isLlvmPrimitive() == true && targetBaseType?.isLlvmPrimitive() == false)
+		val isSourcePrimitive = !isSourceGeneric && sourceBaseType?.isLlvmPrimitive() != false
+		val isTargetPrimitive = !isTargetGeneric && targetBaseType?.isLlvmPrimitive() != false
+
+		if(sourceType !is OptionalType && isSourcePrimitive && targetType is OptionalType && isTargetPrimitive)
+			return boxPrimitive(constructor, sourceValue, sourceType?.getLlvmType(constructor))
+		if(sourceType is OptionalType && isSourcePrimitive && targetType !is OptionalType && isTargetPrimitive)
+			return unboxPrimitive(constructor, sourceValue, targetType?.getLlvmType(constructor))
+		if(isSourcePrimitive && !isTargetPrimitive)
 			return wrapAndUnboxIfRequired(model, constructor, sourceValue, sourceType)
-		if(sourceBaseType?.isLlvmPrimitive() == false && targetBaseType?.isLlvmPrimitive() == true)
+		if(!isSourcePrimitive && isTargetPrimitive)
 			return unwrapAndBoxIfRequired(model, constructor, sourceValue, sourceType, targetType)
-		if((SpecialType.BYTE.matches(sourceType) || SpecialType.INTEGER.matches(sourceType)) && SpecialType.FLOAT.matches(targetType))
+		if((SpecialType.BYTE.matches(sourceType) || SpecialType.INTEGER.matches(sourceType)) && SpecialType.FLOAT.matches(targetType)) {
+			//TODO unbox / unwrap + box / wrap (write tests!)
 			return constructor.buildCastFromSignedIntegerToFloat(sourceValue, "_castPrimitive")
-		if(SpecialType.BYTE.matches(sourceType) && SpecialType.INTEGER.matches(targetType))
+		}
+		if(SpecialType.BYTE.matches(sourceType) && SpecialType.INTEGER.matches(targetType)) {
+			//TODO unbox / unwrap + box / wrap (write tests!)
 			return constructor.buildCastFromByteToInteger(sourceValue, "_castPrimitive")
+		}
+		//TODO test (un-)box / (un-)wrap + conversion
 		if(conversion != null)
 			return buildConversion(constructor, sourceValue, conversion)
 		return sourceValue
@@ -50,7 +65,7 @@ object ValueConverter {
 	private fun wrapAndUnboxIfRequired(model: SemanticModel, constructor: LlvmConstructor, sourceValue: LlvmValue,
 									   sourceType: Type?): LlvmValue {
 		if(sourceType !is OptionalType)
-			return wrap(model, constructor, sourceValue, sourceType)
+			return wrapPrimitive(model, constructor, sourceValue, sourceType)
 		val resultVariable = constructor.buildStackAllocation(constructor.pointerType, "_unboxAndWrap_resultVariable")
 		val function = constructor.getParentFunction()
 		val valueBlock = constructor.createBlock(function, "_unboxAndWrap_valueBlock")
@@ -62,7 +77,7 @@ object ValueConverter {
 		constructor.buildJump(resultBlock)
 		constructor.select(valueBlock)
 		val primitiveValue = unboxPrimitive(constructor, sourceValue, sourceType.baseType.getLlvmType(constructor))
-		constructor.buildStore(wrap(model, constructor, primitiveValue, sourceType.baseType), resultVariable)
+		constructor.buildStore(wrapPrimitive(model, constructor, primitiveValue, sourceType.baseType), resultVariable)
 		constructor.buildJump(resultBlock)
 		constructor.select(resultBlock)
 		return constructor.buildLoad(constructor.pointerType, resultVariable, "_unboxAndWrap_result")
@@ -71,7 +86,7 @@ object ValueConverter {
 	private fun unwrapAndBoxIfRequired(model: SemanticModel, constructor: LlvmConstructor, sourceValue: LlvmValue, sourceType: Type?,
 									   targetType: Type?): LlvmValue {
 		if(targetType !is OptionalType)
-			return unwrap(model, constructor, sourceValue, targetType)
+			return unwrapPrimitive(model, constructor, sourceValue, targetType)
 		val sourceLlvmType = sourceType?.getLlvmType(constructor)
 		if(sourceType is OptionalType) {
 			val resultVariable = constructor.buildStackAllocation(sourceLlvmType, "_unwrapAndBox_resultVariable")
@@ -84,13 +99,13 @@ object ValueConverter {
 			constructor.buildStore(constructor.nullPointer, resultVariable)
 			constructor.buildJump(resultBlock)
 			constructor.select(valueBlock)
-			val primitiveValue = unwrap(model, constructor, sourceValue, targetType.baseType)
+			val primitiveValue = unwrapPrimitive(model, constructor, sourceValue, targetType.baseType)
 			constructor.buildStore(boxPrimitive(constructor, primitiveValue, sourceLlvmType), resultVariable)
 			constructor.buildJump(resultBlock)
 			constructor.select(resultBlock)
 			return constructor.buildLoad(sourceLlvmType, resultVariable, "_unwrapAndBox_result")
 		} else {
-			val primitiveValue = unwrap(model, constructor, sourceValue, targetType.baseType)
+			val primitiveValue = unwrapPrimitive(model, constructor, sourceValue, targetType.baseType)
 			return boxPrimitive(constructor, primitiveValue, sourceLlvmType)
 		}
 	}
@@ -110,7 +125,7 @@ object ValueConverter {
 		return newObject
 	}
 
-	private fun boxPrimitive(constructor: LlvmConstructor, value: LlvmValue, type: LlvmType?): LlvmValue {
+	fun boxPrimitive(constructor: LlvmConstructor, value: LlvmValue, type: LlvmType?): LlvmValue {
 		val box = constructor.buildHeapAllocation(type, "_optionalPrimitiveBox")
 		constructor.buildStore(value, box)
 		return box
@@ -120,7 +135,7 @@ object ValueConverter {
 		return constructor.buildLoad(type, value, "_unboxedPrimitive")
 	}
 
-	private fun wrap(model: SemanticModel, constructor: LlvmConstructor, primitiveLlvmValue: LlvmValue, type: Type?): LlvmValue {
+	fun wrapPrimitive(model: SemanticModel, constructor: LlvmConstructor, primitiveLlvmValue: LlvmValue, type: Type?): LlvmValue {
 		val context = model.context
 		return if(SpecialType.BOOLEAN.matches(type)) {
 			wrapBool(context, constructor, primitiveLlvmValue)
@@ -135,7 +150,7 @@ object ValueConverter {
 		}
 	}
 
-	private fun unwrap(model: SemanticModel, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue, type: Type?): LlvmValue {
+	fun unwrapPrimitive(model: SemanticModel, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue, type: Type?): LlvmValue {
 		val context = model.context
 		return if(SpecialType.BOOLEAN.matches(type)) {
 			unwrapBool(context, constructor, wrappedLlvmValue)
@@ -147,6 +162,22 @@ object ValueConverter {
 			unwrapFloat(context, constructor, wrappedLlvmValue)
 		} else {
 			throw CompilerError(model.source, "Unknown primitive type '$type'.")
+		}
+	}
+
+	fun unwrapPrimitive(model: SemanticModel, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue,
+						typeDeclaration: TypeDeclaration?): LlvmValue {
+		val context = model.context
+		return if(SpecialType.BOOLEAN.matches(typeDeclaration)) {
+			unwrapBool(context, constructor, wrappedLlvmValue)
+		} else if(SpecialType.BYTE.matches(typeDeclaration)) {
+			unwrapByte(context, constructor, wrappedLlvmValue)
+		} else if(SpecialType.INTEGER.matches(typeDeclaration)) {
+			unwrapInteger(context, constructor, wrappedLlvmValue)
+		} else if(SpecialType.FLOAT.matches(typeDeclaration)) {
+			unwrapFloat(context, constructor, wrappedLlvmValue)
+		} else {
+			throw CompilerError(model.source, "Unknown primitive type declaration '${typeDeclaration?.name}'.")
 		}
 	}
 

@@ -4,12 +4,11 @@ import code.Main
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
-import components.code_generation.llvm.native_implementations.*
 import components.semantic_model.control_flow.LoopStatement
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.types.Type
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
-import errors.internal.CompilerError
 import logger.Issue
 import logger.Logger
 import java.util.*
@@ -32,6 +31,10 @@ class Context {
 	lateinit var llvmMemberAddressType: LlvmType
 	lateinit var llvmPrintFunctionType: LlvmType
 	lateinit var llvmPrintFunction: LlvmValue
+	lateinit var llvmWriteFunctionType: LlvmType
+	lateinit var llvmWriteFunction: LlvmValue
+	lateinit var llvmReadFunctionType: LlvmType
+	lateinit var llvmReadFunction: LlvmValue
 	lateinit var llvmFlushFunctionType: LlvmType
 	lateinit var llvmFlushFunction: LlvmValue
 	lateinit var llvmSleepFunctionType: LlvmType
@@ -62,8 +65,8 @@ class Context {
 	lateinit var llvmStringByteArrayInitializerType: LlvmType
 	lateinit var llvmStringByteArrayInitializer: LlvmValue
 	val memberIdentities = IdentityMap<String>()
-	private val nativeInstances = HashMap<String, (constructor: LlvmConstructor) -> LlvmValue>()
-	private val nativeImplementations = HashMap<String, (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit>()
+	val nativeRegistry = NativeRegistry(this)
+	var primitiveCompilationTarget: TypeDeclaration? = null
 
 	companion object {
 		const val CLASS_DEFINITION_PROPERTY_INDEX = 0
@@ -102,11 +105,28 @@ class Context {
 		return constructor.getParameter(function, THIS_PARAMETER_INDEX)
 	}
 
-	fun continueRaise() {
+	fun continueRaise(constructor: LlvmConstructor/*, returnType: Type?*/) {
 		//TODO if exception exists
 		// check for optional try (normal and force try have no effect)
 		// check for catch
 		// resume raise
+//		if(SpecialType.NOTHING.matches(returnType))
+//			constructor.buildReturn()
+//		else
+//			constructor.buildReturn(getNullValue(constructor, returnType))
+	}
+
+	fun getNullValue(constructor: LlvmConstructor, type: Type?): LlvmValue {
+		return if(SpecialType.BOOLEAN.matches(type))
+			constructor.buildBoolean(false)
+		else if(SpecialType.BYTE.matches(type))
+			constructor.buildByte(0)
+		else if(SpecialType.INTEGER.matches(type))
+			constructor.buildInt32(0)
+		else if(SpecialType.FLOAT.matches(type))
+			constructor.buildFloat(0.0)
+		else
+			constructor.nullPointer
 	}
 
 	fun resolveMember(constructor: LlvmConstructor, targetLocation: LlvmValue, memberIdentifier: String,
@@ -125,45 +145,10 @@ class Context {
 			listOf(classDefinition, constructor.buildInt32(memberIdentities.getId(signatureIdentifier))), "_functionAddress")
 	}
 
-	private fun getClassDefinition(constructor: LlvmConstructor, targetObject: LlvmValue): LlvmValue {
+	fun getClassDefinition(constructor: LlvmConstructor, targetObject: LlvmValue): LlvmValue {
 		// The class definition property is the first property, so it can be accessed without GEP
 		val classDefinitionProperty = targetObject
 		return constructor.buildLoad(constructor.pointerType, classDefinitionProperty, "_classDefinition")
-	}
-
-	fun loadNativeImplementations() {
-		ArrayNatives.load(this)
-		BoolNatives.load(this)
-		ByteNatives.load(this)
-		CliNatives.load(this)
-		FloatNatives.load(this)
-		IdentifiableNatives.load(this)
-		IntNatives.load(this)
-		NullNatives.load(this)
-	}
-
-	fun registerNativeInstance(identifier: String, instance: (constructor: LlvmConstructor) -> LlvmValue) {
-		val existingInstance = nativeInstances.putIfAbsent(identifier, instance)
-		if(existingInstance != null)
-			throw CompilerError("Duplicate native instance for identifier '$identifier'.")
-	}
-
-	fun getNativeInstanceValue(constructor: LlvmConstructor, identifier: String): LlvmValue {
-		val getInstanceValue = nativeInstances[identifier]
-			?: throw CompilerError("Missing native instance for identifier '$identifier'.")
-		return getInstanceValue(constructor)
-	}
-
-	fun registerNativeImplementation(identifier: String, implementation: (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit) {
-		val existingImplementation = nativeImplementations.putIfAbsent(identifier, implementation)
-		if(existingImplementation != null)
-			throw CompilerError("Duplicate native implementation for identifier '$identifier'.")
-	}
-
-	fun compileNativeImplementation(constructor: LlvmConstructor, identifier: String, llvmValue: LlvmValue) {
-		val compileImplementation = nativeImplementations[identifier]
-			?: throw CompilerError("Missing native implementation for identifier '$identifier'.")
-		compileImplementation(constructor, llvmValue)
 	}
 
 	fun printDebugMessage(message: String) {

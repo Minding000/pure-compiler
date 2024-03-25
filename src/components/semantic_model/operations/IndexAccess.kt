@@ -21,6 +21,9 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 				  val indices: List<Value>): Value(source, scope) {
 	var sourceExpression: Value? = null
 	var targetSignature: FunctionSignature? = null
+	//TODO same for other potentially generic values (function call, operator call, etc.)
+	override val hasGenericType: Boolean
+		get() = targetSignature?.original?.returnType != targetSignature?.returnType
 
 	init {
 		addSemanticModels(typeParameters, indices)
@@ -30,12 +33,12 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	override fun determineTypes() {
 		determineSourceExpression()
 		super.determineTypes()
-		val targetType = target.type ?: return
+		val targetType = target.providedType ?: return
 		try {
 			val match = targetType.interfaceScope.getIndexOperator(typeParameters, indices, sourceExpression)
 			if(match == null) {
-				val name = "${target.type}[${indices.joinToString { index -> index.type.toString() }}]"
-				context.addIssue(NotFound(source, "Operator", "$name(${sourceExpression?.type ?: ""})"))
+				val name = "${target.providedType}[${indices.joinToString { index -> index.providedType.toString() }}]"
+				context.addIssue(NotFound(source, "Operator", "$name(${sourceExpression?.providedType ?: ""})"))
 				return
 			}
 			targetSignature = match.signature
@@ -64,7 +67,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 
 	private fun validateWhereClauseConditions() {
 		val signature = targetSignature ?: return
-		val targetType = target.type ?: return
+		val targetType = target.providedType ?: return
 		val typeParameters = (targetType as? ObjectType)?.typeParameters ?: emptyList()
 		for(condition in signature.whereClauseConditions) {
 			if(!condition.isMet(typeParameters))
@@ -75,7 +78,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 
 	private fun validateMonomorphicAccess() {
 		val signature = targetSignature ?: return
-		val targetType = target.type ?: return
+		val targetType = target.providedType ?: return
 		if(signature.associatedImplementation?.isAbstract == true && signature.associatedImplementation.isMonomorphic
 			&& !targetType.isMemberAccessible(signature, true))
 			context.addIssue(AbstractMonomorphicAccess(source, "operator",
@@ -107,7 +110,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 			signature.original.toString(false, getOperatorKind()))
 		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,
 			"_indexAccess_result")
-		context.continueRaise()
+		context.continueRaise(constructor)
 		return returnValue
 	}
 
@@ -122,10 +125,10 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 			if(indices.isNotEmpty())
 				signature += " "
 		}
-		signature += indices.joinToString { index -> index.type.toString() }
+		signature += indices.joinToString { index -> index.providedType.toString() }
 		signature += "]"
 		sourceExpression?.let { sourceExpression ->
-			signature += "(${sourceExpression.type})"
+			signature += "(${sourceExpression.providedType})"
 		}
 		return signature
 	}

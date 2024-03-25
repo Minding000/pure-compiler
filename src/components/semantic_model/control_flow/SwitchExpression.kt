@@ -46,24 +46,24 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 			return
 		val types = LinkedList<Type>()
 		for(case in cases) {
-			val caseBranchType = case.result.getValue()?.type
+			val caseBranchType = case.result.getValue()?.providedType
 			if(caseBranchType != null)
 				types.add(caseBranchType)
 		}
 		if(elseBranch != null) {
-			val elseBranchType = elseBranch.getValue()?.type
+			val elseBranchType = elseBranch.getValue()?.providedType
 			if(elseBranchType != null)
 				types.add(elseBranchType)
 		}
 		if(types.isNotEmpty())
-			type = types.combineOrUnion(this)
+			providedType = types.combineOrUnion(this)
 	}
 
 	private fun inferCaseConditionTypes() {
-		val subjectType = subject.type
+		val subjectType = subject.providedType
 		for(case in cases) {
 			if(!case.condition.isAssignableTo(subjectType)) {
-				val conditionType = case.condition.type
+				val conditionType = case.condition.providedType
 				if(conditionType != null && subjectType != null)
 					context.addIssue(CaseTypeMismatch(source, conditionType, subjectType))
 				continue
@@ -266,7 +266,7 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		val resultLlvmType = type?.getLlvmType(constructor)
+		val resultLlvmType = providedType?.getLlvmType(constructor)
 		val result = constructor.buildStackAllocation(resultLlvmType, "switch_resultVariable")
 		val function = constructor.getParentFunction()
 		val elseBlock = constructor.createBlock(function, "switch_elseBlock")

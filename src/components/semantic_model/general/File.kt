@@ -70,7 +70,7 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 			if(typeDeclaration.isDefinition) {
 				constructor.buildFunctionCall(typeDeclaration.llvmClassInitializerType, typeDeclaration.llvmClassInitializer,
 					listOf(context.getExceptionParameter(constructor)))
-				context.continueRaise()
+				context.continueRaise(constructor)
 			}
 		}
 		super.compile(constructor)

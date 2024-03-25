@@ -2,7 +2,9 @@ package components.semantic_model.declarations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.Context
+import components.semantic_model.context.PrimitiveImplementation
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.general.ErrorHandlingContext
@@ -20,6 +22,7 @@ import logger.issues.declaration.InvalidVariadicParameterPosition
 import logger.issues.declaration.MissingBody
 import logger.issues.declaration.MultipleVariadicParameters
 import logger.issues.modifiers.*
+import util.uppercaseFirstChar
 import java.util.*
 
 class FunctionImplementation(override val source: SyntaxTreeNode, override val scope: BlockScope,
@@ -31,6 +34,8 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	SemanticModel(source, scope), MemberDeclaration, Callable {
 	override var parentTypeDeclaration: TypeDeclaration? = null
 	private lateinit var parentFunction: Function
+	val memberType: String
+		get() = parentFunction.memberType
 	override val memberIdentifier: String
 		get() {
 			val parentFunction = parentFunction
@@ -61,7 +66,14 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	override fun determineTypes() {
 		super.determineTypes()
 		parentTypeDeclaration = scope.getSurroundingTypeDeclaration()
-		signature.parentDefinition = parentTypeDeclaration
+		signature.parentTypeDeclaration = parentTypeDeclaration
+	}
+
+	fun fulfillsInheritanceRequirementsOf(superImplementation: FunctionImplementation,
+										  typeSubstitutions: Map<TypeDeclaration, Type>): Boolean {
+		if(parentFunction.name != superImplementation.parentFunction.name)
+			return false
+		return signature.fulfillsInheritanceRequirementsOf(superImplementation.signature.withTypeSubstitutions(typeSubstitutions))
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -95,22 +107,20 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	private fun validateOverridingKeyword() {
 		if(signature.superFunctionSignature != null) {
 			if(!isOverriding)
-				context.addIssue(MissingOverridingKeyword(source, parentFunction.memberType.replaceFirstChar { it.titlecase() },
-					toString()))
+				context.addIssue(MissingOverridingKeyword(source, memberType.uppercaseFirstChar(), toString()))
 		} else {
 			if(isOverriding)
-				context.addIssue(OverriddenSuperMissing(source, parentFunction.memberType))
+				context.addIssue(OverriddenSuperMissing(source, memberType))
 		}
 	}
 
 	private fun validateSpecificKeyword() {
 		if(usesOwnTypeAsSelf) {
 			if(!isSpecific)
-				context.addIssue(MissingSpecificKeyword(source, parentFunction.memberType.replaceFirstChar { it.titlecase() },
-					toString()))
+				context.addIssue(MissingSpecificKeyword(source, memberType.uppercaseFirstChar(), toString()))
 		} else {
 			if(isSpecific)
-				context.addIssue(ExtraneousSpecificModifier(source, parentFunction.memberType))
+				context.addIssue(ExtraneousSpecificModifier(source, memberType))
 		}
 	}
 
@@ -118,11 +128,10 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		val hasSelfTypeParameter = signature.parameterTypes.any { parameterType -> parameterType is SelfType }
 		if(hasSelfTypeParameter) {
 			if(!isMonomorphic)
-				context.addIssue(MissingMonomorphicKeyword(source, parentFunction.memberType.replaceFirstChar { it.titlecase() },
-					toString()))
+				context.addIssue(MissingMonomorphicKeyword(source, memberType.uppercaseFirstChar(), toString()))
 		} else {
 			if(isMonomorphic)
-				context.addIssue(ExtraneousMonomorphicModifier(source, parentFunction.memberType))
+				context.addIssue(ExtraneousMonomorphicModifier(source, memberType))
 		}
 	}
 
@@ -170,20 +179,20 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		}
 		if(SpecialType.NEVER.matches(signature.returnType)) {
 			if(someBlocksCompleteWithoutReturning || mightReturnValue)
-				context.addIssue(FunctionCompletesDespiteNever(source, parentFunction.memberType))
+				context.addIssue(FunctionCompletesDespiteNever(source, memberType))
 		} else {
 			if(someBlocksCompleteWithoutReturning)
-				context.addIssue(FunctionCompletesWithoutReturning(source, parentFunction.memberType))
+				context.addIssue(FunctionCompletesWithoutReturning(source, memberType))
 		}
 	}
 
 	private fun validateBodyPresent() {
 		if(isAbstract || isNative) {
 			if(body != null)
-				context.addIssue(ExtraneousBody(source, isAbstract, parentFunction.memberType, toString()))
+				context.addIssue(ExtraneousBody(source, isAbstract, memberType, toString()))
 		} else {
 			if(body == null)
-				context.addIssue(MissingBody(source, parentFunction.memberType, toString()))
+				context.addIssue(MissingBody(source, memberType, toString()))
 		}
 	}
 
@@ -191,10 +200,24 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		if(isAbstract)
 			return
 		super.declare(constructor)
+		if(parentTypeDeclaration?.isLlvmPrimitive() == true)
+			context.primitiveCompilationTarget = parentTypeDeclaration
 		//TODO add local type parameters
 		for(index in parameters.indices)
 			parameters[index].index = index + Context.VALUE_PARAMETER_OFFSET
 		llvmValue = constructor.buildFunction(memberIdentifier, signature.getLlvmType(constructor))
+		if(parentTypeDeclaration?.isLlvmPrimitive() == true) {
+			context.primitiveCompilationTarget = null
+			if(!isNative)
+				declarePrimitiveImplementation(constructor)
+		}
+	}
+
+	private fun declarePrimitiveImplementation(constructor: LlvmConstructor) {
+		val functionType = signature.buildLlvmType(constructor)
+		val signature = toString()
+		val functionValue = constructor.buildFunction("${signature}_PrimitiveImplementation", functionType)
+		context.nativeRegistry.registerPrimitiveImplementation(signature, PrimitiveImplementation(functionValue, functionType))
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
@@ -202,7 +225,13 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 			return
 		val previousBlock = constructor.getCurrentBlock()
 		if(isNative) {
-			context.compileNativeImplementation(constructor, toString(), llvmValue)
+			context.nativeRegistry.compileNativeImplementation(constructor, this, llvmValue)
+			constructor.select(previousBlock)
+			return
+		}
+		if(parentTypeDeclaration?.isLlvmPrimitive() == true) {
+			compilePrimitiveImplementation(constructor)
+			compileObjectImplementationBasedOnPrimitiveImplementation(constructor)
 			constructor.select(previousBlock)
 			return
 		}
@@ -211,7 +240,43 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		if(body?.isInterruptingExecutionBasedOnStructure != true)
 			constructor.buildReturn()
 		constructor.select(previousBlock)
+	}
 
+	private fun compilePrimitiveImplementation(constructor: LlvmConstructor) {
+		val primitiveImplementation = context.nativeRegistry.resolvePrimitiveImplementation(toString())
+		constructor.createAndSelectEntrypointBlock(primitiveImplementation.llvmValue)
+		super.compile(constructor)
+		if(body?.isInterruptingExecutionBasedOnStructure != true)
+			constructor.buildReturn()
+	}
+
+	private fun compileObjectImplementationBasedOnPrimitiveImplementation(constructor: LlvmConstructor) {
+		constructor.createAndSelectEntrypointBlock(llvmValue)
+		val unwrappedParameters = LinkedList<LlvmValue?>()
+		unwrappedParameters.add(Context.EXCEPTION_PARAMETER_INDEX, context.getExceptionParameter(constructor))
+		val thisParameter = context.getThisParameter(constructor)
+		unwrappedParameters.add(Context.THIS_PARAMETER_INDEX,
+			ValueConverter.unwrapPrimitive(this, constructor, thisParameter, parentTypeDeclaration))
+		for(parameter in parameters) {
+			var value = constructor.getParameter(parameter.index)
+			val type = parameter.type
+			if(type is SelfType && type.typeDeclaration == parentTypeDeclaration)
+				value = ValueConverter.unwrapPrimitive(this, constructor, value, type)
+			unwrappedParameters.add(value)
+		}
+		val signatureString = toString()
+		val primitiveImplementation = context.nativeRegistry.resolvePrimitiveImplementation(signatureString)
+		val doesReturn = !SpecialType.NOTHING.matches(signature.returnType)
+		val resultName = if(doesReturn) signatureString else ""
+		var result = constructor.buildFunctionCall(primitiveImplementation.llvmType, primitiveImplementation.llvmValue, unwrappedParameters,
+			resultName)
+		if(doesReturn) {
+			if(signature.returnType is SelfType && signature.returnType.typeDeclaration == parentTypeDeclaration)
+				result = ValueConverter.wrapPrimitive(this, constructor, result, signature.returnType)
+			constructor.buildReturn(result)
+		}
+		if(body?.isInterruptingExecutionBasedOnStructure != true)
+			constructor.buildReturn()
 	}
 
 	//TODO add debug info

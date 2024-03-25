@@ -4,35 +4,55 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
 import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.Context
+import components.semantic_model.context.NativeRegistry
+import errors.internal.CompilerError
 
 object FloatNatives {
 	lateinit var context: Context
 
-	fun load(context: Context) {
-		this.context = context
-		context.registerNativeInstance("Float.ZERO: Self", ::zero)
-		context.registerNativeInstance("Float.ONE: Self", ::one)
-		context.registerNativeImplementation("Float-: Self", ::negative)
-		context.registerNativeImplementation("Float + Self: Self", ::plus)
-		context.registerNativeImplementation("Float - Self: Self", ::minus)
-		context.registerNativeImplementation("Float * Self: Self", ::times)
-		context.registerNativeImplementation("Float / Self: Self", ::dividedBy)
-		context.registerNativeImplementation("Float += Self", ::add)
-		context.registerNativeImplementation("Float -= Self", ::subtract)
-		context.registerNativeImplementation("Float *= Self", ::multiply)
-		context.registerNativeImplementation("Float /= Self", ::divide)
-		context.registerNativeImplementation("Float < Self: Bool", ::lessThan)
-		context.registerNativeImplementation("Float > Self: Bool", ::greaterThan)
-		context.registerNativeImplementation("Float <= Self: Bool", ::lessThanOrEqualTo)
-		context.registerNativeImplementation("Float >= Self: Bool", ::greaterThanOrEqualTo)
+	fun load(registry: NativeRegistry) {
+		context = registry.context
+		registry.registerNativePrimitiveInitializer("Float(Byte): Self", ::fromByte)
+		registry.registerNativePrimitiveInitializer("Float(Int): Self", ::fromInt)
+		registry.registerNativePrimitiveInitializer("Float(Float): Self", ::fromFloat)
+		registry.registerNativeImplementation("Float-: Self", ::negative)
+		registry.registerNativeImplementation("Float + Self: Self", ::plus)
+		registry.registerNativeImplementation("Float - Self: Self", ::minus)
+		registry.registerNativeImplementation("Float * Self: Self", ::times)
+		registry.registerNativeImplementation("Float / Self: Self", ::dividedBy)
+		registry.registerNativeImplementation("Float += Self", ::add)
+		registry.registerNativeImplementation("Float -= Self", ::subtract)
+		registry.registerNativeImplementation("Float *= Self", ::multiply)
+		registry.registerNativeImplementation("Float /= Self", ::divide)
+		registry.registerNativeImplementation("Float < Self: Bool", ::lessThan)
+		registry.registerNativeImplementation("Float > Self: Bool", ::greaterThan)
+		registry.registerNativeImplementation("Float <= Self: Bool", ::lessThanOrEqualTo)
+		registry.registerNativeImplementation("Float >= Self: Bool", ::greaterThanOrEqualTo)
+		registry.registerNativeImplementation("Float == Float: Bool", ::equalTo)
 	}
 
-	private fun zero(constructor: LlvmConstructor): LlvmValue {
-		return constructor.buildFloat(0.0)
+	private fun fromByte(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+		val name = "Float(Byte): Self"
+		if(parameters.size != 1)
+			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
+		return constructor.buildCastFromSignedIntegerToFloat(firstParameter, name)
 	}
 
-	private fun one(constructor: LlvmConstructor): LlvmValue {
-		return constructor.buildFloat(1.0)
+	private fun fromInt(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+		val name = "Float(Int): Self"
+		if(parameters.size != 1)
+			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
+		return constructor.buildCastFromSignedIntegerToFloat(firstParameter, name)
+	}
+
+	private fun fromFloat(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+		val name = "Float(Float): Self"
+		if(parameters.size != 1)
+			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
+		return firstParameter
 	}
 
 	private fun negative(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
@@ -163,6 +183,17 @@ object FloatNatives {
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
 		val result = constructor.buildFloatGreaterThanOrEqualTo(thisPrimitiveFloat, parameterPrimitiveFloat, "comparisonResult")
+		constructor.buildReturn(result)
+	}
+
+	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisFloat = context.getThisParameter(constructor)
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.floatTypeDeclaration?.llvmType, thisFloat,
+			context.floatValueIndex, "thisValueProperty")
+		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
+		val parameterPrimitiveFloat = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val result = constructor.buildFloatEqualTo(thisPrimitiveFloat, parameterPrimitiveFloat, "equalToResult")
 		constructor.buildReturn(result)
 	}
 }

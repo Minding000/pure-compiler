@@ -3,6 +3,7 @@ package components.semantic_model.types
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.semantic_model.context.SpecialType
+import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
@@ -34,6 +35,10 @@ class SelfType(source: SyntaxTreeNode, scope: Scope): Type(source, scope) {
 
 	override fun getValueDeclaration(name: String): ValueDeclaration.Match? {
 		return typeDeclaration?.scope?.getDirectValueDeclaration(name)
+	}
+
+	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
+		return typeDeclaration?.getConversionsFrom(sourceType) ?: emptyList()
 	}
 
 	override fun isInstanceOf(specialType: SpecialType): Boolean {
@@ -75,5 +80,17 @@ class SelfType(source: SyntaxTreeNode, scope: Scope): Type(source, scope) {
 
 	override fun toString() = "Self"
 
-	override fun createLlvmType(constructor: LlvmConstructor): LlvmType = constructor.pointerType
+	override fun isLlvmPrimitive(): Boolean {
+		val typeDeclaration = typeDeclaration ?: return false
+		if(!typeDeclaration.isLlvmPrimitive())
+			return false
+		return typeDeclaration != context.primitiveCompilationTarget
+	}
+
+	override fun createLlvmType(constructor: LlvmConstructor): LlvmType {
+		val typeDeclaration = typeDeclaration
+		if(typeDeclaration != null && isLlvmPrimitive())
+			return typeDeclaration.getLlvmReferenceType(constructor)
+		return constructor.pointerType
+	}
 }

@@ -73,7 +73,11 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	 * Compiles code to LLVM IR.
 	 */
 	fun compile(constructor: LlvmConstructor, userEntryPointPath: String? = null): LlvmValue {
+		context.logger.addPhase("Compilation")
 		addPrintFunction(constructor)
+		//TODO unused native functions
+		//addWriteFunction(constructor)
+		//addReadFunction(constructor)
 		addFlushFunction(constructor)
 		addSleepFunction(constructor)
 		addExitFunction(constructor)
@@ -85,7 +89,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		context.llvmMemberOffsetType = constructor.i32Type
 		context.llvmMemberAddressType = constructor.pointerType
 		setUpSystemFunctions(constructor)
-		context.loadNativeImplementations()
+		context.nativeRegistry.loadNativeImplementations(constructor)
 		for(file in files)
 			file.declare(constructor)
 		for(file in files)
@@ -143,6 +147,16 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	private fun addPrintFunction(constructor: LlvmConstructor) {
 		context.llvmPrintFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.i32Type, true)
 		context.llvmPrintFunction = constructor.buildFunction("printf", context.llvmPrintFunctionType)
+	}
+
+	private fun addWriteFunction(constructor: LlvmConstructor) {
+		context.llvmWriteFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
+		context.llvmWriteFunction = constructor.buildFunction("fwrite", context.llvmWriteFunctionType)
+	}
+
+	private fun addReadFunction(constructor: LlvmConstructor) {
+		context.llvmReadFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
+		context.llvmReadFunction = constructor.buildFunction("fread", context.llvmReadFunctionType)
 	}
 
 	private fun addFlushFunction(constructor: LlvmConstructor) {

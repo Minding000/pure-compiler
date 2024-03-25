@@ -249,6 +249,7 @@ internal class Functions {
 			}
 			LinkedList class: List {
 				overriding to clear()
+				to reset(position: Int)
 			}
 			""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
@@ -406,6 +407,30 @@ internal class Functions {
 					overriding to createIterator(): Iterator {
 						return Iterator()
 					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<OverridingFunctionReturnTypeNotAssignable>()
+	}
+
+	@Test
+	fun `allows overriding of function with return type containing generic type`() {
+		val sourceCode =
+			"""
+				ValueIterator class {
+					containing Value
+				}
+				Test class
+				abstract Iterable class {
+					containing Value
+					to createIterator(): <Value>ValueIterator
+				}
+				Range class: <N>Iterable {
+					containing N
+					overriding to createIterator(): Iterator {
+						return Iterator()
+					}
+					bound Iterator class: <N>ValueIterator
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

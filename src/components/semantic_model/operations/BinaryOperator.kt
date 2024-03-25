@@ -2,6 +2,7 @@ package components.semantic_model.operations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
@@ -29,15 +30,15 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 
 	override fun determineTypes() {
 		super.determineTypes()
-		var leftType = left.type ?: return
-		val rightType = right.type ?: return
+		var leftType = left.providedType ?: return
+		val rightType = right.providedType ?: return
 		if(kind == Operator.Kind.DOUBLE_QUESTION_MARK) {
 			if(SpecialType.NULL.matches(leftType)) {
-				type = rightType
+				providedType = rightType
 			} else {
 				val nonOptionalLeftType = if(leftType is OptionalType) leftType.baseType else leftType
-				type = listOf(nonOptionalLeftType, rightType).combineOrUnion(this)
-				addSemanticModels(type)
+				providedType = listOf(nonOptionalLeftType, rightType).combineOrUnion(this)
+				addSemanticModels(providedType)
 			}
 			return
 		}
@@ -50,19 +51,19 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		try {
 			val match = leftType.interfaceScope.getOperator(kind, right)
 			if(match == null) {
-				context.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.type}"))
+				context.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.providedType}"))
 				return
 			}
 			targetSignature = match.signature
 			setUnextendedType(match.returnType.getLocalType(this, leftType))
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
-			error.log(source, "operator", "$leftType $kind ${right.type}")
+			error.log(source, "operator", "$leftType $kind ${right.providedType}")
 		}
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
-		val isConditional = SpecialType.BOOLEAN.matches(left.type) && (kind == Operator.Kind.AND || kind == Operator.Kind.OR)
+		val isConditional = SpecialType.BOOLEAN.matches(left.providedType) && (kind == Operator.Kind.AND || kind == Operator.Kind.OR)
 		val isComparison = kind == Operator.Kind.EQUAL_TO || kind == Operator.Kind.NOT_EQUAL_TO
 		left.analyseDataFlow(tracker)
 		if(isConditional) {
@@ -72,7 +73,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			val declaration = variableValue?.declaration
 			if(declaration != null) {
 				val booleanLiteral = BooleanLiteral(this, isAnd)
-				tracker.add(VariableUsage.Kind.HINT, declaration, this, booleanLiteral.type, booleanLiteral)
+				tracker.add(VariableUsage.Kind.HINT, declaration, this, booleanLiteral.providedType, booleanLiteral)
 			}
 			right.analyseDataFlow(tracker)
 			setEndState(right.getEndState(isAnd), isAnd)
@@ -88,7 +89,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			if(declaration != null && literalValue != null) {
 				val isPositive = kind == Operator.Kind.EQUAL_TO
 				setEndState(tracker, !isPositive)
-				tracker.add(VariableUsage.Kind.HINT, declaration, this, literalValue.type, literalValue)
+				tracker.add(VariableUsage.Kind.HINT, declaration, this, literalValue.providedType, literalValue)
 				setEndState(tracker, isPositive)
 				tracker.addVariableStates(getEndState(!isPositive))
 			} else {
@@ -192,7 +193,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 
 	private fun validateWhereClauseConditions() {
 		val signature = targetSignature ?: return
-		val leftType = left.type ?: return
+		val leftType = left.providedType ?: return
 		val typeParameters = (leftType as? ObjectType)?.typeParameters ?: emptyList()
 		for(condition in signature.whereClauseConditions) {
 			if(!condition.isMet(typeParameters))
@@ -203,7 +204,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 
 	private fun validateMonomorphicAccess() {
 		val signature = targetSignature ?: return
-		val leftType = left.type ?: return
+		val leftType = left.providedType ?: return
 		if(signature.associatedImplementation?.isAbstract == true && signature.associatedImplementation.isMonomorphic
 			&& !leftType.isMemberAccessible(signature, true))
 			context.addIssue(AbstractMonomorphicAccess(source, "operator",
@@ -214,9 +215,12 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		if(kind == Operator.Kind.DOUBLE_QUESTION_MARK)
 			return getNullCoalescenceResult(constructor)
 		val resultName = "_binaryOperatorResult"
-		var leftValue = left.getLlvmValue(constructor)
-		var rightValue = right.getLlvmValue(constructor)
-		if(SpecialType.BOOLEAN.matches(left.type) && SpecialType.BOOLEAN.matches(right.type)) {
+		var leftValue = ValueConverter.convertIfRequired(this, constructor, left.getLlvmValue(constructor), left.effectiveType,
+			left.hasGenericType, left.effectiveType, false)
+		val rightType = targetSignature?.parameterTypes?.firstOrNull()
+		var rightValue = ValueConverter.convertIfRequired(this, constructor, right.getLlvmValue(constructor), right.effectiveType,
+			right.hasGenericType, rightType, rightType != targetSignature?.original?.parameterTypes?.firstOrNull())
+		if(SpecialType.BOOLEAN.matches(left.effectiveType) && SpecialType.BOOLEAN.matches(right.effectiveType)) {
 			when(kind) {
 				Operator.Kind.AND -> return constructor.buildAnd(leftValue, rightValue, resultName)
 				Operator.Kind.OR -> return constructor.buildOr(leftValue, rightValue, resultName)
@@ -225,110 +229,126 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				else -> {}
 			}
 		}
-		val isLeftInteger = SpecialType.INTEGER.matches(left.type)
-		val isLeftPrimitiveNumber = isLeftInteger || SpecialType.FLOAT.matches(left.type)
-		val isRightInteger = SpecialType.INTEGER.matches(right.type)
-		val isRightPrimitiveNumber = isRightInteger || SpecialType.FLOAT.matches(right.type)
+		val isLeftFloat = SpecialType.FLOAT.matches(left.effectiveType)
+		val isLeftInteger = SpecialType.INTEGER.matches(left.effectiveType)
+		val isLeftPrimitiveNumber = SpecialType.BYTE.matches(left.effectiveType) || isLeftInteger || isLeftFloat
+		val isRightFloat = SpecialType.FLOAT.matches(right.effectiveType)
+		val isRightInteger = SpecialType.INTEGER.matches(right.effectiveType)
+		val isRightPrimitiveNumber = SpecialType.BYTE.matches(right.effectiveType) || isRightInteger || isRightFloat
 		if(isLeftPrimitiveNumber && isRightPrimitiveNumber) {
-			val isIntegerOperation = isLeftInteger && isRightInteger
-			if(!isIntegerOperation) {
-				val intermediateOperandName = "_implicitlyCastBinaryOperand"
-				if(isLeftInteger)
+			val intermediateOperandName = "_implicitlyCastBinaryOperand"
+			val isFloatOperation = isLeftFloat || isRightFloat
+			if(isFloatOperation) {
+				if(!isLeftFloat)
 					leftValue = constructor.buildCastFromSignedIntegerToFloat(leftValue, intermediateOperandName)
-				else if(isRightInteger)
+				else if(!isRightFloat)
 					rightValue = constructor.buildCastFromSignedIntegerToFloat(rightValue, intermediateOperandName)
+			} else {
+				val isIntegerOperation = isLeftInteger || isRightInteger
+				if(isIntegerOperation) {
+					if(!isLeftInteger)
+						leftValue = constructor.buildCastFromByteToInteger(leftValue, intermediateOperandName)
+					else if(!isRightInteger)
+						rightValue = constructor.buildCastFromByteToInteger(rightValue, intermediateOperandName)
+				}
 			}
 			when(kind) {
 				Operator.Kind.PLUS -> {
-					return if(isIntegerOperation)
-						constructor.buildIntegerAddition(leftValue, rightValue, resultName)
-					else
+					return if(isFloatOperation)
 						constructor.buildFloatAddition(leftValue, rightValue, resultName)
+					else
+						constructor.buildIntegerAddition(leftValue, rightValue, resultName)
 				}
 				Operator.Kind.MINUS -> {
-					return if(isIntegerOperation)
-						constructor.buildIntegerSubtraction(leftValue, rightValue, resultName)
-					else
+					return if(isFloatOperation)
 						constructor.buildFloatSubtraction(leftValue, rightValue, resultName)
+					else
+						constructor.buildIntegerSubtraction(leftValue, rightValue, resultName)
 				}
 				Operator.Kind.STAR -> {
-					return if(isIntegerOperation)
-						constructor.buildIntegerMultiplication(leftValue, rightValue, resultName)
-					else
+					return if(isFloatOperation)
 						constructor.buildFloatMultiplication(leftValue, rightValue, resultName)
+					else
+						constructor.buildIntegerMultiplication(leftValue, rightValue, resultName)
 				}
 				Operator.Kind.SLASH -> {
-					return if(isIntegerOperation)
-						constructor.buildSignedIntegerDivision(leftValue, rightValue, resultName)
-					else
+					return if(isFloatOperation)
 						constructor.buildFloatDivision(leftValue, rightValue, resultName)
+					else
+						constructor.buildSignedIntegerDivision(leftValue, rightValue, resultName)
 				}
 				Operator.Kind.SMALLER_THAN -> {
-					return if(isIntegerOperation)
-						constructor.buildSignedIntegerLessThan(leftValue, rightValue, resultName)
-					else
+					return if(isFloatOperation)
 						constructor.buildFloatLessThan(leftValue, rightValue, resultName)
+					else
+						constructor.buildSignedIntegerLessThan(leftValue, rightValue, resultName)
 				}
 				Operator.Kind.GREATER_THAN -> {
-					return if(isIntegerOperation)
-						constructor.buildSignedIntegerGreaterThan(leftValue, rightValue, resultName)
-					else
+					return if(isFloatOperation)
 						constructor.buildFloatGreaterThan(leftValue, rightValue, resultName)
+					else
+						constructor.buildSignedIntegerGreaterThan(leftValue, rightValue, resultName)
 				}
 				Operator.Kind.SMALLER_THAN_OR_EQUAL_TO -> {
-					return if(isIntegerOperation)
-						constructor.buildSignedIntegerLessThanOrEqualTo(leftValue, rightValue, resultName)
-					else
+					return if(isFloatOperation)
 						constructor.buildFloatLessThanOrEqualTo(leftValue, rightValue, resultName)
+					else
+						constructor.buildSignedIntegerLessThanOrEqualTo(leftValue, rightValue, resultName)
 				}
 				Operator.Kind.GREATER_THAN_OR_EQUAL_TO -> {
-					return if(isIntegerOperation)
-						constructor.buildSignedIntegerGreaterThanOrEqualTo(leftValue, rightValue, resultName)
-					else
+					return if(isFloatOperation)
 						constructor.buildFloatGreaterThanOrEqualTo(leftValue, rightValue, resultName)
+					else
+						constructor.buildSignedIntegerGreaterThanOrEqualTo(leftValue, rightValue, resultName)
 				}
 				Operator.Kind.EQUAL_TO -> {
-					return if(isIntegerOperation)
-						constructor.buildSignedIntegerEqualTo(leftValue, rightValue, resultName)
-					else
+					return if(isFloatOperation)
 						constructor.buildFloatEqualTo(leftValue, rightValue, resultName)
+					else
+						constructor.buildSignedIntegerEqualTo(leftValue, rightValue, resultName)
 				}
 				Operator.Kind.NOT_EQUAL_TO -> {
-					return if(isIntegerOperation)
-						constructor.buildSignedIntegerNotEqualTo(leftValue, rightValue, resultName)
-					else
+					return if(isFloatOperation)
 						constructor.buildFloatNotEqualTo(leftValue, rightValue, resultName)
+					else
+						constructor.buildSignedIntegerNotEqualTo(leftValue, rightValue, resultName)
 				}
 				else -> {}
 			}
 		}
 		val signature = targetSignature?.original ?: throw CompilerError(source, "Binary operator is missing a target.")
-		return createLlvmFunctionCall(constructor, signature)
+		return createLlvmFunctionCall(constructor, signature, leftValue, rightValue)
 	}
 
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
-		val targetValue = left.getLlvmValue(constructor)
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, leftValue: LlvmValue, rightValue: LlvmValue): LlvmValue {
+		val resultName = "_binaryOperatorResult"
 		val parameters = LinkedList<LlvmValue>()
 		parameters.add(context.getExceptionParameter(constructor))
-		parameters.add(targetValue)
-		parameters.add(right.getLlvmValue(constructor))
-		val functionAddress = context.resolveFunction(constructor, targetValue,
-			signature.original.toString(false, kind))
-		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,
-			"_binaryOperatorResult")
-		context.continueRaise()
+		parameters.add(leftValue)
+		parameters.add(rightValue)
+		val typeDefinition = signature.parentTypeDeclaration
+		val returnValue = if(typeDefinition?.isLlvmPrimitive() == true) {
+			val primitiveImplementation = context.nativeRegistry.resolvePrimitiveImplementation(
+				"${typeDefinition.name}${signature.original.toString(false, kind)}")
+			constructor.buildFunctionCall(primitiveImplementation.llvmType, primitiveImplementation.llvmValue, parameters, resultName)
+		} else {
+			val functionAddress = context.resolveFunction(constructor, leftValue,
+				signature.original.toString(false, kind))
+			constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, resultName)
+		}
+		context.continueRaise(constructor)
 		return returnValue
 	}
 
 	private fun getNullCoalescenceResult(constructor: LlvmConstructor): LlvmValue {
 		val rightValue = right.getLlvmValue(constructor)
-		if(SpecialType.NULL.matches(left.type))
+		if(SpecialType.NULL.matches(left.providedType))
 			return rightValue
 		var leftValue = left.getLlvmValue(constructor)
-		val leftType = left.type
+		val leftType = left.providedType
 		if(leftType !is OptionalType)
 			return leftValue
-		val resultType = type?.getLlvmType(constructor)
+		val resultType = providedType?.getLlvmType(constructor)
 		val result = constructor.buildStackAllocation(resultType, "_nullCoalescence_resultVariable")
 		val function = constructor.getParentFunction()
 		val valueBlock = constructor.createBlock(function, "nullCoalescence_valueBlock")
@@ -339,7 +359,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		constructor.buildStore(rightValue, result)
 		constructor.buildJump(resultBlock)
 		constructor.select(valueBlock)
-		if(type?.isLlvmPrimitive() == true && leftType.baseType.isLlvmPrimitive())
+		if(providedType?.isLlvmPrimitive() == true && leftType.baseType.isLlvmPrimitive())
 			leftValue = constructor.buildLoad(leftType.baseType.getLlvmType(constructor), leftValue, "_unboxedPrimitive")
 		constructor.buildStore(leftValue, result)
 		constructor.buildJump(resultBlock)

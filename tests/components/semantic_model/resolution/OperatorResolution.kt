@@ -5,6 +5,7 @@ import components.semantic_model.operations.IndexAccess
 import components.semantic_model.values.Operator
 import components.semantic_model.values.VariableValue
 import logger.Severity
+import logger.issues.access.AbstractMonomorphicAccess
 import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.modifiers.MissingOverridingKeyword
@@ -45,7 +46,7 @@ internal class OperatorResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "fraction" }
-		val operator = variableValue?.type?.interfaceScope?.getOperator(Operator.Kind.MINUS)
+		val operator = variableValue?.providedType?.interfaceScope?.getOperator(Operator.Kind.MINUS)
 		assertNotNull(operator)
 	}
 
@@ -80,7 +81,7 @@ internal class OperatorResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "a" }
-		val operator = variableValue?.type?.interfaceScope?.getOperator(Operator.Kind.PLUS, variableValue)
+		val operator = variableValue?.providedType?.interfaceScope?.getOperator(Operator.Kind.PLUS, variableValue)
 		assertNotNull(operator)
 	}
 
@@ -108,7 +109,7 @@ internal class OperatorResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "fraction" }
-		val operator = variableValue?.type?.interfaceScope?.getOperator(Operator.Kind.DOUBLE_MINUS)
+		val operator = variableValue?.providedType?.interfaceScope?.getOperator(Operator.Kind.DOUBLE_MINUS)
 		assertNotNull(operator)
 	}
 
@@ -143,7 +144,7 @@ internal class OperatorResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "a" }
-		val operator = variableValue?.type?.interfaceScope?.getOperator(Operator.Kind.PLUS_EQUALS, variableValue)
+		val operator = variableValue?.providedType?.interfaceScope?.getOperator(Operator.Kind.PLUS_EQUALS, variableValue)
 		assertNotNull(operator)
 	}
 
@@ -188,7 +189,7 @@ internal class OperatorResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
 		val indexAccess = lintResult.find<IndexAccess>()
-		assertNotNull(indexAccess?.type)
+		assertNotNull(indexAccess?.providedType)
 	}
 
 	@Test
@@ -206,7 +207,7 @@ internal class OperatorResolution {
 		lintResult.assertIssueNotDetected<NotFound>()
 		lintResult.assertIssueNotDetected<TypeNotAssignable>()
 		val indexAccess = lintResult.find<IndexAccess>()
-		assertNotNull(indexAccess?.type)
+		assertNotNull(indexAccess?.providedType)
 	}
 
 	@Test
@@ -228,7 +229,7 @@ internal class OperatorResolution {
 		lintResult.assertIssueNotDetected<OverridingPropertyTypeNotAssignable>()
 		lintResult.assertIssueNotDetected<OverridingPropertyTypeMismatch>()
 		val indexAccess = lintResult.find<IndexAccess>()
-		assertNotNull(indexAccess?.type)
+		assertNotNull(indexAccess?.providedType)
 	}
 
 	@Test
@@ -248,7 +249,7 @@ internal class OperatorResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val indexAccess = lintResult.find<IndexAccess>()
-		assertNotNull(indexAccess?.type)
+		assertNotNull(indexAccess?.providedType)
 	}
 
 	@Test
@@ -592,5 +593,28 @@ internal class OperatorResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<SignatureMismatch>()
+	}
+
+	@Test
+	fun `resolves implementation using conversion for monomorphic operators`() {
+		val sourceCode =
+			"""
+				abstract Number class {
+					abstract monomorphic operator *(right: Self): Self
+				}
+				Byte class: Number {
+					native overriding monomorphic operator *(right: Self): Self
+				}
+				Int class: Number {
+					converting init(value: Byte)
+					init
+					native overriding monomorphic operator *(right: Self): Self
+				}
+				Int() * Byte()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
+		lintResult.assertIssueNotDetected<AbstractMonomorphicAccess>()
 	}
 }

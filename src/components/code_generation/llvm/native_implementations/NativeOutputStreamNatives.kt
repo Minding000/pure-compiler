@@ -1,0 +1,32 @@
+package components.code_generation.llvm.native_implementations
+
+import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmValue
+import components.semantic_model.context.Context
+import components.semantic_model.context.NativeRegistry
+
+object NativeOutputStreamNatives {
+	lateinit var context: Context
+
+	fun load(registry: NativeRegistry) {
+		context = registry.context
+		registry.registerNativeImplementation("NativeOutputStream.writeByte(Byte)", ::writeByte)
+		registry.registerNativeImplementation("NativeOutputStream.writeBytes(<ByteArray>)", ::writeBytes)
+	}
+
+	fun writeByte(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val exceptionAddress = context.getExceptionParameter(constructor)
+		val thisInt = context.getThisParameter(constructor)
+
+		constructor.buildReturn(thisInt)
+	}
+
+	fun writeBytes(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val exceptionAddress = context.getExceptionParameter(constructor)
+		val thisInt = context.getThisParameter(constructor)
+
+		constructor.buildReturn(thisInt)
+	}
+}

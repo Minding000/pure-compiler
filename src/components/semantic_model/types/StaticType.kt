@@ -81,10 +81,10 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 										suppliedLocalTypes: List<Type>, suppliedValues: List<Value>): List<Match> {
 		val matches = LinkedList<Match>()
 		for(initializer in interfaceScope.getDirectInitializers()) {
-			//TODO specialized issue if global type parameter can't be determined for any initializer, but al least one exists
+			//TODO specialized issue if global type parameter can't be determined for any initializer, but at least one exists
 			val globalTypeSubstitutions = initializer.getGlobalTypeSubstitutions(globalTypeParameters, suppliedGlobalTypes,
 				suppliedValues) ?: continue
-			//TODO specialized issue if local type parameter can't be determined for any initializer, but al least one exists (same for functions)
+			//TODO specialized issue if local type parameter can't be determined for any initializer, but at least one exists (same for functions)
 			val localTypeSubstitutions = initializer.getLocalTypeSubstitutions(globalTypeSubstitutions, suppliedLocalTypes,
 				suppliedValues) ?: continue
 			val conversions = HashMap<Value, InitializerDefinition>()

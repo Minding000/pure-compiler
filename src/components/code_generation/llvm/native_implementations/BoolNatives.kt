@@ -4,16 +4,28 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
 import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.Context
+import components.semantic_model.context.NativeRegistry
+import errors.internal.CompilerError
 
 object BoolNatives {
 	lateinit var context: Context
 
-	fun load(context: Context) {
-		this.context = context
-		context.registerNativeImplementation("Bool!: Bool", ::negate)
-		context.registerNativeImplementation("Bool and Bool: Bool", ::and)
-		context.registerNativeImplementation("Bool or Bool: Bool", ::or)
-		context.registerNativeImplementation("Bool.toggle()", ::toggle)
+	fun load(registry: NativeRegistry) {
+		context = registry.context
+		registry.registerNativePrimitiveInitializer("Bool(Bool): Self", ::fromBool)
+		registry.registerNativeImplementation("Bool!: Bool", ::negate)
+		registry.registerNativeImplementation("Bool and Bool: Bool", ::and)
+		registry.registerNativeImplementation("Bool or Bool: Bool", ::or)
+		registry.registerNativeImplementation("Bool.toggle()", ::toggle)
+		registry.registerNativeImplementation("Bool == Bool: Bool", ::equalTo)
+	}
+
+	private fun fromBool(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+		val name = "Bool(Bool): Self"
+		if(parameters.size != 1)
+			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
+		return firstParameter
 	}
 
 	private fun negate(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
@@ -48,5 +60,16 @@ object BoolNatives {
 		val result = constructor.buildBooleanNegation(thisPrimitiveBool, "negationResult")
 		constructor.buildStore(result, thisValueProperty)
 		constructor.buildReturn()
+	}
+
+	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisBool = context.getThisParameter(constructor)
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.booleanTypeDeclaration?.llvmType, thisBool,
+			context.booleanValueIndex, "thisValueProperty")
+		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
+		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val result = constructor.buildBooleanEqualTo(thisPrimitiveBool, parameterPrimitiveBool, "equalToResult")
+		constructor.buildReturn(result)
 	}
 }

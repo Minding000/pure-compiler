@@ -19,7 +19,7 @@ internal class FunctionTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val function = lintResult.find<Function>()
-		assertEquals("=>|", function?.type.toString())
+		assertEquals("=>|", function?.providedType.toString())
 	}
 
 	@Test
@@ -33,7 +33,7 @@ internal class FunctionTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val function = lintResult.find<Function>()
-		assertEquals("=>| & (Int) =>|", function?.type.toString())
+		assertEquals("=>| & (Int) =>|", function?.providedType.toString())
 	}
 
 	@Test

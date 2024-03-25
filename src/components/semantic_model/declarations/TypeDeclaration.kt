@@ -9,9 +9,8 @@ import components.semantic_model.scopes.BlockScope
 import components.semantic_model.scopes.TypeScope
 import components.semantic_model.types.AndUnionType
 import components.semantic_model.types.ObjectType
+import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
-import components.semantic_model.values.Instance
-import components.semantic_model.values.InterfaceMember
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.declaration.*
@@ -155,8 +154,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			return@any if(memberDeclaration is PropertyDeclaration && abstractMember is PropertyDeclaration)
 				memberDeclaration.name == abstractMember.name
 			else if(memberDeclaration is FunctionImplementation && abstractMember is FunctionImplementation)
-				memberDeclaration.signature.fulfillsInheritanceRequirementsOf(
-					abstractMember.signature.withTypeSubstitutions(typeSubstitutions))
+				memberDeclaration.fulfillsInheritanceRequirementsOf(abstractMember, typeSubstitutions)
 			else if(memberDeclaration is InitializerDefinition && abstractMember is InitializerDefinition)
 				memberDeclaration.fulfillsInheritanceRequirementsOf(abstractMember, typeSubstitutions)
 			else if(memberDeclaration is Instance && abstractMember is Instance)
@@ -327,7 +325,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	private fun getStaticMembers(): Map<String, ValueDeclaration> {
 		val staticMembers = HashMap<String, ValueDeclaration>()
 		for(member in scope.memberDeclarations)
-			if((member as? InterfaceMember)?.isStatic == true)
+			if((member as? InterfaceMember)?.isStatic == true && (member.type as? StaticType)?.typeDeclaration !is TypeAlias)
 				staticMembers[member.name] = member
 		for(superType in getDirectSuperTypes()) {
 			for(staticMember in superType.getTypeDeclaration()?.getStaticMembers()?.values ?: emptyList())
@@ -413,6 +411,22 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			context.floatValueIndex = llvmProperties.size
 			llvmProperties.add(constructor.floatType)
 		}
+	}
+
+	fun getLlvmReferenceType(constructor: LlvmConstructor): LlvmType {
+		if(SpecialType.BOOLEAN.matches(this))
+			return constructor.booleanType
+		if(SpecialType.BYTE.matches(this))
+			return constructor.byteType
+		if(SpecialType.INTEGER.matches(this))
+			return constructor.i32Type
+		if(SpecialType.FLOAT.matches(this))
+			return constructor.floatType
+		if(SpecialType.NOTHING.matches(this))
+			return constructor.voidType
+		if(SpecialType.NEVER.matches(this))
+			return constructor.voidType
+		return constructor.pointerType
 	}
 
 	private fun buildLlvmClassInitializer(constructor: LlvmConstructor, staticMembers: List<ValueDeclaration>,
@@ -531,7 +545,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 					continue
 				}
 				val staticMemberValue = staticMember.value?.getComputedValue()
-				val staticMemberLlvmValue = if(staticMemberValue?.type?.isLlvmPrimitive() == true) {
+				val staticMemberLlvmValue = if(staticMemberValue?.providedType?.isLlvmPrimitive() == true) {
 					staticMemberValue.getLlvmValue(constructor)
 				} else {
 					val value = staticMember.value?.getLlvmValue(constructor)
@@ -581,13 +595,13 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			}
 			constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer,
 				parameters)
-			context.continueRaise()
+			context.continueRaise(constructor)
 		}
 		for(memberDeclaration in properties) {
 			val memberValue = memberDeclaration.value
 			if(memberValue != null) {
 				val convertedValue = ValueConverter.convertIfRequired(memberDeclaration, constructor,
-					memberValue.buildLlvmValue(constructor), memberValue.type, memberDeclaration.type, memberDeclaration.conversion)
+					memberValue.buildLlvmValue(constructor), memberValue.providedType, memberDeclaration.type, memberDeclaration.conversion)
 				val memberAddress = context.resolveMember(constructor, thisValue, memberDeclaration.name)
 				constructor.buildStore(convertedValue, memberAddress)
 			}
@@ -604,6 +618,13 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			this.cachedLlvmMetadata = llvmMetadata
 		}
 		return llvmMetadata
+	}
+
+	fun isLlvmPrimitive(): Boolean {
+		return SpecialType.BOOLEAN.matches(this)
+			|| SpecialType.BYTE.matches(this)
+			|| SpecialType.INTEGER.matches(this)
+			|| SpecialType.FLOAT.matches(this)
 	}
 
 	override fun toString(): String {

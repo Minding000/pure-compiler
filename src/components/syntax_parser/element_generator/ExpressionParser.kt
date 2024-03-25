@@ -25,6 +25,7 @@ import java.util.regex.Pattern
 
 class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Generator() {
 	private val typeParameterListCheck: Pattern = Pattern.compile("[;()\\[\\]]")
+	private val selfReferenceCheck: Pattern = Pattern.compile(">|[^\\p{L}\\p{N}_.]")
 	override val currentWord: Word?
 		get() = syntaxTreeGenerator.currentWord
 	override val nextWord: Word?
@@ -56,7 +57,6 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 		return when(currentWord?.type) {
 			WordAtom.IF -> parseIfExpression()
 			WordAtom.SWITCH -> parseSwitchExpression()
-
 			else -> parseBinaryBooleanExpression()
 		}
 	}
@@ -306,7 +306,7 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 	 *   <Primary>
 	 *   <Accessor><MemberAccess>
 	 *   <Accessor><FunctionCall>
-	 *   <Accessor><Index>
+	 *   <Accessor><IndexAccess>
 	 */
 	private fun parseAccessor(): ValueSyntaxTreeNode {
 		var expression = parsePrimary()
@@ -316,7 +316,7 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 			else if(currentWord?.type == WordAtom.OPENING_PARENTHESIS)
 				parseFunctionCall(expression)
 			else if(currentWord?.type == WordAtom.OPENING_BRACKET)
-				parseIndex(expression)
+				parseIndexAccess(expression)
 			else
 				throw CompilerError("Failed to parse accessor: '${currentWord?.type}'")
 		}
@@ -341,10 +341,10 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 	}
 
 	/**
-	 * Index:
+	 * IndexAccess:
 	 *   <Accessor>[[[<Type>[, <Type>]...];][<Expression>[, <Expression>]...]]
 	 */
-	private fun parseIndex(expression: ValueSyntaxTreeNode): ValueSyntaxTreeNode {
+	private fun parseIndexAccess(expression: ValueSyntaxTreeNode): ValueSyntaxTreeNode {
 		return parseCall(expression, WordAtom.OPENING_BRACKET, WordAtom.CLOSING_BRACKET)
 	}
 
@@ -359,13 +359,12 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 	/**
 	 * This is a helper for:
 	 * <FunctionCall>
-	 * <Index>
+	 * <IndexAccess>
 	 */
 	private fun parseCall(expression: ValueSyntaxTreeNode, startWord: WordAtom, endWord: WordAtom): ValueSyntaxTreeNode {
 		val parameterListStart = consume(startWord).end
 		var typeParameters: List<TypeSyntaxTreeNode>? = null
-		val nextSpecialCharacter = syntaxTreeGenerator.wordGenerator.scanForCharacters(parameterListStart,
-			typeParameterListCheck)
+		val nextSpecialCharacter = syntaxTreeGenerator.wordGenerator.scanForCharacters(parameterListStart, typeParameterListCheck)
 		if(nextSpecialCharacter == ';') {
 			typeParameters = LinkedList()
 			typeParameters.add(typeParser.parseType())
@@ -479,9 +478,13 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 		var end = word.end
 		var specifier: ObjectType? = null
 		if(WordType.GENERICS_START.includes(currentWord?.type)) {
-			consume(WordType.GENERICS_START)
-			specifier = typeParser.parseObjectType(false)
-			end = consume(WordType.GENERICS_END).end
+			val searchStart = currentWord?.end ?: throw CompilerError("Value is guaranteed to be non-null.")
+			val nextSpecialCharacter = syntaxTreeGenerator.wordGenerator.scanForCharacters(searchStart, selfReferenceCheck)
+			if(nextSpecialCharacter == '>') {
+				consume(WordType.GENERICS_START)
+				specifier = typeParser.parseObjectType(false)
+				end = consume(WordType.GENERICS_END).end
+			}
 		}
 		return SelfReference(word, specifier, end)
 	}

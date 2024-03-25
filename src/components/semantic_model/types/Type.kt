@@ -77,7 +77,8 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 		var llvmType = cachedLlvmType
 		if(llvmType == null) {
 			llvmType = createLlvmType(constructor)
-			this.cachedLlvmType = llvmType
+			if(context.primitiveCompilationTarget == null)
+				this.cachedLlvmType = llvmType
 		}
 		return llvmType
 	}
@@ -99,7 +100,7 @@ abstract class Type(source: SyntaxTreeNode, scope: Scope, isStatic: Boolean = fa
 		TODO("${source.getStartString()}: '${javaClass.simpleName}.createLlvmMetadata' is not implemented yet.")
 	}
 
-	fun isLlvmPrimitive(): Boolean {
+	open fun isLlvmPrimitive(): Boolean {
 		return SpecialType.BOOLEAN.matches(this)
 			|| SpecialType.BYTE.matches(this)
 			|| SpecialType.INTEGER.matches(this)

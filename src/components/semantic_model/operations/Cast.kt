@@ -9,10 +9,9 @@ import components.semantic_model.context.VariableUsage
 import components.semantic_model.control_flow.IfExpression
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
-import components.semantic_model.types.LiteralType
-import components.semantic_model.types.OptionalType
-import components.semantic_model.types.Type
+import components.semantic_model.types.*
 import components.semantic_model.values.*
+import errors.internal.CompilerError
 import logger.issues.constant_conditions.*
 import components.syntax_parser.syntax_tree.operations.Cast as CastSyntaxTree
 
@@ -26,7 +25,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 
 	init {
 		addSemanticModels(subject, variableDeclaration)
-		type = if(operator.returnsBoolean) {
+		providedType = if(operator.returnsBoolean) {
 			addSemanticModels(referenceType)
 			LiteralType(source, scope, SpecialType.BOOLEAN)
 		} else if(operator == Operator.OPTIONAL_CAST) {
@@ -34,16 +33,19 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 		} else {
 			referenceType
 		}
-		addSemanticModels(type)
+		addSemanticModels(providedType)
 	}
 
 	override fun determineTypes() {
-		super.determineTypes()
 		variableDeclaration?.type = referenceType
+		super.determineTypes()
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
-		super.analyseDataFlow(tracker)
+		subject.analyseDataFlow(tracker)
+		if(variableDeclaration != null)
+			tracker.declare(variableDeclaration, true)
+		setEndStates(tracker)
 		if(operator.returnsBoolean) {
 			val subjectVariable = subject as? VariableValue
 			val subjectVariableDeclaration = subjectVariable?.declaration
@@ -52,11 +54,11 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 				tracker.add(VariableUsage.Kind.HINT, subjectVariableDeclaration, this, referenceType)
 				setEndState(tracker, operator == Operator.CAST_CONDITION)
 				tracker.setVariableStates(commonState)
-				val variableType = subjectVariable.type as? OptionalType
+				val variableType = subjectVariable.providedType as? OptionalType
 				val baseType = variableType?.baseType
 				if(baseType == referenceType) {
 					val nullLiteral = NullLiteral(this)
-					tracker.add(VariableUsage.Kind.HINT, subjectVariableDeclaration, this, nullLiteral.type, nullLiteral)
+					tracker.add(VariableUsage.Kind.HINT, subjectVariableDeclaration, this, nullLiteral.providedType, nullLiteral)
 					setEndState(tracker, operator == Operator.NEGATED_CAST_CONDITION)
 				}
 				tracker.setVariableStates(commonState)
@@ -87,7 +89,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 
 	override fun validate() {
 		super.validate()
-		subject.type?.let { valueType ->
+		subject.providedType?.let { valueType ->
 			if(valueType.isAssignableTo(referenceType)) {
 				if(operator.isConditional)
 					context.addIssue(ConditionalCastIsSafe(source, valueType, referenceType))
@@ -144,21 +146,53 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 		val subjectValue = subject.getLlvmValue(constructor)
 		when(operator) {
 			Operator.SAFE_CAST -> {
-				return ValueConverter.convertIfRequired(this, constructor, subjectValue, subject.type, referenceType)
+				return ValueConverter.convertIfRequired(this, constructor, subjectValue, subject.providedType, referenceType)
 			}
 			Operator.OPTIONAL_CAST -> {
 				//TODO check if value can be converted
 				// else: return null pointer
-				return ValueConverter.convertIfRequired(this, constructor, subjectValue, subject.type, referenceType)
+				return ValueConverter.convertIfRequired(this, constructor, subjectValue, subject.providedType, referenceType)
 			}
 			Operator.RAISING_CAST -> {
 				//TODO check if value can be converted
 				// else: raise
-				return ValueConverter.convertIfRequired(this, constructor, subjectValue, subject.type, referenceType)
+				return ValueConverter.convertIfRequired(this, constructor, subjectValue, subject.providedType, referenceType)
 			}
 			Operator.CAST_CONDITION, Operator.NEGATED_CAST_CONDITION -> {
-				//TODO check if value can be converted and return check result
-				return constructor.buildBoolean(true)
+				//TODO check if value can be converted
+				// - get specified type (is class definition address)
+				// - get value
+				// - check if values class definition matches specified class definition
+				//   - if yes: result = true
+				// - else:
+				//   - get parent class definitions => need to be part of definition
+				//   - recursively check is match
+				//     - if yes for any: result = true
+				// - fallback: result = false
+				// => advanced feature: support complex types
+
+				//TODO if subject is primitive:
+				// - skip comparison
+				// - statically determine result
+
+				val subjectClassDefinition = context.getClassDefinition(constructor, subjectValue)
+				val referenceTypeDeclaration = when(referenceType) {
+					is ObjectType -> referenceType.getTypeDeclaration()
+					is SelfType -> referenceType.typeDeclaration
+					else -> throw CompilerError(referenceType.source,
+						"Conditional casts do not support complex types at the moment. Provided type: $referenceType")
+				}
+				val referenceClassDefinition = referenceTypeDeclaration?.llvmClassDefinition
+					?: throw CompilerError(referenceType.source, "Missing class definition for '$referenceType'.")
+				if(variableDeclaration != null) {
+					variableDeclaration.compile(constructor)
+					constructor.buildStore(subjectValue, variableDeclaration.llvmLocation)
+				}
+				val resultName = "_castConditionResult"
+				return if(operator == Operator.CAST_CONDITION)
+					constructor.buildPointerEqualTo(subjectClassDefinition, referenceClassDefinition, resultName)
+				else
+					constructor.buildPointerNotEqualTo(subjectClassDefinition, referenceClassDefinition, resultName)
 			}
 		}
 	}

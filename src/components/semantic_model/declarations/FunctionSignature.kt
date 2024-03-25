@@ -3,12 +3,12 @@ package components.semantic_model.declarations
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.semantic_model.context.ComparisonResult
+import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.BlockScope
-import components.semantic_model.types.LiteralType
-import components.semantic_model.types.PluralType
-import components.semantic_model.types.Type
+import components.semantic_model.types.*
+import components.semantic_model.values.NumberLiteral
 import components.semantic_model.values.Operator
 import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -28,7 +28,8 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	private val variadicParameterType: Type?
 	val returnType = returnType ?: LiteralType(source, scope, SpecialType.NOTHING)
 	var superFunctionSignature: FunctionSignature? = null
-	var parentDefinition: TypeDeclaration? = null
+	var parentTypeDeclaration: TypeDeclaration? = null
+		get() = if(this === original) field else original.parentTypeDeclaration
 	private var llvmType: LlvmType? = null
 
 	init {
@@ -73,7 +74,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		val inferredTypes = LinkedList<Type>()
 		for(parameterIndex in suppliedValues.indices) {
 			val parameterType = getParameterTypeAt(parameterIndex)
-			val suppliedType = suppliedValues[parameterIndex].type ?: continue
+			val suppliedType = suppliedValues[parameterIndex].providedType ?: continue
 			parameterType?.inferTypeParameter(typeParameter, suppliedType, inferredTypes)
 		}
 		if(inferredTypes.isEmpty())
@@ -94,33 +95,46 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		val specificSignature = FunctionSignature(source, scope, specificLocalTypeParameters, specificParametersTypes,
 			returnType.withTypeSubstitutions(typeSubstitutions), specificWhereClauseConditions, associatedImplementation)
 		specificSignature.original = this
-		specificSignature.superFunctionSignature = superFunctionSignature
-		specificSignature.parentDefinition = parentDefinition
+		//TODO superFunctionSignature might not be set yet
+		specificSignature.superFunctionSignature = superFunctionSignature?.withTypeSubstitutions(typeSubstitutions)
 		return specificSignature
 	}
 
-	fun accepts(localTypeSubstitutions: Map<TypeDeclaration, Type>, suppliedValues: List<Value>,
-				conversions: MutableMap<Value, InitializerDefinition>): Boolean {
+	fun getMatch(localTypeSubstitutions: Map<TypeDeclaration, Type>, suppliedValues: List<Value>): FunctionType.Match? {
 		assert(suppliedValues.size >= fixedParameterTypes.size)
 
+		val conversions = HashMap<Value, InitializerDefinition>()
+		var numberLiteralTypeScore = 0
 		for(parameterIndex in suppliedValues.indices) {
-			val parameterType = getParameterTypeAt(parameterIndex)?.withTypeSubstitutions(localTypeSubstitutions) ?: return false
+			val parameterType = getParameterTypeAt(parameterIndex)?.withTypeSubstitutions(localTypeSubstitutions) ?: return null
 			val suppliedValue = suppliedValues[parameterIndex]
-			if(!suppliedValue.isAssignableTo(parameterType)) {
-				val suppliedType = suppliedValue.type ?: return false
-				val possibleConversions = parameterType.getConversionsFrom(suppliedType)
-				if(possibleConversions.isNotEmpty()) {
-					if(possibleConversions.size > 1) {
-						context.addIssue(ConversionAmbiguity(source, suppliedType, parameterType, possibleConversions))
-						return false
+			if(suppliedValue.isAssignableTo(parameterType)) {
+				if(suppliedValue is NumberLiteral) {
+					val effectiveParameterTypeDefinition = when(val effectiveParameterType = parameterType.effectiveType) {
+						is SelfType -> effectiveParameterType.typeDeclaration
+						is ObjectType -> effectiveParameterType.getTypeDeclaration()
+						else -> null
 					}
-					conversions[suppliedValue] = possibleConversions.first()
-					continue
+					if(effectiveParameterTypeDefinition != null) {
+						if(SpecialType.INTEGER.matches(effectiveParameterTypeDefinition))
+							numberLiteralTypeScore += 1
+						else if(SpecialType.FLOAT.matches(effectiveParameterTypeDefinition))
+							numberLiteralTypeScore += 2
+					}
 				}
-				return false
+			} else {
+				val suppliedType = suppliedValue.providedType ?: return null
+				val possibleConversions = parameterType.getConversionsFrom(suppliedType)
+				if(possibleConversions.isEmpty())
+					return null
+				if(possibleConversions.size > 1) {
+					context.addIssue(ConversionAmbiguity(source, suppliedType, parameterType, possibleConversions))
+					return null
+				}
+				conversions[suppliedValue] = possibleConversions.first()
 			}
 		}
-		return true
+		return FunctionType.Match(this, localTypeSubstitutions, conversions, numberLiteralTypeScore)
 	}
 
 	fun fulfillsInheritanceRequirementsOf(superSignature: FunctionSignature): Boolean {
@@ -174,7 +188,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		return true
 	}
 
-	fun accepts(other: FunctionSignature): Boolean {
+	fun getMatch(other: FunctionSignature): Boolean {
 		if(other.parameterTypes.size != parameterTypes.size)
 			return false
 		for(parameterIndex in parameterTypes.indices) {
@@ -205,15 +219,24 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	fun getLlvmType(constructor: LlvmConstructor): LlvmType {
 		var llvmType = llvmType
 		if(llvmType == null) {
-			val parameterTypes = LinkedList<LlvmType?>(parameterTypes.map { parameterType -> parameterType?.getLlvmType(constructor) })
-			val parentDefinition = parentDefinition
-			if(parentDefinition != null)
-				parameterTypes.addFirst(constructor.pointerType)
-			parameterTypes.addFirst(constructor.pointerType)
-			llvmType = constructor.buildFunctionType(parameterTypes, returnType.getLlvmType(constructor), isVariadic)
+			llvmType = buildLlvmType(constructor)
 			this.llvmType = llvmType
 		}
 		return llvmType
+	}
+
+	fun buildLlvmType(constructor: LlvmConstructor): LlvmType {
+		val parameterTypes = LinkedList<LlvmType?>(parameterTypes.map { parameterType -> parameterType?.getLlvmType(constructor) })
+		val parentTypeDeclaration = parentTypeDeclaration
+		parameterTypes.add(Context.EXCEPTION_PARAMETER_INDEX, constructor.pointerType)
+		if(parentTypeDeclaration != null) {
+			val implicitSelfType = if(parentTypeDeclaration == context.primitiveCompilationTarget)
+				constructor.pointerType
+			else
+				parentTypeDeclaration.getLlvmReferenceType(constructor)
+			parameterTypes.add(Context.THIS_PARAMETER_INDEX, implicitSelfType)
+		}
+		return constructor.buildFunctionType(parameterTypes, returnType.getLlvmType(constructor), isVariadic)
 	}
 
 	override fun equals(other: Any?): Boolean {

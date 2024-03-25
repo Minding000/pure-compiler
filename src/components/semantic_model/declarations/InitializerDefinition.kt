@@ -68,6 +68,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 				return null
 		}
 		val globalTypeSubstitutions = LinkedHashMap<TypeDeclaration, Type>()
+		//TODO also infer type from return statement (write test!)
 		for(parameterIndex in globalTypeParameters.indices) {
 			val globalTypeParameter = globalTypeParameters[parameterIndex]
 			val requiredType = globalTypeParameter.getLinkedSuperType()
@@ -105,7 +106,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		val inferredTypes = LinkedList<Type>()
 		for(parameterIndex in suppliedValues.indices) {
 			val parameterType = getParameterTypeAt(parameterIndex)
-			val suppliedType = suppliedValues[parameterIndex].type ?: continue
+			val suppliedType = suppliedValues[parameterIndex].providedType ?: continue
 			parameterType?.inferTypeParameter(typeParameter, suppliedType, inferredTypes)
 		}
 		if(inferredTypes.isEmpty())
@@ -126,7 +127,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 				?: return false
 			val suppliedValue = suppliedValues[parameterIndex]
 			if(!suppliedValue.isAssignableTo(parameterType)) {
-				val suppliedType = suppliedValue.type ?: return false
+				val suppliedType = suppliedValue.providedType ?: return false
 				val possibleConversions = parameterType.getConversionsFrom(suppliedType)
 				if(possibleConversions.isNotEmpty()) {
 					if(possibleConversions.size > 1) {
@@ -275,22 +276,46 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		}
 	}
 
+	//TODO:
+	// - disallow 'native' instances
+	// - disallow 'return' in primitive initializer
+	// - disallow 'this' in primitive initializer
+	// - require initializer call in primitive initializer as last statement of each block
+
 	override fun declare(constructor: LlvmConstructor) {
 		if(isAbstract)
 			return
 		super.declare(constructor)
 		val parameterTypes = LinkedList<LlvmType?>()
 		parameterTypes.add(Context.EXCEPTION_PARAMETER_INDEX, constructor.pointerType)
-		parameterTypes.add(Context.THIS_PARAMETER_INDEX, constructor.pointerType)
-		var parameterIndex = Context.VALUE_PARAMETER_OFFSET
+		var parameterIndex = Context.THIS_PARAMETER_INDEX
+		if(!parentTypeDeclaration.isLlvmPrimitive()) {
+			parameterTypes.add(Context.THIS_PARAMETER_INDEX, constructor.pointerType)
+			parameterIndex++
+		}
 		//TODO add local type parameters
 		for(valueParameter in parameters) {
 			parameterTypes.add(valueParameter.type?.getLlvmType(constructor))
 			valueParameter.index = parameterIndex
 			parameterIndex++
 		}
-		llvmType = constructor.buildFunctionType(parameterTypes, constructor.voidType, isVariadic)
+		llvmType = if(!isNative && parentTypeDeclaration.isLlvmPrimitive())
+			constructor.buildFunctionType(parameterTypes, getPrimitiveLlvmType(constructor, parentTypeDeclaration), isVariadic)
+		else
+			constructor.buildFunctionType(parameterTypes, constructor.voidType, isVariadic)
 		llvmValue = constructor.buildFunction("${parentTypeDeclaration.getFullName()}_Initializer", llvmType)
+	}
+
+	private fun getPrimitiveLlvmType(constructor: LlvmConstructor, typeDeclaration: TypeDeclaration): LlvmType {
+		if(SpecialType.BOOLEAN.matches(typeDeclaration))
+			return constructor.booleanType
+		if(SpecialType.BYTE.matches(typeDeclaration))
+			return constructor.byteType
+		if(SpecialType.INTEGER.matches(typeDeclaration))
+			return constructor.i32Type
+		if(SpecialType.FLOAT.matches(typeDeclaration))
+			return constructor.floatType
+		throw CompilerError(source, "Encountered unknown primitive type declaration '${typeDeclaration.name}'.")
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
@@ -306,36 +331,26 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 				constructor.buildStore(constructor.getParameter(llvmValue, valueParameter.index), propertyAddress)
 			}
 		}
-		if(isNative)
-			compileNativeInitializer(constructor, thisValue)
-		else if(body == null)
-			callTrivialSuperInitializers(constructor, thisValue)
-		else
-			super.compile(constructor)
-		constructor.buildReturn()
+		if(parentTypeDeclaration.isLlvmPrimitive()) {
+			if(isNative)
+				constructor.buildReturn()
+			else
+				super.compile(constructor)
+		} else {
+			if(isNative)
+				compileNativeInitializer(constructor, thisValue)
+			else if(body == null)
+				callTrivialSuperInitializers(constructor, thisValue)
+			else
+				super.compile(constructor)
+			constructor.buildReturn()
+		}
 		constructor.select(previousBlock)
 	}
 
 	private fun compileNativeInitializer(constructor: LlvmConstructor, thisValue: LlvmValue) {
 		//TODO create different initializers for Array
 		//TODO consider moving this code to 'code_generation/llvm/native_implementations'
-		if(SpecialType.BOOLEAN.matches(parentTypeDeclaration)) {
-			val valueProperty = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue, context.booleanValueIndex,
-				"valueProperty")
-			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), valueProperty)
-		} else if(SpecialType.BYTE.matches(parentTypeDeclaration)) {
-			val valueProperty = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue, context.byteValueIndex,
-				"valueProperty")
-			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), valueProperty)
-		} else if(SpecialType.INTEGER.matches(parentTypeDeclaration)) {
-			val valueProperty = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue, context.integerValueIndex,
-				"valueProperty")
-			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), valueProperty)
-		} else if(SpecialType.FLOAT.matches(parentTypeDeclaration)) {
-			val valueProperty = constructor.buildGetPropertyPointer(parentTypeDeclaration.llvmType, thisValue, context.floatValueIndex,
-				"valueProperty")
-			constructor.buildStore(constructor.getParameter(llvmValue, Context.VALUE_PARAMETER_OFFSET), valueProperty)
-		}
 	}
 
 	private fun callTrivialSuperInitializers(constructor: LlvmConstructor, thisValue: LlvmValue) {
@@ -351,7 +366,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, thisValue)
 			constructor.buildFunctionCall(trivialInitializer.llvmType, trivialInitializer.llvmValue, parameters)
-			context.continueRaise()
+			context.continueRaise(constructor)
 		}
 	}
 

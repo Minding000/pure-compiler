@@ -10,7 +10,7 @@ import source_structure.Position
 import util.indent
 import util.toLines
 import java.util.*
-import components.semantic_model.values.Instance as SemanticInstanceModel
+import components.semantic_model.declarations.Instance as SemanticInstanceModel
 
 class InstanceList(start: Position, private val instances: List<Instance>):
 	MetaSyntaxTreeNode(start, instances.last().end), ModifierSectionChild {

@@ -33,7 +33,7 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 
 	override fun determineTypes() {
 		iterable.determineTypes()
-		val iterableType = iterable.type
+		val iterableType = iterable.providedType
 		if(iterableType is PluralType)
 			setVariableTypes(iterableType)
 		else if(iterableType != null)

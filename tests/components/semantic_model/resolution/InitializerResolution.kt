@@ -38,7 +38,7 @@ internal class InitializerResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<InstanceAccessFromStaticContext>()
 		val initializerCall = lintResult.find<FunctionCall>()
-		assertNotNull(initializerCall?.type)
+		assertNotNull(initializerCall?.providedType)
 	}
 
 	@Test
@@ -68,7 +68,7 @@ internal class InitializerResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<StaticAccessFromInstanceContext>()
 		val initializerCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertNotNull(initializerCall?.type)
+		assertNotNull(initializerCall?.providedType)
 	}
 
 	@Test
@@ -119,7 +119,7 @@ internal class InitializerResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function as? VariableValue)?.name == "IntegerList" }
-		assertNotNull(initializerCall?.type)
+		assertNotNull(initializerCall?.providedType)
 	}
 
 	@Test
@@ -135,7 +135,7 @@ internal class InitializerResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function as? VariableValue)?.name == "IntegerList" }
-		assertNotNull(initializerCall?.type)
+		assertNotNull(initializerCall?.providedType)
 	}
 
 	@Test
@@ -151,7 +151,7 @@ internal class InitializerResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function as? VariableValue)?.name == "IntegerList" }
-		assertNotNull(initializerCall?.type)
+		assertNotNull(initializerCall?.providedType)
 	}
 
 	@Test
@@ -167,7 +167,7 @@ internal class InitializerResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
 			(functionCall.function as? VariableValue)?.name == "IntegerList" }
-		assertNotNull(initializerCall?.type)
+		assertNotNull(initializerCall?.providedType)
 	}
 
 	@Test

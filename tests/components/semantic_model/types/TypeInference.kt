@@ -21,7 +21,7 @@ internal class TypeInference {
 		val lintResult = TestUtil.lint(sourceCode)
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "ball" }
-		val type = valueDeclaration?.value?.type
+		val type = valueDeclaration?.value?.providedType
 		assertNotNull(type)
 		assertEquals(type, valueDeclaration.type)
 	}
@@ -39,7 +39,7 @@ internal class TypeInference {
 		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertEquals(type, instanceAccess?.type)
+		assertEquals(type, instanceAccess?.providedType)
 	}
 
 	@Test
@@ -56,7 +56,7 @@ internal class TypeInference {
 		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertEquals(type, instanceAccess?.type)
+		assertEquals(type, instanceAccess?.providedType)
 	}
 
 	@Test
@@ -77,7 +77,7 @@ internal class TypeInference {
 		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertEquals(type, instanceAccess?.type)
+		assertEquals(type, instanceAccess?.providedType)
 	}
 
 	@Test
@@ -98,7 +98,7 @@ internal class TypeInference {
 		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertEquals(type, instanceAccess?.type)
+		assertEquals(type, instanceAccess?.providedType)
 	}
 
 	@Test
@@ -118,7 +118,7 @@ internal class TypeInference {
 		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertEquals(type, instanceAccess?.type)
+		assertEquals(type, instanceAccess?.providedType)
 	}
 
 	@Test
@@ -138,7 +138,7 @@ internal class TypeInference {
 		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertEquals(type, instanceAccess?.type)
+		assertEquals(type, instanceAccess?.providedType)
 	}
 
 	@Test
@@ -158,7 +158,7 @@ internal class TypeInference {
 		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertEquals(type, instanceAccess?.type)
+		assertEquals(type, instanceAccess?.providedType)
 	}
 
 	@Test
@@ -178,7 +178,7 @@ internal class TypeInference {
 		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertEquals(type, instanceAccess?.type)
+		assertEquals(type, instanceAccess?.providedType)
 	}
 
 	@Test
@@ -198,7 +198,7 @@ internal class TypeInference {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertEquals("TransportLayerProtocol", instanceAccess?.type.toString())
+		assertEquals("TransportLayerProtocol", instanceAccess?.providedType.toString())
 	}
 
 	@Test
@@ -218,7 +218,7 @@ internal class TypeInference {
 		val type = lintResult.find<ObjectType> { type -> type.name == "TransportLayerProtocol" }
 		assertNotNull(type)
 		val instanceAccess = lintResult.find<InstanceAccess>()
-		assertEquals(type, instanceAccess?.type)
+		assertEquals(type, instanceAccess?.providedType)
 	}
 
 	@Test
@@ -234,7 +234,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val initializerResult = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "List" }?.type as? ObjectType
+			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "List" }?.providedType as? ObjectType
 		assertNotNull(initializerResult)
 	}
 
@@ -290,7 +290,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "Letter" }?.type
+			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "Letter" }?.providedType
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "letterBox" }
 		val returnType = valueDeclaration?.type as? ObjectType
@@ -331,7 +331,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerResult = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "MailFolder" }?.type as? ObjectType
+			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "MailFolder" }?.providedType as? ObjectType
 		assertNotNull(initializerResult)
 	}
 
@@ -368,7 +368,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerResult = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "MailFolder" }?.type as? ObjectType
+			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "MailFolder" }?.providedType as? ObjectType
 		assertNotNull(initializerResult)
 	}
 
@@ -387,7 +387,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "PostCard" }?.type
+			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "PostCard" }?.providedType
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "stampedPostCard" }
 		val returnType = valueDeclaration?.type as? ObjectType
@@ -410,7 +410,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "PostCard" }?.type
+			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "PostCard" }?.providedType
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "stampedPostCard" }
 		val returnType = valueDeclaration?.type as? OptionalType
@@ -433,7 +433,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "PostCard" }?.type
+			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "PostCard" }?.providedType
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "stampedPostCard" }
 		val returnType = valueDeclaration?.type as? PluralType
@@ -458,7 +458,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val genericParameter = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function.type as? StaticType)?.typeDeclaration?.name == "Ipv4Address" }?.type
+			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "Ipv4Address" }?.providedType
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "client" }
 		val returnType = valueDeclaration?.type as? ObjectType

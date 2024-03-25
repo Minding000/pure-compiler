@@ -23,7 +23,7 @@ internal class TypeSimplification {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertEquals("Cat | Human", functionCall?.type.toString())
+		assertEquals("Cat | Human", functionCall?.providedType.toString())
 	}
 
 	@Test
@@ -39,7 +39,7 @@ internal class TypeSimplification {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertEquals("Cat", functionCall?.type.toString())
+		assertEquals("Cat", functionCall?.providedType.toString())
 	}
 
 	@Test
@@ -55,7 +55,7 @@ internal class TypeSimplification {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertEquals("Animal", functionCall?.type.toString())
+		assertEquals("Animal", functionCall?.providedType.toString())
 	}
 
 	@Disabled("This requires 'potentially optional' generic types.")
@@ -71,7 +71,7 @@ internal class TypeSimplification {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertEquals("Cat?", functionCall?.type.toString())
+		assertEquals("Cat?", functionCall?.providedType.toString())
 	}
 
 	@Test
@@ -89,7 +89,7 @@ internal class TypeSimplification {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertEquals("Cat | Horse | Monkey", functionCall?.type.toString())
+		assertEquals("Cat | Horse | Monkey", functionCall?.providedType.toString())
 	}
 
 	@Test
@@ -109,7 +109,7 @@ internal class TypeSimplification {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertEquals("Cat | Horse | Human | Monkey", functionCall?.type.toString())
+		assertEquals("Cat | Horse | Human | Monkey", functionCall?.providedType.toString())
 	}
 
 	@Test
@@ -128,7 +128,7 @@ internal class TypeSimplification {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertEquals("Horse | (Human & Patient)", functionCall?.type.toString())
+		assertEquals("Horse | (Human & Patient)", functionCall?.providedType.toString())
 	}
 
 	@Disabled
@@ -150,7 +150,7 @@ internal class TypeSimplification {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertEquals("(Human | Horse) & Patient", functionCall?.type.toString())
+		assertEquals("(Human | Horse) & Patient", functionCall?.providedType.toString())
 	}
 
 	@Disabled

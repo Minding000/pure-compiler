@@ -21,6 +21,20 @@ internal class UnaryOperators {
 	}
 
 	@Test
+	fun `compiles byte negation`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getNegativeOne(): Byte {
+					val byte: Byte = 1
+					return -byte
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNegativeOne")
+		assertEquals(-1, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
 	fun `compiles integer negation`() {
 		val sourceCode = """
 			SimplestApp object {

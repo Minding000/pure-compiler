@@ -5,11 +5,13 @@ import components.semantic_model.operations.MemberAccess
 import components.semantic_model.types.FunctionType
 import components.semantic_model.values.VariableValue
 import logger.Severity
+import logger.issues.access.AbstractMonomorphicAccess
 import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.modifiers.MissingOverridingKeyword
 import logger.issues.modifiers.OverriddenSuperMissing
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
+import logger.issues.resolution.NotFound
 import logger.issues.resolution.SignatureAmbiguity
 import logger.issues.resolution.SignatureMismatch
 import org.junit.jupiter.api.Test
@@ -31,7 +33,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "Door" }
-		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.type
+		val functionType = variableValue?.providedType?.interfaceScope?.getValueDeclaration("open")?.type
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)
@@ -55,7 +57,7 @@ internal class FunctionResolution {
 		lintResult.assertIssueNotDetected<OverridingPropertyTypeNotAssignable>()
 		lintResult.assertIssueNotDetected<OverridingPropertyTypeMismatch>()
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.type
+		val functionType = variableValue?.providedType?.interfaceScope?.getValueDeclaration("open")?.type
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)
@@ -76,7 +78,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableValue = lintResult.find<VariableValue> { variableValue -> variableValue.name == "GlassDoor" }
-		val functionType = variableValue?.type?.interfaceScope?.getValueDeclaration("open")?.type
+		val functionType = variableValue?.providedType?.interfaceScope?.getValueDeclaration("open")?.type
 		assertIs<FunctionType>(functionType)
 		val signature = functionType.getSignature()
 		assertNotNull(signature)
@@ -186,7 +188,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> (functionCall.function as? VariableValue)?.name == "addAll" }
-		assertNotNull(functionCall?.type)
+		assertNotNull(functionCall?.providedType)
 	}
 
 	@Test
@@ -201,7 +203,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertNotNull(functionCall?.type)
+		assertNotNull(functionCall?.providedType)
 	}
 
 	@Test
@@ -216,7 +218,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertNotNull(functionCall?.type)
+		assertNotNull(functionCall?.providedType)
 	}
 
 	@Test
@@ -231,7 +233,7 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val functionCall = lintResult.find<FunctionCall> { functionCall -> functionCall.function is MemberAccess }
-		assertNotNull(functionCall?.type)
+		assertNotNull(functionCall?.providedType)
 	}
 
 	@Test
@@ -445,5 +447,28 @@ internal class FunctionResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<SignatureMismatch>()
+	}
+
+	@Test
+	fun `resolves implementation using conversion for monomorphic functions`() {
+		val sourceCode =
+			"""
+				abstract Number class {
+					abstract monomorphic it times(right: Self): Self
+				}
+				Byte class: Number {
+					native overriding monomorphic it times(right: Self): Self
+				}
+				Int class: Number {
+					converting init(value: Byte)
+					init
+					native overriding monomorphic it times(right: Self): Self
+				}
+				Int().times(Byte())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
+		lintResult.assertIssueNotDetected<AbstractMonomorphicAccess>()
 	}
 }

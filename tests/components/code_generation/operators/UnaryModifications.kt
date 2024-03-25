@@ -8,6 +8,36 @@ import kotlin.test.assertEquals
 internal class UnaryModifications {
 
 	@Test
+	fun `compiles byte increments`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Byte {
+					var a: Byte = 4
+					a++
+					return a
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles byte decrements`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Byte {
+					var a: Byte = 6
+					a--
+					return a
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
 	fun `compiles integer increments`() {
 		val sourceCode = """
 			SimplestApp object {
