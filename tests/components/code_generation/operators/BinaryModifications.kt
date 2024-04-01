@@ -234,14 +234,14 @@ internal class BinaryModifications {
 				init(a)
 			}
 			SimplestApp object {
-				to getOne(): Int {
-					val container = Container(0)
-					container.a++
+				to getEleven(): Int {
+					val container = Container(8)
+					container.a += 3
 					return container.a
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne")
-		assertEquals(1, Llvm.castToSignedInteger(result))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEleven")
+		assertEquals(11, Llvm.castToSignedInteger(result))
 	}
 }

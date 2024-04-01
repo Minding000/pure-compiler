@@ -2,6 +2,7 @@ package components.semantic_model.operations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
@@ -90,7 +91,8 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 		super.compile(constructor)
 		val isTargetInteger = SpecialType.INTEGER.matches(target.providedType)
 		if(isTargetInteger || SpecialType.BYTE.matches(target.providedType)) {
-			val targetValue = target.getLlvmValue(constructor)
+			val targetValue = ValueConverter.convertIfRequired(this, constructor, target.getLlvmValue(constructor),
+				target.effectiveType, target.hasGenericType, target.effectiveType, false)
 			val modifierValue = if(isTargetInteger)
 				constructor.buildInt32(STEP_SIZE.longValueExact())
 			else
@@ -101,7 +103,8 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 				Operator.Kind.DOUBLE_MINUS -> constructor.buildIntegerSubtraction(targetValue, modifierValue, intermediateResultName)
 				else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
 			}
-			constructor.buildStore(operation, target.getLlvmLocation(constructor))
+			constructor.buildStore(ValueConverter.convertIfRequired(this, constructor, operation, target.effectiveType,
+				false, target.effectiveType, target.hasGenericType), target.getLlvmLocation(constructor))
 			return
 		}
 		val signature = targetSignature?.original ?: throw CompilerError(source, "Unary modification is missing a target.")
