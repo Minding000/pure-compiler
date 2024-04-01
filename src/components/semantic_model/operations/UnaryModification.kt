@@ -89,10 +89,10 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
+		val targetValue = ValueConverter.convertIfRequired(this, constructor, target.getLlvmValue(constructor),
+			target.effectiveType, target.hasGenericType, target.effectiveType, false)
 		val isTargetInteger = SpecialType.INTEGER.matches(target.providedType)
 		if(isTargetInteger || SpecialType.BYTE.matches(target.providedType)) {
-			val targetValue = ValueConverter.convertIfRequired(this, constructor, target.getLlvmValue(constructor),
-				target.effectiveType, target.hasGenericType, target.effectiveType, false)
 			val modifierValue = if(isTargetInteger)
 				constructor.buildInt32(STEP_SIZE.longValueExact())
 			else
@@ -108,11 +108,10 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 			return
 		}
 		val signature = targetSignature?.original ?: throw CompilerError(source, "Unary modification is missing a target.")
-		createLlvmFunctionCall(constructor, signature)
+		createLlvmFunctionCall(constructor, signature, targetValue)
 	}
 
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature) {
-		val targetValue = target.getLlvmValue(constructor)
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, targetValue: LlvmValue) {
 		val parameters = LinkedList<LlvmValue>()
 		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)

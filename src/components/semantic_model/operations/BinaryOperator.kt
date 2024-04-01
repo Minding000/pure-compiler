@@ -324,7 +324,8 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		return createLlvmFunctionCall(constructor, signature, leftValue, rightValue)
 	}
 
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, leftValue: LlvmValue, rightValue: LlvmValue): LlvmValue {
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, leftValue: LlvmValue,
+									   rightValue: LlvmValue): LlvmValue {
 		val resultName = "_binaryOperatorResult"
 		val parameters = LinkedList<LlvmValue>()
 		parameters.add(context.getExceptionParameter(constructor))

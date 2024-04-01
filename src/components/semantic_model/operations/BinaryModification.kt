@@ -99,17 +99,17 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
+		val targetValue = ValueConverter.convertIfRequired(this, constructor, target.getLlvmValue(constructor),
+			target.effectiveType, target.hasGenericType, target.effectiveType, false)
+		val modifierType = targetSignature?.parameterTypes?.firstOrNull() ?: modifier.effectiveType
+		val originalModifierType = targetSignature?.original?.parameterTypes?.firstOrNull() ?: modifier.effectiveType
+		var modifierValue = ValueConverter.convertIfRequired(this, constructor, modifier.getLlvmValue(constructor),
+			modifier.effectiveType, modifier.hasGenericType, modifierType, modifierType != originalModifierType)
 		val isTargetInteger = SpecialType.INTEGER.matches(target.providedType)
 		val isTargetPrimitiveNumber = isTargetInteger || SpecialType.FLOAT.matches(target.providedType)
 		val isModifierInteger = SpecialType.INTEGER.matches(modifier.providedType)
 		val isModifierPrimitiveNumber = isModifierInteger || SpecialType.FLOAT.matches(modifier.providedType)
 		if(isTargetPrimitiveNumber && isModifierPrimitiveNumber) {
-			val targetValue = ValueConverter.convertIfRequired(this, constructor, target.getLlvmValue(constructor),
-				target.effectiveType, target.hasGenericType, target.effectiveType, false)
-			val modifierType = targetSignature?.parameterTypes?.firstOrNull() ?: modifier.effectiveType
-			val originalModifierType = targetSignature?.original?.parameterTypes?.firstOrNull() ?: modifier.effectiveType
-			var modifierValue = ValueConverter.convertIfRequired(this, constructor, modifier.getLlvmValue(constructor),
-				modifier.effectiveType, modifier.hasGenericType, modifierType, modifierType != originalModifierType)
 			val isIntegerOperation = isTargetInteger && isModifierInteger
 			if(!isIntegerOperation) {
 				if(isTargetInteger)
@@ -147,18 +147,18 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 			}
 			constructor.buildStore(ValueConverter.convertIfRequired(this, constructor, operation, target.effectiveType,
 				false, target.effectiveType, target.hasGenericType), target.getLlvmLocation(constructor))
-		} else {
-			val signature = targetSignature?.original ?: throw CompilerError(source, "Binary modification is missing a target.")
-			createLlvmFunctionCall(constructor, signature)
+			return
 		}
+		val signature = targetSignature?.original ?: throw CompilerError(source, "Binary modification is missing a target.")
+		createLlvmFunctionCall(constructor, signature, targetValue, modifierValue)
 	}
 
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature) {
-		val targetValue = target.getLlvmValue(constructor)
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, targetValue: LlvmValue,
+									   modifierValue: LlvmValue) {
 		val parameters = LinkedList<LlvmValue>()
 		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)
-		parameters.add(modifier.getLlvmValue(constructor))
+		parameters.add(modifierValue)
 		val functionAddress = context.resolveFunction(constructor, targetValue,
 			signature.original.toString(false, kind))
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
