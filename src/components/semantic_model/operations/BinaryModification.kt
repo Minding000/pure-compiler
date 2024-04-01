@@ -2,6 +2,7 @@ package components.semantic_model.operations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
@@ -103,8 +104,12 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		val isModifierInteger = SpecialType.INTEGER.matches(modifier.providedType)
 		val isModifierPrimitiveNumber = isModifierInteger || SpecialType.FLOAT.matches(modifier.providedType)
 		if(isTargetPrimitiveNumber && isModifierPrimitiveNumber) {
-			val targetValue = target.getLlvmValue(constructor) //TODO handle generics via ValueConverter.convertIfRequired
-			var modifierValue = modifier.getLlvmValue(constructor)
+			val targetValue = ValueConverter.convertIfRequired(this, constructor, target.getLlvmValue(constructor),
+				target.effectiveType, target.hasGenericType, target.effectiveType, false)
+			val modifierType = targetSignature?.parameterTypes?.firstOrNull() ?: modifier.effectiveType
+			val originalModifierType = targetSignature?.original?.parameterTypes?.firstOrNull() ?: modifier.effectiveType
+			var modifierValue = ValueConverter.convertIfRequired(this, constructor, modifier.getLlvmValue(constructor),
+				modifier.effectiveType, modifier.hasGenericType, modifierType, modifierType != originalModifierType)
 			val isIntegerOperation = isTargetInteger && isModifierInteger
 			if(!isIntegerOperation) {
 				if(isTargetInteger)
@@ -140,7 +145,8 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 				}
 				else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
 			}
-			constructor.buildStore(operation, target.getLlvmLocation(constructor))
+			constructor.buildStore(ValueConverter.convertIfRequired(this, constructor, operation, target.effectiveType,
+				false, target.effectiveType, target.hasGenericType), target.getLlvmLocation(constructor))
 		} else {
 			val signature = targetSignature?.original ?: throw CompilerError(source, "Binary modification is missing a target.")
 			createLlvmFunctionCall(constructor, signature)

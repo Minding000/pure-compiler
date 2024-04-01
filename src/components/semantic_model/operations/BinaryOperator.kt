@@ -215,9 +215,13 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		if(kind == Operator.Kind.DOUBLE_QUESTION_MARK)
 			return getNullCoalescenceResult(constructor)
 		val resultName = "_binaryOperatorResult"
+		//TODO write test for this!
+		//TODO same for unary
 		var leftValue = ValueConverter.convertIfRequired(this, constructor, left.getLlvmValue(constructor), left.effectiveType,
 			left.hasGenericType, left.effectiveType, false)
 		val rightType = targetSignature?.parameterTypes?.firstOrNull()
+		//TODO write test for this!
+		//TODO same for unary
 		var rightValue = ValueConverter.convertIfRequired(this, constructor, right.getLlvmValue(constructor), right.effectiveType,
 			right.hasGenericType, rightType, rightType != targetSignature?.original?.parameterTypes?.firstOrNull())
 		if(SpecialType.BOOLEAN.matches(left.effectiveType) && SpecialType.BOOLEAN.matches(right.effectiveType)) {
