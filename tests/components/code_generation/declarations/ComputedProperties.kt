@@ -101,7 +101,7 @@ internal class ComputedProperties {
 				}
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFortyOne", true)
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFortyOne")
 		assertEquals(41, Llvm.castToSignedInteger(result))
 	}
 }

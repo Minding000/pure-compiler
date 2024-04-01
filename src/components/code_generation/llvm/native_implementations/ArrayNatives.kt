@@ -4,7 +4,6 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
-import errors.internal.CompilerError
 
 object ArrayNatives {
 	lateinit var context: Context
@@ -19,7 +18,7 @@ object ArrayNatives {
 	//TODO this function assumes all Arrays store pointers (see offset), but StringLiteral creates Arrays with native chars as elements
 	private fun concatenate(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val arrayType = context.arrayTypeDeclaration?.llvmType
+		val arrayType = context.arrayDeclarationType
 		val thisArray = context.getThisParameter(constructor)
 		val thisValueProperty = constructor.buildGetPropertyPointer(arrayType, thisArray, context.arrayValueIndex,
 			"thisValueProperty")
@@ -35,9 +34,7 @@ object ArrayNatives {
 		val combinedArray = constructor.buildHeapAllocation(arrayType, "combinedArray")
 		val combinedArrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayType, combinedArray,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "combinedArrayClassDefinitionProperty")
-		val arrayClassDefinition = context.arrayTypeDeclaration?.llvmClassDefinition
-			?: throw CompilerError("Missing array type declaration.")
-		constructor.buildStore(arrayClassDefinition, combinedArrayClassDefinitionProperty)
+		constructor.buildStore(context.arrayClassDefinition, combinedArrayClassDefinitionProperty)
 		val combinedArraySizeProperty = context.resolveMember(constructor, combinedArray, "size")
 		val combinedSize = constructor.buildIntegerAddition(thisSize, parameterSize, "combinedSize")
 		constructor.buildStore(combinedSize, combinedArraySizeProperty)
@@ -57,7 +54,7 @@ object ArrayNatives {
 	private fun get(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisArray = context.getThisParameter(constructor)
-		val thisArrayValueProperty = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, thisArray,
+		val thisArrayValueProperty = constructor.buildGetPropertyPointer(context.arrayDeclarationType, thisArray,
 			context.arrayValueIndex, "thisArrayValueProperty")
 		val index = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val element = constructor.buildGetArrayElementPointer(constructor.pointerType, thisArrayValueProperty, index, "element")
@@ -68,7 +65,7 @@ object ArrayNatives {
 	private fun set(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisArray = context.getThisParameter(constructor)
-		val thisArrayValueProperty = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, thisArray,
+		val thisArrayValueProperty = constructor.buildGetPropertyPointer(context.arrayDeclarationType, thisArray,
 			context.arrayValueIndex, "thisArrayValueProperty")
 		val index = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val value = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET + 1)

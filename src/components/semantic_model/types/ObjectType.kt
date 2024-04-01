@@ -183,6 +183,9 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 	override fun accepts(unresolvedSourceType: Type): Boolean {
 		if(unresolvedSourceType is StaticType)
 			return false
+		// Note: This is only here for compilation without the base library
+		if(SpecialType.ANY.matches(this))
+			return true
 		return unresolvedSourceType.isAssignableTo(this)
 	}
 
@@ -195,6 +198,9 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 			return false
 		if(targetType !is ObjectType)
 			return targetType.accepts(this)
+		// Note: This is only here for compilation without the base library
+		if(SpecialType.ANY.matches(targetType))
+			return true
 		if(equals(targetType))
 			return true
 		return typeDeclaration?.getLinkedSuperType()?.withTypeSubstitutions(getTypeSubstitutions())?.isAssignableTo(targetType) ?: false
@@ -319,8 +325,14 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 			return constructor.buildLoad(constructor.pointerType, typeProperty,
 				"${typeDeclaration.getFullName()}_Type")
 		} else {
-			return typeDeclaration?.staticValueDeclaration?.llvmLocation
-				?: throw CompilerError(source, "Type declaration is missing a static type declaration.")
+			val value = typeDeclaration?.staticValueDeclaration?.llvmLocation
+			if(value == null) {
+				// Note: This is only here for compilation without the base library
+				if(isLlvmPrimitive())
+					return constructor.nullPointer
+				throw CompilerError(source, "Type declaration is missing a static type declaration.")
+			}
+			return value
 		}
 	}
 

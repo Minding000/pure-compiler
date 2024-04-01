@@ -51,11 +51,16 @@ class Context {
 	lateinit var llvmVariableParameterIterationEndFunctionType: LlvmType
 	lateinit var llvmVariableParameterIterationEndFunction: LlvmValue
 	lateinit var closureStruct: LlvmType
-	var arrayTypeDeclaration: TypeDeclaration? = null
-	var booleanTypeDeclaration: TypeDeclaration? = null
-	var byteTypeDeclaration: TypeDeclaration? = null
-	var integerTypeDeclaration: TypeDeclaration? = null
-	var floatTypeDeclaration: TypeDeclaration? = null
+	lateinit var arrayDeclarationType: LlvmType
+	lateinit var booleanDeclarationType: LlvmType
+	lateinit var byteDeclarationType: LlvmType
+	lateinit var integerDeclarationType: LlvmType
+	lateinit var floatDeclarationType: LlvmType
+	lateinit var arrayClassDefinition: LlvmValue
+	lateinit var booleanClassDefinition: LlvmValue
+	lateinit var byteClassDefinition: LlvmValue
+	lateinit var integerClassDefinition: LlvmValue
+	lateinit var floatClassDefinition: LlvmValue
 	var arrayValueIndex by Delegates.notNull<Int>()
 	var booleanValueIndex by Delegates.notNull<Int>()
 	var byteValueIndex by Delegates.notNull<Int>()

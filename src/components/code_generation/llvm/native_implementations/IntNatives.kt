@@ -64,8 +64,8 @@ object IntNatives {
 	private fun increment(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisInt = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, thisInt,
-			context.integerValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerDeclarationType, thisInt, context.integerValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveInt = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveInt")
 		val result = constructor.buildIntegerAddition(thisPrimitiveInt, constructor.buildInt32(1), "additionResult")
 		constructor.buildStore(result, thisValueProperty)
@@ -75,8 +75,8 @@ object IntNatives {
 	private fun decrement(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisInt = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, thisInt,
-			context.integerValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerDeclarationType, thisInt, context.integerValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveInt = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveInt")
 		val result = constructor.buildIntegerSubtraction(thisPrimitiveInt, constructor.buildInt32(1), "subtractionResult")
 		constructor.buildStore(result, thisValueProperty)
@@ -129,8 +129,8 @@ object IntNatives {
 	private fun add(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisInt = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, thisInt,
-			context.integerValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerDeclarationType, thisInt, context.integerValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveInt = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveInt")
 		val parameterPrimitiveInt = ValueConverter.unwrapInteger(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
@@ -142,8 +142,8 @@ object IntNatives {
 	private fun subtract(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisInt = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, thisInt,
-			context.integerValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerDeclarationType, thisInt, context.integerValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveInt = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveInt")
 		val parameterPrimitiveInt = ValueConverter.unwrapInteger(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
@@ -155,8 +155,8 @@ object IntNatives {
 	private fun multiply(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisInt = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, thisInt,
-			context.integerValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerDeclarationType, thisInt, context.integerValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveInt = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveInt")
 		val parameterPrimitiveInt = ValueConverter.unwrapInteger(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
@@ -168,8 +168,8 @@ object IntNatives {
 	private fun divide(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisInt = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, thisInt,
-			context.integerValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerDeclarationType, thisInt, context.integerValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveInt = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveInt")
 		val parameterPrimitiveInt = ValueConverter.unwrapInteger(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
@@ -217,8 +217,8 @@ object IntNatives {
 	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisInt = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerTypeDeclaration?.llvmType, thisInt,
-			context.integerValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerDeclarationType, thisInt, context.integerValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveInt = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveInt")
 		val parameterPrimitiveInt = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildSignedIntegerEqualTo(thisPrimitiveInt, parameterPrimitiveInt, "equalToResult")

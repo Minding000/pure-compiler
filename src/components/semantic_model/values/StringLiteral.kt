@@ -42,17 +42,16 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		val byteArray = constructor.buildHeapAllocation(context.arrayTypeDeclaration?.llvmType, "_byteArray")
-		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, byteArray,
+		val arrayType = context.arrayDeclarationType
+		val byteArray = constructor.buildHeapAllocation(arrayType, "_byteArray")
+		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayType, byteArray,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_arrayClassDefinitionProperty")
-		val arrayClassDefinition = context.arrayTypeDeclaration?.llvmClassDefinition
-			?: throw CompilerError(source, "Missing array type declaration.")
-		constructor.buildStore(arrayClassDefinition, arrayClassDefinitionProperty)
+		constructor.buildStore(context.arrayClassDefinition, arrayClassDefinitionProperty)
 		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(constructor.buildInt32(value.length + 1), arraySizeProperty)
 
-		val arrayValueProperty = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, byteArray,
-			context.arrayValueIndex, "_arrayValueProperty")
+		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, context.arrayValueIndex,
+			"_arrayValueProperty")
 		val nullTerminatedCharArray = constructor.buildGlobalAsciiCharArray("_asciiStringLiteral", value)
 		constructor.buildStore(nullTerminatedCharArray, arrayValueProperty)
 

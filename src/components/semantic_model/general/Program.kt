@@ -95,10 +95,10 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		for(file in files)
 			file.define(constructor)
 		findArrayTypeDeclaration()
-		findBooleanTypeDeclaration()
-		findByteTypeDeclaration()
-		findIntegerTypeDeclaration()
-		findFloatTypeDeclaration()
+		findBooleanTypeDeclaration(constructor)
+		findByteTypeDeclaration(constructor)
+		findIntegerTypeDeclaration(constructor)
+		findFloatTypeDeclaration(constructor)
 		findStringInitializer()
 		for(file in files)
 			file.compile(constructor)
@@ -340,27 +340,69 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 
 	private fun findArrayTypeDeclaration() {
 		val fileScope = SpecialType.ARRAY.fileScope
-		context.arrayTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.ARRAY.className)
+		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.ARRAY.className) ?: return
+		context.arrayDeclarationType = typeDeclaration.llvmType
+		context.arrayClassDefinition = typeDeclaration.llvmClassDefinition
 	}
 
-	private fun findBooleanTypeDeclaration() {
+	private fun findBooleanTypeDeclaration(constructor: LlvmConstructor) {
 		val fileScope = SpecialType.BOOLEAN.fileScope
-		context.booleanTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.BOOLEAN.className)
+		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.BOOLEAN.className)
+		context.booleanClassDefinition = if(typeDeclaration == null) {
+			// Note: This is only here for compilation without the base library
+			context.booleanValueIndex = 1
+			context.booleanDeclarationType = constructor.declareStruct("${RUNTIME_PREFIX}Bool")
+			constructor.defineStruct(context.booleanDeclarationType, listOf(constructor.pointerType, constructor.booleanType))
+			constructor.nullPointer
+		} else {
+			context.booleanDeclarationType = typeDeclaration.llvmType
+			typeDeclaration.llvmClassDefinition
+		}
 	}
 
-	private fun findByteTypeDeclaration() {
+	private fun findByteTypeDeclaration(constructor: LlvmConstructor) {
 		val fileScope = SpecialType.BYTE.fileScope
-		context.byteTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.BYTE.className)
+		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.BYTE.className)
+		context.byteClassDefinition = if(typeDeclaration == null) {
+			// Note: This is only here for compilation without the base library
+			context.byteValueIndex = 1
+			context.byteDeclarationType = constructor.declareStruct("${RUNTIME_PREFIX}Byte")
+			constructor.defineStruct(context.byteDeclarationType, listOf(constructor.pointerType, constructor.byteType))
+			constructor.nullPointer
+		} else {
+			context.byteDeclarationType = typeDeclaration.llvmType
+			typeDeclaration.llvmClassDefinition
+		}
 	}
 
-	private fun findIntegerTypeDeclaration() {
+	private fun findIntegerTypeDeclaration(constructor: LlvmConstructor) {
 		val fileScope = SpecialType.INTEGER.fileScope
-		context.integerTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.INTEGER.className)
+		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.INTEGER.className)
+		context.integerClassDefinition = if(typeDeclaration == null) {
+			// Note: This is only here for compilation without the base library
+			context.integerValueIndex = 1
+			context.integerDeclarationType = constructor.declareStruct("${RUNTIME_PREFIX}Int")
+			constructor.defineStruct(context.integerDeclarationType, listOf(constructor.pointerType, constructor.i32Type))
+			constructor.nullPointer
+		} else {
+			context.integerDeclarationType = typeDeclaration.llvmType
+			typeDeclaration.llvmClassDefinition
+		}
 	}
 
-	private fun findFloatTypeDeclaration() {
+	private fun findFloatTypeDeclaration(constructor: LlvmConstructor) {
 		val fileScope = SpecialType.FLOAT.fileScope
-		context.floatTypeDeclaration = fileScope?.getTypeDeclaration(SpecialType.FLOAT.className)
+		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.FLOAT.className)
+		context.floatClassDefinition = if(typeDeclaration == null) {
+			// Note: This is only here for compilation without the base library
+			context.floatValueIndex = 1
+			context.floatDeclarationType = constructor.declareStruct("${RUNTIME_PREFIX}Float")
+			constructor.defineStruct(context.floatDeclarationType, listOf(constructor.pointerType, constructor.floatType))
+			constructor.nullPointer
+		} else {
+			context.floatDeclarationType = typeDeclaration.llvmType
+			typeDeclaration.llvmClassDefinition
+		}
 	}
 
 	private fun findStringInitializer() {

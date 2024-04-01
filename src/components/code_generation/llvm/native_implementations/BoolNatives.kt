@@ -54,8 +54,8 @@ object BoolNatives {
 	private fun toggle(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisBool = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.booleanTypeDeclaration?.llvmType, thisBool,
-			context.booleanValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.booleanDeclarationType, thisBool, context.booleanValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
 		val result = constructor.buildBooleanNegation(thisPrimitiveBool, "negationResult")
 		constructor.buildStore(result, thisValueProperty)
@@ -65,8 +65,8 @@ object BoolNatives {
 	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisBool = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.booleanTypeDeclaration?.llvmType, thisBool,
-			context.booleanValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.booleanDeclarationType, thisBool, context.booleanValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
 		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildBooleanEqualTo(thisPrimitiveBool, parameterPrimitiveBool, "equalToResult")

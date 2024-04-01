@@ -121,7 +121,7 @@ internal class ValueConversion {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", true)
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
 		assertEquals(99, Llvm.castToSignedInteger(result))
 	}
 
@@ -152,7 +152,7 @@ internal class ValueConversion {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", true)
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
 		assertEquals(99, Llvm.castToSignedInteger(result))
 	}
 
@@ -183,7 +183,7 @@ internal class ValueConversion {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", true)
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
 		assertEquals(99, Llvm.castToSignedInteger(result))
 	}
 
@@ -199,7 +199,7 @@ internal class ValueConversion {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", true)
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
 		assertEquals(99, Llvm.castToSignedInteger(result))
 	}
 
@@ -215,7 +215,7 @@ internal class ValueConversion {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", true)
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
 		assertEquals(99, Llvm.castToSignedInteger(result))
 	}
 

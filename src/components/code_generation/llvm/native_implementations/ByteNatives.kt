@@ -42,7 +42,7 @@ object ByteNatives {
 	private fun increment(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisByte = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteTypeDeclaration?.llvmType, thisByte, context.byteValueIndex,
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteDeclarationType, thisByte, context.byteValueIndex,
 			"thisValueProperty")
 		val thisPrimitiveByte = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveByte")
 		val result = constructor.buildIntegerAddition(thisPrimitiveByte, constructor.buildInt32(1), "additionResult")
@@ -53,7 +53,7 @@ object ByteNatives {
 	private fun decrement(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisByte = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteTypeDeclaration?.llvmType, thisByte, context.byteValueIndex,
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteDeclarationType, thisByte, context.byteValueIndex,
 			"thisValueProperty")
 		val thisPrimitiveByte = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveByte")
 		val result = constructor.buildIntegerSubtraction(thisPrimitiveByte, constructor.buildInt32(1), "subtractionResult")
@@ -107,7 +107,7 @@ object ByteNatives {
 	private fun add(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisByte = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteTypeDeclaration?.llvmType, thisByte, context.byteValueIndex,
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteDeclarationType, thisByte, context.byteValueIndex,
 			"thisValueProperty")
 		val thisPrimitiveByte = constructor.buildLoad(constructor.byteType, thisValueProperty, "thisPrimitiveByte")
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -120,7 +120,7 @@ object ByteNatives {
 	private fun subtract(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisByte = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteTypeDeclaration?.llvmType, thisByte, context.byteValueIndex,
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteDeclarationType, thisByte, context.byteValueIndex,
 			"thisValueProperty")
 		val thisPrimitiveByte = constructor.buildLoad(constructor.byteType, thisValueProperty, "thisPrimitiveByte")
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -133,7 +133,7 @@ object ByteNatives {
 	private fun multiply(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisByte = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteTypeDeclaration?.llvmType, thisByte, context.byteValueIndex,
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteDeclarationType, thisByte, context.byteValueIndex,
 			"thisValueProperty")
 		val thisPrimitiveByte = constructor.buildLoad(constructor.byteType, thisValueProperty, "thisPrimitiveByte")
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -146,7 +146,7 @@ object ByteNatives {
 	private fun divide(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisByte = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteTypeDeclaration?.llvmType, thisByte, context.byteValueIndex,
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteDeclarationType, thisByte, context.byteValueIndex,
 			"thisValueProperty")
 		val thisPrimitiveByte = constructor.buildLoad(constructor.byteType, thisValueProperty, "thisPrimitiveByte")
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -195,7 +195,7 @@ object ByteNatives {
 	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisByte = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteTypeDeclaration?.llvmType, thisByte, context.byteValueIndex,
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteDeclarationType, thisByte, context.byteValueIndex,
 			"thisValueProperty")
 		val thisPrimitiveByte = constructor.buildLoad(constructor.byteType, thisValueProperty, "thisPrimitiveByte")
 		val parameterPrimitiveByte = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)

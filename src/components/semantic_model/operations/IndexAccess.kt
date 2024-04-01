@@ -21,7 +21,6 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 				  val indices: List<Value>): Value(source, scope) {
 	var sourceExpression: Value? = null
 	var targetSignature: FunctionSignature? = null
-	//TODO same for other potentially generic values (function call, operator call, etc.)
 	override val hasGenericType: Boolean
 		get() = targetSignature?.original?.returnType != targetSignature?.returnType
 

@@ -101,8 +101,8 @@ object FloatNatives {
 	private fun add(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisFloat = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.floatTypeDeclaration?.llvmType, thisFloat,
-			context.floatValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.floatDeclarationType, thisFloat, context.floatValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
@@ -114,8 +114,8 @@ object FloatNatives {
 	private fun subtract(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisFloat = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.floatTypeDeclaration?.llvmType, thisFloat,
-			context.floatValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.floatDeclarationType, thisFloat, context.floatValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
@@ -127,8 +127,8 @@ object FloatNatives {
 	private fun multiply(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisFloat = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.floatTypeDeclaration?.llvmType, thisFloat,
-			context.floatValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.floatDeclarationType, thisFloat, context.floatValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
@@ -140,8 +140,8 @@ object FloatNatives {
 	private fun divide(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisFloat = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.floatTypeDeclaration?.llvmType, thisFloat,
-			context.floatValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.floatDeclarationType, thisFloat, context.floatValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
@@ -189,8 +189,8 @@ object FloatNatives {
 	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisFloat = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.floatTypeDeclaration?.llvmType, thisFloat,
-			context.floatValueIndex, "thisValueProperty")
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.floatDeclarationType, thisFloat, context.floatValueIndex,
+			"thisValueProperty")
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
 		val parameterPrimitiveFloat = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildFloatEqualTo(thisPrimitiveFloat, parameterPrimitiveFloat, "equalToResult")

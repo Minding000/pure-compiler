@@ -103,7 +103,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		val isModifierInteger = SpecialType.INTEGER.matches(modifier.providedType)
 		val isModifierPrimitiveNumber = isModifierInteger || SpecialType.FLOAT.matches(modifier.providedType)
 		if(isTargetPrimitiveNumber && isModifierPrimitiveNumber) {
-			val targetValue = target.getLlvmValue(constructor)
+			val targetValue = target.getLlvmValue(constructor) //TODO handle generics via ValueConverter.convertIfRequired
 			var modifierValue = modifier.getLlvmValue(constructor)
 			val isIntegerOperation = isTargetInteger && isModifierInteger
 			if(!isIntegerOperation) {

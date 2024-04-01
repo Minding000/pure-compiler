@@ -224,4 +224,24 @@ internal class BinaryModifications {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne")
 		assertEquals(1, Llvm.castToSignedInteger(result))
 	}
+
+	@Test
+	fun `compiles modification on primitive generic properties`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var a: Item
+				init(a)
+			}
+			SimplestApp object {
+				to getOne(): Int {
+					val container = Container(0)
+					container.a++
+					return container.a
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne")
+		assertEquals(1, Llvm.castToSignedInteger(result))
+	}
 }

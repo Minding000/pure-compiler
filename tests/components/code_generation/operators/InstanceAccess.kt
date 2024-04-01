@@ -52,7 +52,7 @@ internal class InstanceAccess {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo", true)
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo")
 		assertEquals(2, Llvm.castToSignedInteger(result))
 	}
 

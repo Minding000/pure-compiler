@@ -18,8 +18,8 @@ object CliNatives {
 		val string = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val bytesProperty = context.resolveMember(constructor, string, "bytes")
 		val byteArray = constructor.buildLoad(constructor.pointerType, bytesProperty, "byteArray")
-		val arrayValueProperty = constructor.buildGetPropertyPointer(context.arrayTypeDeclaration?.llvmType, byteArray,
-			context.arrayValueIndex, "arrayValueProperty")
+		val arrayValueProperty = constructor.buildGetPropertyPointer(context.arrayDeclarationType, byteArray, context.arrayValueIndex,
+			"arrayValueProperty")
 		val primitiveArray = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "primitiveArray")
 		constructor.buildFunctionCall(context.llvmPrintFunctionType, context.llvmPrintFunction, listOf(primitiveArray))
 		constructor.buildFunctionCall(context.llvmFlushFunctionType, context.llvmFlushFunction, listOf(constructor.nullPointer))

@@ -18,6 +18,7 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 	protected var positiveState: VariableTracker.VariableState? = null
 	protected var negativeState: VariableTracker.VariableState? = null
 	private var llvmValue: LlvmValue? = null
+	//TODO same for other potentially generic values (function call, operator call, etc.)
 	open val hasGenericType = false
 
 	open fun isAssignableTo(targetType: Type?): Boolean {
