@@ -2,6 +2,7 @@ package components.semantic_model.operations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.scopes.Scope
@@ -96,15 +97,18 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	}
 
 	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
-		val targetValue = target.getLlvmValue(constructor)
+		val targetValue = target.getLlvmValue(constructor) //TODO convert (write test)
 		val parameters = LinkedList<LlvmValue>()
 		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)
-		for(index in indices)
-			parameters.add(index.getLlvmValue(constructor))
+		for((indexIndex, index) in indices.withIndex()) {
+			val parameterType = signature.getParameterTypeAt(indexIndex)
+			parameters.add(ValueConverter.convertIfRequired(this, constructor, index.getLlvmValue(constructor), index.effectiveType,
+				index.hasGenericType, parameterType, parameterType != signature.original.getParameterTypeAt(indexIndex)))
+		}
 		val sourceExpression = sourceExpression
 		if(sourceExpression != null)
-			parameters.add(sourceExpression.getLlvmValue(constructor))
+			parameters.add(sourceExpression.getLlvmValue(constructor)) //TODO convert (write test)
 		val functionAddress = context.resolveFunction(constructor, targetValue,
 			signature.original.toString(false, getOperatorKind()))
 		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,

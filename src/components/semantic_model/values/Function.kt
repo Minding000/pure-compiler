@@ -59,6 +59,7 @@ open class Function(source: SyntaxTreeNode, scope: Scope, val name: String = "<a
 
 	override fun compile(constructor: LlvmConstructor) {
 		//TODO compile closures (write tests!)
-		super.compile(constructor)
+		for(semanticModel in semanticModels)
+			semanticModel.compile(constructor)
 	}
 }

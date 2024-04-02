@@ -97,7 +97,6 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		super.compile(constructor)
 		val rawLlvmValue = sourceExpression.getLlvmValue(constructor)
 		for(target in targets) {
 			val conversion = conversions[target]
@@ -171,7 +170,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		val signature = indexAccess.targetSignature?.original
 			?: throw CompilerError(source, "Missing index operator implementation.")
 		val indexTarget = indexAccess.target
-		val targetValue = indexTarget.getLlvmValue(constructor)
+		val targetValue = indexTarget.getLlvmValue(constructor) //TODO convert (write test)
 		val indexOperatorAddress = if(indexTarget is SuperReference) {
 			val implementation = signature.associatedImplementation
 				?: throw CompilerError(source, "Encountered member signature without implementation.")
@@ -183,8 +182,11 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		val parameters = LinkedList<LlvmValue>()
 		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)
-		for(index in indexAccess.indices)
-			parameters.add(index.getLlvmValue(constructor))
+		for((indexIndex, index) in indexAccess.indices.withIndex()) {
+			val parameterType = signature.getParameterTypeAt(indexIndex)
+			parameters.add(ValueConverter.convertIfRequired(this, constructor, index.getLlvmValue(constructor), index.effectiveType,
+				index.hasGenericType, parameterType, parameterType != signature.original.getParameterTypeAt(indexIndex)))
+		}
 		parameters.add(value)
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), indexOperatorAddress, parameters)
 		context.continueRaise(constructor)

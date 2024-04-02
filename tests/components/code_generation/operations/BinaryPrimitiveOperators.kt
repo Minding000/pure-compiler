@@ -8,7 +8,11 @@ import kotlin.test.assertEquals
 internal class BinaryPrimitiveOperators {
 
 	//TODO same for:
-	// - index access (get & set - key & value)
+	// - index access
+	//   - get key
+	//   - get value (use)
+	//   - set key
+	//   - set value (done)
 	// - declaration assignment
 	//   - property
 	//   - local

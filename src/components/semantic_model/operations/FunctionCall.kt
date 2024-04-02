@@ -173,10 +173,6 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				signature.toString(false), targetType))
 	}
 
-	override fun compile(constructor: LlvmConstructor) {
-		buildLlvmValue(constructor)
-	}
-
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val exceptionAddress = context.getExceptionParameter(constructor)
 		val functionSignature = targetSignature

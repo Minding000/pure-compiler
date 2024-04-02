@@ -44,4 +44,100 @@ internal class IndexAccess {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo")
 		assertEquals(2, Llvm.castToSignedInteger(result))
 	}
+
+	@Test
+	fun `compiles with primitive generic value as provided getter key`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var a: Item
+				var b = 0
+				init(a)
+				operator[c: Int]: Int {
+					b = c
+					return 0
+				}
+			}
+			SimplestApp object {
+				to getEightySix(): Int {
+					val container = Container(86)
+					container[container.a]
+					return container.b
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightySix")
+		assertEquals(86, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles with primitive generic value as expected getter key`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var b: Item
+				init(b)
+				operator[a: Item]: Int {
+					b = a
+					return 0
+				}
+			}
+			SimplestApp object {
+				to getEightySix(): Int {
+					val container = Container(77)
+					container[86]
+					return container.b
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightySix")
+		assertEquals(86, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles with primitive generic value as provided setter key`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var a: Item
+				var b = 0
+				init(a)
+				operator[c: Int](d: Int) {
+					b = c
+				}
+			}
+			SimplestApp object {
+				to getEightySix(): Int {
+					val container = Container(86)
+					container[container.a] = 9
+					return container.b
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightySix")
+		assertEquals(86, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles with primitive generic value as expected setter key`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var b: Item
+				init(b)
+				operator[a: Item](c: Int) {
+					b = a
+				}
+			}
+			SimplestApp object {
+				to getEightySix(): Int {
+					val container = Container(77)
+					container[86] = 6
+					return container.b
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightySix")
+		assertEquals(86, Llvm.castToSignedInteger(result))
+	}
 }

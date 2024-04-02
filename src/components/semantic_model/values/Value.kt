@@ -109,6 +109,11 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 		return llvmValue
 	}
 
+	override fun compile(constructor: LlvmConstructor) {
+		// In case it is not used as a value
+		buildLlvmValue(constructor)
+	}
+
 	open fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		TODO("${source.getStartString()}: '${javaClass.simpleName}.buildLlvmValue' is not implemented yet.")
 	}
