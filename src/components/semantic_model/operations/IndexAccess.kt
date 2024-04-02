@@ -93,10 +93,10 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val signature = targetSignature?.original ?: throw CompilerError(source, "Index access is missing a target.")
-		return createLlvmFunctionCall(constructor, signature)
+		return createLlvmGetterCall(constructor, signature)
 	}
 
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
+	private fun createLlvmGetterCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
 		val targetValue = target.getLlvmValue(constructor) //TODO convert (write test)
 		val parameters = LinkedList<LlvmValue>()
 		parameters.add(context.getExceptionParameter(constructor))
@@ -106,9 +106,6 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, index.getLlvmValue(constructor), index.effectiveType,
 				index.hasGenericType, parameterType, parameterType != signature.original.getParameterTypeAt(indexIndex)))
 		}
-		val sourceExpression = sourceExpression
-		if(sourceExpression != null)
-			parameters.add(sourceExpression.getLlvmValue(constructor)) //TODO convert (write test)
 		val functionAddress = context.resolveFunction(constructor, targetValue,
 			signature.original.toString(false, getOperatorKind()))
 		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,
