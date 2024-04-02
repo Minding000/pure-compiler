@@ -4,6 +4,7 @@ import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 internal class UnaryOperators {
 
@@ -82,5 +83,24 @@ internal class UnaryOperators {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNegativeTen")
 		assertEquals(-10, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles with primitive generic properties`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var a: Item
+				init(a)
+			}
+			SimplestApp object {
+				to getNo(): Bool {
+					val container = Container(yes)
+					return !container.a
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
+		assertFalse(Llvm.castToBoolean(result))
 	}
 }
