@@ -29,7 +29,6 @@ internal class InstanceAccess {
 	@Test
 	fun `compiles instance accesses on generic types`() {
 		val sourceCode = """
-			referencing Pure
 			abstract Vehicle class {
 				abstract instances DEFAULT
 				var id = 0

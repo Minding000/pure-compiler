@@ -88,7 +88,6 @@ internal class ComputedProperties {
 	@Test
 	fun `unwraps primitive object returned from generic getter`() {
 		val sourceCode = """
-			referencing Pure
 			Container class {
 				containing Element
 				var content: Element

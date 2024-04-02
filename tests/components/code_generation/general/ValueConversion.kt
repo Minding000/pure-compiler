@@ -112,7 +112,6 @@ internal class ValueConversion {
 	@Test
 	fun `doesn't convert between wrapped primitive source and wrapped primitive target`() {
 		val sourceCode = """
-			referencing Pure
 			SimplestApp object {
 				val source: Number = 99
 				val target: Number = source
@@ -143,7 +142,6 @@ internal class ValueConversion {
 	@Test
 	fun `implicitly converts from primitive to wrapped primitive`() {
 		val sourceCode = """
-			referencing Pure
 			SimplestApp object {
 				val source = 99
 				val target: Number = source
@@ -174,7 +172,6 @@ internal class ValueConversion {
 	@Test
 	fun `implicitly converts from boxed primitive to wrapped primitive`() {
 		val sourceCode = """
-			referencing Pure
 			SimplestApp object {
 				val source: Int? = 99
 				val target: Number? = source
@@ -190,7 +187,6 @@ internal class ValueConversion {
 	@Test
 	fun `implicitly converts from wrapped primitive to primitive`() {
 		val sourceCode = """
-			referencing Pure
 			SimplestApp object {
 				val source: Number = 99
 				val target = source as! Int
@@ -206,7 +202,6 @@ internal class ValueConversion {
 	@Test
 	fun `implicitly converts from wrapped primitive to boxed primitive`() {
 		val sourceCode = """
-			referencing Pure
 			SimplestApp object {
 				val source: Number? = 99
 				val target = source as! Int?
