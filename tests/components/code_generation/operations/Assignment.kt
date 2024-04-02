@@ -1,4 +1,4 @@
-package components.code_generation.general
+package components.code_generation.operations
 
 import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
@@ -147,5 +147,69 @@ internal class Assignment {
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
 		assertEquals(5, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles with primitive generic properties on left hand side`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var a: Item
+				init(a)
+			}
+			SimplestApp object {
+				to getEight(): Int {
+					val container = Container(12)
+					container.a = 8
+					return container.a
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEight")
+		assertEquals(8, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles with primitive generic properties on right hand side`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var a: Item
+				init(a)
+			}
+			SimplestApp object {
+				to getSixtyOne(): Int {
+					var b = 0
+					val container = Container(61)
+					b = container.a
+					return b
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSixtyOne")
+		assertEquals(61, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles with primitive generic index access on left hand side`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var b: Item
+				init(b)
+				operator[c: Int](a: Item) {
+					b = a
+				}
+			}
+			SimplestApp object {
+				to getEightySix(): Int {
+					val container = Container(77)
+					container[0] = 86
+					return container.b
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightySix")
+		assertEquals(86, Llvm.castToSignedInteger(result))
 	}
 }

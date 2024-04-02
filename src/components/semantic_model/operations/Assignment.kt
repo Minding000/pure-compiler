@@ -2,6 +2,7 @@ package components.semantic_model.operations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.ComputedPropertyDeclaration
@@ -10,7 +11,6 @@ import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.OptionalType
 import components.semantic_model.types.SelfType
-import components.semantic_model.types.Type
 import components.semantic_model.values.*
 import errors.internal.CompilerError
 import logger.issues.constant_conditions.ExpressionNotAssignable
@@ -22,7 +22,7 @@ import components.syntax_parser.syntax_tree.operations.Assignment as AssignmentS
 
 class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val targets: List<Value>, val sourceExpression: Value):
 	SemanticModel(source, scope) {
-	private var conversion: InitializerDefinition? = null
+	private var conversions = HashMap<Value, InitializerDefinition>()
 
 	init {
 		addSemanticModels(sourceExpression)
@@ -51,7 +51,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 					context.addIssue(ConversionAmbiguity(source, sourceType, targetType, conversions))
 					continue
 				}
-				conversion = conversions.first()
+				this.conversions[target] = conversions.first()
 				continue
 			}
 			context.addIssue(TypeNotAssignable(source, sourceType, targetType))
@@ -99,20 +99,15 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 	override fun compile(constructor: LlvmConstructor) {
 		super.compile(constructor)
 		val rawLlvmValue = sourceExpression.getLlvmValue(constructor)
-		val sourceType = sourceExpression.providedType
-		//TODO fix: source value is calculated even if there's no valid target (member access on null value) (write test!)
-		val pointerLlvmValue = if(sourceType?.isLlvmPrimitive() == true && targets.any { target -> getWriteType(target) is OptionalType }) {
-			val box = constructor.buildHeapAllocation(sourceType.getLlvmType(constructor), "_optionalPrimitiveBox")
-			constructor.buildStore(rawLlvmValue, box)
-			box
-		} else {
-			rawLlvmValue
-		}
 		for(target in targets) {
-			val llvmValue = if(getWriteType(target) is OptionalType) pointerLlvmValue else rawLlvmValue
+			val conversion = conversions[target]
+			//TODO optimization: cache converted value to avoid re-wrapping or re-boxing
+			// cache key: targetType & isTargetGeneric & conversion
 			when(target) {
 				is VariableValue -> {
 					val declaration = target.declaration
+					val llvmValue = ValueConverter.convertIfRequired(this, constructor, rawLlvmValue, sourceExpression.effectiveType,
+						sourceExpression.hasGenericType, declaration?.type, false, conversion)
 					if(declaration is ComputedPropertyDeclaration)
 						buildSetterCall(constructor, declaration, context.getThisParameter(constructor), llvmValue)
 					else
@@ -122,6 +117,9 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 					val memberAccess = target
 					val declaration = (memberAccess.member as? VariableValue)?.declaration
 					val memberAccessTargetValue = memberAccess.target.getLlvmValue(constructor)
+					val llvmValue = ValueConverter.convertIfRequired(this, constructor, rawLlvmValue, sourceExpression.effectiveType,
+						sourceExpression.hasGenericType, memberAccess.member.effectiveType,
+						memberAccess.member.effectiveType != declaration?.type, conversion)
 					if(memberAccess.isOptional) {
 						val function = constructor.getParentFunction()
 						val writeBlock = constructor.createBlock(function, "optionalMemberAccess_write")
@@ -142,18 +140,16 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 							constructor.buildStore(llvmValue, memberAccess.getLlvmLocation(constructor))
 					}
 				}
-				is IndexAccess -> compileAssignmentToIndexAccess(constructor, target, llvmValue)
+				is IndexAccess -> {
+					val targetType = target.targetSignature?.parameterTypes?.lastOrNull()
+					val llvmValue = ValueConverter.convertIfRequired(this, constructor, rawLlvmValue, sourceExpression.effectiveType,
+						sourceExpression.hasGenericType, targetType,
+						targetType != target.targetSignature?.original?.parameterTypes?.lastOrNull(), conversion)
+					compileAssignmentToIndexAccess(constructor, target, llvmValue)
+				}
 				else -> throw CompilerError(source, "Target of type '${target.javaClass.simpleName}' is not assignable.")
 			}
 		}
-	}
-
-	private fun getWriteType(value: Value): Type? {
-		if(value is MemberAccess && value.isOptional) {
-			val targetType = value.target.providedType ?: return null
-			return value.member.providedType?.getLocalType(value, targetType)
-		}
-		return value.providedType
 	}
 
 	private fun buildSetterCall(constructor: LlvmConstructor, declaration: ComputedPropertyDeclaration, targetValue: LlvmValue,

@@ -1,70 +1,80 @@
-package components.code_generation.operators
+package components.code_generation.operations
 
 import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 
-internal class BinaryFloatOperators {
+internal class BinaryByteOperators {
 
 	@Test
-	fun `compiles float additions`() {
+	fun `compiles byte additions`() {
 		val sourceCode = """
 			SimplestApp object {
-				to getFive(): Float {
-					return 4.2 + 0.8
+				to getFive(): Byte {
+					val left: Byte = 2
+					val right: Byte = 3
+					return left + right
 				}
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
-	fun `compiles float subtractions`() {
+	fun `compiles byte subtractions`() {
 		val sourceCode = """
 			SimplestApp object {
-				to getFive(): Float {
-					return 7.3 - 2.3
+				to getFive(): Byte {
+					val left: Byte = 8
+					val right: Byte = 3
+					return left - right
 				}
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
-	fun `compiles float multiplications`() {
+	fun `compiles byte multiplications`() {
 		val sourceCode = """
 			SimplestApp object {
-				to getFive(): Float {
-					return 4.0 * 1.25
+				to getTen(): Byte {
+					val left: Byte = 5
+					val right: Byte = 2
+					return left * right
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTen")
+		assertEquals(10, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles byte divisions`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Byte {
+					val left: Byte = 10
+					val right: Byte = 2
+					return left / right
 				}
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		assertEquals(5, Llvm.castToSignedInteger(result))
 	}
 
 	@Test
-	fun `compiles float divisions`() {
-		val sourceCode = """
-			SimplestApp object {
-				to getTwoPointFive(): Float {
-					return 7.5 / 3.0
-				}
-			}
-			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwoPointFive")
-		assertEquals(2.5, Llvm.castToFloat(result))
-	}
-
-	@Test
-	fun `compiles float smaller than`() {
+	fun `compiles byte smaller than`() {
 		val sourceCode = """
 			SimplestApp object {
 				to getNo(): Bool {
-					return 2.3 < 2.3
+					val left: Byte = 4
+					val right: Byte = 4
+					return left < right
 				}
 			}
 			""".trimIndent()
@@ -73,11 +83,13 @@ internal class BinaryFloatOperators {
 	}
 
 	@Test
-	fun `compiles float greater than`() {
+	fun `compiles byte greater than`() {
 		val sourceCode = """
 			SimplestApp object {
 				to getNo(): Bool {
-					return 2.3 > 2.3
+					val left: Byte = 4
+					val right: Byte = 4
+					return left > right
 				}
 			}
 			""".trimIndent()
@@ -86,11 +98,13 @@ internal class BinaryFloatOperators {
 	}
 
 	@Test
-	fun `compiles float smaller than or equal to`() {
+	fun `compiles byte smaller than or equal to`() {
 		val sourceCode = """
 			SimplestApp object {
 				to getYes(): Bool {
-					return 2.3 <= 2.3
+					val left: Byte = 4
+					val right: Byte = 4
+					return left <= right
 				}
 			}
 			""".trimIndent()
@@ -99,11 +113,13 @@ internal class BinaryFloatOperators {
 	}
 
 	@Test
-	fun `compiles float greater than or equal to`() {
+	fun `compiles byte greater than or equal to`() {
 		val sourceCode = """
 			SimplestApp object {
 				to getYes(): Bool {
-					return 2.3 >= 2.3
+					val left: Byte = 4
+					val right: Byte = 4
+					return left >= right
 				}
 			}
 			""".trimIndent()
@@ -112,11 +128,13 @@ internal class BinaryFloatOperators {
 	}
 
 	@Test
-	fun `compiles float equal to`() {
+	fun `compiles byte equal to`() {
 		val sourceCode = """
 			SimplestApp object {
 				to getYes(): Bool {
-					return 2.3 == 2.3
+					val left: Byte = 4
+					val right: Byte = 4
+					return left == right
 				}
 			}
 			""".trimIndent()
@@ -125,11 +143,13 @@ internal class BinaryFloatOperators {
 	}
 
 	@Test
-	fun `compiles float not equal to`() {
+	fun `compiles byte not equal to`() {
 		val sourceCode = """
 			SimplestApp object {
 				to getNo(): Bool {
-					return 2.3 != 2.3
+					val left: Byte = 4
+					val right: Byte = 4
+					return left != right
 				}
 			}
 			""".trimIndent()

@@ -1,4 +1,4 @@
-package components.code_generation.operators
+package components.code_generation.operations
 
 import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
@@ -7,6 +7,12 @@ import kotlin.test.assertEquals
 
 internal class BinaryPrimitiveOperators {
 
+	//TODO same for:
+	// - index access (get & set - key & value)
+	// - declaration assignment
+	//   - property
+	//   - local
+	// - return (write tests)
 	@Test
 	fun `compiles with primitive generic properties on left hand side`() {
 		val sourceCode = """
