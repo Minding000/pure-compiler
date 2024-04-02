@@ -1,11 +1,11 @@
 package components.semantic_model.declarations
 
 import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.ValueConverter
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.FileScope
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.scopes.TypeScope
-import components.semantic_model.types.OptionalType
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Function
@@ -104,15 +104,9 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 			llvmLocation = constructor.buildStackAllocation(type?.getLlvmType(constructor), "${name}_Variable")
 		}
 		if(value != null) {
-			val llvmValue = value.getLlvmValue(constructor)
-			val valueType = value.providedType
-			if(type is OptionalType && valueType?.isLlvmPrimitive() == true) {
-				val box = constructor.buildHeapAllocation(valueType.getLlvmType(constructor), "_optionalPrimitiveBox")
-				constructor.buildStore(llvmValue, box)
-				constructor.buildStore(box, llvmLocation)
-			} else {
-				constructor.buildStore(llvmValue, llvmLocation)
-			}
+			val llvmValue = ValueConverter.convertIfRequired(this, constructor, value.getLlvmValue(constructor), value.effectiveType,
+				value.hasGenericType, type, false)
+			constructor.buildStore(llvmValue, llvmLocation)
 		}
 	}
 

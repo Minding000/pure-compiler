@@ -7,10 +7,6 @@ import kotlin.test.assertEquals
 
 internal class BinaryPrimitiveOperators {
 
-	//TODO same for:
-	// - declaration assignment
-	//   - property
-	//   - local
 	@Test
 	fun `compiles with primitive generic properties on left hand side`() {
 		val sourceCode = """

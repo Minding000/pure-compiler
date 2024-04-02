@@ -601,7 +601,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			val memberValue = memberDeclaration.value
 			if(memberValue != null) {
 				val convertedValue = ValueConverter.convertIfRequired(memberDeclaration, constructor,
-					memberValue.buildLlvmValue(constructor), memberValue.providedType, memberDeclaration.type, memberDeclaration.conversion)
+					memberValue.buildLlvmValue(constructor), memberValue.effectiveType, memberValue.hasGenericType, memberDeclaration.type,
+					false, memberDeclaration.conversion)
 				val memberAddress = context.resolveMember(constructor, thisValue, memberDeclaration.name)
 				constructor.buildStore(convertedValue, memberAddress)
 			}
