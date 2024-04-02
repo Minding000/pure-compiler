@@ -8,15 +8,9 @@ import kotlin.test.assertEquals
 internal class BinaryPrimitiveOperators {
 
 	//TODO same for:
-	// - index access
-	//   - get key
-	//   - get value (use)
-	//   - set key
-	//   - set value (done)
 	// - declaration assignment
 	//   - property
 	//   - local
-	// - return (write tests)
 	@Test
 	fun `compiles with primitive generic properties on left hand side`() {
 		val sourceCode = """
