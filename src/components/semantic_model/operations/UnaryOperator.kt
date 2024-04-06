@@ -24,6 +24,8 @@ import components.syntax_parser.syntax_tree.operations.UnaryOperator as UnaryOpe
 class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, val subject: Value, val kind: Operator.Kind):
 	Value(source, scope) {
 	var targetSignature: FunctionSignature? = null
+	override val hasGenericType: Boolean
+		get() = targetSignature?.original?.returnType != targetSignature?.returnType
 
 	init {
 		addSemanticModels(subject)

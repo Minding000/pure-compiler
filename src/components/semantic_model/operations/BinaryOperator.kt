@@ -23,6 +23,8 @@ import components.syntax_parser.syntax_tree.operations.BinaryOperator as BinaryO
 class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope, val left: Value, val right: Value,
 					 val kind: Operator.Kind): Value(source, scope) {
 	var targetSignature: FunctionSignature? = null
+	override val hasGenericType: Boolean
+		get() = targetSignature?.original?.returnType != targetSignature?.returnType
 
 	init {
 		addSemanticModels(left, right)

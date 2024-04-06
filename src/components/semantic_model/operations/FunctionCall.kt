@@ -30,6 +30,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	var targetSignature: FunctionSignature? = null
 	var conversions: Map<Value, InitializerDefinition>? = null
 	val globalTypeParameters = LinkedList<Type>()
+	override val hasGenericType: Boolean
+		get() = targetSignature?.original?.returnType != targetSignature?.returnType
 
 	init {
 		addSemanticModels(typeParameters, valueParameters)

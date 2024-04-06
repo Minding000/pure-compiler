@@ -231,4 +231,92 @@ internal class ValueConversion {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", true)
 		assertEquals(99, Llvm.castToSignedInteger(result))
 	}
+
+	@Test
+	fun `implicitly converts generic function return type`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var a: Item
+				init(a)
+				to getA(): Item {
+					return a
+				}
+			}
+			SimplestApp object {
+				to getEightyFive(): Int {
+					val container = Container(85)
+					return container.getA()
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyFive")
+		assertEquals(85, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `implicitly converts generic binary operator return type`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var a: Item
+				init(a)
+				operator +(b: Int): Item {
+					return a
+				}
+			}
+			SimplestApp object {
+				to getEightyFive(): Int {
+					val container = Container(85)
+					return container + 0
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyFive")
+		assertEquals(85, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `implicitly converts generic unary operator return type`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var a: Item
+				init(a)
+				operator -: Item {
+					return a
+				}
+			}
+			SimplestApp object {
+				to getEightyFive(): Int {
+					val container = Container(85)
+					return -container
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyFive")
+		assertEquals(85, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `implicitly converts generic index access return type`() {
+		val sourceCode = """
+			Container class {
+				containing Item
+				var a: Item
+				init(a)
+				operator [b: Int]: Item {
+					return a
+				}
+			}
+			SimplestApp object {
+				to getEightyFive(): Int {
+					val container = Container(85)
+					return container[0]
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyFive")
+		assertEquals(85, Llvm.castToSignedInteger(result))
+	}
 }
