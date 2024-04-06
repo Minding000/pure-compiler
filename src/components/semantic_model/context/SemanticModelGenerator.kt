@@ -1,19 +1,20 @@
 package components.semantic_model.context
 
 import components.semantic_model.scopes.FileScope
-import logger.issues.resolution.LiteralFileNotFound
+import logger.issues.resolution.SpecialTypeFileNotFound
 import components.semantic_model.general.Program as SemanticProgramModel
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
 class SemanticModelGenerator(val context: Context) {
 
-	fun createSemanticModel(programSyntaxTree: ProgramSyntaxTree): SemanticProgramModel {
+	fun createSemanticModel(programSyntaxTree: ProgramSyntaxTree,
+							specialTypePaths: Map<SpecialType, List<String>> = emptyMap()): SemanticProgramModel {
 		val logger = context.logger
 		logger.addPhase("Semantic model creation")
 		val semanticProgramModel = programSyntaxTree.toSemanticModel(context)
 		logger.addPhase("Literal scope resolution")
-		for(literalType in SpecialType.values())
-			literalType.fileScope = getLiteralFileScope(semanticProgramModel, literalType.pathParts)
+		for((specialType, pathParts) in specialTypePaths)
+			specialType.fileScope = getSpecialTypeFileScope(semanticProgramModel, pathParts)
 		logger.addPhase("Declaration")
 		semanticProgramModel.declare()
 		logger.addPhase("File reference resolution")
@@ -27,10 +28,10 @@ class SemanticModelGenerator(val context: Context) {
 		return semanticProgramModel
 	}
 
-	private fun getLiteralFileScope(semanticProgramModel: SemanticProgramModel, pathParts: List<String>): FileScope? {
+	private fun getSpecialTypeFileScope(semanticProgramModel: SemanticProgramModel, pathParts: List<String>): FileScope? {
 		val file = semanticProgramModel.getFile(pathParts)
 		if(file == null)
-			context.addIssue(LiteralFileNotFound(pathParts))
+			context.addIssue(SpecialTypeFileNotFound(pathParts))
 		return file?.scope
 	}
 

@@ -6,8 +6,8 @@ import components.semantic_model.types.ObjectType
 import components.semantic_model.types.SelfType
 import components.semantic_model.types.Type
 
-enum class SpecialType(val className: String, val pathParts: List<String> = listOf("Pure", "lang", "dataTypes", className)) {
-	ARRAY("Array", listOf("Pure", "lang", "collections", "Array")),
+enum class SpecialType(val className: String) {
+	ARRAY("Array"),
 	STRING("String"),
 	BYTE("Byte"),
 	INTEGER("Int"),
@@ -15,10 +15,10 @@ enum class SpecialType(val className: String, val pathParts: List<String> = list
 	BOOLEAN("Bool"),
 	NULL("Null"),
 	FUNCTION("Function"),
-	ITERABLE("Iterable", listOf("Pure", "lang", "collections", "Iterable")),
-	INDEX_ITERATOR("IndexIterator", listOf("Pure", "lang", "collections", "iterators", "IndexIterator")),
-	KEY_ITERATOR("KeyIterator", listOf("Pure", "lang", "collections", "iterators", "KeyIterator")),
-	VALUE_ITERATOR("ValueIterator", listOf("Pure", "lang", "collections", "iterators", "ValueIterator")),
+	ITERABLE("Iterable"),
+	INDEX_ITERATOR("IndexIterator"),
+	KEY_ITERATOR("KeyIterator"),
+	VALUE_ITERATOR("ValueIterator"),
 	NEVER("Never"),
 	NOTHING("Nothing"),
 	IDENTIFIABLE("Identifiable"),

@@ -4,6 +4,7 @@ import code.Builder
 import components.code_generation.llvm.LlvmGenericValue
 import components.code_generation.llvm.LlvmProgram
 import components.semantic_model.context.SemanticModelGenerator
+import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import components.tokenizer.WordAtom
@@ -58,13 +59,15 @@ object TestUtil {
         return ParseResult(syntaxTreeGenerator, program)
     }
 
-    fun lint(sourceCode: String, includeRequiredModules: Boolean = false, printReport: Boolean = true): LintResult {
+    fun lint(sourceCode: String, includeRequiredModules: Boolean = false, printReport: Boolean = true,
+			 specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): LintResult {
         val parseResult = parse(sourceCode, includeRequiredModules, false)
 		val context = parseResult.syntaxTreeGenerator.project.context
         val semanticModelGenerator = SemanticModelGenerator(context)
-        val program = semanticModelGenerator.createSemanticModel(parseResult.program)
+        val program = semanticModelGenerator.createSemanticModel(parseResult.program, specialTypePaths)
 		if(printReport)
-        	context.logger.printReport(Severity.INFO, !includeRequiredModules)
+        	context.logger.printReport(Severity.INFO,
+				!includeRequiredModules && specialTypePaths == Builder.specialTypePaths)
         return LintResult(context, program)
     }
 
@@ -82,12 +85,18 @@ object TestUtil {
 		}
     }
 
-    fun run(sourceCode: String, entryPointPath: String, includeRequiredModules: Boolean = false): LlvmGenericValue {
-		val lintResult = lint(sourceCode, includeRequiredModules, false)
+	fun run(sourceCode: String, entryPointPath: String, specialTypePaths: Map<SpecialType, List<String>>): LlvmGenericValue {
+		return run(sourceCode, entryPointPath, false, specialTypePaths)
+	}
+
+    fun run(sourceCode: String, entryPointPath: String, includeRequiredModules: Boolean = false,
+			specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): LlvmGenericValue {
+		val lintResult = lint(sourceCode, includeRequiredModules, false, specialTypePaths)
 		val program = LlvmProgram(TEST_PROJECT_NAME)
 		try {
 			program.loadSemanticModel(lintResult.program, entryPointPath)
-			lintResult.context.logger.printReport(Severity.INFO, !includeRequiredModules)
+			lintResult.context.logger.printReport(Severity.INFO,
+				!includeRequiredModules && specialTypePaths == Builder.specialTypePaths)
 			val intermediateRepresentation = program.getIntermediateRepresentation()
 			println(intermediateRepresentation)
 			println("----------")
@@ -118,7 +127,7 @@ object TestUtil {
 		val parseResult = parse(sourceCode, includeRequiredModules = false, printReport = false)
 		val context = parseResult.syntaxTreeGenerator.project.context
 		val semanticModelGenerator = SemanticModelGenerator(context)
-		val program = semanticModelGenerator.createSemanticModel(parseResult.program)
+		val program = semanticModelGenerator.createSemanticModel(parseResult.program, Builder.specialTypePaths)
 		context.logger.printReport(Severity.WARNING, true)
 		val testFile = program.files.find { file -> file.file.name == TEST_FILE_NAME }
 		assertNotNull(testFile, "Missing test file")

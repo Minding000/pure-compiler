@@ -2,6 +2,7 @@ package code
 
 import components.code_generation.llvm.LlvmCompiler
 import components.semantic_model.context.SemanticModelGenerator
+import components.semantic_model.context.SpecialType
 import components.semantic_model.general.Program
 import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import errors.internal.CompilerError
@@ -16,6 +17,24 @@ import java.util.*
 object Builder {
 	private const val LANG_MODULE_PATH = "D:\\Daten\\Projekte\\Pure\\packages\\lang"
 	val PRINT_SUBJECTS = listOf("source", "ast", "llvm-ir")
+	val specialTypePaths = mapOf(
+		SpecialType.ARRAY to listOf("Pure", "lang", "collections", "Array"),
+		SpecialType.STRING to listOf("Pure", "lang", "dataTypes", "String"),
+		SpecialType.BYTE to listOf("Pure", "lang", "dataTypes", "Byte"),
+		SpecialType.INTEGER to listOf("Pure", "lang", "dataTypes", "Integer"),
+		SpecialType.FLOAT to listOf("Pure", "lang", "dataTypes", "Float"),
+		SpecialType.BOOLEAN to listOf("Pure", "lang", "dataTypes", "Bool"),
+		SpecialType.NULL to listOf("Pure", "lang", "dataTypes", "Null"),
+		SpecialType.FUNCTION to listOf("Pure", "lang", "dataTypes", "Function"),
+		SpecialType.ITERABLE to listOf("Pure", "lang", "collections", "Iterable"),
+		SpecialType.INDEX_ITERATOR to listOf("Pure", "lang", "collections", "iterators", "IndexIterator"),
+		SpecialType.KEY_ITERATOR to listOf("Pure", "lang", "collections", "iterators", "KeyIterator"),
+		SpecialType.VALUE_ITERATOR to listOf("Pure", "lang", "collections", "iterators", "ValueIterator"),
+		SpecialType.NEVER to listOf("Pure", "lang", "dataTypes", "Never"),
+		SpecialType.NOTHING to listOf("Pure", "lang", "dataTypes", "Nothing"),
+		SpecialType.IDENTIFIABLE to listOf("Pure", "lang", "dataTypes", "Identifiable"),
+		SpecialType.ANY to listOf("Pure", "lang", "dataTypes", "Any"),
+	)
 
 	fun run(path: String, entryPointPath: String) {
 		try {
@@ -56,7 +75,7 @@ object Builder {
 			return
 		}
 		val semanticModelGenerator = SemanticModelGenerator(project.context)
-		val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree)
+		val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree, specialTypePaths)
 		val intermediateRepresentation = LlvmCompiler.getIntermediateRepresentation(project, semanticModel, entryPointPath)
 		println(intermediateRepresentation)
 	}
@@ -65,7 +84,7 @@ object Builder {
 		loadRequiredModules(project)
 		val abstractSyntaxTree = SyntaxTreeGenerator(project).parseProgram()
 		val semanticModelGenerator = SemanticModelGenerator(project.context)
-		val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree)
+		val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree, specialTypePaths)
 		project.context.logger.printReport(Main.logLevel)
 		return semanticModel
 	}
