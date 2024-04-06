@@ -67,4 +67,23 @@ internal class Primitives {
 		))
 		assertEquals(74, Llvm.castToSignedInteger(result))
 	}
+
+	@Test
+	fun `compiles instances in primitive class`() {
+		val sourceCode = """
+			native copied Int class {
+				overriding instances ZERO(0), ONE(1)
+				native init(value: Int)
+			}
+			SimplestApp object {
+				to getOne(): Int {
+					return Int.ONE
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne", mapOf(
+			SpecialType.INTEGER to listOf(TestUtil.TEST_FILE_NAME)
+		))
+		assertEquals(1, Llvm.castToSignedInteger(result))
+	}
 }

@@ -534,7 +534,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			values.add(llvmClassDefinition)
 			for(staticMember in staticMembers) {
 				if(staticMember is Instance) {
-					values.add(constructor.nullPointer)
+					values.add(context.getNullValue(constructor, staticMember.type))
 					if(staticMember.isAbstract)
 						continue
 					val offset = staticMemberOffsets[staticMember]

@@ -9,6 +9,7 @@ import components.semantic_model.declarations.*
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.ObjectType
+import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.Identifier
@@ -128,6 +129,8 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val declaration = declaration
+		if(declaration?.type is StaticType)
+			return declaration.llvmLocation
 		if(declaration is ComputedPropertyDeclaration) {
 			val setStatement = declaration.setter
 			if(setStatement != null && isIn(setStatement))
