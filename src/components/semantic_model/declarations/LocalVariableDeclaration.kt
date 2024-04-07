@@ -16,6 +16,6 @@ class LocalVariableDeclaration(source: SyntaxTreeNode, scope: MutableScope, name
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
-		tracker.declare(this, type is StaticType)
+		tracker.declare(this, providedType is StaticType)
 	}
 }

@@ -34,7 +34,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "bird" }
-		assertNotNull((declaration?.type as? ObjectType)?.getTypeDeclaration())
+		assertNotNull((declaration?.providedType as? ObjectType)?.getTypeDeclaration())
 	}
 
 	@Test
@@ -46,7 +46,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "birdFeeder" }
-		assertEquals("BirdFeeder", (declaration?.type as? ObjectType)?.getTypeDeclaration()?.name)
+		assertEquals("BirdFeeder", (declaration?.providedType as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -58,7 +58,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "birdType" }
-		assertEquals("BirdType", (declaration?.type as? ObjectType)?.getTypeDeclaration()?.name)
+		assertEquals("BirdType", (declaration?.providedType as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -70,7 +70,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "eventHandler" }
-		assertEquals("EventHandler", (declaration?.type as? ObjectType)?.getTypeDeclaration()?.name)
+		assertEquals("EventHandler", (declaration?.providedType as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -84,7 +84,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "birdType" }
-		assertEquals("Type", (declaration?.type as? ObjectType)?.getTypeDeclaration()?.name)
+		assertEquals("Type", (declaration?.providedType as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -102,7 +102,7 @@ internal class TypeResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "value" }
 		assertNotNull(declaration)
-		val type = declaration.type
+		val type = declaration.providedType
 		assertNotNull(type)
 		assertIs<ObjectType>(type)
 		assertNull(type.getTypeDeclaration())
@@ -121,7 +121,7 @@ internal class TypeResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<TypeParameterCountMismatch>()
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "listView" }
-		assertEquals("View", (declaration?.type as? ObjectType)?.getTypeDeclaration()?.name)
+		assertEquals("View", (declaration?.providedType as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -135,7 +135,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val declaration = lintResult.find<ValueDeclaration> { declaration -> declaration.name == "element" }
-		assertEquals("Element", (declaration?.type as? ObjectType)?.getTypeDeclaration()?.name)
+		assertEquals("Element", (declaration?.providedType as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -167,7 +167,7 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val propertyDeclaration = lintResult.find<PropertyDeclaration> { propertyDeclaration -> propertyDeclaration.name == "interface" }
-		assertEquals("Self", propertyDeclaration?.type.toString())
+		assertEquals("Self", propertyDeclaration?.providedType.toString())
 	}
 
 	@Test
@@ -181,6 +181,6 @@ internal class TypeResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val propertyDeclaration = lintResult.find<PropertyDeclaration> { propertyDeclaration -> propertyDeclaration.name == "size" }
-		assertEquals("Int", propertyDeclaration?.type.toString())
+		assertEquals("Int", propertyDeclaration?.providedType.toString())
 	}
 }

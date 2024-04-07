@@ -106,7 +106,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 				is VariableValue -> {
 					val declaration = target.declaration
 					val llvmValue = ValueConverter.convertIfRequired(this, constructor, rawLlvmValue, sourceExpression.effectiveType,
-						sourceExpression.hasGenericType, declaration?.type, false, conversion)
+						sourceExpression.hasGenericType, declaration?.effectiveType, false, conversion)
 					if(declaration is ComputedPropertyDeclaration)
 						buildSetterCall(constructor, declaration, context.getThisParameter(constructor), llvmValue)
 					else
@@ -118,7 +118,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 					val memberAccessTargetValue = memberAccess.target.getLlvmValue(constructor)
 					val llvmValue = ValueConverter.convertIfRequired(this, constructor, rawLlvmValue, sourceExpression.effectiveType,
 						sourceExpression.hasGenericType, memberAccess.member.effectiveType,
-						memberAccess.member.effectiveType != declaration?.type, conversion)
+						memberAccess.member.effectiveType != declaration?.effectiveType, conversion)
 					if(memberAccess.isOptional) {
 						val function = constructor.getParentFunction()
 						val writeBlock = constructor.createBlock(function, "optionalMemberAccess_write")

@@ -64,8 +64,10 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, scope: TypeScope, name
 	override fun define(constructor: LlvmConstructor) {
 		super.declare(constructor)
 		val llvmType = effectiveType.getLlvmType(constructor)
-		for(instance in instances)
+		for(instance in instances) {
 			instance.llvmLocation = constructor.declareGlobal("${name}_${instance.name}_TypeAliasInstance", llvmType)
+			constructor.defineGlobal(instance.llvmLocation, context.getNullValue(constructor, effectiveType))
+		}
 	}
 
 	override fun compile(constructor: LlvmConstructor) {

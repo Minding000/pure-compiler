@@ -61,7 +61,7 @@ internal class IfExpressions {
 				val y = if yes 10 else 2
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		val variableDeclarationType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "y" }?.type
+		val variableDeclarationType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "y" }?.providedType
 		assertEquals("Int", variableDeclarationType.toString())
 	}
 }

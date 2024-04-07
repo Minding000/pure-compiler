@@ -58,10 +58,10 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 			indexVariableType.determineTypes()
 			addSemanticModels(indexVariableType)
 			currentIndexVariable = variableDeclarations.firstOrNull()
-			currentIndexVariable?.type = indexVariableType
+			currentIndexVariable?.providedType = indexVariableType
 		}
 		currentValueVariable = variableDeclarations.lastOrNull()
-		currentValueVariable?.type = iterableType.baseType
+		currentValueVariable?.providedType = iterableType.baseType
 	}
 
 	private fun setVariableTypes(iterableType: Type) {
@@ -73,25 +73,25 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 			val iteratorCreationPropertyType = iterableType.interfaceScope.getValueDeclaration("createIterator")?.type
 			val iteratorCreationFunctionType = iteratorCreationPropertyType as? FunctionType
 			val iteratorType = iteratorCreationFunctionType?.getSignature()?.returnType ?: return
-			iteratorVariableDeclaration?.type = iteratorType
+			iteratorVariableDeclaration?.providedType = iteratorType
 			var variableIndex = variableDeclarations.size - 1
 			val availableValueTypes = LinkedList<Type?>()
 			if(iteratorType.isInstanceOf(SpecialType.VALUE_ITERATOR)) {
 				val valuePropertyType = iteratorType.interfaceScope.getValueDeclaration("currentValue")?.type
 				currentValueVariable = variableDeclarations.getOrNull(variableIndex--)
-				currentValueVariable?.type = valuePropertyType
+				currentValueVariable?.providedType = valuePropertyType
 				availableValueTypes.add(valuePropertyType)
 			}
 			if(iteratorType.isInstanceOf(SpecialType.KEY_ITERATOR)) {
 				val keyPropertyType = iteratorType.interfaceScope.getValueDeclaration("currentKey")?.type
 				currentKeyVariable = variableDeclarations.getOrNull(variableIndex--)
-				currentKeyVariable?.type = keyPropertyType
+				currentKeyVariable?.providedType = keyPropertyType
 				availableValueTypes.add(keyPropertyType)
 			}
 			if(iteratorType.isInstanceOf(SpecialType.INDEX_ITERATOR)) {
 				val indexPropertyType = iteratorType.interfaceScope.getValueDeclaration("currentIndex")?.type
 				currentIndexVariable = variableDeclarations.getOrNull(variableIndex)
-				currentIndexVariable?.type = indexPropertyType
+				currentIndexVariable?.providedType = indexPropertyType
 				availableValueTypes.add(indexPropertyType)
 			}
 			if(variableDeclarations.size > availableValueTypes.size)

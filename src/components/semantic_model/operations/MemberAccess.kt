@@ -153,7 +153,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 			else
 				buildGetterCall(constructor, declaration)
 		} else {
-			constructor.buildLoad(declaration?.type?.getLlvmType(constructor), getLlvmLocation(constructor), "member")
+			constructor.buildLoad(declaration?.effectiveType?.getLlvmType(constructor), getLlvmLocation(constructor), "member")
 		}
 	}
 

@@ -31,7 +31,7 @@ open class PropertyDeclaration(source: SyntaxTreeNode, scope: MutableScope, name
 		val (superMember, superMemberType) = superMember ?: return
 		if(!superMember.isConstant && isConstant)
 			context.addIssue(VariablePropertyOverriddenByValue(this))
-		val type = type ?: return
+		val type = providedType ?: return
 		if(superMemberType == null)
 			return
 		if(type is FunctionType) {

@@ -57,7 +57,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 	}
 
 	fun getCurrentTypeOf(declaration: ValueDeclaration?): Type? {
-		return getCommonType(currentState.lastVariableUsages[declaration ?: return null] ?: return declaration.type, declaration)
+		return getCommonType(currentState.lastVariableUsages[declaration ?: return null] ?: return declaration.providedType, declaration)
 	}
 
 	private fun getCommonType(usages: Collection<VariableUsage>, semanticModel: SemanticModel): Type? {
@@ -92,7 +92,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		val types = mutableListOf(VariableUsage.Kind.DECLARATION)
 		if(isInitialized || declaration.value != null)
 			types.add(VariableUsage.Kind.WRITE)
-		val computedType = declaration.value?.getComputedType() ?: declaration.type
+		val computedType = declaration.value?.getComputedType() ?: declaration.providedType
 		val computedValue = declaration.value?.getComputedValue()
 		val usage = VariableUsage(types, declaration, computedType, computedValue)
 		val lastUsages = getLastVariableUsagesOf(declaration)

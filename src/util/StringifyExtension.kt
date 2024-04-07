@@ -23,5 +23,5 @@ fun List<Value>.stringifyTypes(): String {
 
 @JvmName("stringifyParameterTypes")
 fun List<Parameter>.stringifyTypes(): String {
-	return joinToString { parameter -> parameter.type.toString() }
+	return joinToString { parameter -> parameter.providedType.toString() }
 }

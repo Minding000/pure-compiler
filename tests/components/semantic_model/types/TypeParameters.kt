@@ -78,12 +78,12 @@ internal class TypeParameters {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val baseType = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
-			variableValueDeclaration.name == "softDrink" }?.type
+			variableValueDeclaration.name == "softDrink" }?.providedType
 		val specificType = lintResult.find<VariableValue> { variableValue ->
 			variableValue.name == "softDrinkDestination" }?.providedType
 		val functionType = specificType?.interfaceScope?.getValueDeclaration("get")?.type as? FunctionType
 		val anyType = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
-			variableValueDeclaration.type.toString() == "Any" }?.type
+			variableValueDeclaration.providedType.toString() == "Any" }?.providedType
 		assertNotNull(functionType)
 		assertNotNull(anyType)
 		val signature = functionType.getSignature()
@@ -108,7 +108,7 @@ internal class TypeParameters {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val baseType = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
-			variableValueDeclaration.name == "softDrink" }?.type
+			variableValueDeclaration.name == "softDrink" }?.providedType
 		val specificType = lintResult.find<VariableValue> { variableValue ->
 			variableValue.name == "softDrinkSupply" }?.providedType
 		val functionType = specificType?.interfaceScope?.getValueDeclaration("get")?.type as? FunctionType

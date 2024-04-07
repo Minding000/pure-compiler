@@ -17,7 +17,7 @@ class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: 
 	var index by Delegates.notNull<Int>()
 
 	override fun declare() {
-		if(type != null)
+		if(providedType != null)
 			scope.addValueDeclaration(this)
 	}
 
@@ -29,7 +29,7 @@ class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: 
 				//TODO allow/disallow property setter for inherited property (write tests!)
 				val match = parent.parentTypeDeclaration.scope.getValueDeclaration(name)
 				propertyDeclaration = match?.declaration
-				type = match?.type
+				providedType = match?.type
 				if(propertyDeclaration == null)
 					context.addIssue(PropertyParameterMismatch(source))
 			} else {
@@ -53,7 +53,7 @@ class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: 
 		if(isVariadic)
 			return
 		val function = constructor.getParentFunction()
-		llvmLocation = constructor.buildStackAllocation(type?.getLlvmType(constructor), name)
+		llvmLocation = constructor.buildStackAllocation(providedType?.getLlvmType(constructor), name)
 		val value = constructor.getParameter(function, index)
 		constructor.buildStore(value, llvmLocation)
 	}

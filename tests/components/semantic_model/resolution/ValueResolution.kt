@@ -93,7 +93,7 @@ internal class ValueResolution {
 		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
 		lintResult.assertIssueNotDetected<CircularAssignment>()
 		val parameter = lintResult.find<Parameter>()
-		assertEquals("Int", parameter?.type.toString())
+		assertEquals("Int", parameter?.providedType.toString())
 	}
 
 	@Test
@@ -108,7 +108,7 @@ internal class ValueResolution {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<ComputedPropertyMissingType>()
 		val computedPropertyDeclaration = lintResult.find<ComputedPropertyDeclaration>()
-		assertEquals("Int", computedPropertyDeclaration?.type.toString())
+		assertEquals("Int", computedPropertyDeclaration?.providedType.toString())
 	}
 
 	@Test
@@ -123,7 +123,7 @@ internal class ValueResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val propertyParameter = lintResult.find<Parameter>()
-		assertEquals("Int", propertyParameter?.type.toString())
+		assertEquals("Int", propertyParameter?.providedType.toString())
 	}
 
 	@Test

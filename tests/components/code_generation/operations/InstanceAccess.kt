@@ -1,6 +1,7 @@
 package components.code_generation.operations
 
 import components.code_generation.llvm.Llvm
+import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -58,6 +59,9 @@ internal class InstanceAccess {
 	@Test
 	fun `compiles instance accesses on type aliases`() {
 		val sourceCode = """
+			native copied Int class {
+				native init(value: Int)
+			}
 			alias ExitCode = Int {
 				instances SUCCESS(0)
 			}
@@ -68,7 +72,9 @@ internal class InstanceAccess {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getZero")
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getZero", mapOf(
+			SpecialType.INTEGER to listOf(TestUtil.TEST_FILE_NAME)
+		))
 		assertEquals(0, Llvm.castToSignedInteger(result))
 	}
 }

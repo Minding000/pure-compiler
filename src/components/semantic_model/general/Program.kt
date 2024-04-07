@@ -130,7 +130,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			val parameters = LinkedList<LlvmValue>()
 			parameters.add(exceptionAddress)
 			if(userEntryPointObject != null) {
-				val objectAddress = constructor.buildLoad(userEntryPointObject.type?.getLlvmType(constructor),
+				val objectAddress = constructor.buildLoad(userEntryPointObject.effectiveType?.getLlvmType(constructor),
 					userEntryPointObject.llvmLocation, "objectAddress")
 				parameters.add(objectAddress)
 			}

@@ -37,7 +37,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 	}
 
 	override fun determineTypes() {
-		variableDeclaration?.type = referenceType
+		variableDeclaration?.providedType = referenceType
 		super.determineTypes()
 	}
 

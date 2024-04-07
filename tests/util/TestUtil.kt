@@ -111,7 +111,8 @@ object TestUtil {
     }
 
 	private fun printDiagnostics(intermediateRepresentation: String) {
-		val declaredFunctions = intermediateRepresentation.split("\n").filter { line -> line.startsWith("declare") }
+		val lines = intermediateRepresentation.split("\n")
+		val declaredFunctions = lines.filter { line -> line.startsWith("declare") }
 		val functionsMissingAnImplementation = declaredFunctions.filter { declaredFunction ->
 			val identifier = declaredFunction.substringAfter("declare ").substringBefore(")") + ")"
 			!EXTERNAL_FUNCTIONS.contains(identifier)
@@ -120,6 +121,12 @@ object TestUtil {
 			println("Possibly unimplemented functions (${functionsMissingAnImplementation.size}):")
 			functionsMissingAnImplementation.forEach { function -> println(function) }
 			fail("Encountered unimplemented functions. Check output above for details.")
+		}
+		val externalGlobals = lines.filter { line -> line.contains("external global") }
+		if(externalGlobals.isNotEmpty()) {
+			println("Possibly non-existent globals (${externalGlobals.size}):")
+			externalGlobals.forEach { global -> println(global) }
+			fail("Encountered non-existent globals. Check output above for details.")
 		}
 	}
 

@@ -38,7 +38,7 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 	val getterErrorHandlingContext: ErrorHandlingContext?
 	val setterErrorHandlingContext: ErrorHandlingContext?
 	val getterReturnType: Type?
-		get() = type
+		get() = providedType
 	val setterReturnType = LiteralType(source, scope, SpecialType.NOTHING)
 
 	init {
@@ -70,7 +70,7 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		val (superMember, superMemberType) = superMember ?: return
 		if(!superMember.isConstant && isConstant)
 			context.addIssue(VariablePropertyOverriddenByValue(this))
-		val type = type ?: return
+		val type = providedType ?: return
 		if(superMemberType == null)
 			return
 		if(superMemberType is FunctionType) {
@@ -92,7 +92,7 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)
-		val llvmType = type?.getLlvmType(constructor)
+		val llvmType = providedType?.getLlvmType(constructor)
 		if(getterErrorHandlingContext != null) {
 			val functionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), llvmType)
 			llvmGetterType = functionType

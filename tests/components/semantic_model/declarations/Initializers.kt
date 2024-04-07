@@ -185,7 +185,7 @@ internal class Initializers {
 		lintResult.assertIssueNotDetected<PropertyParameterOutsideOfInitializer>()
 		lintResult.assertIssueNotDetected<PropertyParameterMismatch>()
 		val parameter = lintResult.find<Parameter>()
-		assertEquals("Int", parameter?.type.toString())
+		assertEquals("Int", parameter?.providedType.toString())
 	}
 
 	@Test

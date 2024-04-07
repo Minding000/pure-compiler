@@ -19,8 +19,9 @@ import org.bytedeco.llvm.LLVM.LLVMValueRef
 import java.util.*
 
 abstract class ValueDeclaration(override val source: SyntaxTreeNode, override val scope: MutableScope, val name: String,
-								var type: Type? = null, value: Value? = null, val isConstant: Boolean = true,
+								var providedType: Type? = null, value: Value? = null, val isConstant: Boolean = true,
 								val isMutable: Boolean = false): SemanticModel(source, scope) {
+	val effectiveType: Type? get() = providedType?.effectiveType
 	private var hasDeterminedTypes = false
 	open val value = value
 	val usages = LinkedList<VariableValue>()
@@ -28,7 +29,7 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 	lateinit var llvmLocation: LLVMValueRef
 
 	init {
-		addSemanticModels(type, value)
+		addSemanticModels(providedType, value)
 	}
 
 	override fun declare() {
@@ -37,13 +38,13 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 	}
 
 	fun getLinkedType(): Type? {
-		val type = type
+		val type = providedType
 		if(type != null) {
 			type.determineTypes()
 			return type
 		}
 		determineTypes()
-		return this.type
+		return this.providedType
 	}
 
 	override fun determineTypes() {
@@ -57,18 +58,18 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		super.determineTypes()
 		val value = value
 		if(value == null) {
-			if(type == null)
+			if(providedType == null)
 				context.addIssue(DeclarationMissingTypeOrValue(source))
 			return
 		}
-		val targetType = type
+		val targetType = providedType
 		if(value.isAssignableTo(targetType)) {
 			value.setInferredType(targetType)
 			return
 		}
 		val sourceType = value.providedType ?: return
 		if(targetType == null) {
-			type = sourceType
+			providedType = sourceType
 			return
 		}
 		val conversions = targetType.getConversionsFrom(sourceType)
@@ -85,15 +86,15 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)
-		if(type is StaticType)
+		if(providedType is StaticType)
 			return
 		if(scope is FileScope)
-			llvmLocation = constructor.declareGlobal("${name}_Global", type?.getLlvmType(constructor))
+			llvmLocation = constructor.declareGlobal("${name}_Global", effectiveType?.getLlvmType(constructor))
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
 		val value = value
-		if(scope is TypeScope || type is StaticType) {
+		if(scope is TypeScope || providedType is StaticType) {
 			if(value is Function)
 				value.compile(constructor)
 			return
@@ -101,11 +102,11 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		if(scope is FileScope) {
 			constructor.defineGlobal(llvmLocation, constructor.nullPointer)
 		} else {
-			llvmLocation = constructor.buildStackAllocation(type?.getLlvmType(constructor), "${name}_Variable")
+			llvmLocation = constructor.buildStackAllocation(effectiveType?.getLlvmType(constructor), "${name}_Variable")
 		}
 		if(value != null) {
 			val llvmValue = ValueConverter.convertIfRequired(this, constructor, value.getLlvmValue(constructor), value.effectiveType,
-				value.hasGenericType, type, false)
+				value.hasGenericType, effectiveType, false)
 			constructor.buildStore(llvmValue, llvmLocation)
 		}
 	}

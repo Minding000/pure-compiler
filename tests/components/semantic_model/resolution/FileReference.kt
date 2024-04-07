@@ -38,7 +38,7 @@ internal class FileReference {
 		assertNotNull(typeRequesterFile)
 		val declaration = typeRequesterFile.find<ValueDeclaration> { declaration -> declaration.name == "birdType" }
 		assertNotNull(declaration)
-		assertEquals("BirdType", (declaration.type as? ObjectType)?.getTypeDeclaration()?.name)
+		assertEquals("BirdType", (declaration.providedType as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -63,7 +63,7 @@ internal class FileReference {
 		assertNotNull(typeRequesterFile)
 		val declaration = typeRequesterFile.find<ValueDeclaration> { declaration -> declaration.name == "birdType" }
 		assertNotNull(declaration)
-		assertNull((declaration.type as? ObjectType)?.getTypeDeclaration())
+		assertNull((declaration.providedType as? ObjectType)?.getTypeDeclaration())
 	}
 
 	@Test
@@ -91,7 +91,7 @@ internal class FileReference {
 		assertNotNull(typeRequesterFile)
 		val declaration = typeRequesterFile.find<ValueDeclaration> { declaration -> declaration.name == "text" }
 		assertNotNull(declaration)
-		assertEquals("String", (declaration.type as? ObjectType)?.getTypeDeclaration()?.name)
+		assertEquals("String", (declaration.providedType as? ObjectType)?.getTypeDeclaration()?.name)
 	}
 
 	@Test
@@ -119,6 +119,6 @@ internal class FileReference {
 		assertNotNull(typeRequesterFile)
 		val declaration = typeRequesterFile.find<ValueDeclaration> { declaration -> declaration.name == "string" }
 		assertNotNull(declaration)
-		assertNull((declaration.type as? ObjectType)?.getTypeDeclaration())
+		assertNull((declaration.providedType as? ObjectType)?.getTypeDeclaration())
 	}
 }

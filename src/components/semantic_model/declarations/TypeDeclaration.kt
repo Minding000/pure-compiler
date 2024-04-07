@@ -325,7 +325,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	private fun getStaticMembers(): Map<String, ValueDeclaration> {
 		val staticMembers = HashMap<String, ValueDeclaration>()
 		for(member in scope.memberDeclarations)
-			if((member as? InterfaceMember)?.isStatic == true && (member.type as? StaticType)?.typeDeclaration !is TypeAlias)
+			if((member as? InterfaceMember)?.isStatic == true && (member.providedType as? StaticType)?.typeDeclaration !is TypeAlias)
 				staticMembers[member.name] = member
 		for(superType in getDirectSuperTypes()) {
 			for(staticMember in superType.getTypeDeclaration()?.getStaticMembers()?.values ?: emptyList())
@@ -382,14 +382,14 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		val llvmConstants = LinkedList<LlvmType?>()
 		llvmConstants.add(constructor.pointerType)
 		for(memberDeclaration in staticMembers)
-			llvmConstants.add(memberDeclaration.type?.getLlvmType(constructor))
+			llvmConstants.add(memberDeclaration.effectiveType?.getLlvmType(constructor))
 		constructor.defineStruct(llvmStaticType, llvmConstants)
 		val llvmProperties = LinkedList<LlvmType?>()
 		llvmProperties.add(constructor.pointerType)
 		if(isBound)
 			llvmProperties.add(constructor.pointerType)
 		for(memberDeclaration in properties)
-			llvmProperties.add(memberDeclaration.type?.getLlvmType(constructor))
+			llvmProperties.add(memberDeclaration.effectiveType?.getLlvmType(constructor))
 		addNativeProperties(constructor, llvmProperties)
 		constructor.defineStruct(llvmType, llvmProperties)
 	}
@@ -534,7 +534,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			values.add(llvmClassDefinition)
 			for(staticMember in staticMembers) {
 				if(staticMember is Instance) {
-					values.add(context.getNullValue(constructor, staticMember.type))
+					values.add(context.getNullValue(constructor, staticMember.effectiveType))
 					if(staticMember.isAbstract)
 						continue
 					val offset = staticMemberOffsets[staticMember]
@@ -601,7 +601,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			val memberValue = memberDeclaration.value
 			if(memberValue != null) {
 				val convertedValue = ValueConverter.convertIfRequired(memberDeclaration, constructor,
-					memberValue.buildLlvmValue(constructor), memberValue.effectiveType, memberValue.hasGenericType, memberDeclaration.type,
+					memberValue.buildLlvmValue(constructor), memberValue.effectiveType, memberValue.hasGenericType, memberDeclaration.effectiveType,
 					false, memberDeclaration.conversion)
 				val memberAddress = context.resolveMember(constructor, thisValue, memberDeclaration.name)
 				constructor.buildStore(convertedValue, memberAddress)

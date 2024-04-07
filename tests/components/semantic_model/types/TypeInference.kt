@@ -23,7 +23,7 @@ internal class TypeInference {
 			variableValueDeclaration.name == "ball" }
 		val type = valueDeclaration?.value?.providedType
 		assertNotNull(type)
-		assertEquals(type, valueDeclaration.type)
+		assertEquals(type, valueDeclaration.providedType)
 	}
 
 	@Test
@@ -260,7 +260,7 @@ internal class TypeInference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration -> variableValueDeclaration.name == "plant" }
-		assertNotNull(valueDeclaration?.type)
+		assertNotNull(valueDeclaration?.providedType)
 	}
 
 	@Test
@@ -293,7 +293,7 @@ internal class TypeInference {
 			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "Letter" }?.providedType
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "letterBox" }
-		val returnType = valueDeclaration?.type as? ObjectType
+		val returnType = valueDeclaration?.providedType as? ObjectType
 		assertNotNull(returnType)
 		assertEquals(genericParameter, returnType.typeParameters.firstOrNull())
 	}
@@ -390,7 +390,7 @@ internal class TypeInference {
 			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "PostCard" }?.providedType
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "stampedPostCard" }
-		val returnType = valueDeclaration?.type as? ObjectType
+		val returnType = valueDeclaration?.providedType as? ObjectType
 		assertNotNull(returnType)
 		assertEquals(genericParameter, returnType)
 	}
@@ -413,7 +413,7 @@ internal class TypeInference {
 			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "PostCard" }?.providedType
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "stampedPostCard" }
-		val returnType = valueDeclaration?.type as? OptionalType
+		val returnType = valueDeclaration?.providedType as? OptionalType
 		assertNotNull(returnType)
 		assertEquals(genericParameter, returnType.baseType)
 	}
@@ -436,7 +436,7 @@ internal class TypeInference {
 			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "PostCard" }?.providedType
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "stampedPostCard" }
-		val returnType = valueDeclaration?.type as? PluralType
+		val returnType = valueDeclaration?.providedType as? PluralType
 		assertNotNull(returnType)
 		assertEquals(genericParameter, returnType.baseType)
 	}
@@ -461,7 +461,7 @@ internal class TypeInference {
 			(functionCall.function.providedType as? StaticType)?.typeDeclaration?.name == "Ipv4Address" }?.providedType
 		val valueDeclaration = lintResult.find<ValueDeclaration> { variableValueDeclaration ->
 			variableValueDeclaration.name == "client" }
-		val returnType = valueDeclaration?.type as? ObjectType
+		val returnType = valueDeclaration?.providedType as? ObjectType
 		assertNotNull(returnType)
 		assertEquals(genericParameter, returnType.typeParameters.firstOrNull())
 	}

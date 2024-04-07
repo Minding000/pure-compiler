@@ -21,7 +21,7 @@ internal class OverGeneratorLoops {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
-		val indexVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "index" }?.type
+		val indexVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "index" }?.providedType
 		assertIs<ObjectType>(indexVariableType)
 		assertTrue(SpecialType.INTEGER.matches(indexVariableType))
 	}
@@ -36,7 +36,7 @@ internal class OverGeneratorLoops {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
-		val keyVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.type
+		val keyVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.providedType
 		assertIs<ObjectType>(keyVariableType)
 		assertTrue(SpecialType.STRING.matches(keyVariableType))
 	}
@@ -51,7 +51,7 @@ internal class OverGeneratorLoops {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
-		val valueVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.type
+		val valueVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.providedType
 		assertIs<ObjectType>(valueVariableType)
 		assertTrue(SpecialType.STRING.matches(valueVariableType))
 	}
@@ -66,10 +66,10 @@ internal class OverGeneratorLoops {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		lintResult.assertIssueNotDetected<DeclarationMissingTypeOrValue>()
-		val indexVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "index" }?.type
+		val indexVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "index" }?.providedType
 		assertIs<ObjectType>(indexVariableType)
 		assertTrue(SpecialType.INTEGER.matches(indexVariableType))
-		val valueVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.type
+		val valueVariableType = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "word" }?.providedType
 		assertIs<ObjectType>(valueVariableType)
 		assertTrue(SpecialType.STRING.matches(valueVariableType))
 	}

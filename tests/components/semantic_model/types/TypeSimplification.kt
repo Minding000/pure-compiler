@@ -167,6 +167,6 @@ internal class TypeSimplification {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode, true)
 		val valueDeclaration = lintResult.find<LocalVariableDeclaration> { declaration -> declaration.name == "human" }
-		assertEquals("Human & Patient", valueDeclaration?.type.toString())
+		assertEquals("Human & Patient", valueDeclaration?.providedType.toString())
 	}
 }

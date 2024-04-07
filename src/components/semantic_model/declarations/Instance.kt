@@ -41,7 +41,7 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 		}
 		val type = SelfType(typeDeclaration)
 		addSemanticModels(type)
-		this.type = type
+		providedType = type
 		val staticType = StaticType(typeDeclaration)
 		addSemanticModels(staticType)
 		super.determineType()

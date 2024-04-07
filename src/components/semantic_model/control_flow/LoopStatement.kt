@@ -51,7 +51,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		for(declaration in mutatedVariables)
-			tracker.add(VariableUsage.Kind.HINT, declaration, this, declaration.type, null)
+			tracker.add(VariableUsage.Kind.HINT, declaration, this, declaration.providedType, null)
 		val (loopReferencePoint, loopEndState) = if(generator is WhileGenerator) {
 			//TODO fix: does not work if WhileGenerator.isPostCondition
 			val referencePoint = tracker.currentState.createReferencePoint()
@@ -205,7 +205,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 				?: throw CompilerError(source, "'Iterator.currentIndex' computed property not found.")
 			val currentIndexValue = buildGetterCall(constructor, exceptionAddress, iteratorLlvmValue, iteratorCurrentIndexComputedProperty)
 			val convertedValue = ValueConverter.convertIfRequired(this, constructor, currentIndexValue,
-				iteratorCurrentIndexComputedProperty.type, generator.currentIndexVariable?.type)
+				iteratorCurrentIndexComputedProperty.providedType, generator.currentIndexVariable?.providedType)
 			constructor.buildStore(convertedValue, indexVariable.llvmLocation)
 		}
 		val keyVariable = generator.currentKeyVariable
@@ -215,7 +215,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 				?: throw CompilerError(source, "'Iterator.currentKey' computed property not found.")
 			val currentKeyValue = buildGetterCall(constructor, exceptionAddress, iteratorLlvmValue, iteratorCurrentKeyComputedProperty)
 			val convertedValue = ValueConverter.convertIfRequired(this, constructor, currentKeyValue,
-				iteratorCurrentKeyComputedProperty.type, generator.currentKeyVariable?.type)
+				iteratorCurrentKeyComputedProperty.providedType, generator.currentKeyVariable?.providedType)
 			constructor.buildStore(convertedValue, keyVariable.llvmLocation)
 		}
 		val valueVariable = generator.currentValueVariable
@@ -225,7 +225,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 				?: throw CompilerError(source, "'Iterator.currentValue' computed property not found.")
 			val currentValueValue = buildGetterCall(constructor, exceptionAddress, iteratorLlvmValue, iteratorCurrentValueComputedProperty)
 			val convertedValue = ValueConverter.convertIfRequired(this, constructor, currentValueValue,
-				iteratorCurrentValueComputedProperty.type, generator.currentValueVariable?.type)
+				iteratorCurrentValueComputedProperty.providedType, generator.currentValueVariable?.providedType)
 			constructor.buildStore(convertedValue, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)

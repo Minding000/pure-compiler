@@ -44,7 +44,7 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 		if(superScope != null)
 			propertiesToBeInitialized.addAll(superScope.getPropertiesToBeInitialized())
 		propertiesToBeInitialized.addAll(memberDeclarations.filterIsInstance<PropertyDeclaration>().filter { member ->
-			if(member.isStatic || member.type is StaticType || member.isAbstract || member is ComputedPropertyDeclaration)
+			if(member.isStatic || member.providedType is StaticType || member.isAbstract || member is ComputedPropertyDeclaration)
 				return@filter false
 			return@filter member.value == null
 		})
@@ -56,12 +56,12 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 		for(initializer in initializers)
 			initializer.superInitializer = superScope?.getSuperInitializer(initializer)
 		for((_, interfaceMember) in interfaceMembers) {
-			if(interfaceMember.type is StaticType)
+			if(interfaceMember.providedType is StaticType)
 				continue
 			val (superMember, _, superMemberType) = superScope?.getValueDeclaration(interfaceMember.name) ?: continue
 			val superInterfaceMember = superMember as? InterfaceMember ?: continue
 			interfaceMember.superMember = Pair(superInterfaceMember, superMemberType)
-			val functionType = interfaceMember.type as? FunctionType ?: continue
+			val functionType = interfaceMember.providedType as? FunctionType ?: continue
 			functionType.determineSuperType()
 			functionType.determineSuperSignatures()
 		}
@@ -87,7 +87,7 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 				if(otherInitializer.parameters.size != initializer.parameters.size)
 					continue
 				for(parameterIndex in initializer.parameters.indices) {
-					if(otherInitializer.parameters[parameterIndex].type != initializer.parameters[parameterIndex].type)
+					if(otherInitializer.parameters[parameterIndex].providedType != initializer.parameters[parameterIndex].providedType)
 						continue@initializerIteration
 				}
 				redeclarations.add(otherInitializer)

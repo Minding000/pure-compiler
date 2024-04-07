@@ -45,7 +45,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 				"${parentFunction.name}${signature.toString(false)}"
 		}
 	val isVariadic = parameters.lastOrNull()?.isVariadic ?: false
-	val signature = FunctionSignature(source, scope, localTypeParameters, parameters.map { parameter -> parameter.type }, returnType,
+	val signature = FunctionSignature(source, scope, localTypeParameters, parameters.map { parameter -> parameter.providedType }, returnType,
 		whereClauseConditions, this)
 	var mightReturnValue = false
 	var usesOwnTypeAsSelf = false
@@ -259,7 +259,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 			ValueConverter.unwrapPrimitive(this, constructor, thisParameter, parentTypeDeclaration))
 		for(parameter in parameters) {
 			var value = constructor.getParameter(parameter.index)
-			val type = parameter.type
+			val type = parameter.providedType
 			if(type is SelfType && type.typeDeclaration == parentTypeDeclaration)
 				value = ValueConverter.unwrapPrimitive(this, constructor, value, type)
 			unwrappedParameters.add(value)
@@ -284,7 +284,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	private fun addDebugInfo(constructor: LlvmConstructor) {
 		val file = constructor.debug.createFile("test.pure", ".")
 		val parent = file
-		val parameterMetadata = parameters.map { parameter -> parameter.type?.getLlvmMetadata(constructor) }
+		val parameterMetadata = parameters.map { parameter -> parameter.providedType?.getLlvmMetadata(constructor) }
 		val typeMetadata = constructor.debug.createFunctionType(file, parameterMetadata)
 		val metadata = constructor.debug.createFunction(parent, toString(), file, typeMetadata)
 		constructor.debug.attach(metadata, llvmValue)

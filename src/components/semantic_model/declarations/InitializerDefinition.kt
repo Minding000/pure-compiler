@@ -159,8 +159,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		} else {
 			if(variadicParameter == null)
 				return ComparisonResult.HIGHER
-			val variadicParameterType = variadicParameter.type ?: return ComparisonResult.SAME
-			val otherVariadicParameterType = otherVariadicParameter.type ?: return ComparisonResult.SAME
+			val variadicParameterType = variadicParameter.providedType ?: return ComparisonResult.SAME
+			val otherVariadicParameterType = otherVariadicParameter.providedType ?: return ComparisonResult.SAME
 			if(variadicParameterType != otherVariadicParameterType) {
 				if(otherVariadicParameterType.accepts(variadicParameterType)) return ComparisonResult.HIGHER
 				if(otherVariadicParameterType.accepts(variadicParameterType)) return ComparisonResult.LOWER
@@ -173,8 +173,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		if(parameters.size != superInitializer.parameters.size)
 			return false
 		for(parameterIndex in parameters.indices) {
-			val superParameterType = superInitializer.parameters[parameterIndex].type ?: continue
-			val baseParameterType = parameters[parameterIndex].type ?: continue
+			val superParameterType = superInitializer.parameters[parameterIndex].providedType ?: continue
+			val baseParameterType = parameters[parameterIndex].providedType ?: continue
 			if(!baseParameterType.accepts(superParameterType))
 				return false
 		}
@@ -185,8 +185,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		if(parameters.size != superInitializer.parameters.size)
 			return false
 		for(parameterIndex in parameters.indices) {
-			val superParameterType = superInitializer.parameters[parameterIndex].type?.withTypeSubstitutions(typeSubstitutions) ?: continue
-			val baseParameterType = parameters[parameterIndex].type ?: continue
+			val superParameterType = superInitializer.parameters[parameterIndex].providedType?.withTypeSubstitutions(typeSubstitutions) ?: continue
+			val baseParameterType = parameters[parameterIndex].providedType ?: continue
 			if(!baseParameterType.accepts(superParameterType))
 				return false
 		}
@@ -207,7 +207,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		val initializerTracker = VariableTracker(context, true)
 		for(member in parentTypeDeclaration.scope.memberDeclarations)
 			if(member is PropertyDeclaration)
-				initializerTracker.declare(member, member.type is StaticType)
+				initializerTracker.declare(member, member.providedType is StaticType)
 		for(parameter in parameters)
 			parameter.analyseDataFlow(initializerTracker)
 		body?.analyseDataFlow(initializerTracker)
@@ -295,7 +295,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		}
 		//TODO add local type parameters
 		for(valueParameter in parameters) {
-			parameterTypes.add(valueParameter.type?.getLlvmType(constructor))
+			parameterTypes.add(valueParameter.providedType?.getLlvmType(constructor))
 			valueParameter.index = parameterIndex
 			parameterIndex++
 		}
@@ -359,7 +359,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			if(SpecialType.IDENTIFIABLE.matches(superType) || SpecialType.ANY.matches(superType))
 				continue
 			val superTypeDeclaration = superType.getTypeDeclaration()
-			val trivialInitializer = (superTypeDeclaration?.staticValueDeclaration?.type as? StaticType)?.getInitializer()?.initializer
+			val trivialInitializer = (superTypeDeclaration?.staticValueDeclaration?.providedType as? StaticType)?.getInitializer()?.initializer
 				?: throw CompilerError(source, "Default initializer in class '${parentTypeDeclaration.name}'" +
 					" with super class '${superTypeDeclaration?.name}' without trivial initializer.")
 			val parameters = LinkedList<LlvmValue?>()
@@ -371,14 +371,14 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	}
 
 	fun isConvertingFrom(sourceType: Type): Boolean {
-		return isConverting && fixedParameters.size == 1 && fixedParameters.first().type?.accepts(sourceType) ?: false
+		return isConverting && fixedParameters.size == 1 && fixedParameters.first().providedType?.accepts(sourceType) ?: false
 	}
 
 	fun getParameterTypeAt(index: Int): Type? {
 		return if(index < fixedParameters.size)
-			fixedParameters[index].type
+			fixedParameters[index].providedType
 		else
-			(variadicParameter?.type as? PluralType)?.baseType
+			(variadicParameter?.providedType as? PluralType)?.baseType
 	}
 
 	override fun toString(): String {
