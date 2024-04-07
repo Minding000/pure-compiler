@@ -66,10 +66,11 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 
 	override fun compile(constructor: LlvmConstructor) {
 		constructor.createAndSelectEntrypointBlock(llvmInitializerValue)
+		val exceptionParameter = context.getExceptionParameter(constructor)
 		for(typeDeclaration in scope.typeDeclarations.values) {
 			if(typeDeclaration.isDefinition) {
 				constructor.buildFunctionCall(typeDeclaration.llvmClassInitializerType, typeDeclaration.llvmClassInitializer,
-					listOf(context.getExceptionParameter(constructor)))
+					listOf(exceptionParameter))
 				context.continueRaise(constructor)
 			}
 		}

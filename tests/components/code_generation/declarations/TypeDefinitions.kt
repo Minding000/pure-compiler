@@ -241,10 +241,9 @@ internal class TypeDefinitions {
 			define void @Test_FileInitializer(ptr %0) {
 			entrypoint:
 			  call void @InternetProtocol_ClassInitializer(ptr %0)
-			  %InternetProtocol = load ptr, ptr @InternetProtocol_StaticObject, align 8
-			  %_classDefinition = load ptr, ptr %InternetProtocol, align 8
+			  %_classDefinition = load ptr, ptr @InternetProtocol_StaticObject, align 8
 			  %_memberOffset = call i32 @pure_runtime_getConstantOffset(ptr %_classDefinition, i32 2)
-			  %_memberAddress = getelementptr i8, ptr %InternetProtocol, i32 %_memberOffset
+			  %_memberAddress = getelementptr i8, ptr @InternetProtocol_StaticObject, i32 %_memberOffset
 			  %member = load ptr, ptr %_memberAddress, align 8
 			  store ptr %member, ptr @protocol_Global, align 8
 			  ret void

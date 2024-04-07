@@ -57,7 +57,7 @@ internal class InstanceAccess {
 	}
 
 	@Test
-	fun `compiles instance accesses on type aliases`() {
+	fun `compiles instance accesses on primitive type aliases`() {
 		val sourceCode = """
 			native copied Int class {
 				native init(value: Int)
