@@ -1,6 +1,7 @@
 package components.code_generation.general
 
 import components.code_generation.llvm.Llvm
+import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -217,7 +218,10 @@ internal class ValueConversion {
 	@Test
 	fun `implicitly converts function call parameter`() {
 		val sourceCode = """
-			referencing Pure
+			native copied Int class {
+				native converting init(value: Byte)
+				native init(value: Int)
+			}
 			SimplestApp object {
 				val source: Byte = 94
 				to plusFive(target: Int): Int {
@@ -228,7 +232,9 @@ internal class ValueConversion {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", true)
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", mapOf(
+			SpecialType.INTEGER to listOf(TestUtil.TEST_FILE_NAME)
+		))
 		assertEquals(99, Llvm.castToSignedInteger(result))
 	}
 

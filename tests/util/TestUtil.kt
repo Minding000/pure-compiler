@@ -94,9 +94,12 @@ object TestUtil {
 		val lintResult = lint(sourceCode, includeRequiredModules, false, specialTypePaths)
 		val program = LlvmProgram(TEST_PROJECT_NAME)
 		try {
-			program.loadSemanticModel(lintResult.program, entryPointPath)
-			lintResult.context.logger.printReport(Severity.INFO,
-				!includeRequiredModules && specialTypePaths == Builder.specialTypePaths)
+			try {
+				program.loadSemanticModel(lintResult.program, entryPointPath)
+			} finally {
+				lintResult.context.logger.printReport(Severity.INFO,
+					!includeRequiredModules && specialTypePaths == Builder.specialTypePaths)
+			}
 			val intermediateRepresentation = program.getIntermediateRepresentation()
 			println(intermediateRepresentation)
 			println("----------")
