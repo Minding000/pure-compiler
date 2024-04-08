@@ -1,8 +1,10 @@
 package components.code_generation.declarations
 
+import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertContains
+import kotlin.test.assertEquals
 
 internal class TypeDefinitions {
 
@@ -249,5 +251,23 @@ internal class TypeDefinitions {
 			  ret void
 			}
 			""".trimIndent())
+	}
+
+	@Test
+	fun `compiles inherited bound objects`() {
+		val sourceCode = """
+			Application class {
+				bound Process object {
+					val a = 58
+				}
+			}
+			SimplestApp object: Application {
+				to getFiftyEight(): Int {
+					return Process.a
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiftyEight")
+		assertEquals(58, Llvm.castToSignedInteger(result))
 	}
 }

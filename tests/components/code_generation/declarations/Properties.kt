@@ -26,4 +26,20 @@ internal class Properties {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSixteen")
 		assertEquals(16, Llvm.castToSignedInteger(result))
 	}
+
+	@Test
+	fun `compiles properties in bound objects`() {
+		val sourceCode = """
+			SimplestApp object {
+				bound Process object {
+					val a = 58
+				}
+				to getFiftyEight(): Int {
+					return Process.a
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiftyEight")
+		assertEquals(58, Llvm.castToSignedInteger(result))
+	}
 }

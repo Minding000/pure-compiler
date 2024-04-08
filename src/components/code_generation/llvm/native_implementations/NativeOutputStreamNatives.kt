@@ -14,6 +14,7 @@ object NativeOutputStreamNatives {
 		registry.registerNativeImplementation("NativeOutputStream.writeBytes(<ByteArray>)", ::writeBytes)
 	}
 
+	//TODO implement
 	fun writeByte(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionAddress = context.getExceptionParameter(constructor)
@@ -22,6 +23,7 @@ object NativeOutputStreamNatives {
 		constructor.buildReturn(thisInt)
 	}
 
+	//TODO implement
 	fun writeBytes(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionAddress = context.getExceptionParameter(constructor)

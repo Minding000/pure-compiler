@@ -24,9 +24,8 @@ class NativeRegistry(val context: Context) {
 		IdentifiableNatives.load(this)
 		IntNatives.load(this)
 		NullNatives.load(this)
-		//TODO currently unused
-//		NativeInputStreamNatives.load(this)
-//		NativeOutputStreamNatives.load(this)
+		NativeInputStreamNatives.load(this)
+		NativeOutputStreamNatives.load(this)
 	}
 
 	fun registerNativePrimitiveInitializer(identifier: String, instance: (constructor: LlvmConstructor, parameters: List<LlvmValue?>) -> LlvmValue) {

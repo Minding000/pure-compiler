@@ -14,6 +14,7 @@ object NativeInputStreamNatives {
 		registry.registerNativeImplementation("NativeInputStream.readBytes(): <ByteArray>", ::readBytes)
 	}
 
+	//TODO implement
 	fun readByte(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionAddress = context.getExceptionParameter(constructor)
@@ -22,6 +23,7 @@ object NativeInputStreamNatives {
 		constructor.buildReturn(thisInt)
 	}
 
+	//TODO implement
 	fun readBytes(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionAddress = context.getExceptionParameter(constructor)
