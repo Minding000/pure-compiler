@@ -113,6 +113,14 @@ object TestUtil {
 		}
     }
 
+	fun runExecutable(path: String = ".\\out\\program.exe") {
+		println("----- Program output: -----")
+		val process = ProcessBuilder(path).inheritIO().start()
+		val exitCode = process.onExit().join().exitValue()
+		if(exitCode != ExitCode.SUCCESS)
+			System.err.println("Program exited with error code: $exitCode")
+	}
+
 	private fun printDiagnostics(intermediateRepresentation: String) {
 		val lines = intermediateRepresentation.split("\n")
 		val declaredFunctions = lines.filter { line -> line.startsWith("declare") }

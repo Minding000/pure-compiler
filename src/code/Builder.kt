@@ -40,7 +40,7 @@ object Builder {
 		try {
 			val project = loadProject(path)
 			val semanticModel = createSemanticModel(project)
-			println("----- JIT output: -----")
+			println("----- Compilation output: -----")
 			LlvmCompiler.buildAndRun(project, semanticModel, entryPointPath)
 		} catch(error: UserError) {
 			System.err.println("Failed to compile: ${error.message}")

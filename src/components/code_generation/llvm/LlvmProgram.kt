@@ -40,9 +40,9 @@ class LlvmProgram(name: String) {
 		LLVMDisposePassManager(passManager)
 	}
 
-	fun writeTo() {
-		val objectFilePath = ".\\out\\program.o"
-		val executableFilePath = ".\\out\\program.exe"
+	fun writeTo(path: String) {
+		val objectFilePath = "${path}\\program.o"
+		val executableFilePath = "${path}\\program.exe"
 
 		LLVMInitializeAllTargetInfos()
 		LLVMInitializeAllTargets()

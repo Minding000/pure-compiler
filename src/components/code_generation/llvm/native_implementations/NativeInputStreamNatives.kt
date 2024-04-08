@@ -32,7 +32,7 @@ object NativeInputStreamNatives {
 		// - choose buffer size
 		// - create buffer
 		// - check result -> loop
-		constructor.buildFunctionCall(context.llvmReadFunctionType, context.llvmReadFunction, listOf(constructor.nullPointer))
+		//constructor.buildFunctionCall(context.llvmReadFunctionType, context.llvmReadFunction, listOf(constructor.nullPointer))
 		constructor.buildReturn(thisInt)
 	}
 }

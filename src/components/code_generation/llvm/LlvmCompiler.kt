@@ -21,7 +21,7 @@ object LlvmCompiler {
 		program.loadSemanticModel(semanticModel, entryPointPath)
 		program.verify()
 		program.compile()
-		program.writeTo()
+		program.writeTo(".\\out")
 		program.dispose()
 	}
 
@@ -30,7 +30,7 @@ object LlvmCompiler {
 		program.loadSemanticModel(semanticModel, entryPointPath)
 		program.verify()
 		program.compile()
-		println("Running program...")
+		println("----- JIT output: -----")
 		val result = program.run()
 		val intResult = Llvm.castToSignedInteger(result)
 		println("Result: '${intResult}'")

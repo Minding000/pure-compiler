@@ -255,6 +255,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.buildJump(loopBlock)
 		constructor.select(loopBlock)
 		val currentIndex = constructor.buildLoad(context.llvmMemberIndexType, indexVariable, "currentIndex")
+		context.printDebugMessage(constructor, "Current index is '%i'.", currentIndex)
 		if(Main.shouldPrintRuntimeDebugOutput) {
 			val isOutOfBounds = constructor.buildSignedIntegerEqualTo(currentIndex, memberCount, "isOutOfBounds")
 			val panicBlock = constructor.createBlock(function, "panic")
@@ -266,10 +267,12 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			constructor.select(idCheckBlock)
 		}
 		val newIndex = constructor.buildIntegerAddition(currentIndex, constructor.buildInt32(1), "newIndex")
+		context.printDebugMessage(constructor, "New index is '%i'.", newIndex)
 		constructor.buildStore(newIndex, indexVariable)
 		val currentIdElement = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, memberIdArray, currentIndex,
 			"currentIdElement")
 		val currentId = constructor.buildLoad(context.llvmMemberIdType, currentIdElement, "currentId")
+		context.printDebugMessage(constructor, "Current ID is '%i'.", currentId)
 		val isMemberFound = constructor.buildSignedIntegerEqualTo(currentId, targetMemberId, "isMemberFound")
 		val returnBlock = constructor.createBlock(function, "return")
 		constructor.buildJump(isMemberFound, returnBlock, loopBlock)
@@ -277,6 +280,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val memberOffsetElement = constructor.buildGetArrayElementPointer(context.llvmMemberOffsetType, memberOffsetArray, currentIndex,
 			"memberOffsetElement")
 		val memberOffset = constructor.buildLoad(context.llvmMemberOffsetType, memberOffsetElement, "memberOffset")
+		context.printDebugMessage(constructor, "Found member with ID '%i' and offset '%i'.", targetMemberId, memberOffset)
 		constructor.buildReturn(memberOffset)
 		if(type == "Constant") {
 			context.llvmConstantOffsetFunction = function
