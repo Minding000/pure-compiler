@@ -434,6 +434,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		context.printDebugMessage("'${getFullName()}' class initializer:")
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectEntrypointBlock(llvmClassInitializer)
+		context.printDebugMessage(constructor, "Initializing class '${getFullName()}' with class definition at '%p'.",
+			llvmClassDefinition)
 		for(typeDeclaration in scope.typeDeclarations.values) {
 			if(typeDeclaration.isDefinition)
 				constructor.buildFunctionCall(typeDeclaration.llvmClassInitializerType, typeDeclaration.llvmClassInitializer,
@@ -561,6 +563,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			}
 			constructor.defineGlobal(staticObject, constructor.buildConstantStruct(llvmStaticType, values))
 		}
+		context.printDebugMessage(constructor, "Class '${getFullName()}' initialized.")
 		constructor.buildReturn()
 		constructor.select(previousBlock)
 	}
@@ -570,6 +573,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		constructor.createAndSelectEntrypointBlock(llvmCommonPreInitializer)
 		val exceptionAddress = constructor.getParameter(llvmCommonPreInitializer, Context.EXCEPTION_PARAMETER_INDEX)
 		val thisValue = constructor.getParameter(llvmCommonPreInitializer, Context.THIS_PARAMETER_INDEX)
+		context.printDebugMessage(constructor, "Running '${getFullName()}' pre-initialization of object at '%p'.", thisValue)
 		if(isBound) {
 			val parentValue = constructor.getParameter(llvmCommonPreInitializer, Context.PARENT_PARAMETER_OFFSET)
 			val parentProperty = constructor.buildGetPropertyPointer(llvmType, thisValue, Context.PARENT_PROPERTY_INDEX,
@@ -607,6 +611,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 				constructor.buildStore(convertedValue, memberAddress)
 			}
 		}
+		context.printDebugMessage(constructor, "Finished '${getFullName()}' pre-initialization of object at '%p'.", thisValue)
 		constructor.buildReturn()
 		constructor.select(previousBlock)
 	}

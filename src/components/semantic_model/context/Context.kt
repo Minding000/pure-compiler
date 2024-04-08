@@ -161,6 +161,12 @@ class Context {
 			println(message)
 	}
 
+	/**
+	 * Prints a debug message at runtime.
+	 * Use '%i' as a placeholder for an integer.
+	 * Use '%p' as a placeholder for a pointer.
+	 * Documentation: https://en.cppreference.com/w/cpp/io/c/fprintf
+	 */
 	fun printDebugMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
 		if(Main.shouldPrintRuntimeDebugOutput)
 			printMessage(constructor, formatString, *values)

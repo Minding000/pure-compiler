@@ -66,6 +66,7 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 
 	override fun compile(constructor: LlvmConstructor) {
 		constructor.createAndSelectEntrypointBlock(llvmInitializerValue)
+		context.printDebugMessage(constructor, "Initializing file '${file.name}'.")
 		val exceptionParameter = context.getExceptionParameter(constructor)
 		for(typeDeclaration in scope.typeDeclarations.values) {
 			if(typeDeclaration.isDefinition) {
@@ -74,7 +75,9 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 				context.continueRaise(constructor)
 			}
 		}
+		context.printDebugMessage(constructor, "Classes in file '${file.name}' initialized.")
 		super.compile(constructor)
+		context.printDebugMessage(constructor, "File '${file.name}' initialized.")
 		constructor.buildReturn()
 	}
 }

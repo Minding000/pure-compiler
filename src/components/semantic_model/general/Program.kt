@@ -239,13 +239,16 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.createAndSelectEntrypointBlock(function)
 		val classDefinition = constructor.getParameter(function, 0)
 		val targetMemberId = constructor.getParameter(function, 1)
-		context.printDebugMessage(constructor, "Searching for member with ID '%i'.", targetMemberId)
+		context.printDebugMessage(constructor, "Searching for member with ID '%i' in class definition at '%p'.", targetMemberId,
+			classDefinition)
 		val memberCountProperty = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition,
 			memberCountPropertyIndex, "memberCountProperty")
 		val memberCount = constructor.buildLoad(context.llvmMemberIndexType, memberCountProperty, "memberCount")
 		val memberIdArrayProperty = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition,
 			memberIdArrayPropertyIndex, "memberIdArrayProperty")
+		context.printDebugMessage(constructor, "Member ID array property is at '%p'.", memberIdArrayProperty)
 		val memberIdArray = constructor.buildLoad(constructor.pointerType, memberIdArrayProperty, "memberIdArray")
+		context.printDebugMessage(constructor, "Member ID array is at '%p'.", memberIdArray)
 		val memberOffsetArrayProperty = constructor.buildGetPropertyPointer( context.classDefinitionStruct, classDefinition,
 			memberOffsetArrayPropertyIndex, "memberOffsetArrayProperty")
 		val memberOffsetArray = constructor.buildLoad(constructor.pointerType, memberOffsetArrayProperty, "memberOffsetArray")
@@ -255,7 +258,6 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.buildJump(loopBlock)
 		constructor.select(loopBlock)
 		val currentIndex = constructor.buildLoad(context.llvmMemberIndexType, indexVariable, "currentIndex")
-		context.printDebugMessage(constructor, "Current index is '%i'.", currentIndex)
 		if(Main.shouldPrintRuntimeDebugOutput) {
 			val isOutOfBounds = constructor.buildSignedIntegerEqualTo(currentIndex, memberCount, "isOutOfBounds")
 			val panicBlock = constructor.createBlock(function, "panic")
@@ -267,12 +269,10 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			constructor.select(idCheckBlock)
 		}
 		val newIndex = constructor.buildIntegerAddition(currentIndex, constructor.buildInt32(1), "newIndex")
-		context.printDebugMessage(constructor, "New index is '%i'.", newIndex)
 		constructor.buildStore(newIndex, indexVariable)
 		val currentIdElement = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, memberIdArray, currentIndex,
 			"currentIdElement")
 		val currentId = constructor.buildLoad(context.llvmMemberIdType, currentIdElement, "currentId")
-		context.printDebugMessage(constructor, "Current ID is '%i'.", currentId)
 		val isMemberFound = constructor.buildSignedIntegerEqualTo(currentId, targetMemberId, "isMemberFound")
 		val returnBlock = constructor.createBlock(function, "return")
 		constructor.buildJump(isMemberFound, returnBlock, loopBlock)
