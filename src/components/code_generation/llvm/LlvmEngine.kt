@@ -15,7 +15,6 @@ object LlvmEngine {
 	private fun initialize() {
 		if(isInitialized)
 			return
-		LLVMInitializeCore(LLVMGetGlobalPassRegistry())
 		LLVMLinkInMCJIT()
 		LLVMInitializeNativeAsmPrinter()
 		LLVMInitializeNativeAsmParser()

@@ -4,7 +4,6 @@ import errors.internal.CompilerError
 import org.bytedeco.llvm.global.LLVM.*
 import util.toLlvmList
 
-//TODO Upgrade to LLVM 17: https://mvnrepository.com/artifact/org.bytedeco/llvm
 class LlvmConstructor(name: String) {
 	val context = Llvm.createContext()
 	val module = Llvm.createModule(context, name)

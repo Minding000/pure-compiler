@@ -36,9 +36,6 @@ class LlvmProgram(name: String) {
 
 	fun compile() {
 		val passManager = LLVMCreatePassManager()
-		LLVMAddInstructionCombiningPass(passManager)
-		LLVMAddNewGVNPass(passManager)
-		LLVMAddCFGSimplificationPass(passManager)
 		LLVMRunPassManager(passManager, constructor.module)
 		LLVMDisposePassManager(passManager)
 	}
