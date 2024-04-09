@@ -246,9 +246,19 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val memberCount = constructor.buildLoad(context.llvmMemberIndexType, memberCountProperty, "memberCount")
 		val memberIdArrayProperty = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition,
 			memberIdArrayPropertyIndex, "memberIdArrayProperty")
-		context.printDebugMessage(constructor, "Member ID array property is at '%p'.", memberIdArrayProperty)
 		val memberIdArray = constructor.buildLoad(constructor.pointerType, memberIdArrayProperty, "memberIdArray")
-		context.printDebugMessage(constructor, "Member ID array is at '%p'.", memberIdArray)
+		if(Main.shouldPrintRuntimeDebugOutput) {
+			// Assumption: Uninitialized memory is zeroed
+			val isClassUninitialized = constructor.buildSignedIntegerEqualTo(memberIdArray, constructor.nullPointer,
+				"isClassUninitialized")
+			val panicBlock = constructor.createBlock(function, "uninitializedClassPanic")
+			val initializedClassBlock = constructor.createBlock(function, "initializedClass")
+			constructor.buildJump(isClassUninitialized, panicBlock, initializedClassBlock)
+			constructor.select(panicBlock)
+			context.panic(constructor, "Class definition at '%p' is uninitialized.", classDefinition)
+			constructor.markAsUnreachable()
+			constructor.select(initializedClassBlock)
+		}
 		val memberOffsetArrayProperty = constructor.buildGetPropertyPointer( context.classDefinitionStruct, classDefinition,
 			memberOffsetArrayPropertyIndex, "memberOffsetArrayProperty")
 		val memberOffsetArray = constructor.buildLoad(constructor.pointerType, memberOffsetArrayProperty, "memberOffsetArray")
@@ -260,7 +270,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val currentIndex = constructor.buildLoad(context.llvmMemberIndexType, indexVariable, "currentIndex")
 		if(Main.shouldPrintRuntimeDebugOutput) {
 			val isOutOfBounds = constructor.buildSignedIntegerEqualTo(currentIndex, memberCount, "isOutOfBounds")
-			val panicBlock = constructor.createBlock(function, "panic")
+			val panicBlock = constructor.createBlock(function, "outOfBoundsPanic")
 			val idCheckBlock = constructor.createBlock(function, "idCheck")
 			constructor.buildJump(isOutOfBounds, panicBlock, idCheckBlock)
 			constructor.select(panicBlock)
@@ -280,6 +290,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val memberOffsetElement = constructor.buildGetArrayElementPointer(context.llvmMemberOffsetType, memberOffsetArray, currentIndex,
 			"memberOffsetElement")
 		val memberOffset = constructor.buildLoad(context.llvmMemberOffsetType, memberOffsetElement, "memberOffset")
+		//TODO resolve member ID to member identifier (string) at runtime using a debug symbol table
+		// - global string array
 		context.printDebugMessage(constructor, "Found member with ID '%i' and offset '%i'.", targetMemberId, memberOffset)
 		constructor.buildReturn(memberOffset)
 		if(type == "Constant") {
