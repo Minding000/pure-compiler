@@ -309,14 +309,27 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val function = constructor.buildFunction("${RUNTIME_PREFIX}getFunctionAddress", functionType)
 		constructor.createAndSelectEntrypointBlock(function)
 		val classDefinition = constructor.getParameter(function, 0)
-		val targetMemberId = constructor.getParameter(function, 1)
-		context.printDebugMessage(constructor, "Searching for function with ID '%i'.", targetMemberId)
+		val targetFunctionId = constructor.getParameter(function, 1)
+		context.printDebugMessage(constructor, "Searching for function with ID '%i' in class definition at '%p'.",
+			targetFunctionId, classDefinition)
 		val functionCountProperty = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition,
 			Context.FUNCTION_COUNT_PROPERTY_INDEX, "functionCountProperty")
 		val functionCount = constructor.buildLoad(context.llvmMemberIndexType, functionCountProperty, "functionCount")
 		val functionIdArrayProperty = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition,
 			Context.FUNCTION_ID_ARRAY_PROPERTY_INDEX, "functionIdArrayProperty")
 		val functionIdArray = constructor.buildLoad(constructor.pointerType, functionIdArrayProperty, "functionIdArray")
+		if(Main.shouldPrintRuntimeDebugOutput) {
+			// Assumption: Uninitialized memory is zeroed
+			val isClassUninitialized = constructor.buildSignedIntegerEqualTo(functionIdArray, constructor.nullPointer,
+				"isClassUninitialized")
+			val panicBlock = constructor.createBlock(function, "uninitializedClassPanic")
+			val initializedClassBlock = constructor.createBlock(function, "initializedClass")
+			constructor.buildJump(isClassUninitialized, panicBlock, initializedClassBlock)
+			constructor.select(panicBlock)
+			context.panic(constructor, "Class definition at '%p' is uninitialized.", classDefinition)
+			constructor.markAsUnreachable()
+			constructor.select(initializedClassBlock)
+		}
 		val functionAddressArrayProperty = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition,
 			Context.FUNCTION_ADDRESS_ARRAY_PROPERTY_INDEX, "functionAddressArrayProperty")
 		val functionAddressArray = constructor.buildLoad(constructor.pointerType, functionAddressArrayProperty,
@@ -329,11 +342,11 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val currentIndex = constructor.buildLoad(context.llvmMemberIndexType, indexVariable, "currentIndex")
 		if(Main.shouldPrintRuntimeDebugOutput) {
 			val isOutOfBounds = constructor.buildSignedIntegerEqualTo(currentIndex, functionCount, "isOutOfBounds")
-			val panicBlock = constructor.createBlock(function, "panic")
+			val panicBlock = constructor.createBlock(function, "outOfBoundsPanic")
 			val idCheckBlock = constructor.createBlock(function, "idCheck")
 			constructor.buildJump(isOutOfBounds, panicBlock, idCheckBlock)
 			constructor.select(panicBlock)
-			context.panic(constructor, "Function with ID '%i' does not exist.", targetMemberId)
+			context.panic(constructor, "Function with ID '%i' does not exist.", targetFunctionId)
 			constructor.markAsUnreachable()
 			constructor.select(idCheckBlock)
 		}
@@ -342,13 +355,15 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val currentIdElement = constructor.buildGetArrayElementPointer(context.llvmMemberIdType, functionIdArray, currentIndex,
 			"currentIdElement")
 		val currentId = constructor.buildLoad(context.llvmMemberIdType, currentIdElement, "currentId")
-		val isFunctionFound = constructor.buildSignedIntegerEqualTo(currentId, targetMemberId, "isFunctionFound")
+		val isFunctionFound = constructor.buildSignedIntegerEqualTo(currentId, targetFunctionId, "isFunctionFound")
 		val returnBlock = constructor.createBlock(function, "return")
 		constructor.buildJump(isFunctionFound, returnBlock, loopBlock)
 		constructor.select(returnBlock)
-		val functionAddressElement = constructor.buildGetArrayElementPointer(context.llvmMemberAddressType,functionAddressArray,
+		val functionAddressElement = constructor.buildGetArrayElementPointer(context.llvmMemberAddressType, functionAddressArray,
 			currentIndex, "functionAddressElement")
 		val functionAddress = constructor.buildLoad(context.llvmMemberAddressType, functionAddressElement, "functionAddress")
+		context.printDebugMessage(constructor, "Found function with ID '%i' and address '%i'.", targetFunctionId,
+			functionAddress)
 		constructor.buildReturn(functionAddress)
 		context.llvmFunctionAddressFunction = function
 		context.llvmFunctionAddressFunctionType = functionType
