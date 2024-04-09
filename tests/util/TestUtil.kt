@@ -1,6 +1,7 @@
 package util
 
 import code.Builder
+import code.Main
 import components.code_generation.llvm.LlvmGenericValue
 import components.code_generation.llvm.LlvmProgram
 import components.semantic_model.context.SemanticModelGenerator
@@ -75,6 +76,8 @@ object TestUtil {
 		val includeRequiredModules = false
 		val lintResult = lint(sourceCode, includeRequiredModules, false)
 		val program = LlvmProgram(TEST_PROJECT_NAME)
+		val previousFlag = Main.shouldPrintRuntimeDebugOutput
+		Main.shouldPrintRuntimeDebugOutput = false
 		try {
 			program.loadSemanticModel(lintResult.program)
 			lintResult.context.logger.printReport(Severity.INFO, !includeRequiredModules)
@@ -82,6 +85,7 @@ object TestUtil {
 			return program.getIntermediateRepresentation()
 		} finally {
 			program.dispose()
+			Main.shouldPrintRuntimeDebugOutput = previousFlag
 		}
     }
 

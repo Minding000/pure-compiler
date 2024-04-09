@@ -18,6 +18,7 @@ class Context {
 	val logger = Logger("compiler")
 	val declarationStack = DeclarationStack(logger)
 	val surroundingLoops = LinkedList<LoopStatement>()
+	lateinit var symbolTable: LlvmValue
 	lateinit var classDefinitionStruct: LlvmType
 	lateinit var llvmConstantOffsetFunction: LlvmValue
 	lateinit var llvmPropertyOffsetFunction: LlvmValue
@@ -148,6 +149,12 @@ class Context {
 		val classDefinition = getClassDefinition(constructor, targetLocation)
 		return constructor.buildFunctionCall(llvmFunctionAddressFunctionType, llvmFunctionAddressFunction,
 			listOf(classDefinition, constructor.buildInt32(memberIdentities.getId(signatureIdentifier))), "_functionAddress")
+	}
+
+	fun resolveMemberIdentifier(constructor: LlvmConstructor, memberId: LlvmValue): LlvmValue {
+		val memberIdentifierElement = constructor.buildGetArrayElementPointer(constructor.pointerType, symbolTable, memberId,
+			"_memberIdentifierElement")
+		return constructor.buildLoad(constructor.pointerType, memberIdentifierElement, "_memberIdentifier")
 	}
 
 	fun getClassDefinition(constructor: LlvmConstructor, targetObject: LlvmValue): LlvmValue {

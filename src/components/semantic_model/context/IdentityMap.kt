@@ -4,7 +4,7 @@ import errors.internal.CompilerError
 
 class IdentityMap<Identifier> {
 	private var nextId = 1
-	private val ids = HashMap<Identifier, Int>()
+	val ids = HashMap<Identifier, Int>()
 
 	companion object {
 		const val NULL_ID = 0

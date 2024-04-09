@@ -254,6 +254,10 @@ class LlvmConstructor(name: String) {
 		return LLVMConstStringInContext(context, text, text.length, Llvm.NO)
 	}
 
+	fun buildConstantPointerArray(values: List<LlvmValue>): LlvmValue {
+		return LLVMConstArray(pointerType, values.toLlvmList(), values.size)
+	}
+
 	fun buildGlobalAsciiCharArray(name: String, text: String): LlvmValue {
 		val globalCharArray = declareGlobal(name, buildArrayType(byteType, text.length + 1))
 		defineGlobal(globalCharArray, buildConstantAsciiCharArray(text))
