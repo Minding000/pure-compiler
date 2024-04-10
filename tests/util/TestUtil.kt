@@ -42,17 +42,26 @@ object TestUtil {
     }
 
 	private fun createTestProject(sourceCode: String, includeRequiredModules: Boolean = false): Project {
+		return createTestProject(mapOf(TEST_FILE_NAME to sourceCode), includeRequiredModules)
+	}
+
+	private fun createTestProject(files: Map<String, String>, includeRequiredModules: Boolean = false): Project {
 		val project = Project(TEST_PROJECT_NAME)
 		val testModule = Module(project, TEST_MODULE_NAME)
-		testModule.addFile(emptyList(), TEST_FILE_NAME, sourceCode)
+		for((name, content) in files)
+			testModule.addFile(emptyList(), name, content)
 		project.addModule(testModule)
 		if(includeRequiredModules)
 			Builder.loadRequiredModules(project)
 		return project
 	}
 
-    fun parse(sourceCode: String, includeRequiredModules: Boolean = false, printReport: Boolean = true): ParseResult {
-		val project = createTestProject(sourceCode, includeRequiredModules)
+	fun parse(sourceCode: String, includeRequiredModules: Boolean = false, printReport: Boolean = true): ParseResult {
+		return parse(mapOf(TEST_FILE_NAME to sourceCode), includeRequiredModules, printReport)
+	}
+
+    fun parse(files: Map<String, String>, includeRequiredModules: Boolean = false, printReport: Boolean = true): ParseResult {
+		val project = createTestProject(files, includeRequiredModules)
         val syntaxTreeGenerator = SyntaxTreeGenerator(project)
         val program = syntaxTreeGenerator.parseProgram()
 		if(printReport)
@@ -62,7 +71,12 @@ object TestUtil {
 
     fun lint(sourceCode: String, includeRequiredModules: Boolean = false, printReport: Boolean = true,
 			 specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): LintResult {
-        val parseResult = parse(sourceCode, includeRequiredModules, false)
+		return lint(mapOf(TEST_FILE_NAME to sourceCode), includeRequiredModules, printReport, specialTypePaths)
+	}
+
+    fun lint(files: Map<String, String>, includeRequiredModules: Boolean = false, printReport: Boolean = true,
+			 specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): LintResult {
+        val parseResult = parse(files, includeRequiredModules, false)
 		val context = parseResult.syntaxTreeGenerator.project.context
         val semanticModelGenerator = SemanticModelGenerator(context)
         val program = semanticModelGenerator.createSemanticModel(parseResult.program, specialTypePaths)

@@ -1,8 +1,6 @@
 package components.semantic_model.declarations
 
-import components.semantic_model.context.SemanticModelGenerator
 import components.semantic_model.values.VariableValue
-import components.syntax_parser.element_generator.SyntaxTreeGenerator
 import logger.Severity
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.declaration.*
@@ -11,10 +9,6 @@ import logger.issues.modifiers.DuplicateModifier
 import logger.issues.modifiers.NoParentToBindTo
 import logger.issues.resolution.ReferencedFileNotFound
 import org.junit.jupiter.api.Test
-import source_structure.Module
-import source_structure.Project
-import util.LintResult
-import util.ParseResult
 import util.TestUtil
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -286,17 +280,11 @@ internal class Declarations {
 				referencing ${TestUtil.TEST_MODULE_NAME}.ExternalDeclaration
 				Int class
             """.trimIndent()
-		val project = Project(TestUtil.TEST_PROJECT_NAME)
-		val testModule = Module(project, TestUtil.TEST_MODULE_NAME)
 		val fileName = "LocalDeclaration"
-		testModule.addFile(emptyList(), "ExternalDeclaration", externalDeclaration)
-		testModule.addFile(emptyList(), fileName, localDeclaration)
-		project.addModule(testModule)
-		val syntaxTreeGenerator = SyntaxTreeGenerator(project)
-		val parseResult = ParseResult(syntaxTreeGenerator, syntaxTreeGenerator.parseProgram())
-		val program = SemanticModelGenerator(project.context).createSemanticModel(parseResult.program)
-		val lintResult = LintResult(project.context, program)
-		project.context.logger.printReport(Severity.INFO)
+		val lintResult = TestUtil.lint(mapOf(
+			"ExternalDeclaration" to externalDeclaration,
+			fileName to localDeclaration
+		))
 		lintResult.assertIssueNotDetected<ReferencedFileNotFound>(fileName)
 		lintResult.assertIssueNotDetected<Redeclaration>(fileName)
 	}
