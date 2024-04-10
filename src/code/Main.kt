@@ -4,6 +4,7 @@ import logger.Severity
 import java.util.*
 
 object Main {
+	//TODO these should probably not be global (this would simplify testing)
 	var logLevel = Severity.INFO
 	var shouldPrintCompileTimeDebugOutput = false
 	var shouldPrintRuntimeDebugOutput = false

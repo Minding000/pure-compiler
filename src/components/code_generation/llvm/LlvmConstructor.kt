@@ -250,17 +250,19 @@ class LlvmConstructor(name: String) {
 		return LLVMBuildGEP2(builder, elementType, arrayPointer, indices.toLlvmList(), indices.size, name)
 	}
 
-	fun buildConstantAsciiCharArray(text: String): LlvmValue {
-		return LLVMConstStringInContext(context, text, text.length, Llvm.NO)
+	fun buildConstantAsciiCharArray(text: String, shouldNullTerminate: Boolean = true): LlvmValue {
+		return LLVMConstStringInContext(context, text, text.length, Llvm.bool(!shouldNullTerminate))
 	}
 
 	fun buildConstantPointerArray(values: List<LlvmValue>): LlvmValue {
 		return LLVMConstArray(pointerType, values.toLlvmList(), values.size)
 	}
 
-	fun buildGlobalAsciiCharArray(name: String, text: String): LlvmValue {
-		val globalCharArray = declareGlobal(name, buildArrayType(byteType, text.length + 1))
-		defineGlobal(globalCharArray, buildConstantAsciiCharArray(text))
+	fun buildGlobalAsciiCharArray(name: String, text: String, shouldNullTerminate: Boolean = true): LlvmValue {
+		var length = text.length
+		if(shouldNullTerminate) length++
+		val globalCharArray = declareGlobal(name, buildArrayType(byteType, length))
+		defineGlobal(globalCharArray, buildConstantAsciiCharArray(text, shouldNullTerminate))
 		return globalCharArray
 	}
 
@@ -272,11 +274,13 @@ class LlvmConstructor(name: String) {
 
 	fun buildCastFromIntegerToPointer(value: LlvmValue, name: String): LlvmValue = LLVMBuildIntToPtr(builder, value, pointerType, name)
 
+	fun buildCastFromIntegerToBoolean(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, booleanType, name)
+
 	fun buildCastFromBooleanToByte(boolean: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, boolean, byteType, name)
 	fun buildCastFromIntegerToByte(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, byteType, name)
 	fun buildCastFromByteToInteger(byte: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, byte, i32Type, name)
 
-	fun buildCastFromIntegerToBoolean(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, booleanType, name)
+	fun buildCastFromIntegerToLong(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, i64Type, name)
 
 	fun buildCastFromSignedIntegerToFloat(integer: LlvmValue, name: String): LlvmValue = LLVMBuildSIToFP(builder, integer, floatType, name)
 

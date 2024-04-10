@@ -48,12 +48,12 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_arrayClassDefinitionProperty")
 		constructor.buildStore(context.arrayClassDefinition, arrayClassDefinitionProperty)
 		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
-		constructor.buildStore(constructor.buildInt32(value.length + 1), arraySizeProperty)
+		constructor.buildStore(constructor.buildInt32(value.length), arraySizeProperty)
 
 		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, context.arrayValueIndex,
 			"_arrayValueProperty")
-		val nullTerminatedCharArray = constructor.buildGlobalAsciiCharArray("_asciiStringLiteral", value)
-		constructor.buildStore(nullTerminatedCharArray, arrayValueProperty)
+		val charArray = constructor.buildGlobalAsciiCharArray("_asciiStringLiteral", value, false)
+		constructor.buildStore(charArray, arrayValueProperty)
 
 		val stringAddress = constructor.buildHeapAllocation(context.stringTypeDeclaration?.llvmType, "_stringAddress")
 		val stringClassDefinitionProperty = constructor.buildGetPropertyPointer(context.stringTypeDeclaration?.llvmType, stringAddress,

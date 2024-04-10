@@ -11,28 +11,28 @@ object NativeInputStreamNatives {
 	fun load(registry: NativeRegistry) {
 		context = registry.context
 		registry.registerNativeImplementation("NativeInputStream.readByte(): Byte", ::readByte)
-		registry.registerNativeImplementation("NativeInputStream.readBytes(): <ByteArray>", ::readBytes)
+		registry.registerNativeImplementation("NativeInputStream.readBytes(): <Byte>Array", ::readBytes)
 	}
 
 	//TODO implement
-	fun readByte(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun readByte(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionAddress = context.getExceptionParameter(constructor)
-		val thisInt = context.getThisParameter(constructor)
+		val thisObject = context.getThisParameter(constructor)
 
-		constructor.buildReturn(thisInt)
+		constructor.buildReturn(thisObject)
 	}
 
 	//TODO implement
-	fun readBytes(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun readBytes(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionAddress = context.getExceptionParameter(constructor)
-		val thisInt = context.getThisParameter(constructor)
+		val thisObject = context.getThisParameter(constructor)
 		//TODO
 		// - choose buffer size
 		// - create buffer
 		// - check result -> loop
 		//constructor.buildFunctionCall(context.llvmReadFunctionType, context.llvmReadFunction, listOf(constructor.nullPointer))
-		constructor.buildReturn(thisInt)
+		constructor.buildReturn(thisObject)
 	}
 }

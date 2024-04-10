@@ -13,11 +13,9 @@ internal class HelloWorldProject {
 		TestUtil.assertErrorStreamEmpty()
 	}
 
-	//TODO check why this is crashing
 	@Test
-	fun `runs without errors`() {
-		TestUtil.recordErrorStream()
-		Main.main(arrayOf("run", "D:\\Daten\\Projekte\\Pure\\Example projects\\Hello World\\Main.pure", "Main:HelloWorldApp.run"))
-		TestUtil.assertErrorStreamEmpty()
+	fun `prints 'Hello world!'`() {
+		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Hello World\\Main.pure", "Main:HelloWorldApp.run"))
+		TestUtil.assertExecutablePrints("Hello world!")
 	}
 }

@@ -12,6 +12,7 @@ import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Function
 import errors.internal.CompilerError
 import errors.user.UserError
+import util.ExitCode
 import java.util.*
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
@@ -75,9 +76,9 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	fun compile(constructor: LlvmConstructor, userEntryPointPath: String? = null): LlvmValue {
 		context.logger.addPhase("Compilation")
 		addPrintFunction(constructor)
-		//TODO unused native functions
-		//addWriteFunction(constructor)
-		//addReadFunction(constructor)
+		addOpenFunction(constructor)
+		addWriteFunction(constructor)
+		addReadFunction(constructor)
 		addFlushFunction(constructor)
 		addSleepFunction(constructor)
 		addExitFunction(constructor)
@@ -127,9 +128,13 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 
 	private fun createGlobalEntrypoint(constructor: LlvmConstructor, userEntryPointObject: ValueDeclaration?,
 									   userEntryPointFunction: FunctionImplementation?): LlvmValue {
-		val entryPointType = constructor.buildFunctionType(emptyList(),
-			userEntryPointFunction?.signature?.returnType?.getLlvmType(constructor) ?: constructor.voidType)
-		val globalEntryPoint = constructor.buildFunction("main", entryPointType)
+		val userEntryPointReturnsVoid = SpecialType.NOTHING.matches(userEntryPointFunction?.signature?.returnType)
+		val globalEntryPointReturnType = if(userEntryPointReturnsVoid)
+			constructor.i32Type
+		else
+			userEntryPointFunction?.signature?.returnType?.getLlvmType(constructor) ?: constructor.voidType
+		val globalEntryPointType = constructor.buildFunctionType(emptyList(), globalEntryPointReturnType)
+		val globalEntryPoint = constructor.buildFunction("main", globalEntryPointType)
 		constructor.createAndSelectEntrypointBlock(globalEntryPoint)
 
 		context.printDebugMessage(constructor, "Initializing program...")
@@ -141,10 +146,9 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		for(file in files)
 			constructor.buildFunctionCall(file.llvmRunnerType, file.llvmRunnerValue, listOf(exceptionAddress))
 		context.printDebugMessage(constructor, "Files executed.")
-		context.printDebugMessage(constructor, "Calling entrypoint...")
 		var result: LlvmValue? = null
 		if(userEntryPointFunction != null) {
-			val returnsVoid = SpecialType.NOTHING.matches(userEntryPointFunction.signature.returnType)
+			context.printDebugMessage(constructor, "Calling entrypoint...")
 			val parameters = LinkedList<LlvmValue>()
 			parameters.add(exceptionAddress)
 			if(userEntryPointObject != null) {
@@ -153,12 +157,12 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 				parameters.add(objectAddress)
 			}
 			result = constructor.buildFunctionCall(userEntryPointFunction.signature.getLlvmType(constructor),
-				userEntryPointFunction.llvmValue, parameters, if(returnsVoid) "" else "programResult")
+				userEntryPointFunction.llvmValue, parameters, if(userEntryPointReturnsVoid) "" else "programResult")
 			//TODO check for uncaught exception
-			if(returnsVoid)
-				result = null
+			context.printDebugMessage(constructor, "Entrypoint returned.")
 		}
-		context.printDebugMessage(constructor, "Entrypoint returns.")
+		if(userEntryPointReturnsVoid)
+			result = constructor.buildInt32(ExitCode.SUCCESS)
 		constructor.buildReturn(result)
 		return globalEntryPoint
 	}
@@ -166,6 +170,13 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	private fun addPrintFunction(constructor: LlvmConstructor) {
 		context.llvmPrintFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.i32Type, true)
 		context.llvmPrintFunction = constructor.buildFunction("printf", context.llvmPrintFunctionType)
+	}
+
+	private fun addOpenFunction(constructor: LlvmConstructor) {
+		val targetTriple = constructor.getTargetTriple()
+		val name = if(targetTriple.contains("linux")) "fdopen" else "_fdopen"
+		context.llvmOpenFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type, constructor.pointerType), constructor.pointerType)
+		context.llvmOpenFunction = constructor.buildFunction(name, context.llvmOpenFunctionType)
 	}
 
 	private fun addWriteFunction(constructor: LlvmConstructor) {
@@ -396,7 +407,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val functionAddress = constructor.buildLoad(context.llvmMemberAddressType, functionAddressElement, "functionAddress")
 		if(Main.shouldPrintRuntimeDebugOutput) {
 			val targetFunctionIdentifier = context.resolveMemberIdentifier(constructor, targetFunctionId)
-			context.printDebugMessage(constructor, "Found function '%s' with address '%i'.", targetFunctionIdentifier,
+			context.printDebugMessage(constructor, "Found function '%s' with address '%p'.", targetFunctionIdentifier,
 				functionAddress)
 		}
 		constructor.buildReturn(functionAddress)

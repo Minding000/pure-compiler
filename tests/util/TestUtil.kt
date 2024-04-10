@@ -26,7 +26,8 @@ object TestUtil {
 	const val TEST_FILE_NAME = "Test"
     private val defaultErrorStream = System.err
     private val testErrorStream = ByteArrayOutputStream()
-	private val EXTERNAL_FUNCTIONS = listOf( "i32 @printf(ptr, ...)", "i32 @fflush(ptr)", "void @Sleep(i32)", "void @exit(i32)",
+	private val EXTERNAL_FUNCTIONS = listOf("i32 @printf(ptr, ...)", "i32 @fflush(ptr)", "ptr @_fdopen(i32, ptr)",
+		"i64 @fwrite(ptr, i64, i64, ptr)", "i64 @fread(ptr, i64, i64, ptr)", "void @Sleep(i32)", "void @exit(i32)",
 		"ptr @memcpy(ptr, ptr, i32)", "void @llvm.va_start(ptr)", "void @llvm.va_copy(ptr, ptr)", "void @llvm.va_end(ptr)",
 		"noalias ptr @malloc(i32)")
 
@@ -141,7 +142,16 @@ object TestUtil {
 		val process = ProcessBuilder(path).inheritIO().start()
 		val exitCode = process.onExit().join().exitValue()
 		if(exitCode != ExitCode.SUCCESS)
-			System.err.println("Program exited with error code: $exitCode")
+			fail("Program exited with error code: $exitCode")
+	}
+
+	fun assertExecutablePrints(expectedString: String, path: String = ".\\out\\program.exe") {
+		val process = ProcessBuilder(path).start()
+		val reader = process.inputStream.bufferedReader()
+		val exitCode = process.onExit().join().exitValue()
+		if(exitCode != ExitCode.SUCCESS)
+			fail("Program exited with error code: $exitCode")
+		assertEquals(expectedString, reader.readText())
 	}
 
 	private fun printDiagnostics(intermediateRepresentation: String) {
