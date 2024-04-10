@@ -16,6 +16,8 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 	lateinit var variableTracker: VariableTracker
 	lateinit var llvmInitializerValue: LlvmValue
 	lateinit var llvmInitializerType: LlvmType
+	lateinit var llvmRunnerValue: LlvmValue
+	lateinit var llvmRunnerType: LlvmType
 
 	init {
 		addSemanticModels(statements)
@@ -62,9 +64,16 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 		super.declare(constructor)
 		llvmInitializerType = constructor.buildFunctionType(listOf(constructor.pointerType))
 		llvmInitializerValue = constructor.buildFunction("${file.name}_FileInitializer", llvmInitializerType)
+		llvmRunnerType = constructor.buildFunctionType(listOf(constructor.pointerType))
+		llvmRunnerValue = constructor.buildFunction("${file.name}_FileRunner", llvmRunnerType)
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
+		compileInitializer(constructor)
+		compileRunner(constructor)
+	}
+
+	private fun compileInitializer(constructor: LlvmConstructor) {
 		constructor.createAndSelectEntrypointBlock(llvmInitializerValue)
 		context.printDebugMessage(constructor, "Initializing file '${file.name}'.")
 		val exceptionParameter = context.getExceptionParameter(constructor)
@@ -75,9 +84,15 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 				context.continueRaise(constructor)
 			}
 		}
-		context.printDebugMessage(constructor, "Classes in file '${file.name}' initialized.")
-		super.compile(constructor)
 		context.printDebugMessage(constructor, "File '${file.name}' initialized.")
+		constructor.buildReturn()
+	}
+
+	private fun compileRunner(constructor: LlvmConstructor) {
+		constructor.createAndSelectEntrypointBlock(llvmRunnerValue)
+		context.printDebugMessage(constructor, "Executing file '${file.name}'.")
+		super.compile(constructor)
+		context.printDebugMessage(constructor, "File '${file.name}' executed.")
 		constructor.buildReturn()
 	}
 }

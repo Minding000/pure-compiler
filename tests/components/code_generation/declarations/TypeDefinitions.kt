@@ -45,6 +45,11 @@ internal class TypeDefinitions {
 			define void @Test_FileInitializer(ptr %0) {
 			entrypoint:
 			  call void @SimplestApp_ClassInitializer(ptr %0)
+			  ret void
+			}
+
+			define void @Test_FileRunner(ptr %0) {
+			entrypoint:
 			  %newObject = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%SimplestApp_ClassStruct, ptr null, i32 1) to i32))
 			  %classDefinitionProperty = getelementptr inbounds %SimplestApp_ClassStruct, ptr %newObject, i32 0, i32 0
 			  store ptr @SimplestApp_ClassDefinition, ptr %classDefinitionProperty, align 8
@@ -113,6 +118,11 @@ internal class TypeDefinitions {
 			define void @Test_FileInitializer(ptr %0) {
 			entrypoint:
 			  call void @SimplestApp_ClassInitializer(ptr %0)
+			  ret void
+			}
+
+			define void @Test_FileRunner(ptr %0) {
+			entrypoint:
 			  %newObject = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%SimplestApp_ClassStruct, ptr null, i32 1) to i32))
 			  %classDefinitionProperty = getelementptr inbounds %SimplestApp_ClassStruct, ptr %newObject, i32 0, i32 0
 			  store ptr @SimplestApp_ClassDefinition, ptr %classDefinitionProperty, align 8
@@ -172,6 +182,11 @@ internal class TypeDefinitions {
 			define void @Test_FileInitializer(ptr %0) {
 			entrypoint:
 			  call void @Application_ClassInitializer(ptr %0)
+			  ret void
+			}
+
+			define void @Test_FileRunner(ptr %0) {
+			entrypoint:
 			  %newObject = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%Application_ClassStruct, ptr null, i32 1) to i32))
 			  %classDefinitionProperty = getelementptr inbounds %Application_ClassStruct, ptr %newObject, i32 0, i32 0
 			  store ptr @Application_ClassDefinition, ptr %classDefinitionProperty, align 8
@@ -243,6 +258,11 @@ internal class TypeDefinitions {
 			define void @Test_FileInitializer(ptr %0) {
 			entrypoint:
 			  call void @InternetProtocol_ClassInitializer(ptr %0)
+			  ret void
+			}
+
+			define void @Test_FileRunner(ptr %0) {
+			entrypoint:
 			  %_classDefinition = load ptr, ptr @InternetProtocol_StaticObject, align 8
 			  %_memberOffset = call i32 @pure_runtime_getConstantOffset(ptr %_classDefinition, i32 2)
 			  %_memberAddress = getelementptr i8, ptr @InternetProtocol_StaticObject, i32 %_memberOffset

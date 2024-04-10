@@ -109,7 +109,12 @@ object TestUtil {
 
     fun run(sourceCode: String, entryPointPath: String, includeRequiredModules: Boolean = false,
 			specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): LlvmGenericValue {
-		val lintResult = lint(sourceCode, includeRequiredModules, false, specialTypePaths)
+		return run(mapOf(TEST_FILE_NAME to sourceCode), entryPointPath, includeRequiredModules, specialTypePaths)
+	}
+
+    fun run(files: Map<String, String>, entryPointPath: String, includeRequiredModules: Boolean = false,
+			specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): LlvmGenericValue {
+		val lintResult = lint(files, includeRequiredModules, false, specialTypePaths)
 		val program = LlvmProgram(TEST_PROJECT_NAME)
 		try {
 			try {
