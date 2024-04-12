@@ -28,12 +28,14 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 
 	override fun determineTypes() {
 		target.determineTypes()
-		var targetType = target.providedType ?: return
+		//TODO StaticType check is just a quick fix
+		var targetType = (if(target.effectiveType is StaticType) target.providedType else target.effectiveType) ?: return
 		if(targetType is OptionalType)
 			targetType = targetType.baseType
 		member.scope = targetType.interfaceScope
 		member.determineTypes()
-		val memberType = member.providedType?.getLocalType(this, targetType) ?: return
+		//TODO StaticType check is just a quick fix
+		val memberType = (if(member.effectiveType is StaticType) member.providedType else member.effectiveType)?.getLocalType(this, targetType) ?: return
 		providedType = if(isOptional && memberType !is OptionalType)
 			OptionalType(source, scope, memberType)
 		else

@@ -37,7 +37,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 	override fun determineTypes() {
 		super.determineTypes()
 		context.registerWrite(target)
-		val targetType = target.providedType ?: return
+		val targetType = target.effectiveType ?: return
 		try {
 			val match = targetType.interfaceScope.getOperator(kind)
 			if(match == null) {

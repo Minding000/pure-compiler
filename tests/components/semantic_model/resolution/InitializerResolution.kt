@@ -6,8 +6,10 @@ import components.semantic_model.values.VariableValue
 import logger.Severity
 import logger.issues.access.InstanceAccessFromStaticContext
 import logger.issues.access.StaticAccessFromInstanceContext
+import logger.issues.resolution.NotCallable
 import logger.issues.resolution.NotFound
 import logger.issues.resolution.SignatureAmbiguity
+import logger.issues.resolution.SignatureMismatch
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -277,5 +279,36 @@ internal class InitializerResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<NotFound>()
+	}
+
+	@Test
+	fun `resolves initializer when target type is a type alias`() {
+		val sourceCode =
+			"""
+				Int class
+				alias Integer = Int
+				Integer()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
+		lintResult.assertIssueNotDetected<NotCallable>()
+	}
+
+	@Test
+	fun `resolves initializer when parameter type is a type alias`() {
+		val sourceCode =
+			"""
+				Int class {
+					init
+					init(template: Int)
+				}
+				alias Integer = Int
+				val integer: Integer = Int()
+				Int(integer)
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
 	}
 }

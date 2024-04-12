@@ -96,7 +96,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 
 	private fun getTargetType(): Type? {
 		//TODO improve 'targetType' determination
-		return (function as? MemberAccess)?.target?.providedType
+		return (function as? MemberAccess)?.target?.effectiveType
 	}
 
 	//TODO do the same for initializer calls
@@ -196,9 +196,10 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				TODO("The spread operator is not implemented yet.")
 				//TODO scrap va_lists, because they require a static parameter count
 			} else {
-				val parameterType = targetSignature?.getParameterTypeAt(index)
+				//TODO detect class-generic parameter type
+				val parameterType = targetSignature?.getParameterTypeAt(index)?.effectiveType
 				parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
-					valueParameter.providedType, valueParameter.hasGenericType, parameterType,
+					valueParameter.effectiveType, valueParameter.hasGenericType, parameterType,
 					parameterType != targetSignature?.original?.getParameterTypeAt(index), conversions?.get(valueParameter)))
 			}
 		}
@@ -261,9 +262,13 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		val isPrimaryCall = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
 		val parameters = LinkedList<LlvmValue?>()
 		//TODO add local type parameters
-		for((index, valueParameter) in valueParameters.withIndex())
+		for((index, valueParameter) in valueParameters.withIndex()) {
+			//TODO detect class-generic parameter type
+			val parameterType = initializer.getParameterTypeAt(index)?.effectiveType
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
-				valueParameter.providedType, initializer.getParameterTypeAt(index), conversions?.get(valueParameter)))
+				valueParameter.effectiveType, valueParameter.hasGenericType, parameterType,
+				false, conversions?.get(valueParameter)))
+		}
 		if(initializer.isVariadic) {
 			val fixedParameterCount = initializer.fixedParameters.size
 			val variadicParameterCount = parameters.size - fixedParameterCount

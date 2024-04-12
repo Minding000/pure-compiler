@@ -5,6 +5,7 @@ import components.code_generation.llvm.LlvmValue
 import components.code_generation.llvm.native_implementations.*
 import components.code_generation.llvm.native_implementations.primitives.PrimitiveIntNatives
 import components.semantic_model.declarations.FunctionImplementation
+import components.semantic_model.scopes.FileScope
 import errors.internal.CompilerError
 import logger.issues.declaration.MissingNativeImplementation
 
@@ -12,20 +13,21 @@ class NativeRegistry(val context: Context) {
 	private val nativePrimitiveInitializers = HashMap<String, (constructor: LlvmConstructor, parameters: List<LlvmValue?>) -> LlvmValue>()
 	private val nativeImplementations = HashMap<String, (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit>()
 	private val primitiveImplementations = HashMap<String, PrimitiveImplementation>()
+	val specialTypeScopes = HashMap<SpecialType, FileScope>()
 
 	fun loadNativeImplementations(constructor: LlvmConstructor) {
-		PrimitiveIntNatives.load(this, constructor)
+		PrimitiveIntNatives(context).load(this, constructor)
 
-		ArrayNatives.load(this)
-		BoolNatives.load(this)
-		ByteNatives.load(this)
-		CliNatives.load(this)
-		FloatNatives.load(this)
-		IdentifiableNatives.load(this)
-		IntNatives.load(this)
-		NullNatives.load(this)
-		NativeInputStreamNatives.load(this)
-		NativeOutputStreamNatives.load(this)
+		ArrayNatives(context).load(this)
+		BoolNatives(context).load(this)
+		ByteNatives(context).load(this)
+		CliNatives(context).load(this)
+		FloatNatives(context).load(this)
+		IdentifiableNatives(context).load(this)
+		IntNatives(context).load(this)
+		NullNatives(context).load(this)
+		NativeInputStreamNatives(context).load(this)
+		NativeOutputStreamNatives(context).load(this)
 	}
 
 	fun registerNativePrimitiveInitializer(identifier: String, instance: (constructor: LlvmConstructor, parameters: List<LlvmValue?>) -> LlvmValue) {

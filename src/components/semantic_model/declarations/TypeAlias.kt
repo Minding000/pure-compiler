@@ -45,7 +45,7 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, scope: TypeScope, name
 			if(referenceType is ObjectType) {
 				val referenceTypeDeclaration = referenceType.getTypeDeclaration()
 				if(referenceTypeDeclaration is TypeAlias)
-					effectiveType = referenceTypeDeclaration.getEffectiveType()
+					effectiveType = referenceTypeDeclaration.effectiveType
 			}
 		}
 		context.declarationStack.pop(this)

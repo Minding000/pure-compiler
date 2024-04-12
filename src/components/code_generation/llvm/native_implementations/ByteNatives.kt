@@ -7,11 +7,9 @@ import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 import errors.internal.CompilerError
 
-object ByteNatives {
-	lateinit var context: Context
+class ByteNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
-		context = registry.context
 		registry.registerNativePrimitiveInitializer("Byte(Byte): Self", ::fromByte)
 		registry.registerNativeImplementation("Byte++", ::increment)
 		registry.registerNativeImplementation("Byte--", ::decrement)

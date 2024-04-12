@@ -310,6 +310,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 				context.memberIdentities.register(memberDeclaration.name)
 			for(property in properties)
 				context.memberIdentities.register(property.name)
+			for(function in functions)
+				context.memberIdentities.register(function.identifier)
 		}
 		super.define(constructor)
 	}
@@ -351,21 +353,18 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		for(member in scope.memberDeclarations) {
 			if(member is FunctionImplementation) {
 				val memberIdentifier = member.memberIdentifier
-				context.memberIdentities.register(memberIdentifier)
 				if(!member.isAbstract)
 					functions[memberIdentifier] = LlvmMemberFunction(memberIdentifier, member.llvmValue)
 			} else if(member is ComputedPropertyDeclaration) {
 				val llvmGetterValue = member.llvmGetterValue
 				if(llvmGetterValue != null) {
 					val getterIdentifier = member.getterIdentifier
-					context.memberIdentities.register(getterIdentifier)
 					if(!member.isAbstract)
 						functions[getterIdentifier] = LlvmMemberFunction(getterIdentifier, llvmGetterValue)
 				}
 				val llvmSetterValue = member.llvmSetterValue
 				if(llvmSetterValue != null) {
 					val setterIdentifier = member.setterIdentifier
-					context.memberIdentities.register(setterIdentifier)
 					if(!member.isAbstract)
 						functions[setterIdentifier] = LlvmMemberFunction(setterIdentifier, llvmSetterValue)
 				}

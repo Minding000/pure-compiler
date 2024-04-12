@@ -5,11 +5,9 @@ import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 
-object NativeOutputStreamNatives {
-	lateinit var context: Context
+class NativeOutputStreamNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
-		context = registry.context
 		registry.registerNativeImplementation("NativeOutputStream.writeByte(Byte)", ::writeByte)
 		registry.registerNativeImplementation("NativeOutputStream.writeBytes(<Byte>Array)", ::writeBytes)
 	}

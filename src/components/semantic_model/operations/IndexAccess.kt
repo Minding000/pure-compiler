@@ -33,12 +33,12 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	override fun determineTypes() {
 		determineSourceExpression()
 		super.determineTypes()
-		val targetType = target.providedType ?: return
+		val targetType = target.effectiveType ?: return
 		try {
 			val match = targetType.interfaceScope.getIndexOperator(typeParameters, indices, sourceExpression)
 			if(match == null) {
-				val name = "${target.providedType}[${indices.joinToString { index -> index.providedType.toString() }}]"
-				context.addIssue(NotFound(source, "Operator", "$name(${sourceExpression?.providedType ?: ""})"))
+				val name = "$targetType[${indices.joinToString { index -> index.effectiveType.toString() }}]"
+				context.addIssue(NotFound(source, "Operator", "$name(${sourceExpression?.effectiveType ?: ""})"))
 				return
 			}
 			targetSignature = match.signature

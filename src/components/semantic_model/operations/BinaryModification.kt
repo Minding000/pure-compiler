@@ -33,17 +33,18 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 	override fun determineTypes() {
 		super.determineTypes()
 		context.registerWrite(target)
-		val valueType = target.providedType ?: return
+		val targetType = target.effectiveType ?: return
+		val modifierType = target.effectiveType ?: return
 		try {
-			val match = valueType.interfaceScope.getOperator(kind, listOf(modifier))
+			val match = targetType.interfaceScope.getOperator(kind, modifier)
 			if(match == null) {
-				context.addIssue(NotFound(source, "Operator", "$valueType $kind ${modifier.providedType}"))
+				context.addIssue(NotFound(source, "Operator", "$targetType $kind $modifierType"))
 				return
 			}
 			targetSignature = match.signature
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
-			error.log(source, "operator", "$valueType $kind ${modifier.providedType}")
+			error.log(source, "operator", "$targetType $kind $modifierType")
 		}
 	}
 

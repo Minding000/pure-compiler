@@ -10,8 +10,10 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 object LlvmEngine {
+	@Volatile
 	private var isInitialized = false
 
+	@Synchronized
 	private fun initialize() {
 		if(isInitialized)
 			return

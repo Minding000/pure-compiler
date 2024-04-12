@@ -7,11 +7,9 @@ import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 import errors.internal.CompilerError
 
-object BoolNatives {
-	lateinit var context: Context
+class BoolNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
-		context = registry.context
 		registry.registerNativePrimitiveInitializer("Bool(Bool): Self", ::fromBool)
 		registry.registerNativeImplementation("Bool!: Bool", ::negate)
 		registry.registerNativeImplementation("Bool and Bool: Bool", ::and)

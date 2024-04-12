@@ -81,11 +81,11 @@ internal class TypeDefinitions {
 			  %functionAddressArray = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (ptr, ptr null, i32 1) to i32))
 			  %propertyIdElement = getelementptr i32, ptr %propertyIdArray, i32 0
 			  %propertyOffsetElement = getelementptr i32, ptr %propertyOffsetArray, i32 0
-			  store i32 2, ptr %propertyIdElement, align 4
+			  store i32 1, ptr %propertyIdElement, align 4
 			  store i32 8, ptr %propertyOffsetElement, align 4
 			  %functionIdElement = getelementptr i32, ptr %functionIdArray, i32 0
 			  %functionAddressElement = getelementptr ptr, ptr %functionAddressArray, i32 0
-			  store i32 1, ptr %functionIdElement, align 4
+			  store i32 2, ptr %functionIdElement, align 4
 			  store ptr @"run()", ptr %functionAddressElement, align 8
 			  store ptr %staticMemberIdArray, ptr getelementptr inbounds (%pure_runtime_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 1), align 8
 			  store ptr %staticMemberOffsetArray, ptr getelementptr inbounds (%pure_runtime_ClassStruct, ptr @SimplestApp_ClassDefinition, i32 0, i32 2), align 8
@@ -99,7 +99,7 @@ internal class TypeDefinitions {
 			define void @SimplestApp_CommonPreInitializer(ptr %0, ptr %1) {
 			entrypoint:
 			  %_classDefinition = load ptr, ptr %1, align 8
-			  %_memberOffset = call i32 @pure_runtime_getPropertyOffset(ptr %_classDefinition, i32 2)
+			  %_memberOffset = call i32 @pure_runtime_getPropertyOffset(ptr %_classDefinition, i32 1)
 			  %_memberAddress = getelementptr i8, ptr %1, i32 %_memberOffset
 			  store i32 62, ptr %_memberAddress, align 4
 			  ret void

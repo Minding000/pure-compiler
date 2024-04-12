@@ -1,7 +1,6 @@
 package components.semantic_model.context
 
 import components.semantic_model.declarations.TypeDeclaration
-import components.semantic_model.scopes.FileScope
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.SelfType
 import components.semantic_model.types.Type
@@ -23,7 +22,6 @@ enum class SpecialType(val className: String) {
 	NOTHING("Nothing"),
 	IDENTIFIABLE("Identifiable"),
 	ANY("Any");
-	var fileScope: FileScope? = null
 
 	companion object {
 		fun isRootType(name: String): Boolean {
@@ -42,12 +40,14 @@ enum class SpecialType(val className: String) {
 			return matches(type.typeDeclaration)
 		if(type !is ObjectType)
 			return false
-		return type.name == className && type.getTypeDeclaration()?.scope?.enclosingScope == fileScope
+		return type.name == className &&
+			type.getTypeDeclaration()?.scope?.enclosingScope == type.context.nativeRegistry.specialTypeScopes[this]
 	}
 
 	fun matches(typeDeclaration: TypeDeclaration?): Boolean {
 		if(typeDeclaration == null)
 			return false
-		return typeDeclaration.name == className && typeDeclaration.scope.enclosingScope == fileScope
+		return typeDeclaration.name == className &&
+			typeDeclaration.scope.enclosingScope == typeDeclaration.context.nativeRegistry.specialTypeScopes[this]
 	}
 }

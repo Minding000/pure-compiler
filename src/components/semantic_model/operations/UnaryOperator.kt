@@ -33,7 +33,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 
 	override fun determineTypes() {
 		super.determineTypes()
-		val subjectType = subject.providedType ?: return
+		val subjectType = subject.effectiveType ?: return
 		try {
 			val match = subjectType.interfaceScope.getOperator(kind)
 			if(match == null) {

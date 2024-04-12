@@ -19,11 +19,9 @@ abstract class Scope {
 	abstract fun getValueDeclaration(name: String): ValueDeclaration.Match?
 	open fun getValueDeclaration(variable: VariableValue) = getValueDeclaration(variable.name)
 
-	fun getOperator(kind: Operator.Kind) = getOperator(kind, emptyList())
+	fun getOperator(kind: Operator.Kind, suppliedValue: Value) = getOperator(kind, listOf(suppliedValue))
 
-	fun getOperator(kind: Operator.Kind, suppliedType: Value) = getOperator(kind, listOf(suppliedType))
-
-	open fun getOperator(kind: Operator.Kind, suppliedValues: List<Value>): FunctionType.Match? {
+	open fun getOperator(kind: Operator.Kind, suppliedValues: List<Value> = emptyList()): FunctionType.Match? {
 		val operator = getValueDeclaration(kind.stringRepresentation)?.type as? FunctionType
 		return operator?.getSignature(suppliedValues)
 	}

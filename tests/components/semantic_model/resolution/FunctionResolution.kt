@@ -471,4 +471,36 @@ internal class FunctionResolution {
 		lintResult.assertIssueNotDetected<SignatureMismatch>()
 		lintResult.assertIssueNotDetected<AbstractMonomorphicAccess>()
 	}
+
+	@Test
+	fun `resolves function when target type is a type alias`() {
+		val sourceCode =
+			"""
+				Int class {
+					to increment() {}
+				}
+				alias Integer = Int
+				var integer: Integer = Int()
+				integer.increment()
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
+	}
+
+	@Test
+	fun `resolves function when parameter type is a type alias`() {
+		val sourceCode =
+			"""
+				Int class {
+					to add(addend: Int) {}
+				}
+				alias Integer = Int
+				var integer: Integer = Int()
+				Int().add(integer)
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
+	}
 }

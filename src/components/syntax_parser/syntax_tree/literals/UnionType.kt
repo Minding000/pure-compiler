@@ -39,7 +39,7 @@ class UnionType(private val left: TypeSyntaxTreeNode, private val right: TypeSyn
 		companion object {
 
 			fun bySymbol(symbol: String): Mode {
-				for(mode in values())
+				for(mode in entries)
 					if(mode.symbol == symbol)
 						return mode
 				throw CompilerError("Failed to parse union type mode '$symbol'.")

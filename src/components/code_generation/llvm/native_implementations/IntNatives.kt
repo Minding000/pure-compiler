@@ -7,11 +7,9 @@ import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 import errors.internal.CompilerError
 
-object IntNatives {
-	lateinit var context: Context
+class IntNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
-		context = registry.context
 		registry.registerNativePrimitiveInitializer("Int(Byte): Self", ::fromByte)
 		registry.registerNativePrimitiveInitializer("Int(Int): Self", ::fromInt)
 		registry.registerNativeImplementation("Int.toThePowerOf(Int): Int", ::toThePowerOf)

@@ -5,11 +5,9 @@ import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 import components.semantic_model.context.PrimitiveImplementation
 
-object PrimitiveIntNatives {
-	lateinit var context: Context
+class PrimitiveIntNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry, constructor: LlvmConstructor) {
-		context = registry.context
 		registry.registerPrimitiveImplementation("Int.toThePowerOf(Int): Int", compileToThePowerOf(constructor))
 	}
 

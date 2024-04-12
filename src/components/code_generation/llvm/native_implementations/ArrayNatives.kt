@@ -5,11 +5,9 @@ import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 
-object ArrayNatives {
-	lateinit var context: Context
+class ArrayNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
-		context = registry.context
 		registry.registerNativeImplementation("Array + <Element>Array: <Element>Array", ::concatenate)
 		registry.registerNativeImplementation("Array[Int]: Element", ::get)
 		registry.registerNativeImplementation("Array[Int](Element)", ::set)

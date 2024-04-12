@@ -32,8 +32,8 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 
 	override fun determineTypes() {
 		super.determineTypes()
-		var leftType = left.providedType ?: return
-		val rightType = right.providedType ?: return
+		var leftType = left.effectiveType ?: return
+		val rightType = right.effectiveType ?: return
 		if(kind == Operator.Kind.DOUBLE_QUESTION_MARK) {
 			if(SpecialType.NULL.matches(leftType)) {
 				providedType = rightType

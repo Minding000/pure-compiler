@@ -1,6 +1,7 @@
 package components.code_generation.declarations
 
 import components.code_generation.llvm.Llvm
+import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -41,5 +42,27 @@ internal class Properties {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiftyEight")
 		assertEquals(58, Llvm.castToSignedInteger(result))
+	}
+
+	@Test
+	fun `compiles primitive type alias properties`() {
+		val sourceCode = """
+			native copied Int class {
+				native init(value: Int)
+			}
+			alias ExitCode = Int {
+				instances ERROR(1)
+			}
+			SimplestApp object {
+				val exitCode: ExitCode = .ERROR
+				to getOne(): Int {
+					return exitCode
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne", mapOf(
+			SpecialType.INTEGER to listOf(TestUtil.TEST_FILE_NAME)
+		))
+		assertEquals(1, Llvm.castToSignedInteger(result))
 	}
 }

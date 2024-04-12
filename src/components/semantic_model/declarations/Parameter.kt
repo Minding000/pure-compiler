@@ -53,7 +53,7 @@ class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: 
 		if(isVariadic)
 			return
 		val function = constructor.getParentFunction()
-		llvmLocation = constructor.buildStackAllocation(providedType?.getLlvmType(constructor), name)
+		llvmLocation = constructor.buildStackAllocation(effectiveType?.getLlvmType(constructor), name)
 		val value = constructor.getParameter(function, index)
 		constructor.buildStore(value, llvmLocation)
 	}

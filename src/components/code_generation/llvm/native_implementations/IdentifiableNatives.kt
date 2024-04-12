@@ -5,11 +5,9 @@ import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 
-object IdentifiableNatives {
-	lateinit var context: Context
+class IdentifiableNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
-		context = registry.context
 		registry.registerNativeImplementation("Identifiable === Any?: Bool", ::identicalTo)
 	}
 

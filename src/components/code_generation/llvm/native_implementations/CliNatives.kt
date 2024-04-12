@@ -5,11 +5,9 @@ import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 
-object CliNatives {
-	lateinit var context: Context
+class CliNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
-		context = registry.context
 		registry.registerNativeImplementation("Cli.writeLine(String)", ::writeLine)
 	}
 

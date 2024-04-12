@@ -226,7 +226,8 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	}
 
 	fun buildLlvmType(constructor: LlvmConstructor): LlvmType {
-		val parameterTypes = LinkedList<LlvmType?>(parameterTypes.map { parameterType -> parameterType?.getLlvmType(constructor) })
+		val parameterTypes = LinkedList<LlvmType?>(parameterTypes.map { parameterType ->
+			parameterType?.effectiveType?.getLlvmType(constructor) })
 		val parentTypeDeclaration = parentTypeDeclaration
 		parameterTypes.add(Context.EXCEPTION_PARAMETER_INDEX, constructor.pointerType)
 		if(parentTypeDeclaration != null) {

@@ -7,11 +7,9 @@ import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 import errors.internal.CompilerError
 
-object FloatNatives {
-	lateinit var context: Context
+class FloatNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
-		context = registry.context
 		registry.registerNativePrimitiveInitializer("Float(Byte): Self", ::fromByte)
 		registry.registerNativePrimitiveInitializer("Float(Int): Self", ::fromInt)
 		registry.registerNativePrimitiveInitializer("Float(Float): Self", ::fromFloat)

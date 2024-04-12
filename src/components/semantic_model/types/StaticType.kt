@@ -4,6 +4,7 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.semantic_model.context.ComparisonResult
 import components.semantic_model.declarations.InitializerDefinition
+import components.semantic_model.declarations.TypeAlias
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.values.Value
@@ -35,6 +36,15 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 	override fun getValueDeclaration(name: String): ValueDeclaration.Match? {
 		//TODO only return static value declarations here (write tests!)
 		return typeDeclaration.scope.getValueDeclaration(name)
+	}
+
+	override fun resolveTypeDeclarations() {
+		if(typeDeclaration is TypeAlias) {
+			val referenceType = typeDeclaration.getEffectiveType()
+			val referenceTypeDeclaration = (referenceType as? ObjectType)?.getTypeDeclaration()
+			if(referenceTypeDeclaration != null)
+				effectiveType = StaticType(referenceTypeDeclaration)
+		}
 	}
 
 	override fun accepts(unresolvedSourceType: Type): Boolean {

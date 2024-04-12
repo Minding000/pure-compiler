@@ -617,4 +617,84 @@ internal class OperatorResolution {
 		lintResult.assertIssueNotDetected<SignatureMismatch>()
 		lintResult.assertIssueNotDetected<AbstractMonomorphicAccess>()
 	}
+
+	@Test
+	fun `resolves unary operator when operand type is a type alias`() {
+		val sourceCode =
+			"""
+				Int class {
+					operator -: Int
+				}
+				alias Integer = Int
+				val integer: Integer = Int()
+				-integer
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
+	}
+
+	@Test
+	fun `resolves unary modification operator when operand type is a type alias`() {
+		val sourceCode =
+			"""
+				Int class {
+					operator ++
+				}
+				alias Integer = Int
+				var integer: Integer = Int()
+				integer++
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
+	}
+
+	@Test
+	fun `resolves binary operator when operand type is a type alias`() {
+		val sourceCode =
+			"""
+				Int class {
+					operator +(right: Int): Int
+				}
+				alias Integer = Int
+				val integer: Integer = Int()
+				integer + integer
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
+	}
+
+	@Test
+	fun `resolves binary modification operator when operand type is a type alias`() {
+		val sourceCode =
+			"""
+				Int class {
+					operator +=(right: Int)
+				}
+				alias Integer = Int
+				var integer: Integer = Int()
+				integer += integer
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
+	}
+
+	@Test
+	fun `resolves index access when operand type is a type alias`() {
+		val sourceCode =
+			"""
+				Int class {
+					operator [right: Int]: Int
+				}
+				alias Integer = Int
+				val integer: Integer = Int()
+				integer[integer]
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<NotFound>()
+		lintResult.assertIssueNotDetected<SignatureMismatch>()
+	}
 }

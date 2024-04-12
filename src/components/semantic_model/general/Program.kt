@@ -416,14 +416,14 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun findArrayTypeDeclaration() {
-		val fileScope = SpecialType.ARRAY.fileScope
+		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.ARRAY]
 		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.ARRAY.className) ?: return
 		context.arrayDeclarationType = typeDeclaration.llvmType
 		context.arrayClassDefinition = typeDeclaration.llvmClassDefinition
 	}
 
 	private fun findBooleanTypeDeclaration(constructor: LlvmConstructor) {
-		val fileScope = SpecialType.BOOLEAN.fileScope
+		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.BOOLEAN]
 		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.BOOLEAN.className)
 		context.booleanClassDefinition = if(typeDeclaration == null) {
 			// Note: This is only here for compilation without the base library
@@ -438,7 +438,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun findByteTypeDeclaration(constructor: LlvmConstructor) {
-		val fileScope = SpecialType.BYTE.fileScope
+		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.BYTE]
 		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.BYTE.className)
 		context.byteClassDefinition = if(typeDeclaration == null) {
 			// Note: This is only here for compilation without the base library
@@ -453,7 +453,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun findIntegerTypeDeclaration(constructor: LlvmConstructor) {
-		val fileScope = SpecialType.INTEGER.fileScope
+		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.INTEGER]
 		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.INTEGER.className)
 		context.integerClassDefinition = if(typeDeclaration == null) {
 			// Note: This is only here for compilation without the base library
@@ -468,7 +468,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun findFloatTypeDeclaration(constructor: LlvmConstructor) {
-		val fileScope = SpecialType.FLOAT.fileScope
+		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.FLOAT]
 		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.FLOAT.className)
 		context.floatClassDefinition = if(typeDeclaration == null) {
 			// Note: This is only here for compilation without the base library
@@ -483,7 +483,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun findStringInitializer() {
-		val fileScope = SpecialType.STRING.fileScope
+		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.STRING]
 		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.STRING.className)
 		context.stringTypeDeclaration = typeDeclaration
 		if(typeDeclaration == null)

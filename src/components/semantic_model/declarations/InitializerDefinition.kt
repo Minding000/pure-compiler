@@ -295,7 +295,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		}
 		//TODO add local type parameters
 		for(valueParameter in parameters) {
-			parameterTypes.add(valueParameter.providedType?.getLlvmType(constructor))
+			parameterTypes.add(valueParameter.effectiveType?.getLlvmType(constructor))
 			valueParameter.index = parameterIndex
 			parameterIndex++
 		}
