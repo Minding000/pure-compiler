@@ -13,18 +13,21 @@ internal class Compiler {
 	fun `is able to assemble and run test program`() {
 		val expectedResult = 5L
 		val program = LlvmProgram(TestUtil.TEST_PROJECT_NAME)
-		val constructor = program.constructor
-		val functionType = constructor.buildFunctionType(emptyList(), constructor.i32Type)
-		val function = constructor.buildFunction("getNumber", functionType)
-		constructor.createAndSelectBlock(function, "body")
-		val number = constructor.buildInt32(expectedResult)
-		constructor.buildReturn(number)
-		program.entrypoint = function
-		program.verify()
-		program.compile()
-		val result = program.run()
-		program.dispose()
-		assertEquals(expectedResult, Llvm.castToSignedInteger(result))
+		try {
+			val constructor = program.constructor
+			val functionType = constructor.buildFunctionType(emptyList(), constructor.i32Type)
+			val function = constructor.buildFunction("getNumber", functionType)
+			constructor.createAndSelectBlock(function, "body")
+			val number = constructor.buildInt32(expectedResult)
+			constructor.buildReturn(number)
+			program.entrypoint = function
+			program.verify()
+			program.compile()
+			val result = program.run()
+			assertEquals(expectedResult, Llvm.castToSignedInteger(result))
+		} finally {
+			program.dispose()
+		}
 	}
 
 	@Test

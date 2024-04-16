@@ -6,7 +6,6 @@ import org.bytedeco.javacpp.BytePointer
 import org.bytedeco.llvm.LLVM.LLVMTargetRef
 import org.bytedeco.llvm.LLVM.LLVMValueRef
 import org.bytedeco.llvm.global.LLVM.*
-import util.ExitCode
 
 class LlvmProgram(name: String) {
 	val targetTriple = "x86_64-pc-windows"
@@ -40,10 +39,7 @@ class LlvmProgram(name: String) {
 		LLVMDisposePassManager(passManager)
 	}
 
-	fun writeTo(path: String) {
-		val objectFilePath = "${path}\\program.o"
-		val executableFilePath = "${path}\\program.exe"
-
+	fun writeObjectFileTo(objectFilePath: String) {
 		LLVMInitializeAllTargetInfos()
 		LLVMInitializeAllTargets()
 		LLVMInitializeAllTargetMCs()
@@ -67,12 +63,6 @@ class LlvmProgram(name: String) {
 			LLVMDisposeMessage(error)
 			throw CompilerError("Failed get LLVM target from target triple.")
 		}
-		// see: https://stackoverflow.com/questions/64413414/unresolved-external-symbol-printf-in-windows-x64-assembly-programming-with-nasm
-		val process = ProcessBuilder("D:\\Programme\\LLVM\\bin\\lld-link.exe", objectFilePath, "/out:$executableFilePath",
-			"/subsystem:console", "/defaultlib:msvcrt", "legacy_stdio_definitions.lib").inheritIO().start()
-		val exitCode = process.onExit().join().exitValue()
-		if(exitCode != ExitCode.SUCCESS)
-			throw CompilerError("Failed to link object file. Exit code #$exitCode")
 	}
 
 	fun getIntermediateRepresentation(): String {

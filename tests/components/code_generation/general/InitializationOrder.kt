@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 
+//TODO add more tests!
 internal class InitializationOrder {
 
 	@Test

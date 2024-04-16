@@ -21,7 +21,7 @@ class Logger(private val systemName: String) {
 
 	fun printReport(verbosity: Severity, ignoreInternalIssues: Boolean = false) {
 		val capitalizedSystemName = systemName.uppercaseFirstChar()
-		val totalIssueTypeCounts = Array(Severity.values().size) { 0 }
+		val totalIssueTypeCounts = Array(Severity.entries.size) { 0 }
 		for(phase in phases) {
 			if(!phase.containsVisibleIssues(verbosity))
 				continue
@@ -48,9 +48,17 @@ class Logger(private val systemName: String) {
 		return IssueIterator()
 	}
 
+	fun containsErrors(): Boolean {
+		for(issue in issues()) {
+			if(issue.severity == Severity.ERROR)
+				return true
+		}
+		return false
+	}
+
 	private inner class Phase(val name: String) {
 		val issues = LinkedList<Issue>()
-		val issueTypeCounts = Array(Severity.values().size) { 0 }
+		val issueTypeCounts = Array(Severity.entries.size) { 0 }
 
 		fun add(issue: Issue) {
 			issues.add(issue)
@@ -58,7 +66,7 @@ class Logger(private val systemName: String) {
 		}
 
 		fun containsVisibleIssues(verbosity: Severity): Boolean {
-			for(issueType in Severity.values()) {
+			for(issueType in Severity.entries) {
 				if(issueType >= verbosity) {
 					if(issueTypeCounts[issueType.ordinal] > 0)
 						return true
@@ -68,7 +76,7 @@ class Logger(private val systemName: String) {
 		}
 
 		fun getTypeCountString(): String {
-			return Severity.values().reversed().joinToString { issueType ->
+			return Severity.entries.reversed().joinToString { issueType ->
 				"${issueType.name.first()}${issueTypeCounts[issueType.ordinal]}" }
 		}
 	}

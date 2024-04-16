@@ -9,6 +9,7 @@ class Project(val name: String) {
 	val context = Context()
     lateinit var targetPath: String
     val modules = LinkedList<Module>()
+	val outputPath = ".\\out"
 
     fun addModule(module: Module) {
         modules.add(module)

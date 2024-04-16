@@ -10,30 +10,39 @@ object LlvmCompiler {
 
 	fun getIntermediateRepresentation(project: Project, semanticModel: Program, entryPointPath: String): String {
 		val program = LlvmProgram(project.name)
-		program.loadSemanticModel(semanticModel, entryPointPath)
-		val intermediateRepresentation = program.getIntermediateRepresentation()
-		program.dispose()
-		return intermediateRepresentation
+		try {
+			program.loadSemanticModel(semanticModel, entryPointPath)
+			val intermediateRepresentation = program.getIntermediateRepresentation()
+			return intermediateRepresentation
+		} finally {
+			program.dispose()
+		}
 	}
 
 	fun build(project: Project, semanticModel: Program, entryPointPath: String) {
 		val program = LlvmProgram(project.name)
-		program.loadSemanticModel(semanticModel, entryPointPath)
-		program.verify()
-		program.compile()
-		program.writeTo(".\\out")
-		program.dispose()
+		try {
+			program.loadSemanticModel(semanticModel, entryPointPath)
+			program.verify()
+			program.compile()
+			program.writeObjectFileTo("${project.outputPath}\\program.o")
+		} finally {
+			program.dispose()
+		}
 	}
 
 	fun buildAndRun(project: Project, semanticModel: Program, entryPointPath: String) {
 		val program = LlvmProgram(project.name)
-		program.loadSemanticModel(semanticModel, entryPointPath)
-		program.verify()
-		program.compile()
-		println("----- JIT output: -----")
-		val result = program.run()
-		val intResult = Llvm.castToSignedInteger(result)
-		println("Result: '${intResult}'")
-		program.dispose()
+		try {
+			program.loadSemanticModel(semanticModel, entryPointPath)
+			program.verify()
+			program.compile()
+			println("----- JIT output: -----")
+			val result = program.run()
+			val intResult = Llvm.castToSignedInteger(result)
+			println("Result: '${intResult}'")
+		} finally {
+			program.dispose()
+		}
 	}
 }

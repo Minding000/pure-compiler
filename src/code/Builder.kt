@@ -1,5 +1,6 @@
 package code
 
+import components.code_generation.Linker
 import components.code_generation.llvm.LlvmCompiler
 import components.semantic_model.context.SemanticModelGenerator
 import components.semantic_model.context.SpecialType
@@ -40,7 +41,7 @@ object Builder {
 		try {
 			val project = loadProject(path)
 			val semanticModel = createSemanticModel(project)
-			println("----- Compilation output: -----")
+			project.context.logger.printReport(Main.logLevel)
 			LlvmCompiler.buildAndRun(project, semanticModel, entryPointPath)
 		} catch(error: UserError) {
 			System.err.println("Failed to compile: ${error.message}")
@@ -53,8 +54,14 @@ object Builder {
 		try {
 			val project = loadProject(path)
 			val semanticModel = createSemanticModel(project)
-			println("----- Build output: -----")
+			if(project.context.logger.containsErrors()) {
+				project.context.logger.printReport(Main.logLevel)
+				System.err.println("Source code contains errors.")
+				return
+			}
 			LlvmCompiler.build(project, semanticModel, entryPointPath)
+			project.context.logger.printReport(Main.logLevel)
+			Linker.link("${project.outputPath}\\program.o", "${project.outputPath}\\program.exe")
 		} catch(error: UserError) {
 			System.err.println("Failed to compile: ${error.message}")
 			if(Main.shouldPrintCompileTimeDebugOutput)
@@ -85,7 +92,6 @@ object Builder {
 		val abstractSyntaxTree = SyntaxTreeGenerator(project).parseProgram()
 		val semanticModelGenerator = SemanticModelGenerator(project.context)
 		val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree, specialTypePaths)
-		project.context.logger.printReport(Main.logLevel)
 		return semanticModel
 	}
 
