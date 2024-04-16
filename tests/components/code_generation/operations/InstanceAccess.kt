@@ -73,7 +73,7 @@ internal class InstanceAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getZero", mapOf(
-			SpecialType.INTEGER to listOf(TestUtil.TEST_FILE_NAME)
+			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
 		))
 		assertEquals(0, Llvm.castToSignedInteger(result))
 	}

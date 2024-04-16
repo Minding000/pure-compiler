@@ -104,6 +104,11 @@ object TestUtil {
 		}
     }
 
+	@JvmName("runTestFile")
+	fun run(sourceCode: String, entryPointPath: String, specialTypePaths: Map<SpecialType, String>): LlvmGenericValue {
+		return run(sourceCode, entryPointPath, false, specialTypePaths.mapValues { (_, fileName) -> listOf(fileName) })
+	}
+
 	fun run(sourceCode: String, entryPointPath: String, specialTypePaths: Map<SpecialType, List<String>>): LlvmGenericValue {
 		return run(sourceCode, entryPointPath, false, specialTypePaths)
 	}

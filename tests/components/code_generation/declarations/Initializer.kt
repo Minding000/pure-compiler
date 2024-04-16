@@ -123,7 +123,7 @@ internal class Initializer {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEight", mapOf(
-			SpecialType.INTEGER to listOf(TestUtil.TEST_FILE_NAME)
+			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
 		))
 		assertEquals(8, Llvm.castToSignedInteger(result))
 	}
