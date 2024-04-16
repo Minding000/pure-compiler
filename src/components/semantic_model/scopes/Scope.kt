@@ -35,6 +35,7 @@ abstract class Scope {
 		return getOperator(kind, listOf(*suppliedIndexValues.toTypedArray(), *suppliedParameterValues.toTypedArray()))
 	}
 
+	/** Similar to SemanticModel::getSurrounding<TypeDeclaration>, but takes explicit parent type declarations into account. */
 	open fun getSurroundingTypeDeclaration(): TypeDeclaration? = null
 
 	open fun getSurroundingComputedProperty(): ComputedPropertyDeclaration? = null

@@ -5,6 +5,7 @@ import components.semantic_model.context.Context
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.InitializerDefinition
+import components.semantic_model.declarations.PropertyDeclaration
 import components.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.declaration.DuplicateChildModel
@@ -17,6 +18,7 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 	val semanticModels = LinkedList<SemanticModel>()
 	open val isInterruptingExecutionBasedOnStructure = false
 	open val isInterruptingExecutionBasedOnStaticEvaluation = false
+	var hasDeterminedFileInitializationOrder = false
 
 	fun addSemanticModels(vararg newSemanticModels: SemanticModel?) {
 		newModel@for(newSemanticModel in newSemanticModels) {
@@ -95,6 +97,30 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 	open fun compile(constructor: LlvmConstructor) {
 		for(semanticModel in semanticModels)
 			semanticModel.compile(constructor)
+	}
+
+	open fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
+		println("Checking '${javaClass.simpleName}' '$this' in '${getSurrounding<File>()?.file?.name}'")
+		if(this is PropertyDeclaration)
+			println("Property declaration: $name")
+		if(hasDeterminedFileInitializationOrder)
+			return
+		hasDeterminedFileInitializationOrder = true
+		for(semanticModel in semanticModels)
+			semanticModel.determineFileInitializationOrder(filesToInitialize)
+	}
+
+	inline fun <reified T: SemanticModel> getSurrounding(): T? {
+		if(this is T)
+			return this
+		return parent?.getSurrounding(T::class.java)
+	}
+
+	fun <T: SemanticModel> getSurrounding(`class`: Class<T>): T? {
+		@Suppress("UNCHECKED_CAST") // Cast will always work, because Class<T> == T
+		if(`class`.isAssignableFrom(this.javaClass))
+			return this as T
+		return parent?.getSurrounding(`class`)
 	}
 
 	fun isInInitializer(): Boolean {

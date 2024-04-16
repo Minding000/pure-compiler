@@ -2,6 +2,7 @@ package components.semantic_model.declarations
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.ValueConverter
+import components.semantic_model.general.File
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.FileScope
 import components.semantic_model.scopes.MutableScope
@@ -12,6 +13,7 @@ import components.semantic_model.values.Function
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import errors.internal.CompilerError
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.declaration.DeclarationMissingTypeOrValue
 import logger.issues.resolution.ConversionAmbiguity
@@ -109,6 +111,24 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 				value.hasGenericType, effectiveType, false)
 			constructor.buildStore(llvmValue, llvmLocation)
 		}
+	}
+
+	override fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
+		if(hasDeterminedFileInitializationOrder)
+			return
+		if(this is GlobalValueDeclaration) {
+			println("Skipping '${name}'")
+		} else {
+			val file = getSurrounding<File>() ?: throw CompilerError(source, "Value declaration outside of file.")
+			println("'${javaClass.simpleName}' '${name}' adds '${file.file.name}'")
+			if(!filesToInitialize.contains(file)) {
+				filesToInitialize.add(file)
+				file.determineFileInitializationOrder(filesToInitialize)
+				return
+			}
+		}
+		super.determineFileInitializationOrder(filesToInitialize)
+		hasDeterminedFileInitializationOrder = true
 	}
 
 	data class Match(val declaration: ValueDeclaration, val whereClauseConditions: List<WhereClauseCondition>?, val type: Type?) {

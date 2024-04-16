@@ -6,6 +6,7 @@ import components.semantic_model.context.Context
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.*
+import components.semantic_model.general.File
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.ObjectType
@@ -148,6 +149,15 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
 		context.continueRaise(constructor)
 		return returnValue
+	}
+
+	override fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
+		if(hasDeterminedFileInitializationOrder)
+			return
+		hasDeterminedFileInitializationOrder = true
+		super.determineFileInitializationOrder(filesToInitialize)
+		println("Going to declaration of '${declaration?.name}'")
+		declaration?.determineFileInitializationOrder(filesToInitialize)
 	}
 
 	override fun hashCode(): Int {

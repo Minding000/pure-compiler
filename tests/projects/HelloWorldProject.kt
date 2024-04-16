@@ -12,7 +12,7 @@ internal class HelloWorldProject {
 		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Hello World\\Main.pure", "Main:HelloWorldApp.run"))
 		//TODO this only checks for LLVM errors, because preceding errors are logged to stdout
 		// -> for non-test builds stop compilation on error
-		//   -> add --force flag to continue anyways?
+		//   -> add --ignore-errors flag to continue anyways?
 		TestUtil.assertErrorStreamEmpty()
 	}
 

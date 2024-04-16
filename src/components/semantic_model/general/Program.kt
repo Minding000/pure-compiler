@@ -143,11 +143,19 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			constructor.buildFunctionCall(file.llvmInitializerType, file.llvmInitializerValue, listOf(exceptionAddress))
 		context.printDebugMessage(constructor, "Program initialized.")
 		context.printDebugMessage(constructor, "Starting program...")
-		for(file in files)
-			constructor.buildFunctionCall(file.llvmRunnerType, file.llvmRunnerValue, listOf(exceptionAddress))
-		context.printDebugMessage(constructor, "Files executed.")
 		var result: LlvmValue? = null
-		if(userEntryPointFunction != null) {
+		if(userEntryPointFunction == null) {
+			for(file in files)
+				constructor.buildFunctionCall(file.llvmRunnerType, file.llvmRunnerValue, listOf(exceptionAddress))
+			context.printDebugMessage(constructor, "Files executed.")
+		} else {
+			val filesToInitialize = LinkedHashSet<File>()
+			userEntryPointFunction.getSurrounding<File>()?.determineFileInitializationOrder(filesToInitialize)
+			for(file in filesToInitialize.reversed()) {
+				println("Initializing '${file.file.name}'")
+				constructor.buildFunctionCall(file.llvmRunnerType, file.llvmRunnerValue, listOf(exceptionAddress))
+			}
+			context.printDebugMessage(constructor, "Files executed.")
 			context.printDebugMessage(constructor, "Calling entrypoint...")
 			val parameters = LinkedList<LlvmValue>()
 			parameters.add(exceptionAddress)
