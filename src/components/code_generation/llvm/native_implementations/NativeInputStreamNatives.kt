@@ -12,13 +12,22 @@ class NativeInputStreamNatives(val context: Context) {
 		registry.registerNativeImplementation("NativeInputStream.readBytes(Int): <Byte>Array", ::readBytes)
 	}
 
-	//TODO implement
 	private fun readByte(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val exceptionAddress = context.getExceptionParameter(constructor)
+		val exceptionAddress = context.getExceptionParameter(constructor) //TODO error handling
 		val thisObject = context.getThisParameter(constructor)
 
-		constructor.buildReturn(thisObject)
+		val identifierProperty = context.resolveMember(constructor, thisObject, "identifier")
+		val identifier = constructor.buildLoad(constructor.i32Type, identifierProperty, "identifier")
+		val mode = constructor.buildGlobalAsciiCharArray("NativeInputStream_readMode", "r")
+		val fileDescriptor = constructor.buildFunctionCall(context.llvmOpenFunctionType, context.llvmOpenFunction, listOf(identifier, mode),
+			"fileDescriptor")
+
+		val byteAsInteger = constructor.buildFunctionCall(context.llvmReadByteFunctionType, context.llvmReadByteFunction,
+			listOf(fileDescriptor), "byteAsInteger")
+
+		val byte = constructor.buildCastFromIntegerToByte(byteAsInteger, "byte")
+		constructor.buildReturn(byte)
 	}
 
 	private fun readBytes(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
@@ -46,8 +55,10 @@ class NativeInputStreamNatives(val context: Context) {
 		constructor.buildStore(buffer, arrayValueProperty)
 
 		val byteSize = constructor.buildInt64(1)
-		val actualNumberOfBytes = constructor.buildFunctionCall(context.llvmReadFunctionType, context.llvmReadFunction,
-			listOf(buffer, byteSize, desiredNumberOfBytes, fileDescriptor), "actualNumberOfBytes")
+		val actualNumberOfBytesAsLong = constructor.buildFunctionCall(context.llvmReadFunctionType, context.llvmReadFunction,
+			listOf(buffer, byteSize, desiredNumberOfBytes, fileDescriptor), "actualNumberOfBytesAsLong")
+
+		val actualNumberOfBytes = constructor.buildCastFromIntegerToLong(actualNumberOfBytesAsLong, "actualNumberOfBytes")
 
 		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(actualNumberOfBytes, arraySizeProperty)

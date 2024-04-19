@@ -117,10 +117,10 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		if(hasDeterminedFileInitializationOrder)
 			return
 		if(this is GlobalValueDeclaration) {
-			println("Skipping '${name}'")
+//			println("Skipping '${name}'")
 		} else {
 			val file = getSurrounding<File>() ?: throw CompilerError(source, "Value declaration outside of file.")
-			println("'${javaClass.simpleName}' '${name}' adds '${file.file.name}'")
+//			println("'${javaClass.simpleName}' '${name}' adds '${file.file.name}'")
 			if(!filesToInitialize.contains(file)) {
 				filesToInitialize.add(file)
 				file.determineFileInitializationOrder(filesToInitialize)

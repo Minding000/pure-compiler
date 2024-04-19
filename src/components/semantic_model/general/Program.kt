@@ -78,6 +78,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		addPrintFunction(constructor)
 		addOpenFunction(constructor)
 		addWriteFunction(constructor)
+		addReadByteFunction(constructor)
 		addReadFunction(constructor)
 		addFlushFunction(constructor)
 		addSleepFunction(constructor)
@@ -190,6 +191,11 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	private fun addWriteFunction(constructor: LlvmConstructor) {
 		context.llvmWriteFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
 		context.llvmWriteFunction = constructor.buildFunction("fwrite", context.llvmWriteFunctionType)
+	}
+
+	private fun addReadByteFunction(constructor: LlvmConstructor) {
+		context.llvmReadByteFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.i32Type)
+		context.llvmReadByteFunction = constructor.buildFunction("fgetc", context.llvmReadByteFunctionType)
 	}
 
 	private fun addReadFunction(constructor: LlvmConstructor) {

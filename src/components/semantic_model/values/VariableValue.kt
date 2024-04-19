@@ -156,7 +156,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 			return
 		hasDeterminedFileInitializationOrder = true
 		super.determineFileInitializationOrder(filesToInitialize)
-		println("Going to declaration of '${declaration?.name}'")
+//		println("Going to declaration of '${declaration?.name}'")
 		declaration?.determineFileInitializationOrder(filesToInitialize)
 	}
 

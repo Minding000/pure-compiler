@@ -27,7 +27,7 @@ object TestUtil {
     private val defaultErrorStream = System.err
     private val testErrorStream = ByteArrayOutputStream()
 	private val EXTERNAL_FUNCTIONS = listOf("i32 @printf(ptr, ...)", "i32 @fflush(ptr)", "ptr @_fdopen(i32, ptr)",
-		"i64 @fwrite(ptr, i64, i64, ptr)", "i64 @fread(ptr, i64, i64, ptr)", "void @Sleep(i32)", "void @exit(i32)",
+		"i64 @fwrite(ptr, i64, i64, ptr)", "i64 @fread(ptr, i64, i64, ptr)", "i32 @fgetc(ptr)", "void @Sleep(i32)", "void @exit(i32)",
 		"ptr @memcpy(ptr, ptr, i32)", "void @llvm.va_start(ptr)", "void @llvm.va_copy(ptr, ptr)", "void @llvm.va_end(ptr)",
 		"noalias ptr @malloc(i32)")
 

@@ -83,6 +83,11 @@ object Builder {
 		}
 		val semanticModelGenerator = SemanticModelGenerator(project.context)
 		val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree, specialTypePaths)
+		if(project.context.logger.containsErrors()) {
+			project.context.logger.printReport(Main.logLevel)
+			System.err.println("Source code contains errors.")
+			return
+		}
 		val intermediateRepresentation = LlvmCompiler.getIntermediateRepresentation(project, semanticModel, entryPointPath)
 		println(intermediateRepresentation)
 	}

@@ -338,7 +338,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 				super.compile(constructor)
 		} else {
 			if(isNative)
-				compileNativeInitializer(constructor, thisValue)
+				context.nativeRegistry.compileNativeImplementation(constructor, this, llvmValue)
 			else if(body == null)
 				callTrivialSuperInitializers(constructor, thisValue)
 			else
@@ -346,11 +346,6 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			constructor.buildReturn()
 		}
 		constructor.select(previousBlock)
-	}
-
-	private fun compileNativeInitializer(constructor: LlvmConstructor, thisValue: LlvmValue) {
-		//TODO create different initializers for Array
-		//TODO consider moving this code to 'code_generation/llvm/native_implementations'
 	}
 
 	private fun callTrivialSuperInitializers(constructor: LlvmConstructor, thisValue: LlvmValue) {

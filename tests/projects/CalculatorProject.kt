@@ -11,7 +11,7 @@ internal class CalculatorProject {
 	@Test
 	fun `runs without errors`() {
 		TestUtil.recordErrorStream()
-		Main.main(arrayOf("run", "D:\\Daten\\Projekte\\Pure\\Example projects\\Calculator", "Main:CalculatorApp.run"))
+		Main.main(arrayOf("run", "D:\\Daten\\Projekte\\Pure\\Example projects\\Calculator", "Calculator.Main:CalculatorApp.run"))
 		TestUtil.assertErrorStreamEmpty()
 	}
 }

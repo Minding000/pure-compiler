@@ -5,7 +5,9 @@ import components.code_generation.llvm.LlvmValue
 import components.code_generation.llvm.native_implementations.*
 import components.code_generation.llvm.native_implementations.primitives.PrimitiveIntNatives
 import components.semantic_model.declarations.FunctionImplementation
+import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.scopes.FileScope
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.declaration.MissingNativeImplementation
 
@@ -49,9 +51,18 @@ class NativeRegistry(val context: Context) {
 	}
 
 	fun compileNativeImplementation(constructor: LlvmConstructor, function: FunctionImplementation, llvmValue: LlvmValue) {
-		val compileImplementation = nativeImplementations[function.toString()]
+		compileNativeImplementation(constructor, function.source, function.memberType, function.toString(), llvmValue)
+	}
+
+	fun compileNativeImplementation(constructor: LlvmConstructor, initializer: InitializerDefinition, llvmValue: LlvmValue) {
+		compileNativeImplementation(constructor, initializer.source, "initializer", initializer.toString(), llvmValue)
+	}
+
+	fun compileNativeImplementation(constructor: LlvmConstructor, source: SyntaxTreeNode, type: String, signature: String,
+									llvmValue: LlvmValue) {
+		val compileImplementation = nativeImplementations[signature]
 		if(compileImplementation == null) {
-			context.addIssue(MissingNativeImplementation(function))
+			context.addIssue(MissingNativeImplementation(source, type, signature))
 			return
 		}
 		compileImplementation(constructor, llvmValue)

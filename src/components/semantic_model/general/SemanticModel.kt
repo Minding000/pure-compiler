@@ -5,7 +5,6 @@ import components.semantic_model.context.Context
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.InitializerDefinition
-import components.semantic_model.declarations.PropertyDeclaration
 import components.semantic_model.scopes.Scope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.issues.declaration.DuplicateChildModel
@@ -100,9 +99,9 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 	}
 
 	open fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
-		println("Checking '${javaClass.simpleName}' '$this' in '${getSurrounding<File>()?.file?.name}'")
-		if(this is PropertyDeclaration)
-			println("Property declaration: $name")
+//		println("Checking '${javaClass.simpleName}' '$this' in '${getSurrounding<File>()?.file?.name}'")
+//		if(this is PropertyDeclaration)
+//			println("Property declaration: $name")
 		if(hasDeterminedFileInitializationOrder)
 			return
 		hasDeterminedFileInitializationOrder = true

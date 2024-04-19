@@ -36,6 +36,8 @@ class Context {
 	lateinit var llvmOpenFunction: LlvmValue
 	lateinit var llvmWriteFunctionType: LlvmType
 	lateinit var llvmWriteFunction: LlvmValue
+	lateinit var llvmReadByteFunctionType: LlvmType
+	lateinit var llvmReadByteFunction: LlvmValue
 	lateinit var llvmReadFunctionType: LlvmType
 	lateinit var llvmReadFunction: LlvmValue
 	lateinit var llvmFlushFunctionType: LlvmType
