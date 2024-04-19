@@ -10,7 +10,7 @@ class ArrayNatives(val context: Context) {
 	fun load(registry: NativeRegistry) {
 		registry.registerNativeImplementation("<Element>Array(...Element)", ::fromPluralType)
 //		registry.registerNativeImplementation("<Element>Array(<Element>Iterable)", ::fromIterable)
-//		registry.registerNativeImplementation("<Element>Array(Element, Int)", ::fromValueToBeRepeated)
+		registry.registerNativeImplementation("<Element>Array(Element, Int)", ::fromValueToBeRepeated)
 		registry.registerNativeImplementation("Array + <Element>Array: <Element>Array", ::concatenate)
 		registry.registerNativeImplementation("Array[Int]: Element", ::get)
 		registry.registerNativeImplementation("Array[Int](Element)", ::set)
@@ -61,7 +61,33 @@ class ArrayNatives(val context: Context) {
 	}
 
 	private fun fromValueToBeRepeated(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
-
+		val element = constructor.getParameter(Context.VALUE_PARAMETER_OFFSET)
+		val elementCount = constructor.getLastParameter(llvmFunctionValue)
+		val elementType = constructor.pointerType
+		val arrayType = context.arrayDeclarationType
+		val thisArray = context.getThisParameter(constructor)
+		val thisValueProperty = constructor.buildGetPropertyPointer(arrayType, thisArray, context.arrayValueIndex,
+			"thisValueProperty")
+		val thisValue = constructor.buildHeapArrayAllocation(elementType, elementCount, "thisValue")
+		constructor.buildStore(thisValue, thisValueProperty)
+		val indexType = constructor.i32Type
+		val indexVariable = constructor.buildStackAllocation(indexType, "indexVariable")
+		constructor.buildStore(constructor.buildInt32(0), indexVariable)
+		val entryBlock = constructor.createBlock(llvmFunctionValue, "loop_entry")
+		val exitBlock = constructor.createBlock(llvmFunctionValue, "loop_exit")
+		constructor.buildJump(entryBlock)
+		constructor.select(entryBlock)
+		val index = constructor.buildLoad(indexType, indexVariable, "index")
+		val condition = constructor.buildSignedIntegerLessThan(index, elementCount, "condition")
+		val bodyBlock = constructor.createBlock(llvmFunctionValue, "loop_body")
+		constructor.buildJump(condition, bodyBlock, exitBlock)
+		constructor.select(bodyBlock)
+		val elementElement = constructor.buildGetArrayElementPointer(elementType, thisValue, index, "elementElement")
+		constructor.buildStore(element, elementElement)
+		val newIndex = constructor.buildIntegerAddition(index, constructor.buildInt32(1), "newIndex")
+		constructor.buildStore(newIndex, indexVariable)
+		constructor.buildJump(entryBlock)
+		constructor.select(exitBlock)
 	}
 
 	//TODO this function assumes all Arrays store pointers (see offset), but StringLiteral creates Arrays with native chars as elements
@@ -69,9 +95,9 @@ class ArrayNatives(val context: Context) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val arrayType = context.arrayDeclarationType
 		val thisArray = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(arrayType, thisArray, context.arrayValueIndex,
-			"thisValueProperty")
-		val thisValue = constructor.buildLoad(constructor.pointerType, thisValueProperty, "thisValue")
+		val thisArrayValueProperty = constructor.buildGetPropertyPointer(arrayType, thisArray, context.arrayValueIndex,
+			"thisArrayValueProperty")
+		val thisArrayValue = constructor.buildLoad(constructor.pointerType, thisArrayValueProperty, "thisArrayValue")
 		val thisSizeProperty = context.resolveMember(constructor, thisArray, "size")
 		val thisSize = constructor.buildLoad(constructor.i32Type, thisSizeProperty, "thisSize")
 		val parameterArray = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
@@ -89,7 +115,7 @@ class ArrayNatives(val context: Context) {
 		constructor.buildStore(combinedSize, combinedArraySizeProperty)
 		val combinedValue = constructor.buildHeapArrayAllocation(constructor.pointerType, combinedSize, "combinedValue")
 		constructor.buildFunctionCall(context.llvmMemoryCopyFunctionType, context.llvmMemoryCopyFunction,
-			listOf(thisValue, combinedValue, thisSize))
+			listOf(thisArrayValue, combinedValue, thisSize))
 		val offsetCombinedArrayAddress = constructor.buildGetArrayElementPointer(constructor.pointerType, combinedValue, thisSize,
 			"offsetCombinedArrayAddress")
 		constructor.buildFunctionCall(context.llvmMemoryCopyFunctionType, context.llvmMemoryCopyFunction,
@@ -105,10 +131,11 @@ class ArrayNatives(val context: Context) {
 		val thisArray = context.getThisParameter(constructor)
 		val thisArrayValueProperty = constructor.buildGetPropertyPointer(context.arrayDeclarationType, thisArray,
 			context.arrayValueIndex, "thisArrayValueProperty")
+		val thisArrayValue = constructor.buildLoad(constructor.pointerType, thisArrayValueProperty, "thisArrayValue")
 		val index = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
-		val element = constructor.buildGetArrayElementPointer(constructor.pointerType, thisArrayValueProperty, index, "element")
-		val value = constructor.buildLoad(constructor.pointerType, element, "value")
-		constructor.buildReturn(value)
+		val elementElement = constructor.buildGetArrayElementPointer(constructor.pointerType, thisArrayValue, index, "elementElement")
+		val element = constructor.buildLoad(constructor.pointerType, elementElement, "value")
+		constructor.buildReturn(element)
 	}
 
 	private fun set(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
@@ -117,9 +144,10 @@ class ArrayNatives(val context: Context) {
 		val thisArrayValueProperty = constructor.buildGetPropertyPointer(context.arrayDeclarationType, thisArray,
 			context.arrayValueIndex, "thisArrayValueProperty")
 		val index = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
-		val value = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET + 1)
-		val element = constructor.buildGetArrayElementPointer(constructor.pointerType, thisArrayValueProperty, index, "element")
-		constructor.buildStore(value, element)
+		val element = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET + 1)
+		val elementElement = constructor.buildGetArrayElementPointer(constructor.pointerType, thisArrayValueProperty, index,
+			"elementElement")
+		constructor.buildStore(element, elementElement)
 		constructor.buildReturn()
 	}
 }
