@@ -50,6 +50,10 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(constructor.buildInt32(value.length), arraySizeProperty)
 
+		//TODO fix: Arrays don't support native types
+		// -> also effects native IO stream (native implementations)
+		// -> could be solved by introducing specializations
+		// -> or making String.bytes a native computed property that wraps each byte (terrible performance)
 		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, context.arrayValueIndex,
 			"_arrayValueProperty")
 		val charArray = constructor.buildGlobalAsciiCharArray("_asciiStringLiteral", value, false)

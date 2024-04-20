@@ -9,7 +9,6 @@ class ArrayNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
 		registry.registerNativeImplementation("<Element>Array(...Element)", ::fromPluralType)
-//		registry.registerNativeImplementation("<Element>Array(<Element>Iterable)", ::fromIterable)
 		registry.registerNativeImplementation("<Element>Array(Element, Int)", ::fromValueToBeRepeated)
 		registry.registerNativeImplementation("Array + <Element>Array: <Element>Array", ::concatenate)
 		registry.registerNativeImplementation("Array[Int]: Element", ::get)
@@ -56,10 +55,6 @@ class ArrayNatives(val context: Context) {
 			context.llvmVariableParameterIterationEndFunction, listOf(elementList))
 	}
 
-	private fun fromIterable(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
-
-	}
-
 	private fun fromValueToBeRepeated(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val element = constructor.getParameter(Context.VALUE_PARAMETER_OFFSET)
 		val elementCount = constructor.getLastParameter(llvmFunctionValue)
@@ -90,7 +85,6 @@ class ArrayNatives(val context: Context) {
 		constructor.select(exitBlock)
 	}
 
-	//TODO this function assumes all Arrays store pointers (see offset), but StringLiteral creates Arrays with native chars as elements
 	private fun concatenate(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val arrayType = context.arrayDeclarationType
