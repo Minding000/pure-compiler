@@ -16,6 +16,6 @@ internal class HelloWorldProject {
 	@Test
 	fun `prints 'Hello world!'`() {
 		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Hello World\\Main.pure", "Main:HelloWorldApp.run"))
-		TestUtil.assertExecutablePrints("Hello world!")
+		TestUtil.assertExecutablePrints("Hello world!" + Character.toString(13) + Character.toString(10))
 	}
 }

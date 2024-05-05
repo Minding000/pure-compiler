@@ -118,10 +118,11 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 		return providedType.hashCode()
 	}
 
+	// Note: Just here to suppress a warning
 	override fun equals(other: Any?): Boolean {
 		if(other !is Value)
 			return false
-		return providedType == other.providedType
+		return super.equals(other)
 	}
 
 	override fun toString(): String {

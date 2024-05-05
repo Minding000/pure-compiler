@@ -12,11 +12,24 @@ class NativeOutputStreamNatives(val context: Context) {
 		registry.registerNativeImplementation("NativeOutputStream.writeBytes(ByteArray)", ::writeBytes)
 	}
 
-	//TODO implement
 	private fun writeByte(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val exceptionAddress = context.getExceptionParameter(constructor)
+		val exceptionAddress = context.getExceptionParameter(constructor) //TODO error handling
 		val thisObject = context.getThisParameter(constructor)
+		val byte = constructor.getLastParameter()
+
+		val identifierProperty = context.resolveMember(constructor, thisObject, "identifier")
+		val identifier = constructor.buildLoad(constructor.i32Type, identifierProperty, "identifier")
+		val mode = constructor.buildGlobalAsciiCharArray("NativeOutputStream_writeMode", "a")
+		val fileDescriptor = constructor.buildFunctionCall(context.llvmOpenFunctionType, context.llvmOpenFunction, listOf(identifier, mode),
+			"fileDescriptor")
+
+		val byteVariable = constructor.buildStackAllocation(constructor.byteType, "byteVariable")
+		constructor.buildStore(byte, byteVariable)
+		val byteSize = constructor.buildInt64(1)
+		val byteCount = constructor.buildInt64(1)
+		constructor.buildFunctionCall(context.llvmWriteFunctionType, context.llvmWriteFunction,
+			listOf(byteVariable, byteSize, byteCount, fileDescriptor))
 
 		constructor.buildReturn()
 	}

@@ -77,6 +77,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		context.logger.addPhase("Compilation")
 		addPrintFunction(constructor)
 		addOpenFunction(constructor)
+		addCloseFunction(constructor)
 		addWriteFunction(constructor)
 		addReadByteFunction(constructor)
 		addReadFunction(constructor)
@@ -187,6 +188,11 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val name = if(targetTriple.contains("linux")) "fdopen" else "_fdopen"
 		context.llvmOpenFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type, constructor.pointerType), constructor.pointerType)
 		context.llvmOpenFunction = constructor.buildFunction(name, context.llvmOpenFunctionType)
+	}
+
+	private fun addCloseFunction(constructor: LlvmConstructor) {
+		context.llvmCloseFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.i32Type)
+		context.llvmCloseFunction = constructor.buildFunction("fclose", context.llvmCloseFunctionType)
 	}
 
 	private fun addWriteFunction(constructor: LlvmConstructor) {
