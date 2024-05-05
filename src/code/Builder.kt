@@ -22,6 +22,7 @@ object Builder {
 		SpecialType.ARRAY to listOf("Pure", "lang", "collections", "Array"),
 		SpecialType.STRING to listOf("Pure", "lang", "dataTypes", "String"),
 		SpecialType.BYTE to listOf("Pure", "lang", "dataTypes", "Byte"),
+		SpecialType.BYTE_ARRAY to listOf("Pure", "lang", "collections", "primitiveArrays", "ByteArray"),
 		SpecialType.INTEGER to listOf("Pure", "lang", "dataTypes", "Int"),
 		SpecialType.FLOAT to listOf("Pure", "lang", "dataTypes", "Float"),
 		SpecialType.BOOLEAN to listOf("Pure", "lang", "dataTypes", "Bool"),

@@ -42,19 +42,15 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		val arrayType = context.arrayDeclarationType
+		val arrayType = context.byteArrayDeclarationType
 		val byteArray = constructor.buildHeapAllocation(arrayType, "_byteArray")
 		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayType, byteArray,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_arrayClassDefinitionProperty")
-		constructor.buildStore(context.arrayClassDefinition, arrayClassDefinitionProperty)
+		constructor.buildStore(context.byteArrayClassDefinition, arrayClassDefinitionProperty)
 		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(constructor.buildInt32(value.length), arraySizeProperty)
 
-		//TODO fix: Arrays don't support native types
-		// -> also effects native IO stream (native implementations)
-		// -> could be solved by introducing specializations
-		// -> or making String.bytes a native computed property that wraps each byte (terrible performance)
-		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, context.arrayValueIndex,
+		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, context.byteArrayValueIndex,
 			"_arrayValueProperty")
 		val charArray = constructor.buildGlobalAsciiCharArray("_asciiStringLiteral", value, false)
 		constructor.buildStore(charArray, arrayValueProperty)

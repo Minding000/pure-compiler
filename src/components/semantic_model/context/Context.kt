@@ -58,16 +58,19 @@ class Context {
 	lateinit var closureStruct: LlvmType
 	lateinit var arrayDeclarationType: LlvmType
 	lateinit var booleanDeclarationType: LlvmType
+	lateinit var byteArrayDeclarationType: LlvmType
 	lateinit var byteDeclarationType: LlvmType
 	lateinit var integerDeclarationType: LlvmType
 	lateinit var floatDeclarationType: LlvmType
 	lateinit var arrayClassDefinition: LlvmValue
 	lateinit var booleanClassDefinition: LlvmValue
+	lateinit var byteArrayClassDefinition: LlvmValue
 	lateinit var byteClassDefinition: LlvmValue
 	lateinit var integerClassDefinition: LlvmValue
 	lateinit var floatClassDefinition: LlvmValue
 	var arrayValueIndex by Delegates.notNull<Int>()
 	var booleanValueIndex by Delegates.notNull<Int>()
+	var byteArrayValueIndex by Delegates.notNull<Int>()
 	var byteValueIndex by Delegates.notNull<Int>()
 	var integerValueIndex by Delegates.notNull<Int>()
 	var floatValueIndex by Delegates.notNull<Int>()

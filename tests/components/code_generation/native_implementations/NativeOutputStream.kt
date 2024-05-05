@@ -14,22 +14,21 @@ internal class NativeOutputStream {
 					NativeOutputStream(1).writeBytes("Test".bytes)
 				}
 			}
-			native Array class {
-				containing Element
+			native ByteArray class {
 				val size: Int
 			}
 			copied String class {
-				var bytes: <Byte>Array
+				var bytes: ByteArray
 				init(bytes)
 			}
 			NativeOutputStream class {
 				val identifier: Int
 				init(identifier)
-				native to writeBytes(bytes: <Byte>Array)
+				native to writeBytes(bytes: ByteArray)
 			}
 		""".trimIndent()
 		TestUtil.run(sourceCode, "Test:SimplestApp.printTest", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME,
+			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME,
 			SpecialType.STRING to TestUtil.TEST_FILE_NAME
 		))
 	}

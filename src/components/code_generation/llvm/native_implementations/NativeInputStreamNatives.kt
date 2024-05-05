@@ -9,7 +9,7 @@ class NativeInputStreamNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
 		registry.registerNativeImplementation("NativeInputStream.readByte(): Byte", ::readByte)
-		registry.registerNativeImplementation("NativeInputStream.readBytes(Int): <Byte>Array", ::readBytes)
+		registry.registerNativeImplementation("NativeInputStream.readBytes(Int): ByteArray", ::readBytes)
 	}
 
 	private fun readByte(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
@@ -42,14 +42,14 @@ class NativeInputStreamNatives(val context: Context) {
 		val fileDescriptor = constructor.buildFunctionCall(context.llvmOpenFunctionType, context.llvmOpenFunction, listOf(identifier, mode),
 			"fileDescriptor")
 
-		val arrayType = context.arrayDeclarationType
+		val arrayType = context.byteArrayDeclarationType
 		val byteArray = constructor.buildHeapAllocation(arrayType, "byteArrayObject")
 		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayType, byteArray,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "arrayClassDefinitionProperty")
-		constructor.buildStore(context.arrayClassDefinition, arrayClassDefinitionProperty)
+		constructor.buildStore(context.byteArrayClassDefinition, arrayClassDefinitionProperty)
 		val desiredNumberOfBytes = constructor.buildCastFromIntegerToLong(amount, "desiredNumberOfBytes")
 
-		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, context.arrayValueIndex,
+		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, context.byteArrayValueIndex,
 			"arrayValueProperty")
 		val buffer = constructor.buildHeapArrayAllocation(constructor.byteType, amount, "byteArray")
 		constructor.buildStore(buffer, arrayValueProperty)

@@ -9,6 +9,7 @@ enum class SpecialType(val className: String) {
 	ARRAY("Array"),
 	STRING("String"),
 	BYTE("Byte"),
+	BYTE_ARRAY("ByteArray"),
 	INTEGER("Int"),
 	FLOAT("Float"),
 	BOOLEAN("Bool"),

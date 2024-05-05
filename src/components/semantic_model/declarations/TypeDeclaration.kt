@@ -403,6 +403,9 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		} else if(SpecialType.BYTE.matches(this)) {
 			context.byteValueIndex = llvmProperties.size
 			llvmProperties.add(constructor.byteType)
+		} else if(SpecialType.BYTE_ARRAY.matches(this)) {
+			context.byteArrayValueIndex = llvmProperties.size
+			llvmProperties.add(constructor.pointerType)
 		} else if(SpecialType.INTEGER.matches(this)) {
 			context.integerValueIndex = llvmProperties.size
 			llvmProperties.add(constructor.i32Type)

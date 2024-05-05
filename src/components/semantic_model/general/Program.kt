@@ -102,6 +102,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		findArrayTypeDeclaration()
 		findBooleanTypeDeclaration(constructor)
 		findByteTypeDeclaration(constructor)
+		findByteArrayTypeDeclaration()
 		findIntegerTypeDeclaration(constructor)
 		findFloatTypeDeclaration(constructor)
 		findStringInitializer()
@@ -449,6 +450,13 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			context.booleanDeclarationType = typeDeclaration.llvmType
 			typeDeclaration.llvmClassDefinition
 		}
+	}
+
+	private fun findByteArrayTypeDeclaration() {
+		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.BYTE_ARRAY]
+		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.BYTE_ARRAY.className) ?: return
+		context.byteArrayDeclarationType = typeDeclaration.llvmType
+		context.byteArrayClassDefinition = typeDeclaration.llvmClassDefinition
 	}
 
 	private fun findByteTypeDeclaration(constructor: LlvmConstructor) {

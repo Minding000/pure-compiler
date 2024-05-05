@@ -16,22 +16,21 @@ internal class NativeInputStream {
 					return NativeInputStream(1).readBytes(0).size
 				}
 			}
-			native Array class {
-				containing Element
+			native ByteArray class {
 				val size: Int
 			}
 			copied String class {
-				var bytes: <Byte>Array
+				var bytes: ByteArray
 				init(bytes)
 			}
 			NativeInputStream class {
 				val identifier: Int
 				init(identifier)
-				native to readBytes(amount: Int): <Byte>Array
+				native to readBytes(amount: Int): ByteArray
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getZero", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME,
+			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME,
 			SpecialType.STRING to TestUtil.TEST_FILE_NAME
 		))
 		assertEquals(0, Llvm.castToSignedInteger(result))

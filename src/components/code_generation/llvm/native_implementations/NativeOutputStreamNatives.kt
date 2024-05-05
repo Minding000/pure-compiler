@@ -9,7 +9,7 @@ class NativeOutputStreamNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
 		registry.registerNativeImplementation("NativeOutputStream.writeByte(Byte)", ::writeByte)
-		registry.registerNativeImplementation("NativeOutputStream.writeBytes(<Byte>Array)", ::writeBytes)
+		registry.registerNativeImplementation("NativeOutputStream.writeBytes(ByteArray)", ::writeBytes)
 	}
 
 	//TODO implement
@@ -37,8 +37,8 @@ class NativeOutputStreamNatives(val context: Context) {
 		val arraySize = constructor.buildLoad(constructor.i32Type, arraySizeProperty, "size")
 		val arraySizeAsLong = constructor.buildCastFromIntegerToLong(arraySize, "sizeAsLong")
 
-		val arrayValueProperty = constructor.buildGetPropertyPointer(context.arrayDeclarationType, arrayObject, context.arrayValueIndex,
-			"arrayValueProperty")
+		val arrayValueProperty = constructor.buildGetPropertyPointer(context.byteArrayDeclarationType, arrayObject,
+			context.byteArrayValueIndex, "arrayValueProperty")
 		val arrayValue = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "arrayValue")
 		val byteSize = constructor.buildInt64(1)
 		constructor.buildFunctionCall(context.llvmWriteFunctionType, context.llvmWriteFunction,
