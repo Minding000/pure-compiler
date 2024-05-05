@@ -150,9 +150,13 @@ object TestUtil {
 			fail("Program exited with error code: $exitCode")
 	}
 
-	fun assertExecutablePrints(expectedString: String, path: String = ".\\out\\program.exe") {
+	fun assertExecutablePrints(expectedString: String, input: String = "", path: String = ".\\out\\program.exe") {
 		val process = ProcessBuilder(path).start()
 		val reader = process.inputStream.bufferedReader()
+		val outputStream = process.outputStream
+		outputStream.write(input.toByteArray())
+		outputStream.flush()
+		outputStream.close()
 		val exitCode = process.onExit().join().exitValue()
 		if(exitCode != ExitCode.SUCCESS)
 			fail("Program exited with error code: $exitCode")
