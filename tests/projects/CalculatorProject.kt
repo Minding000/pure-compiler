@@ -17,6 +17,6 @@ internal class CalculatorProject {
 	fun `runs without errors`() {
 		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Calculator", "Calculator.Main:CalculatorApp.run"))
 		val newLine = Character.toString(13) + Character.toString(10)
-		TestUtil.assertExecutablePrints("Input was: 5" + newLine, "5")
+		TestUtil.assertExecutablePrints("Input was: 5" + newLine, "50\n")
 	}
 }

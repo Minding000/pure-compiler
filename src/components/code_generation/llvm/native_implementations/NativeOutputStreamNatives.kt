@@ -18,18 +18,18 @@ class NativeOutputStreamNatives(val context: Context) {
 		val thisObject = context.getThisParameter(constructor)
 		val byte = constructor.getLastParameter()
 
-		val identifierProperty = context.resolveMember(constructor, thisObject, "identifier")
-		val identifier = constructor.buildLoad(constructor.i32Type, identifierProperty, "identifier")
-		val mode = constructor.buildGlobalAsciiCharArray("NativeOutputStream_writeMode", "a")
-		val fileDescriptor = constructor.buildFunctionCall(context.llvmOpenFunctionType, context.llvmOpenFunction, listOf(identifier, mode),
-			"fileDescriptor")
+		val handleProperty = constructor.buildGetPropertyPointer(context.nativeOutputStreamDeclarationType, thisObject,
+			context.nativeOutputStreamValueIndex, "handleProperty")
+		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 
 		val byteVariable = constructor.buildStackAllocation(constructor.byteType, "byteVariable")
 		constructor.buildStore(byte, byteVariable)
 		val byteSize = constructor.buildInt64(1)
 		val byteCount = constructor.buildInt64(1)
-		constructor.buildFunctionCall(context.llvmWriteFunctionType, context.llvmWriteFunction,
-			listOf(byteVariable, byteSize, byteCount, fileDescriptor))
+		constructor.buildFunctionCall(context.llvmStreamWriteFunctionType, context.llvmStreamWriteFunction,
+			listOf(byteVariable, byteSize, byteCount, handle))
+
+		constructor.buildFunctionCall(context.llvmStreamFlushFunctionType, context.llvmStreamFlushFunction, listOf(constructor.nullPointer))
 
 		constructor.buildReturn()
 	}
@@ -40,11 +40,9 @@ class NativeOutputStreamNatives(val context: Context) {
 		val thisObject = context.getThisParameter(constructor)
 		val arrayObject = constructor.getLastParameter()
 
-		val identifierProperty = context.resolveMember(constructor, thisObject, "identifier")
-		val identifier = constructor.buildLoad(constructor.i32Type, identifierProperty, "identifier")
-		val mode = constructor.buildGlobalAsciiCharArray("NativeOutputStream_writeMode", "a")
-		val fileDescriptor = constructor.buildFunctionCall(context.llvmOpenFunctionType, context.llvmOpenFunction, listOf(identifier, mode),
-			"fileDescriptor")
+		val handleProperty = constructor.buildGetPropertyPointer(context.nativeOutputStreamDeclarationType, thisObject,
+			context.nativeOutputStreamValueIndex, "handleProperty")
+		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 
 		val arraySizeProperty = context.resolveMember(constructor, arrayObject, "size")
 		val arraySize = constructor.buildLoad(constructor.i32Type, arraySizeProperty, "size")
@@ -54,8 +52,8 @@ class NativeOutputStreamNatives(val context: Context) {
 			context.byteArrayValueIndex, "arrayValueProperty")
 		val arrayValue = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "arrayValue")
 		val byteSize = constructor.buildInt64(1)
-		constructor.buildFunctionCall(context.llvmWriteFunctionType, context.llvmWriteFunction,
-			listOf(arrayValue, byteSize, arraySizeAsLong, fileDescriptor))
+		constructor.buildFunctionCall(context.llvmStreamWriteFunctionType, context.llvmStreamWriteFunction,
+			listOf(arrayValue, byteSize, arraySizeAsLong, handle))
 
 		constructor.buildReturn()
 	}

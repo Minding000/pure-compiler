@@ -12,8 +12,12 @@ internal class NativeInputStream {
 	fun `'readBytes' doesn't fail`() {
 		val sourceCode = """
 			SimplestApp object {
+				bound Process object {
+					val inputStream = getStandardInputStream()
+					native to getStandardInputStream(): NativeInputStream
+				}
 				to getZero(): Int {
-					return NativeInputStream(1).readBytes(0).size
+					return Process.inputStream.readBytes(0).size
 				}
 			}
 			native ByteArray class {
@@ -23,15 +27,14 @@ internal class NativeInputStream {
 				var bytes: ByteArray
 				init(bytes)
 			}
-			NativeInputStream class {
-				val identifier: Int
-				init(identifier)
+			native NativeInputStream class {
 				native to readBytes(amount: Int): ByteArray
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getZero", mapOf(
 			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME,
-			SpecialType.STRING to TestUtil.TEST_FILE_NAME
+			SpecialType.STRING to TestUtil.TEST_FILE_NAME,
+			SpecialType.NATIVE_INPUT_STREAM to TestUtil.TEST_FILE_NAME,
 		))
 		assertEquals(0, Llvm.castToSignedInteger(result))
 	}

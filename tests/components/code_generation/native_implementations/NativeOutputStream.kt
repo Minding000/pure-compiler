@@ -10,8 +10,12 @@ internal class NativeOutputStream {
 	fun `'writeBytes' doesn't fail`() {
 		val sourceCode = """
 			SimplestApp object {
+				bound Process object {
+					val outputStream = getStandardOutputStream()
+					native to getStandardOutputStream(): NativeOutputStream
+				}
 				to printTest() {
-					NativeOutputStream(1).writeBytes("Test".bytes)
+					Process.outputStream.writeBytes("Test".bytes)
 				}
 			}
 			native ByteArray class {
@@ -21,15 +25,14 @@ internal class NativeOutputStream {
 				var bytes: ByteArray
 				init(bytes)
 			}
-			NativeOutputStream class {
-				val identifier: Int
-				init(identifier)
+			native NativeOutputStream class {
 				native to writeBytes(bytes: ByteArray)
 			}
 		""".trimIndent()
 		TestUtil.run(sourceCode, "Test:SimplestApp.printTest", mapOf(
 			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME,
-			SpecialType.STRING to TestUtil.TEST_FILE_NAME
+			SpecialType.STRING to TestUtil.TEST_FILE_NAME,
+			SpecialType.NATIVE_OUTPUT_STREAM to TestUtil.TEST_FILE_NAME,
 		))
 	}
 }

@@ -17,17 +17,25 @@ class NativeInputStreamNatives(val context: Context) {
 		val exceptionAddress = context.getExceptionParameter(constructor) //TODO error handling
 		val thisObject = context.getThisParameter(constructor)
 
-		val identifierProperty = context.resolveMember(constructor, thisObject, "identifier")
-		val identifier = constructor.buildLoad(constructor.i32Type, identifierProperty, "identifier")
-		val mode = constructor.buildGlobalAsciiCharArray("NativeInputStream_readMode", "r")
-		val fileDescriptor = constructor.buildFunctionCall(context.llvmOpenFunctionType, context.llvmOpenFunction, listOf(identifier, mode),
-			"fileDescriptor")
+		val handleProperty = constructor.buildGetPropertyPointer(context.nativeInputStreamDeclarationType, thisObject,
+			context.nativeInputStreamValueIndex, "handleProperty")
+		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
+		val byteAsInteger = constructor.buildFunctionCall(context.llvmStreamReadByteFunctionType, context.llvmStreamReadByteFunction,
+			listOf(handle), "byteAsInteger")
 
-		val byteAsInteger = constructor.buildFunctionCall(context.llvmReadByteFunctionType, context.llvmReadByteFunction,
-			listOf(fileDescriptor), "byteAsInteger")
-
+		val endOfFileIndicator = constructor.buildInt32(-1)
+		val hasFailed = constructor.buildSignedIntegerEqualTo(byteAsInteger, endOfFileIndicator, "hasFailed")
+		val okBlock = constructor.createBlock(llvmFunctionValue, "ok")
+		val errorBlock = constructor.createBlock(llvmFunctionValue, "error")
+		constructor.buildJump(hasFailed, errorBlock, okBlock)
+		constructor.select(okBlock)
 		val byte = constructor.buildCastFromIntegerToByte(byteAsInteger, "byte")
 		constructor.buildReturn(byte)
+		constructor.select(errorBlock)
+		val errorCode = constructor.buildFunctionCall(context.llvmStreamErrorFunctionType, context.llvmStreamErrorFunction,
+			listOf(handle), "errorCode")
+		context.panic(constructor, "Failed to read byte: %i", errorCode)
+		constructor.markAsUnreachable()
 	}
 
 	private fun readBytes(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
@@ -36,11 +44,9 @@ class NativeInputStreamNatives(val context: Context) {
 		val thisObject = context.getThisParameter(constructor)
 		val amount = constructor.getLastParameter()
 
-		val identifierProperty = context.resolveMember(constructor, thisObject, "identifier")
-		val identifier = constructor.buildLoad(constructor.i32Type, identifierProperty, "identifier")
-		val mode = constructor.buildGlobalAsciiCharArray("NativeInputStream_readMode", "r")
-		val fileDescriptor = constructor.buildFunctionCall(context.llvmOpenFunctionType, context.llvmOpenFunction, listOf(identifier, mode),
-			"fileDescriptor")
+		val handleProperty = constructor.buildGetPropertyPointer(context.nativeInputStreamDeclarationType, thisObject,
+			context.nativeInputStreamValueIndex, "handleProperty")
+		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 
 		val arrayType = context.byteArrayDeclarationType
 		val byteArray = constructor.buildHeapAllocation(arrayType, "byteArrayObject")
@@ -55,8 +61,8 @@ class NativeInputStreamNatives(val context: Context) {
 		constructor.buildStore(buffer, arrayValueProperty)
 
 		val byteSize = constructor.buildInt64(1)
-		val actualNumberOfBytesAsLong = constructor.buildFunctionCall(context.llvmReadFunctionType, context.llvmReadFunction,
-			listOf(buffer, byteSize, desiredNumberOfBytes, fileDescriptor), "actualNumberOfBytesAsLong")
+		val actualNumberOfBytesAsLong = constructor.buildFunctionCall(context.llvmStreamReadFunctionType, context.llvmStreamReadFunction,
+			listOf(buffer, byteSize, desiredNumberOfBytes, handle), "actualNumberOfBytesAsLong")
 
 		val actualNumberOfBytes = constructor.buildCastFromIntegerToLong(actualNumberOfBytesAsLong, "actualNumberOfBytes")
 

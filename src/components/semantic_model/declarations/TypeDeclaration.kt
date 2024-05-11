@@ -412,6 +412,12 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		} else if(SpecialType.FLOAT.matches(this)) {
 			context.floatValueIndex = llvmProperties.size
 			llvmProperties.add(constructor.floatType)
+		} else if(SpecialType.NATIVE_INPUT_STREAM.matches(this)) {
+			context.nativeInputStreamValueIndex = llvmProperties.size
+			llvmProperties.add(constructor.pointerType)
+		} else if(SpecialType.NATIVE_OUTPUT_STREAM.matches(this)) {
+			context.nativeOutputStreamValueIndex = llvmProperties.size
+			llvmProperties.add(constructor.pointerType)
 		}
 	}
 

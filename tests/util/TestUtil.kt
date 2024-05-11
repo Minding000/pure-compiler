@@ -15,6 +15,7 @@ import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
+import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -26,10 +27,11 @@ object TestUtil {
 	const val TEST_FILE_NAME = "Test"
     private val defaultErrorStream = System.err
     private val testErrorStream = ByteArrayOutputStream()
-	private val EXTERNAL_FUNCTIONS = listOf("i32 @printf(ptr, ...)", "i32 @fflush(ptr)", "ptr @_fdopen(i32, ptr)", "i32 @fclose(ptr)",
-		"i64 @fwrite(ptr, i64, i64, ptr)", "i64 @fread(ptr, i64, i64, ptr)", "i32 @fgetc(ptr)", "void @Sleep(i32)", "void @exit(i32)",
-		"ptr @memcpy(ptr, ptr, i32)", "void @llvm.va_start(ptr)", "void @llvm.va_copy(ptr, ptr)", "void @llvm.va_end(ptr)",
-		"noalias ptr @malloc(i32)")
+	private val EXTERNAL_FUNCTIONS = listOf("i32 @fprintf(ptr, ptr, ...)", "i32 @fflush(ptr)", "ptr @_fdopen(i32, ptr)",
+		"i1 @__vcrt_initialize()", "i1 @__acrt_initialize()", "i32 @__acrt_initialize_stdio()", "ptr @__acrt_iob_func(i32)", "i32 @ferror(ptr)",
+		"i32 @fclose(ptr)", "i64 @fwrite(ptr, i64, i64, ptr)", "i64 @fread(ptr, i64, i64, ptr)", "i32 @fgetc(ptr)", "void @Sleep(i32)",
+		"void @exit(i32)", "ptr @memcpy(ptr, ptr, i32)", "void @llvm.va_start(ptr)", "void @llvm.va_copy(ptr, ptr)",
+		"void @llvm.va_end(ptr)", "noalias ptr @malloc(i32)")
 
     fun recordErrorStream() {
         System.setErr(PrintStream(testErrorStream))
@@ -157,10 +159,16 @@ object TestUtil {
 		outputStream.write(input.toByteArray())
 		outputStream.flush()
 		outputStream.close()
-		val exitCode = process.onExit().join().exitValue()
-		if(exitCode != ExitCode.SUCCESS)
-			fail("Program exited with error code: $exitCode")
+		val timeoutInSeconds = 1L
+		val exitCode = process.onExit().completeOnTimeout(null, timeoutInSeconds, TimeUnit.SECONDS).join()?.exitValue()
+		val programFailed = exitCode != ExitCode.SUCCESS
+		if(exitCode == null)
+			System.err.println("Program timed out after ${timeoutInSeconds}s.")
+		else if(programFailed)
+			System.err.println("Program exited with error code: $exitCode")
 		assertStringEquals(expectedString, reader.readText())
+		if(programFailed)
+			fail("Program failed! See lines above for details (timeout or error code).")
 	}
 
 	private fun printDiagnostics(intermediateRepresentation: String) {

@@ -24,7 +24,7 @@ class NativeRegistry(val context: Context) {
 		BoolNatives(context).load(this)
 		ByteArrayNatives(context).load(this)
 		ByteNatives(context).load(this)
-		CliNatives(context).load(this)
+		ProcessNatives(context).load(this)
 		FloatNatives(context).load(this)
 		IdentifiableNatives(context).load(this)
 		IntNatives(context).load(this)

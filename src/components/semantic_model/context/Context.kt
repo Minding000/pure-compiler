@@ -30,20 +30,25 @@ class Context {
 	lateinit var llvmMemberIdType: LlvmType
 	lateinit var llvmMemberOffsetType: LlvmType
 	lateinit var llvmMemberAddressType: LlvmType
+	lateinit var llvmStandardInputStreamGlobal: LlvmValue
+	lateinit var llvmStandardOutputStreamGlobal: LlvmValue
+	lateinit var llvmStandardErrorStreamGlobal: LlvmValue
 	lateinit var llvmPrintFunctionType: LlvmType
 	lateinit var llvmPrintFunction: LlvmValue
-	lateinit var llvmOpenFunctionType: LlvmType
-	lateinit var llvmOpenFunction: LlvmValue
-	lateinit var llvmCloseFunctionType: LlvmType
-	lateinit var llvmCloseFunction: LlvmValue
-	lateinit var llvmWriteFunctionType: LlvmType
-	lateinit var llvmWriteFunction: LlvmValue
-	lateinit var llvmReadByteFunctionType: LlvmType
-	lateinit var llvmReadByteFunction: LlvmValue
-	lateinit var llvmReadFunctionType: LlvmType
-	lateinit var llvmReadFunction: LlvmValue
-	lateinit var llvmFlushFunctionType: LlvmType
-	lateinit var llvmFlushFunction: LlvmValue
+	lateinit var llvmStreamOpenFunctionType: LlvmType
+	lateinit var llvmStreamOpenFunction: LlvmValue
+	lateinit var llvmStreamErrorFunctionType: LlvmType
+	lateinit var llvmStreamErrorFunction: LlvmValue
+	lateinit var llvmStreamCloseFunctionType: LlvmType
+	lateinit var llvmStreamCloseFunction: LlvmValue
+	lateinit var llvmStreamWriteFunctionType: LlvmType
+	lateinit var llvmStreamWriteFunction: LlvmValue
+	lateinit var llvmStreamReadByteFunctionType: LlvmType
+	lateinit var llvmStreamReadByteFunction: LlvmValue
+	lateinit var llvmStreamReadFunctionType: LlvmType
+	lateinit var llvmStreamReadFunction: LlvmValue
+	lateinit var llvmStreamFlushFunctionType: LlvmType
+	lateinit var llvmStreamFlushFunction: LlvmValue
 	lateinit var llvmSleepFunctionType: LlvmType
 	lateinit var llvmSleepFunction: LlvmValue
 	lateinit var llvmExitFunctionType: LlvmType
@@ -64,18 +69,24 @@ class Context {
 	lateinit var byteDeclarationType: LlvmType
 	lateinit var integerDeclarationType: LlvmType
 	lateinit var floatDeclarationType: LlvmType
+	lateinit var nativeInputStreamDeclarationType: LlvmType
+	lateinit var nativeOutputStreamDeclarationType: LlvmType
 	lateinit var arrayClassDefinition: LlvmValue
 	lateinit var booleanClassDefinition: LlvmValue
 	lateinit var byteArrayClassDefinition: LlvmValue
 	lateinit var byteClassDefinition: LlvmValue
 	lateinit var integerClassDefinition: LlvmValue
 	lateinit var floatClassDefinition: LlvmValue
+	lateinit var nativeInputStreamClassDefinition: LlvmValue
+	lateinit var nativeOutputStreamClassDefinition: LlvmValue
 	var arrayValueIndex by Delegates.notNull<Int>()
 	var booleanValueIndex by Delegates.notNull<Int>()
 	var byteArrayValueIndex by Delegates.notNull<Int>()
 	var byteValueIndex by Delegates.notNull<Int>()
 	var integerValueIndex by Delegates.notNull<Int>()
 	var floatValueIndex by Delegates.notNull<Int>()
+	var nativeInputStreamValueIndex by Delegates.notNull<Int>()
+	var nativeOutputStreamValueIndex by Delegates.notNull<Int>()
 	var stringTypeDeclaration: TypeDeclaration? = null
 	lateinit var llvmStringByteArrayInitializerType: LlvmType
 	lateinit var llvmStringByteArrayInitializer: LlvmValue
@@ -194,9 +205,13 @@ class Context {
 		constructor.buildFunctionCall(llvmExitFunctionType, llvmExitFunction, listOf(exitCode))
 	}
 
-	private fun printMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
+	fun printMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
+		assert(formatString.count { it == '%' } == values.size) { "Wrong template count!" }
+
 		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("pure_debug_formatString", "$formatString\n")
-		constructor.buildFunctionCall(llvmPrintFunctionType, llvmPrintFunction, listOf(formatStringGlobal, *values))
-		constructor.buildFunctionCall(llvmFlushFunctionType, llvmFlushFunction, listOf(constructor.nullPointer))
+
+		val handle = constructor.buildLoad(constructor.pointerType, llvmStandardOutputStreamGlobal, "handle")
+		constructor.buildFunctionCall(llvmPrintFunctionType, llvmPrintFunction, listOf(handle, formatStringGlobal, *values))
+		constructor.buildFunctionCall(llvmStreamFlushFunctionType, llvmStreamFlushFunction, listOf(handle))
 	}
 }

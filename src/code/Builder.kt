@@ -28,6 +28,8 @@ object Builder {
 		SpecialType.BOOLEAN to listOf("Pure", "lang", "dataTypes", "Bool"),
 		SpecialType.NULL to listOf("Pure", "lang", "dataTypes", "Null"),
 		SpecialType.FUNCTION to listOf("Pure", "lang", "dataTypes", "Function"),
+		SpecialType.NATIVE_INPUT_STREAM to listOf("Pure", "lang", "core", "NativeInputStream"),
+		SpecialType.NATIVE_OUTPUT_STREAM to listOf("Pure", "lang", "core", "NativeOutputStream"),
 		SpecialType.ITERABLE to listOf("Pure", "lang", "collections", "Iterable"),
 		SpecialType.INDEX_ITERATOR to listOf("Pure", "lang", "collections", "iterators", "IndexIterator"),
 		SpecialType.KEY_ITERATOR to listOf("Pure", "lang", "collections", "iterators", "KeyIterator"),

@@ -15,6 +15,8 @@ enum class SpecialType(val className: String) {
 	BOOLEAN("Bool"),
 	NULL("Null"),
 	FUNCTION("Function"),
+	NATIVE_INPUT_STREAM("NativeInputStream"),
+	NATIVE_OUTPUT_STREAM("NativeOutputStream"),
 	ITERABLE("Iterable"),
 	INDEX_ITERATOR("IndexIterator"),
 	KEY_ITERATOR("KeyIterator"),
