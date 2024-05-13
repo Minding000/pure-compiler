@@ -1,6 +1,5 @@
 package components.code_generation.operations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -16,8 +15,8 @@ internal class BinaryFloatOperatorsWithCast {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result)
 	}
 
 	@Test
@@ -29,8 +28,8 @@ internal class BinaryFloatOperatorsWithCast {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result)
 	}
 
 	@Test
@@ -42,8 +41,8 @@ internal class BinaryFloatOperatorsWithCast {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result)
 	}
 
 	@Test
@@ -55,8 +54,8 @@ internal class BinaryFloatOperatorsWithCast {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result)
 	}
 
 	@Test
@@ -68,8 +67,8 @@ internal class BinaryFloatOperatorsWithCast {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
-		assertEquals(false, Llvm.castToBoolean(result))
+		val result = TestUtil.runAndReturnBoolean(sourceCode, "Test:SimplestApp.getNo")
+		assertEquals(false, result)
 	}
 
 	@Test
@@ -81,8 +80,8 @@ internal class BinaryFloatOperatorsWithCast {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
-		assertEquals(false, Llvm.castToBoolean(result))
+		val result = TestUtil.runAndReturnBoolean(sourceCode, "Test:SimplestApp.getNo")
+		assertEquals(false, result)
 	}
 
 	@Test
@@ -94,8 +93,8 @@ internal class BinaryFloatOperatorsWithCast {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
-		assertEquals(true, Llvm.castToBoolean(result))
+		val result = TestUtil.runAndReturnBoolean(sourceCode, "Test:SimplestApp.getYes")
+		assertEquals(true, result)
 	}
 
 	@Test
@@ -107,8 +106,8 @@ internal class BinaryFloatOperatorsWithCast {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
-		assertEquals(true, Llvm.castToBoolean(result))
+		val result = TestUtil.runAndReturnBoolean(sourceCode, "Test:SimplestApp.getYes")
+		assertEquals(true, result)
 	}
 
 	@Test
@@ -120,8 +119,8 @@ internal class BinaryFloatOperatorsWithCast {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getYes")
-		assertEquals(true, Llvm.castToBoolean(result))
+		val result = TestUtil.runAndReturnBoolean(sourceCode, "Test:SimplestApp.getYes")
+		assertEquals(true, result)
 	}
 
 	@Test
@@ -133,7 +132,7 @@ internal class BinaryFloatOperatorsWithCast {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
-		assertEquals(false, Llvm.castToBoolean(result))
+		val result = TestUtil.runAndReturnBoolean(sourceCode, "Test:SimplestApp.getNo")
+		assertEquals(false, result)
 	}
 }

@@ -1,6 +1,5 @@
 package components.code_generation.declarations
 
-import components.code_generation.llvm.Llvm
 import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -23,7 +22,7 @@ internal class Initializer {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
-		assertEquals(53, Llvm.castToSignedInteger(result))
+		assertEquals(53, result)
 	}
 
 	@Test
@@ -45,7 +44,7 @@ internal class Initializer {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
-		assertEquals(74, Llvm.castToSignedInteger(result))
+		assertEquals(74, result)
 	}
 
 	@Test
@@ -64,7 +63,7 @@ internal class Initializer {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
-		assertEquals(74, Llvm.castToSignedInteger(result))
+		assertEquals(74, result)
 	}
 
 	@Test
@@ -86,7 +85,7 @@ internal class Initializer {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSum")
-		assertEquals(15, Llvm.castToSignedInteger(result))
+		assertEquals(15, result)
 	}
 
 	@Test
@@ -100,7 +99,7 @@ internal class Initializer {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo", true)
-		assertEquals(2, Llvm.castToSignedInteger(result))
+		assertEquals(2, result)
 	}
 
 	@Test
@@ -125,6 +124,6 @@ internal class Initializer {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEight", mapOf(
 			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
 		))
-		assertEquals(8, Llvm.castToSignedInteger(result))
+		assertEquals(8, result)
 	}
 }

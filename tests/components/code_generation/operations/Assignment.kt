@@ -1,6 +1,5 @@
 package components.code_generation.operations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -19,7 +18,7 @@ internal class Assignment {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -34,7 +33,7 @@ internal class Assignment {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -49,7 +48,7 @@ internal class Assignment {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -65,7 +64,7 @@ internal class Assignment {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -81,7 +80,7 @@ internal class Assignment {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEleven")
-		assertEquals(11, Llvm.castToSignedInteger(result))
+		assertEquals(11, result)
 	}
 
 	@Test
@@ -99,7 +98,7 @@ internal class Assignment {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -122,7 +121,7 @@ internal class Assignment {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -146,7 +145,7 @@ internal class Assignment {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -166,7 +165,7 @@ internal class Assignment {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEight")
-		assertEquals(8, Llvm.castToSignedInteger(result))
+		assertEquals(8, result)
 	}
 
 	@Test
@@ -187,7 +186,7 @@ internal class Assignment {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSixtyOne")
-		assertEquals(61, Llvm.castToSignedInteger(result))
+		assertEquals(61, result)
 	}
 
 	@Test
@@ -210,6 +209,6 @@ internal class Assignment {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightySix")
-		assertEquals(86, Llvm.castToSignedInteger(result))
+		assertEquals(86, result)
 	}
 }

@@ -1,8 +1,12 @@
 package components.code_generation.llvm
 
+import components.code_generation.ForeignFunctionInterface
 import components.semantic_model.general.Program
 import errors.internal.CompilerError
+import org.bytedeco.javacpp.BoolPointer
 import org.bytedeco.javacpp.BytePointer
+import org.bytedeco.javacpp.FloatPointer
+import org.bytedeco.javacpp.IntPointer
 import org.bytedeco.llvm.LLVM.LLVMTargetRef
 import org.bytedeco.llvm.LLVM.LLVMValueRef
 import org.bytedeco.llvm.global.LLVM.*
@@ -72,10 +76,58 @@ class LlvmProgram(name: String) {
 		return message
 	}
 
-	fun run(): LlvmGenericValue {
-		var result: LlvmGenericValue
-		LlvmEngine.run(constructor.module) { engine ->
-			result = Llvm.runFunction(engine, entrypoint)
+	fun run(entrypoint: String = Program.GLOBAL_ENTRYPOINT_NAME) {
+		LlvmRunner.run(constructor, entrypoint) { address ->
+			val functionInterface = ForeignFunctionInterface()
+			functionInterface.setSignature(emptyList(), ForeignFunctionInterface.voidType)
+			functionInterface.call(address)
+		}
+	}
+
+	fun runAndReturnBoolean(entrypoint: String = Program.GLOBAL_ENTRYPOINT_NAME): Boolean {
+		val result: Boolean
+		LlvmRunner.run(constructor, entrypoint) { address ->
+			val functionInterface = ForeignFunctionInterface()
+			functionInterface.setSignature(emptyList(), ForeignFunctionInterface.booleanType)
+			val returnValue = BoolPointer(1)
+			functionInterface.call(address, emptyList(), returnValue)
+			result = returnValue.get()
+		}
+		return result
+	}
+
+	fun runAndReturnByte(entrypoint: String = Program.GLOBAL_ENTRYPOINT_NAME): Byte {
+		val result: Byte
+		LlvmRunner.run(constructor, entrypoint) { address ->
+			val functionInterface = ForeignFunctionInterface()
+			functionInterface.setSignature(emptyList(), ForeignFunctionInterface.signedByteType)
+			val returnValue = BytePointer(1L)
+			functionInterface.call(address, emptyList(), returnValue)
+			result = returnValue.get()
+		}
+		return result
+	}
+
+	fun runAndReturnInt(entrypoint: String = Program.GLOBAL_ENTRYPOINT_NAME): Int {
+		val result: Int
+		LlvmRunner.run(constructor, entrypoint) { address ->
+			val functionInterface = ForeignFunctionInterface()
+			functionInterface.setSignature(emptyList(), ForeignFunctionInterface.signedIntegerType)
+			val returnValue = IntPointer(1)
+			functionInterface.call(address, emptyList(), returnValue)
+			result = returnValue.get()
+		}
+		return result
+	}
+
+	fun runAndReturnFloat(entrypoint: String = Program.GLOBAL_ENTRYPOINT_NAME): Float {
+		val result: Float
+		LlvmRunner.run(constructor, entrypoint) { address ->
+			val functionInterface = ForeignFunctionInterface()
+			functionInterface.setSignature(emptyList(), ForeignFunctionInterface.floatType)
+			val returnValue = FloatPointer(1)
+			functionInterface.call(address, emptyList(), returnValue)
+			result = returnValue.get()
 		}
 		return result
 	}

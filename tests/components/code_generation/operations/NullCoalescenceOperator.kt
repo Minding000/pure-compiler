@@ -1,6 +1,5 @@
 package components.code_generation.operations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -17,7 +16,7 @@ internal class NullCoalescenceOperator {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEight")
-		assertEquals(8, Llvm.castToSignedInteger(result))
+		assertEquals(8, result)
 	}
 
 	@Test
@@ -30,7 +29,7 @@ internal class NullCoalescenceOperator {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree")
-		assertEquals(3, Llvm.castToSignedInteger(result))
+		assertEquals(3, result)
 	}
 
 	@Test
@@ -44,7 +43,7 @@ internal class NullCoalescenceOperator {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -60,6 +59,6 @@ internal class NullCoalescenceOperator {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSeven")
-		assertEquals(7, Llvm.castToSignedInteger(result))
+		assertEquals(7, result)
 	}
 }

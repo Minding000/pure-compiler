@@ -1,6 +1,5 @@
 package components.code_generation.operations
 
-import components.code_generation.llvm.Llvm
 import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -24,7 +23,7 @@ internal class InstanceAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwelve")
-		assertEquals(12, Llvm.castToSignedInteger(result))
+		assertEquals(12, result)
 	}
 
 	@Test
@@ -53,7 +52,7 @@ internal class InstanceAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo")
-		assertEquals(2, Llvm.castToSignedInteger(result))
+		assertEquals(2, result)
 	}
 
 	@Test
@@ -75,6 +74,6 @@ internal class InstanceAccess {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getZero", mapOf(
 			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
 		))
-		assertEquals(0, Llvm.castToSignedInteger(result))
+		assertEquals(0, result)
 	}
 }

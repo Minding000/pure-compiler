@@ -1,6 +1,5 @@
 package components.code_generation.operations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -22,7 +21,7 @@ internal class IndexAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwelve")
-		assertEquals(12, Llvm.castToSignedInteger(result))
+		assertEquals(12, result)
 	}
 
 	@Test
@@ -42,7 +41,7 @@ internal class IndexAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo")
-		assertEquals(2, Llvm.castToSignedInteger(result))
+		assertEquals(2, result)
 	}
 
 	@Test
@@ -67,7 +66,7 @@ internal class IndexAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightySix")
-		assertEquals(86, Llvm.castToSignedInteger(result))
+		assertEquals(86, result)
 	}
 
 	@Test
@@ -91,7 +90,7 @@ internal class IndexAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightySix")
-		assertEquals(86, Llvm.castToSignedInteger(result))
+		assertEquals(86, result)
 	}
 
 	@Test
@@ -115,7 +114,7 @@ internal class IndexAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightySix")
-		assertEquals(86, Llvm.castToSignedInteger(result))
+		assertEquals(86, result)
 	}
 
 	@Test
@@ -138,6 +137,6 @@ internal class IndexAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightySix")
-		assertEquals(86, Llvm.castToSignedInteger(result))
+		assertEquals(86, result)
 	}
 }

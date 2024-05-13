@@ -1,6 +1,5 @@
 package components.code_generation.general
 
-import components.code_generation.llvm.Llvm
 import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -19,8 +18,8 @@ internal class ValueConversion {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNineteen")
-		assertEquals(19.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getNineteen")
+		assertEquals(19.0, result)
 	}
 
 	@Test
@@ -35,7 +34,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiftyOne")
-		assertEquals(51, Llvm.castToSignedInteger(result))
+		assertEquals(51, result)
 	}
 
 	@Test
@@ -49,8 +48,8 @@ internal class ValueConversion {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSeventyOne")
-		assertEquals(71.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getSeventyOne")
+		assertEquals(71.0, result)
 	}
 
 	@Test
@@ -76,8 +75,8 @@ internal class ValueConversion {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result), 0.01)
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result, 0.01)
 	}
 
 	@Test
@@ -92,7 +91,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
-		assertEquals(99, Llvm.castToSignedInteger(result))
+		assertEquals(99, result)
 	}
 
 	@Test
@@ -107,7 +106,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
-		assertEquals(99, Llvm.castToSignedInteger(result))
+		assertEquals(99, result)
 	}
 
 	@Test
@@ -122,7 +121,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
-		assertEquals(99, Llvm.castToSignedInteger(result))
+		assertEquals(99, result)
 	}
 
 	@Test
@@ -137,7 +136,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
-		assertEquals(99, Llvm.castToSignedInteger(result))
+		assertEquals(99, result)
 	}
 
 	@Test
@@ -152,7 +151,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
-		assertEquals(99, Llvm.castToSignedInteger(result))
+		assertEquals(99, result)
 	}
 
 	@Test
@@ -167,7 +166,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
-		assertEquals(99, Llvm.castToSignedInteger(result))
+		assertEquals(99, result)
 	}
 
 	@Test
@@ -182,7 +181,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
-		assertEquals(99, Llvm.castToSignedInteger(result))
+		assertEquals(99, result)
 	}
 
 	@Test
@@ -197,7 +196,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
-		assertEquals(99, Llvm.castToSignedInteger(result))
+		assertEquals(99, result)
 	}
 
 	@Test
@@ -212,7 +211,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine")
-		assertEquals(99, Llvm.castToSignedInteger(result))
+		assertEquals(99, result)
 	}
 
 	@Test
@@ -235,7 +234,7 @@ internal class ValueConversion {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", mapOf(
 			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
 		))
-		assertEquals(99, Llvm.castToSignedInteger(result))
+		assertEquals(99, result)
 	}
 
 	@Test
@@ -257,7 +256,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyFive")
-		assertEquals(85, Llvm.castToSignedInteger(result))
+		assertEquals(85, result)
 	}
 
 	@Test
@@ -279,7 +278,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyFive")
-		assertEquals(85, Llvm.castToSignedInteger(result))
+		assertEquals(85, result)
 	}
 
 	@Test
@@ -301,7 +300,7 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyFive")
-		assertEquals(85, Llvm.castToSignedInteger(result))
+		assertEquals(85, result)
 	}
 
 	@Test
@@ -323,6 +322,6 @@ internal class ValueConversion {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyFive")
-		assertEquals(85, Llvm.castToSignedInteger(result))
+		assertEquals(85, result)
 	}
 }

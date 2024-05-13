@@ -1,6 +1,5 @@
 package components.code_generation.control_flow
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertContains
@@ -50,7 +49,7 @@ internal class Loop {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo")
-		assertEquals(2, Llvm.castToSignedInteger(result))
+		assertEquals(2, result)
 	}
 
 	@Test
@@ -71,7 +70,7 @@ internal class Loop {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getZero")
-		assertEquals(0, Llvm.castToSignedInteger(result))
+		assertEquals(0, result)
 	}
 
 	@Test
@@ -123,7 +122,7 @@ internal class Loop {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
-		assertEquals(6, Llvm.castToSignedInteger(result))
+		assertEquals(6, result)
 	}
 
 	@Test
@@ -142,7 +141,7 @@ internal class Loop {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree")
-		assertEquals(3, Llvm.castToSignedInteger(result))
+		assertEquals(3, result)
 	}
 
 	@Test
@@ -162,6 +161,6 @@ internal class Loop {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix", true)
-		assertEquals(6, Llvm.castToSignedInteger(result))
+		assertEquals(6, result)
 	}
 }

@@ -1,6 +1,5 @@
 package components.code_generation.operations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -17,8 +16,8 @@ internal class UnaryOperators {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
-		assertEquals(false, Llvm.castToBoolean(result))
+		val result = TestUtil.runAndReturnBoolean(sourceCode, "Test:SimplestApp.getNo")
+		assertEquals(false, result)
 	}
 
 	@Test
@@ -31,8 +30,8 @@ internal class UnaryOperators {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNegativeOne")
-		assertEquals(-1, Llvm.castToSignedInteger(result))
+		val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getNegativeOne")
+		assertEquals(-1, result)
 	}
 
 	@Test
@@ -45,7 +44,7 @@ internal class UnaryOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNegativeOne")
-		assertEquals(-1, Llvm.castToSignedInteger(result))
+		assertEquals(-1, result)
 	}
 
 	@Test
@@ -57,8 +56,8 @@ internal class UnaryOperators {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNegativeOnePointFive")
-		assertEquals(-1.5, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getNegativeOnePointFive")
+		assertEquals(-1.5, result)
 	}
 
 	@Test
@@ -82,7 +81,7 @@ internal class UnaryOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNegativeTen")
-		assertEquals(-10, Llvm.castToSignedInteger(result))
+		assertEquals(-10, result)
 	}
 
 	@Test
@@ -100,7 +99,7 @@ internal class UnaryOperators {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNo")
-		assertFalse(Llvm.castToBoolean(result))
+		val result = TestUtil.runAndReturnBoolean(sourceCode, "Test:SimplestApp.getNo")
+		assertFalse(result)
 	}
 }

@@ -2,7 +2,6 @@ package util
 
 import code.Builder
 import code.Main
-import components.code_generation.llvm.LlvmGenericValue
 import components.code_generation.llvm.LlvmProgram
 import components.semantic_model.context.SemanticModelGenerator
 import components.semantic_model.context.SpecialType
@@ -16,6 +15,9 @@ import source_structure.Project
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.util.concurrent.TimeUnit
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -106,22 +108,59 @@ object TestUtil {
 		}
     }
 
+	fun runAndReturnBoolean(sourceCode: String, entryPointPath: String): Boolean {
+		val result: Boolean
+		run(mapOf(TEST_FILE_NAME to sourceCode), entryPointPath, false, Builder.specialTypePaths) { program ->
+			result = program.runAndReturnBoolean()
+		}
+		return result
+	}
+
+	fun runAndReturnByte(sourceCode: String, entryPointPath: String): Byte {
+		val result: Byte
+		run(mapOf(TEST_FILE_NAME to sourceCode), entryPointPath, false, Builder.specialTypePaths) { program ->
+			result = program.runAndReturnByte()
+		}
+		return result
+	}
+
+	fun runAndReturnFloat(sourceCode: String, entryPointPath: String): Double {
+		val result: Double
+		run(mapOf(TEST_FILE_NAME to sourceCode), entryPointPath, false, Builder.specialTypePaths) { program ->
+			result = program.runAndReturnFloat().toDouble()
+		}
+		return result
+	}
+
 	@JvmName("runTestFile")
-	fun run(sourceCode: String, entryPointPath: String, specialTypePaths: Map<SpecialType, String>): LlvmGenericValue {
+	fun run(sourceCode: String, entryPointPath: String, specialTypePaths: Map<SpecialType, String>): Int {
 		return run(sourceCode, entryPointPath, false, specialTypePaths.mapValues { (_, fileName) -> listOf(fileName) })
 	}
 
-	fun run(sourceCode: String, entryPointPath: String, specialTypePaths: Map<SpecialType, List<String>>): LlvmGenericValue {
+	fun run(sourceCode: String, entryPointPath: String, specialTypePaths: Map<SpecialType, List<String>>): Int {
 		return run(sourceCode, entryPointPath, false, specialTypePaths)
 	}
 
     fun run(sourceCode: String, entryPointPath: String, includeRequiredModules: Boolean = false,
-			specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): LlvmGenericValue {
+			specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): Int {
 		return run(mapOf(TEST_FILE_NAME to sourceCode), entryPointPath, includeRequiredModules, specialTypePaths)
 	}
 
-    fun run(files: Map<String, String>, entryPointPath: String, includeRequiredModules: Boolean = false,
-			specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): LlvmGenericValue {
+	fun run(files: Map<String, String>, entryPointPath: String, includeRequiredModules: Boolean = false,
+			specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): Int {
+		val result: Int
+		run(files, entryPointPath, includeRequiredModules, specialTypePaths) { program ->
+			result = program.runAndReturnInt()
+		}
+		return result
+	}
+
+    @OptIn(ExperimentalContracts::class)
+	fun run(files: Map<String, String>, entryPointPath: String, includeRequiredModules: Boolean = false,
+			specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths, runner: (program: LlvmProgram) -> Unit) {
+		contract {
+			callsInPlace(runner, InvocationKind.EXACTLY_ONCE)
+		}
 		val lintResult = lint(files, includeRequiredModules, false, specialTypePaths)
 		val program = LlvmProgram(TEST_PROJECT_NAME)
 		try {
@@ -138,7 +177,7 @@ object TestUtil {
 			program.compile()
 			printDiagnostics(intermediateRepresentation)
 			println("----------")
-			return program.run()
+			runner(program)
 		} finally {
 			program.dispose()
 		}

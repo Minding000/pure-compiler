@@ -1,6 +1,5 @@
 package components.code_generation.operations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -19,7 +18,7 @@ internal class BinaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -34,7 +33,7 @@ internal class BinaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -49,7 +48,7 @@ internal class BinaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -64,7 +63,7 @@ internal class BinaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -78,8 +77,8 @@ internal class BinaryModifications {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result)
 	}
 
 	@Test
@@ -93,8 +92,8 @@ internal class BinaryModifications {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result)
 	}
 
 	@Test
@@ -108,8 +107,8 @@ internal class BinaryModifications {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result)
 	}
 
 	@Test
@@ -123,8 +122,8 @@ internal class BinaryModifications {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result)
 	}
 
 	@Test
@@ -138,8 +137,8 @@ internal class BinaryModifications {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result)
 	}
 
 	@Test
@@ -153,8 +152,8 @@ internal class BinaryModifications {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result)
 	}
 
 	@Test
@@ -168,8 +167,8 @@ internal class BinaryModifications {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result)
 	}
 
 	@Test
@@ -183,8 +182,8 @@ internal class BinaryModifications {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5.0, Llvm.castToFloat(result))
+		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5.0, result)
 	}
 
 	@Test
@@ -201,7 +200,7 @@ internal class BinaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOneHundred")
-		assertEquals(100, Llvm.castToSignedInteger(result))
+		assertEquals(100, result)
 	}
 
 	@Test
@@ -222,7 +221,7 @@ internal class BinaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne")
-		assertEquals(1, Llvm.castToSignedInteger(result))
+		assertEquals(1, result)
 	}
 
 	@Test
@@ -242,7 +241,7 @@ internal class BinaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEleven")
-		assertEquals(11, Llvm.castToSignedInteger(result))
+		assertEquals(11, result)
 	}
 
 	@Test
@@ -263,6 +262,6 @@ internal class BinaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 }

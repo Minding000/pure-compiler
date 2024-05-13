@@ -1,6 +1,5 @@
 package components.code_generation.native_implementations
 
-import components.code_generation.llvm.Llvm
 import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -36,6 +35,6 @@ internal class NativeInputStream {
 			SpecialType.STRING to TestUtil.TEST_FILE_NAME,
 			SpecialType.NATIVE_INPUT_STREAM to TestUtil.TEST_FILE_NAME,
 		))
-		assertEquals(0, Llvm.castToSignedInteger(result))
+		assertEquals(0, result)
 	}
 }

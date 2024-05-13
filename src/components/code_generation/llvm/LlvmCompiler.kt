@@ -38,9 +38,8 @@ object LlvmCompiler {
 			program.verify()
 			program.compile()
 			println("----- JIT output: -----")
-			val result = program.run()
-			val intResult = Llvm.castToSignedInteger(result)
-			println("Result: '${intResult}'")
+			val result = program.runAndReturnInt()
+			println("Exit code: $result")
 		} finally {
 			program.dispose()
 		}

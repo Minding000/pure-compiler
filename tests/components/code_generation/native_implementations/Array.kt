@@ -1,6 +1,5 @@
 package components.code_generation.native_implementations
 
-import components.code_generation.llvm.Llvm
 import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -27,7 +26,7 @@ internal class Array {
 			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME,
 			SpecialType.STRING to TestUtil.TEST_FILE_NAME
 		))
-		assertEquals(3, Llvm.castToSignedInteger(result))
+		assertEquals(3, result)
 	}
 
 	@Test
@@ -50,7 +49,7 @@ internal class Array {
 			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME,
 			SpecialType.STRING to TestUtil.TEST_FILE_NAME
 		))
-		assertEquals(3, Llvm.castToSignedInteger(result))
+		assertEquals(3, result)
 	}
 
 	@Test
@@ -72,7 +71,7 @@ internal class Array {
 			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME,
 			SpecialType.STRING to TestUtil.TEST_FILE_NAME
 		))
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -95,6 +94,6 @@ internal class Array {
 			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME,
 			SpecialType.STRING to TestUtil.TEST_FILE_NAME
 		))
-		assertEquals(7, Llvm.castToSignedInteger(result))
+		assertEquals(7, result)
 	}
 }

@@ -1,6 +1,5 @@
 package components.code_generation.declarations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -25,7 +24,7 @@ internal class Casts {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getB")
-		assertEquals(84, Llvm.castToSignedInteger(result))
+		assertEquals(84, result)
 	}
 
 	@Test
@@ -46,6 +45,6 @@ internal class Casts {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getB")
-		assertEquals(124, Llvm.castToSignedInteger(result))
+		assertEquals(124, result)
 	}
 }

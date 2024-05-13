@@ -5,7 +5,8 @@ import org.bytedeco.llvm.global.LLVM.*
 import util.toLlvmList
 
 class LlvmConstructor(name: String) {
-	val context = Llvm.createContext()
+	val threadSafeContext = LLVMOrcCreateNewThreadSafeContext()
+	val context = LLVMOrcThreadSafeContextGetContext(threadSafeContext)
 	val module = Llvm.createModule(context, name)
 	val dataLayout = LLVMGetModuleDataLayout(module)
 	val builder = Llvm.createBuilder(context)
@@ -351,6 +352,10 @@ class LlvmConstructor(name: String) {
 		if(value == null)
 			return LLVMBuildRetVoid(builder)
 		return LLVMBuildRet(builder, value)
+	}
+
+	fun toThreadSafeModule(): LlvmThreadSafeModule {
+		return LLVMOrcCreateNewThreadSafeModule(module, threadSafeContext)
 	}
 
 	fun dispose() {

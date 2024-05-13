@@ -1,6 +1,5 @@
 package components.code_generation.operations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -18,7 +17,7 @@ internal class MemberAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
-		assertEquals(62, Llvm.castToSignedInteger(result))
+		assertEquals(62, result)
 	}
 
 	@Test
@@ -35,7 +34,7 @@ internal class MemberAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getId")
-		assertEquals(3, Llvm.castToSignedInteger(result))
+		assertEquals(3, result)
 	}
 
 	@Test
@@ -52,7 +51,7 @@ internal class MemberAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getId")
-		assertEquals(3, Llvm.castToSignedInteger(result))
+		assertEquals(3, result)
 	}
 
 	@Test
@@ -78,7 +77,7 @@ internal class MemberAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getId")
-		assertEquals(23, Llvm.castToSignedInteger(result))
+		assertEquals(23, result)
 	}
 
 	@Test
@@ -99,7 +98,7 @@ internal class MemberAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getKey")
-		assertEquals(2, Llvm.castToSignedInteger(result))
+		assertEquals(2, result)
 	}
 
 	@Test
@@ -120,7 +119,7 @@ internal class MemberAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getKey")
-		assertEquals(3, Llvm.castToSignedInteger(result))
+		assertEquals(3, result)
 	}
 
 	@Test
@@ -135,7 +134,7 @@ internal class MemberAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
-		assertEquals(62, Llvm.castToSignedInteger(result))
+		assertEquals(62, result)
 	}
 
 	@Test
@@ -150,6 +149,6 @@ internal class MemberAccess {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
-		assertEquals(0, Llvm.castToSignedInteger(result))
+		assertEquals(0, result)
 	}
 }

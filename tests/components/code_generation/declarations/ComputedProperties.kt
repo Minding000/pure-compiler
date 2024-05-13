@@ -1,6 +1,5 @@
 package components.code_generation.declarations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -19,7 +18,7 @@ internal class ComputedProperties {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
-		assertEquals(6, Llvm.castToSignedInteger(result))
+		assertEquals(6, result)
 	}
 
 	@Test
@@ -35,7 +34,7 @@ internal class ComputedProperties {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
-		assertEquals(6, Llvm.castToSignedInteger(result))
+		assertEquals(6, result)
 	}
 
 	@Test
@@ -50,7 +49,7 @@ internal class ComputedProperties {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
-		assertEquals(6, Llvm.castToSignedInteger(result))
+		assertEquals(6, result)
 	}
 
 	@Test
@@ -66,7 +65,7 @@ internal class ComputedProperties {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
-		assertEquals(6, Llvm.castToSignedInteger(result))
+		assertEquals(6, result)
 	}
 
 	@Test
@@ -82,7 +81,7 @@ internal class ComputedProperties {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
-		assertEquals(6, Llvm.castToSignedInteger(result))
+		assertEquals(6, result)
 	}
 
 	@Test
@@ -101,6 +100,6 @@ internal class ComputedProperties {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFortyOne")
-		assertEquals(41, Llvm.castToSignedInteger(result))
+		assertEquals(41, result)
 	}
 }

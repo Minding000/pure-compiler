@@ -1,6 +1,5 @@
 package components.code_generation.declarations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -24,6 +23,6 @@ internal class LocalVariables {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSixteen")
-		assertEquals(16, Llvm.castToSignedInteger(result))
+		assertEquals(16, result)
 	}
 }

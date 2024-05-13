@@ -1,6 +1,5 @@
 package components.code_generation.control_flow
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -20,7 +19,7 @@ internal class SwitchExpression {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiveOrTen")
-		assertEquals(10, Llvm.castToSignedInteger(result))
+		assertEquals(10, result)
 	}
 
 	@Test
@@ -36,7 +35,7 @@ internal class SwitchExpression {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiveOrTen")
-		assertEquals(10, Llvm.castToSignedInteger(result))
+		assertEquals(10, result)
 	}
 
 	@Test
@@ -53,7 +52,7 @@ internal class SwitchExpression {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTenOrTwelve")
-		assertEquals(12, Llvm.castToSignedInteger(result))
+		assertEquals(12, result)
 	}
 
 	@Test
@@ -69,7 +68,7 @@ internal class SwitchExpression {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTenOrFifteen")
-		assertEquals(10, Llvm.castToSignedInteger(result))
+		assertEquals(10, result)
 	}
 
 	@Test
@@ -85,7 +84,7 @@ internal class SwitchExpression {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTenOrTwelve")
-		assertEquals(12, Llvm.castToSignedInteger(result))
+		assertEquals(12, result)
 	}
 
 	@Test
@@ -101,6 +100,6 @@ internal class SwitchExpression {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTenOrFortyOne")
-		assertEquals(41, Llvm.castToSignedInteger(result))
+		assertEquals(41, result)
 	}
 }

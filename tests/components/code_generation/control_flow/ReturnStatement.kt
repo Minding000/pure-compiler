@@ -1,6 +1,5 @@
 package components.code_generation.control_flow
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -23,6 +22,6 @@ internal class ReturnStatement {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFourteen")
-		assertEquals(14, Llvm.castToSignedInteger(result))
+		assertEquals(14, result)
 	}
 }

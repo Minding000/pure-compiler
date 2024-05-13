@@ -20,6 +20,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	val files = LinkedList<File>()
 
 	companion object {
+		const val GLOBAL_ENTRYPOINT_NAME = "main"
 		const val RUNTIME_PREFIX = "pure_runtime_"
 	}
 
@@ -141,7 +142,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		else
 			userEntryPointFunction?.signature?.returnType?.getLlvmType(constructor) ?: constructor.voidType
 		val globalEntryPointType = constructor.buildFunctionType(emptyList(), globalEntryPointReturnType)
-		val globalEntryPoint = constructor.buildFunction("main", globalEntryPointType)
+		val globalEntryPoint = constructor.buildFunction(GLOBAL_ENTRYPOINT_NAME, globalEntryPointType)
 		constructor.createAndSelectEntrypointBlock(globalEntryPoint)
 		createStandardStreams(constructor)
 		context.printDebugMessage(constructor, "Initializing program...")

@@ -1,6 +1,5 @@
 package components.code_generation.operations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -18,8 +17,8 @@ internal class UnaryModifications {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -33,8 +32,8 @@ internal class UnaryModifications {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -49,7 +48,7 @@ internal class UnaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -64,7 +63,7 @@ internal class UnaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -81,7 +80,7 @@ internal class UnaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne")
-		assertEquals(1, Llvm.castToSignedInteger(result))
+		assertEquals(1, result)
 	}
 
 	@Test
@@ -105,7 +104,7 @@ internal class UnaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFour")
-		assertEquals(4, Llvm.castToSignedInteger(result))
+		assertEquals(4, result)
 	}
 
 	@Test
@@ -125,6 +124,6 @@ internal class UnaryModifications {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne")
-		assertEquals(1, Llvm.castToSignedInteger(result))
+		assertEquals(1, result)
 	}
 }

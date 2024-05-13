@@ -1,6 +1,5 @@
 package components.code_generation.general
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -26,6 +25,6 @@ internal class SelfReference {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
-		assertEquals(38, Llvm.castToSignedInteger(result))
+		assertEquals(38, result)
 	}
 }

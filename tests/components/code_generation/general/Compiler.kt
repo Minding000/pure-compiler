@@ -1,6 +1,5 @@
 package components.code_generation.general
 
-import components.code_generation.llvm.Llvm
 import components.code_generation.llvm.LlvmProgram
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -11,20 +10,21 @@ internal class Compiler {
 
 	@Test
 	fun `is able to assemble and run test program`() {
-		val expectedResult = 5L
+		val expectedResult = 5
 		val program = LlvmProgram(TestUtil.TEST_PROJECT_NAME)
 		try {
 			val constructor = program.constructor
 			val functionType = constructor.buildFunctionType(emptyList(), constructor.i32Type)
-			val function = constructor.buildFunction("getNumber", functionType)
+			val functionName = "getNumber"
+			val function = constructor.buildFunction(functionName, functionType)
 			constructor.createAndSelectBlock(function, "body")
 			val number = constructor.buildInt32(expectedResult)
 			constructor.buildReturn(number)
 			program.entrypoint = function
 			program.verify()
 			program.compile()
-			val result = program.run()
-			assertEquals(expectedResult, Llvm.castToSignedInteger(result))
+			val result = program.runAndReturnInt(functionName)
+			assertEquals(expectedResult, result)
 		} finally {
 			program.dispose()
 		}
@@ -40,7 +40,7 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -67,7 +67,7 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -83,7 +83,7 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 
 	@Test
@@ -99,6 +99,6 @@ internal class Compiler {
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
-		assertEquals(5, Llvm.castToSignedInteger(result))
+		assertEquals(5, result)
 	}
 }

@@ -85,6 +85,7 @@ object Llvm {
 
 typealias LlvmContext = LLVMContextRef
 typealias LlvmModule = LLVMModuleRef
+typealias LlvmThreadSafeModule = LLVMOrcThreadSafeModuleRef
 typealias LlvmBuilder = LLVMBuilderRef
 typealias LlvmBlock = LLVMBasicBlockRef
 typealias LlvmValue = LLVMValueRef

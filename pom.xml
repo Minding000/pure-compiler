@@ -13,6 +13,11 @@
             <artifactId>llvm-platform</artifactId>
             <version>17.0.6-1.5.10</version>
         </dependency>
+		<dependency>
+			<groupId>org.bytedeco</groupId>
+			<artifactId>libffi-platform</artifactId>
+			<version>3.4.4-1.5.10</version>
+		</dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>

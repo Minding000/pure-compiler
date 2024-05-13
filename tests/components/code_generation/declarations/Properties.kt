@@ -1,6 +1,5 @@
 package components.code_generation.declarations
 
-import components.code_generation.llvm.Llvm
 import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
 import util.TestUtil
@@ -25,7 +24,7 @@ internal class Properties {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSixteen")
-		assertEquals(16, Llvm.castToSignedInteger(result))
+		assertEquals(16, result)
 	}
 
 	@Test
@@ -41,7 +40,7 @@ internal class Properties {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiftyEight")
-		assertEquals(58, Llvm.castToSignedInteger(result))
+		assertEquals(58, result)
 	}
 
 	@Test
@@ -63,6 +62,6 @@ internal class Properties {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne", mapOf(
 			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
 		))
-		assertEquals(1, Llvm.castToSignedInteger(result))
+		assertEquals(1, result)
 	}
 }

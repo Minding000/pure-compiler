@@ -1,6 +1,5 @@
 package components.code_generation.declarations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertContains
@@ -288,6 +287,6 @@ internal class TypeDefinitions {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiftyEight")
-		assertEquals(58, Llvm.castToSignedInteger(result))
+		assertEquals(58, result)
 	}
 }

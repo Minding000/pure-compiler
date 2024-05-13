@@ -1,6 +1,5 @@
 package components.code_generation.operations
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -23,7 +22,7 @@ internal class BinaryPrimitiveOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwentyFour")
-		assertEquals(24, Llvm.castToSignedInteger(result))
+		assertEquals(24, result)
 	}
 
 	@Test
@@ -43,6 +42,6 @@ internal class BinaryPrimitiveOperators {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree")
-		assertEquals(3, Llvm.castToSignedInteger(result))
+		assertEquals(3, result)
 	}
 }

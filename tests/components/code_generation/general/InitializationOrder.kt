@@ -1,6 +1,5 @@
 package components.code_generation.general
 
-import components.code_generation.llvm.Llvm
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -23,7 +22,7 @@ internal class InitializationOrder {
 			}
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyFour")
-		assertEquals(84, Llvm.castToSignedInteger(result))
+		assertEquals(84, result)
 	}
 
 	@Test
@@ -47,6 +46,6 @@ internal class InitializationOrder {
 			"SimplestApp" to simplestAppSourceCode,
 			"Application" to applicationSourceCode,
 		), "Test:SimplestApp.getEightyFour")
-		assertEquals(84, Llvm.castToSignedInteger(result))
+		assertEquals(84, result)
 	}
 }
