@@ -114,7 +114,8 @@ class ArrayNatives(val context: Context) {
 		val offsetCombinedArrayAddress = constructor.buildGetArrayElementPointer(elementType, combinedValue, thisSize,
 			"offsetCombinedArrayAddress")
 		constructor.buildFunctionCall(context.llvmMemoryCopyFunctionType, context.llvmMemoryCopyFunction,
-			listOf(parameterValue, offsetCombinedArrayAddress, parameterSize)) //TODO fix: count needs to be in bytes - multiply by pointer size
+			listOf(parameterValue, offsetCombinedArrayAddress,
+				parameterSize)) //TODO fix: count needs to be in bytes - multiply by pointer size
 		val combinedArrayValueProperty = constructor.buildGetPropertyPointer(arrayType, combinedArray, context.arrayValueIndex,
 			"combinedArrayValueProperty")
 		constructor.buildStore(combinedValue, combinedArrayValueProperty)

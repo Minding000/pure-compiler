@@ -12,7 +12,8 @@ class PrimitiveIntNatives(val context: Context) {
 	}
 
 	private fun compileToThePowerOf(constructor: LlvmConstructor): PrimitiveImplementation {
-		val functionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.i32Type, constructor.i32Type), constructor.i32Type)
+		val functionType =
+			constructor.buildFunctionType(listOf(constructor.pointerType, constructor.i32Type, constructor.i32Type), constructor.i32Type)
 		val function = constructor.buildFunction("Int.toThePowerOf(Int): Int", functionType)
 		constructor.createAndSelectEntrypointBlock(function)
 		val thisInt = context.getThisParameter(constructor)

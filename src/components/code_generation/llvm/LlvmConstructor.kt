@@ -71,6 +71,7 @@ class LlvmConstructor(name: String) {
 	fun buildInt32(value: Long): LlvmValue {
 		return LLVMConstInt(i32Type, value, Llvm.NO)
 	}
+
 	fun buildInt64(value: Long): LlvmValue {
 		return LLVMConstInt(i64Type, value, Llvm.NO)
 	}
@@ -92,10 +93,11 @@ class LlvmConstructor(name: String) {
 	}
 
 	fun buildArrayType(baseType: LlvmType, size: Int): LlvmType {
-		return LLVMArrayType(baseType, size)
+		return LLVMArrayType2(baseType, size.toLong())
 	}
 
-	fun buildFunctionType(parameterTypes: List<LlvmType?> = emptyList(), returnType: LlvmType? = voidType, isVariadic: Boolean = false): LlvmType {
+	fun buildFunctionType(parameterTypes: List<LlvmType?> = emptyList(), returnType: LlvmType? = voidType,
+						  isVariadic: Boolean = false): LlvmType {
 		if(returnType == null)
 			throw CompilerError("Missing return type in function.")
 		return LLVMFunctionType(returnType, parameterTypes.toLlvmList(), parameterTypes.size, Llvm.bool(isVariadic))
@@ -294,6 +296,7 @@ class LlvmConstructor(name: String) {
 	fun buildOr(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildOr(builder, left, right, name)
 	fun buildBooleanEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.BooleanOperation.EQUAL_TO, left, right, name)
+
 	fun buildBooleanNotEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.BooleanOperation.NOT_EQUAL_TO, left, right, name)
 
@@ -306,19 +309,25 @@ class LlvmConstructor(name: String) {
 	fun buildSignedIntegerDivision(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildSDiv(builder, left, right, name)
 	fun buildSignedIntegerLessThan(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.SignedIntegerOperation.LESS_THAN, left, right, name)
+
 	fun buildSignedIntegerGreaterThan(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.SignedIntegerOperation.GREATER_THAN, left, right, name)
+
 	fun buildSignedIntegerLessThanOrEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.SignedIntegerOperation.LESS_THAN_OR_EQUAL_TO, left, right, name)
+
 	fun buildSignedIntegerGreaterThanOrEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.SignedIntegerOperation.GREATER_THAN_OR_EQUAL_TO, left, right, name)
+
 	fun buildSignedIntegerEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.SignedIntegerOperation.EQUAL_TO, left, right, name)
+
 	fun buildSignedIntegerNotEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.SignedIntegerOperation.NOT_EQUAL_TO, left, right, name)
 
 	fun buildPointerEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.UnsignedIntegerOperation.EQUAL_TO, left, right, name)
+
 	fun buildPointerNotEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.UnsignedIntegerOperation.NOT_EQUAL_TO, left, right, name)
 
@@ -329,14 +338,19 @@ class LlvmConstructor(name: String) {
 	fun buildFloatDivision(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildFDiv(builder, left, right, name)
 	fun buildFloatLessThan(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildFCmp(builder, Llvm.FloatOperation.LESS_THAN, left, right, name)
+
 	fun buildFloatGreaterThan(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildFCmp(builder, Llvm.FloatOperation.GREATER_THAN, left, right, name)
+
 	fun buildFloatLessThanOrEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildFCmp(builder, Llvm.FloatOperation.LESS_THAN_OR_EQUAL_TO, left, right, name)
+
 	fun buildFloatGreaterThanOrEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildFCmp(builder, Llvm.FloatOperation.GREATER_THAN_OR_EQUAL_TO, left, right, name)
+
 	fun buildFloatEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildFCmp(builder, Llvm.FloatOperation.EQUAL_TO, left, right, name)
+
 	fun buildFloatNotEqualTo(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildFCmp(builder, Llvm.FloatOperation.NOT_EQUAL_TO, left, right, name)
 

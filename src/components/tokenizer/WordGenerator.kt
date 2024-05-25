@@ -93,7 +93,7 @@ class WordGenerator(private val project: Project) {
 		if(file.content.length == position)
 			return null
 		matcher.region(position, file.content.length)
-		for(wordType in WordAtom.values()) {
+		for(wordType in WordAtom.entries) {
 			matcher.usePattern(wordType.pattern)
 			if(!matcher.lookingAt())
 				continue

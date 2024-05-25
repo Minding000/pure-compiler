@@ -13,10 +13,12 @@ object Llvm {
 	const val YES = 1
 	const val OK = 0
 	const val DEFAULT_ADDRESS_SPACE_INDEX = 0
+
 	object BooleanOperation {
 		const val EQUAL_TO = LLVMIntEQ
 		const val NOT_EQUAL_TO = LLVMIntNE
 	}
+
 	object SignedIntegerOperation {
 		const val LESS_THAN = LLVMIntSLT
 		const val GREATER_THAN = LLVMIntSGT
@@ -25,6 +27,7 @@ object Llvm {
 		const val EQUAL_TO = LLVMIntEQ
 		const val NOT_EQUAL_TO = LLVMIntNE
 	}
+
 	object UnsignedIntegerOperation {
 		const val LESS_THAN = LLVMIntULT
 		const val GREATER_THAN = LLVMIntUGT
@@ -33,6 +36,7 @@ object Llvm {
 		const val EQUAL_TO = LLVMIntEQ
 		const val NOT_EQUAL_TO = LLVMIntNE
 	}
+
 	object FloatOperation {
 		//TODO test NaN values
 		// see: https://stackoverflow.com/questions/40327806/what-are-ordered-and-unordered-llvm-cmpinst-compare-instructions
@@ -43,6 +47,7 @@ object Llvm {
 		const val EQUAL_TO = LLVMRealOEQ
 		const val NOT_EQUAL_TO = LLVMRealONE
 	}
+
 	object OptimizationLevel {
 		const val MINIMAL = 0
 		const val DEBUGGABLE = 1

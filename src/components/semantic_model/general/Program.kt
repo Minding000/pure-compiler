@@ -228,7 +228,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 
 	private fun declareStandardStreams(constructor: LlvmConstructor) {
 		context.llvmStandardInputStreamGlobal = constructor.declareGlobal("${RUNTIME_PREFIX}standard_input_stream", constructor.pointerType)
-		context.llvmStandardOutputStreamGlobal = constructor.declareGlobal("${RUNTIME_PREFIX}standard_output_stream", constructor.pointerType)
+		context.llvmStandardOutputStreamGlobal =
+			constructor.declareGlobal("${RUNTIME_PREFIX}standard_output_stream", constructor.pointerType)
 		context.llvmStandardErrorStreamGlobal = constructor.declareGlobal("${RUNTIME_PREFIX}standard_error_stream", constructor.pointerType)
 		constructor.defineGlobal(context.llvmStandardInputStreamGlobal, constructor.nullPointer)
 		constructor.defineGlobal(context.llvmStandardOutputStreamGlobal, constructor.nullPointer)
@@ -236,7 +237,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun addPrintFunction(constructor: LlvmConstructor) {
-		context.llvmPrintFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), constructor.i32Type, true)
+		context.llvmPrintFunctionType =
+			constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), constructor.i32Type, true)
 		context.llvmPrintFunction = constructor.buildFunction("fprintf", context.llvmPrintFunctionType)
 	}
 
@@ -262,7 +264,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun addStreamWriteFunction(constructor: LlvmConstructor) {
-		context.llvmStreamWriteFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
+		context.llvmStreamWriteFunctionType = constructor.buildFunctionType(
+			listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
 		context.llvmStreamWriteFunction = constructor.buildFunction("fwrite", context.llvmStreamWriteFunctionType)
 	}
 
@@ -272,7 +275,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun addStreamReadFunction(constructor: LlvmConstructor) {
-		context.llvmStreamReadFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
+		context.llvmStreamReadFunctionType = constructor.buildFunctionType(
+			listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
 		context.llvmStreamReadFunction = constructor.buildFunction("fread", context.llvmStreamReadFunctionType)
 	}
 
@@ -305,12 +309,18 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		else
 			listOf(constructor.pointerType)
 		constructor.defineStruct(context.variadicParameterListStruct, variadicParameterListStructMembers)
-		context.llvmVariableParameterIterationStartFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.voidType)
-		context.llvmVariableParameterIterationStartFunction = constructor.buildFunction("llvm.va_start", context.llvmVariableParameterIterationStartFunctionType)
-		context.llvmVariableParameterListCopyFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), constructor.voidType)
-		context.llvmVariableParameterListCopyFunction = constructor.buildFunction("llvm.va_copy", context.llvmVariableParameterListCopyFunctionType)
-		context.llvmVariableParameterIterationEndFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.voidType)
-		context.llvmVariableParameterIterationEndFunction = constructor.buildFunction("llvm.va_end", context.llvmVariableParameterIterationEndFunctionType)
+		context.llvmVariableParameterIterationStartFunctionType =
+			constructor.buildFunctionType(listOf(constructor.pointerType), constructor.voidType)
+		context.llvmVariableParameterIterationStartFunction =
+			constructor.buildFunction("llvm.va_start", context.llvmVariableParameterIterationStartFunctionType)
+		context.llvmVariableParameterListCopyFunctionType =
+			constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), constructor.voidType)
+		context.llvmVariableParameterListCopyFunction =
+			constructor.buildFunction("llvm.va_copy", context.llvmVariableParameterListCopyFunctionType)
+		context.llvmVariableParameterIterationEndFunctionType =
+			constructor.buildFunctionType(listOf(constructor.pointerType), constructor.voidType)
+		context.llvmVariableParameterIterationEndFunction =
+			constructor.buildFunction("llvm.va_end", context.llvmVariableParameterIterationEndFunctionType)
 	}
 
 	private fun declareClosureStruct(constructor: LlvmConstructor) {
@@ -382,7 +392,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			constructor.markAsUnreachable()
 			constructor.select(initializedClassBlock)
 		}
-		val memberOffsetArrayProperty = constructor.buildGetPropertyPointer( context.classDefinitionStruct, classDefinition,
+		val memberOffsetArrayProperty = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition,
 			memberOffsetArrayPropertyIndex, "memberOffsetArrayProperty")
 		val memberOffsetArray = constructor.buildLoad(constructor.pointerType, memberOffsetArrayProperty, "memberOffsetArray")
 		val indexVariable = constructor.buildStackAllocation(constructor.i32Type, "indexVariable")
@@ -597,7 +607,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		if(typeDeclaration == null)
 			return
 		val byteArrayInitializer = typeDeclaration.getAllInitializers().find { initializerDefinition ->
-			initializerDefinition.parameters.size == 1 }
+			initializerDefinition.parameters.size == 1
+		}
 			?: throw CompilerError(typeDeclaration.source, "Failed to find string literal initializer.")
 		context.llvmStringByteArrayInitializer = byteArrayInitializer.llvmValue
 		context.llvmStringByteArrayInitializerType = byteArrayInitializer.llvmType
@@ -624,7 +635,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 				?: throw UserError("Function '$functionName' not found.")
 			val function = functionVariable.value as? Function ?: throw UserError("Variable '$functionName' is not a function.")
 			val functionImplementation = function.implementations.find { functionImplementation ->
-				!functionImplementation.signature.requiresParameters() }
+				!functionImplementation.signature.requiresParameters()
+			}
 				?: throw UserError("Function '$functionName' has no overload without parameters.")
 			var objectValue: ValueDeclaration? = null
 			if(objectDefinition != null)

@@ -13,7 +13,7 @@ class Cast(val value: ValueSyntaxTreeNode, val operator: String, val identifier:
 	ValueSyntaxTreeNode(value.start, type.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticCastModel {
-		val operator = SemanticCastModel.Operator.values().find { castType ->
+		val operator = SemanticCastModel.Operator.entries.find { castType ->
 			castType.stringRepresentation == operator } ?: throw CompilerError(this, "Unknown cast operator '$operator'.")
 		val variableDeclaration = if(identifier == null)
 			null

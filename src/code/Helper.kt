@@ -21,6 +21,6 @@ object Helper {
 		println("List of options:")
 		println(" - --compile-time-debug-output")
 		println(" - --runtime-debug-output")
-		println(" - --log-level ${Severity.values().joinToString("|") { severity -> severity.name.lowercase() }}")
+		println(" - --log-level ${Severity.entries.joinToString("|") { severity -> severity.name.lowercase() }}")
 	}
 }

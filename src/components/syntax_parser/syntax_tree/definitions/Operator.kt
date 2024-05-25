@@ -12,7 +12,7 @@ open class Operator(start: Position, end: Position): MetaSyntaxTreeNode(start, e
 
 	fun getKind(): Operator.Kind {
 		val name = getValue()
-		for(type in Operator.Kind.values()) {
+		for(type in Operator.Kind.entries) {
 			if(type.stringRepresentation == name)
 				return type
 		}

@@ -42,7 +42,8 @@ class ForeignFunctionInterface {
 		if(!isSignatureSet)
 			throw CompilerError("Foreign function signature hasn't been set yet.")
 		if(parameterValues.size != parameterCount)
-			throw CompilerError("Foreign function called with wrong number of parameters (supplied ${parameterValues.size}, but expected ${parameterCount}).")
+			throw CompilerError(
+				"Foreign function called with wrong number of parameters (supplied ${parameterValues.size}, but expected ${parameterCount}).")
 		ffi_call(callInterface, address, returnValuePointer, parameterValues.toLlvmList())
 	}
 }
