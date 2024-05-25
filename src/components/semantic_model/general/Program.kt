@@ -208,6 +208,9 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 //			val functionType2 = constructor.buildFunctionType(listOf(), constructor.i32Type)
 //			val function2 = constructor.buildFunction("__acrt_initialize_stdio", functionType2)
 //			constructor.buildFunctionCall(functionType2, function2)
+//			val functionType2 = constructor.buildFunctionType(listOf(), constructor.i32Type)
+//			val function2 = constructor.buildFunction("_tmainCRTStartup", functionType2)
+//			constructor.buildFunctionCall(functionType2, function2)
 		}
 		val inputStreamMode = constructor.buildGlobalAsciiCharArray("${RUNTIME_PREFIX}standard_input_stream_mode", "r")
 		val outputStreamMode = constructor.buildGlobalAsciiCharArray("${RUNTIME_PREFIX}standard_output_stream_mode", "w")

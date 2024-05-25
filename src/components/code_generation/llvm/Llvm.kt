@@ -1,5 +1,7 @@
 package components.code_generation.llvm
 
+import errors.internal.CompilerError
+import org.bytedeco.javacpp.Pointer
 import org.bytedeco.javacpp.PointerPointer
 import org.bytedeco.llvm.LLVM.*
 import org.bytedeco.llvm.global.LLVM.*
@@ -81,11 +83,27 @@ object Llvm {
 	fun castToBoolean(genericValue: LlvmGenericValue): Boolean = castToUnsignedInteger(genericValue) == 1L
 
 	fun bool(value: Boolean): Int = if(value) YES else NO
+
+	fun handleError(error: LLVMErrorRef?, messagePrefix: String) {
+		if(error == null)
+			return
+		val errorMessage = LLVMGetErrorMessage(error)
+		val message = "$messagePrefix: ${errorMessage.string}"
+		LLVMDisposeErrorMessage(errorMessage)
+		throw CompilerError(message)
+	}
+
+	fun longToPointer(addressAsLong: Long): Pointer {
+		return object: Pointer() {
+			init {
+				address = addressAsLong
+			}
+		}
+	}
 }
 
 typealias LlvmContext = LLVMContextRef
 typealias LlvmModule = LLVMModuleRef
-typealias LlvmThreadSafeModule = LLVMOrcThreadSafeModuleRef
 typealias LlvmBuilder = LLVMBuilderRef
 typealias LlvmBlock = LLVMBasicBlockRef
 typealias LlvmValue = LLVMValueRef

@@ -354,7 +354,7 @@ class LlvmConstructor(name: String) {
 		return LLVMBuildRet(builder, value)
 	}
 
-	fun toThreadSafeModule(): LlvmThreadSafeModule {
+	fun toThreadSafeModule(): OrcThreadSafeModule {
 		return LLVMOrcCreateNewThreadSafeModule(module, threadSafeContext)
 	}
 
