@@ -19,7 +19,9 @@ class TypeParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Generato
 		get() = syntaxTreeGenerator.nextWord
 	override var parseForeignLanguageLiteralNext: Boolean
 		get() = syntaxTreeGenerator.parseForeignLanguageLiteralNext
-		set(value) { syntaxTreeGenerator.parseForeignLanguageLiteralNext = value }
+		set(value) {
+			syntaxTreeGenerator.parseForeignLanguageLiteralNext = value
+		}
 
 	private val literalParser
 		get() = syntaxTreeGenerator.literalParser

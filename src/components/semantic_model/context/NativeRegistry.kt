@@ -33,7 +33,8 @@ class NativeRegistry(val context: Context) {
 		NativeOutputStreamNatives(context).load(this)
 	}
 
-	fun registerNativePrimitiveInitializer(identifier: String, instance: (constructor: LlvmConstructor, parameters: List<LlvmValue?>) -> LlvmValue) {
+	fun registerNativePrimitiveInitializer(identifier: String,
+										   instance: (constructor: LlvmConstructor, parameters: List<LlvmValue?>) -> LlvmValue) {
 		val existingInstance = nativePrimitiveInitializers.putIfAbsent(identifier, instance)
 		if(existingInstance != null)
 			throw CompilerError("Duplicate native primitive initializer for identifier '$identifier'.")

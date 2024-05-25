@@ -17,7 +17,8 @@ class GeneratorDefinition(start: Position, private val identifier: Identifier, p
 		val generatorScope = BlockScope(scope)
 		val parameters = parameterList.getSemanticParameterModels(generatorScope)
 		return SemanticGeneratorDefinitionModel(this, generatorScope, identifier.getValue(), parameters,
-			keyReturnType?.toSemanticModel(generatorScope), valueReturnType.toSemanticModel(generatorScope), body.toSemanticModel(generatorScope))
+			keyReturnType?.toSemanticModel(generatorScope), valueReturnType.toSemanticModel(generatorScope),
+			body.toSemanticModel(generatorScope))
 	}
 
 	override fun toString(): String {

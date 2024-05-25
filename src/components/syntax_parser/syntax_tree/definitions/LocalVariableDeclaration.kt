@@ -8,7 +8,8 @@ import components.syntax_parser.syntax_tree.literals.Identifier
 import components.tokenizer.WordAtom
 import components.semantic_model.declarations.LocalVariableDeclaration as SemanticLocalVariableDeclarationModel
 
-class LocalVariableDeclaration(private val identifier: Identifier, private val type: TypeSyntaxTreeNode?, private val value: ValueSyntaxTreeNode?):
+class LocalVariableDeclaration(private val identifier: Identifier, private val type: TypeSyntaxTreeNode?,
+							   private val value: ValueSyntaxTreeNode?):
 	VariableSectionSyntaxTreeNode(identifier.start, (value ?: type ?: identifier).end) {
 
 	companion object {

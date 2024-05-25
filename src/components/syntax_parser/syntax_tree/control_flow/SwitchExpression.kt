@@ -23,6 +23,8 @@ class SwitchExpression(private val subject: ValueSyntaxTreeNode, private val cas
 	}
 
 	override fun toString(): String {
-		return "Switch [ $subject ] {${cases.toLines().indent()}\n}${if(elseBranch == null) "" else " Else {${"\n$elseBranch".indent()}\n}"}"
+		return "Switch [ $subject ] {${
+			cases.toLines().indent()
+		}\n}${if(elseBranch == null) "" else " Else {${"\n$elseBranch".indent()}\n}"}"
 	}
 }

@@ -211,7 +211,8 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 		val abstractMemberDeclarations = typeDeclaration.getUnimplementedAbstractSuperMemberDeclarations().toMutableList()
 		val typeSubstitutions = getTypeSubstitutions()
 		abstractMemberDeclarations.addAll(typeDeclaration.scope.getAbstractMemberDeclarations().map { abstractMemberDeclaration ->
-			Pair(abstractMemberDeclaration, typeSubstitutions) })
+			Pair(abstractMemberDeclaration, typeSubstitutions)
+		})
 		return abstractMemberDeclarations
 	}
 
@@ -224,7 +225,8 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 		val typeDeclaration = getTypeDeclaration() ?: return emptyList()
 		val typeSubstitutions = getTypeSubstitutions()
 		return typeDeclaration.scope.getSpecificMemberDeclarations().map { abstractMemberDeclaration ->
-			Pair(abstractMemberDeclaration, typeSubstitutions) }
+			Pair(abstractMemberDeclaration, typeSubstitutions)
+		}
 	}
 
 	override fun getPropertiesToBeInitialized(): List<PropertyDeclaration> {

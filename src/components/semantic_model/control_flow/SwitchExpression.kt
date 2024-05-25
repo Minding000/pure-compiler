@@ -121,10 +121,12 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 		val areAllBranchesInterruptingExecutionBasedOnStructure = cases.all { case -> case.result.isInterruptingExecutionBasedOnStructure }
 			&& elseBranch?.isInterruptingExecutionBasedOnStructure ?: true
 		isInterruptingExecutionBasedOnStructure = areAllBranchesInterruptingExecutionBasedOnStructure && isExhaustive()
-		val areAllBranchesInterruptingExecutionBasedOnStaticEvaluation = cases.all { case -> case.result.isInterruptingExecutionBasedOnStaticEvaluation }
-			&& elseBranch?.isInterruptingExecutionBasedOnStaticEvaluation ?: true
-		isInterruptingExecutionBasedOnStaticEvaluation = (getBranchForValue(subject.getComputedValue())?.isInterruptingExecutionBasedOnStaticEvaluation ?: false)
-			|| (isExhaustive() && areAllBranchesInterruptingExecutionBasedOnStaticEvaluation)
+		val areAllBranchesInterruptingExecutionBasedOnStaticEvaluation =
+			cases.all { case -> case.result.isInterruptingExecutionBasedOnStaticEvaluation }
+				&& elseBranch?.isInterruptingExecutionBasedOnStaticEvaluation ?: true
+		isInterruptingExecutionBasedOnStaticEvaluation =
+			(getBranchForValue(subject.getComputedValue())?.isInterruptingExecutionBasedOnStaticEvaluation ?: false)
+				|| (isExhaustive() && areAllBranchesInterruptingExecutionBasedOnStaticEvaluation)
 	}
 
 	override fun validate() {
@@ -144,8 +146,8 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 	private fun validateUniqueCases() {
 		val casesWithUniqueConditions = LinkedList<Case>()
 		for(case in cases) {
-			val caseWithUniqueCondition = casesWithUniqueConditions.find {
-					caseWithUniqueCondition -> caseWithUniqueCondition.condition == case.condition }
+			val caseWithUniqueCondition =
+				casesWithUniqueConditions.find { caseWithUniqueCondition -> caseWithUniqueCondition.condition == case.condition }
 			if(caseWithUniqueCondition != null) {
 				context.addIssue(DuplicateCase(caseWithUniqueCondition, case))
 				continue
@@ -214,13 +216,13 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 			return containsYes && containsNo
 		}
 		//TODO detect exhausted enum values by implementing the following pseudo code:
-//		if(subject.type.definition is Enum) {
-//			for(instance in enum.instances) {
-//				if(!casesContainValue(instance))
-//					return false
-//			}
-//			return true
-//		}
+		//if(subject.type.definition is Enum) {
+		//	for(instance in enum.instances) {
+		//		if(!casesContainValue(instance))
+		//			return false
+		//	}
+		//	return true
+		//}
 		return false
 	}
 

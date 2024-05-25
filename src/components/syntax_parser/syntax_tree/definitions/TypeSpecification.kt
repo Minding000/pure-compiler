@@ -6,7 +6,8 @@ import components.syntax_parser.syntax_tree.literals.Identifier
 import components.syntax_parser.syntax_tree.literals.TypeList
 import components.semantic_model.declarations.TypeSpecification as SemanticTypeSpecificationModel
 
-class TypeSpecification(private val typeList: TypeList, private val identifier: Identifier): ValueSyntaxTreeNode(typeList.start, identifier.end) {
+class TypeSpecification(private val typeList: TypeList, private val identifier: Identifier):
+	ValueSyntaxTreeNode(typeList.start, identifier.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticTypeSpecificationModel {
 		return SemanticTypeSpecificationModel(this, scope, typeList.toSemanticModels(scope), identifier.toSemanticModel(scope))

@@ -33,7 +33,8 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 				emptyList()
 			} else {
 				val superType = surroundingTypeDeclaration.getAllSuperTypes().find { superType ->
-					matchesSpecifier(superType, specifierDefinition) }
+					matchesSpecifier(superType, specifierDefinition)
+				}
 				if(superType == null) {
 					context.addIssue(SuperReferenceSpecifierNotInherited(source, surroundingTypeDeclaration, specifier))
 					return

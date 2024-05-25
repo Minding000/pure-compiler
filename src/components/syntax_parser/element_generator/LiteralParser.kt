@@ -13,7 +13,9 @@ class LiteralParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gener
 		get() = syntaxTreeGenerator.nextWord
 	override var parseForeignLanguageLiteralNext: Boolean
 		get() = syntaxTreeGenerator.parseForeignLanguageLiteralNext
-		set(value) { syntaxTreeGenerator.parseForeignLanguageLiteralNext = value }
+		set(value) {
+			syntaxTreeGenerator.parseForeignLanguageLiteralNext = value
+		}
 
 	override fun getCurrentPosition(): Position = syntaxTreeGenerator.getCurrentPosition()
 

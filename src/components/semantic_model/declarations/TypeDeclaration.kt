@@ -144,7 +144,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	fun getUnimplementedAbstractSuperMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> {
 		val abstractSuperMembers = superType?.getPotentiallyUnimplementedAbstractMemberDeclarations() ?: return emptyList()
 		return abstractSuperMembers.filter { (abstractSuperMember, typeSubstitutions) ->
-			!implements(abstractSuperMember, typeSubstitutions) }
+			!implements(abstractSuperMember, typeSubstitutions)
+		}
 	}
 
 	fun implements(abstractMember: MemberDeclaration, typeSubstitutions: Map<TypeDeclaration, Type>): Boolean {
@@ -179,7 +180,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	private fun getUnoverriddenSpecificSuperMemberDeclarations(): List<Pair<MemberDeclaration, Map<TypeDeclaration, Type>>> {
 		val specificSuperMembers = superType?.getSpecificMemberDeclarations() ?: return emptyList()
 		return specificSuperMembers.filter { (specificSuperMember, typeSubstitutions) ->
-			!overrides(specificSuperMember, typeSubstitutions) }
+			!overrides(specificSuperMember, typeSubstitutions)
+		}
 	}
 
 	private fun overrides(specificMember: MemberDeclaration, typeSubstitutions: Map<TypeDeclaration, Type>): Boolean {
@@ -246,7 +248,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		return scope.getGenericTypeDeclarations().map { genericTypeDeclaration -> ObjectType(genericTypeDeclaration) }
 	}
 
-	fun acceptsSubstituteType(substituteType: Type): Boolean { //TODO fix: it's not clear that Identifiable inherits from Any when running without STD lib
+	fun acceptsSubstituteType(
+		substituteType: Type): Boolean { //TODO fix: it's not clear that Identifiable inherits from Any when running without STD lib
 		if(superType == null)
 			return false
 		if(SpecialType.ANY.matches(superType))
@@ -613,7 +616,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			val memberValue = memberDeclaration.value
 			if(memberValue != null) {
 				val convertedValue = ValueConverter.convertIfRequired(memberDeclaration, constructor,
-					memberValue.buildLlvmValue(constructor), memberValue.effectiveType, memberValue.hasGenericType, memberDeclaration.effectiveType,
+					memberValue.buildLlvmValue(constructor), memberValue.effectiveType, memberValue.hasGenericType,
+					memberDeclaration.effectiveType,
 					false, memberDeclaration.conversion)
 				val memberAddress = context.resolveMember(constructor, thisValue, memberDeclaration.name)
 				constructor.buildStore(convertedValue, memberAddress)

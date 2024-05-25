@@ -11,7 +11,8 @@ import util.toSemanticValueModels
 import components.semantic_model.operations.FunctionCall as SemanticFunctionCallModel
 
 class FunctionCall(private val functionReference: ValueSyntaxTreeNode, private val typeParameters: List<TypeSyntaxTreeNode>?,
-				   private val valueParameters: List<ValueSyntaxTreeNode>, end: Position): ValueSyntaxTreeNode(functionReference.start, end) {
+				   private val valueParameters: List<ValueSyntaxTreeNode>, end: Position):
+	ValueSyntaxTreeNode(functionReference.start, end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticFunctionCallModel {
 		return SemanticFunctionCallModel(this, scope, functionReference.toSemanticModel(scope),

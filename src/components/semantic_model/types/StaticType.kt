@@ -71,7 +71,7 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 		val matches = getMatchingInitializers(globalTypeParameters, suppliedGlobalTypes, suppliedLocalTypes, suppliedValues)
 		if(matches.isEmpty())
 			return null
-		specificityPrecedenceLoop@for(match in matches) {
+		specificityPrecedenceLoop@ for(match in matches) {
 			for(otherMatch in matches) {
 				if(otherMatch == match)
 					continue
@@ -105,7 +105,7 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 	}
 
 	class Match(val initializer: InitializerDefinition, val globalTypeSubstitutions: Map<TypeDeclaration, Type>,
-		val conversions: Map<Value, InitializerDefinition>) {
+				val conversions: Map<Value, InitializerDefinition>) {
 
 		fun compareSpecificity(otherMatch: Match): ComparisonResult {
 			val initializerComparisonResult = initializer.compareSpecificity(otherMatch.initializer)

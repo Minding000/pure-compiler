@@ -8,7 +8,8 @@ import components.semantic_model.types.AndUnionType as SemanticAndUnionTypeModel
 import components.semantic_model.types.OrUnionType as SemanticOrUnionTypeModel
 import components.semantic_model.types.Type as SemanticTypeModel
 
-class UnionType(private val left: TypeSyntaxTreeNode, private val right: TypeSyntaxTreeNode, private val mode: Mode): TypeSyntaxTreeNode(left.start, right.end) {
+class UnionType(private val left: TypeSyntaxTreeNode, private val right: TypeSyntaxTreeNode, private val mode: Mode):
+	TypeSyntaxTreeNode(left.start, right.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticTypeModel {
 		val types = LinkedList<SemanticTypeModel>()

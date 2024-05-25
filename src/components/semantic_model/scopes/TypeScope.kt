@@ -82,7 +82,7 @@ class TypeScope(val enclosingScope: MutableScope): MutableScope() {
 			val initializer = initializers[initializerIndex]
 			if(redeclarations.contains(initializer))
 				continue
-			initializerIteration@for(otherInitializerIndex in initializerIndex + 1 until initializers.size) {
+			initializerIteration@ for(otherInitializerIndex in initializerIndex + 1 until initializers.size) {
 				val otherInitializer = initializers[otherInitializerIndex]
 				if(otherInitializer.parameters.size != initializer.parameters.size)
 					continue

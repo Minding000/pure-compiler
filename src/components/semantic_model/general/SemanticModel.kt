@@ -20,7 +20,7 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 	var hasDeterminedFileInitializationOrder = false
 
 	fun addSemanticModels(vararg newSemanticModels: SemanticModel?) {
-		newModel@for(newSemanticModel in newSemanticModels) {
+		newModel@ for(newSemanticModel in newSemanticModels) {
 			if(newSemanticModel != null) {
 				newSemanticModel.parent = this
 				for(existingSemanticModel in semanticModels) {
@@ -99,9 +99,9 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 	}
 
 	open fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
-//		println("Checking '${javaClass.simpleName}' '$this' in '${getSurrounding<File>()?.file?.name}'")
-//		if(this is PropertyDeclaration)
-//			println("Property declaration: $name")
+		//println("Checking '${javaClass.simpleName}' '$this' in '${getSurrounding<File>()?.file?.name}'")
+		//if(this is PropertyDeclaration)
+		//	println("Property declaration: $name")
 		if(hasDeterminedFileInitializationOrder)
 			return
 		hasDeterminedFileInitializationOrder = true
@@ -130,7 +130,7 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 		return parent?.isInInitializer() ?: return false
 	}
 
-	inline fun <reified T: SemanticModel>find(noinline predicate: (T) -> Boolean): T? {
+	inline fun <reified T: SemanticModel> find(noinline predicate: (T) -> Boolean): T? {
 		if(this is T && predicate(this))
 			return this
 		for(semanticModel in semanticModels)
@@ -138,7 +138,7 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 		return null
 	}
 
-	fun <T: SemanticModel>find(predicate: (T) -> Boolean, `class`: Class<T>): T? {
+	fun <T: SemanticModel> find(predicate: (T) -> Boolean, `class`: Class<T>): T? {
 		@Suppress("UNCHECKED_CAST") // Cast will always work, because Class<T> == T
 		if(`class`.isAssignableFrom(this.javaClass) && predicate(this as T))
 			return this

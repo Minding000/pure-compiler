@@ -8,7 +8,8 @@ import util.toLines
 import util.toSemanticValueModels
 import components.semantic_model.operations.Assignment as SemanticAssignmentModel
 
-class Assignment(private val targets: List<ValueSyntaxTreeNode>, val source: ValueSyntaxTreeNode): SyntaxTreeNode(targets.first().start, source.end) {
+class Assignment(private val targets: List<ValueSyntaxTreeNode>, val source: ValueSyntaxTreeNode):
+	SyntaxTreeNode(targets.first().start, source.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticAssignmentModel {
 		return SemanticAssignmentModel(this, scope, targets.toSemanticValueModels(scope), source.toSemanticModel(scope))

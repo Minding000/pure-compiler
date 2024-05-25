@@ -26,7 +26,8 @@ class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value
 	override fun isAssignableTo(targetType: Type?): Boolean {
 		if(targetType == null)
 			return false
-		return (providedType?.isAssignableTo(targetType) ?: false) || SpecialType.BYTE.matches(targetType) || SpecialType.FLOAT.matches(targetType)
+		return (providedType?.isAssignableTo(targetType) ?: false) || SpecialType.BYTE.matches(targetType) || SpecialType.FLOAT.matches(
+			targetType)
 	}
 
 	override fun setInferredType(inferredType: Type?) {

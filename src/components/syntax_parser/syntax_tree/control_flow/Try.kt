@@ -5,7 +5,8 @@ import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import source_structure.Position
 import components.semantic_model.control_flow.Try as SemanticTryModel
 
-class Try(private val expression: ValueSyntaxTreeNode, private val isOptional: Boolean, start: Position): ValueSyntaxTreeNode(start, expression.end) {
+class Try(private val expression: ValueSyntaxTreeNode, private val isOptional: Boolean, start: Position):
+	ValueSyntaxTreeNode(start, expression.end) {
 
 	override fun toSemanticModel(scope: MutableScope): SemanticTryModel {
 		return SemanticTryModel(this, scope, expression.toSemanticModel(scope), isOptional)

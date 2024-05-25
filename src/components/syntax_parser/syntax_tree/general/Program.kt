@@ -8,14 +8,14 @@ import components.semantic_model.general.Program as SemanticProgramModel
 
 class Program(private val files: List<File>) {
 
-    fun toSemanticModel(context: Context): SemanticProgramModel {
-        val program = SemanticProgramModel(context, this)
-        for(file in files)
-            program.files.add(file.toSemanticModel(FileScope()))
-        return program
-    }
+	fun toSemanticModel(context: Context): SemanticProgramModel {
+		val program = SemanticProgramModel(context, this)
+		for(file in files)
+			program.files.add(file.toSemanticModel(FileScope()))
+		return program
+	}
 
-    override fun toString(): String {
-        return "Program {${files.toLines().indent()}\n}"
-    }
+	override fun toString(): String {
+		return "Program {${files.toLines().indent()}\n}"
+	}
 }

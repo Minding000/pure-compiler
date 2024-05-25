@@ -25,7 +25,8 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 		val mainBlockReferencePoint = tracker.currentState.createReferencePoint()
 		mainBlock.analyseDataFlow(tracker)
 		// Collect usages that should link to the handle blocks
-		val potentiallyLastVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>() // This is done to avoid creating a state for each variable usage in an error handling context
+		// This is done to avoid creating a state for each variable usage in an error handling context
+		val potentiallyLastVariableUsages = HashMap<ValueDeclaration, MutableSet<VariableUsage>>()
 		if(handleBlocks.isNotEmpty() || alwaysBlock != null)
 			tracker.collectAllUsagesInto(mainBlockReferencePoint, potentiallyLastVariableUsages)
 		tracker.currentState.removeReferencePoint(mainBlockReferencePoint)

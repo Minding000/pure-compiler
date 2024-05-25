@@ -12,7 +12,8 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.resolution.MissingType
 
-open class Value(override val source: SyntaxTreeNode, override var scope: Scope, var providedType: Type? = null): SemanticModel(source, scope) {
+open class Value(override val source: SyntaxTreeNode, override var scope: Scope, var providedType: Type? = null):
+	SemanticModel(source, scope) {
 	val effectiveType: Type? get() = providedType?.effectiveType
 	protected open var staticValue: Value? = null
 	protected var positiveState: VariableTracker.VariableState? = null

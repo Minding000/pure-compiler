@@ -80,9 +80,10 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 	private fun evaluateExecutionFlow() {
 		isInterruptingExecutionBasedOnStructure = positiveBranch.isInterruptingExecutionBasedOnStructure
 			&& negativeBranch?.isInterruptingExecutionBasedOnStructure == true
-		isInterruptingExecutionBasedOnStaticEvaluation = (isConditionAlwaysTrue && positiveBranch.isInterruptingExecutionBasedOnStaticEvaluation) ||
-			(isConditionAlwaysFalse && negativeBranch?.isInterruptingExecutionBasedOnStaticEvaluation == true) ||
-			(positiveBranch.isInterruptingExecutionBasedOnStaticEvaluation && negativeBranch?.isInterruptingExecutionBasedOnStaticEvaluation == true)
+		isInterruptingExecutionBasedOnStaticEvaluation =
+			(isConditionAlwaysTrue && positiveBranch.isInterruptingExecutionBasedOnStaticEvaluation) ||
+				(isConditionAlwaysFalse && negativeBranch?.isInterruptingExecutionBasedOnStaticEvaluation == true) ||
+				(positiveBranch.isInterruptingExecutionBasedOnStaticEvaluation && negativeBranch?.isInterruptingExecutionBasedOnStaticEvaluation == true)
 	}
 
 	override fun validate() {

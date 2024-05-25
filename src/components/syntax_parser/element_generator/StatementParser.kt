@@ -30,7 +30,9 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 		get() = syntaxTreeGenerator.nextWord
 	override var parseForeignLanguageLiteralNext: Boolean
 		get() = syntaxTreeGenerator.parseForeignLanguageLiteralNext
-		set(value) { syntaxTreeGenerator.parseForeignLanguageLiteralNext = value }
+		set(value) {
+			syntaxTreeGenerator.parseForeignLanguageLiteralNext = value
+		}
 
 	private val expressionParser
 		get() = syntaxTreeGenerator.expressionParser
@@ -762,7 +764,7 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 	 */
 	private fun parseModifierSection(context: DeclarationContext): ModifierSection {
 		val modifierList = parseModifierList()
-				?: throw UnexpectedWordError(getCurrentWord(WordType.MODIFIER), WordType.MODIFIER)
+			?: throw UnexpectedWordError(getCurrentWord(WordType.MODIFIER), WordType.MODIFIER)
 		val sections = LinkedList<SyntaxTreeNode>()
 		val end = if(currentWord?.type == WordAtom.OPENING_BRACE) {
 			consume(WordAtom.OPENING_BRACE)

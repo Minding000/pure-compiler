@@ -5,7 +5,8 @@ import components.semantic_model.types.Type
 import components.semantic_model.values.Value
 import java.util.*
 
-class VariableUsage(val kinds: List<Kind>, val semanticModel: SemanticModel, var resultingType: Type? = null, var resultingValue: Value? = null) {
+class VariableUsage(val kinds: List<Kind>, val semanticModel: SemanticModel, var resultingType: Type? = null,
+					var resultingValue: Value? = null) {
 	private var isRequiredToBeInitializedCache: Boolean? = null
 	private var initializationStateCache = InitializationState.UNKNOWN
 	private var isPossiblyInitializedCache: Boolean? = null
@@ -41,7 +42,7 @@ class VariableUsage(val kinds: List<Kind>, val semanticModel: SemanticModel, var
 			return initializationStateCache
 		initializationStateCache = InitializationState.PENDING
 		initializationStateCache = if(kinds.contains(Kind.WRITE) || !(previousUsages.isEmpty()
-				|| previousUsages.any { usage -> usage.getInitializationState() == InitializationState.UNINITIALIZED}))
+				|| previousUsages.any { usage -> usage.getInitializationState() == InitializationState.UNINITIALIZED }))
 			InitializationState.INITIALIZED
 		else
 			InitializationState.UNINITIALIZED
@@ -71,8 +72,8 @@ class VariableUsage(val kinds: List<Kind>, val semanticModel: SemanticModel, var
 		if(kinds.contains(Kind.END))
 			return "end"
 		var stringRepresentation = semanticModel.source.start.line.number.toString()
-//		stringRepresentation += "-"
-//		stringRepresentation += semanticModel.source.start.column
+		//stringRepresentation += "-"
+		//stringRepresentation += semanticModel.source.start.column
 		if(willExit)
 			stringRepresentation += "e"
 		return stringRepresentation

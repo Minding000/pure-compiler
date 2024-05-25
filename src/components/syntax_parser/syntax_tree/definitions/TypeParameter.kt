@@ -8,15 +8,15 @@ import components.semantic_model.types.TypeParameter as SemanticTypeParameterMod
 
 class TypeParameter(val type: TypeSyntaxTreeNode, val modifier: Word): TypeSyntaxTreeNode(type.start, modifier.end) {
 
-    override fun toSemanticModel(scope: MutableScope): SemanticTypeParameterModel {
-        val mode = if(modifier.type == WordAtom.CONSUMING)
-            SemanticTypeParameterModel.Mode.CONSUMING
-        else
-            SemanticTypeParameterModel.Mode.PRODUCING
-        return SemanticTypeParameterModel(this, scope, mode, type.toSemanticModel(scope))
-    }
+	override fun toSemanticModel(scope: MutableScope): SemanticTypeParameterModel {
+		val mode = if(modifier.type == WordAtom.CONSUMING)
+			SemanticTypeParameterModel.Mode.CONSUMING
+		else
+			SemanticTypeParameterModel.Mode.PRODUCING
+		return SemanticTypeParameterModel(this, scope, mode, type.toSemanticModel(scope))
+	}
 
-    override fun toString(): String {
-        return "TypeParameter${" [ ${modifier.getValue()} ]"} { $type }"
-    }
+	override fun toString(): String {
+		return "TypeParameter${" [ ${modifier.getValue()} ]"} { $type }"
+	}
 }

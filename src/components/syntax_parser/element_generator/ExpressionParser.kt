@@ -32,7 +32,9 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 		get() = syntaxTreeGenerator.nextWord
 	override var parseForeignLanguageLiteralNext: Boolean
 		get() = syntaxTreeGenerator.parseForeignLanguageLiteralNext
-		set(value) { syntaxTreeGenerator.parseForeignLanguageLiteralNext = value }
+		set(value) {
+			syntaxTreeGenerator.parseForeignLanguageLiteralNext = value
+		}
 
 	private val statementParser
 		get() = syntaxTreeGenerator.statementParser
@@ -399,7 +401,7 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 		if(currentWord?.type == WordAtom.OPENING_PARENTHESIS) {
 			val start = consume(WordAtom.OPENING_PARENTHESIS).start
 			val isEmptyParameterListPresent = currentWord?.type == WordAtom.CLOSING_PARENTHESIS
-					&& nextWord?.type == WordAtom.ARROW
+				&& nextWord?.type == WordAtom.ARROW
 			val isParameterModifierPresent = WordType.MODIFIER.includes(currentWord?.type)
 			val isParameterPresent = currentWord?.type == WordAtom.IDENTIFIER
 				&& nextWord?.type in listOf(WordAtom.COMMA, WordAtom.SEMICOLON, WordAtom.COLON)

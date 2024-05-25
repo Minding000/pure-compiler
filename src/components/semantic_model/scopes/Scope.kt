@@ -26,8 +26,8 @@ abstract class Scope {
 		return operator?.getSignature(suppliedValues)
 	}
 
-	fun getIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>, suppliedParameterValue: Value?)
-		= getIndexOperator(suppliedTypes, suppliedIndexValues, listOfNotNull(suppliedParameterValue))
+	fun getIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>, suppliedParameterValue: Value?) =
+		getIndexOperator(suppliedTypes, suppliedIndexValues, listOfNotNull(suppliedParameterValue))
 
 	open fun getIndexOperator(suppliedTypes: List<Type>, suppliedIndexValues: List<Value>,
 							  suppliedParameterValues: List<Value>): FunctionType.Match? {

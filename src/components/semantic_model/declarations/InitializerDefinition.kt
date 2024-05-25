@@ -185,7 +185,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		if(parameters.size != superInitializer.parameters.size)
 			return false
 		for(parameterIndex in parameters.indices) {
-			val superParameterType = superInitializer.parameters[parameterIndex].providedType?.withTypeSubstitutions(typeSubstitutions) ?: continue
+			val superParameterType =
+				superInitializer.parameters[parameterIndex].providedType?.withTypeSubstitutions(typeSubstitutions) ?: continue
 			val baseParameterType = parameters[parameterIndex].providedType ?: continue
 			if(!baseParameterType.accepts(superParameterType))
 				return false
@@ -354,9 +355,10 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			if(SpecialType.IDENTIFIABLE.matches(superType) || SpecialType.ANY.matches(superType))
 				continue
 			val superTypeDeclaration = superType.getTypeDeclaration()
-			val trivialInitializer = (superTypeDeclaration?.staticValueDeclaration?.providedType as? StaticType)?.getInitializer()?.initializer
-				?: throw CompilerError(source, "Default initializer in class '${parentTypeDeclaration.name}'" +
-					" with super class '${superTypeDeclaration?.name}' without trivial initializer.")
+			val trivialInitializer =
+				(superTypeDeclaration?.staticValueDeclaration?.providedType as? StaticType)?.getInitializer()?.initializer
+					?: throw CompilerError(source, "Default initializer in class '${parentTypeDeclaration.name}'" +
+						" with super class '${superTypeDeclaration?.name}' without trivial initializer.")
 			val parameters = LinkedList<LlvmValue?>()
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, thisValue)

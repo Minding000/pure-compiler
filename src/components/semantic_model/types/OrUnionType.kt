@@ -87,6 +87,7 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 
 	override fun toString(): String {
 		return types.sortedBy(Type::toString).joinToString(" | ") { type ->
-			if(type is AndUnionType || type is OrUnionType) "($type)" else "$type" }
+			if(type is AndUnionType || type is OrUnionType) "($type)" else "$type"
+		}
 	}
 }

@@ -40,6 +40,7 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 
 	fun containsMonomorphicMemberImplementation(): Boolean {
 		return scope.memberDeclarations.any { memberDeclaration ->
-			memberDeclaration is FunctionImplementation && memberDeclaration.isMonomorphic && !memberDeclaration.isAbstract }
+			memberDeclaration is FunctionImplementation && memberDeclaration.isMonomorphic && !memberDeclaration.isAbstract
+		}
 	}
 }

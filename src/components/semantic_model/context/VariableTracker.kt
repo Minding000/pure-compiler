@@ -109,7 +109,9 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 	fun add(kind: VariableUsage.Kind, variable: VariableValue, resultingType: Type? = getCurrentTypeOf(variable.declaration),
 			resultingValue: Value? = getCurrentValueOf(variable.declaration)): VariableUsage? =
 		add(listOf(kind), variable, resultingType, resultingValue)
-	fun add(kind: VariableUsage.Kind, declaration: ValueDeclaration, semanticModel: SemanticModel, resultingType: Type? = getCurrentTypeOf(declaration),
+
+	fun add(kind: VariableUsage.Kind, declaration: ValueDeclaration, semanticModel: SemanticModel,
+			resultingType: Type? = getCurrentTypeOf(declaration),
 			resultingValue: Value? = getCurrentValueOf(declaration)): VariableUsage =
 		add(listOf(kind), declaration, semanticModel, resultingType, resultingValue)
 
@@ -199,7 +201,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		while(true) {
 			var hasNextUsages = false
 			val nextVariableUsages = UsagesByVariable()
-			usagesToBeLinked@for((declaration, usages) in currentUsages) {
+			usagesToBeLinked@ for((declaration, usages) in currentUsages) {
 				val nextUsages = nextVariableUsages.getOrPut(declaration) { HashSet() }
 				for(usage in usages) {
 					usage.willExit = true

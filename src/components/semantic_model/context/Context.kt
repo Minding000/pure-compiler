@@ -136,10 +136,10 @@ class Context {
 		// check for optional try (normal and force try have no effect)
 		// check for catch
 		// resume raise
-//		if(SpecialType.NOTHING.matches(returnType))
-//			constructor.buildReturn()
-//		else
-//			constructor.buildReturn(getNullValue(constructor, returnType))
+		//if(SpecialType.NOTHING.matches(returnType))
+		//	constructor.buildReturn()
+		//else
+		//	constructor.buildReturn(getNullValue(constructor, returnType))
 	}
 
 	fun getNullValue(constructor: LlvmConstructor, type: Type?): LlvmValue {

@@ -146,15 +146,14 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.createAndSelectEntrypointBlock(globalEntryPoint)
 		createStandardStreams(constructor)
 		context.printDebugMessage(constructor, "Initializing program...")
-//		val handle = constructor.buildLoad(constructor.pointerType, context.llvmStandardOutputStreamGlobal, "handle")
-//		val test = constructor.buildGlobalAsciiCharArray("test", "Test")
-////		constructor.buildFunctionCall(context.llvmStreamWriteFunctionType, context.llvmStreamWriteFunction,
-////			listOf(test, constructor.buildInt64(1), constructor.buildInt64(4), handle))
-//
-//
-//		//TODO remove: this print is for debugging
-//		context.printDebugMessage(constructor, "Test: %d", constructor.buildInt32(42))
-//		context.printDebugMessage(constructor, "Test: %p", context.llvmStandardErrorStreamGlobal)
+		//val handle = constructor.buildLoad(constructor.pointerType, context.llvmStandardOutputStreamGlobal, "handle")
+		//val test = constructor.buildGlobalAsciiCharArray("test", "Test")
+		//constructor.buildFunctionCall(context.llvmStreamWriteFunctionType, context.llvmStreamWriteFunction,
+		//	listOf(test, constructor.buildInt64(1), constructor.buildInt64(4), handle))
+		//
+		////TODO remove: this print is for debugging
+		//context.printDebugMessage(constructor, "Test: %d", constructor.buildInt32(42))
+		//context.printDebugMessage(constructor, "Test: %p", context.llvmStandardErrorStreamGlobal)
 
 		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		for(file in files)
@@ -199,18 +198,18 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	private fun createStandardStreams(constructor: LlvmConstructor) {
 		val targetTriple = constructor.getTargetTriple()
 		if(targetTriple.contains("windows")) {
-//			val functionType3 = constructor.buildFunctionType(listOf(), constructor.booleanType)
-//			val function3 = constructor.buildFunction("__vcrt_initialize", functionType3)
-//			constructor.buildFunctionCall(functionType3, function3)
-//			val functionType = constructor.buildFunctionType(listOf(), constructor.booleanType)
-//			val function = constructor.buildFunction("__acrt_initialize", functionType)
-//			constructor.buildFunctionCall(functionType, function)
-//			val functionType2 = constructor.buildFunctionType(listOf(), constructor.i32Type)
-//			val function2 = constructor.buildFunction("__acrt_initialize_stdio", functionType2)
-//			constructor.buildFunctionCall(functionType2, function2)
-//			val functionType2 = constructor.buildFunctionType(listOf(), constructor.i32Type)
-//			val function2 = constructor.buildFunction("_tmainCRTStartup", functionType2)
-//			constructor.buildFunctionCall(functionType2, function2)
+			//val functionType3 = constructor.buildFunctionType(listOf(), constructor.booleanType)
+			//val function3 = constructor.buildFunction("__vcrt_initialize", functionType3)
+			//constructor.buildFunctionCall(functionType3, function3)
+			//val functionType = constructor.buildFunctionType(listOf(), constructor.booleanType)
+			//val function = constructor.buildFunction("__acrt_initialize", functionType)
+			//constructor.buildFunctionCall(functionType, function)
+			//val functionType2 = constructor.buildFunctionType(listOf(), constructor.i32Type)
+			//val function2 = constructor.buildFunction("__acrt_initialize_stdio", functionType2)
+			//constructor.buildFunctionCall(functionType2, function2)
+			//val functionType2 = constructor.buildFunctionType(listOf(), constructor.i32Type)
+			//val function2 = constructor.buildFunction("_tmainCRTStartup", functionType2)
+			//constructor.buildFunctionCall(functionType2, function2)
 		}
 		val inputStreamMode = constructor.buildGlobalAsciiCharArray("${RUNTIME_PREFIX}standard_input_stream_mode", "r")
 		val outputStreamMode = constructor.buildGlobalAsciiCharArray("${RUNTIME_PREFIX}standard_output_stream_mode", "w")
@@ -246,10 +245,10 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val targetTriple = constructor.getTargetTriple()
 		val name = if(targetTriple.contains("linux")) "fdopen" else "__acrt_iob_func"
 		context.llvmStreamOpenFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type), constructor.pointerType)
-//		val name = if(targetTriple.contains("linux")) "fdopen" else "__iob_func"
-//		context.llvmStreamOpenFunctionType = constructor.buildFunctionType(listOf(), constructor.pointerType)
-//		val name = if(targetTriple.contains("linux")) "fdopen" else "_fdopen"
-//		context.llvmStreamOpenFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type, constructor.pointerType), constructor.pointerType)
+		//val name = if(targetTriple.contains("linux")) "fdopen" else "__iob_func"
+		//context.llvmStreamOpenFunctionType = constructor.buildFunctionType(listOf(), constructor.pointerType)
+		//val name = if(targetTriple.contains("linux")) "fdopen" else "_fdopen"
+		//context.llvmStreamOpenFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type, constructor.pointerType), constructor.pointerType)
 		context.llvmStreamOpenFunction = constructor.buildFunction(name, context.llvmStreamOpenFunctionType)
 	}
 

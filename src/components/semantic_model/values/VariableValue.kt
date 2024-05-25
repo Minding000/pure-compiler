@@ -110,7 +110,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 				currentValue = constructor.buildLoad(constructor.pointerType, parentProperty, "_parent")
 				currentTypeDeclaration = currentTypeDeclaration.parentTypeDeclaration
 					?: throw CompilerError(source,
-					"Type declaration of property referenced by variable value not found in its surrounding type declaration.")
+						"Type declaration of property referenced by variable value not found in its surrounding type declaration.")
 			}
 			context.resolveMember(constructor, currentValue, name, (declaration as? InterfaceMember)?.isStatic ?: false)
 		} else {
@@ -156,7 +156,6 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 			return
 		hasDeterminedFileInitializationOrder = true
 		super.determineFileInitializationOrder(filesToInitialize)
-//		println("Going to declaration of '${declaration?.name}'")
 		declaration?.determineFileInitializationOrder(filesToInitialize)
 	}
 

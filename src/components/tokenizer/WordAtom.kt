@@ -6,9 +6,11 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	// Whitespace
 	LINE_BREAK("\\n"),
 	WHITESPACE("[^\\S\\n]+", true),
+
 	// Comments
 	SINGLE_LINE_COMMENT("\\/\\/.*", true),
 	MULTI_LINE_COMMENT("\\/\\*[\\s\\S]*?\\*\\/", true, true),
+
 	// Operators
 	CAPPED_ARROW("=>\\|"),
 	ARROW("=>"),
@@ -39,6 +41,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	NULL_COALESCENCE("\\?\\?"),
 	OPTIONAL_ACCESSOR("\\?\\."),
 	FOREIGN_EXPRESSION("::"),
+
 	// Symbols
 	ASSIGNMENT("="),
 	DOT("\\."),
@@ -52,11 +55,13 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	CLOSING_BRACKET("]"),
 	OPENING_BRACE("\\{"),
 	CLOSING_BRACE("\\}"),
+
 	// Literals
 	NULL_LITERAL("null\\b"),
 	BOOLEAN_LITERAL("(yes|no)\\b"),
 	NUMBER_LITERAL("(?:[1-9][\\d_]*|0)(?:\\.\\d[\\d_]*)?(?:e-?\\d+)?"),
 	STRING_LITERAL("\"(?:[^\"\\\\]|\\\\.)*\"", false, true),
+
 	// Keywords
 	INSTANCES("instances\\b"),
 	CONST("const\\b"),
@@ -115,8 +120,10 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	REFERENCING("referencing\\b"),
 	SELF_REFERENCE("this\\b"),
 	SUPER_REFERENCE("super\\b"),
+
 	// Identifier
 	IDENTIFIER("[\\p{L}][\\p{L}\\p{N}_]*"),
+
 	// Synthetic words (invalid regular expression to avoid match)
 	FOREIGN_LANGUAGE("$$");
 

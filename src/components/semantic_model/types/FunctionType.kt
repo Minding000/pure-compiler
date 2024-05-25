@@ -65,7 +65,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		val matches = getMatchingSignatures(suppliedLocalTypes, suppliedValues)
 		if(matches.isEmpty())
 			return null
-		specificityPrecedenceLoop@for(match in matches) {
+		specificityPrecedenceLoop@ for(match in matches) {
 			for(otherMatch in matches) {
 				if(otherMatch === match)
 					continue
@@ -93,7 +93,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		val superFunctionType = superFunctionType
 		if(superFunctionType != null) {
 			val superMatches = superFunctionType.getMatchingSignatures(suppliedLocalTypes, suppliedValues)
-			validSuperSignatures@for(superMatch in superMatches) {
+			validSuperSignatures@ for(superMatch in superMatches) {
 				for(match in matches)
 					if(match.signature.overrides(superMatch.signature))
 						continue@validSuperSignatures
@@ -122,7 +122,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 			val function = associatedFunction ?: return
 			val superFunctionType = superFunctionType ?: return
 			for(signature in signatures) {
-				superSignatureLoop@for(superSignature in superFunctionType.signatures) {
+				superSignatureLoop@ for(superSignature in superFunctionType.signatures) {
 					if(signature.parameterTypes.size != superSignature.parameterTypes.size)
 						continue
 					for(parameterIndex in signature.parameterTypes.indices) {
@@ -138,7 +138,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 						val superImplementation = superSignature.associatedImplementation
 							?: throw CompilerError("Encountered member signature without implementation.")
 						signature.context.addIssue(OverridingFunctionReturnTypeNotAssignable(implementation.source, function.memberType,
-								implementation.toString(), superImplementation.toString()))
+							implementation.toString(), superImplementation.toString()))
 					}
 					break
 				}
@@ -156,7 +156,7 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 		val targetType = unresolvedTargetType.effectiveType
 		if(targetType !is FunctionType)
 			return SpecialType.ANY.matches(targetType)
-		signatureAssignabilityCheck@for(requiredSignature in targetType.signatures) {
+		signatureAssignabilityCheck@ for(requiredSignature in targetType.signatures) {
 			for(availableSignature in signatures) {
 				if(requiredSignature.getMatch(availableSignature))
 					continue@signatureAssignabilityCheck
