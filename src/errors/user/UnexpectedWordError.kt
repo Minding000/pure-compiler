@@ -13,5 +13,6 @@ class UnexpectedWordError(message: String, section: Section): SyntaxError(messag
 
 	constructor(word: Word, expectation: String): this("Unexpected ${word.type} in ${word.getStartString()}:" +
 		" '${word.getValue().stringify()}'.\n${word.getHighlight()}\nExpected $expectation instead.", word)
+
 	constructor(word: Word, expectation: WordDescriptor): this(word, expectation.toString())
 }

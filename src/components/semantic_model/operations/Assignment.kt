@@ -83,7 +83,8 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 				}
 				is MemberAccess -> {
 					if(target.target is SelfReference && target.member is VariableValue) {
-						tracker.add(VariableUsage.Kind.WRITE, target.member, sourceExpression.providedType, sourceExpression.getComputedValue())
+						tracker.add(VariableUsage.Kind.WRITE, target.member, sourceExpression.providedType,
+							sourceExpression.getComputedValue())
 						continue
 					}
 					if(target.member !is VariableValue || target.member.declaration?.isConstant == true)

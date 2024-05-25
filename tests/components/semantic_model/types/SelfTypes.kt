@@ -80,7 +80,8 @@ internal class SelfTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableType = lintResult.find<LocalVariableDeclaration> { localVariableDeclaration ->
-			localVariableDeclaration.name == "device" }?.providedType
+			localVariableDeclaration.name == "device"
+		}?.providedType
 		assertNotNull(variableType)
 		assertIs<OptionalType>(variableType)
 		assertIs<SelfType>(variableType.baseType)
@@ -102,7 +103,8 @@ internal class SelfTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableType = lintResult.find<LocalVariableDeclaration> { localVariableDeclaration ->
-			localVariableDeclaration.name == "device" }?.providedType
+			localVariableDeclaration.name == "device"
+		}?.providedType
 		assertNotNull(variableType)
 		assertIs<OptionalType>(variableType)
 		assertIs<ObjectType>(variableType.baseType)
@@ -124,7 +126,8 @@ internal class SelfTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableType = lintResult.find<LocalVariableDeclaration> { localVariableDeclaration ->
-			localVariableDeclaration.name == "device" }?.providedType
+			localVariableDeclaration.name == "device"
+		}?.providedType
 		assertNotNull(variableType)
 		assertIs<SelfType>(variableType)
 	}
@@ -147,7 +150,8 @@ internal class SelfTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableType = lintResult.find<LocalVariableDeclaration> { localVariableDeclaration ->
-			localVariableDeclaration.name == "device" }?.providedType
+			localVariableDeclaration.name == "device"
+		}?.providedType
 		assertNotNull(variableType)
 		assertIs<ObjectType>(variableType)
 	}
@@ -168,7 +172,8 @@ internal class SelfTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableType = lintResult.find<LocalVariableDeclaration> { localVariableDeclaration ->
-			localVariableDeclaration.name == "device" }?.providedType
+			localVariableDeclaration.name == "device"
+		}?.providedType
 		assertNotNull(variableType)
 		assertIs<SelfType>(variableType)
 	}
@@ -191,7 +196,8 @@ internal class SelfTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableType = lintResult.find<LocalVariableDeclaration> { localVariableDeclaration ->
-			localVariableDeclaration.name == "device" }?.providedType
+			localVariableDeclaration.name == "device"
+		}?.providedType
 		assertNotNull(variableType)
 		assertIs<ObjectType>(variableType)
 	}
@@ -212,7 +218,8 @@ internal class SelfTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableType = lintResult.find<LocalVariableDeclaration> { localVariableDeclaration ->
-			localVariableDeclaration.name == "device" }?.providedType
+			localVariableDeclaration.name == "device"
+		}?.providedType
 		assertNotNull(variableType)
 		assertIs<SelfType>(variableType)
 	}
@@ -235,7 +242,8 @@ internal class SelfTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableType = lintResult.find<LocalVariableDeclaration> { localVariableDeclaration ->
-			localVariableDeclaration.name == "device" }?.providedType
+			localVariableDeclaration.name == "device"
+		}?.providedType
 		assertNotNull(variableType)
 		assertIs<ObjectType>(variableType)
 	}
@@ -256,7 +264,8 @@ internal class SelfTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableType = lintResult.find<LocalVariableDeclaration> { localVariableDeclaration ->
-			localVariableDeclaration.name == "device" }?.providedType
+			localVariableDeclaration.name == "device"
+		}?.providedType
 		assertNotNull(variableType)
 		assertIs<SelfType>(variableType)
 	}
@@ -279,7 +288,8 @@ internal class SelfTypes {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val variableType = lintResult.find<LocalVariableDeclaration> { localVariableDeclaration ->
-			localVariableDeclaration.name == "device" }?.providedType
+			localVariableDeclaration.name == "device"
+		}?.providedType
 		assertNotNull(variableType)
 		assertIs<ObjectType>(variableType)
 	}

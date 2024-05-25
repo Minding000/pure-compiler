@@ -27,24 +27,24 @@ object TestUtil {
 	const val TEST_PROJECT_NAME = "Test"
 	const val TEST_MODULE_NAME = "Test"
 	const val TEST_FILE_NAME = "Test"
-    private val defaultErrorStream = System.err
-    private val testErrorStream = ByteArrayOutputStream()
+	private val defaultErrorStream = System.err
+	private val testErrorStream = ByteArrayOutputStream()
 	private val EXTERNAL_FUNCTIONS = listOf("i32 @fprintf(ptr, ptr, ...)", "i32 @fflush(ptr)", "ptr @_fdopen(i32, ptr)",
 		"i32 @_tmainCRTStartup()", "i1 @__vcrt_initialize()", "i1 @__acrt_initialize()", "i32 @__acrt_initialize_stdio()",
 		"ptr @__acrt_iob_func(i32)", "i32 @ferror(ptr)", "i32 @fclose(ptr)", "i64 @fwrite(ptr, i64, i64, ptr)",
 		"i64 @fread(ptr, i64, i64, ptr)", "i32 @fgetc(ptr)", "void @Sleep(i32)", "void @exit(i32)", "ptr @memcpy(ptr, ptr, i32)",
 		"void @llvm.va_start(ptr)", "void @llvm.va_copy(ptr, ptr)", "void @llvm.va_end(ptr)", "noalias ptr @malloc(i32)")
 
-    fun recordErrorStream() {
-        System.setErr(PrintStream(testErrorStream))
-    }
+	fun recordErrorStream() {
+		System.setErr(PrintStream(testErrorStream))
+	}
 
-    fun assertErrorStreamEmpty() {
-        System.setErr(defaultErrorStream)
-        val actualErrorStream = testErrorStream.toString()
-        testErrorStream.reset()
-        assertEquals("", actualErrorStream, "Expected error stream to be empty")
-    }
+	fun assertErrorStreamEmpty() {
+		System.setErr(defaultErrorStream)
+		val actualErrorStream = testErrorStream.toString()
+		testErrorStream.reset()
+		assertEquals("", actualErrorStream, "Expected error stream to be empty")
+	}
 
 	private fun createTestProject(sourceCode: String, includeRequiredModules: Boolean = false): Project {
 		return createTestProject(mapOf(TEST_FILE_NAME to sourceCode), includeRequiredModules)
@@ -65,33 +65,33 @@ object TestUtil {
 		return parse(mapOf(TEST_FILE_NAME to sourceCode), includeRequiredModules, printReport)
 	}
 
-    fun parse(files: Map<String, String>, includeRequiredModules: Boolean = false, printReport: Boolean = true): ParseResult {
+	fun parse(files: Map<String, String>, includeRequiredModules: Boolean = false, printReport: Boolean = true): ParseResult {
 		val project = createTestProject(files, includeRequiredModules)
-        val syntaxTreeGenerator = SyntaxTreeGenerator(project)
-        val program = syntaxTreeGenerator.parseProgram()
+		val syntaxTreeGenerator = SyntaxTreeGenerator(project)
+		val program = syntaxTreeGenerator.parseProgram()
 		if(printReport)
-        	syntaxTreeGenerator.project.context.logger.printReport(Severity.INFO)
-        return ParseResult(syntaxTreeGenerator, program)
-    }
+			syntaxTreeGenerator.project.context.logger.printReport(Severity.INFO)
+		return ParseResult(syntaxTreeGenerator, program)
+	}
 
-    fun lint(sourceCode: String, includeRequiredModules: Boolean = false, printReport: Boolean = true,
+	fun lint(sourceCode: String, includeRequiredModules: Boolean = false, printReport: Boolean = true,
 			 specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): LintResult {
 		return lint(mapOf(TEST_FILE_NAME to sourceCode), includeRequiredModules, printReport, specialTypePaths)
 	}
 
-    fun lint(files: Map<String, String>, includeRequiredModules: Boolean = false, printReport: Boolean = true,
+	fun lint(files: Map<String, String>, includeRequiredModules: Boolean = false, printReport: Boolean = true,
 			 specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): LintResult {
-        val parseResult = parse(files, includeRequiredModules, false)
+		val parseResult = parse(files, includeRequiredModules, false)
 		val context = parseResult.syntaxTreeGenerator.project.context
-        val semanticModelGenerator = SemanticModelGenerator(context)
-        val program = semanticModelGenerator.createSemanticModel(parseResult.program, specialTypePaths)
+		val semanticModelGenerator = SemanticModelGenerator(context)
+		val program = semanticModelGenerator.createSemanticModel(parseResult.program, specialTypePaths)
 		if(printReport)
-        	context.logger.printReport(Severity.INFO,
+			context.logger.printReport(Severity.INFO,
 				!includeRequiredModules && specialTypePaths == Builder.specialTypePaths)
-        return LintResult(context, program)
-    }
+		return LintResult(context, program)
+	}
 
-    fun getIntermediateRepresentation(sourceCode: String): String {
+	fun getIntermediateRepresentation(sourceCode: String): String {
 		val includeRequiredModules = false
 		val lintResult = lint(sourceCode, includeRequiredModules, false)
 		val program = LlvmProgram(TEST_PROJECT_NAME)
@@ -106,7 +106,7 @@ object TestUtil {
 			program.dispose()
 			Main.shouldPrintRuntimeDebugOutput = previousFlag
 		}
-    }
+	}
 
 	fun runAndReturnBoolean(sourceCode: String, entryPointPath: String): Boolean {
 		val result: Boolean
@@ -141,7 +141,7 @@ object TestUtil {
 		return run(sourceCode, entryPointPath, false, specialTypePaths)
 	}
 
-    fun run(sourceCode: String, entryPointPath: String, includeRequiredModules: Boolean = false,
+	fun run(sourceCode: String, entryPointPath: String, includeRequiredModules: Boolean = false,
 			specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): Int {
 		return run(mapOf(TEST_FILE_NAME to sourceCode), entryPointPath, includeRequiredModules, specialTypePaths)
 	}
@@ -155,7 +155,7 @@ object TestUtil {
 		return result
 	}
 
-    @OptIn(ExperimentalContracts::class)
+	@OptIn(ExperimentalContracts::class)
 	fun run(files: Map<String, String>, entryPointPath: String, includeRequiredModules: Boolean = false,
 			specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths, runner: (program: LlvmProgram) -> Unit) {
 		contract {
@@ -181,7 +181,7 @@ object TestUtil {
 		} finally {
 			program.dispose()
 		}
-    }
+	}
 
 	fun runExecutable(path: String = ".\\out\\program.exe") {
 		println("----- Program output: -----")
@@ -257,12 +257,14 @@ object TestUtil {
 		assertEquals(type, word.type, "The generated token doesn't match the expected type")
 	}
 
-    fun assertSyntaxTreeEquals(expectedFileSyntaxTree: String, sourceCode: String) {
-        val actualSyntaxTree = parse(sourceCode).program.toString()
-        val expectedSyntaxTree = "Program {\n\tFile {${if(expectedFileSyntaxTree == "") ""
-            else "\n$expectedFileSyntaxTree".indent().indent()}\n\t}\n}"
+	fun assertSyntaxTreeEquals(expectedFileSyntaxTree: String, sourceCode: String) {
+		val actualSyntaxTree = parse(sourceCode).program.toString()
+		val expectedSyntaxTree = "Program {\n\tFile {${
+			if(expectedFileSyntaxTree == "") ""
+			else "\n$expectedFileSyntaxTree".indent().indent()
+		}\n\t}\n}"
 		assertStringEquals(expectedSyntaxTree, actualSyntaxTree)
-    }
+	}
 
 	fun assertStringEquals(expected: String, actual: String?) {
 		if(actual != null && actual != expected)
@@ -270,33 +272,33 @@ object TestUtil {
 		assertEquals(expected, actual)
 	}
 
-    fun printDiffPosition(expected: String, actual: String) {
-        var position = 0
-        var line = 1
-        var index = 1
-        for(character in expected) {
-            val actualChar = actual.getOrNull(position)
-            if(character != actualChar) {
-                val highlight = StringBuilder()
-                val start = position - index + 1
-                var end = expected.indexOf('\n', start)
-                if(end == -1)
-                    end = expected.length
-                highlight.append(expected.substring(start, end).replace("\t", " "))
-                highlight.append("\n")
-                highlight.append(" ".repeat(index - 1))
-                highlight.append("^")
-                println("Expected '${character.stringify()}' at $line:$index, but got '${actualChar?.stringify()}' instead.")
-                println(highlight.toString())
-                break
-            }
-            position++
-            if(character == '\n') {
-                line++
-                index = 1
-            } else {
-                index++
-            }
-        }
-    }
+	fun printDiffPosition(expected: String, actual: String) {
+		var position = 0
+		var line = 1
+		var index = 1
+		for(character in expected) {
+			val actualChar = actual.getOrNull(position)
+			if(character != actualChar) {
+				val highlight = StringBuilder()
+				val start = position - index + 1
+				var end = expected.indexOf('\n', start)
+				if(end == -1)
+					end = expected.length
+				highlight.append(expected.substring(start, end).replace("\t", " "))
+				highlight.append("\n")
+				highlight.append(" ".repeat(index - 1))
+				highlight.append("^")
+				println("Expected '${character.stringify()}' at $line:$index, but got '${actualChar?.stringify()}' instead.")
+				println(highlight.toString())
+				break
+			}
+			position++
+			if(character == '\n') {
+				line++
+				index = 1
+			} else {
+				index++
+			}
+		}
+	}
 }

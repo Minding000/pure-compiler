@@ -77,7 +77,8 @@ class Logger(private val systemName: String) {
 
 		fun getTypeCountString(): String {
 			return Severity.entries.reversed().joinToString { issueType ->
-				"${issueType.name.first()}${issueTypeCounts[issueType.ordinal]}" }
+				"${issueType.name.first()}${issueTypeCounts[issueType.ordinal]}"
+			}
 		}
 	}
 

@@ -1,7 +1,5 @@
 package source_structure
 
-import java.lang.StringBuilder
-
 open class Section(val start: Position, val end: Position): IdentifierSource {
 	private val file: File
 		get() = start.line.file

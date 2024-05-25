@@ -30,7 +30,7 @@ fun List<Type>.combineOrUnion(context: SemanticModel): Type {
 		simplifiedFlattenedTypes.add(type)
 	}
 	val simplifiedUniqueTypes = HashSet<Type>()
-	uniqueTypeSearch@for(type in simplifiedFlattenedTypes) {
+	uniqueTypeSearch@ for(type in simplifiedFlattenedTypes) {
 		for(otherType in simplifiedFlattenedTypes) {
 			if(otherType == type)
 				continue

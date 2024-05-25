@@ -6,8 +6,8 @@ import logger.Severity
 
 open class LogResult(val logger: Logger) {
 
-	inline fun <reified I: Issue>assertIssueDetected(expectedText: String? = null, expectedSeverity: Severity? = null,
-													 expectedLineNumber: Int? = null) {
+	inline fun <reified I: Issue> assertIssueDetected(expectedText: String? = null, expectedSeverity: Severity? = null,
+													  expectedLineNumber: Int? = null) {
 		var detectedLineNumber: Int? = null
 		var detectedText: String? = null
 		var matchCount = 0
@@ -52,7 +52,7 @@ open class LogResult(val logger: Logger) {
 		}
 	}
 
-	inline fun <reified I: Issue>assertIssueNotDetected(fileName: String = TestUtil.TEST_FILE_NAME) {
+	inline fun <reified I: Issue> assertIssueNotDetected(fileName: String = TestUtil.TEST_FILE_NAME) {
 		for(issue in logger.issues()) {
 			if(issue.isInternal)
 				continue

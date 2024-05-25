@@ -8,11 +8,11 @@ import kotlin.test.assertNotNull
 
 class LintResult(val context: Context, val program: Program): LogResult(context.logger) {
 
-	inline fun <reified T: SemanticModel>find(noinline predicate: (T) -> Boolean = { true }): T? {
+	inline fun <reified T: SemanticModel> find(noinline predicate: (T) -> Boolean = { true }): T? {
 		return find(TestUtil.TEST_FILE_NAME, predicate)
 	}
 
-	inline fun <reified T: SemanticModel>find(fileName: String, noinline predicate: (T) -> Boolean = { true }): T? {
+	inline fun <reified T: SemanticModel> find(fileName: String, noinline predicate: (T) -> Boolean = { true }): T? {
 		return getFile(fileName).find(predicate)
 	}
 

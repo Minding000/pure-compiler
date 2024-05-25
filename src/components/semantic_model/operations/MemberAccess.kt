@@ -35,7 +35,8 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		member.scope = targetType.interfaceScope
 		member.determineTypes()
 		//TODO StaticType check is just a quick fix
-		val memberType = (if(member.effectiveType is StaticType) member.providedType else member.effectiveType)?.getLocalType(this, targetType) ?: return
+		val memberType =
+			(if(member.effectiveType is StaticType) member.providedType else member.effectiveType)?.getLocalType(this, targetType) ?: return
 		providedType = if(isOptional && memberType !is OptionalType)
 			OptionalType(source, scope, memberType)
 		else
@@ -80,7 +81,8 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 				is InitializerReference -> {
 					val staticType = StaticType(availableType.getTypeDeclaration() ?: continue)
 					val functionCall = parent as? FunctionCall ?: continue
-					if(staticType.getInitializer(emptyList(), emptyList(), functionCall.typeParameters, functionCall.valueParameters) == null)
+					if(staticType.getInitializer(emptyList(), emptyList(), functionCall.typeParameters,
+							functionCall.valueParameters) == null)
 						continue
 					possibleTargetTypes.add(staticType)
 				}

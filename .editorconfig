@@ -15,3 +15,8 @@ trim_trailing_whitespace = false
 [*.yml]
 indent_style = space
 indent_size = 2
+
+# Formatter wishlist (IntelliJ):
+# - no space after label e.g. myLoop@while(true);
+# - no line break to close closure e.g. .filter { a -> a == 0 }
+# - no space between generics and function name e.g. fun <T>test() {}

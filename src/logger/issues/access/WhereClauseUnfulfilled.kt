@@ -6,7 +6,8 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import logger.Issue
 import logger.Severity
 
-class WhereClauseUnfulfilled(source: SyntaxTreeNode, memberType: String, signature: String, targetType: Type, whereClause: WhereClauseCondition):
+class WhereClauseUnfulfilled(source: SyntaxTreeNode, memberType: String, signature: String, targetType: Type,
+							 whereClause: WhereClauseCondition):
 	Issue(Severity.ERROR, source) {
 	override val text = "$memberType '$signature' cannot be accessed on object of type '$targetType'," +
 		" because the condition '$whereClause' is not met."

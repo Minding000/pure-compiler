@@ -120,7 +120,8 @@ internal class InitializerResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function as? VariableValue)?.name == "IntegerList" }
+			(functionCall.function as? VariableValue)?.name == "IntegerList"
+		}
 		assertNotNull(initializerCall?.providedType)
 	}
 
@@ -136,7 +137,8 @@ internal class InitializerResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function as? VariableValue)?.name == "IntegerList" }
+			(functionCall.function as? VariableValue)?.name == "IntegerList"
+		}
 		assertNotNull(initializerCall?.providedType)
 	}
 
@@ -152,7 +154,8 @@ internal class InitializerResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function as? VariableValue)?.name == "IntegerList" }
+			(functionCall.function as? VariableValue)?.name == "IntegerList"
+		}
 		assertNotNull(initializerCall?.providedType)
 	}
 
@@ -168,7 +171,8 @@ internal class InitializerResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function as? VariableValue)?.name == "IntegerList" }
+			(functionCall.function as? VariableValue)?.name == "IntegerList"
+		}
 		assertNotNull(initializerCall?.providedType)
 	}
 
@@ -186,7 +190,8 @@ internal class InitializerResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function as? VariableValue)?.name == "Bottle" }
+			(functionCall.function as? VariableValue)?.name == "Bottle"
+		}
 		assertEquals("Bottle(Int)", initializerCall?.targetInitializer.toString())
 	}
 
@@ -203,7 +208,8 @@ internal class InitializerResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function as? VariableValue)?.name == "Bottle" }
+			(functionCall.function as? VariableValue)?.name == "Bottle"
+		}
 		assertEquals("Bottle(Int)", initializerCall?.targetInitializer.toString())
 	}
 
@@ -221,7 +227,8 @@ internal class InitializerResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function as? VariableValue)?.name == "Bottle" }
+			(functionCall.function as? VariableValue)?.name == "Bottle"
+		}
 		assertEquals("Bottle(...Int)", initializerCall?.targetInitializer.toString())
 	}
 
@@ -241,7 +248,8 @@ internal class InitializerResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function as? VariableValue)?.name == "Bottle" }
+			(functionCall.function as? VariableValue)?.name == "Bottle"
+		}
 		assertEquals("Bottle(Cup)", initializerCall?.targetInitializer.toString())
 	}
 
@@ -259,7 +267,8 @@ internal class InitializerResolution {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		val initializerCall = lintResult.find<FunctionCall> { functionCall ->
-			(functionCall.function as? VariableValue)?.name == "Bottle" }
+			(functionCall.function as? VariableValue)?.name == "Bottle"
+		}
 		assertEquals("Bottle(Bottle)", initializerCall?.targetInitializer?.toString())
 	}
 
