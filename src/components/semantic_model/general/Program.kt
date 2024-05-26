@@ -146,12 +146,12 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.createAndSelectEntrypointBlock(globalEntryPoint)
 		createStandardStreams(constructor)
 		context.printDebugMessage(constructor, "Initializing program...")
+
+		//TODO remove: this print is for debugging
 		//val handle = constructor.buildLoad(constructor.pointerType, context.llvmStandardOutputStreamGlobal, "handle")
 		//val test = constructor.buildGlobalAsciiCharArray("test", "Test")
 		//constructor.buildFunctionCall(context.llvmStreamWriteFunctionType, context.llvmStreamWriteFunction,
 		//	listOf(test, constructor.buildInt64(1), constructor.buildInt64(4), handle))
-		//
-		////TODO remove: this print is for debugging
 		//context.printDebugMessage(constructor, "Test: %d", constructor.buildInt32(42))
 		//context.printDebugMessage(constructor, "Test: %p", context.llvmStandardErrorStreamGlobal)
 
@@ -186,9 +186,11 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			//TODO check for uncaught exception
 			context.printDebugMessage(constructor, "Entrypoint returned.")
 		}
+
 		//TODO remove: this flush is for debugging
 		val handle = constructor.buildLoad(constructor.pointerType, context.llvmStandardOutputStreamGlobal, "handle")
 		constructor.buildFunctionCall(context.llvmStreamFlushFunctionType, context.llvmStreamFlushFunction, listOf(handle))
+
 		if(userEntryPointReturnsVoid)
 			result = constructor.buildInt32(ExitCode.SUCCESS)
 		constructor.buildReturn(result)
@@ -213,9 +215,9 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		}
 		val inputStreamMode = constructor.buildGlobalAsciiCharArray("${RUNTIME_PREFIX}standard_input_stream_mode", "r")
 		val outputStreamMode = constructor.buildGlobalAsciiCharArray("${RUNTIME_PREFIX}standard_output_stream_mode", "w")
-		//createStandardStream(constructor, 0, inputStreamMode, context.llvmStandardInputStreamGlobal)
+		createStandardStream(constructor, 0, inputStreamMode, context.llvmStandardInputStreamGlobal)
 		createStandardStream(constructor, 1, outputStreamMode, context.llvmStandardOutputStreamGlobal)
-		//createStandardStream(constructor, 2, outputStreamMode, context.llvmStandardErrorStreamGlobal)
+		createStandardStream(constructor, 2, outputStreamMode, context.llvmStandardErrorStreamGlobal)
 	}
 
 	private fun createStandardStream(constructor: LlvmConstructor, identifier: Int, mode: LlvmValue, global: LlvmValue) {

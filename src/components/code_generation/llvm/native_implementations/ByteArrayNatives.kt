@@ -140,9 +140,10 @@ class ByteArrayNatives(val context: Context) {
 		val thisArray = context.getThisParameter(constructor)
 		val thisArrayValueProperty = constructor.buildGetPropertyPointer(context.byteArrayDeclarationType, thisArray,
 			context.byteArrayValueIndex, "thisArrayValueProperty")
+		val thisArrayValue = constructor.buildLoad(constructor.pointerType, thisArrayValueProperty, "thisArrayValue")
 		val index = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val element = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET + 1)
-		val elementElement = constructor.buildGetArrayElementPointer(elementType, thisArrayValueProperty, index, "elementElement")
+		val elementElement = constructor.buildGetArrayElementPointer(elementType, thisArrayValue, index, "elementElement")
 		constructor.buildStore(element, elementElement)
 		constructor.buildReturn()
 	}

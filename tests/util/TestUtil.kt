@@ -188,7 +188,7 @@ object TestUtil {
 		val process = ProcessBuilder(path).inheritIO().start()
 		val exitCode = process.onExit().join().exitValue()
 		if(exitCode != ExitCode.SUCCESS)
-			fail("Program exited with error code: $exitCode")
+			fail(createExitCodeMessage(exitCode))
 	}
 
 	fun assertExecutablePrints(expectedString: String, input: String = "", path: String = ".\\out\\program.exe") {
@@ -204,10 +204,14 @@ object TestUtil {
 		if(exitCode == null)
 			System.err.println("Program timed out after ${timeoutInSeconds}s.")
 		else if(programFailed)
-			System.err.println("Program exited with error code: $exitCode")
+			System.err.println(createExitCodeMessage(exitCode))
 		assertStringEquals(expectedString, reader.readText())
 		if(programFailed)
 			fail("Program failed! See lines above for details (timeout or error code).")
+	}
+
+	private fun createExitCodeMessage(exitCode: Int): String {
+		return "Program exited with exit code: $exitCode (${exitCode.toUInt().toString(16).uppercase()})"
 	}
 
 	private fun printDiagnostics(intermediateRepresentation: String) {
