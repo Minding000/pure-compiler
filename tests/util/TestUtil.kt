@@ -18,10 +18,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.fail
+import kotlin.test.*
 
 object TestUtil {
 	const val TEST_PROJECT_NAME = "Test"
@@ -186,7 +183,7 @@ object TestUtil {
 	fun runExecutable(path: String = ".\\out\\program.exe") {
 		println("----- Program output: -----")
 		val process = ProcessBuilder(path).inheritIO().start()
-		val exitCode = process.onExit().join().exitValue()
+		val exitCode = process.waitFor()
 		if(exitCode != ExitCode.SUCCESS)
 			fail(createExitCodeMessage(exitCode))
 	}
@@ -194,27 +191,53 @@ object TestUtil {
 	fun assertExecutablePrints(expectedString: String, input: String = "", path: String = ".\\out\\program.exe",
 							   expectedExitCode: Int = ExitCode.SUCCESS) {
 		val process = ProcessBuilder(path).start()
-		val reader = process.inputStream.bufferedReader()
+		val outputStreamReader = process.inputStream.bufferedReader()
+		val errorStreamReader = process.errorStream.bufferedReader()
 		if(input.isNotEmpty()) {
-			val outputStream = process.outputStream
-			outputStream.write(input.toByteArray())
-			outputStream.flush()
-			outputStream.close()
+			val inputStream = process.outputStream
+			inputStream.write(input.toByteArray())
+			inputStream.flush()
+			inputStream.close()
 		}
 		val timeoutInSeconds = 1L
-		val exitCode = process.onExit().completeOnTimeout(null, timeoutInSeconds, TimeUnit.SECONDS).join()?.exitValue()
+		val processFuture = process.onExit().completeOnTimeout(null, timeoutInSeconds, TimeUnit.SECONDS)
+		val outputStreamBuilder = StringBuilder()
+		val errorStreamBuilder = StringBuilder()
+		val outputBuffer = CharArray(512)
+		while(true) {
+			val isDone = processFuture.isDone
+			while(outputStreamReader.ready()) {
+				val byteCount = outputStreamReader.read(outputBuffer)
+				outputStreamBuilder.appendRange(outputBuffer, 0, byteCount)
+			}
+			while(errorStreamReader.ready()) {
+				val byteCount = errorStreamReader.read(outputBuffer)
+				errorStreamBuilder.appendRange(outputBuffer, 0, byteCount)
+			}
+			if(isDone)
+				break
+			try {
+				Thread.sleep(20)
+			} catch(_: InterruptedException) {
+			}
+		}
+		val exitCode = processFuture.join()?.exitValue()
 		val programFailed = exitCode != expectedExitCode
 		if(exitCode == null)
 			System.err.println("Program timed out after ${timeoutInSeconds}s.")
 		else if(programFailed)
 			System.err.println(createExitCodeMessage(exitCode))
-		assertStringEquals(expectedString, reader.readText())
+		val errorStream = errorStreamBuilder.toString()
+		if(errorStream.isNotEmpty())
+			System.err.println(errorStream)
+		assertStringEquals(expectedString, outputStreamBuilder.toString())
+		assertTrue(errorStream.isEmpty(), "The error stream is not empty.")
 		if(programFailed)
 			fail("Program failed! See lines above for details (timeout or error code).")
 	}
 
 	private fun createExitCodeMessage(exitCode: Int): String {
-		return "Program exited with exit code: $exitCode (${exitCode.toUInt().toString(16).uppercase()})"
+		return "Program exited with exit code: $exitCode (0x${exitCode.toUInt().toString(16).uppercase()})"
 	}
 
 	private fun printDiagnostics(intermediateRepresentation: String) {
