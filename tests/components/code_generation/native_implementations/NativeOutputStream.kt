@@ -2,12 +2,35 @@ package components.code_generation.native_implementations
 
 import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
-import util.TestUtil
+import util.TestApp
 
 internal class NativeOutputStream {
 
 	@Test
-	fun `'writeBytes' doesn't fail`() {
+	fun `'writeByte' prints to output`() {
+		val sourceCode = """
+			SimplestApp object {
+				bound Process object {
+					val outputStream = getStandardOutputStream()
+					native to getStandardOutputStream(): NativeOutputStream
+				}
+				to printTest() {
+					Process.outputStream.writeByte(48)
+					Process.outputStream.writeByte(49)
+					Process.outputStream.writeByte(50)
+				}
+			}
+			native NativeOutputStream class {
+				native to writeByte(byte: Byte)
+			}
+		""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.printTest")
+		app.setSpecialTypeDeclarations(SpecialType.NATIVE_OUTPUT_STREAM)
+		app.shouldPrint("012")
+	}
+
+	@Test
+	fun `'writeBytes' prints to output`() {
 		val sourceCode = """
 			SimplestApp object {
 				bound Process object {
@@ -29,10 +52,8 @@ internal class NativeOutputStream {
 				native to writeBytes(bytes: ByteArray)
 			}
 		""".trimIndent()
-		TestUtil.run(sourceCode, "Test:SimplestApp.printTest", mapOf(
-			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME,
-			SpecialType.STRING to TestUtil.TEST_FILE_NAME,
-			SpecialType.NATIVE_OUTPUT_STREAM to TestUtil.TEST_FILE_NAME,
-		))
+		val app = TestApp(sourceCode, "Test:SimplestApp.printTest")
+		app.setSpecialTypeDeclarations(SpecialType.BYTE_ARRAY, SpecialType.STRING, SpecialType.NATIVE_OUTPUT_STREAM)
+		app.shouldPrint("Test")
 	}
 }

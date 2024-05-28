@@ -191,16 +191,19 @@ object TestUtil {
 			fail(createExitCodeMessage(exitCode))
 	}
 
-	fun assertExecutablePrints(expectedString: String, input: String = "", path: String = ".\\out\\program.exe") {
+	fun assertExecutablePrints(expectedString: String, input: String = "", path: String = ".\\out\\program.exe",
+							   expectedExitCode: Int = ExitCode.SUCCESS) {
 		val process = ProcessBuilder(path).start()
 		val reader = process.inputStream.bufferedReader()
-		val outputStream = process.outputStream
-		outputStream.write(input.toByteArray())
-		outputStream.flush()
-		outputStream.close()
+		if(input.isNotEmpty()) {
+			val outputStream = process.outputStream
+			outputStream.write(input.toByteArray())
+			outputStream.flush()
+			outputStream.close()
+		}
 		val timeoutInSeconds = 1L
 		val exitCode = process.onExit().completeOnTimeout(null, timeoutInSeconds, TimeUnit.SECONDS).join()?.exitValue()
-		val programFailed = exitCode != ExitCode.SUCCESS
+		val programFailed = exitCode != expectedExitCode
 		if(exitCode == null)
 			System.err.println("Program timed out after ${timeoutInSeconds}s.")
 		else if(programFailed)

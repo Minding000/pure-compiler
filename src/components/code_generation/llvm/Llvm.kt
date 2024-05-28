@@ -1,6 +1,7 @@
 package components.code_generation.llvm
 
 import errors.internal.CompilerError
+import org.bytedeco.javacpp.BytePointer
 import org.bytedeco.javacpp.Pointer
 import org.bytedeco.javacpp.PointerPointer
 import org.bytedeco.llvm.LLVM.*
@@ -55,6 +56,12 @@ object Llvm {
 		const val MAXIMAL = 3
 	}
 
+	object ModuleVerificationAction {
+		const val PRINT_AND_EXIT = LLVMAbortProcessAction
+		const val PRINT = LLVMPrintMessageAction
+		const val RETURN = LLVMReturnStatusAction
+	}
+
 	fun createContext(): LlvmContext = LLVMContextCreate()
 
 	fun createModule(context: LlvmContext, name: String): LlvmModule = LLVMModuleCreateWithNameInContext(name, context)
@@ -88,6 +95,12 @@ object Llvm {
 	fun castToBoolean(genericValue: LlvmGenericValue): Boolean = castToUnsignedInteger(genericValue) == 1L
 
 	fun bool(value: Boolean): Int = if(value) YES else NO
+
+	fun getMessage(rawMessage: BytePointer): String {
+		val message = rawMessage.string
+		LLVMDisposeMessage(rawMessage)
+		return message
+	}
 
 	fun handleError(error: LLVMErrorRef?, messagePrefix: String) {
 		if(error == null)

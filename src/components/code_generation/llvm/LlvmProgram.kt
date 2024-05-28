@@ -31,7 +31,7 @@ class LlvmProgram(name: String) {
 
 	fun verify() {
 		val error = BytePointer()
-		if(LLVMVerifyModule(constructor.module, LLVMPrintMessageAction, error) != Llvm.OK) {
+		if(LLVMVerifyModule(constructor.module, Llvm.ModuleVerificationAction.PRINT, error) != Llvm.OK) {
 			LLVMDisposeMessage(error)
 			throw CompilerError("Failed to compile to LLVM target.")
 		}
@@ -52,10 +52,8 @@ class LlvmProgram(name: String) {
 		val target = LLVMTargetRef()
 		val error = BytePointer()
 		val triplePointer = BytePointer(targetTriple)
-		if(LLVMGetTargetFromTriple(triplePointer, target, error) != Llvm.OK) {
-			LLVMDisposeMessage(error)
-			throw CompilerError("Failed get LLVM target from target triple.")
-		}
+		if(LLVMGetTargetFromTriple(triplePointer, target, error) != Llvm.OK)
+			throw CompilerError("Failed get LLVM target from target triple: ${Llvm.getMessage(error)}")
 		val cpu = "generic"
 		val features = ""
 		val targetMachine = LLVMCreateTargetMachine(target, targetTriple, cpu, features, Llvm.OptimizationLevel.DEBUGGABLE, LLVMRelocPIC,
@@ -63,17 +61,13 @@ class LlvmProgram(name: String) {
 		val dataLayout = LLVMCreateTargetDataLayout(targetMachine)
 		val dataLayoutPointer = BytePointer(dataLayout)
 		LLVMSetDataLayout(constructor.module, dataLayoutPointer)
-		if(LLVMTargetMachineEmitToFile(targetMachine, constructor.module, objectFilePath, LLVMObjectFile, error) != Llvm.OK) {
-			LLVMDisposeMessage(error)
-			throw CompilerError("Failed get LLVM target from target triple.")
-		}
+		if(LLVMTargetMachineEmitToFile(targetMachine, constructor.module, objectFilePath, LLVMObjectFile, error) != Llvm.OK)
+			throw CompilerError("Failed to emit object file: ${Llvm.getMessage(error)}")
 	}
 
 	fun getIntermediateRepresentation(): String {
-		val bytes = LLVMPrintModuleToString(constructor.module)
-		val message = bytes.string
-		LLVMDisposeMessage(bytes)
-		return message
+		val string = LLVMPrintModuleToString(constructor.module)
+		return Llvm.getMessage(string)
 	}
 
 	fun run(entrypoint: String = Program.GLOBAL_ENTRYPOINT_NAME) {
