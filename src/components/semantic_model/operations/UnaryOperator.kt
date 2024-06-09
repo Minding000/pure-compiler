@@ -129,8 +129,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		val parameters = LinkedList<LlvmValue>()
 		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)
-		val functionAddress = context.resolveFunction(constructor, targetValue,
-			signature.original.toString(false, kind))
+		val functionAddress = context.resolveFunction(constructor, targetValue, signature.getIdentifier(kind))
 		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,
 			"_unaryOperatorResult")
 		context.continueRaise(constructor)

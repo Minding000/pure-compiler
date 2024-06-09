@@ -248,8 +248,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			} else {
 				val functionName = (((function as? MemberAccess)?.member ?: function) as? VariableValue)?.name
 					?: throw CompilerError(source, "Failed to determine name of member function.")
-				context.resolveFunction(constructor, targetValue,
-					"${functionName}${signature.original.toString(false)}")
+				context.resolveFunction(constructor, targetValue, signature.getIdentifier(functionName))
 			}
 		}
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)

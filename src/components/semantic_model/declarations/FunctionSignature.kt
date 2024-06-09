@@ -94,7 +94,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 			specificWhereClauseConditions.add(whereClauseCondition.withTypeSubstitutions(typeSubstitutions))
 		val specificSignature = FunctionSignature(source, scope, specificLocalTypeParameters, specificParametersTypes,
 			returnType.withTypeSubstitutions(typeSubstitutions), specificWhereClauseConditions, associatedImplementation)
-		specificSignature.original = this
+		specificSignature.original = original
 		//TODO superFunctionSignature might not be set yet
 		specificSignature.superFunctionSignature = superFunctionSignature?.withTypeSubstitutions(typeSubstitutions)
 		return specificSignature
@@ -256,6 +256,14 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 		result = 31 * result + parameterTypes.hashCode()
 		result = 31 * result + returnType.hashCode()
 		return result
+	}
+
+	fun getIdentifier(name: String): String {
+		return superFunctionSignature?.getIdentifier(name) ?: "$name${original.toString(false)}"
+	}
+
+	fun getIdentifier(kind: Operator.Kind): String {
+		return superFunctionSignature?.getIdentifier(kind) ?: original.toString(false, kind)
 	}
 
 	override fun toString(): String {

@@ -169,22 +169,24 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		for(variableDeclaration in generator.variableDeclarations)
 			variableDeclaration.compile(constructor)
 
-		val iteratorCreationPropertyType = iterableType?.getValueDeclaration("createIterator")?.type
+		val iteratorCreationPropertyName = "createIterator"
+		val iteratorCreationPropertyType = iterableType?.getValueDeclaration(iteratorCreationPropertyName)?.type
 		val iteratorCreationMatch = (iteratorCreationPropertyType as? FunctionType)?.getSignature()
 		val iteratorCreationSignature = iteratorCreationMatch?.signature
-		val iteratorType = iteratorCreationMatch?.returnType
-		val iteratorAdvancePropertyType = iteratorType?.getValueDeclaration("advance")?.type
+			?: throw CompilerError(source, "'Iterator.createIterator' signature not found.")
+		val iteratorType = iteratorCreationMatch.returnType
+		val iteratorAdvancePropertyType = iteratorType.getValueDeclaration("advance")?.type
 		val iteratorAdvanceSignature = (iteratorAdvancePropertyType as? FunctionType)?.getSignature()?.signature
-		val iteratorIsDoneComputedProperty = iteratorType?.getValueDeclaration("isDone")?.declaration as? ComputedPropertyDeclaration
+		val iteratorIsDoneComputedProperty = iteratorType.getValueDeclaration("isDone")?.declaration as? ComputedPropertyDeclaration
 			?: throw CompilerError(source, "'Iterator.isDone' computed property not found.")
 
 		val function = constructor.getParentFunction()
 		//TODO support looping over union types
 		val iterableLlvmValue = generator.iterable.getLlvmValue(constructor)
-		val createIteratorAddress = context.resolveFunction(constructor, iterableLlvmValue,
-			"createIterator(): <Element>List.Iterator") //TODO change function IDs: exclude return type
+		val createIteratorAddress =
+			context.resolveFunction(constructor, iterableLlvmValue, iteratorCreationSignature.getIdentifier(iteratorCreationPropertyName))
 		val exceptionAddress = context.getExceptionParameter(constructor)
-		val iteratorLlvmValue = constructor.buildFunctionCall(iteratorCreationSignature?.getLlvmType(constructor), createIteratorAddress,
+		val iteratorLlvmValue = constructor.buildFunctionCall(iteratorCreationSignature.getLlvmType(constructor), createIteratorAddress,
 			listOf(exceptionAddress, iterableLlvmValue), "iterator")
 		context.continueRaise(constructor)
 		entryBlock = constructor.createBlock(function, "loop_entry")

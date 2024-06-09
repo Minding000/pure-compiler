@@ -106,8 +106,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, index.getLlvmValue(constructor), index.effectiveType,
 				index.hasGenericType, parameterType, parameterType != signature.original.getParameterTypeAt(indexIndex)))
 		}
-		val functionAddress = context.resolveFunction(constructor, targetValue,
-			signature.original.toString(false, getOperatorKind()))
+		val functionAddress = context.resolveFunction(constructor, targetValue, signature.getIdentifier(getOperatorKind()))
 		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,
 			"_indexAccess_result")
 		context.continueRaise(constructor)

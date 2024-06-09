@@ -177,8 +177,7 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 				?: throw CompilerError(source, "Encountered member signature without implementation.")
 			implementation.llvmValue
 		} else {
-			context.resolveFunction(constructor, targetValue,
-				signature.original.toString(false, Operator.Kind.BRACKETS_SET))
+			context.resolveFunction(constructor, targetValue, signature.getIdentifier(Operator.Kind.BRACKETS_SET))
 		}
 		val parameters = LinkedList<LlvmValue>()
 		parameters.add(context.getExceptionParameter(constructor))

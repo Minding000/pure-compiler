@@ -160,8 +160,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)
 		parameters.add(modifierValue)
-		val functionAddress = context.resolveFunction(constructor, targetValue,
-			signature.original.toString(false, kind))
+		val functionAddress = context.resolveFunction(constructor, targetValue, signature.getIdentifier(kind))
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
 		context.continueRaise(constructor)
 	}

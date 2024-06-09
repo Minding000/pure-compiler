@@ -336,8 +336,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				"${typeDefinition.name}${signature.original.toString(false, kind)}")
 			constructor.buildFunctionCall(primitiveImplementation.llvmType, primitiveImplementation.llvmValue, parameters, resultName)
 		} else {
-			val functionAddress = context.resolveFunction(constructor, leftValue,
-				signature.original.toString(false, kind))
+			val functionAddress = context.resolveFunction(constructor, leftValue, signature.getIdentifier(kind))
 			constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, resultName)
 		}
 		context.continueRaise(constructor)
