@@ -1,7 +1,7 @@
 package components.code_generation.control_flow
 
 import org.junit.jupiter.api.Test
-import util.TestUtil
+import util.TestApp
 
 internal class RaiseStatement {
 
@@ -10,11 +10,13 @@ internal class RaiseStatement {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
-					raise 1
+					raise 23
 				}
 			}
 			""".trimIndent()
-		TestUtil.run(sourceCode, "Test:SimplestApp.run")
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		val newLine = Character.toString(13) + Character.toString(10)
+		app.shouldPrint("Uncaught exception at '0000000000000017'." + newLine, "", 1)
 	}
 
 	@Test
@@ -23,11 +25,13 @@ internal class RaiseStatement {
 			Drawer class
 			SimplestApp object {
 				to run(): Drawer {
-					raise 1
+					raise 23
 				}
 			}
 			""".trimIndent()
-		TestUtil.run(sourceCode, "Test:SimplestApp.run")
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		val newLine = Character.toString(13) + Character.toString(10)
+		app.shouldPrint("Uncaught exception at '0000000000000017'." + newLine, "", 1)
 	}
 
 	@Test
@@ -35,11 +39,13 @@ internal class RaiseStatement {
 		val sourceCode = """
 			SimplestApp object {
 				to run(): Bool {
-					raise 1
+					raise 23
 				}
 			}
 			""".trimIndent()
-		TestUtil.run(sourceCode, "Test:SimplestApp.run")
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		val newLine = Character.toString(13) + Character.toString(10)
+		app.shouldPrint("Uncaught exception at '0000000000000017'." + newLine, "", 1)
 	}
 
 	@Test
@@ -47,11 +53,13 @@ internal class RaiseStatement {
 		val sourceCode = """
 			SimplestApp object {
 				to run(): Byte {
-					raise 1
+					raise 23
 				}
 			}
 			""".trimIndent()
-		TestUtil.run(sourceCode, "Test:SimplestApp.run")
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		val newLine = Character.toString(13) + Character.toString(10)
+		app.shouldPrint("Uncaught exception at '0000000000000017'." + newLine, "", 1)
 	}
 
 	@Test
@@ -59,11 +67,13 @@ internal class RaiseStatement {
 		val sourceCode = """
 			SimplestApp object {
 				to run(): Int {
-					raise 1
+					raise 23
 				}
 			}
 			""".trimIndent()
-		TestUtil.run(sourceCode, "Test:SimplestApp.run")
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		val newLine = Character.toString(13) + Character.toString(10)
+		app.shouldPrint("Uncaught exception at '0000000000000017'." + newLine, "", 1)
 	}
 
 	@Test
@@ -71,10 +81,12 @@ internal class RaiseStatement {
 		val sourceCode = """
 			SimplestApp object {
 				to run(): Float {
-					raise 1
+					raise 23
 				}
 			}
 			""".trimIndent()
-		TestUtil.run(sourceCode, "Test:SimplestApp.run")
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		val newLine = Character.toString(13) + Character.toString(10)
+		app.shouldPrint("Uncaught exception at '0000000000000017'." + newLine, "", 1)
 	}
 }

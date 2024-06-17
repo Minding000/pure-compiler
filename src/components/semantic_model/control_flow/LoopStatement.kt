@@ -100,7 +100,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		}
 		val function = constructor.getParentFunction()
 		entryBlock = constructor.createBlock(function, "loop_entry")
-		exitBlock = constructor.createBlock("loop_exit")
+		exitBlock = constructor.createDetachedBlock("loop_exit")
 		constructor.buildJump(entryBlock)
 		constructor.select(entryBlock)
 		if(generator is WhileGenerator) {

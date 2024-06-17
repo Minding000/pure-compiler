@@ -132,8 +132,12 @@ class LlvmConstructor(name: String) {
 		return LLVMBuildCall2(builder, functionType, function, parameters.toLlvmList(), parameters.size, name)
 	}
 
-	fun createBlock(name: String): LlvmBlock {
+	fun createDetachedBlock(name: String): LlvmBlock {
 		return LLVMCreateBasicBlockInContext(context, name)
+	}
+
+	fun createBlock(name: String): LlvmBlock {
+		return LLVMAppendBasicBlockInContext(context, getParentFunction(), name)
 	}
 
 	fun createBlock(function: LlvmValue, name: String): LlvmBlock {
@@ -144,13 +148,19 @@ class LlvmConstructor(name: String) {
 		createAndSelectBlock(function, "entrypoint")
 	}
 
+	fun createAndSelectBlock(name: String): LlvmBlock {
+		return createAndSelectBlock(getParentFunction(), name)
+	}
+
 	fun createAndSelectBlock(function: LlvmValue, name: String): LlvmBlock {
 		val block = createBlock(function, name)
-		LLVMPositionBuilderAtEnd(builder, block)
+		select(block)
 		return block
 	}
 
 	fun select(block: LlvmBlock) {
+		if(LLVMGetBasicBlockParent(block) == null)
+			throw CompilerError("Block to be selected is not attached to a function.")
 		LLVMPositionBuilderAtEnd(builder, block)
 	}
 
@@ -163,6 +173,8 @@ class LlvmConstructor(name: String) {
 	}
 
 	fun addBlockToFunction(function: LlvmValue, block: LlvmBlock) {
+		if(LLVMGetBasicBlockParent(block) != null)
+			throw CompilerError("Block to be attached is already attached to a function.")
 		LLVMAppendExistingBasicBlock(function, block)
 	}
 

@@ -229,7 +229,7 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 	override fun compile(constructor: LlvmConstructor) {
 		val function = constructor.getParentFunction()
 		val elseBlock = constructor.createBlock(function, "switch_elseBlock")
-		val exitBlock = constructor.createBlock("switch_exitBlock")
+		val exitBlock = constructor.createDetachedBlock("switch_exitBlock")
 		if(cases.isNotEmpty()) {
 			val targetBlocks = LinkedList<LlvmBlock>()
 			for(case in cases)
@@ -272,7 +272,7 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 		val result = constructor.buildStackAllocation(resultLlvmType, "switch_resultVariable")
 		val function = constructor.getParentFunction()
 		val elseBlock = constructor.createBlock(function, "switch_elseBlock")
-		val exitBlock = constructor.createBlock("switch_exitBlock")
+		val exitBlock = constructor.createDetachedBlock("switch_exitBlock")
 		if(cases.isNotEmpty()) {
 			val targetBlocks = LinkedList<LlvmBlock>()
 			for(case in cases)

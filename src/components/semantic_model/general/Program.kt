@@ -155,27 +155,29 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		//context.printDebugMessage(constructor, "Test: %d", constructor.buildInt32(42))
 		//context.printDebugMessage(constructor, "Test: %p", context.llvmStandardErrorStreamGlobal)
 
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
+		val exceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "__exceptionVariable")
+		constructor.buildStore(constructor.nullPointer, exceptionVariable)
 		for(file in files)
-			constructor.buildFunctionCall(file.llvmInitializerType, file.llvmInitializerValue, listOf(exceptionAddress))
+			constructor.buildFunctionCall(file.llvmInitializerType, file.llvmInitializerValue, listOf(exceptionVariable))
 		context.printDebugMessage(constructor, "Program initialized.")
 		context.printDebugMessage(constructor, "Starting program...")
+		//TODO check for uncaught exception in all initializer calls (write tests!)
 		var result: LlvmValue? = null
 		if(userEntryPointFunction == null) {
 			for(file in files)
-				constructor.buildFunctionCall(file.llvmRunnerType, file.llvmRunnerValue, listOf(exceptionAddress))
+				constructor.buildFunctionCall(file.llvmRunnerType, file.llvmRunnerValue, listOf(exceptionVariable))
 			context.printDebugMessage(constructor, "Files executed.")
 		} else {
 			val filesToInitialize = LinkedHashSet<File>()
 			userEntryPointFunction.getSurrounding<File>()?.determineFileInitializationOrder(filesToInitialize)
 			for(file in filesToInitialize.reversed()) {
 				println("Initializing '${file.file.name}'")
-				constructor.buildFunctionCall(file.llvmRunnerType, file.llvmRunnerValue, listOf(exceptionAddress))
+				constructor.buildFunctionCall(file.llvmRunnerType, file.llvmRunnerValue, listOf(exceptionVariable))
 			}
 			context.printDebugMessage(constructor, "Files executed.")
 			context.printDebugMessage(constructor, "Calling entrypoint...")
 			val parameters = LinkedList<LlvmValue>()
-			parameters.add(exceptionAddress)
+			parameters.add(exceptionVariable)
 			if(userEntryPointObject != null) {
 				val objectAddress = constructor.buildLoad(userEntryPointObject.effectiveType?.getLlvmType(constructor),
 					userEntryPointObject.llvmLocation, "objectAddress")
@@ -183,7 +185,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			}
 			result = constructor.buildFunctionCall(userEntryPointFunction.signature.getLlvmType(constructor),
 				userEntryPointFunction.llvmValue, parameters, if(userEntryPointReturnsVoid) "" else "programResult")
-			//TODO check for uncaught exception
+			handleUncaughtException(constructor, exceptionVariable)
 			context.printDebugMessage(constructor, "Entrypoint returned.")
 		}
 
@@ -195,6 +197,18 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			result = constructor.buildInt32(ExitCode.SUCCESS)
 		constructor.buildReturn(result)
 		return globalEntryPoint
+	}
+
+	private fun handleUncaughtException(constructor: LlvmConstructor, exceptionVariable: LlvmValue) {
+		val exception = constructor.buildLoad(constructor.pointerType, exceptionVariable, "exception")
+		val doesExceptionExist = constructor.buildIsNotNull(exception, "doesExceptionExist")
+		val panicBlock = constructor.createBlock("uncaughtException")
+		val noExceptionBlock = constructor.createBlock("noException")
+		constructor.buildJump(doesExceptionExist, panicBlock, noExceptionBlock)
+		constructor.select(panicBlock)
+		context.panic(constructor, "Uncaught exception at '%p'.", exception)
+		constructor.markAsUnreachable()
+		constructor.select(noExceptionBlock)
 	}
 
 	private fun createStandardStreams(constructor: LlvmConstructor) {
