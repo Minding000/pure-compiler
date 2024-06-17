@@ -17,7 +17,7 @@ internal class Compiler {
 			val functionType = constructor.buildFunctionType(emptyList(), constructor.i32Type)
 			val functionName = "getNumber"
 			val function = constructor.buildFunction(functionName, functionType)
-			constructor.createAndSelectBlock(function, "body")
+			constructor.createAndSelectEntrypointBlock(function)
 			val number = constructor.buildInt32(expectedResult)
 			constructor.buildReturn(number)
 			program.entrypoint = function

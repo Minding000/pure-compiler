@@ -145,17 +145,8 @@ class LlvmConstructor(name: String) {
 	}
 
 	fun createAndSelectEntrypointBlock(function: LlvmValue) {
-		createAndSelectBlock(function, "entrypoint")
-	}
-
-	fun createAndSelectBlock(name: String): LlvmBlock {
-		return createAndSelectBlock(getParentFunction(), name)
-	}
-
-	fun createAndSelectBlock(function: LlvmValue, name: String): LlvmBlock {
-		val block = createBlock(function, name)
+		val block = createBlock(function, "entrypoint")
 		select(block)
-		return block
 	}
 
 	fun select(block: LlvmBlock) {
