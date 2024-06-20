@@ -339,7 +339,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			val functionAddress = context.resolveFunction(constructor, leftValue, signature.getIdentifier(kind))
 			constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, resultName)
 		}
-		context.continueRaise(constructor)
+		context.continueRaise(constructor, parent)
 		return returnValue
 	}
 

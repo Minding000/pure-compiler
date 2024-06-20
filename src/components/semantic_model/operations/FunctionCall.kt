@@ -184,7 +184,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		} else {
 			buildLlvmFunctionCall(constructor, functionSignature, exceptionAddress)
 		}
-		context.continueRaise(constructor)
+		context.continueRaise(constructor, parent)
 		return returnValue
 	}
 
@@ -326,7 +326,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			parameters.add(objectType.getStaticLlvmValue(constructor))
 		}
 		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
-		context.continueRaise(constructor)
+		context.continueRaise(constructor, parent)
 	}
 
 	private fun getSignature(includeParentType: Boolean = true): String {

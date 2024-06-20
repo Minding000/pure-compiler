@@ -1,5 +1,6 @@
 package components.semantic_model.general
 
+import components.code_generation.llvm.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
@@ -17,5 +18,9 @@ class HandleBlock(override val source: HandleBlockSyntaxTree, scope: Scope, val 
 		if(eventVariable != null)
 			tracker.declare(eventVariable, true)
 		block.analyseDataFlow(tracker)
+	}
+
+	override fun compile(constructor: LlvmConstructor) {
+		super.compile(constructor) //TODO implement
 	}
 }

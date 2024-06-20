@@ -189,6 +189,6 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		}
 		parameters.add(value)
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), indexOperatorAddress, parameters)
-		context.continueRaise(constructor)
+		context.continueRaise(constructor, parent)
 	}
 }

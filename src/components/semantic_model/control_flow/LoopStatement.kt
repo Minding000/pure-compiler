@@ -188,7 +188,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		val exceptionAddress = context.getExceptionParameter(constructor)
 		val iteratorLlvmValue = constructor.buildFunctionCall(iteratorCreationSignature.getLlvmType(constructor), createIteratorAddress,
 			listOf(exceptionAddress, iterableLlvmValue), "iterator")
-		context.continueRaise(constructor)
+		context.continueRaise(constructor, parent)
 		entryBlock = constructor.createBlock(function, "loop_entry")
 		exitBlock = constructor.createBlock(function, "loop_exit")
 		context.printDebugMessage(constructor, "Iterator created (${generator.source.getStartString()})")
@@ -236,7 +236,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			val advanceFunctionAddress = context.resolveFunction(constructor, iteratorLlvmValue, "advance()")
 			constructor.buildFunctionCall(iteratorAdvanceSignature?.getLlvmType(constructor), advanceFunctionAddress,
 				listOf(exceptionAddress, iteratorLlvmValue))
-			context.continueRaise(constructor)
+			context.continueRaise(constructor, parent)
 			constructor.buildJump(entryBlock)
 		}
 		constructor.select(exitBlock)
@@ -248,7 +248,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		val functionAddress = context.resolveFunction(constructor, targetValue, computedPropertyDeclaration.getterIdentifier)
 		val returnValue = constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
 			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
-		context.continueRaise(constructor)
+		context.continueRaise(constructor, parent)
 		return returnValue
 	}
 

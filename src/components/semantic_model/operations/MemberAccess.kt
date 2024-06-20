@@ -168,7 +168,7 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		val exceptionAddress = context.getExceptionParameter(constructor)
 		val returnValue = constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
 			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
-		context.continueRaise(constructor)
+		context.continueRaise(constructor, parent)
 		return returnValue
 	}
 }

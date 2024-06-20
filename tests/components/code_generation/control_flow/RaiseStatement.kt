@@ -15,8 +15,7 @@ internal class RaiseStatement {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		val newLine = Character.toString(13) + Character.toString(10)
-		app.shouldPrint("Uncaught exception at '0000000000000017'." + newLine, "", 1)
+		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 
 	@Test
@@ -30,8 +29,7 @@ internal class RaiseStatement {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		val newLine = Character.toString(13) + Character.toString(10)
-		app.shouldPrint("Uncaught exception at '0000000000000017'." + newLine, "", 1)
+		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 
 	@Test
@@ -44,8 +42,7 @@ internal class RaiseStatement {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		val newLine = Character.toString(13) + Character.toString(10)
-		app.shouldPrint("Uncaught exception at '0000000000000017'." + newLine, "", 1)
+		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 
 	@Test
@@ -58,8 +55,7 @@ internal class RaiseStatement {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		val newLine = Character.toString(13) + Character.toString(10)
-		app.shouldPrint("Uncaught exception at '0000000000000017'." + newLine, "", 1)
+		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 
 	@Test
@@ -72,8 +68,7 @@ internal class RaiseStatement {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		val newLine = Character.toString(13) + Character.toString(10)
-		app.shouldPrint("Uncaught exception at '0000000000000017'." + newLine, "", 1)
+		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 
 	@Test
@@ -86,7 +81,6 @@ internal class RaiseStatement {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		val newLine = Character.toString(13) + Character.toString(10)
-		app.shouldPrint("Uncaught exception at '0000000000000017'." + newLine, "", 1)
+		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 }

@@ -5,7 +5,9 @@ import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.control_flow.LoopStatement
+import components.semantic_model.control_flow.Try
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.general.SemanticModel
 import components.semantic_model.types.Type
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
@@ -131,10 +133,21 @@ class Context {
 		return constructor.getParameter(function, THIS_PARAMETER_INDEX)
 	}
 
-	fun continueRaise(constructor: LlvmConstructor/*, returnType: Type?*/) {
+	fun continueRaise(constructor: LlvmConstructor, parent: SemanticModel? /*, returnType: Type?*/) {
+		if(parent is Try && parent.isOptional)
+			return
+		//val exceptionParameter = getExceptionParameter(constructor)
+		//val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "exception")
+		//val doesExceptionExist = constructor.buildIsNotNull(exception, "doesExceptionExist")
+		//val exceptionBlock = constructor.createBlock("exception")
+		//val noExceptionBlock = constructor.createBlock("noException")
+		//constructor.buildJump(doesExceptionExist, exceptionBlock, noExceptionBlock)
+		//constructor.select(exceptionBlock) //TODO write test
+		//constructor.buildReturn(constructor.nullPointer)
+		//constructor.select(noExceptionBlock) //TODO write test
+
 		//TODO if exception exists
-		// check for optional try (normal and force try have no effect)
-		// check for catch
+		//TODO check for handle block
 		// resume raise
 		//if(SpecialType.NOTHING.matches(returnType))
 		//	constructor.buildReturn()

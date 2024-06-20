@@ -363,7 +363,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, thisValue)
 			constructor.buildFunctionCall(trivialInitializer.llvmType, trivialInitializer.llvmValue, parameters)
-			context.continueRaise(constructor)
+			context.continueRaise(constructor, parent)
 		}
 	}
 

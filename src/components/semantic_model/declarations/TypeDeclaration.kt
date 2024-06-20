@@ -610,7 +610,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			}
 			constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer,
 				parameters)
-			context.continueRaise(constructor)
+			context.continueRaise(constructor, parent)
 		}
 		for(memberDeclaration in properties) {
 			val memberValue = memberDeclaration.value

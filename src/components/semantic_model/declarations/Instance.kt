@@ -97,7 +97,7 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		parameters.add(Context.THIS_PARAMETER_INDEX, instance)
 		constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
-		context.continueRaise(constructor)
+		context.continueRaise(constructor, parent)
 		return instance
 	}
 
@@ -107,6 +107,6 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
 		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
-		context.continueRaise(constructor)
+		context.continueRaise(constructor, parent)
 	}
 }

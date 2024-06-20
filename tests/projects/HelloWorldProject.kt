@@ -16,7 +16,6 @@ internal class HelloWorldProject {
 	@Test
 	fun `prints 'Hello world!'`() {
 		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Hello World\\Main.pure", "Main:HelloWorldApp.run"))
-		val newLine = Character.toString(13) + Character.toString(10)
-		TestUtil.assertExecutablePrints("Hello world!" + newLine)
+		TestUtil.assertExecutablePrints("Hello world!${System.lineSeparator()}")
 	}
 }

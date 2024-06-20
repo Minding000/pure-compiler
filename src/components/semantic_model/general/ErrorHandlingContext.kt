@@ -8,6 +8,7 @@ import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import java.util.*
 
+//TODO handle LLVM side of always block
 class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, val mainBlock: StatementBlock,
 						   val handleBlocks: List<HandleBlock> = emptyList(), val alwaysBlock: StatementBlock? = null):
 	SemanticModel(source, scope) {

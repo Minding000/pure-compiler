@@ -81,7 +81,7 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 			if(typeDeclaration.isDefinition) {
 				constructor.buildFunctionCall(typeDeclaration.llvmClassInitializerType, typeDeclaration.llvmClassInitializer,
 					listOf(exceptionParameter))
-				context.continueRaise(constructor)
+				context.continueRaise(constructor, parent)
 			}
 		}
 		context.printDebugMessage(constructor, "File '${file.name}' initialized.")
