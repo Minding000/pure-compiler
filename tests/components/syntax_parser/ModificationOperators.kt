@@ -6,7 +6,7 @@ import util.TestUtil
 internal class ModificationOperators {
 
 	@Test
-	fun `parses unary modification operators`() {
+	fun `parses unary modification operators on variables`() {
 		val sourceCode =
 			"""
 				var x = 0
@@ -25,7 +25,22 @@ internal class ModificationOperators {
 	}
 
 	@Test
-	fun `parses binary modification operators`() {
+	fun `parses unary modification operators on self references`() {
+		val sourceCode =
+			"""
+				this++
+				this--
+            """.trimIndent()
+		val expected =
+			"""
+				UnaryModification { This Operator { ++ } }
+				UnaryModification { This Operator { -- } }
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses binary modification operators on variables`() {
 		val sourceCode =
 			"""
 				var x = 0
@@ -50,6 +65,33 @@ internal class ModificationOperators {
 				}
 				BinaryModification {
 					Identifier { x } Operator { /= } NumberLiteral { 2 }
+				}
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses binary modification operators on self references`() {
+		val sourceCode =
+			"""
+				this += 4
+				this -= 3
+				this *= 4
+				this /= 2
+            """.trimIndent()
+		val expected =
+			"""
+				BinaryModification {
+					This Operator { += } NumberLiteral { 4 }
+				}
+				BinaryModification {
+					This Operator { -= } NumberLiteral { 3 }
+				}
+				BinaryModification {
+					This Operator { *= } NumberLiteral { 4 }
+				}
+				BinaryModification {
+					This Operator { /= } NumberLiteral { 2 }
 				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)

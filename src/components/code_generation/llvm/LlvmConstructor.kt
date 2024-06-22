@@ -21,6 +21,8 @@ class LlvmConstructor(name: String) {
 
 	val debug = LlvmDebugInfoConstructor(module)
 
+	val functionTypes = HashMap<LlvmValue, LlvmType>()
+
 	fun setTargetTriple(targetTriple: String) {
 		LLVMSetTarget(module, targetTriple)
 	}
@@ -49,6 +51,23 @@ class LlvmConstructor(name: String) {
 
 	fun getParentFunction(block: LlvmBlock = getCurrentBlock()): LlvmValue {
 		return LLVMGetBasicBlockParent(block)
+	}
+
+	fun getTypeOf(value: LlvmValue): LlvmType {
+		return LLVMTypeOf(value)
+	}
+
+	fun getReturnType(function: LlvmValue = getParentFunction()): LlvmType {
+		val functionType =
+			functionTypes[function] ?: throw CompilerError("Failed to retrieve function type, because the function is not registered.")
+		return getReturnType(functionType)
+	}
+
+	fun getReturnType(functionType: LlvmType): LlvmType {
+		val typeKind = LLVMGetTypeKind(functionType)
+		if(typeKind != LLVMFunctionTypeKind)
+			throw CompilerError("Value is not a function (type kind is '$typeKind').")
+		return LLVMGetReturnType(functionType)
 	}
 
 	fun getEntryBlock(function: LlvmValue): LlvmBlock {
@@ -105,6 +124,7 @@ class LlvmConstructor(name: String) {
 
 	fun buildFunction(name: String, type: LlvmType = buildFunctionType()): LlvmValue {
 		val function = LLVMAddFunction(module, name, type)
+		functionTypes[function] = type
 		LLVMSetFunctionCallConv(function, LLVMCCallConv)
 		return function
 	}

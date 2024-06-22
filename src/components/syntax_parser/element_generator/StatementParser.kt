@@ -152,15 +152,15 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 				} while(isExpressionAssignable(lastExpression) && currentWord?.type == WordAtom.ASSIGNMENT)
 				return Assignment(targets, lastExpression)
 			}
-			if(WordType.BINARY_MODIFICATION.includes(currentWord?.type)) {
-				val operator = expressionParser.parseOperator(WordType.BINARY_MODIFICATION)
-				val value = parseExpression()
-				return BinaryModification(expression, value, operator)
-			}
-			if(WordType.UNARY_MODIFICATION.includes(currentWord?.type)) {
-				val operator = expressionParser.parseOperator(WordType.UNARY_MODIFICATION)
-				return UnaryModification(expression, operator)
-			}
+		}
+		if(WordType.BINARY_MODIFICATION.includes(currentWord?.type)) {
+			val operator = expressionParser.parseOperator(WordType.BINARY_MODIFICATION)
+			val value = parseExpression()
+			return BinaryModification(expression, value, operator)
+		}
+		if(WordType.UNARY_MODIFICATION.includes(currentWord?.type)) {
+			val operator = expressionParser.parseOperator(WordType.UNARY_MODIFICATION)
+			return UnaryModification(expression, operator)
 		}
 		return expression
 	}

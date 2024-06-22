@@ -133,26 +133,24 @@ class Context {
 		return constructor.getParameter(function, THIS_PARAMETER_INDEX)
 	}
 
-	fun continueRaise(constructor: LlvmConstructor, parent: SemanticModel? /*, returnType: Type?*/) {
+	fun continueRaise(constructor: LlvmConstructor, parent: SemanticModel?) {
 		if(parent is Try && parent.isOptional)
 			return
-		//val exceptionParameter = getExceptionParameter(constructor)
-		//val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "exception")
-		//val doesExceptionExist = constructor.buildIsNotNull(exception, "doesExceptionExist")
-		//val exceptionBlock = constructor.createBlock("exception")
-		//val noExceptionBlock = constructor.createBlock("noException")
-		//constructor.buildJump(doesExceptionExist, exceptionBlock, noExceptionBlock)
-		//constructor.select(exceptionBlock) //TODO write test
-		//constructor.buildReturn(constructor.nullPointer)
-		//constructor.select(noExceptionBlock) //TODO write test
-
-		//TODO if exception exists
+		val exceptionParameter = getExceptionParameter(constructor)
+		val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "exception")
+		val doesExceptionExist = constructor.buildIsNotNull(exception, "doesExceptionExist")
+		val exceptionBlock = constructor.createBlock("exception")
+		val noExceptionBlock = constructor.createBlock("noException")
+		constructor.buildJump(doesExceptionExist, exceptionBlock, noExceptionBlock)
+		constructor.select(exceptionBlock)
+		val returnType = constructor.getReturnType()
+		if(returnType == constructor.voidType)
+			constructor.buildReturn()
+		else
+			constructor.buildReturn(getNullValue(constructor, returnType))
+		constructor.select(noExceptionBlock)
 		//TODO check for handle block
-		// resume raise
-		//if(SpecialType.NOTHING.matches(returnType))
-		//	constructor.buildReturn()
-		//else
-		//	constructor.buildReturn(getNullValue(constructor, returnType))
+		//TODO check for always block
 	}
 
 	fun getNullValue(constructor: LlvmConstructor, type: Type?): LlvmValue {
@@ -166,6 +164,16 @@ class Context {
 			constructor.buildFloat(0.0)
 		else
 			constructor.nullPointer
+	}
+
+	fun getNullValue(constructor: LlvmConstructor, type: LlvmType): LlvmValue {
+		return when(type) {
+			constructor.booleanType -> constructor.buildBoolean(false)
+			constructor.byteType -> constructor.buildByte(0)
+			constructor.i32Type -> constructor.buildInt32(0)
+			constructor.floatType -> constructor.buildFloat(0.0)
+			else -> constructor.nullPointer
+		}
 	}
 
 	fun resolveMember(constructor: LlvmConstructor, targetLocation: LlvmValue, memberIdentifier: String,

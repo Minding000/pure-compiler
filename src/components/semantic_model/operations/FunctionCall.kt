@@ -184,7 +184,6 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		} else {
 			buildLlvmFunctionCall(constructor, functionSignature, exceptionAddress)
 		}
-		context.continueRaise(constructor, parent)
 		return returnValue
 	}
 
@@ -233,8 +232,10 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, targetValue)
 			val resultName = if(SpecialType.NOTHING.matches(signature.returnType)) "" else getSignature()
-			return constructor.buildFunctionCall(primitiveImplementation.llvmType, primitiveImplementation.llvmValue, parameters,
+			val result = constructor.buildFunctionCall(primitiveImplementation.llvmType, primitiveImplementation.llvmValue, parameters,
 				resultName)
+			context.continueRaise(constructor, parent)
+			return result
 		} else {
 			val targetValue = if(function is MemberAccess)
 				function.target.getLlvmValue(constructor)
@@ -253,7 +254,9 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		}
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		val resultName = if(SpecialType.NOTHING.matches(signature.returnType)) "" else getSignature()
-		return constructor.buildFunctionCall(signature.original.getLlvmType(constructor), functionAddress, parameters, resultName)
+		val result = constructor.buildFunctionCall(signature.original.getLlvmType(constructor), functionAddress, parameters, resultName)
+		context.continueRaise(constructor, parent)
+		return result
 	}
 
 	private fun buildLlvmInitializerCall(constructor: LlvmConstructor, initializer: InitializerDefinition,
@@ -281,7 +284,9 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				if(initializer.isNative)
 					return context.nativeRegistry.inlineNativePrimitiveInitializer(constructor, "$signature: Self", parameters)
 				parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
-				return constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters, signature)
+				val result = constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters, signature)
+				context.continueRaise(constructor, parent)
+				return result
 			}
 			val typeDeclaration = initializer.parentTypeDeclaration
 			val newObject = constructor.buildHeapAllocation(typeDeclaration.llvmType, "newObject")
@@ -292,6 +297,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
+			context.continueRaise(constructor, parent)
 			newObject
 		} else if(initializer.parentTypeDeclaration.isLlvmPrimitive()) {
 			if(parameters.size != 1)
@@ -303,6 +309,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, context.getThisParameter(constructor))
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
+			context.continueRaise(constructor, parent)
 			constructor.nullPointer
 		}
 	}

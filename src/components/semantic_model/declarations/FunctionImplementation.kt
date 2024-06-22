@@ -85,12 +85,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		functionTracker.validate()
 		propertiesBeingInitialized.addAll(functionTracker.getPropertiesBeingInitialized())
 		propertiesRequiredToBeInitialized.addAll(functionTracker.getPropertiesRequiredToBeInitialized())
-		var trackerName = ""
-		val parentDefinition = parentTypeDeclaration
-		if(parentDefinition != null)
-			trackerName += "${parentDefinition.name}."
-		trackerName += memberIdentifier
-		tracker.addChild(trackerName, functionTracker)
+		tracker.addChild(toString(), functionTracker)
 	}
 
 	override fun validate() {
@@ -298,7 +293,11 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 			if(parentFunction !is Operator)
 				stringRepresentation += "."
 		}
-		stringRepresentation += memberIdentifier
+		val parentFunction = parentFunction
+		stringRepresentation += if(parentFunction is Operator)
+			signature.toString(false, parentFunction.kind)
+		else
+			"${parentFunction.name}${signature.toString(false)}"
 		return stringRepresentation
 	}
 }

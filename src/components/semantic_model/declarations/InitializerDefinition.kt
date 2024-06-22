@@ -216,7 +216,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		initializerTracker.validate()
 		propertiesBeingInitialized.addAll(initializerTracker.getPropertiesBeingInitialized())
 		propertiesRequiredToBeInitialized.addAll(initializerTracker.getPropertiesRequiredToBeInitialized())
-		tracker.addChild("${parentTypeDeclaration.name}.${memberIdentifier}", initializerTracker)
+		tracker.addChild("${parentTypeDeclaration.name}.${toString(true)}", initializerTracker)
 		propertiesToBeInitialized.removeAll(propertiesBeingInitialized)
 		if(propertiesToBeInitialized.isNotEmpty())
 			context.addIssue(UninitializedProperties(source, propertiesToBeInitialized))

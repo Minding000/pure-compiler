@@ -16,7 +16,7 @@ abstract class InterfaceMember(source: SyntaxTreeNode, scope: MutableScope, name
 	ValueDeclaration(source, scope, name, type, value, isConstant, isMutable), MemberDeclaration {
 	override lateinit var parentTypeDeclaration: TypeDeclaration
 	override val memberIdentifier
-		get() = "$name${if(providedType == null) "" else ": $providedType"}"
+		get() = toString()
 	var superMember: Pair<InterfaceMember, Type?>? = null
 
 	override fun validate() {
@@ -27,8 +27,12 @@ abstract class InterfaceMember(source: SyntaxTreeNode, scope: MutableScope, name
 					context.addIssue(OverriddenSuperMissing(source, "property"))
 			} else {
 				if(!isOverriding)
-					context.addIssue(MissingOverridingKeyword(source, "Property", memberIdentifier))
+					context.addIssue(MissingOverridingKeyword(source, "Property", toString()))
 			}
 		}
+	}
+
+	override fun toString(): String {
+		return "$name${if(providedType == null) "" else ": $providedType"}"
 	}
 }
