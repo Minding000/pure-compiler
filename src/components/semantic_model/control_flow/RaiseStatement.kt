@@ -2,13 +2,11 @@ package components.semantic_model.control_flow
 
 import components.code_generation.llvm.LlvmConstructor
 import components.semantic_model.context.Context
-import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
-import components.semantic_model.types.Type
 import components.semantic_model.values.Value
 import errors.internal.CompilerError
 import components.syntax_parser.syntax_tree.control_flow.RaiseStatement as RaiseStatementSyntaxTree
@@ -47,23 +45,6 @@ class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope
 		super.compile(constructor)
 		val exceptionAddress = constructor.getParameter(constructor.getParentFunction(), Context.EXCEPTION_PARAMETER_INDEX)
 		constructor.buildStore(value.getLlvmValue(constructor), exceptionAddress)
-		val returnType = getReturnType()
-		if(SpecialType.NOTHING.matches(returnType))
-			constructor.buildReturn()
-		else
-			constructor.buildReturn(context.getNullValue(constructor, returnType))
-	}
-
-	private fun getReturnType(): Type? {
-		var returnType = targetFunction?.signature?.returnType
-		val targetComputedProperty = targetComputedProperty
-		if(targetComputedProperty != null) {
-			val getter = targetComputedProperty.getterErrorHandlingContext
-			returnType = if(getter != null && isIn(getter))
-				targetComputedProperty.getterReturnType
-			else
-				targetComputedProperty.setterReturnType
-		}
-		return returnType
+		context.handleException(constructor, parent)
 	}
 }

@@ -85,4 +85,6 @@ internal class MemberResolution {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
 		assertEquals(64, result)
 	}
+
+	//TODO test resolution when calling member with multiple super members
 }

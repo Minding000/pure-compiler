@@ -5,6 +5,7 @@ import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.declarations.ValueDeclaration
+import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.values.VariableValue
 import logger.issues.declaration.Redeclaration
@@ -60,6 +61,10 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 
 	override fun getSurroundingLoop(): LoopStatement? {
 		return (semanticModel as? LoopStatement) ?: parentScope.getSurroundingLoop()
+	}
+
+	override fun getSurroundingErrorHandlingContext(): ErrorHandlingContext? {
+		return (semanticModel as? ErrorHandlingContext) ?: parentScope.getSurroundingErrorHandlingContext()
 	}
 
 	fun validate() {

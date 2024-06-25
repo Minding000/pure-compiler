@@ -143,14 +143,21 @@ class Context {
 		val noExceptionBlock = constructor.createBlock("noException")
 		constructor.buildJump(doesExceptionExist, exceptionBlock, noExceptionBlock)
 		constructor.select(exceptionBlock)
-		val returnType = constructor.getReturnType()
-		if(returnType == constructor.voidType)
-			constructor.buildReturn()
-		else
-			constructor.buildReturn(getNullValue(constructor, returnType))
+		handleException(constructor, parent)
 		constructor.select(noExceptionBlock)
-		//TODO check for handle block
-		//TODO check for always block
+	}
+
+	fun handleException(constructor: LlvmConstructor, parent: SemanticModel?) {
+		val errorHandlingContext = parent?.scope?.getSurroundingErrorHandlingContext()
+		if(errorHandlingContext?.needsToBeCalled() == true) {
+			errorHandlingContext.jumpTo(constructor)
+		} else {
+			val returnType = constructor.getReturnType()
+			if(returnType == constructor.voidType)
+				constructor.buildReturn()
+			else
+				constructor.buildReturn(getNullValue(constructor, returnType))
+		}
 	}
 
 	fun getNullValue(constructor: LlvmConstructor, type: Type?): LlvmValue {
