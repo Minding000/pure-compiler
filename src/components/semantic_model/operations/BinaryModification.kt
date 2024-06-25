@@ -99,7 +99,6 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		super.compile(constructor)
 		val targetValue = ValueConverter.convertIfRequired(this, constructor, target.getLlvmValue(constructor),
 			target.effectiveType, target.hasGenericType, target.effectiveType, false)
 		val modifierType = targetSignature?.parameterTypes?.firstOrNull() ?: modifier.effectiveType

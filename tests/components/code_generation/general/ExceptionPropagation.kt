@@ -141,7 +141,6 @@ internal class ExceptionPropagation {
 	// - always block runs on return when handle blocks are absent in same function
 	// - always block runs on return when handle blocks are absent in parent function
 
-	//TODO investigate unused 'x' read in handle block
 	//TODO use 'error' parameter
 	@Test
 	fun `handle block is executed and execution is resumed when exception matches is same function`() {

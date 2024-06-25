@@ -42,7 +42,6 @@ class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		super.compile(constructor)
 		val exceptionAddress = constructor.getParameter(constructor.getParentFunction(), Context.EXCEPTION_PARAMETER_INDEX)
 		constructor.buildStore(value.getLlvmValue(constructor), exceptionAddress)
 		context.handleException(constructor, parent)
