@@ -183,7 +183,7 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 						"Conditional casts do not support complex types at the moment. Provided type: $referenceType")
 				}
 				val referenceClassDefinition = referenceTypeDeclaration?.llvmClassDefinition
-					?: throw CompilerError(referenceType.source, "Missing class definition for '$referenceType'.")
+					?: throw CompilerError(referenceType.source, "Missing class definition for type '$referenceType'.")
 				if(variableDeclaration != null) {
 					variableDeclaration.compile(constructor)
 					constructor.buildStore(subjectValue, variableDeclaration.llvmLocation)

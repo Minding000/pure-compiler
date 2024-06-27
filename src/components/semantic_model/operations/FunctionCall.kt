@@ -32,6 +32,12 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	val globalTypeParameters = LinkedList<Type>()
 	override val hasGenericType: Boolean
 		get() = targetSignature?.original?.returnType != targetSignature?.returnType
+	val isPrimaryCall: Boolean
+		get() = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
+	override val isInterruptingExecutionBasedOnStructure
+		get() = targetInitializer?.parentTypeDeclaration?.isLlvmPrimitive() == true && !isPrimaryCall
+	override val isInterruptingExecutionBasedOnStaticEvaluation
+		get() = isInterruptingExecutionBasedOnStructure
 
 	init {
 		addSemanticModels(typeParameters, valueParameters)
@@ -261,7 +267,6 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 
 	private fun buildLlvmInitializerCall(constructor: LlvmConstructor, initializer: InitializerDefinition,
 										 exceptionAddress: LlvmValue): LlvmValue {
-		val isPrimaryCall = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
 		val parameters = LinkedList<LlvmValue?>()
 		//TODO add local type parameters
 		for((index, valueParameter) in valueParameters.withIndex()) {

@@ -27,15 +27,13 @@ class HandleBlock(override val source: HandleBlockSyntaxTree, scope: Scope, val 
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		val previousBlock = constructor.getCurrentBlock()
-		val function = constructor.getParentFunction(previousBlock)
+		val function = constructor.getParentFunction()
 		entryBlock = constructor.createBlock(function, "handle_block_entry")
 		constructor.select(entryBlock)
 		val exceptionParameter = context.getExceptionParameter(constructor, function)
 		//TODO write exception into 'eventVariable'
 		constructor.buildStore(constructor.nullPointer, exceptionParameter)
 		block.compile(constructor)
-		constructor.select(previousBlock)
 	}
 
 	fun jumpTo(constructor: LlvmConstructor) {

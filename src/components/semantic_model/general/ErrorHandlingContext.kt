@@ -6,8 +6,11 @@ import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
+import components.semantic_model.types.ObjectType
+import components.semantic_model.types.SelfType
 import components.semantic_model.values.Value
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import errors.internal.CompilerError
 import java.util.*
 
 //TODO handle LLVM side of always block
@@ -98,27 +101,63 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
+		val exitBlock = constructor.createDetachedBlock("error_handling_exit")
+		val shouldAddExitBlock = !(isInterruptingExecutionBasedOnStructure || (handleBlocks.isEmpty() && alwaysBlock == null))
+		if(shouldAddExitBlock)
+			constructor.addBlockToFunction(constructor.getParentFunction(), exitBlock)
 		if(needsToBeCalled())
-			compileErrorHandler(constructor)
+			compileErrorHandler(constructor, exitBlock)
 		mainBlock.compile(constructor)
+		if(shouldAddExitBlock) {
+			if(!mainBlock.isInterruptingExecutionBasedOnStructure)
+				constructor.buildJump(exitBlock)
+			constructor.select(exitBlock)
+		}
 	}
 
-	private fun compileErrorHandler(constructor: LlvmConstructor) {
+	private fun compileErrorHandler(constructor: LlvmConstructor, exitBlock: LlvmBlock) {
 		val previousBlock = constructor.getCurrentBlock()
 		val function = constructor.getParentFunction(previousBlock)
 		entryBlock = constructor.createBlock(function, "error_handling_entry")
 		constructor.select(entryBlock)
+		val exceptionParameter = context.getExceptionParameter(constructor, function)
+		val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "exception")
+		val exceptionClass = context.getClassDefinition(constructor, exception)
+		var currentBlock = entryBlock
 		for(handleBlock in handleBlocks) {
 			handleBlock.compile(constructor)
-			//TODO check exception type
+			if(!handleBlock.isInterruptingExecutionBasedOnStructure)
+				constructor.buildJump(exitBlock)
+			constructor.select(currentBlock)
+			val referenceType = handleBlock.eventType
+			val referenceTypeDeclaration = when(referenceType) {
+				is ObjectType -> referenceType.getTypeDeclaration()
+				is SelfType -> referenceType.typeDeclaration
+				else -> throw CompilerError(referenceType.source,
+					"Handle blocks do not support complex types at the moment. Provided type: $referenceType")
+			}
+			val referenceClassDefinition = referenceTypeDeclaration?.llvmClassDefinition
+				?: throw CompilerError(referenceType.source, "Missing class definition for type '$referenceType'.")
+			val matchesErrorType = constructor.buildPointerEqualTo(exceptionClass, referenceClassDefinition, "matchesErrorType")
+			val matchBlock = constructor.createBlock(function, "error_handling_match")
+			val noMatchBlock = constructor.createBlock(function, "error_handling_no_match")
+			constructor.buildJump(matchesErrorType, matchBlock, noMatchBlock)
+			constructor.select(matchBlock)
 			handleBlock.jumpTo(constructor)
+			currentBlock = noMatchBlock
 		}
-		if(alwaysBlock != null) {
-			alwaysBlock.compile(constructor)
-			//TODO check for always block
-			// - and either resumes control flow
-			// - or returns as required
-		}
+		constructor.select(currentBlock)
+		context.handleException(constructor, parent)
+
+		//if(alwaysBlock != null) {
+		//	alwaysBlock.compile(constructor)
+		//	if(!alwaysBlock.isInterruptingExecutionBasedOnStructure)
+		//		constructor.buildJump(exitBlock)
+		//	//TODO check for always block
+		//	// - and either resumes control flow
+		//	// - or returns as required
+		//}
+
 		constructor.select(previousBlock)
 	}
 
