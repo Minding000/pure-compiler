@@ -63,8 +63,10 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 		return (semanticModel as? LoopStatement) ?: parentScope.getSurroundingLoop()
 	}
 
-	override fun getSurroundingErrorHandlingContext(): ErrorHandlingContext? {
-		return (semanticModel as? ErrorHandlingContext) ?: parentScope.getSurroundingErrorHandlingContext()
+	override fun getSurroundingErrorHandlingContext(): Pair<ErrorHandlingContext, SemanticModel>? {
+		val semanticModel = semanticModel
+		val errorHandlingContext = semanticModel?.parent as? ErrorHandlingContext ?: return parentScope.getSurroundingErrorHandlingContext()
+		return Pair(errorHandlingContext, semanticModel)
 	}
 
 	fun validate() {

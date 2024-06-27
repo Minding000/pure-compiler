@@ -12,6 +12,7 @@ class StatementBlock(override val source: SyntaxTreeNode, override val scope: Bl
 	override var isInterruptingExecutionBasedOnStaticEvaluation = false
 
 	init {
+		scope.semanticModel = this
 		addSemanticModels(statements)
 	}
 

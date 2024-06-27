@@ -19,13 +19,9 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 	SemanticModel(source, scope) {
 	override var isInterruptingExecutionBasedOnStructure = false
 	override var isInterruptingExecutionBasedOnStaticEvaluation = false
-	private lateinit var entryBlock: LlvmBlock
+	private var entryBlocks = HashMap<SemanticModel, LlvmBlock>()
 
 	init {
-		mainBlock.scope.semanticModel = this
-		for(handleBlock in handleBlocks)
-			handleBlock.block.scope.semanticModel = this
-		alwaysBlock?.scope?.semanticModel = this
 		addSemanticModels(mainBlock, alwaysBlock)
 		addSemanticModels(handleBlocks)
 	}
@@ -97,7 +93,7 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 	}
 
 	fun needsToBeCalled(): Boolean {
-		return handleBlocks.isNotEmpty() || alwaysBlock != null
+		return !(handleBlocks.isEmpty() && alwaysBlock == null)
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
@@ -118,12 +114,13 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 	private fun compileErrorHandler(constructor: LlvmConstructor, exitBlock: LlvmBlock) {
 		val previousBlock = constructor.getCurrentBlock()
 		val function = constructor.getParentFunction(previousBlock)
-		entryBlock = constructor.createBlock(function, "error_handling_entry")
+		val entryBlock = constructor.createBlock(function, "error_handling_entry")
 		constructor.select(entryBlock)
 		val exceptionParameter = context.getExceptionParameter(constructor, function)
 		val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "exception")
 		val exceptionClass = context.getClassDefinition(constructor, exception)
 		var currentBlock = entryBlock
+		entryBlocks[mainBlock] = entryBlock
 		for(handleBlock in handleBlocks) {
 			handleBlock.compile(constructor)
 			if(!handleBlock.isInterruptingExecutionBasedOnStructure)
@@ -145,6 +142,7 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 			constructor.select(matchBlock)
 			handleBlock.jumpTo(constructor)
 			currentBlock = noMatchBlock
+			entryBlocks[handleBlock] = noMatchBlock
 		}
 		constructor.select(currentBlock)
 		context.handleException(constructor, parent)
@@ -161,7 +159,12 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 		constructor.select(previousBlock)
 	}
 
-	fun jumpTo(constructor: LlvmConstructor) {
+	fun jumpTo(constructor: LlvmConstructor, source: SemanticModel) {
+		val entryBlock = entryBlocks[source]
+		if(entryBlock == null) {
+			context.handleException(constructor, parent)
+			return
+		}
 		constructor.buildJump(entryBlock)
 	}
 }

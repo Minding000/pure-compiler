@@ -148,9 +148,10 @@ class Context {
 	}
 
 	fun handleException(constructor: LlvmConstructor, parent: SemanticModel?) {
-		val errorHandlingContext = parent?.scope?.getSurroundingErrorHandlingContext()
+		val result = parent?.scope?.getSurroundingErrorHandlingContext()
+		val errorHandlingContext = result?.first
 		if(errorHandlingContext?.needsToBeCalled() == true) {
-			errorHandlingContext.jumpTo(constructor)
+			errorHandlingContext.jumpTo(constructor, result.second)
 		} else {
 			val returnType = constructor.getReturnType()
 			if(returnType == constructor.voidType)

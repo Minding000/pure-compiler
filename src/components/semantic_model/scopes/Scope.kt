@@ -6,6 +6,7 @@ import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.general.ErrorHandlingContext
+import components.semantic_model.general.SemanticModel
 import components.semantic_model.types.FunctionType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Operator
@@ -48,6 +49,6 @@ abstract class Scope {
 	/** Similar to SemanticModel::getSurrounding<LoopStatement>, but doesn't search outside the surrounding callable. */
 	open fun getSurroundingLoop(): LoopStatement? = null
 
-	/** Similar to SemanticModel::getSurrounding<ErrorHandlingContext>, but doesn't search outside the surrounding callable. */
-	open fun getSurroundingErrorHandlingContext(): ErrorHandlingContext? = null
+	/** Searches inside of the surrounding callable. Returns the error handling context and the direct child from which the search originated within. */
+	open fun getSurroundingErrorHandlingContext(): Pair<ErrorHandlingContext, SemanticModel>? = null
 }
