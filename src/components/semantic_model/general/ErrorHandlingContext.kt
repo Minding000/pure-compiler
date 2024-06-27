@@ -108,6 +108,14 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 			if(!mainBlock.isInterruptingExecutionBasedOnStructure)
 				constructor.buildJump(exitBlock)
 			constructor.select(exitBlock)
+			if(alwaysBlock != null) {
+				val exceptionParameter = context.getExceptionParameter(constructor)
+				val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "initialException")
+				constructor.buildStore(constructor.nullPointer, exceptionParameter)
+				alwaysBlock.compile(constructor)
+				constructor.buildStore(exception, exceptionParameter)
+				context.continueRaise(constructor, parent)
+			}
 		}
 	}
 
@@ -124,7 +132,7 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 		for(handleBlock in handleBlocks) {
 			handleBlock.compile(constructor)
 			if(!handleBlock.isInterruptingExecutionBasedOnStructure)
-				constructor.buildJump(exitBlock)
+				constructor.buildJump(exitBlock) //TODO or to always block if exits
 			constructor.select(currentBlock)
 			val referenceType = handleBlock.eventType
 			val referenceTypeDeclaration = when(referenceType) {
@@ -146,16 +154,6 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 		}
 		constructor.select(currentBlock)
 		context.handleException(constructor, parent)
-
-		//if(alwaysBlock != null) {
-		//	alwaysBlock.compile(constructor)
-		//	if(!alwaysBlock.isInterruptingExecutionBasedOnStructure)
-		//		constructor.buildJump(exitBlock)
-		//	//TODO check for always block
-		//	// - and either resumes control flow
-		//	// - or returns as required
-		//}
-
 		constructor.select(previousBlock)
 	}
 
