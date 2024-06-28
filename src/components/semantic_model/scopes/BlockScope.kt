@@ -6,6 +6,7 @@ import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.general.ErrorHandlingContext
+import components.semantic_model.general.HandleBlock
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.values.VariableValue
 import logger.issues.declaration.Redeclaration
@@ -64,7 +65,9 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 	}
 
 	override fun getSurroundingErrorHandlingContext(): Pair<ErrorHandlingContext, SemanticModel>? {
-		val semanticModel = semanticModel
+		var semanticModel = semanticModel
+		if(semanticModel?.parent is HandleBlock)
+			semanticModel = semanticModel.parent
 		val errorHandlingContext = semanticModel?.parent as? ErrorHandlingContext ?: return parentScope.getSurroundingErrorHandlingContext()
 		return Pair(errorHandlingContext, semanticModel)
 	}

@@ -31,7 +31,11 @@ class HandleBlock(override val source: HandleBlockSyntaxTree, scope: Scope, val 
 		entryBlock = constructor.createBlock(function, "handle_block_entry")
 		constructor.select(entryBlock)
 		val exceptionParameter = context.getExceptionParameter(constructor, function)
-		//TODO write exception into 'eventVariable'
+		if(eventVariable != null) {
+			val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "exception")
+			eventVariable.compile(constructor)
+			constructor.buildStore(exception, eventVariable.llvmLocation)
+		}
 		constructor.buildStore(constructor.nullPointer, exceptionParameter)
 		block.compile(constructor)
 	}

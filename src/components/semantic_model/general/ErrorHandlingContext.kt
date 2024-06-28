@@ -98,25 +98,29 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 
 	override fun compile(constructor: LlvmConstructor) {
 		val exitBlock = constructor.createDetachedBlock("error_handling_exit")
-		val shouldAddExitBlock = !(isInterruptingExecutionBasedOnStructure || (handleBlocks.isEmpty() && alwaysBlock == null))
+		val shouldAddExitBlock =
+			!(mainBlock.isInterruptingExecutionBasedOnStructure && handleBlocks.all { it.isInterruptingExecutionBasedOnStructure } && alwaysBlock == null)
 		if(shouldAddExitBlock)
 			constructor.addBlockToFunction(constructor.getParentFunction(), exitBlock)
 		if(needsToBeCalled())
 			compileErrorHandler(constructor, exitBlock)
 		mainBlock.compile(constructor)
-		if(shouldAddExitBlock) {
-			if(!mainBlock.isInterruptingExecutionBasedOnStructure)
-				constructor.buildJump(exitBlock)
-			constructor.select(exitBlock)
-			if(alwaysBlock != null) {
-				val exceptionParameter = context.getExceptionParameter(constructor)
-				val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "initialException")
-				constructor.buildStore(constructor.nullPointer, exceptionParameter)
-				alwaysBlock.compile(constructor)
-				constructor.buildStore(exception, exceptionParameter)
-				context.continueRaise(constructor, parent)
-			}
-		}
+		if(!shouldAddExitBlock)
+			return
+		if(!mainBlock.isInterruptingExecutionBasedOnStructure)
+			constructor.buildJump(exitBlock)
+		constructor.select(exitBlock)
+		if(alwaysBlock == null)
+			return
+		val exceptionParameter = context.getExceptionParameter(constructor)
+		val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "initialException")
+		constructor.buildStore(constructor.nullPointer, exceptionParameter)
+		alwaysBlock.compile(constructor) //TODO this won't work if the always block interrupts execution
+		constructor.buildStore(exception, exceptionParameter)
+		if(isInterruptingExecutionBasedOnStructure)
+			context.handleException(constructor, parent)
+		else
+			context.continueRaise(constructor, parent)
 	}
 
 	private fun compileErrorHandler(constructor: LlvmConstructor, exitBlock: LlvmBlock) {
@@ -130,6 +134,9 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 		var currentBlock = entryBlock
 		entryBlocks[mainBlock] = entryBlock
 		for(handleBlock in handleBlocks) {
+			val matchBlock = constructor.createBlock(function, "error_handling_match")
+			val noMatchBlock = constructor.createBlock(function, "error_handling_no_match")
+			entryBlocks[handleBlock] = noMatchBlock
 			handleBlock.compile(constructor)
 			if(!handleBlock.isInterruptingExecutionBasedOnStructure)
 				constructor.buildJump(exitBlock)
@@ -144,13 +151,10 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 			val referenceClassDefinition = referenceTypeDeclaration?.llvmClassDefinition
 				?: throw CompilerError(referenceType.source, "Missing class definition for type '$referenceType'.")
 			val matchesErrorType = constructor.buildPointerEqualTo(exceptionClass, referenceClassDefinition, "matchesErrorType")
-			val matchBlock = constructor.createBlock(function, "error_handling_match")
-			val noMatchBlock = constructor.createBlock(function, "error_handling_no_match")
 			constructor.buildJump(matchesErrorType, matchBlock, noMatchBlock)
 			constructor.select(matchBlock)
 			handleBlock.jumpTo(constructor)
 			currentBlock = noMatchBlock
-			entryBlocks[handleBlock] = noMatchBlock
 		}
 		constructor.select(currentBlock)
 		if(alwaysBlock == null)

@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 internal class ExceptionPropagation {
 
 	@Test
-	fun `propagates exception from function call`() {
+	fun `propagates error from function call`() {
 		val sourceCode = """
 			SimplestApp object {
 				var x = 0
@@ -31,7 +31,7 @@ internal class ExceptionPropagation {
 	}
 
 	@Test
-	fun `propagates exception from binary operator`() {
+	fun `propagates error from binary operator`() {
 		val sourceCode = """
 			SimplestApp object {
 				var x = 0
@@ -55,7 +55,7 @@ internal class ExceptionPropagation {
 	}
 
 	@Test
-	fun `propagates exception from unary operator`() {
+	fun `propagates error from unary operator`() {
 		val sourceCode = """
 			SimplestApp object {
 				var x = 0
@@ -79,7 +79,7 @@ internal class ExceptionPropagation {
 	}
 
 	@Test
-	fun `propagates exception from binary modification operator`() {
+	fun `propagates error from binary modification operator`() {
 		val sourceCode = """
 			SimplestApp object {
 				var x = 0
@@ -103,7 +103,7 @@ internal class ExceptionPropagation {
 	}
 
 	@Test
-	fun `propagates exception from unary modification operator`() {
+	fun `propagates error from unary modification operator`() {
 		val sourceCode = """
 			SimplestApp object {
 				var x = 0
@@ -127,14 +127,14 @@ internal class ExceptionPropagation {
 	}
 
 	//TODO write tests:
-	// -X exception matches, is handled and execution is resumed in same function
-	// -X exception matches, is handled and execution is resumed in parent function
-	// -X exception doesn't match and is propagated in same function
-	// -X exception doesn't match and is propagated in parent function
-	// -X exception matches, is handled and re-raised
-	// -X exception matches, is handled, always block runs and execution is resumed
-	// -X exception doesn't match, always block runs and exception is propagated
-	// - exception matches, is handled, re-raised and always block runs
+	// -X error matches, is handled and execution is resumed in same function
+	// -X error matches, is handled and execution is resumed in parent function
+	// -X error doesn't match and is propagated in same function
+	// -X error doesn't match and is propagated in parent function
+	// -X error matches, is handled and re-raised
+	// -X error matches, is handled, always block runs and execution is resumed
+	// -X error doesn't match, always block runs and error is propagated
+	// -X error matches, is handled, re-raised and always block runs
 	// - compiles with multiple handle blocks
 	// - always block runs on return when handle block is present in same function
 	// - always block runs on return when handle block is present in parent function
@@ -143,7 +143,7 @@ internal class ExceptionPropagation {
 
 	//TODO use 'error' parameter
 	@Test
-	fun `handle block is executed and execution is resumed when exception matches in same function`() {
+	fun `handle block is executed and execution is resumed when error matches in same function`() {
 		val sourceCode = """
 			SomeError class
 			SimplestApp object {
@@ -163,7 +163,7 @@ internal class ExceptionPropagation {
 
 	//TODO use 'error' parameter
 	@Test
-	fun `handle block is executed and execution is resumed when exception matches in parent function`() {
+	fun `handle block is executed and execution is resumed when error matches in parent function`() {
 		val sourceCode = """
 			SomeError class
 			SimplestApp object {
@@ -188,7 +188,7 @@ internal class ExceptionPropagation {
 	}
 
 	@Test
-	fun `handle block is not executed and exception is propagated when exception doesn't match in same function`() {
+	fun `handle block is not executed and error is propagated when error doesn't match in same function`() {
 		val sourceCode = """
 			SomeError class
 			OtherError class
@@ -211,7 +211,7 @@ internal class ExceptionPropagation {
 	}
 
 	@Test
-	fun `handle block is not executed and exception is propagated when exception doesn't match in parent function`() {
+	fun `handle block is not executed and error is propagated when error doesn't match in parent function`() {
 		val sourceCode = """
 			SomeError class
 			OtherError class
@@ -238,7 +238,7 @@ internal class ExceptionPropagation {
 	}
 
 	@Test
-	fun `handle block is executed and exception is re-raised when exception matches and handle block contains raise statement`() {
+	fun `handle block is executed and error is re-raised when error matches and handle block contains raise statement`() {
 		val sourceCode = """
 			SomeError class
 			SimplestApp object {
@@ -289,7 +289,7 @@ internal class ExceptionPropagation {
 	}
 
 	@Test
-	fun `always block is executed and execution is resumed after handle block didn't run`() {
+	fun `always block is executed and error is propagated after handle block didn't run`() {
 		val sourceCode = """
 			SomeError class
 			OtherError class
@@ -314,5 +314,34 @@ internal class ExceptionPropagation {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo")
 		assertEquals(2, result)
+	}
+
+	@Test
+	fun `always block is executed after error re-raised in handle block`() {
+		val sourceCode = """
+			SomeError class
+			OtherError class
+			SimplestApp object {
+				var x = 0
+				to throw() {
+					{
+						x += 1
+						raise SomeError()
+					} handle error: SomeError {
+						x += 1
+						raise error
+					} always {
+						x += 1
+					}
+					x = 9
+				}
+				to getThree(): Int {
+					try? throw()
+					return x
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree")
+		assertEquals(3, result)
 	}
 }
