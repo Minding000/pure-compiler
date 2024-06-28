@@ -132,7 +132,7 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 		for(handleBlock in handleBlocks) {
 			handleBlock.compile(constructor)
 			if(!handleBlock.isInterruptingExecutionBasedOnStructure)
-				constructor.buildJump(exitBlock) //TODO or to always block if exits
+				constructor.buildJump(exitBlock)
 			constructor.select(currentBlock)
 			val referenceType = handleBlock.eventType
 			val referenceTypeDeclaration = when(referenceType) {
@@ -153,7 +153,10 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 			entryBlocks[handleBlock] = noMatchBlock
 		}
 		constructor.select(currentBlock)
-		context.handleException(constructor, parent)
+		if(alwaysBlock == null)
+			context.handleException(constructor, parent)
+		else
+			constructor.buildJump(exitBlock)
 		constructor.select(previousBlock)
 	}
 
