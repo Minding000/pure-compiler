@@ -126,22 +126,6 @@ internal class ExceptionPropagation {
 		assertEquals(1, result)
 	}
 
-	//TODO write tests:
-	// -X error matches, is handled and execution is resumed in same function
-	// -X error matches, is handled and execution is resumed in parent function
-	// -X error doesn't match and is propagated in same function
-	// -X error doesn't match and is propagated in parent function
-	// -X error matches, is handled and re-raised
-	// -X error matches, is handled, always block runs and execution is resumed
-	// -X error doesn't match, always block runs and error is propagated
-	// -X error matches, is handled, re-raised and always block runs
-	// - compiles with multiple handle blocks
-	// - always block runs on return when handle block is present in same function
-	// - always block runs on return when handle block is present in parent function
-	// - always block runs on return when handle blocks are absent in same function
-	// - always block runs on return when handle blocks are absent in parent function
-
-	//TODO use 'error' parameter
 	@Test
 	fun `handle block is executed and execution is resumed when error matches in same function`() {
 		val sourceCode = """
@@ -161,7 +145,6 @@ internal class ExceptionPropagation {
 		assertEquals(11, result)
 	}
 
-	//TODO use 'error' parameter
 	@Test
 	fun `handle block is executed and execution is resumed when error matches in parent function`() {
 		val sourceCode = """
@@ -320,7 +303,6 @@ internal class ExceptionPropagation {
 	fun `always block is executed after error re-raised in handle block`() {
 		val sourceCode = """
 			SomeError class
-			OtherError class
 			SimplestApp object {
 				var x = 0
 				to throw() {
@@ -343,5 +325,42 @@ internal class ExceptionPropagation {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree")
 		assertEquals(3, result)
+	}
+
+	//TODO write tests:
+	// -X error matches, is handled and execution is resumed in same function
+	// -X error matches, is handled and execution is resumed in parent function
+	// -X error doesn't match and is propagated in same function
+	// -X error doesn't match and is propagated in parent function
+	// -X error matches, is handled and re-raised
+	// -X error matches, is handled, always block runs and execution is resumed
+	// -X error doesn't match, always block runs and error is propagated
+	// -X error matches, is handled, re-raised and always block runs
+	// -X compiles with multiple handle blocks
+	// - always block runs on return when handle block is present in same function
+	// - always block runs on return when handle block is present in parent function
+	// - always block runs on return when handle blocks are absent in same function
+	// - always block runs on return when handle blocks are absent in parent function
+
+	@Test
+	fun `handle block matches error after another handle block didn't match it`() {
+		val sourceCode = """
+			SomeError class
+			OtherError class
+			SimplestApp object {
+				var x = 0
+				to getTwo(): Int {
+					x += 1
+					raise SomeError()
+				} handle error: OtherError {
+					return 44
+				} handle error: SomeError {
+					x += 1
+					return x
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo")
+		assertEquals(2, result)
 	}
 }
