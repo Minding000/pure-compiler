@@ -2,6 +2,7 @@ package components.semantic_model.general
 
 import components.code_generation.llvm.LlvmBlock
 import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.ValueDeclaration
@@ -13,13 +14,15 @@ import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import java.util.*
 
-//TODO handle LLVM side of always block
 class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, val mainBlock: StatementBlock,
 						   val handleBlocks: List<HandleBlock> = emptyList(), val alwaysBlock: StatementBlock? = null):
 	SemanticModel(source, scope) {
 	override var isInterruptingExecutionBasedOnStructure = false
 	override var isInterruptingExecutionBasedOnStaticEvaluation = false
 	private var entryBlocks = HashMap<SemanticModel, LlvmBlock>()
+	private lateinit var exitBlock: LlvmBlock
+	private var returnAddressVariable: LlvmValue? = null
+	private val returnBlocks = LinkedList<LlvmBlock>()
 
 	init {
 		addSemanticModels(mainBlock, alwaysBlock)
@@ -97,9 +100,15 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		val exitBlock = constructor.createDetachedBlock("error_handling_exit")
-		val shouldAddExitBlock =
-			!(mainBlock.isInterruptingExecutionBasedOnStructure && handleBlocks.all { it.isInterruptingExecutionBasedOnStructure } && alwaysBlock == null)
+		var noReturnAddressBlock: LlvmBlock? = null
+		if(alwaysBlock != null) {
+			returnAddressVariable = constructor.buildStackAllocation(constructor.pointerType, "errorHandling_returnAddressVariable")
+			noReturnAddressBlock = constructor.createBlock("noReturnAddress")
+			constructor.buildStore(constructor.getBlockAddress(noReturnAddressBlock), returnAddressVariable)
+			returnBlocks.add(noReturnAddressBlock)
+		}
+		exitBlock = constructor.createDetachedBlock("errorHandling_exit")
+		val shouldAddExitBlock = handleBlocks.any { !it.isInterruptingExecutionBasedOnStructure } || alwaysBlock != null
 		if(shouldAddExitBlock)
 			constructor.addBlockToFunction(constructor.getParentFunction(), exitBlock)
 		if(needsToBeCalled())
@@ -115,7 +124,13 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 		val exceptionParameter = context.getExceptionParameter(constructor)
 		val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "initialException")
 		constructor.buildStore(constructor.nullPointer, exceptionParameter)
-		alwaysBlock.compile(constructor) //TODO this won't work if the always block interrupts execution
+		alwaysBlock.compile(
+			constructor) //TODO this won't work if the always block interrupts execution | Also, what should be the behaviour when always block returns during raise?
+		if(noReturnAddressBlock == null)
+			throw CompilerError(source, "Block 'noReturnAddressBlock' is missing")
+		val returnAddress = constructor.buildLoad(constructor.pointerType, returnAddressVariable, "returnAddress")
+		constructor.buildJump(returnAddress, returnBlocks)
+		constructor.select(noReturnAddressBlock)
 		constructor.buildStore(exception, exceptionParameter)
 		if(isInterruptingExecutionBasedOnStructure)
 			context.handleException(constructor, parent)
@@ -126,7 +141,7 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 	private fun compileErrorHandler(constructor: LlvmConstructor, exitBlock: LlvmBlock) {
 		val previousBlock = constructor.getCurrentBlock()
 		val function = constructor.getParentFunction(previousBlock)
-		val entryBlock = constructor.createBlock(function, "error_handling_entry")
+		val entryBlock = constructor.createBlock(function, "errorHandling_entry")
 		constructor.select(entryBlock)
 		val exceptionParameter = context.getExceptionParameter(constructor, function)
 		val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "exception")
@@ -134,8 +149,8 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 		var currentBlock = entryBlock
 		entryBlocks[mainBlock] = entryBlock
 		for(handleBlock in handleBlocks) {
-			val matchBlock = constructor.createBlock(function, "error_handling_match")
-			val noMatchBlock = constructor.createBlock(function, "error_handling_no_match")
+			val matchBlock = constructor.createBlock(function, "errorHandling_match")
+			val noMatchBlock = constructor.createBlock(function, "errorHandling_noMatch")
 			entryBlocks[handleBlock] = noMatchBlock
 			handleBlock.compile(constructor)
 			if(!handleBlock.isInterruptingExecutionBasedOnStructure)
@@ -171,5 +186,13 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 			return
 		}
 		constructor.buildJump(entryBlock)
+	}
+
+	fun runAlwaysBlock(constructor: LlvmConstructor) {
+		val returnBlock = constructor.createBlock("return")
+		constructor.buildStore(constructor.getBlockAddress(returnBlock), returnAddressVariable)
+		returnBlocks.add(returnBlock)
+		constructor.buildJump(exitBlock)
+		constructor.select(returnBlock)
 	}
 }

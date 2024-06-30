@@ -72,6 +72,13 @@ class BlockScope(val parentScope: MutableScope): MutableScope() {
 		return Pair(errorHandlingContext, semanticModel)
 	}
 
+	override fun getSurroundingAlwaysBlock(): ErrorHandlingContext? { //TODO check case: always-block is searched from within always-block
+		val errorHandlingContext = semanticModel?.parent as? ErrorHandlingContext ?: return parentScope.getSurroundingAlwaysBlock()
+		if(errorHandlingContext.alwaysBlock == null)
+			return parentScope.getSurroundingAlwaysBlock()
+		return errorHandlingContext
+	}
+
 	fun validate() {
 		validateDeclarations()
 	}

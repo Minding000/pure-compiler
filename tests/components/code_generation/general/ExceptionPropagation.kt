@@ -5,6 +5,8 @@ import util.TestUtil
 import kotlin.test.assertEquals
 
 internal class ExceptionPropagation {
+	//TODO add test for 'continue' statement
+	//TODO add test for 'break' statement
 
 	@Test
 	fun `propagates error from function call`() {
@@ -327,21 +329,6 @@ internal class ExceptionPropagation {
 		assertEquals(3, result)
 	}
 
-	//TODO write tests:
-	// -X error matches, is handled and execution is resumed in same function
-	// -X error matches, is handled and execution is resumed in parent function
-	// -X error doesn't match and is propagated in same function
-	// -X error doesn't match and is propagated in parent function
-	// -X error matches, is handled and re-raised
-	// -X error matches, is handled, always block runs and execution is resumed
-	// -X error doesn't match, always block runs and error is propagated
-	// -X error matches, is handled, re-raised and always block runs
-	// -X compiles with multiple handle blocks
-	// - always block runs on return when handle block is present in same function
-	// - always block runs on return when handle block is present in parent function
-	// - always block runs on return when handle blocks are absent in same function
-	// - always block runs on return when handle blocks are absent in parent function
-
 	@Test
 	fun `handle block matches error after another handle block didn't match it`() {
 		val sourceCode = """
@@ -362,5 +349,46 @@ internal class ExceptionPropagation {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo")
 		assertEquals(2, result)
+	}
+
+	@Test
+	fun `always block is executed after return with handle block present`() {
+		val sourceCode = """
+			SomeError class
+			SimplestApp object {
+				var x = 0
+				to getZero(): Int {
+					return x
+				} handle error: SomeError {
+					return 44
+				} always {
+					x += 1
+				}
+				to getOne(): Int {
+					return getZero() + x
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne")
+		assertEquals(1, result)
+	}
+
+	@Test
+	fun `always block is executed after return without handle blocks`() {
+		val sourceCode = """
+			SimplestApp object {
+				var x = 0
+				to getZero(): Int {
+					return x
+				} always {
+					x += 1
+				}
+				to getOne(): Int {
+					return getZero() + x
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne")
+		assertEquals(1, result)
 	}
 }

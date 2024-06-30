@@ -49,6 +49,9 @@ abstract class Scope {
 	/** Similar to SemanticModel::getSurrounding<LoopStatement>, but doesn't search outside the surrounding callable. */
 	open fun getSurroundingLoop(): LoopStatement? = null
 
-	/** Searches inside of the surrounding callable. Returns the error handling context and the direct child from which the search originated within. */
+	/** Searches inside of the surrounding callable. Returns an error handling context and the direct child from which the search originated within. */
 	open fun getSurroundingErrorHandlingContext(): Pair<ErrorHandlingContext, SemanticModel>? = null
+
+	/** Searches inside of the surrounding callable. Returns an error handling context containing an always-block. */
+	open fun getSurroundingAlwaysBlock(): ErrorHandlingContext? = null
 }

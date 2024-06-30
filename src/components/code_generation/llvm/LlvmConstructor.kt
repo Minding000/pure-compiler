@@ -385,6 +385,16 @@ class LlvmConstructor(name: String) {
 		LLVMBuildCondBr(builder, condition, positiveBlock, negativeBlock)
 	}
 
+	fun buildJump(targetAddress: LlvmValue, potentialTargetBlocks: List<LlvmBlock>) {
+		val jump = LLVMBuildIndirectBr(builder, targetAddress, potentialTargetBlocks.size)
+		for(potentialTargetBlock in potentialTargetBlocks)
+			LLVMAddDestination(jump, potentialTargetBlock)
+	}
+
+	fun getBlockAddress(block: LlvmBlock, parentFunction: LlvmValue = getParentFunction(block)): LlvmValue {
+		return LLVMBlockAddress(parentFunction, block)
+	}
+
 	fun buildReturn(value: LlvmValue? = null): LlvmValue {
 		if(value == null)
 			return LLVMBuildRetVoid(builder)

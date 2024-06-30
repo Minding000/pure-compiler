@@ -97,12 +97,16 @@ class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val val
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
+		val errorHandlingContext = scope.getSurroundingAlwaysBlock()
 		if(value == null) {
+			errorHandlingContext?.runAlwaysBlock(constructor)
 			constructor.buildReturn()
 			return
 		}
 		val declaredReturnType = targetFunction?.signature?.returnType ?: targetComputedProperty?.getterReturnType
-		constructor.buildReturn(ValueConverter.convertIfRequired(this, constructor, value.getLlvmValue(constructor),
-			value.effectiveType, value.hasGenericType, declaredReturnType, false, conversion))
+		val returnValue = ValueConverter.convertIfRequired(this, constructor, value.getLlvmValue(constructor), value.effectiveType,
+			value.hasGenericType, declaredReturnType, false, conversion)
+		errorHandlingContext?.runAlwaysBlock(constructor)
+		constructor.buildReturn(returnValue)
 	}
 }
