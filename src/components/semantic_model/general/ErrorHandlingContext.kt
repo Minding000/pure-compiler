@@ -101,7 +101,7 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 
 	override fun compile(constructor: LlvmConstructor) {
 		var noReturnAddressBlock: LlvmBlock? = null
-		if(alwaysBlock != null) {
+		if(alwaysBlock != null && !alwaysBlock.isInterruptingExecutionBasedOnStructure) {
 			returnAddressVariable = constructor.buildStackAllocation(constructor.pointerType, "errorHandling_returnAddressVariable")
 			noReturnAddressBlock = constructor.createBlock("noReturnAddress")
 			constructor.buildStore(constructor.getBlockAddress(noReturnAddressBlock), returnAddressVariable)
@@ -124,8 +124,9 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 		val exceptionParameter = context.getExceptionParameter(constructor)
 		val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "initialException")
 		constructor.buildStore(constructor.nullPointer, exceptionParameter)
-		alwaysBlock.compile(
-			constructor) //TODO this won't work if the always block interrupts execution | Also, what should be the behaviour when always block returns during raise?
+		alwaysBlock.compile(constructor)
+		if(alwaysBlock.isInterruptingExecutionBasedOnStructure)
+			return
 		if(noReturnAddressBlock == null)
 			throw CompilerError(source, "Block 'noReturnAddressBlock' is missing")
 		val returnAddress = constructor.buildLoad(constructor.pointerType, returnAddressVariable, "returnAddress")
@@ -189,8 +190,10 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 	}
 
 	fun runAlwaysBlock(constructor: LlvmConstructor, returnBlock: LlvmBlock = constructor.createBlock("return")) {
-		constructor.buildStore(constructor.getBlockAddress(returnBlock), returnAddressVariable)
-		returnBlocks.add(returnBlock)
+		if(alwaysBlock?.isInterruptingExecutionBasedOnStructure == false) {
+			constructor.buildStore(constructor.getBlockAddress(returnBlock), returnAddressVariable)
+			returnBlocks.add(returnBlock)
+		}
 		constructor.buildJump(exitBlock)
 		constructor.select(returnBlock)
 	}

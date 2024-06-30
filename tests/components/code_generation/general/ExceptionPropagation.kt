@@ -429,4 +429,43 @@ internal class ExceptionPropagation {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
 		assertEquals(6, result)
 	}
+
+	@Test
+	fun `always block with raise`() {
+		val sourceCode = """
+			SomeError class
+			OtherError class
+			SimplestApp object {
+				to throw() {
+					raise SomeError()
+				} always {
+					raise OtherError()
+				}
+				to getSix(): Int {
+					throw()
+					return 4
+				} handle OtherError {
+					return 6
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
+		assertEquals(6, result)
+	}
+
+	@Test
+	fun `always block with return`() {
+		val sourceCode = """
+			SomeError class
+			SimplestApp object {
+				to getSix(): Int {
+					raise SomeError()
+				} always {
+					return 6
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
+		assertEquals(6, result)
+	}
 }
