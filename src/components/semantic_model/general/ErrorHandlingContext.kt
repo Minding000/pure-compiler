@@ -188,8 +188,7 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 		constructor.buildJump(entryBlock)
 	}
 
-	fun runAlwaysBlock(constructor: LlvmConstructor) {
-		val returnBlock = constructor.createBlock("return")
+	fun runAlwaysBlock(constructor: LlvmConstructor, returnBlock: LlvmBlock = constructor.createBlock("return")) {
 		constructor.buildStore(constructor.getBlockAddress(returnBlock), returnAddressVariable)
 		returnBlocks.add(returnBlock)
 		constructor.buildJump(exitBlock)

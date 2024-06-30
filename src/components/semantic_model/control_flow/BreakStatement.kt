@@ -32,6 +32,8 @@ class BreakStatement(override val source: BreakStatementSyntaxTree, scope: Scope
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
+		val errorHandlingContext = scope.getSurroundingAlwaysBlock()
+		errorHandlingContext?.runAlwaysBlock(constructor)
 		targetLoop?.jumpOut(constructor)
 	}
 }

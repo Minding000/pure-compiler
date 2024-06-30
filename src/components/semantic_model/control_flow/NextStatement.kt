@@ -31,6 +31,8 @@ class NextStatement(override val source: NextStatementSyntaxTree, scope: Scope):
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
+		val errorHandlingContext = scope.getSurroundingAlwaysBlock()
+		errorHandlingContext?.runAlwaysBlock(constructor)
 		targetLoop?.jumpToNextIteration(constructor)
 	}
 }

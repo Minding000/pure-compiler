@@ -5,8 +5,6 @@ import util.TestUtil
 import kotlin.test.assertEquals
 
 internal class ExceptionPropagation {
-	//TODO add test for 'continue' statement
-	//TODO add test for 'break' statement
 
 	@Test
 	fun `propagates error from function call`() {
@@ -390,5 +388,45 @@ internal class ExceptionPropagation {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne")
 		assertEquals(1, result)
+	}
+
+	@Test
+	fun `always block is executed after break`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFive(): Int {
+					var x = 4
+					loop {
+						break
+					} always {
+						x += 1
+					}
+					return x
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
+		assertEquals(5, result)
+	}
+
+	@Test
+	fun `always block is executed after next`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getSix(): Int {
+					var x = 4
+					loop while x < 5 {
+						x += 1
+						next
+						x = 10
+					} always {
+						x += 1
+					}
+					return x
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
+		assertEquals(6, result)
 	}
 }
