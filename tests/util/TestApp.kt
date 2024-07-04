@@ -34,6 +34,10 @@ class TestApp(private val files: Map<String, String>, private val entryPointPath
 		shouldPrint("", input, expectedValue)
 	}
 
+	fun shouldPrintLine(expectedOutput: String, input: String = "", expectedExitCode: Int = ExitCode.SUCCESS) {
+		shouldPrint("$expectedOutput${System.lineSeparator()}", input, expectedExitCode)
+	}
+
 	fun shouldPrint(expectedOutput: String, input: String = "", expectedExitCode: Int = ExitCode.SUCCESS) {
 		TestUtil.run(files, entryPointPath, includeRequiredModules, specialTypePaths) { program ->
 			val basePath = ".\\out\\tests"

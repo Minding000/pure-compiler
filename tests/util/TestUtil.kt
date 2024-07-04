@@ -188,6 +188,11 @@ object TestUtil {
 			fail(createExitCodeMessage(exitCode))
 	}
 
+	fun assertExecutablePrintsLine(expectedString: String, input: String = "", path: String = ".\\out\\program.exe",
+								   expectedExitCode: Int = ExitCode.SUCCESS) {
+		assertExecutablePrints("$expectedString${System.lineSeparator()}", input, path, expectedExitCode)
+	}
+
 	fun assertExecutablePrints(expectedString: String, input: String = "", path: String = ".\\out\\program.exe",
 							   expectedExitCode: Int = ExitCode.SUCCESS) {
 		val process = ProcessBuilder(path).start()

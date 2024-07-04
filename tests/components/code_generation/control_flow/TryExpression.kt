@@ -20,7 +20,7 @@ internal class TryExpression {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		app.shouldPrint("Unhandled error at '0000000000000017'.${System.lineSeparator()}", "", 1)
+		app.shouldPrintLine("Unhandled error at '0000000000000017'.", "", 1)
 	}
 
 	@Test

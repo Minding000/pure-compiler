@@ -13,6 +13,7 @@ import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
 import logger.Issue
 import logger.Logger
+import util.count
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -235,7 +236,7 @@ class Context {
 	}
 
 	fun printMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
-		assert(formatString.count { it == '%' } == values.size) { "Wrong template count!" }
+		assert(formatString.count('%') + formatString.count("%.") == values.size) { "Wrong template count!" }
 
 		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("pure_debug_formatString", "$formatString\n")
 

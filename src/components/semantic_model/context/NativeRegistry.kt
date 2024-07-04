@@ -81,4 +81,8 @@ class NativeRegistry(val context: Context) {
 			?: throw CompilerError("Missing primitive implementation for identifier '$identifier'.")
 		return primitiveImplementation
 	}
+
+	fun has(vararg specialTypes: SpecialType): Boolean {
+		return specialTypes.all { specialType -> specialTypeScopes.containsKey(specialType) }
+	}
 }

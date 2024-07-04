@@ -206,7 +206,20 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val noExceptionBlock = constructor.createBlock("noException")
 		constructor.buildJump(doesExceptionExist, panicBlock, noExceptionBlock)
 		constructor.select(panicBlock)
-		context.panic(constructor, "Unhandled error at '%p'.", exception)
+		if(context.nativeRegistry.has(SpecialType.EXCEPTION, SpecialType.STRING, SpecialType.ARRAY)) {
+			val descriptionProperty = context.resolveMember(constructor, exception, "description")
+			val description = constructor.buildLoad(constructor.pointerType, descriptionProperty, "description")
+			val byteArrayProperty = context.resolveMember(constructor, description, "bytes")
+			val byteArray = constructor.buildLoad(constructor.pointerType, byteArrayProperty, "bytes")
+			val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
+			val arraySize = constructor.buildLoad(constructor.i32Type, arraySizeProperty, "size")
+			val arrayValueProperty = constructor.buildGetPropertyPointer(context.byteArrayDeclarationType, byteArray,
+				context.byteArrayValueIndex, "arrayValueProperty")
+			val arrayValue = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "arrayValue")
+			context.panic(constructor, "Unhandled error: %.*s", arraySize, arrayValue)
+		} else {
+			context.panic(constructor, "Unhandled error at '%p'.", exception)
+		}
 		constructor.markAsUnreachable()
 		constructor.select(noExceptionBlock)
 	}

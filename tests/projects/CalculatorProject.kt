@@ -16,6 +16,6 @@ internal class CalculatorProject {
 	@Test
 	fun `runs without errors`() {
 		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Calculator", "Calculator.Main:CalculatorApp.run"))
-		TestUtil.assertExecutablePrints("Input was: 5${System.lineSeparator()}", "5" + Character.toString(10))
+		TestUtil.assertExecutablePrintsLine("Input was: 5", "5" + Character.toString(10))
 	}
 }
