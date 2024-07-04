@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 
-internal class ExceptionPropagation {
+internal class ErrorPropagation {
 
 	@Test
 	fun `propagates error from function call`() {

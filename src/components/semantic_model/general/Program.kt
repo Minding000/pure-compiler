@@ -185,7 +185,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			}
 			result = constructor.buildFunctionCall(userEntryPointFunction.signature.getLlvmType(constructor),
 				userEntryPointFunction.llvmValue, parameters, if(userEntryPointReturnsVoid) "" else "programResult")
-			handleUncaughtException(constructor, exceptionVariable)
+			handleUnhandledError(constructor, exceptionVariable)
 			context.printDebugMessage(constructor, "Entrypoint returned.")
 		}
 
@@ -199,14 +199,14 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		return globalEntryPoint
 	}
 
-	private fun handleUncaughtException(constructor: LlvmConstructor, exceptionVariable: LlvmValue) {
+	private fun handleUnhandledError(constructor: LlvmConstructor, exceptionVariable: LlvmValue) {
 		val exception = constructor.buildLoad(constructor.pointerType, exceptionVariable, "exception")
 		val doesExceptionExist = constructor.buildIsNotNull(exception, "doesExceptionExist")
 		val panicBlock = constructor.createBlock("uncaughtException")
 		val noExceptionBlock = constructor.createBlock("noException")
 		constructor.buildJump(doesExceptionExist, panicBlock, noExceptionBlock)
 		constructor.select(panicBlock)
-		context.panic(constructor, "Uncaught exception at '%p'.", exception)
+		context.panic(constructor, "Unhandled error at '%p'.", exception)
 		constructor.markAsUnreachable()
 		constructor.select(noExceptionBlock)
 	}

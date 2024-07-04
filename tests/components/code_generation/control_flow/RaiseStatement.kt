@@ -15,7 +15,7 @@ internal class RaiseStatement {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
+		app.shouldPrint("Unhandled error at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 
 	@Test
@@ -29,7 +29,7 @@ internal class RaiseStatement {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
+		app.shouldPrint("Unhandled error at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 
 	@Test
@@ -42,7 +42,7 @@ internal class RaiseStatement {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
+		app.shouldPrint("Unhandled error at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 
 	@Test
@@ -55,7 +55,7 @@ internal class RaiseStatement {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
+		app.shouldPrint("Unhandled error at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 
 	@Test
@@ -68,7 +68,7 @@ internal class RaiseStatement {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
+		app.shouldPrint("Unhandled error at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 
 	@Test
@@ -81,6 +81,6 @@ internal class RaiseStatement {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
+		app.shouldPrint("Unhandled error at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 }

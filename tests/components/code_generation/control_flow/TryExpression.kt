@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 internal class TryExpression {
 
 	@Test
-	fun `unchecked try doesn't catch exception`() {
+	fun `unchecked try doesn't catch error`() {
 		val sourceCode = """
 			SimplestApp object {
 				to throw() {
@@ -20,7 +20,7 @@ internal class TryExpression {
 			}
 			""".trimIndent()
 		val app = TestApp(sourceCode, "Test:SimplestApp.run")
-		app.shouldPrint("Uncaught exception at '0000000000000017'.${System.lineSeparator()}", "", 1)
+		app.shouldPrint("Unhandled error at '0000000000000017'.${System.lineSeparator()}", "", 1)
 	}
 
 	@Test
@@ -40,7 +40,7 @@ internal class TryExpression {
 	}
 
 	@Test
-	fun `optional try catches exception in function without return value`() {
+	fun `optional try catches error in function without return value`() {
 		val sourceCode = """
 			SimplestApp object {
 				to throw() {
@@ -56,7 +56,7 @@ internal class TryExpression {
 	}
 
 	@Test
-	fun `optional try returns null for exception in function with return value`() {
+	fun `optional try returns null for error in function with return value`() {
 		val sourceCode = """
 			SimplestApp object {
 				to throw(): Int {
