@@ -34,7 +34,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		super.determineTypes()
 		context.registerWrite(target)
 		val targetType = target.effectiveType ?: return
-		val modifierType = target.effectiveType ?: return
+		val modifierType = modifier.effectiveType ?: return
 		try {
 			val match = targetType.interfaceScope.getOperator(kind, modifier)
 			if(match == null) {
