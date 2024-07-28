@@ -20,7 +20,7 @@ class VariableUsage(val kinds: List<Kind>, val semanticModel: SemanticModel, var
 			return isRequiredToBeInitialized
 		isRequiredToBeInitializedCache = false
 		isRequiredToBeInitialized = kinds.contains(Kind.READ)
-			|| (nextUsages.isNotEmpty() && nextUsages.any(VariableUsage::isRequiredToBeInitialized))
+			|| (!kinds.contains(Kind.WRITE) && nextUsages.isNotEmpty() && nextUsages.any(VariableUsage::isRequiredToBeInitialized))
 		isRequiredToBeInitializedCache = isRequiredToBeInitialized
 		return isRequiredToBeInitialized
 	}

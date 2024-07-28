@@ -613,13 +613,49 @@ internal class InitializationState {
 			"""
 				Int class
 				Map class {
-					computed size: Int gets {
-						return Int()
-					}
+					computed size: Int gets Int()
 					init
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<UninitializedProperties>()
+	}
+
+	@Test
+	fun `allows calling secondary initializer when computed property is present`() {
+		val sourceCode =
+			"""
+				Int class
+				Map class {
+					computed size: Int gets Int()
+					init
+					init(a: Int) {
+						init()
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ConstantReassignment>()
+	}
+
+	@Test
+	fun `allows calling secondary initializer to initialize a property`() {
+		val sourceCode =
+			"""
+				Int class
+				Map class {
+					val size: Int
+					init {
+						size = Int()
+						size
+					}
+					init(a: Int) {
+						init()
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<UninitializedProperties>()
+		lintResult.assertIssueNotDetected<ReliesOnUninitializedProperties>()
 	}
 }

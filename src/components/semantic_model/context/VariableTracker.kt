@@ -1,5 +1,6 @@
 package components.semantic_model.context
 
+import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.PropertyDeclaration
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.general.SemanticModel
@@ -90,7 +91,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 	fun declare(declaration: ValueDeclaration, isInitialized: Boolean = false) {
 		val usages = variables.getOrPut(declaration) { LinkedList() }
 		val types = mutableListOf(VariableUsage.Kind.DECLARATION)
-		if(isInitialized || declaration.value != null)
+		if(isInitialized || (declaration.value != null && declaration !is ComputedPropertyDeclaration))
 			types.add(VariableUsage.Kind.WRITE)
 		val computedType = declaration.value?.getComputedType() ?: declaration.providedType
 		val computedValue = declaration.value?.getComputedValue()
