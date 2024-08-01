@@ -102,7 +102,7 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, scope: TypeScope, name
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		parameters.add(Context.THIS_PARAMETER_INDEX, instanceValue)
 		constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
 		return instanceValue
 	}
 
@@ -112,6 +112,6 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, scope: TypeScope, name
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
 		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
 	}
 }

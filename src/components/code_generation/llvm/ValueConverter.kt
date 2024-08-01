@@ -13,16 +13,16 @@ import java.util.*
 object ValueConverter {
 	//TODO use this function in these places (write tests!):
 	// - function call target
-	// - function call parameter
+	// - function call parameter		- DONE
 	// - initializer call parameter
-	// - assignment source
-	// - declaration assignment source
+	// - assignment source				- DONE
+	// - declaration assignment source	- DONE
 	// - binary operator target
-	// - binary operator source
-	// - binary modification source
+	// - binary operator source			- DONE
+	// - binary modification source		- DONE
 	// - cast target
 	// - null check target
-	// - return source
+	// - return source					- DONE
 
 	@Deprecated("Provide generics information.")
 	fun convertIfRequired(model: SemanticModel, constructor: LlvmConstructor, sourceValue: LlvmValue, sourceType: Type?, targetType: Type?,
@@ -44,9 +44,9 @@ object ValueConverter {
 			return boxPrimitive(constructor, sourceValue, sourceType?.getLlvmType(constructor))
 		if(sourceType is OptionalType && isSourcePrimitive && targetType !is OptionalType && isTargetPrimitive)
 			return unboxPrimitive(constructor, sourceValue, targetType?.getLlvmType(constructor))
-		if(isSourcePrimitive && !isTargetPrimitive)
+		if(isSourcePrimitive && !isTargetPrimitive && conversion == null)
 			return wrapAndUnboxIfRequired(model, constructor, sourceValue, sourceType)
-		if(!isSourcePrimitive && isTargetPrimitive)
+		if(!isSourcePrimitive && isTargetPrimitive && conversion == null)
 			return unwrapAndBoxIfRequired(model, constructor, sourceValue, sourceType, targetType)
 		if((SpecialType.BYTE.matches(sourceType) || SpecialType.INTEGER.matches(sourceType)) && SpecialType.FLOAT.matches(targetType)) {
 			//TODO unbox / unwrap + box / wrap (write tests!)
@@ -57,8 +57,10 @@ object ValueConverter {
 			return constructor.buildCastFromByteToInteger(sourceValue, "_castPrimitive")
 		}
 		//TODO test (un-)box / (un-)wrap + conversion
+		// - converting init accepts optional Int
+		// - converting init accepts union with Int
 		if(conversion != null)
-			return buildConversion(constructor, sourceValue, conversion)
+			return buildConversion(model, constructor, sourceValue, conversion)
 		return sourceValue
 	}
 
@@ -110,19 +112,33 @@ object ValueConverter {
 		}
 	}
 
-	private fun buildConversion(constructor: LlvmConstructor, sourceValue: LlvmValue, conversion: InitializerDefinition): LlvmValue {
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
+	private fun buildConversion(model: SemanticModel, constructor: LlvmConstructor, sourceValue: LlvmValue,
+								conversion: InitializerDefinition): LlvmValue {
+		val context = model.context
+		val exceptionParameter = context.getExceptionParameter(constructor)
 		val typeDeclaration = conversion.parentTypeDeclaration
 		val newObject = constructor.buildHeapAllocation(typeDeclaration.llvmType, "_newObject")
 		val classDefinitionProperty = constructor.buildGetPropertyPointer(typeDeclaration.llvmType, newObject,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_classDefinitionProperty")
 		constructor.buildStore(typeDeclaration.llvmClassDefinition, classDefinitionProperty)
 		val parameters = LinkedList<LlvmValue?>()
-		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
+		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionParameter)
 		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
 		parameters.add(sourceValue)
+		buildLlvmCommonPreInitializerCall(model, constructor, typeDeclaration, exceptionParameter, newObject)
 		constructor.buildFunctionCall(conversion.llvmType, conversion.llvmValue, parameters)
+		context.continueRaise(constructor, model)
 		return newObject
+	}
+
+	private fun buildLlvmCommonPreInitializerCall(model: SemanticModel, constructor: LlvmConstructor, typeDeclaration: TypeDeclaration,
+												  exceptionParameter: LlvmValue, newObject: LlvmValue) {
+		val context = model.context
+		val parameters = LinkedList<LlvmValue?>()
+		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionParameter)
+		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
+		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
+		context.continueRaise(constructor, model)
 	}
 
 	fun boxPrimitive(constructor: LlvmConstructor, value: LlvmValue, type: LlvmType?): LlvmValue {

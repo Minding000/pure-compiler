@@ -320,4 +320,23 @@ internal class InitializerResolution {
 		lintResult.assertIssueNotDetected<NotFound>()
 		lintResult.assertIssueNotDetected<SignatureMismatch>()
 	}
+
+	@Test
+	fun `conversions take precedence over variadic-ness in disambiguation`() {
+		val sourceCode =
+			"""
+				Int class
+				Byte class {
+					converting init(integer: Int)
+				}
+				Container class {
+					init(...integers: ...Int)
+					init(byte: Byte)
+				}
+				Container(Int())
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val initializerCall = lintResult.find<FunctionCall>()
+		assertEquals("Container(...Int)", initializerCall?.targetInitializer.toString())
+	}
 }

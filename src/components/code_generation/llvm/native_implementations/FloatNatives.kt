@@ -27,6 +27,7 @@ class FloatNatives(val context: Context) {
 		registry.registerNativeImplementation("Float <= Self: Bool", ::lessThanOrEqualTo)
 		registry.registerNativeImplementation("Float >= Self: Bool", ::greaterThanOrEqualTo)
 		registry.registerNativeImplementation("Float == Float: Bool", ::equalTo)
+		registry.registerNativeImplementation("Float != Float: Bool", ::notEqualTo)
 	}
 
 	private fun fromByte(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
@@ -192,6 +193,17 @@ class FloatNatives(val context: Context) {
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
 		val parameterPrimitiveFloat = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildFloatEqualTo(thisPrimitiveFloat, parameterPrimitiveFloat, "equalToResult")
+		constructor.buildReturn(result)
+	}
+
+	private fun notEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisFloat = context.getThisParameter(constructor)
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.floatDeclarationType, thisFloat, context.floatValueIndex,
+			"thisValueProperty")
+		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
+		val parameterPrimitiveFloat = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val result = constructor.buildFloatNotEqualTo(thisPrimitiveFloat, parameterPrimitiveFloat, "notEqualToResult")
 		constructor.buildReturn(result)
 	}
 }

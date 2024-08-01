@@ -80,6 +80,10 @@ object Llvm {
 	fun createPointerType(context: LlvmContext, addressSpace: Int = DEFAULT_ADDRESS_SPACE_INDEX): LlvmType =
 		LLVMPointerTypeInContext(context, addressSpace)
 
+	fun getTypeSizeInBytes(type: LlvmType): LlvmValue {
+		return LLVMSizeOf(type)
+	}
+
 	fun runFunction(engine: LlvmExecutionEngine, function: LlvmValue, parameters: List<LlvmValue?> = emptyList()): LlvmGenericValue {
 		return runFunction(engine, function, parameters.toLlvmList(), parameters.size)
 	}

@@ -109,7 +109,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		val functionAddress = context.resolveFunction(constructor, targetValue, signature.getIdentifier(getOperatorKind()))
 		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,
 			"_indexAccess_result")
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
 		return returnValue
 	}
 

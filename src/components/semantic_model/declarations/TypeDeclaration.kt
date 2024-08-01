@@ -41,6 +41,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	lateinit var llvmCommonPreInitializer: LlvmValue
 	lateinit var llvmCommonPreInitializerType: LlvmType
 	lateinit var llvmStaticType: LlvmType
+	private val staticMemberOffsets = HashMap<ValueDeclaration, LlvmValue>()
 	private var cachedLlvmMetadata: LlvmDebugInfoMetadata? = null
 
 	companion object {
@@ -93,6 +94,9 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			hasCircularInheritance = true
 			context.addIssue(CircularInheritance(superType.source))
 		}
+		for(semanticModel in semanticModels)
+			if(semanticModel is InitializerDefinition)
+				semanticModel.determineSignatureTypes()
 		for(semanticModel in semanticModels)
 			if(semanticModel is InitializerDefinition)
 				semanticModel.determineTypes()
@@ -206,7 +210,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 
 	private fun addDefaultInitializer() {
 		val defaultInitializer = InitializerDefinition(source, BlockScope(scope))
-		defaultInitializer.determineTypes()
+		defaultInitializer.determineSignatureTypes()
 		addSemanticModels(defaultInitializer)
 	}
 
@@ -323,15 +327,24 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		if(isDefinition) {
 			buildLlvmClassInitializer(constructor, staticMembers, properties, functions)
 			buildLlvmCommonPreInitializer(constructor, properties)
+			if(this !is Object)
+				compileStaticMemberInitialization(constructor)
 		}
 		super.compile(constructor)
 	}
 
 	private fun getStaticMembers(): Map<String, ValueDeclaration> {
 		val staticMembers = HashMap<String, ValueDeclaration>()
-		for(member in scope.memberDeclarations)
-			if((member as? InterfaceMember)?.isStatic == true && (member.providedType as? StaticType)?.typeDeclaration !is TypeAlias)
+		for(member in scope.memberDeclarations) {
+			if((member as? InterfaceMember)?.isStatic == true) {
+				val typeDeclaration = (member.providedType as? StaticType)?.typeDeclaration
+				if(typeDeclaration is TypeAlias)
+					continue
+				if(typeDeclaration?.isBound == false)
+					continue
 				staticMembers[member.name] = member
+			}
+		}
 		for(superType in getDirectSuperTypes()) {
 			for(staticMember in superType.getTypeDeclaration()?.getStaticMembers()?.values ?: emptyList())
 				staticMembers.putIfAbsent(staticMember.name, staticMember)
@@ -445,7 +458,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		context.printDebugMessage("'${getFullName()}' class initializer:")
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectEntrypointBlock(llvmClassInitializer)
-		context.printDebugMessage(constructor, "Initializing class '${getFullName()}' with class definition at '%p'.",
+		context.printDebugLine(constructor, "Initializing class '${getFullName()}' with class definition at '%p'.",
 			llvmClassDefinition)
 		for(typeDeclaration in scope.typeDeclarations.values) {
 			if(typeDeclaration.isDefinition)
@@ -465,7 +478,6 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		val functionIdArray = constructor.buildHeapArrayAllocation(context.llvmMemberIdType, functionCount, "functionIdArray")
 		val functionAddressArray = constructor.buildHeapArrayAllocation(context.llvmMemberAddressType, functionCount,
 			"functionAddressArray")
-		val staticMemberOffsets = HashMap<ValueDeclaration, LlvmValue>()
 		for((memberIndex, memberDeclaration) in staticMembers.withIndex()) {
 			val memberId = context.memberIdentities.getId(memberDeclaration.name)
 			val structMemberIndex = memberIndex + FIXED_STATIC_PROPERTY_COUNT
@@ -541,50 +553,51 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		constructor.buildStore(propertyOffsetArray, propertyOffsetArrayProperty)
 		constructor.buildStore(functionIdArray, functionIdArrayProperty)
 		constructor.buildStore(functionAddressArray, functionAddressArrayProperty)
-		if(this !is Object) {
-			val staticObject = staticValueDeclaration.llvmLocation
-			val values = LinkedList<LlvmValue>()
-			values.add(llvmClassDefinition)
-			for(staticMember in staticMembers) {
-				if(staticMember is Instance) {
-					values.add(context.getNullValue(constructor, staticMember.effectiveType))
-					if(staticMember.isAbstract)
-						continue
-					val offset = staticMemberOffsets[staticMember]
-						?: throw CompilerError(staticMember.source, "Missing static member offset.")
-					val staticProperty = constructor.buildGetArrayElementPointer(constructor.byteType, staticObject, offset,
-						"_staticMemberAddress")
-					constructor.buildStore(staticMember.getLlvmValue(constructor), staticProperty)
-					continue
-				}
-				val staticMemberValue = staticMember.value?.getComputedValue()
-				val staticMemberLlvmValue = if(staticMemberValue?.providedType?.isLlvmPrimitive() == true) {
-					staticMemberValue.getLlvmValue(constructor)
-				} else {
-					val value = staticMember.value?.getLlvmValue(constructor)
-						?: throw CompilerError(staticMember.source, "Static member is missing a value.")
-					val offset = staticMemberOffsets[staticMember]
-						?: throw CompilerError(staticMember.source, "Missing static member offset.")
-					val staticProperty = constructor.buildGetArrayElementPointer(constructor.byteType, staticObject, offset,
-						"_staticMemberAddress")
-					constructor.buildStore(value, staticProperty)
-					constructor.nullPointer
-				}
-				values.add(staticMemberLlvmValue)
-			}
-			constructor.defineGlobal(staticObject, constructor.buildConstantStruct(llvmStaticType, values))
-		}
-		context.printDebugMessage(constructor, "Class '${getFullName()}' initialized.")
+		context.printDebugLine(constructor, "Class '${getFullName()}' initialized.")
 		constructor.buildReturn()
 		constructor.select(previousBlock)
+	}
+
+	private fun compileStaticMemberInitialization(constructor: LlvmConstructor) {
+		val staticObject = staticValueDeclaration.llvmLocation
+		val values = LinkedList<LlvmValue>()
+		values.add(llvmClassDefinition)
+		for(staticMember in staticMembers) {
+			if(staticMember is Instance) {
+				values.add(context.getNullValue(constructor, staticMember.effectiveType))
+				if(staticMember.isAbstract)
+					continue
+				val offset = staticMemberOffsets[staticMember]
+					?: throw CompilerError(staticMember.source, "Missing static member offset.")
+				val staticProperty = constructor.buildGetArrayElementPointer(constructor.byteType, staticObject, offset,
+					"_staticMemberAddress")
+				constructor.buildStore(staticMember.getLlvmValue(constructor), staticProperty)
+				continue
+			}
+			val staticMemberValue = staticMember.value?.getComputedValue()
+			val staticMemberLlvmValue = if(staticMemberValue?.effectiveType?.isLlvmPrimitive() == true) {
+				staticMemberValue.getLlvmValue(constructor)
+			} else {
+				val value = staticMember.value?.getLlvmValue(constructor)
+					?: throw CompilerError(staticMember.source, "Static member is missing a value.")
+				val offset = staticMemberOffsets[staticMember]
+					?: throw CompilerError(staticMember.source, "Missing static member offset.")
+				val staticProperty = constructor.buildGetArrayElementPointer(constructor.byteType, staticObject, offset,
+					"_staticMemberAddress")
+				constructor.buildStore(value, staticProperty)
+				constructor.nullPointer
+			}
+			values.add(staticMemberLlvmValue)
+		}
+		constructor.defineGlobal(staticObject, constructor.buildConstantStruct(llvmStaticType, values))
 	}
 
 	private fun buildLlvmCommonPreInitializer(constructor: LlvmConstructor, properties: List<ValueDeclaration>) {
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectEntrypointBlock(llvmCommonPreInitializer)
-		val exceptionAddress = constructor.getParameter(llvmCommonPreInitializer, Context.EXCEPTION_PARAMETER_INDEX)
+		val exceptionParameter = context.getExceptionParameter(constructor, llvmCommonPreInitializer)
 		val thisValue = constructor.getParameter(llvmCommonPreInitializer, Context.THIS_PARAMETER_INDEX)
-		context.printDebugMessage(constructor, "Running '${getFullName()}' pre-initialization of object at '%p'.", thisValue)
+		context.printDebugLine(constructor, "Running '${getFullName()}' pre-initialization of object at '%p'.", thisValue)
 		if(isBound) {
 			val parentValue = constructor.getParameter(llvmCommonPreInitializer, Context.PARENT_PARAMETER_OFFSET)
 			val parentProperty = constructor.buildGetPropertyPointer(llvmType, thisValue, Context.PARENT_PROPERTY_INDEX,
@@ -601,7 +614,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			val typeDeclaration = superType.getTypeDeclaration() ?: throw CompilerError(superType.source,
 				"Object type missing type declaration.")
 			val parameters = LinkedList<LlvmValue?>()
-			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
+			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionParameter)
 			parameters.add(Context.THIS_PARAMETER_INDEX, thisValue)
 			for(typeParameter in superType.typeParameters) {
 				val objectType = typeParameter.effectiveType as? ObjectType
@@ -610,7 +623,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			}
 			constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer,
 				parameters)
-			context.continueRaise(constructor, parent)
+			context.continueRaise(constructor, this)
 		}
 		for(memberDeclaration in properties) {
 			val memberValue = memberDeclaration.value
@@ -623,7 +636,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 				constructor.buildStore(convertedValue, memberAddress)
 			}
 		}
-		context.printDebugMessage(constructor, "Finished '${getFullName()}' pre-initialization of object at '%p'.", thisValue)
+		context.printDebugLine(constructor, "Finished '${getFullName()}' pre-initialization of object at '%p'.", thisValue)
 		constructor.buildReturn()
 		constructor.select(previousBlock)
 	}

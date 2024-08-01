@@ -7,6 +7,7 @@ import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.FunctionSignature
+import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.OptionalType
@@ -23,6 +24,7 @@ import components.syntax_parser.syntax_tree.operations.BinaryOperator as BinaryO
 class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope, val left: Value, val right: Value,
 					 val kind: Operator.Kind): Value(source, scope) {
 	var targetSignature: FunctionSignature? = null
+	var conversions: Map<Value, InitializerDefinition>? = null
 	override val hasGenericType: Boolean
 		get() = targetSignature?.original?.returnType != targetSignature?.returnType
 
@@ -57,6 +59,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				return
 			}
 			targetSignature = match.signature
+			conversions = match.conversions
 			setUnextendedType(match.returnType.getLocalType(this, leftType))
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
@@ -222,7 +225,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		val rightType = targetSignature?.parameterTypes?.firstOrNull() ?: right.effectiveType
 		val originalRightType = targetSignature?.original?.parameterTypes?.firstOrNull() ?: right.effectiveType
 		var rightValue = ValueConverter.convertIfRequired(this, constructor, right.getLlvmValue(constructor), right.effectiveType,
-			right.hasGenericType, rightType, rightType != originalRightType)
+			right.hasGenericType, rightType, rightType != originalRightType, conversions?.get(right))
 		if(SpecialType.BOOLEAN.matches(left.effectiveType) && SpecialType.BOOLEAN.matches(right.effectiveType)) {
 			when(kind) {
 				Operator.Kind.AND -> return constructor.buildAnd(leftValue, rightValue, resultName)
@@ -339,7 +342,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			val functionAddress = context.resolveFunction(constructor, leftValue, signature.getIdentifier(kind))
 			constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters, resultName)
 		}
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
 		return returnValue
 	}
 

@@ -39,6 +39,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	val fixedParameters: List<Parameter>
 	private val variadicParameter: Parameter?
 	var superInitializer: InitializerDefinition? = null
+	val initializerTracker = VariableTracker(context, true)
+	override var hasDataFlowBeenAnalysed = isNative
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 	lateinit var llvmValue: LlvmValue
@@ -153,12 +155,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			}
 		}
 		val otherVariadicParameter = otherInitializerDefinition.variadicParameter
-		if(otherVariadicParameter == null) {
-			if(variadicParameter != null)
-				return ComparisonResult.LOWER
-		} else {
-			if(variadicParameter == null)
-				return ComparisonResult.HIGHER
+		if(variadicParameter != null && otherVariadicParameter != null) {
 			val variadicParameterType = variadicParameter.providedType ?: return ComparisonResult.SAME
 			val otherVariadicParameterType = otherVariadicParameter.providedType ?: return ComparisonResult.SAME
 			if(variadicParameterType != otherVariadicParameterType) {
@@ -194,18 +191,29 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 		return true
 	}
 
-	override fun determineTypes() {
+	fun determineSignatureTypes() {
 		parentTypeDeclaration = scope.getSurroundingTypeDeclaration()
 			?: throw CompilerError(source, "Initializer expected surrounding type definition.")
-		super.determineTypes()
+		for(localTypeParameter in localTypeParameters)
+			localTypeParameter.determineTypes()
+		for(parameter in parameters)
+			parameter.determineTypes()
 		parentTypeDeclaration.scope.addInitializer(this)
 	}
 
+	override fun determineTypes() {
+		body?.determineTypes()
+	}
+
+	override fun analyseDataFlow() {
+		analyseDataFlow(initializerTracker)
+	}
+
 	override fun analyseDataFlow(tracker: VariableTracker) {
-		if(isNative)
+		if(hasDataFlowBeenAnalysed)
 			return
+		hasDataFlowBeenAnalysed = true
 		val propertiesToBeInitialized = parentTypeDeclaration.scope.getPropertiesToBeInitialized().toMutableList()
-		val initializerTracker = VariableTracker(context, true)
 		for(member in parentTypeDeclaration.scope.memberDeclarations)
 			if(member is PropertyDeclaration)
 				initializerTracker.declare(member, member.providedType is StaticType)
@@ -363,7 +371,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, thisValue)
 			constructor.buildFunctionCall(trivialInitializer.llvmType, trivialInitializer.llvmValue, parameters)
-			context.continueRaise(constructor, parent)
+			context.continueRaise(constructor, this)
 		}
 	}
 

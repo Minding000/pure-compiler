@@ -1,7 +1,6 @@
 package components.semantic_model.control_flow
 
 import components.code_generation.llvm.LlvmConstructor
-import components.semantic_model.context.Context
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
@@ -42,8 +41,12 @@ class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
-		val exceptionAddress = constructor.getParameter(constructor.getParentFunction(), Context.EXCEPTION_PARAMETER_INDEX)
-		constructor.buildStore(value.getLlvmValue(constructor), exceptionAddress)
+		val exceptionParameter = context.getExceptionParameter(constructor)
+		val exception = value.getLlvmValue(constructor)
+		val functionIdentifier = targetFunction?.toString() ?: targetComputedProperty?.toString()
+		?: throw CompilerError(source, "Missing surrounding function.")
+		context.addLocationToStacktrace(source, constructor, exception, functionIdentifier)
+		constructor.buildStore(exception, exceptionParameter)
 		context.handleException(constructor, parent)
 	}
 }

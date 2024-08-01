@@ -211,4 +211,23 @@ internal class Assignment {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightySix")
 		assertEquals(86, result)
 	}
+
+	@Test
+	fun `converts values`() {
+		val sourceCode = """
+			A class {
+				val b: Int
+				converting init(b)
+			}
+			SimplestApp object {
+				to getThirtyFive(): Int {
+					var a: A
+					a = 35
+					return a.b
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThirtyFive")
+		assertEquals(35, result)
+	}
 }

@@ -40,16 +40,15 @@ internal class NativeModifier {
 	}
 
 	@Test
-	fun `is not allowed on computed properties`() {
+	fun `is allowed on computed properties`() {
 		val sourceCode =
 			"""
 				Goldfish class {
 					native computed name: String
-						gets "Bernd"
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<DisallowedModifier>()
+		lintResult.assertIssueNotDetected<DisallowedModifier>()
 	}
 
 	@Test

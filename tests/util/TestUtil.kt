@@ -26,11 +26,12 @@ object TestUtil {
 	const val TEST_FILE_NAME = "Test"
 	private val defaultErrorStream = System.err
 	private val testErrorStream = ByteArrayOutputStream()
-	private val EXTERNAL_FUNCTIONS = listOf("i32 @fprintf(ptr, ptr, ...)", "i32 @fflush(ptr)", "ptr @_fdopen(i32, ptr)",
-		"i32 @_tmainCRTStartup()", "i1 @__vcrt_initialize()", "i1 @__acrt_initialize()", "i32 @__acrt_initialize_stdio()",
-		"ptr @__acrt_iob_func(i32)", "i32 @ferror(ptr)", "i32 @fclose(ptr)", "i64 @fwrite(ptr, i64, i64, ptr)",
-		"i64 @fread(ptr, i64, i64, ptr)", "i32 @fgetc(ptr)", "void @Sleep(i32)", "void @exit(i32)", "ptr @memcpy(ptr, ptr, i32)",
-		"void @llvm.va_start(ptr)", "void @llvm.va_copy(ptr, ptr)", "void @llvm.va_end(ptr)", "noalias ptr @malloc(i32)")
+	private val EXTERNAL_FUNCTIONS = listOf("i32 @fprintf(ptr, ptr, ...)", "i32 @sprintf(ptr, ptr, ...)",
+		"i32 @snprintf(ptr, i64, ptr, ...)", "i32 @fflush(ptr)", "ptr @_fdopen(i32, ptr)", "i32 @_tmainCRTStartup()",
+		"i1 @__vcrt_initialize()", "i1 @__acrt_initialize()", "i32 @__acrt_initialize_stdio()", "ptr @__acrt_iob_func(i32)",
+		"i32 @ferror(ptr)", "i32 @fclose(ptr)", "i64 @fwrite(ptr, i64, i64, ptr)", "i64 @fread(ptr, i64, i64, ptr)", "i32 @fgetc(ptr)",
+		"void @Sleep(i32)", "void @exit(i32)", "ptr @memcpy(ptr, ptr, i64)", "void @llvm.va_start(ptr)", "void @llvm.va_copy(ptr, ptr)",
+		"void @llvm.va_end(ptr)", "noalias ptr @malloc(i32)")
 
 	fun recordErrorStream() {
 		System.setErr(PrintStream(testErrorStream))
@@ -105,25 +106,28 @@ object TestUtil {
 		}
 	}
 
-	fun runAndReturnBoolean(sourceCode: String, entryPointPath: String): Boolean {
+	fun runAndReturnBoolean(sourceCode: String, entryPointPath: String,
+							specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): Boolean {
 		val result: Boolean
-		run(mapOf(TEST_FILE_NAME to sourceCode), entryPointPath, false, Builder.specialTypePaths) { program ->
+		run(mapOf(TEST_FILE_NAME to sourceCode), entryPointPath, false, specialTypePaths) { program ->
 			result = program.runAndReturnBoolean()
 		}
 		return result
 	}
 
-	fun runAndReturnByte(sourceCode: String, entryPointPath: String): Byte {
+	fun runAndReturnByte(sourceCode: String, entryPointPath: String,
+						 specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): Byte {
 		val result: Byte
-		run(mapOf(TEST_FILE_NAME to sourceCode), entryPointPath, false, Builder.specialTypePaths) { program ->
+		run(mapOf(TEST_FILE_NAME to sourceCode), entryPointPath, false, specialTypePaths) { program ->
 			result = program.runAndReturnByte()
 		}
 		return result
 	}
 
-	fun runAndReturnFloat(sourceCode: String, entryPointPath: String): Double {
+	fun runAndReturnFloat(sourceCode: String, entryPointPath: String,
+						  specialTypePaths: Map<SpecialType, List<String>> = Builder.specialTypePaths): Double {
 		val result: Double
-		run(mapOf(TEST_FILE_NAME to sourceCode), entryPointPath, false, Builder.specialTypePaths) { program ->
+		run(mapOf(TEST_FILE_NAME to sourceCode), entryPointPath, false, specialTypePaths) { program ->
 			result = program.runAndReturnFloat().toDouble()
 		}
 		return result
@@ -228,10 +232,12 @@ object TestUtil {
 		}
 		val exitCode = processFuture.join()?.exitValue()
 		val programFailed = exitCode != expectedExitCode
-		if(exitCode == null)
+		if(exitCode == null) {
 			System.err.println("Program timed out after ${timeoutInSeconds}s.")
-		else if(programFailed)
+			process.waitFor()
+		} else if(programFailed) {
 			System.err.println(createExitCodeMessage(exitCode))
+		}
 		val errorStream = errorStreamBuilder.toString()
 		if(errorStream.isNotEmpty())
 			System.err.println(errorStream)
@@ -241,6 +247,9 @@ object TestUtil {
 			fail("Program failed! See lines above for details (timeout or error code).")
 	}
 
+	/**
+	 * Windows exit codes: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
+	 */
 	private fun createExitCodeMessage(exitCode: Int): String {
 		return "Program exited with exit code: $exitCode (0x${exitCode.toUInt().toString(16).uppercase()})"
 	}

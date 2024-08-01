@@ -119,6 +119,10 @@ class StaticType(val typeDeclaration: TypeDeclaration): Type(typeDeclaration.sou
 				return ComparisonResult.HIGHER
 			if(initializer.isConverting && !otherMatch.initializer.isConverting)
 				return ComparisonResult.LOWER
+			if(!initializer.isVariadic && otherMatch.initializer.isVariadic)
+				return ComparisonResult.HIGHER
+			if(initializer.isVariadic && !otherMatch.initializer.isVariadic)
+				return ComparisonResult.LOWER
 			return ComparisonResult.SAME
 		}
 	}

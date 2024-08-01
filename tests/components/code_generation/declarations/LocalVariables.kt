@@ -25,4 +25,22 @@ internal class LocalVariables {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSixteen")
 		assertEquals(16, result)
 	}
+
+	@Test
+	fun `converts values`() {
+		val sourceCode = """
+			A class {
+				val b: Int
+				converting init(b)
+			}
+			SimplestApp object {
+				to getThirtyOne(): Int {
+					var a: A = 31
+					return a.b
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThirtyOne")
+		assertEquals(31, result)
+	}
 }

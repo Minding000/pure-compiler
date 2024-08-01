@@ -63,6 +63,8 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	VAL("val\\b"),
 	VAR("var\\b"),
 	COMPUTED("computed\\b"),
+	GETTABLE("gettable\\b"),
+	SETTABLE("settable\\b"),
 	GETS("gets\\b"),
 	SETS("sets\\b"),
 	INITIALIZER("init\\b"),

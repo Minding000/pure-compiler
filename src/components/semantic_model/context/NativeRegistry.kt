@@ -28,6 +28,7 @@ class NativeRegistry(val context: Context) {
 		FloatNatives(context).load(this)
 		IdentifiableNatives(context).load(this)
 		IntNatives(context).load(this)
+		MathNatives(context).load(this)
 		NullNatives(context).load(this)
 		NativeInputStreamNatives(context).load(this)
 		NativeOutputStreamNatives(context).load(this)

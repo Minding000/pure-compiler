@@ -14,16 +14,20 @@ import components.semantic_model.types.FunctionType
 import components.semantic_model.types.LiteralType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Value
+import errors.internal.CompilerError
+import logger.issues.declaration.MissingBody
 import logger.issues.modifiers.OverridingMemberKindMismatch
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
 import logger.issues.modifiers.VariablePropertyOverriddenByValue
 import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclaration as ComputedPropertySyntaxTree
 
+//TODO allow read/write base on 'gettable' and 'settable' modifiers for abstract and native computed properties
+//TODO disallow body for abstract and native computed properties
 class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTree, scope: MutableScope, name: String, type: Type?,
 								  val whereClauseConditions: List<WhereClauseCondition>, isOverriding: Boolean, isAbstract: Boolean,
-								  val getterScope: BlockScope, val setterScope: BlockScope, getter: SemanticModel?,
-								  val setter: SemanticModel?):
+								  val isNative: Boolean, val isGettable: Boolean, val isSettable: Boolean, val getterScope: BlockScope,
+								  val setterScope: BlockScope, getter: SemanticModel?, val setter: SemanticModel?):
 	PropertyDeclaration(source, scope, name, type, null, false, isAbstract, setter == null, false,
 		isOverriding) {
 	override val value: Value? = getter as? Value
@@ -66,6 +70,11 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		addSemanticModels(setterReturnType, getterErrorHandlingContext, setterErrorHandlingContext)
 	}
 
+	override fun validate() {
+		super.validate()
+		validateBody()
+	}
+
 	override fun validateSuperMember() {
 		val (superMember, superMemberType) = superMember ?: return
 		if(!superMember.isConstant && isConstant)
@@ -90,15 +99,24 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		}
 	}
 
+	private fun validateBody() {
+		if(isAbstract || isNative)
+			return
+		if(getterErrorHandlingContext == null && setterErrorHandlingContext == null)
+			context.addIssue(MissingBody(source, "Computed property", "$name: $providedType"))
+	}
+
 	override fun declare(constructor: LlvmConstructor) {
+		if(isAbstract)
+			return
 		super.declare(constructor)
-		val llvmType = providedType?.getLlvmType(constructor)
-		if(getterErrorHandlingContext != null) {
+		val llvmType = effectiveType?.getLlvmType(constructor)
+		if(isGettable || getterErrorHandlingContext != null) {
 			val functionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), llvmType)
 			llvmGetterType = functionType
 			llvmGetterValue = constructor.buildFunction(getterIdentifier, functionType)
 		}
-		if(setterErrorHandlingContext != null) {
+		if(isSettable || setterErrorHandlingContext != null) {
 			val functionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType, llvmType))
 			llvmSetterType = functionType
 			llvmSetterValue = constructor.buildFunction(setterIdentifier, functionType)
@@ -106,7 +124,23 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
+		if(isAbstract)
+			return
 		val previousBlock = constructor.getCurrentBlock()
+		if(isNative) {
+			if(isGettable) {
+				val llvmGetterValue = llvmGetterValue ?: throw CompilerError(source, "Missing getter value")
+				context.nativeRegistry.compileNativeImplementation(constructor, source, "computed property getter", getterIdentifier,
+					llvmGetterValue)
+			}
+			if(isSettable) {
+				val llvmSetterValue = llvmSetterValue ?: throw CompilerError(source, "Missing setter value")
+				context.nativeRegistry.compileNativeImplementation(constructor, source, "computed property setter", setterIdentifier,
+					llvmSetterValue)
+			}
+			constructor.select(previousBlock)
+			return
+		}
 		val llvmGetterValue = llvmGetterValue
 		if(llvmGetterValue != null && getterErrorHandlingContext != null) {
 			constructor.createAndSelectEntrypointBlock(llvmGetterValue)

@@ -8,9 +8,12 @@ import components.semantic_model.control_flow.LoopStatement
 import components.semantic_model.control_flow.Try
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.general.SemanticModel
+import components.semantic_model.types.FunctionType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
+import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import errors.internal.CompilerError
 import logger.Issue
 import logger.Logger
 import util.count
@@ -38,6 +41,10 @@ class Context {
 	lateinit var llvmStandardErrorStreamGlobal: LlvmValue
 	lateinit var llvmPrintFunctionType: LlvmType
 	lateinit var llvmPrintFunction: LlvmValue
+	lateinit var llvmPrintToBufferFunctionType: LlvmType
+	lateinit var llvmPrintToBufferFunction: LlvmValue
+	lateinit var llvmPrintSizeFunctionType: LlvmType
+	lateinit var llvmPrintSizeFunction: LlvmValue
 	lateinit var llvmStreamOpenFunctionType: LlvmType
 	lateinit var llvmStreamOpenFunction: LlvmValue
 	lateinit var llvmStreamErrorFunctionType: LlvmType
@@ -134,7 +141,8 @@ class Context {
 		return constructor.getParameter(function, THIS_PARAMETER_INDEX)
 	}
 
-	fun continueRaise(constructor: LlvmConstructor, parent: SemanticModel?) {
+	fun continueRaise(constructor: LlvmConstructor, model: SemanticModel) {
+		val parent = model.parent
 		if(parent is Try && parent.isOptional)
 			return
 		val exceptionParameter = getExceptionParameter(constructor)
@@ -144,8 +152,34 @@ class Context {
 		val noExceptionBlock = constructor.createBlock("noException")
 		constructor.buildJump(doesExceptionExist, exceptionBlock, noExceptionBlock)
 		constructor.select(exceptionBlock)
+		//TODO what about surrounding computed property getter / setter or initializers?
+		val surroundingFunction = model.scope.getSurroundingFunction()
+		if(surroundingFunction != null)
+			addLocationToStacktrace(model.source, constructor, exception, surroundingFunction.toString())
 		handleException(constructor, parent)
 		constructor.select(noExceptionBlock)
+	}
+
+	fun addLocationToStacktrace(source: SyntaxTreeNode, constructor: LlvmConstructor, exception: LlvmValue, description: String) {
+		if(!nativeRegistry.has(SpecialType.EXCEPTION))
+			return
+		val ignoredExceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable")
+		constructor.buildStore(constructor.nullPointer, ignoredExceptionVariable)
+		val line = source.start.line
+		val moduleName = createStringObject(constructor, line.file.module.localName)
+		val fileName = createStringObject(constructor, line.file.name)
+		val lineNumber = constructor.buildInt32(line.number)
+		val descriptionString = createStringObject(constructor, description)
+
+		//TODO resolve "addLocation" once in Program to avoid repeated work
+		val fileScope = nativeRegistry.specialTypeScopes[SpecialType.EXCEPTION]
+		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.EXCEPTION.className)
+		val exceptionAddLocationPropertyType = typeDeclaration?.scope?.getValueDeclaration("addLocation")?.type
+		val exceptionAddLocationSignature = (exceptionAddLocationPropertyType as? FunctionType)?.signatures?.firstOrNull()
+
+		val addLocationFunctionAddress = resolveFunction(constructor, exception, "addLocation(String, String, Int, String)")
+		constructor.buildFunctionCall(exceptionAddLocationSignature?.getLlvmType(constructor), addLocationFunctionAddress,
+			listOf(ignoredExceptionVariable, exception, moduleName, fileName, lineNumber, descriptionString))
 	}
 
 	fun handleException(constructor: LlvmConstructor, parent: SemanticModel?) {
@@ -183,6 +217,38 @@ class Context {
 			constructor.floatType -> constructor.buildFloat(0.0)
 			else -> constructor.nullPointer
 		}
+	}
+
+	//TODO this function is not calling the pre-initializer. Either:
+	// - call it for String and ByteArray
+	// - add comments marking this as an optimization, because the pre-initializer is empty
+	//   - consider generalizing and automating this optimization
+	// also: search project for other missed pre-initializer calls
+	// also: this doesn't check for exceptions - same choice as above applies
+	fun createStringObject(constructor: LlvmConstructor, content: String): LlvmValue {
+		val arrayType = byteArrayDeclarationType
+		val byteArray = constructor.buildHeapAllocation(arrayType, "_byteArray")
+		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayType, byteArray,
+			CLASS_DEFINITION_PROPERTY_INDEX, "_arrayClassDefinitionProperty")
+		constructor.buildStore(byteArrayClassDefinition, arrayClassDefinitionProperty)
+		val arraySizeProperty = resolveMember(constructor, byteArray, "size")
+		constructor.buildStore(constructor.buildInt32(content.length), arraySizeProperty)
+
+		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, byteArrayValueIndex,
+			"_arrayValueProperty")
+		val charArray = constructor.buildGlobalAsciiCharArray("_asciiStringLiteral", content, false)
+		constructor.buildStore(charArray, arrayValueProperty)
+
+		val stringAddress = constructor.buildHeapAllocation(stringTypeDeclaration?.llvmType, "_stringAddress")
+		val stringClassDefinitionProperty = constructor.buildGetPropertyPointer(stringTypeDeclaration?.llvmType, stringAddress,
+			CLASS_DEFINITION_PROPERTY_INDEX, "_stringClassDefinitionProperty")
+		val stringClassDefinition = stringTypeDeclaration?.llvmClassDefinition
+			?: throw CompilerError("Missing string type declaration.")
+		constructor.buildStore(stringClassDefinition, stringClassDefinitionProperty)
+		val exceptionAddress = getExceptionParameter(constructor)
+		val parameters = listOf(exceptionAddress, stringAddress, byteArray)
+		constructor.buildFunctionCall(llvmStringByteArrayInitializerType, llvmStringByteArrayInitializer, parameters)
+		return stringAddress
 	}
 
 	fun resolveMember(constructor: LlvmConstructor, targetLocation: LlvmValue, memberIdentifier: String,
@@ -224,21 +290,25 @@ class Context {
 	 * Use '%p' as a placeholder for a pointer.
 	 * Documentation: https://en.cppreference.com/w/cpp/io/c/fprintf
 	 */
-	fun printDebugMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
+	fun printDebugLine(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
 		if(Main.shouldPrintRuntimeDebugOutput)
-			printMessage(constructor, formatString, *values)
+			printLine(constructor, formatString, *values)
 	}
 
 	fun panic(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
-		printMessage(constructor, formatString, *values)
+		printLine(constructor, formatString, *values)
 		val exitCode = constructor.buildInt32(1)
 		constructor.buildFunctionCall(llvmExitFunctionType, llvmExitFunction, listOf(exitCode))
+	}
+
+	fun printLine(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
+		printMessage(constructor, "$formatString\n", *values)
 	}
 
 	fun printMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
 		assert(formatString.count('%') + formatString.count("%.") == values.size) { "Wrong template count!" }
 
-		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("pure_debug_formatString", "$formatString\n")
+		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("pure_debug_formatString", formatString)
 
 		val handle = constructor.buildLoad(constructor.pointerType, llvmStandardOutputStreamGlobal, "handle")
 		constructor.buildFunctionCall(llvmPrintFunctionType, llvmPrintFunction, listOf(handle, formatStringGlobal, *values))

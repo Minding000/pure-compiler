@@ -108,7 +108,7 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		}
 		if(value != null) {
 			val llvmValue = ValueConverter.convertIfRequired(this, constructor, value.getLlvmValue(constructor), value.effectiveType,
-				value.hasGenericType, effectiveType, false)
+				value.hasGenericType, effectiveType, false, conversion)
 			constructor.buildStore(llvmValue, llvmLocation)
 		}
 	}
@@ -116,19 +116,22 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 	override fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
 		if(hasDeterminedFileInitializationOrder)
 			return
-		if(this is GlobalValueDeclaration) {
-			//println("Skipping '${name}'")
+		val file = getSurrounding<File>() ?: throw CompilerError(source, "Value declaration outside of file.")
+		if(requiresFileRunner()) {
+			println("${javaClass.simpleName} '${name}' adds file '${file.file.name}'")
+			filesToInitialize.add(file)
 		} else {
-			val file = getSurrounding<File>() ?: throw CompilerError(source, "Value declaration outside of file.")
-			//println("'${javaClass.simpleName}' '${name}' adds '${file.file.name}'")
-			if(!filesToInitialize.contains(file)) {
-				filesToInitialize.add(file)
-				file.determineFileInitializationOrder(filesToInitialize)
-				return
-			}
+			//println("${javaClass.simpleName} '${name}' is not at top level of '${file.file.name}'")
 		}
 		super.determineFileInitializationOrder(filesToInitialize)
+		file.determineFileInitializationOrder(filesToInitialize)
 		hasDeterminedFileInitializationOrder = true
+	}
+
+	open fun requiresFileRunner(): Boolean {
+		//TODO what about nested bound enums and objects?
+		// - enums are partly handled by instances (but isBound is not taken into consideration)
+		return parent is File
 	}
 
 	data class Match(val declaration: ValueDeclaration, val whereClauseConditions: List<WhereClauseCondition>?, val type: Type?) {

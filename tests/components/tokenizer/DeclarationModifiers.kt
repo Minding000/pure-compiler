@@ -59,4 +59,14 @@ internal class DeclarationModifiers {
 	fun `detects 'monomorphic' modifier tokens`() {
 		TestUtil.assertTokenType("monomorphic", WordAtom.MONOMORPHIC)
 	}
+
+	@Test
+	fun `detects 'gettable' modifier tokens`() {
+		TestUtil.assertTokenType("gettable", WordAtom.GETTABLE)
+	}
+
+	@Test
+	fun `detects 'settable' modifier tokens`() {
+		TestUtil.assertTokenType("settable", WordAtom.SETTABLE)
+	}
 }

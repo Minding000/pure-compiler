@@ -301,50 +301,6 @@ internal class TypeDefinitions {
 			  store ptr %propertyOffsetArray, ptr getelementptr inbounds (%pure_runtime_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 5), align 8
 			  store ptr %functionIdArray, ptr getelementptr inbounds (%pure_runtime_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 7), align 8
 			  store ptr %functionAddressArray, ptr getelementptr inbounds (%pure_runtime_ClassStruct, ptr @InternetProtocol_ClassDefinition, i32 0, i32 8), align 8
-			  %InternetProtocol_IPv6_Instance = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%InternetProtocol_ClassStruct, ptr null, i32 1) to i32))
-			  %classDefinitionProperty = getelementptr inbounds %InternetProtocol_ClassStruct, ptr %InternetProtocol_IPv6_Instance, i32 0, i32 0
-			  store ptr @InternetProtocol_ClassDefinition, ptr %classDefinitionProperty, align 8
-			  call void @InternetProtocol_CommonPreInitializer(ptr %0, ptr %InternetProtocol_IPv6_Instance)
-			  %exception = load ptr, ptr %0, align 8
-			  %doesExceptionExist = icmp ne ptr %exception, null
-			  br i1 %doesExceptionExist, label %exception3, label %noException
-
-			exception3:                                       ; preds = %entrypoint
-			  ret void
-
-			noException:                                      ; preds = %entrypoint
-			  call void @InternetProtocol_Initializer(ptr %0, ptr %InternetProtocol_IPv6_Instance)
-			  %exception4 = load ptr, ptr %0, align 8
-			  %doesExceptionExist5 = icmp ne ptr %exception4, null
-			  br i1 %doesExceptionExist5, label %exception6, label %noException7
-
-			exception6:                                       ; preds = %noException
-			  ret void
-
-			noException7:                                     ; preds = %noException
-			  store ptr %InternetProtocol_IPv6_Instance, ptr getelementptr (i8, ptr @InternetProtocol_StaticObject, i32 8), align 8
-			  %InternetProtocol_IPv4_Instance = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%InternetProtocol_ClassStruct, ptr null, i32 1) to i32))
-			  %classDefinitionProperty8 = getelementptr inbounds %InternetProtocol_ClassStruct, ptr %InternetProtocol_IPv4_Instance, i32 0, i32 0
-			  store ptr @InternetProtocol_ClassDefinition, ptr %classDefinitionProperty8, align 8
-			  call void @InternetProtocol_CommonPreInitializer(ptr %0, ptr %InternetProtocol_IPv4_Instance)
-			  %exception9 = load ptr, ptr %0, align 8
-			  %doesExceptionExist10 = icmp ne ptr %exception9, null
-			  br i1 %doesExceptionExist10, label %exception11, label %noException12
-
-			exception11:                                      ; preds = %noException7
-			  ret void
-
-			noException12:                                    ; preds = %noException7
-			  call void @InternetProtocol_Initializer(ptr %0, ptr %InternetProtocol_IPv4_Instance)
-			  %exception13 = load ptr, ptr %0, align 8
-			  %doesExceptionExist14 = icmp ne ptr %exception13, null
-			  br i1 %doesExceptionExist14, label %exception15, label %noException16
-
-			exception15:                                      ; preds = %noException12
-			  ret void
-
-			noException16:                                    ; preds = %noException12
-			  store ptr %InternetProtocol_IPv4_Instance, ptr getelementptr (i8, ptr @InternetProtocol_StaticObject, i32 16), align 8
 			  ret void
 			}
 
@@ -374,6 +330,50 @@ internal class TypeDefinitions {
 
 			define void @Test_FileRunner(ptr %0) {
 			entrypoint:
+			  %InternetProtocol_IPv6_Instance = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%InternetProtocol_ClassStruct, ptr null, i32 1) to i32))
+			  %classDefinitionProperty = getelementptr inbounds %InternetProtocol_ClassStruct, ptr %InternetProtocol_IPv6_Instance, i32 0, i32 0
+			  store ptr @InternetProtocol_ClassDefinition, ptr %classDefinitionProperty, align 8
+			  call void @InternetProtocol_CommonPreInitializer(ptr %0, ptr %InternetProtocol_IPv6_Instance)
+			  %exception = load ptr, ptr %0, align 8
+			  %doesExceptionExist = icmp ne ptr %exception, null
+			  br i1 %doesExceptionExist, label %exception1, label %noException
+
+			exception1:                                       ; preds = %entrypoint
+			  ret void
+
+			noException:                                      ; preds = %entrypoint
+			  call void @InternetProtocol_Initializer(ptr %0, ptr %InternetProtocol_IPv6_Instance)
+			  %exception2 = load ptr, ptr %0, align 8
+			  %doesExceptionExist3 = icmp ne ptr %exception2, null
+			  br i1 %doesExceptionExist3, label %exception4, label %noException5
+
+			exception4:                                       ; preds = %noException
+			  ret void
+
+			noException5:                                     ; preds = %noException
+			  store ptr %InternetProtocol_IPv6_Instance, ptr getelementptr (i8, ptr @InternetProtocol_StaticObject, i32 8), align 8
+			  %InternetProtocol_IPv4_Instance = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%InternetProtocol_ClassStruct, ptr null, i32 1) to i32))
+			  %classDefinitionProperty6 = getelementptr inbounds %InternetProtocol_ClassStruct, ptr %InternetProtocol_IPv4_Instance, i32 0, i32 0
+			  store ptr @InternetProtocol_ClassDefinition, ptr %classDefinitionProperty6, align 8
+			  call void @InternetProtocol_CommonPreInitializer(ptr %0, ptr %InternetProtocol_IPv4_Instance)
+			  %exception7 = load ptr, ptr %0, align 8
+			  %doesExceptionExist8 = icmp ne ptr %exception7, null
+			  br i1 %doesExceptionExist8, label %exception9, label %noException10
+
+			exception9:                                       ; preds = %noException5
+			  ret void
+
+			noException10:                                    ; preds = %noException5
+			  call void @InternetProtocol_Initializer(ptr %0, ptr %InternetProtocol_IPv4_Instance)
+			  %exception11 = load ptr, ptr %0, align 8
+			  %doesExceptionExist12 = icmp ne ptr %exception11, null
+			  br i1 %doesExceptionExist12, label %exception13, label %noException14
+
+			exception13:                                      ; preds = %noException10
+			  ret void
+
+			noException14:                                    ; preds = %noException10
+			  store ptr %InternetProtocol_IPv4_Instance, ptr getelementptr (i8, ptr @InternetProtocol_StaticObject, i32 16), align 8
 			  %_classDefinition = load ptr, ptr @InternetProtocol_StaticObject, align 8
 			  %_memberOffset = call i32 @pure_runtime_getConstantOffset(ptr %_classDefinition, i32 2)
 			  %_memberAddress = getelementptr i8, ptr @InternetProtocol_StaticObject, i32 %_memberOffset

@@ -16,6 +16,7 @@ import util.ExitCode
 import java.util.*
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
+//TODO check if memory is assumed to be zero on allocation anywhere (not guaranteed!)
 class Program(val context: Context, val source: ProgramSyntaxTree) {
 	val files = LinkedList<File>()
 
@@ -81,6 +82,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		context.llvmMemberOffsetType = constructor.i32Type
 		context.llvmMemberAddressType = constructor.pointerType
 		addPrintFunction(constructor)
+		addPrintToBufferFunction(constructor)
+		addPrintSizeFunction(constructor)
 		addStreamOpenFunction(constructor)
 		addStreamErrorFunction(constructor)
 		addStreamCloseFunction(constructor)
@@ -145,7 +148,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val globalEntryPoint = constructor.buildFunction(GLOBAL_ENTRYPOINT_NAME, globalEntryPointType)
 		constructor.createAndSelectEntrypointBlock(globalEntryPoint)
 		createStandardStreams(constructor)
-		context.printDebugMessage(constructor, "Initializing program...")
+		context.printDebugLine(constructor, "Initializing program...")
 
 		//TODO remove: this print is for debugging
 		//val handle = constructor.buildLoad(constructor.pointerType, context.llvmStandardOutputStreamGlobal, "handle")
@@ -159,14 +162,14 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.buildStore(constructor.nullPointer, exceptionVariable)
 		for(file in files)
 			constructor.buildFunctionCall(file.llvmInitializerType, file.llvmInitializerValue, listOf(exceptionVariable))
-		context.printDebugMessage(constructor, "Program initialized.")
-		context.printDebugMessage(constructor, "Starting program...")
+		context.printDebugLine(constructor, "Program initialized.")
+		context.printDebugLine(constructor, "Starting program...")
 		//TODO check for uncaught exception in all initializer calls (write tests!)
 		var result: LlvmValue? = null
 		if(userEntryPointFunction == null) {
 			for(file in files)
 				constructor.buildFunctionCall(file.llvmRunnerType, file.llvmRunnerValue, listOf(exceptionVariable))
-			context.printDebugMessage(constructor, "Files executed.")
+			context.printDebugLine(constructor, "Files executed.")
 		} else {
 			val filesToInitialize = LinkedHashSet<File>()
 			userEntryPointFunction.getSurrounding<File>()?.determineFileInitializationOrder(filesToInitialize)
@@ -174,8 +177,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 				println("Initializing '${file.file.name}'")
 				constructor.buildFunctionCall(file.llvmRunnerType, file.llvmRunnerValue, listOf(exceptionVariable))
 			}
-			context.printDebugMessage(constructor, "Files executed.")
-			context.printDebugMessage(constructor, "Calling entrypoint...")
+			context.printDebugLine(constructor, "Files executed.")
+			context.printDebugLine(constructor, "Calling entrypoint...")
 			val parameters = LinkedList<LlvmValue>()
 			parameters.add(exceptionVariable)
 			if(userEntryPointObject != null) {
@@ -186,7 +189,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			result = constructor.buildFunctionCall(userEntryPointFunction.signature.getLlvmType(constructor),
 				userEntryPointFunction.llvmValue, parameters, if(userEntryPointReturnsVoid) "" else "programResult")
 			handleUnhandledError(constructor, exceptionVariable)
-			context.printDebugMessage(constructor, "Entrypoint returned.")
+			context.printDebugLine(constructor, "Entrypoint returned.")
 		}
 
 		//TODO remove: this flush is for debugging
@@ -207,16 +210,22 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.buildJump(doesExceptionExist, panicBlock, noExceptionBlock)
 		constructor.select(panicBlock)
 		if(context.nativeRegistry.has(SpecialType.EXCEPTION, SpecialType.STRING, SpecialType.ARRAY)) {
-			val descriptionProperty = context.resolveMember(constructor, exception, "description")
-			val description = constructor.buildLoad(constructor.pointerType, descriptionProperty, "description")
-			val byteArrayProperty = context.resolveMember(constructor, description, "bytes")
+			val stringRepresentationGetterAddress = context.resolveFunction(constructor, exception, "get stringRepresentation: String")
+			val ignoredExceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable")
+			constructor.buildStore(constructor.nullPointer, ignoredExceptionVariable)
+			val stringRepresentation = constructor.buildFunctionCall(
+				constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), constructor.pointerType),
+				stringRepresentationGetterAddress, listOf(ignoredExceptionVariable, exception), "stringRepresentation")
+			val byteArrayProperty = context.resolveMember(constructor, stringRepresentation, "bytes")
 			val byteArray = constructor.buildLoad(constructor.pointerType, byteArrayProperty, "bytes")
 			val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 			val arraySize = constructor.buildLoad(constructor.i32Type, arraySizeProperty, "size")
 			val arrayValueProperty = constructor.buildGetPropertyPointer(context.byteArrayDeclarationType, byteArray,
 				context.byteArrayValueIndex, "arrayValueProperty")
 			val arrayValue = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "arrayValue")
-			context.panic(constructor, "Unhandled error: %.*s", arraySize, arrayValue)
+			context.printMessage(constructor, "Unhandled error: %.*s", arraySize, arrayValue)
+			val exitCode = constructor.buildInt32(1)
+			constructor.buildFunctionCall(context.llvmExitFunctionType, context.llvmExitFunction, listOf(exitCode))
 		} else {
 			context.panic(constructor, "Unhandled error at '%p'.", exception)
 		}
@@ -268,6 +277,19 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		context.llvmPrintFunctionType =
 			constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), constructor.i32Type, true)
 		context.llvmPrintFunction = constructor.buildFunction("fprintf", context.llvmPrintFunctionType)
+	}
+
+	private fun addPrintToBufferFunction(constructor: LlvmConstructor) {
+		context.llvmPrintToBufferFunctionType =
+			constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), constructor.i32Type, true)
+		context.llvmPrintToBufferFunction = constructor.buildFunction("sprintf", context.llvmPrintToBufferFunctionType)
+	}
+
+	private fun addPrintSizeFunction(constructor: LlvmConstructor) {
+		context.llvmPrintSizeFunctionType =
+			constructor.buildFunctionType(listOf(constructor.pointerType, constructor.i64Type, constructor.pointerType),
+				constructor.i32Type, true)
+		context.llvmPrintSizeFunction = constructor.buildFunction("snprintf", context.llvmPrintSizeFunctionType)
 	}
 
 	private fun addStreamOpenFunction(constructor: LlvmConstructor) {
@@ -325,7 +347,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 
 	private fun addMemoryCopyFunction(constructor: LlvmConstructor) {
 		context.llvmMemoryCopyFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType,
-			constructor.i32Type), constructor.pointerType)
+			constructor.i64Type), constructor.pointerType)
 		context.llvmMemoryCopyFunction = constructor.buildFunction("memcpy", context.llvmMemoryCopyFunctionType)
 	}
 
@@ -399,7 +421,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val targetMemberId = constructor.getParameter(function, 1)
 		if(Main.shouldPrintRuntimeDebugOutput) {
 			val targetMemberIdentifier = context.resolveMemberIdentifier(constructor, targetMemberId)
-			context.printDebugMessage(constructor, "Searching for ${type.lowercase()} '%s' in class definition at '%p'.",
+			context.printDebugLine(constructor, "Searching for ${type.lowercase()} '%s' in class definition at '%p'.",
 				targetMemberIdentifier, classDefinition)
 		}
 		val memberCountProperty = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition,
@@ -454,7 +476,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val memberOffset = constructor.buildLoad(context.llvmMemberOffsetType, memberOffsetElement, "memberOffset")
 		if(Main.shouldPrintRuntimeDebugOutput) {
 			val targetMemberIdentifier = context.resolveMemberIdentifier(constructor, targetMemberId)
-			context.printDebugMessage(constructor, "Found ${type.lowercase()} '%s' with offset '%i'.", targetMemberIdentifier,
+			context.printDebugLine(constructor, "Found ${type.lowercase()} '%s' with offset '%i'.", targetMemberIdentifier,
 				memberOffset)
 		}
 		constructor.buildReturn(memberOffset)
@@ -476,7 +498,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val targetFunctionId = constructor.getParameter(function, 1)
 		if(Main.shouldPrintRuntimeDebugOutput) {
 			val targetFunctionIdentifier = context.resolveMemberIdentifier(constructor, targetFunctionId)
-			context.printDebugMessage(constructor, "Searching for function '%s' in class definition at '%p'.",
+			context.printDebugLine(constructor, "Searching for function '%s' in class definition at '%p'.",
 				targetFunctionIdentifier, classDefinition)
 		}
 		val functionCountProperty = constructor.buildGetPropertyPointer(context.classDefinitionStruct, classDefinition,
@@ -532,7 +554,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val functionAddress = constructor.buildLoad(context.llvmMemberAddressType, functionAddressElement, "functionAddress")
 		if(Main.shouldPrintRuntimeDebugOutput) {
 			val targetFunctionIdentifier = context.resolveMemberIdentifier(constructor, targetFunctionId)
-			context.printDebugMessage(constructor, "Found function '%s' with address '%p'.", targetFunctionIdentifier,
+			context.printDebugLine(constructor, "Found function '%s' with address '%p'.", targetFunctionIdentifier,
 				functionAddress)
 		}
 		constructor.buildReturn(functionAddress)
@@ -635,9 +657,11 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		if(typeDeclaration == null)
 			return
 		val byteArrayInitializer = typeDeclaration.getAllInitializers().find { initializerDefinition ->
-			initializerDefinition.parameters.size == 1
-		}
-			?: throw CompilerError(typeDeclaration.source, "Failed to find string literal initializer.")
+			val parameters = initializerDefinition.parameters
+			if(parameters.size != 1) return@find false
+			val firstParameter = parameters.first()
+			firstParameter.isPropertySetter && firstParameter.name == "bytes"
+		} ?: throw CompilerError(typeDeclaration.source, "Failed to find String byte array initializer.")
 		context.llvmStringByteArrayInitializer = byteArrayInitializer.llvmValue
 		context.llvmStringByteArrayInitializerType = byteArrayInitializer.llvmType
 	}

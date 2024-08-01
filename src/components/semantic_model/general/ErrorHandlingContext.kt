@@ -136,7 +136,7 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 		if(isInterruptingExecutionBasedOnStructure)
 			context.handleException(constructor, parent)
 		else
-			context.continueRaise(constructor, parent)
+			context.continueRaise(constructor, this)
 	}
 
 	private fun compileErrorHandler(constructor: LlvmConstructor, exitBlock: LlvmBlock) {

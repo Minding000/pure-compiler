@@ -49,6 +49,8 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		returnType, whereClauseConditions, this)
 	var mightReturnValue = false
 	var usesOwnTypeAsSelf = false
+	val functionTracker = VariableTracker(context)
+	override var hasDataFlowBeenAnalysed = body == null
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 	lateinit var llvmValue: LlvmValue
@@ -76,10 +78,14 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		return signature.fulfillsInheritanceRequirementsOf(superImplementation.signature.withTypeSubstitutions(typeSubstitutions))
 	}
 
+	override fun analyseDataFlow() {
+		analyseDataFlow(functionTracker)
+	}
+
 	override fun analyseDataFlow(tracker: VariableTracker) {
-		if(body == null)
+		if(hasDataFlowBeenAnalysed)
 			return
-		val functionTracker = VariableTracker(context)
+		hasDataFlowBeenAnalysed = true
 		super.analyseDataFlow(functionTracker)
 		functionTracker.calculateEndState()
 		functionTracker.validate()

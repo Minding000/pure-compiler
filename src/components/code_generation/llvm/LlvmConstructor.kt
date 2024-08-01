@@ -298,6 +298,10 @@ class LlvmConstructor(name: String) {
 		return LLVMBuildTruncOrBitCast(builder, value, newType, name)
 	}
 
+	fun buildSignedIntegerRemainder(dividend: LlvmValue, divisor: LlvmValue, name: String): LlvmValue {
+		return LLVMBuildSRem(builder, dividend, divisor, name)
+	}
+
 	fun buildCastFromIntegerToPointer(value: LlvmValue, name: String): LlvmValue = LLVMBuildIntToPtr(builder, value, pointerType, name)
 
 	fun buildCastFromIntegerToBoolean(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, booleanType, name)

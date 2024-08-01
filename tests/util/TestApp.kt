@@ -35,7 +35,7 @@ class TestApp(private val files: Map<String, String>, private val entryPointPath
 	}
 
 	fun shouldPrintLine(expectedOutput: String, input: String = "", expectedExitCode: Int = ExitCode.SUCCESS) {
-		shouldPrint("$expectedOutput${System.lineSeparator()}", input, expectedExitCode)
+		shouldPrint("$expectedOutput\n", input, expectedExitCode)
 	}
 
 	fun shouldPrint(expectedOutput: String, input: String = "", expectedExitCode: Int = ExitCode.SUCCESS) {
@@ -47,7 +47,8 @@ class TestApp(private val files: Map<String, String>, private val entryPointPath
 			try {
 				program.writeObjectFileTo(objectFilePath)
 				Linker.link(objectFilePath, executablePath)
-				TestUtil.assertExecutablePrints(expectedOutput, input, executablePath, expectedExitCode)
+				TestUtil.assertExecutablePrints(expectedOutput.replace("\n", System.lineSeparator()), input, executablePath,
+					expectedExitCode)
 			} finally {
 				Path(objectFilePath).deleteIfExists()
 				Path(executablePath).deleteIfExists()

@@ -154,17 +154,14 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 
 	private fun buildSetterCall(constructor: LlvmConstructor, declaration: ComputedPropertyDeclaration, targetValue: LlvmValue,
 								sourceValue: LlvmValue) {
+		val exceptionAddress = context.getExceptionParameter(constructor)
 		val parameters = LinkedList<LlvmValue>()
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
 		parameters.add(exceptionAddress)
 		parameters.add(targetValue)
 		parameters.add(sourceValue)
 		val functionAddress = context.resolveFunction(constructor, targetValue, declaration.setterIdentifier)
 		constructor.buildFunctionCall(declaration.llvmSetterType, functionAddress, parameters)
-		//TODO if exception exists
-		// check for optional try (normal and force try have no effect)
-		// check for catch
-		// resume raise
+		context.continueRaise(constructor, this)
 	}
 
 	private fun compileAssignmentToIndexAccess(constructor: LlvmConstructor, indexAccess: IndexAccess, value: LlvmValue) {
@@ -189,6 +186,6 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 		}
 		parameters.add(value)
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), indexOperatorAddress, parameters)
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
 	}
 }

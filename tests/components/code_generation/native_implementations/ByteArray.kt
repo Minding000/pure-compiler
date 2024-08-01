@@ -5,25 +5,24 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 
-internal class Array {
+internal class ByteArray {
 
 	@Test
 	fun `plural type initializer sets size`() {
 		val sourceCode = """
 			SimplestApp object {
 				to getOne(): Int {
-					val array = Array(3, 2, 1)
+					val array = ByteArray(3, 2, 1)
 					return array.size
 				}
 			}
-			native Array class {
-				containing Element
+			native ByteArray class {
 				val size: Int
-				native init(...values: ...Element)
+				native init(...values: ...Byte)
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME
+			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME
 		))
 		assertEquals(3, result)
 	}
@@ -32,20 +31,19 @@ internal class Array {
 	fun `plural type initializer sets values`() {
 		val sourceCode = """
 			SimplestApp object {
-				to getThree(): Int {
-					val array = Array(3, 2, 1)
+				to getThree(): Byte {
+					val array = ByteArray(3, 2, 1)
 					return array[0]
 				}
 			}
-			native Array class {
-				containing Element
+			native ByteArray class {
 				val size: Int
-				native init(...values: ...Element)
-				native operator [index: Int]: Element
+				native init(...values: ...Byte)
+				native operator [index: Int]: Byte
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME
+		val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getThree", mapOf(
+			SpecialType.BYTE_ARRAY to listOf(TestUtil.TEST_FILE_NAME)
 		))
 		assertEquals(3, result)
 	}
@@ -55,18 +53,17 @@ internal class Array {
 		val sourceCode = """
 			SimplestApp object {
 				to getFive(): Int {
-					val array = Array(2, 5)
+					val array = ByteArray(2, 5)
 					return array.size
 				}
 			}
-			native Array class {
-				containing Element
+			native ByteArray class {
 				val size: Int
-				native init(value: Element, size)
+				native init(value: Byte, size)
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME
+			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME
 		))
 		assertEquals(5, result)
 	}
@@ -75,20 +72,19 @@ internal class Array {
 	fun `value to be repeated initializer sets values`() {
 		val sourceCode = """
 			SimplestApp object {
-				to getSeven(): Int {
-					val array = Array(7, 4)
+				to getSeven(): Byte {
+					val array = ByteArray(7, 4)
 					return array[3]
 				}
 			}
-			native Array class {
-				containing Element
+			native ByteArray class {
 				val size: Int
-				native init(value: Element, size)
-				native operator [index: Int]: Element
+				native init(value: Byte, size)
+				native operator [index: Int]: Byte
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSeven", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME
+		val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getSeven", mapOf(
+			SpecialType.BYTE_ARRAY to listOf(TestUtil.TEST_FILE_NAME)
 		))
 		assertEquals(7, result)
 	}
@@ -98,20 +94,19 @@ internal class Array {
 		val sourceCode = """
 			SimplestApp object {
 				to getFive(): Int {
-					val a = Array(7, 2)
-					val b = Array(3, 3)
+					val a = ByteArray(7, 2)
+					val b = ByteArray(3, 3)
 					return (a + b).size
 				}
 			}
-			native Array class {
-				containing Element
+			native ByteArray class {
 				val size: Int
-				native init(value: Element, size)
-				native operator +(right: <Element>Array): <Element>Array
+				native init(value: Byte, size)
+				native operator +(right: ByteArray): ByteArray
 			}
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME
+			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME
 		))
 		assertEquals(5, result)
 	}
@@ -120,22 +115,21 @@ internal class Array {
 	fun `addition operator sets values`() {
 		val sourceCode = """
 			SimplestApp object {
-				to getThree(): Int {
-					val a = Array(7, 2)
-					val b = Array(3, 3)
+				to getThree(): Byte {
+					val a = ByteArray(7, 2)
+					val b = ByteArray(3, 3)
 					return (a + b)[4]
 				}
 			}
-			native Array class {
-				containing Element
+			native ByteArray class {
 				val size: Int
-				native init(value: Element, size)
-				native operator [index: Int]: Element
-				native operator +(right: <Element>Array): <Element>Array
+				native init(value: Byte, size)
+				native operator [index: Int]: Byte
+				native operator +(right: ByteArray): ByteArray
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME
+		val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getThree", mapOf(
+			SpecialType.BYTE_ARRAY to listOf(TestUtil.TEST_FILE_NAME)
 		))
 		assertEquals(3, result)
 	}

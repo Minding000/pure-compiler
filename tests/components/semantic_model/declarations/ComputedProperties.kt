@@ -2,6 +2,7 @@ package components.semantic_model.declarations
 
 import logger.Severity
 import logger.issues.declaration.ComputedPropertyMissingType
+import logger.issues.declaration.MissingBody
 import logger.issues.initialization.ConstantReassignment
 import logger.issues.modifiers.OverridingMemberKindMismatch
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
@@ -28,6 +29,40 @@ internal class ComputedProperties {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<ComputedPropertyMissingType>(
 			"Computed properties need to have an explicitly declared type.", Severity.ERROR)
+	}
+
+	@Test
+	fun `disallows non-abstract non-native computed properties with neither getter nor setter`() {
+		val sourceCode = """
+			Computer class {
+				computed result: Int
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<MissingBody>(
+			"Computed property 'result: Int' is missing a body.", Severity.ERROR)
+	}
+
+	@Test
+	fun `allows abstract computed properties with neither getter nor setter`() {
+		val sourceCode = """
+			abstract Computer class {
+				abstract computed result: Int
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingBody>()
+	}
+
+	@Test
+	fun `allows native computed properties with neither getter nor setter`() {
+		val sourceCode = """
+			Computer class {
+				native computed result: Int
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<MissingBody>()
 	}
 
 	@Test

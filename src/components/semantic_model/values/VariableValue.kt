@@ -147,7 +147,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		val functionAddress = context.resolveFunction(constructor, targetValue, computedPropertyDeclaration.getterIdentifier)
 		val returnValue = constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
 			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
 		return returnValue
 	}
 

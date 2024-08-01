@@ -95,4 +95,24 @@ internal class FunctionCall {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightySix")
 		assertEquals(86, result)
 	}
+
+	@Test
+	fun `converts values`() {
+		val sourceCode = """
+			A class {
+				val b: Int
+				converting init(b)
+				it isEqualTo(other: A): Bool {
+					return b == other.b
+				}
+			}
+			SimplestApp object {
+				to getYes(): Bool {
+					return A(5).isEqualTo(5)
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.runAndReturnBoolean(sourceCode, "Test:SimplestApp.getYes")
+		assertEquals(true, result)
+	}
 }

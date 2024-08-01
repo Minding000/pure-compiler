@@ -132,7 +132,7 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 		val functionAddress = context.resolveFunction(constructor, targetValue, signature.getIdentifier(kind))
 		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,
 			"_unaryOperatorResult")
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
 		return returnValue
 	}
 }

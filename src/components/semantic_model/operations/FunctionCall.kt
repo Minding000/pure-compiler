@@ -135,15 +135,16 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 					return
 			}
 		}
+
 		val targetImplementation = targetInitializer ?: targetSignature?.associatedImplementation ?: return
 		//TODO also track required and initialized properties for operators (IndexAccess, BinaryOperator, etc.)
 		val requiredButUninitializedProperties = LinkedList<PropertyDeclaration>()
-		for(propertyRequiredToBeInitialized in targetImplementation.propertiesRequiredToBeInitialized) {
+		for(propertyRequiredToBeInitialized in targetImplementation.getPropertiesRequiredToBeInitialized()) {
 			val usage = tracker.add(VariableUsage.Kind.READ, propertyRequiredToBeInitialized, this)
 			if(!usage.isPreviouslyInitialized())
 				requiredButUninitializedProperties.add(propertyRequiredToBeInitialized)
 		}
-		for(propertyBeingInitialized in targetImplementation.propertiesBeingInitialized)
+		for(propertyBeingInitialized in targetImplementation.getPropertiesBeingInitialized())
 			tracker.add(VariableUsage.Kind.WRITE, propertyBeingInitialized, this)
 		if(tracker.isInitializer && requiredButUninitializedProperties.isNotEmpty())
 			context.addIssue(ReliesOnUninitializedProperties(source, getSignature(), requiredButUninitializedProperties))
@@ -240,7 +241,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			val resultName = if(SpecialType.NOTHING.matches(signature.returnType)) "" else getSignature()
 			val result = constructor.buildFunctionCall(primitiveImplementation.llvmType, primitiveImplementation.llvmValue, parameters,
 				resultName)
-			context.continueRaise(constructor, parent)
+			context.continueRaise(constructor, this)
 			return result
 		} else {
 			val targetValue = if(function is MemberAccess)
@@ -261,7 +262,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		val resultName = if(SpecialType.NOTHING.matches(signature.returnType)) "" else getSignature()
 		val result = constructor.buildFunctionCall(signature.original.getLlvmType(constructor), functionAddress, parameters, resultName)
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
 		return result
 	}
 
@@ -273,8 +274,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			//TODO detect class-generic parameter type
 			val parameterType = initializer.getParameterTypeAt(index)?.effectiveType
 			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
-				valueParameter.effectiveType, valueParameter.hasGenericType, parameterType,
-				false, conversions?.get(valueParameter)))
+				valueParameter.effectiveType, valueParameter.hasGenericType, parameterType, false,
+				conversions?.get(valueParameter)))
 		}
 		if(initializer.isVariadic) {
 			val fixedParameterCount = initializer.fixedParameters.size
@@ -290,7 +291,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 					return context.nativeRegistry.inlineNativePrimitiveInitializer(constructor, "$signature: Self", parameters)
 				parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 				val result = constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters, signature)
-				context.continueRaise(constructor, parent)
+				context.continueRaise(constructor, this)
 				return result
 			}
 			val typeDeclaration = initializer.parentTypeDeclaration
@@ -302,7 +303,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
-			context.continueRaise(constructor, parent)
+			context.continueRaise(constructor, this)
 			newObject
 		} else if(initializer.parentTypeDeclaration.isLlvmPrimitive()) {
 			if(parameters.size != 1)
@@ -314,7 +315,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			parameters.add(Context.THIS_PARAMETER_INDEX, context.getThisParameter(constructor))
 			constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
-			context.continueRaise(constructor, parent)
+			context.continueRaise(constructor, this)
 			constructor.nullPointer
 		}
 	}
@@ -338,12 +339,13 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			parameters.add(objectType.getStaticLlvmValue(constructor))
 		}
 		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
 	}
 
 	private fun getSignature(includeParentType: Boolean = true): String {
 		var signature = ""
 		signature += when(function) {
+			is InitializerReference -> function.providedType
 			is VariableValue -> function.name
 			is TypeSpecification -> function
 			is MemberAccess -> if(includeParentType) "${function.target.providedType}.${function.member}" else function.member

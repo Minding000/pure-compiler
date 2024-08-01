@@ -324,4 +324,26 @@ internal class ValueConversion {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyFive")
 		assertEquals(85, result)
 	}
+
+	@Test
+	fun `converts primitives to non-wrapper objects`() {
+		val sourceCode = """
+			NonWrapper class {
+				val b: Int
+				converting init(b)
+			}
+			Container class {
+				var a: NonWrapper
+				init(a)
+			}
+			SimplestApp object {
+				to getEightyFive(): Int {
+					val container = Container(85)
+					return container.a.b
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyFive")
+		assertEquals(85, result)
+	}
 }

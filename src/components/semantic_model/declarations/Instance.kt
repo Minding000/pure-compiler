@@ -97,7 +97,7 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		parameters.add(Context.THIS_PARAMETER_INDEX, instance)
 		constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
 		return instance
 	}
 
@@ -107,6 +107,11 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
 		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
+	}
+
+	override fun requiresFileRunner(): Boolean {
+		//TODO What about isNative?
+		return !isAbstract
 	}
 }

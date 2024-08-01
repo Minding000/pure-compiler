@@ -75,24 +75,24 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 
 	private fun compileInitializer(constructor: LlvmConstructor) {
 		constructor.createAndSelectEntrypointBlock(llvmInitializerValue)
-		context.printDebugMessage(constructor, "Initializing file '${file.name}'.")
+		context.printDebugLine(constructor, "Initializing file '${file.name}'.")
 		val exceptionParameter = context.getExceptionParameter(constructor)
 		for(typeDeclaration in scope.typeDeclarations.values) {
 			if(typeDeclaration.isDefinition) {
 				constructor.buildFunctionCall(typeDeclaration.llvmClassInitializerType, typeDeclaration.llvmClassInitializer,
 					listOf(exceptionParameter))
-				context.continueRaise(constructor, parent)
+				context.continueRaise(constructor, this)
 			}
 		}
-		context.printDebugMessage(constructor, "File '${file.name}' initialized.")
+		context.printDebugLine(constructor, "File '${file.name}' initialized.")
 		constructor.buildReturn()
 	}
 
 	private fun compileRunner(constructor: LlvmConstructor) {
 		constructor.createAndSelectEntrypointBlock(llvmRunnerValue)
-		context.printDebugMessage(constructor, "Executing file '${file.name}'.")
+		context.printDebugLine(constructor, "Executing file '${file.name}'.")
 		super.compile(constructor)
-		context.printDebugMessage(constructor, "File '${file.name}' executed.")
+		context.printDebugLine(constructor, "File '${file.name}' executed.")
 		constructor.buildReturn()
 	}
 }

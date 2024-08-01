@@ -67,12 +67,11 @@ internal class AbstractModifier {
 	}
 
 	@Test
-	fun `is not allowed on computed properties`() {
+	fun `is allowed on computed properties`() {
 		val sourceCode =
 			"""
 				abstract Goldfish class {
 					abstract computed name: String
-						gets "Bernd"
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)

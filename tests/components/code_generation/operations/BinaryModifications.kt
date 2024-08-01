@@ -264,4 +264,26 @@ internal class BinaryModifications {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
 		assertEquals(5, result)
 	}
+
+	@Test
+	fun `converts values`() {
+		val sourceCode = """
+			A class {
+				val b: Int
+				converting init(b)
+				operator +=(other: A) {
+					b += other.b
+				}
+			}
+			SimplestApp object {
+				to getSeven(): Int {
+					val a = A(5)
+					a += 2
+					return a.b
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSeven")
+		assertEquals(7, result)
+	}
 }

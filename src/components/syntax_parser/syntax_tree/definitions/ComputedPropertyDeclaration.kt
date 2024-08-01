@@ -17,20 +17,23 @@ class ComputedPropertyDeclaration(private val identifier: Identifier, private va
 	lateinit var parent: ComputedPropertySection
 
 	companion object {
-		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.OVERRIDING)
+		val ALLOWED_MODIFIER_TYPES = listOf(WordAtom.ABSTRACT, WordAtom.GETTABLE, WordAtom.NATIVE, WordAtom.OVERRIDING, WordAtom.SETTABLE)
 	}
 
 	override fun toSemanticModel(scope: MutableScope): SemanticComputedPropertyDeclarationModel {
 		parent.validate(ALLOWED_MODIFIER_TYPES)
 		val isAbstract = parent.containsModifier(WordAtom.ABSTRACT)
+		val isGettable = parent.containsModifier(WordAtom.GETTABLE)
+		val isNative = parent.containsModifier(WordAtom.NATIVE)
 		val isOverriding = parent.containsModifier(WordAtom.OVERRIDING)
+		val isSettable = parent.containsModifier(WordAtom.SETTABLE)
 		val type = type ?: parent.type
 		val whereClauseConditions = whereClause?.toWhereClauseConditionSemanticModels(scope) ?: emptyList()
 		val getterScope = BlockScope(scope)
 		val setterScope = BlockScope(scope)
 		return SemanticComputedPropertyDeclarationModel(this, scope, identifier.getValue(), type?.toSemanticModel(scope),
-			whereClauseConditions, isOverriding, isAbstract, getterScope, setterScope, getter?.toSemanticModel(getterScope),
-			setter?.toSemanticModel(setterScope))
+			whereClauseConditions, isOverriding, isAbstract, isNative, isGettable, isSettable, getterScope, setterScope,
+			getter?.toSemanticModel(getterScope), setter?.toSemanticModel(setterScope))
 	}
 
 	override fun toString(): String {

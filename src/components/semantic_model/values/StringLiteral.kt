@@ -2,11 +2,9 @@ package components.semantic_model.values
 
 import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.LlvmValue
-import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.LiteralType
-import errors.internal.CompilerError
 import components.syntax_parser.syntax_tree.literals.StringLiteral as StringLiteralSyntaxTree
 
 class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, val value: String): LiteralValue(source, scope) {
@@ -42,29 +40,7 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		val arrayType = context.byteArrayDeclarationType
-		val byteArray = constructor.buildHeapAllocation(arrayType, "_byteArray")
-		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayType, byteArray,
-			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_arrayClassDefinitionProperty")
-		constructor.buildStore(context.byteArrayClassDefinition, arrayClassDefinitionProperty)
-		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
-		constructor.buildStore(constructor.buildInt32(value.length), arraySizeProperty)
-
-		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, context.byteArrayValueIndex,
-			"_arrayValueProperty")
-		val charArray = constructor.buildGlobalAsciiCharArray("_asciiStringLiteral", value, false)
-		constructor.buildStore(charArray, arrayValueProperty)
-
-		val stringAddress = constructor.buildHeapAllocation(context.stringTypeDeclaration?.llvmType, "_stringAddress")
-		val stringClassDefinitionProperty = constructor.buildGetPropertyPointer(context.stringTypeDeclaration?.llvmType, stringAddress,
-			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_stringClassDefinitionProperty")
-		val stringClassDefinition = context.stringTypeDeclaration?.llvmClassDefinition
-			?: throw CompilerError(source, "Missing string type declaration.")
-		constructor.buildStore(stringClassDefinition, stringClassDefinitionProperty)
-		val exceptionAddress = constructor.buildStackAllocation(constructor.pointerType, "__exceptionAddress")
-		val parameters = listOf(exceptionAddress, stringAddress, byteArray)
-		constructor.buildFunctionCall(context.llvmStringByteArrayInitializerType, context.llvmStringByteArrayInitializer, parameters)
-		return stringAddress
+		return context.createStringObject(constructor, value)
 	}
 
 	override fun hashCode(): Int {

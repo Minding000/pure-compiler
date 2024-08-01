@@ -23,4 +23,24 @@ internal class BinaryObjectOperators {
 		val result = TestUtil.runAndReturnBoolean(sourceCode, "Test:SimplestApp.getYes")
 		assertEquals(true, result)
 	}
+
+	@Test
+	fun `converts values`() {
+		val sourceCode = """
+			A class {
+				val b: Int
+				converting init(b)
+				operator ==(other: A): Bool {
+					return b == other.b
+				}
+			}
+			SimplestApp object {
+				to getYes(): Bool {
+					return A(5) == 5
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.runAndReturnBoolean(sourceCode, "Test:SimplestApp.getYes")
+		assertEquals(true, result)
+	}
 }

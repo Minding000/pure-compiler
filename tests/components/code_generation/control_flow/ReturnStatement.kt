@@ -24,4 +24,24 @@ internal class ReturnStatement {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFourteen")
 		assertEquals(14, result)
 	}
+
+	@Test
+	fun `converts values`() {
+		val sourceCode = """
+			A class {
+				val b: Int
+				converting init(b)
+				to wrap(other: Int): A {
+					return other
+				}
+			}
+			SimplestApp object {
+				to getFifteen(): Int {
+					return A(1).wrap(15).b
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFifteen")
+		assertEquals(15, result)
+	}
 }

@@ -7,6 +7,7 @@ import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.FunctionSignature
+import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.ObjectType
@@ -25,6 +26,7 @@ import components.syntax_parser.syntax_tree.operations.BinaryModification as Bin
 class BinaryModification(override val source: BinaryModificationSyntaxTree, scope: Scope, val target: Value, val modifier: Value,
 						 val kind: Operator.Kind): SemanticModel(source, scope) {
 	var targetSignature: FunctionSignature? = null
+	var conversions: Map<Value, InitializerDefinition>? = null
 
 	init {
 		addSemanticModels(target, modifier)
@@ -42,6 +44,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 				return
 			}
 			targetSignature = match.signature
+			conversions = match.conversions
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
 			error.log(source, "operator", "$targetType $kind $modifierType")
@@ -104,7 +107,8 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		val modifierType = targetSignature?.parameterTypes?.firstOrNull() ?: modifier.effectiveType
 		val originalModifierType = targetSignature?.original?.parameterTypes?.firstOrNull() ?: modifier.effectiveType
 		var modifierValue = ValueConverter.convertIfRequired(this, constructor, modifier.getLlvmValue(constructor),
-			modifier.effectiveType, modifier.hasGenericType, modifierType, modifierType != originalModifierType)
+			modifier.effectiveType, modifier.hasGenericType, modifierType, modifierType != originalModifierType,
+			conversions?.get(modifier))
 		val isTargetInteger = SpecialType.INTEGER.matches(target.providedType)
 		val isTargetPrimitiveNumber = isTargetInteger || SpecialType.FLOAT.matches(target.providedType)
 		val isModifierInteger = SpecialType.INTEGER.matches(modifier.providedType)
@@ -161,6 +165,6 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		parameters.add(modifierValue)
 		val functionAddress = context.resolveFunction(constructor, targetValue, signature.getIdentifier(kind))
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
 	}
 }

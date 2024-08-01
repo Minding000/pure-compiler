@@ -116,6 +116,6 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 		parameters.add(targetValue)
 		val functionAddress = context.resolveFunction(constructor, targetValue, signature.getIdentifier(kind))
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
-		context.continueRaise(constructor, parent)
+		context.continueRaise(constructor, this)
 	}
 }

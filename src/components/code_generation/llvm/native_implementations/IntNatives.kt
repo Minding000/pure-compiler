@@ -29,6 +29,7 @@ class IntNatives(val context: Context) {
 		registry.registerNativeImplementation("Int <= Self: Bool", ::lessThanOrEqualTo)
 		registry.registerNativeImplementation("Int >= Self: Bool", ::greaterThanOrEqualTo)
 		registry.registerNativeImplementation("Int == Int: Bool", ::equalTo)
+		registry.registerNativeImplementation("Int != Int: Bool", ::notEqualTo)
 	}
 
 	private fun fromByte(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
@@ -220,6 +221,17 @@ class IntNatives(val context: Context) {
 		val thisPrimitiveInt = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveInt")
 		val parameterPrimitiveInt = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildSignedIntegerEqualTo(thisPrimitiveInt, parameterPrimitiveInt, "equalToResult")
+		constructor.buildReturn(result)
+	}
+
+	private fun notEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisInt = context.getThisParameter(constructor)
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.integerDeclarationType, thisInt, context.integerValueIndex,
+			"thisValueProperty")
+		val thisPrimitiveInt = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveInt")
+		val parameterPrimitiveInt = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val result = constructor.buildSignedIntegerNotEqualTo(thisPrimitiveInt, parameterPrimitiveInt, "notEqualToResult")
 		constructor.buildReturn(result)
 	}
 }

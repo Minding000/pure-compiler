@@ -16,6 +16,7 @@ class BoolNatives(val context: Context) {
 		registry.registerNativeImplementation("Bool or Bool: Bool", ::or)
 		registry.registerNativeImplementation("Bool.toggle()", ::toggle)
 		registry.registerNativeImplementation("Bool == Bool: Bool", ::equalTo)
+		registry.registerNativeImplementation("Bool != Bool: Bool", ::notEqualTo)
 	}
 
 	private fun fromBool(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
@@ -68,6 +69,17 @@ class BoolNatives(val context: Context) {
 		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
 		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildBooleanEqualTo(thisPrimitiveBool, parameterPrimitiveBool, "equalToResult")
+		constructor.buildReturn(result)
+	}
+
+	private fun notEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisBool = context.getThisParameter(constructor)
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.booleanDeclarationType, thisBool, context.booleanValueIndex,
+			"thisValueProperty")
+		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
+		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val result = constructor.buildBooleanNotEqualTo(thisPrimitiveBool, parameterPrimitiveBool, "notEqualToResult")
 		constructor.buildReturn(result)
 	}
 }

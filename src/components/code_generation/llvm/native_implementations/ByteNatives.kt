@@ -11,6 +11,7 @@ class ByteNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
 		registry.registerNativePrimitiveInitializer("Byte(Byte): Self", ::fromByte)
+		registry.registerNativePrimitiveInitializer("Byte(Int, Int): Self", ::fromInteger)
 		registry.registerNativeImplementation("Byte++", ::increment)
 		registry.registerNativeImplementation("Byte--", ::decrement)
 		registry.registerNativeImplementation("Byte-: Self", ::negative)
@@ -27,6 +28,7 @@ class ByteNatives(val context: Context) {
 		registry.registerNativeImplementation("Byte <= Self: Bool", ::lessThanOrEqualTo)
 		registry.registerNativeImplementation("Byte >= Self: Bool", ::greaterThanOrEqualTo)
 		registry.registerNativeImplementation("Byte == Byte: Bool", ::equalTo)
+		registry.registerNativeImplementation("Byte != Byte: Bool", ::notEqualTo)
 	}
 
 	private fun fromByte(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
@@ -35,6 +37,14 @@ class ByteNatives(val context: Context) {
 			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
 		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
 		return firstParameter
+	}
+
+	private fun fromInteger(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+		val name = "Byte(Int, Int): Self"
+		if(parameters.size != 2)
+			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
+		return constructor.buildCastFromIntegerToByte(firstParameter, "byte")
 	}
 
 	private fun increment(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
@@ -198,6 +208,17 @@ class ByteNatives(val context: Context) {
 		val thisPrimitiveByte = constructor.buildLoad(constructor.byteType, thisValueProperty, "thisPrimitiveByte")
 		val parameterPrimitiveByte = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildSignedIntegerEqualTo(thisPrimitiveByte, parameterPrimitiveByte, "equalToResult")
+		constructor.buildReturn(result)
+	}
+
+	private fun notEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisByte = context.getThisParameter(constructor)
+		val thisValueProperty = constructor.buildGetPropertyPointer(context.byteDeclarationType, thisByte, context.byteValueIndex,
+			"thisValueProperty")
+		val thisPrimitiveByte = constructor.buildLoad(constructor.byteType, thisValueProperty, "thisPrimitiveByte")
+		val parameterPrimitiveByte = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val result = constructor.buildSignedIntegerNotEqualTo(thisPrimitiveByte, parameterPrimitiveByte, "notEqualToResult")
 		constructor.buildReturn(result)
 	}
 }
