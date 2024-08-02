@@ -108,9 +108,4 @@ internal class Runtime {
 			""".trimIndent()
 		app.shouldPrintLine(expectedOutput, "", 1)
 	}
-
-	//TODO
-	// - implement String(Int)
-	// - add native implementation for Identifiable.stringRepresentation
-	// - ensure computed property without getter produces an error
 }
