@@ -64,9 +64,12 @@ class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val val
 		validateReturnType()
 	}
 
-	//TODO validate 'value == null' in initializer (write test)
-	//TODO write '[return] is allowed in initializer' test
 	private fun validateReturnType() {
+		if(targetInitializer != null) {
+			if(value != null)
+				context.addIssue(RedundantReturnValue(source))
+			return
+		}
 		var returnType = targetFunction?.signature?.returnType
 		val targetComputedProperty = targetComputedProperty
 		if(targetComputedProperty != null) {

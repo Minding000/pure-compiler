@@ -13,7 +13,7 @@ import util.TestUtil
 internal class ReturnStatements {
 
 	@Test
-	fun `detects return statements outside of functions`() {
+	fun `disallowed outside of functions`() {
 		val sourceCode =
 			"""
 				return
@@ -24,7 +24,7 @@ internal class ReturnStatements {
 	}
 
 	@Test
-	fun `detects return statements inside of initializers`() {
+	fun `allowed in initializers`() {
 		val sourceCode =
 			"""
 				Plane class {
@@ -34,11 +34,41 @@ internal class ReturnStatements {
 				}
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
-		lintResult.assertIssueDetected<ReturnStatementOutsideOfCallable>()
+		lintResult.assertIssueNotDetected<ReturnStatementOutsideOfCallable>()
 	}
 
 	@Test
-	fun `ignores return statements inside of functions`() {
+	fun `allowed in getters`() {
+		val sourceCode =
+			"""
+				Plane class {
+					computed address: Int
+						gets {
+							return 4
+						}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ReturnStatementOutsideOfCallable>()
+	}
+
+	@Test
+	fun `allowed in setters`() {
+		val sourceCode =
+			"""
+				Plane class {
+					computed address: Int
+						sets {
+							return
+						}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ReturnStatementOutsideOfCallable>()
+	}
+
+	@Test
+	fun `allowed in functions`() {
 		val sourceCode =
 			"""
 				Desk class {
@@ -200,6 +230,100 @@ internal class ReturnStatements {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<FunctionCompletesDespiteNever>()
+	}
+
+	@Test
+	fun `does not require value in initializers`() {
+		val sourceCode =
+			"""
+				Int class
+				Desk class {
+					init {
+						return
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ReturnStatementMissingValue>()
+	}
+
+	@Test
+	fun `disallows value in initializers`() {
+		val sourceCode =
+			"""
+				Int class
+				Desk class {
+					init() {
+						return Int()
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<RedundantReturnValue>()
+	}
+
+	@Test
+	fun `requires value in getters`() {
+		val sourceCode =
+			"""
+				Int class
+				Desk class {
+					computed address: Int
+						gets {
+							return
+						}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<ReturnStatementMissingValue>()
+	}
+
+	@Test
+	fun `allows value in getters`() {
+		val sourceCode =
+			"""
+				Int class
+				Desk class {
+					computed address: Int
+						gets {
+							return 4
+						}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<RedundantReturnValue>()
+	}
+
+	@Test
+	fun `does not require value in setters`() {
+		val sourceCode =
+			"""
+				Int class
+				Desk class {
+					computed address: Int
+						sets {
+							return
+						}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ReturnStatementMissingValue>()
+	}
+
+	@Test
+	fun `disallows value in setters`() {
+		val sourceCode =
+			"""
+				Int class
+				Desk class {
+					computed address: Int
+						sets {
+							return 4
+						}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueDetected<RedundantReturnValue>()
 	}
 
 	@Test

@@ -9,6 +9,7 @@ import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.Object
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
+import components.semantic_model.types.FunctionType
 import components.semantic_model.values.Function
 import errors.internal.CompilerError
 import errors.user.UserError
@@ -115,6 +116,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		findNativeInputStreamTypeDeclaration()
 		findNativeOutputStreamTypeDeclaration()
 		findStringInitializer()
+		findExceptionAddLocationSignature(constructor)
 		for(file in files)
 			file.compile(constructor)
 		var userEntryPointObject: ValueDeclaration? = null
@@ -664,6 +666,14 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		} ?: throw CompilerError(typeDeclaration.source, "Failed to find String byte array initializer.")
 		context.llvmStringByteArrayInitializer = byteArrayInitializer.llvmValue
 		context.llvmStringByteArrayInitializerType = byteArrayInitializer.llvmType
+	}
+
+	private fun findExceptionAddLocationSignature(constructor: LlvmConstructor) {
+		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.EXCEPTION] ?: return
+		val typeDeclaration = fileScope.getTypeDeclaration(SpecialType.EXCEPTION.className) ?: return
+		val exceptionAddLocationPropertyType = typeDeclaration.scope.getValueDeclaration("addLocation")?.type
+		context.exceptionAddLocationFunctionType =
+			(exceptionAddLocationPropertyType as? FunctionType)?.signatures?.firstOrNull()?.getLlvmType(constructor)
 	}
 
 	fun getEntryPoint(entryPointPath: String): Pair<ValueDeclaration?, FunctionImplementation> {

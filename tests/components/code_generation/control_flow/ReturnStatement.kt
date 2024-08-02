@@ -44,4 +44,74 @@ internal class ReturnStatement {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFifteen")
 		assertEquals(15, result)
 	}
+
+	@Test
+	fun `compiles in initializer`() {
+		val sourceCode = """
+			Park class {
+				init {
+					return
+				}
+			}
+			SimplestApp object {
+				to getFiftyThree(): Int {
+					return 53
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiftyThree")
+		assertEquals(53, result)
+	}
+
+	@Test
+	fun `compiles in operator`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFiftyThree(): Int {
+					this--
+					return 53
+				}
+				operator -- {
+					return
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiftyThree")
+		assertEquals(53, result)
+	}
+
+	@Test
+	fun `compiles in getter`() {
+		val sourceCode = """
+			SimplestApp object {
+				computed address: Int
+					gets {
+						return 4
+					}
+				to getFour(): Int {
+					return address
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFour")
+		assertEquals(4, result)
+	}
+
+	@Test
+	fun `compiles in setter`() {
+		val sourceCode = """
+			SimplestApp object {
+				computed address: Int
+					sets {
+						return
+					}
+				to getFiftyThree(): Int {
+					address = 1
+					return 53
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiftyThree")
+		assertEquals(53, result)
+	}
 }

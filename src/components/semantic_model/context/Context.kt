@@ -9,7 +9,6 @@ import components.semantic_model.control_flow.Try
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.general.SemanticModel
-import components.semantic_model.types.FunctionType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
@@ -72,6 +71,7 @@ class Context {
 	lateinit var llvmVariableParameterListCopyFunction: LlvmValue
 	lateinit var llvmVariableParameterIterationEndFunctionType: LlvmType
 	lateinit var llvmVariableParameterIterationEndFunction: LlvmValue
+	var exceptionAddLocationFunctionType: LlvmType? = null
 	lateinit var closureStruct: LlvmType
 	lateinit var arrayDeclarationType: LlvmType
 	lateinit var booleanDeclarationType: LlvmType
@@ -181,14 +181,8 @@ class Context {
 		}
 		val descriptionString = createStringObject(constructor, description)
 
-		//TODO resolve "addLocation" once in Program to avoid repeated work
-		val fileScope = nativeRegistry.specialTypeScopes[SpecialType.EXCEPTION]
-		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.EXCEPTION.className)
-		val exceptionAddLocationPropertyType = typeDeclaration?.scope?.getValueDeclaration("addLocation")?.type
-		val exceptionAddLocationSignature = (exceptionAddLocationPropertyType as? FunctionType)?.signatures?.firstOrNull()
-
 		val addLocationFunctionAddress = resolveFunction(constructor, exception, "addLocation(String, String, Int, String)")
-		constructor.buildFunctionCall(exceptionAddLocationSignature?.getLlvmType(constructor), addLocationFunctionAddress,
+		constructor.buildFunctionCall(exceptionAddLocationFunctionType, addLocationFunctionAddress,
 			listOf(ignoredExceptionVariable, exception, moduleName, fileName, lineNumber, descriptionString))
 	}
 
