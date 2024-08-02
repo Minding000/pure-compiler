@@ -20,6 +20,7 @@ import logger.issues.returns.ReturnValueTypeMismatch
 class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val value: Value?): SemanticModel(source, scope) {
 	override val isInterruptingExecutionBasedOnStructure = true
 	override val isInterruptingExecutionBasedOnStaticEvaluation = true
+	private var targetInitializer: InitializerDefinition? = null
 	private var targetFunction: FunctionImplementation? = null
 	private var targetComputedProperty: ComputedPropertyDeclaration? = null
 	private var conversion: InitializerDefinition? = null
@@ -34,18 +35,23 @@ class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val val
 	}
 
 	private fun determineTargetFunction() {
+		val surroundingInitializer = scope.getSurroundingInitializer()
+		if(surroundingInitializer != null) {
+			targetInitializer = surroundingInitializer
+			return
+		}
+		val surroundingFunction = scope.getSurroundingFunction()
+		if(surroundingFunction != null) {
+			targetFunction = surroundingFunction
+			surroundingFunction.mightReturnValue = true
+			return
+		}
 		val surroundingComputedProperty = scope.getSurroundingComputedProperty()
 		if(surroundingComputedProperty != null) {
 			targetComputedProperty = surroundingComputedProperty
 			return
 		}
-		val surroundingFunction = scope.getSurroundingFunction()
-		if(surroundingFunction == null) {
-			context.addIssue(ReturnStatementOutsideOfCallable(source))
-			return
-		}
-		targetFunction = surroundingFunction
-		surroundingFunction.mightReturnValue = true
+		context.addIssue(ReturnStatementOutsideOfCallable(source))
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -58,6 +64,8 @@ class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val val
 		validateReturnType()
 	}
 
+	//TODO validate 'value == null' in initializer (write test)
+	//TODO write '[return] is allowed in initializer' test
 	private fun validateReturnType() {
 		var returnType = targetFunction?.signature?.returnType
 		val targetComputedProperty = targetComputedProperty

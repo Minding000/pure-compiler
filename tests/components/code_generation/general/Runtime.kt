@@ -28,6 +28,87 @@ internal class Runtime {
 		app.shouldPrintLine(expectedOutput, "", 1)
 	}
 
+	@Test
+	fun `the stacktrace includes initializer calls`() {
+		val sourceCode = """
+			referencing Pure
+			TownHall class {
+				init {
+					raise Exception("Whoops")
+				}
+			}
+			Town class {
+				init {
+					TownHall()
+				}
+			}
+			SimplestApp object {
+				to run() {
+					Town()
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Whoops
+			 at Test:Test:4:TownHall()
+			 at Test:Test:9:Town()
+			 at Test:Test:14:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
+	fun `the stacktrace includes computed property getter calls`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				computed name: String gets {
+					raise Exception("Whoops")
+				}
+				computed id: String gets name
+				to run() {
+					id
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Whoops
+			 at Test:Test:4:get name
+			 at Test:Test:6:get id
+			 at Test:Test:8:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
+	fun `the stacktrace includes computed property setter calls`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				computed name: String sets {
+					raise Exception("Whoops")
+				}
+				computed id: String sets name = id
+				to run() {
+					id = "1"
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Whoops
+			 at Test:Test:4:set name
+			 at Test:Test:6:set id
+			 at Test:Test:8:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
 	//TODO
 	// - implement String(Int)
 	// - add native implementation for Identifiable.stringRepresentation

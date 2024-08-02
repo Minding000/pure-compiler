@@ -6,13 +6,13 @@ import components.code_generation.llvm.LlvmType
 import components.code_generation.llvm.LlvmValue
 import components.semantic_model.control_flow.LoopStatement
 import components.semantic_model.control_flow.Try
+import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.types.FunctionType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
-import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.Issue
 import logger.Logger
@@ -152,23 +152,33 @@ class Context {
 		val noExceptionBlock = constructor.createBlock("noException")
 		constructor.buildJump(doesExceptionExist, exceptionBlock, noExceptionBlock)
 		constructor.select(exceptionBlock)
-		//TODO what about surrounding computed property getter / setter or initializers?
-		val surroundingFunction = model.scope.getSurroundingFunction()
-		if(surroundingFunction != null)
-			addLocationToStacktrace(model.source, constructor, exception, surroundingFunction.toString())
+		val surroundingCallable =
+			model.scope.getSurroundingInitializer() ?: model.scope.getSurroundingFunction() ?: model.scope.getSurroundingComputedProperty()
+		if(surroundingCallable != null)
+			addLocationToStacktrace(model, constructor, exception, surroundingCallable)
 		handleException(constructor, parent)
 		constructor.select(noExceptionBlock)
 	}
 
-	fun addLocationToStacktrace(source: SyntaxTreeNode, constructor: LlvmConstructor, exception: LlvmValue, description: String) {
+	fun addLocationToStacktrace(model: SemanticModel, constructor: LlvmConstructor, exception: LlvmValue,
+								surroundingCallable: SemanticModel) {
 		if(!nativeRegistry.has(SpecialType.EXCEPTION))
 			return
 		val ignoredExceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable")
 		constructor.buildStore(constructor.nullPointer, ignoredExceptionVariable)
-		val line = source.start.line
+		val line = model.source.start.line
 		val moduleName = createStringObject(constructor, line.file.module.localName)
 		val fileName = createStringObject(constructor, line.file.name)
 		val lineNumber = constructor.buildInt32(line.number)
+		val description = if(surroundingCallable is ComputedPropertyDeclaration) {
+			val getter = surroundingCallable.getterErrorHandlingContext
+			if(getter != null && model.isIn(getter))
+				"get ${surroundingCallable.name}"
+			else
+				"set ${surroundingCallable.name}"
+		} else {
+			surroundingCallable.toString()
+		}
 		val descriptionString = createStringObject(constructor, description)
 
 		//TODO resolve "addLocation" once in Program to avoid repeated work

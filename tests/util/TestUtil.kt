@@ -172,7 +172,8 @@ object TestUtil {
 					!includeRequiredModules && specialTypePaths == Builder.specialTypePaths)
 			}
 			val intermediateRepresentation = program.getIntermediateRepresentation()
-			println(intermediateRepresentation)
+			print(intermediateRepresentation)
+			//File("out\\program.ll").printWriter().use { out -> out.print(intermediateRepresentation) }
 			println("----------")
 			program.verify()
 			program.compile()

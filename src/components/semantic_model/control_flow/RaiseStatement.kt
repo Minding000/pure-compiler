@@ -4,6 +4,7 @@ import components.code_generation.llvm.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
+import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
 import components.semantic_model.values.Value
@@ -13,8 +14,9 @@ import components.syntax_parser.syntax_tree.control_flow.RaiseStatement as Raise
 class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope, val value: Value): SemanticModel(source, scope) {
 	override val isInterruptingExecutionBasedOnStructure = true
 	override val isInterruptingExecutionBasedOnStaticEvaluation = true
-	private var targetComputedProperty: ComputedPropertyDeclaration? = null
+	private var targetInitializer: InitializerDefinition? = null
 	private var targetFunction: FunctionImplementation? = null
+	private var targetComputedProperty: ComputedPropertyDeclaration? = null
 
 	init {
 		addSemanticModels(value)
@@ -22,17 +24,23 @@ class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope
 
 	override fun determineTypes() {
 		super.determineTypes()
+		val surroundingInitializer = scope.getSurroundingInitializer()
+		if(surroundingInitializer != null) {
+			targetInitializer = surroundingInitializer
+			return
+		}
+		val surroundingFunction = scope.getSurroundingFunction()
+		if(surroundingFunction != null) {
+			targetFunction = surroundingFunction
+			return
+		}
 		val surroundingComputedProperty = scope.getSurroundingComputedProperty()
 		if(surroundingComputedProperty != null) {
 			targetComputedProperty = surroundingComputedProperty
 			return
 		}
-		val surroundingFunction = scope.getSurroundingFunction()
-		if(surroundingFunction == null) {
-			//TODO this should be an issue instead or raise statements should be allowed in any context
-			throw CompilerError(source, "Raise statement outside of function.")
-		}
-		targetFunction = surroundingFunction
+		//TODO this should be an issue instead or raise statements should be allowed in any context
+		throw CompilerError(source, "Raise statement outside of callable.")
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {
@@ -43,9 +51,9 @@ class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope
 	override fun compile(constructor: LlvmConstructor) {
 		val exceptionParameter = context.getExceptionParameter(constructor)
 		val exception = value.getLlvmValue(constructor)
-		val functionIdentifier = targetFunction?.toString() ?: targetComputedProperty?.toString()
-		?: throw CompilerError(source, "Missing surrounding function.")
-		context.addLocationToStacktrace(source, constructor, exception, functionIdentifier)
+		val surroundingCallable =
+			targetInitializer ?: targetFunction ?: targetComputedProperty ?: throw CompilerError(source, "Missing target callable.")
+		context.addLocationToStacktrace(this, constructor, exception, surroundingCallable)
 		constructor.buildStore(exception, exceptionParameter)
 		context.handleException(constructor, parent)
 	}

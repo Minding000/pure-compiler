@@ -47,6 +47,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	lateinit var llvmType: LlvmType
 
 	init {
+		scope.semanticModel = this
 		addSemanticModels(localTypeParameters, parameters)
 		addSemanticModels(body)
 		if(isVariadic) {
@@ -352,7 +353,8 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 				callTrivialSuperInitializers(constructor, thisValue)
 			else
 				super.compile(constructor)
-			constructor.buildReturn()
+			if(body?.isInterruptingExecutionBasedOnStructure != true)
+				constructor.buildReturn()
 		}
 		constructor.select(previousBlock)
 	}

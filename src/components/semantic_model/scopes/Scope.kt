@@ -1,10 +1,7 @@
 package components.semantic_model.scopes
 
 import components.semantic_model.control_flow.LoopStatement
-import components.semantic_model.declarations.ComputedPropertyDeclaration
-import components.semantic_model.declarations.FunctionImplementation
-import components.semantic_model.declarations.TypeDeclaration
-import components.semantic_model.declarations.ValueDeclaration
+import components.semantic_model.declarations.*
 import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.types.FunctionType
@@ -40,11 +37,14 @@ abstract class Scope {
 	/** Similar to SemanticModel::getSurrounding<TypeDeclaration>, but takes explicit parent type declarations into account. */
 	open fun getSurroundingTypeDeclaration(): TypeDeclaration? = null
 
-	/** Similar to SemanticModel::getSurrounding<ComputedPropertyDeclaration>, but doesn't search outside the surrounding type declaration. */
-	open fun getSurroundingComputedProperty(): ComputedPropertyDeclaration? = null
+	/** Similar to SemanticModel::getSurrounding<InitializerDefinition>, but doesn't search outside the surrounding type declaration. */
+	open fun getSurroundingInitializer(): InitializerDefinition? = null
 
 	/** Similar to SemanticModel::getSurrounding<FunctionImplementation>, but doesn't search outside the surrounding type declaration. */
 	open fun getSurroundingFunction(): FunctionImplementation? = null
+
+	/** Similar to SemanticModel::getSurrounding<ComputedPropertyDeclaration>, but doesn't search outside the surrounding type declaration. */
+	open fun getSurroundingComputedProperty(): ComputedPropertyDeclaration? = null
 
 	/** Similar to SemanticModel::getSurrounding<LoopStatement>, but doesn't search outside the surrounding callable. */
 	open fun getSurroundingLoop(): LoopStatement? = null
