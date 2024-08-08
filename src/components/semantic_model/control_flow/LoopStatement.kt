@@ -207,7 +207,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 				?: throw CompilerError(source, "'Iterator.currentIndex' computed property not found.")
 			val currentIndexValue = buildGetterCall(constructor, exceptionAddress, iteratorLlvmValue, iteratorCurrentIndexComputedProperty)
 			val convertedValue = ValueConverter.convertIfRequired(this, constructor, currentIndexValue,
-				iteratorCurrentIndexComputedProperty.providedType, generator.currentIndexVariable?.providedType)
+				iteratorCurrentIndexComputedProperty.root.getterReturnType, false, generator.currentIndexVariable?.effectiveType, false)
 			constructor.buildStore(convertedValue, indexVariable.llvmLocation)
 		}
 		val keyVariable = generator.currentKeyVariable
@@ -217,17 +217,18 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 				?: throw CompilerError(source, "'Iterator.currentKey' computed property not found.")
 			val currentKeyValue = buildGetterCall(constructor, exceptionAddress, iteratorLlvmValue, iteratorCurrentKeyComputedProperty)
 			val convertedValue = ValueConverter.convertIfRequired(this, constructor, currentKeyValue,
-				iteratorCurrentKeyComputedProperty.providedType, generator.currentKeyVariable?.providedType)
+				iteratorCurrentKeyComputedProperty.root.getterReturnType, false, generator.currentKeyVariable?.effectiveType, false)
 			constructor.buildStore(convertedValue, keyVariable.llvmLocation)
 		}
-		val valueVariable = generator.currentValueVariable
+		val valueVariable =
+			generator.currentValueVariable //TODO consider that computed property type behaves like a function return type (can be generic)
 		if(valueVariable != null) {
 			val iteratorCurrentValueComputedProperty = iteratorType.getValueDeclaration("currentValue")
 				?.declaration as? ComputedPropertyDeclaration
 				?: throw CompilerError(source, "'Iterator.currentValue' computed property not found.")
 			val currentValueValue = buildGetterCall(constructor, exceptionAddress, iteratorLlvmValue, iteratorCurrentValueComputedProperty)
 			val convertedValue = ValueConverter.convertIfRequired(this, constructor, currentValueValue,
-				iteratorCurrentValueComputedProperty.providedType, generator.currentValueVariable?.providedType)
+				iteratorCurrentValueComputedProperty.root.getterReturnType, false, generator.currentValueVariable?.effectiveType, false)
 			constructor.buildStore(convertedValue, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)

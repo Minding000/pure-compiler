@@ -114,9 +114,18 @@ class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val val
 			constructor.buildReturn()
 			return
 		}
+		val targetFunction = targetFunction
+		val targetComputedProperty = targetComputedProperty
 		val declaredReturnType = targetFunction?.signature?.returnType ?: targetComputedProperty?.getterReturnType
+
+		//TODO consider 'Self' return type
+		val isTargetTypeGeneric = if(targetFunction != null)
+			targetFunction.signature.returnType != targetFunction.signature.root.returnType
+		else if(targetComputedProperty != null)
+			targetComputedProperty.getterReturnType != targetComputedProperty.root.getterReturnType
+		else false
 		val returnValue = ValueConverter.convertIfRequired(this, constructor, value.getLlvmValue(constructor), value.effectiveType,
-			value.hasGenericType, declaredReturnType, false, conversion)
+			value.hasGenericType, declaredReturnType, isTargetTypeGeneric, conversion)
 		errorHandlingContext?.runAlwaysBlock(constructor)
 		constructor.buildReturn(returnValue)
 	}

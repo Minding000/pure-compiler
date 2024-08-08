@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 
-internal class Initializer {
+internal class Initializers {
 
 	@Test
 	fun `initializes property with value of property parameter`() {

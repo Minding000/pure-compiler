@@ -251,26 +251,26 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 		}
 	}
 
-	fun getPropertiesBeingInitialized(): List<PropertyDeclaration> {
-		val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
-		for((declaration, end) in ends) {
-			if(declaration !is PropertyDeclaration)
-				continue
-			if(end.isPreviouslyInitialized())
-				propertiesBeingInitialized.add(declaration)
-		}
-		return propertiesBeingInitialized
-	}
-
 	fun getPropertiesRequiredToBeInitialized(): List<PropertyDeclaration> {
 		val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 		for((declaration, usages) in variables) {
-			if(declaration !is PropertyDeclaration)
+			if(declaration !is PropertyDeclaration || declaration is ComputedPropertyDeclaration)
 				continue
 			if(usages.first().isRequiredToBeInitialized())
 				propertiesRequiredToBeInitialized.add(declaration)
 		}
 		return propertiesRequiredToBeInitialized
+	}
+
+	fun getPropertiesBeingInitialized(): List<PropertyDeclaration> {
+		val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
+		for((declaration, end) in ends) {
+			if(declaration !is PropertyDeclaration || declaration is ComputedPropertyDeclaration)
+				continue
+			if(end.isPreviouslyInitialized())
+				propertiesBeingInitialized.add(declaration)
+		}
+		return propertiesBeingInitialized
 	}
 
 	fun getReportFor(variableName: String): String? {

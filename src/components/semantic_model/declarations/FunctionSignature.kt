@@ -23,6 +23,8 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 						val whereClauseConditions: List<WhereClauseCondition> = emptyList(),
 						val associatedImplementation: FunctionImplementation? = null): SemanticModel(source, scope) {
 	var original = this
+	val root: FunctionSignature
+		get() = superFunctionSignature?.root ?: original
 	val isVariadic = associatedImplementation?.isVariadic ?: false
 	val fixedParameterTypes: List<Type?>
 	private val variadicParameterType: Type?
@@ -226,9 +228,9 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	}
 
 	fun buildLlvmType(constructor: LlvmConstructor): LlvmType {
-		val parameterTypes = LinkedList<LlvmType?>(parameterTypes.map { parameterType ->
-			parameterType?.effectiveType?.getLlvmType(constructor)
-		})
+		val parameterTypes = LinkedList<LlvmType?>()
+		for(parameterIndex in this.parameterTypes.indices)
+			parameterTypes.add(getEffectiveParameterType(parameterIndex)?.getLlvmType(constructor))
 		val parentTypeDeclaration = parentTypeDeclaration
 		parameterTypes.add(Context.EXCEPTION_PARAMETER_INDEX, constructor.pointerType)
 		if(parentTypeDeclaration != null) {
@@ -238,7 +240,15 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 				parentTypeDeclaration.getLlvmReferenceType(constructor)
 			parameterTypes.add(Context.THIS_PARAMETER_INDEX, implicitSelfType)
 		}
-		return constructor.buildFunctionType(parameterTypes, returnType.getLlvmType(constructor), isVariadic)
+		return constructor.buildFunctionType(parameterTypes, getEffectiveReturnType().getLlvmType(constructor), isVariadic)
+	}
+
+	fun getEffectiveParameterType(index: Int): Type? {
+		return root.parameterTypes[index]?.effectiveType
+	}
+
+	fun getEffectiveReturnType(): Type {
+		return root.returnType
 	}
 
 	override fun equals(other: Any?): Boolean {

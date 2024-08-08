@@ -102,4 +102,48 @@ internal class ComputedProperties {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFortyOne")
 		assertEquals(41, result)
 	}
+
+	@Test
+	fun `unwraps generic values`() {
+		val sourceCode = """
+			abstract C class {
+				containing A
+				abstract gettable computed e: A
+			}
+			D class: <Int>C {
+				overriding computed e: Int
+					gets { return 93 }
+			}
+			SimplestApp object {
+				to getNinetyThree(): Int {
+					val d: <Int>C = D()
+					return d.e
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyThree")
+		assertEquals(93, result)
+	}
+
+	@Test
+	fun `unwraps generic values `() {
+		val sourceCode = """
+			abstract C class {
+				containing A
+				abstract gettable computed e: A
+			}
+			D class: <Int>C {
+				overriding computed e: Int
+					gets { return 93 }
+			}
+			SimplestApp object {
+				to getNinetyThree(): Int {
+					val d: <Int>C = D()
+					return d.e
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyThree")
+		assertEquals(93, result)
+	}
 }

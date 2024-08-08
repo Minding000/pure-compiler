@@ -77,8 +77,8 @@ internal class Runtime {
 		app.includeRequiredModules = true
 		val expectedOutput = """
 			Unhandled error: Whoops
-			 at Test:Test:4:get name
-			 at Test:Test:6:get id
+			 at Test:Test:4:get name: String
+			 at Test:Test:6:get id: String
 			 at Test:Test:8:SimplestApp.run()
 			""".trimIndent()
 		app.shouldPrintLine(expectedOutput, "", 1)
@@ -102,8 +102,8 @@ internal class Runtime {
 		app.includeRequiredModules = true
 		val expectedOutput = """
 			Unhandled error: Whoops
-			 at Test:Test:4:set name
-			 at Test:Test:6:set id
+			 at Test:Test:4:set name: String
+			 at Test:Test:6:set id: String
 			 at Test:Test:8:SimplestApp.run()
 			""".trimIndent()
 		app.shouldPrintLine(expectedOutput, "", 1)

@@ -31,10 +31,15 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 	PropertyDeclaration(source, scope, name, type, null, false, isAbstract, setter == null, false,
 		isOverriding) {
 	override val value: Value? = getter as? Value
-	val getterIdentifier
-		get() = "get $memberIdentifier"
-	val setterIdentifier
-		get() = "set $memberIdentifier"
+	val root: ComputedPropertyDeclaration
+		get() = superComputedProperty?.root ?: this
+	var superComputedProperty: ComputedPropertyDeclaration? = null
+	val hasGenericType: Boolean
+		get() = effectiveType != root.effectiveType
+	val getterIdentifier: String
+		get() = superComputedProperty?.getterIdentifier ?: "get $memberIdentifier"
+	val setterIdentifier: String
+		get() = superComputedProperty?.setterIdentifier ?: "set $memberIdentifier"
 	var llvmGetterType: LlvmType? = null
 	var llvmSetterType: LlvmType? = null
 	var llvmGetterValue: LlvmValue? = null
@@ -90,6 +95,7 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 			context.addIssue(OverridingMemberKindMismatch(source, name, "computed property", "property"))
 			return
 		}
+		superComputedProperty = superMember
 		if(isConstant) {
 			if(!type.isAssignableTo(superMemberType))
 				context.addIssue(OverridingPropertyTypeNotAssignable(type, superMemberType))
@@ -107,19 +113,19 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 	}
 
 	override fun declare(constructor: LlvmConstructor) {
-		if(isAbstract)
-			return
 		super.declare(constructor)
-		val llvmType = effectiveType?.getLlvmType(constructor)
+		val llvmType = root.effectiveType?.getLlvmType(constructor)
 		if(isGettable || getterErrorHandlingContext != null) {
 			val functionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), llvmType)
 			llvmGetterType = functionType
-			llvmGetterValue = constructor.buildFunction(getterIdentifier, functionType)
+			if(!isAbstract)
+				llvmGetterValue = constructor.buildFunction(getterIdentifier, functionType)
 		}
 		if(isSettable || setterErrorHandlingContext != null) {
 			val functionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType, llvmType))
 			llvmSetterType = functionType
-			llvmSetterValue = constructor.buildFunction(setterIdentifier, functionType)
+			if(!isAbstract)
+				llvmSetterValue = constructor.buildFunction(setterIdentifier, functionType)
 		}
 	}
 

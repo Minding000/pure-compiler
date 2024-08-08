@@ -133,4 +133,48 @@ internal class ByteArray {
 		))
 		assertEquals(3, result)
 	}
+
+	@Test
+	fun `get operator gets requested value`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getThree(): Byte {
+					return ByteArray(1, 2, 3, 4)[2]
+				}
+			}
+			native ByteArray class {
+				val size: Int
+				native init(...values: ...Byte)
+				native operator [index: Int]: Byte
+			}
+		""".trimIndent()
+		val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getThree", mapOf(
+			SpecialType.BYTE_ARRAY to listOf(TestUtil.TEST_FILE_NAME)
+		))
+		assertEquals(3, result)
+	}
+
+	@Test
+	fun `set operator sets specified value`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFourteen(): Byte {
+					val bytes = ByteArray(1, 2, 3, 4)
+					bytes[3] = 14
+					bytes[2] = -1
+					return bytes[3]
+				}
+			}
+			native ByteArray class {
+				val size: Int
+				native init(...values: ...Byte)
+				native operator [index: Int]: Byte
+				native operator [index: Int](element: Byte)
+			}
+		""".trimIndent()
+		val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getFourteen", mapOf(
+			SpecialType.BYTE_ARRAY to listOf(TestUtil.TEST_FILE_NAME)
+		))
+		assertEquals(14, result)
+	}
 }

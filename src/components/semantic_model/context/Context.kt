@@ -151,7 +151,7 @@ class Context {
 		val exceptionBlock = constructor.createBlock("exception")
 		val noExceptionBlock = constructor.createBlock("noException")
 		constructor.buildJump(doesExceptionExist, exceptionBlock, noExceptionBlock)
-		constructor.select(exceptionBlock)
+		constructor.select(exceptionBlock) //TODO deduplicate LLVM-IR in these blocks (bloats the application)
 		val surroundingCallable =
 			model.scope.getSurroundingInitializer() ?: model.scope.getSurroundingFunction() ?: model.scope.getSurroundingComputedProperty()
 		if(surroundingCallable != null)
@@ -173,9 +173,9 @@ class Context {
 		val description = if(surroundingCallable is ComputedPropertyDeclaration) {
 			val getter = surroundingCallable.getterErrorHandlingContext
 			if(getter != null && model.isIn(getter))
-				"get ${surroundingCallable.name}"
+				"get $surroundingCallable"
 			else
-				"set ${surroundingCallable.name}"
+				"set $surroundingCallable"
 		} else {
 			surroundingCallable.toString()
 		}

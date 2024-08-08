@@ -109,10 +109,10 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		var modifierValue = ValueConverter.convertIfRequired(this, constructor, modifier.getLlvmValue(constructor),
 			modifier.effectiveType, modifier.hasGenericType, modifierType, modifierType != originalModifierType,
 			conversions?.get(modifier))
-		val isTargetInteger = SpecialType.INTEGER.matches(target.providedType)
-		val isTargetPrimitiveNumber = isTargetInteger || SpecialType.FLOAT.matches(target.providedType)
-		val isModifierInteger = SpecialType.INTEGER.matches(modifier.providedType)
-		val isModifierPrimitiveNumber = isModifierInteger || SpecialType.FLOAT.matches(modifier.providedType)
+		val isTargetInteger = SpecialType.BYTE.matches(target.effectiveType) || SpecialType.INTEGER.matches(target.effectiveType)
+		val isTargetPrimitiveNumber = isTargetInteger || SpecialType.FLOAT.matches(target.effectiveType)
+		val isModifierInteger = SpecialType.BYTE.matches(modifier.effectiveType) || SpecialType.INTEGER.matches(modifier.effectiveType)
+		val isModifierPrimitiveNumber = isModifierInteger || SpecialType.FLOAT.matches(modifier.effectiveType)
 		if(isTargetPrimitiveNumber && isModifierPrimitiveNumber) {
 			val isIntegerOperation = isTargetInteger && isModifierInteger
 			if(!isIntegerOperation) {

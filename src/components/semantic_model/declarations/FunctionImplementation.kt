@@ -49,7 +49,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		returnType, whereClauseConditions, this)
 	var mightReturnValue = false
 	var usesOwnTypeAsSelf = false
-	val functionTracker = VariableTracker(context)
+	private val functionTracker = VariableTracker(context)
 	override var hasDataFlowBeenAnalysed = body == null
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()

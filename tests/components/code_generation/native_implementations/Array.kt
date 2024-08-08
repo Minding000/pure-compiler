@@ -139,4 +139,50 @@ internal class Array {
 		))
 		assertEquals(3, result)
 	}
+
+	@Test
+	fun `get operator gets requested value`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getThree(): Int {
+					return Array(1, 2, 3, 4)[2]
+				}
+			}
+			native Array class {
+				containing Element
+				val size: Int
+				native init(...values: ...Element)
+				native operator [index: Int]: Element
+			}
+		""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", mapOf(
+			SpecialType.ARRAY to listOf(TestUtil.TEST_FILE_NAME)
+		))
+		assertEquals(3, result)
+	}
+
+	@Test
+	fun `set operator sets specified value`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getFourteen(): Int {
+					val bytes = Array(1, 2, 3, 4)
+					bytes[3] = 14
+					bytes[2] = -1
+					return bytes[3]
+				}
+			}
+			native Array class {
+				containing Element
+				val size: Int
+				native init(...values: ...Element)
+				native operator [index: Int]: Element
+				native operator [index: Int](element: Element)
+			}
+		""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFourteen", mapOf(
+			SpecialType.ARRAY to listOf(TestUtil.TEST_FILE_NAME)
+		))
+		assertEquals(14, result)
+	}
 }

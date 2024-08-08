@@ -46,6 +46,29 @@ internal class ReturnStatement {
 	}
 
 	@Test
+	fun `wraps generic values`() {
+		val sourceCode = """
+			abstract C class {
+				containing A
+				abstract to getE(): A
+			}
+			D class: <Int>C {
+				overriding to getE(): Int {
+					return 93
+				}
+			}
+			SimplestApp object {
+				to getNinetyThree(): Int {
+					val d: <Int>C = D()
+					return d.getE()
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyThree")
+		assertEquals(93, result)
+	}
+
+	@Test
 	fun `compiles in initializer`() {
 		val sourceCode = """
 			Park class {

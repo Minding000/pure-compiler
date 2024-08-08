@@ -39,7 +39,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	val fixedParameters: List<Parameter>
 	private val variadicParameter: Parameter?
 	var superInitializer: InitializerDefinition? = null
-	val initializerTracker = VariableTracker(context, true)
+	private val initializerTracker = VariableTracker(context, true)
 	override var hasDataFlowBeenAnalysed = isNative
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()

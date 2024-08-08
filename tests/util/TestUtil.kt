@@ -13,6 +13,7 @@ import logger.Severity
 import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.PrintStream
 import java.util.concurrent.TimeUnit
 import kotlin.contracts.ExperimentalContracts
@@ -172,8 +173,10 @@ object TestUtil {
 					!includeRequiredModules && specialTypePaths == Builder.specialTypePaths)
 			}
 			val intermediateRepresentation = program.getIntermediateRepresentation()
-			print(intermediateRepresentation)
-			//File("out\\program.ll").printWriter().use { out -> out.print(intermediateRepresentation) }
+			if(false) {
+				//print(intermediateRepresentation)
+				File("out\\program.ll").printWriter().use { out -> out.print(intermediateRepresentation) }
+			}
 			println("----------")
 			program.verify()
 			program.compile()
@@ -235,7 +238,8 @@ object TestUtil {
 		val programFailed = exitCode != expectedExitCode
 		if(exitCode == null) {
 			System.err.println("Program timed out after ${timeoutInSeconds}s.")
-			process.waitFor()
+			process.waitFor(2, TimeUnit.SECONDS)
+			process.destroyForcibly()
 		} else if(programFailed) {
 			System.err.println(createExitCodeMessage(exitCode))
 		}

@@ -14,6 +14,11 @@ class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: 
 				val isVariadic: Boolean = false): ValueDeclaration(source, scope, name, type, null, true, isMutable) {
 	val isPropertySetter = type == null
 	var propertyDeclaration: ValueDeclaration? = null
+	val hasGenericType: Boolean
+		get() {
+			val surroundingFunction = scope.getSurroundingFunction() ?: return false
+			return effectiveType != surroundingFunction.signature.getEffectiveParameterType(surroundingFunction.parameters.indexOf(this))
+		}
 	var index by Delegates.notNull<Int>()
 
 	override fun declare() {
@@ -53,8 +58,8 @@ class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: 
 		if(isVariadic)
 			return
 		val function = constructor.getParentFunction()
-		llvmLocation = constructor.buildStackAllocation(effectiveType?.getLlvmType(constructor), name)
 		val value = constructor.getParameter(function, index)
+		llvmLocation = constructor.buildStackAllocation(constructor.getParameterType(function, index), name)
 		constructor.buildStore(value, llvmLocation)
 	}
 }

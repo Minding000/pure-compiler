@@ -26,7 +26,9 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 	var whereClauseConditions: List<WhereClauseCondition>? = null
 	protected open var staticType: Type? = null
 	override val hasGenericType: Boolean
-		get() = (declaration?.providedType as? ObjectType)?.getTypeDeclaration() is GenericTypeDeclaration
+		get() = (declaration as? Parameter)?.hasGenericType == true
+			|| (declaration as? ComputedPropertyDeclaration)?.hasGenericType == true
+			|| (declaration?.providedType as? ObjectType)?.getTypeDeclaration() is GenericTypeDeclaration
 
 	constructor(source: Identifier, scope: Scope): this(source, scope, source.getValue())
 
@@ -138,7 +140,8 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 				return constructor.getLastParameter()
 			return buildGetterCall(constructor, declaration)
 		}
-		return constructor.buildLoad(effectiveType?.getLlvmType(constructor), getLlvmLocation(constructor), name)
+		val llvmType = if(hasGenericType) constructor.pointerType else effectiveType?.getLlvmType(constructor)
+		return constructor.buildLoad(llvmType, getLlvmLocation(constructor), name)
 	}
 
 	private fun buildGetterCall(constructor: LlvmConstructor, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {

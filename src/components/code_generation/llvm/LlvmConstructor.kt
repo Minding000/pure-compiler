@@ -54,7 +54,19 @@ class LlvmConstructor(name: String) {
 	}
 
 	fun getTypeOf(value: LlvmValue): LlvmType {
-		return LLVMTypeOf(value)
+		return LLVMTypeOf(value) ?: throw CompilerError("Failed to retrieve type of value.")
+	}
+
+	fun getParameterType(function: LlvmValue = getParentFunction(), index: Int): LlvmType {
+		val functionType =
+			functionTypes[function] ?: throw CompilerError("Failed to retrieve parameter type, because the function is not registered.")
+		return getParameterType(functionType, index)
+	}
+
+	fun getParameterType(functionType: LlvmType, index: Int): LlvmType {
+		val parameterTypes = LlvmList<LlvmType>(LLVMCountParamTypes(functionType).toLong())
+		LLVMGetParamTypes(functionType, parameterTypes)
+		return parameterTypes.get(LlvmType::class.java, index.toLong())
 	}
 
 	fun getReturnType(function: LlvmValue = getParentFunction()): LlvmType {
@@ -252,6 +264,8 @@ class LlvmConstructor(name: String) {
 	fun buildStore(value: LlvmValue, location: LlvmValue?) {
 		if(location == null)
 			throw CompilerError("Missing location in store.")
+		if(getTypeOf(location) != pointerType)
+			throw CompilerError("Storing into a non-pointer value.")
 		LLVMBuildStore(builder, value, location)
 	}
 
@@ -260,6 +274,8 @@ class LlvmConstructor(name: String) {
 			throw CompilerError("Missing type in load '$name'.")
 		if(location == null)
 			throw CompilerError("Missing location in load '$name'.")
+		if(getTypeOf(location) != pointerType)
+			throw CompilerError("Loading from a non-pointer value.")
 		return LLVMBuildLoad2(builder, type, location, name)
 	}
 

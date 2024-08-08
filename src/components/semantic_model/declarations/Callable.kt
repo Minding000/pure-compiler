@@ -10,7 +10,7 @@ interface Callable {
 	fun analyseDataFlow()
 	// see: https://youtrack.jetbrains.com/issue/KT-31420
 	@Suppress("INAPPLICABLE_JVM_NAME")
-	@JvmName("getPropertiesRequiredToBeInitialized-function")
+	@JvmName("getPropertiesRequiredToBeInitialized_function")
 	fun getPropertiesRequiredToBeInitialized(): LinkedList<PropertyDeclaration> {
 		if(!hasDataFlowBeenAnalysed)
 			analyseDataFlow()
@@ -18,7 +18,7 @@ interface Callable {
 	}
 	// see: https://youtrack.jetbrains.com/issue/KT-31420
 	@Suppress("INAPPLICABLE_JVM_NAME")
-	@JvmName("getPropertiesBeingInitialized-function")
+	@JvmName("getPropertiesBeingInitialized_function")
 	fun getPropertiesBeingInitialized(): LinkedList<PropertyDeclaration> {
 		if(!hasDataFlowBeenAnalysed)
 			analyseDataFlow()
