@@ -13,7 +13,6 @@ import logger.Severity
 import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.PrintStream
 import java.util.concurrent.TimeUnit
 import kotlin.contracts.ExperimentalContracts
@@ -173,10 +172,7 @@ object TestUtil {
 					!includeRequiredModules && specialTypePaths == Builder.specialTypePaths)
 			}
 			val intermediateRepresentation = program.getIntermediateRepresentation()
-			if(false) {
-				//print(intermediateRepresentation)
-				File("out\\program.ll").printWriter().use { out -> out.print(intermediateRepresentation) }
-			}
+			//print(intermediateRepresentation)
 			println("----------")
 			program.verify()
 			program.compile()

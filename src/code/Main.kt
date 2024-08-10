@@ -7,6 +7,7 @@ object Main {
 	//TODO these should probably not be global (this would simplify testing)
 	var logLevel = Severity.INFO
 	var shouldPrintCompileTimeDebugOutput = false
+	var shouldWriteIntermediateRepresentation = false
 	var shouldPrintRuntimeDebugOutput = false
 
 	@JvmStatic

@@ -9,13 +9,22 @@ class NullNatives(val context: Context) {
 
 	fun load(registry: NativeRegistry) {
 		registry.registerNativeImplementation("Null == Any?: Bool", ::equalTo)
+		registry.registerNativeImplementation("Null != Any?: Bool", ::notEqualTo)
 	}
 
 	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisNull = context.getThisParameter(constructor)
 		val parameterAny = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
-		val result = constructor.buildSignedIntegerEqualTo(thisNull, parameterAny, "equalsResult")
+		val result = constructor.buildPointerEqualTo(thisNull, parameterAny, "equalsResult")
+		constructor.buildReturn(result)
+	}
+
+	private fun notEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		val thisNull = context.getThisParameter(constructor)
+		val parameterAny = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val result = constructor.buildPointerNotEqualTo(thisNull, parameterAny, "notEqualsResult")
 		constructor.buildReturn(result)
 	}
 }

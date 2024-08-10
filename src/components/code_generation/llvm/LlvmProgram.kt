@@ -1,5 +1,6 @@
 package components.code_generation.llvm
 
+import code.Main
 import components.code_generation.ForeignFunctionInterface
 import components.semantic_model.general.Program
 import errors.internal.CompilerError
@@ -10,6 +11,7 @@ import org.bytedeco.javacpp.IntPointer
 import org.bytedeco.llvm.LLVM.LLVMTargetRef
 import org.bytedeco.llvm.LLVM.LLVMValueRef
 import org.bytedeco.llvm.global.LLVM.*
+import java.io.File
 
 class LlvmProgram(name: String) {
 	val targetTriple = "x86_64-pc-windows"
@@ -27,6 +29,8 @@ class LlvmProgram(name: String) {
 		constructor.setTargetTriple(targetTriple)
 		entrypoint = program.compile(constructor, entryPointPath)
 		constructor.debug.finish()
+		if(Main.shouldWriteIntermediateRepresentation)
+			File("out\\program.ll").printWriter().use { out -> out.print(getIntermediateRepresentation()) }
 	}
 
 	fun verify() {

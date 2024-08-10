@@ -101,6 +101,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 				signature.toString(false, kind), valueType))
 	}
 
+	//TODO test optional target (also for other operators)
 	override fun compile(constructor: LlvmConstructor) {
 		val targetValue = ValueConverter.convertIfRequired(this, constructor, target.getLlvmValue(constructor),
 			target.effectiveType, target.hasGenericType, target.effectiveType, false)

@@ -322,12 +322,54 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 				else -> {}
 			}
 		}
-		val signature = targetSignature?.original ?: throw CompilerError(source, "Binary operator is missing a target.")
-		return createLlvmFunctionCall(constructor, signature, leftValue, rightValue)
+		if(kind == Operator.Kind.EQUAL_TO) {
+			if(SpecialType.NULL.matches(left.effectiveType)) {
+				return constructor.buildPointerEqualTo(constructor.nullPointer, rightValue, resultName)
+			} else if(left.effectiveType is OptionalType) { //TODO check is effectiveType simplified?
+				val resultVariable = constructor.buildStackAllocation(constructor.booleanType, "_resultVariable")
+				val isLeftNull = constructor.buildPointerEqualTo(constructor.nullPointer, leftValue, "_isLeftNull")
+				val leftNullBlock = constructor.createBlock("leftNull")
+				val leftNotNullBlock = constructor.createBlock("leftNotNull")
+				val resultBlock = constructor.createBlock("result")
+				constructor.buildJump(isLeftNull, leftNullBlock, leftNotNullBlock)
+				constructor.select(leftNullBlock)
+				val isRightNull = constructor.buildPointerEqualTo(constructor.nullPointer, rightValue, "_isRightNull")
+				constructor.buildStore(isRightNull, resultVariable)
+				constructor.buildJump(resultBlock)
+				constructor.select(leftNotNullBlock)
+				val result = createLlvmFunctionCall(constructor, leftValue, rightValue)
+				constructor.buildStore(result, resultVariable)
+				constructor.buildJump(resultBlock)
+				constructor.select(resultBlock)
+				return constructor.buildLoad(constructor.booleanType, resultVariable, resultName)
+			}
+		} else if(kind == Operator.Kind.NOT_EQUAL_TO) {
+			if(SpecialType.NULL.matches(left.effectiveType)) {
+				return constructor.buildPointerNotEqualTo(constructor.nullPointer, rightValue, resultName)
+			} else if(left.effectiveType is OptionalType) {
+				val resultVariable = constructor.buildStackAllocation(constructor.booleanType, "_resultVariable")
+				val isLeftNull = constructor.buildPointerEqualTo(constructor.nullPointer, leftValue, "_isLeftNull")
+				val leftNullBlock = constructor.createBlock("leftNull")
+				val leftNotNullBlock = constructor.createBlock("leftNotNull")
+				val resultBlock = constructor.createBlock("result")
+				constructor.buildJump(isLeftNull, leftNullBlock, leftNotNullBlock)
+				constructor.select(leftNullBlock)
+				val isRightNotNull = constructor.buildPointerNotEqualTo(constructor.nullPointer, rightValue, "_isRightNull")
+				constructor.buildStore(isRightNotNull, resultVariable)
+				constructor.buildJump(resultBlock)
+				constructor.select(leftNotNullBlock)
+				val result = createLlvmFunctionCall(constructor, leftValue, rightValue)
+				constructor.buildStore(result, resultVariable)
+				constructor.buildJump(resultBlock)
+				constructor.select(resultBlock)
+				return constructor.buildLoad(constructor.booleanType, resultVariable, resultName)
+			}
+		}
+		return createLlvmFunctionCall(constructor, leftValue, rightValue)
 	}
 
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, leftValue: LlvmValue,
-									   rightValue: LlvmValue): LlvmValue {
+	private fun createLlvmFunctionCall(constructor: LlvmConstructor, leftValue: LlvmValue, rightValue: LlvmValue): LlvmValue {
+		val signature = targetSignature?.original ?: throw CompilerError(source, "Binary operator is missing a target.")
 		val resultName = "_binaryOperatorResult"
 		val parameters = LinkedList<LlvmValue>()
 		parameters.add(context.getExceptionParameter(constructor))
