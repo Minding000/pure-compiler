@@ -194,10 +194,10 @@ object TestUtil {
 
 	fun assertExecutablePrintsLine(expectedString: String, input: String = "", path: String = ".\\out\\program.exe",
 								   expectedExitCode: Int = ExitCode.SUCCESS) {
-		assertExecutablePrints("$expectedString${System.lineSeparator()}", input, path, expectedExitCode)
+		assertExecutablePrints("$expectedString\n", input, path, expectedExitCode)
 	}
 
-	fun assertExecutablePrints(expectedString: String, input: String = "", path: String = ".\\out\\program.exe",
+	fun assertExecutablePrints(expectedOutput: String, input: String = "", path: String = ".\\out\\program.exe",
 							   expectedExitCode: Int = ExitCode.SUCCESS) {
 		val process = ProcessBuilder(path).start()
 		val outputStreamReader = process.inputStream.bufferedReader()
@@ -242,7 +242,7 @@ object TestUtil {
 		val errorStream = errorStreamBuilder.toString()
 		if(errorStream.isNotEmpty())
 			System.err.println(errorStream)
-		assertStringEquals(expectedString, outputStreamBuilder.toString())
+		assertStringEquals(expectedOutput.replace("\n", System.lineSeparator()), outputStreamBuilder.toString())
 		assertTrue(errorStream.isEmpty(), "The error stream is not empty.")
 		if(programFailed)
 			fail("Program failed! See lines above for details (timeout or error code).")

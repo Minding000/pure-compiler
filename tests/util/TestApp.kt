@@ -47,7 +47,7 @@ class TestApp(private val files: Map<String, String>, private val entryPointPath
 			try {
 				program.writeObjectFileTo(objectFilePath)
 				Linker.link(objectFilePath, executablePath)
-				TestUtil.assertExecutablePrints(expectedOutput.replace("\n", System.lineSeparator()), input, executablePath,
+				TestUtil.assertExecutablePrints(expectedOutput, input, executablePath,
 					expectedExitCode)
 			} finally {
 				Path(objectFilePath).deleteIfExists()

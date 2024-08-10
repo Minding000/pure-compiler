@@ -16,6 +16,10 @@ internal class CalculatorProject {
 	@Test
 	fun `runs without errors`() {
 		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Calculator", "Calculator.Main:CalculatorApp.run"))
-		TestUtil.assertExecutablePrintsLine("Input was: 5", "5" + Character.toString(10))
+		val expectedOutput = """
+				Please enter an equation:
+				The result is: 5
+			""".trimIndent()
+		TestUtil.assertExecutablePrintsLine(expectedOutput, "5" + Character.toString(10))
 	}
 }
