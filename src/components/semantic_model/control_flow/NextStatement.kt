@@ -4,6 +4,7 @@ import components.code_generation.llvm.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
+import errors.internal.CompilerError
 import logger.issues.loops.NextStatementOutsideOfLoop
 import components.syntax_parser.syntax_tree.control_flow.NextStatement as NextStatementSyntaxTree
 
@@ -31,8 +32,10 @@ class NextStatement(override val source: NextStatementSyntaxTree, scope: Scope):
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
+		val targetLoop = targetLoop ?: throw CompilerError(source, "Next statement outside of loop.")
 		val errorHandlingContext = scope.getSurroundingAlwaysBlock()
-		errorHandlingContext?.runAlwaysBlock(constructor)
-		targetLoop?.jumpToNextIteration(constructor)
+		if(errorHandlingContext?.isIn(targetLoop) == true)
+			errorHandlingContext.runAlwaysBlock(constructor)
+		targetLoop.jumpToNextIteration(constructor)
 	}
 }

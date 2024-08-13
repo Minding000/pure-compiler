@@ -199,6 +199,7 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 
 	fun markAllUsagesAsExiting(referencePoint: VariableState.ReferencePoint) {
 		var currentUsages = currentState.firstVariableUsages[referencePoint] ?: return
+		val markedUsages = HashSet<VariableUsage>()
 		while(true) {
 			var hasNextUsages = false
 			val nextVariableUsages = UsagesByVariable()
@@ -206,8 +207,13 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 				val nextUsages = nextVariableUsages.getOrPut(declaration) { HashSet() }
 				for(usage in usages) {
 					usage.willExit = true
-					hasNextUsages = true
-					nextUsages.addAll(usage.nextUsages)
+					markedUsages.add(usage)
+					for(nextUsage in usage.nextUsages) {
+						if(!markedUsages.contains(nextUsage)) {
+							hasNextUsages = true
+							nextUsages.add(nextUsage)
+						}
+					}
 				}
 			}
 			if(!hasNextUsages)
@@ -226,8 +232,12 @@ class VariableTracker(val context: Context, val isInitializer: Boolean = false) 
 				cumulatedUsages.addAll(usages)
 				val nextUsages = nextVariableUsages.getOrPut(declaration) { HashSet() }
 				for(usage in usages) {
-					hasNextUsages = true
-					nextUsages.addAll(usage.nextUsages)
+					for(nextUsage in usage.nextUsages) {
+						if(!cumulatedUsages.contains(nextUsage)) {
+							hasNextUsages = true
+							nextUsages.add(nextUsage)
+						}
+					}
 				}
 			}
 			if(!hasNextUsages)

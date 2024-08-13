@@ -37,6 +37,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 	val mutatedVariables = HashSet<ValueDeclaration>()
 	private lateinit var entryBlock: LlvmBlock
 	private lateinit var exitBlock: LlvmBlock
+	private var advance: (() -> Unit)? = null
 
 	init {
 		scope.semanticModel = this
@@ -135,6 +136,12 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		constructor.buildJump(entryBlock)
 		constructor.select(entryBlock)
 		val index = constructor.buildLoad(indexType, indexVariable, "_overGenerator_index")
+
+		advance = {
+			val newIndex = constructor.buildIntegerAddition(index, constructor.buildInt32(1), "_overGenerator_newIndex")
+			constructor.buildStore(newIndex, indexVariable)
+		}
+
 		val condition = constructor.buildSignedIntegerLessThan(index, elementCount, "_overGenerator_condition")
 		val bodyBlock = constructor.createBlock(function, "loop_body")
 		constructor.buildJump(condition, bodyBlock, exitBlock)
@@ -153,12 +160,8 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			constructor.buildStore(element, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)
-		if(!body.isInterruptingExecutionBasedOnStructure) {
-			//TODO fix: should be called on 'next' statement
-			val newIndex = constructor.buildIntegerAddition(index, constructor.buildInt32(1), "_overGenerator_newIndex")
-			constructor.buildStore(newIndex, indexVariable)
-			constructor.buildJump(entryBlock)
-		}
+		if(!body.isInterruptingExecutionBasedOnStructure)
+			jumpToNextIteration(constructor)
 		constructor.select(exitBlock)
 		//TODO also call this if the loop body returns / raises? (like always block)
 		constructor.buildFunctionCall(context.llvmVariableParameterIterationEndFunctionType,
@@ -188,6 +191,14 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		val exceptionAddress = context.getExceptionParameter(constructor)
 		val iteratorLlvmValue = constructor.buildFunctionCall(iteratorCreationSignature.getLlvmType(constructor), createIteratorAddress,
 			listOf(exceptionAddress, iterableLlvmValue), "iterator")
+		val advanceFunctionAddress = context.resolveFunction(constructor, iteratorLlvmValue, "advance()")
+
+		advance = {
+			constructor.buildFunctionCall(iteratorAdvanceSignature?.getLlvmType(constructor), advanceFunctionAddress,
+				listOf(exceptionAddress, iteratorLlvmValue))
+			context.continueRaise(constructor, this)
+		}
+
 		context.continueRaise(constructor, this)
 		entryBlock = constructor.createBlock(function, "loop_entry")
 		exitBlock = constructor.createBlock(function, "loop_exit")
@@ -232,14 +243,8 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			constructor.buildStore(convertedValue, valueVariable.llvmLocation)
 		}
 		body.compile(constructor)
-		if(!body.isInterruptingExecutionBasedOnStructure) {
-			//TODO fix: should be called on 'next' statement
-			val advanceFunctionAddress = context.resolveFunction(constructor, iteratorLlvmValue, "advance()")
-			constructor.buildFunctionCall(iteratorAdvanceSignature?.getLlvmType(constructor), advanceFunctionAddress,
-				listOf(exceptionAddress, iteratorLlvmValue))
-			context.continueRaise(constructor, this)
-			constructor.buildJump(entryBlock)
-		}
+		if(!body.isInterruptingExecutionBasedOnStructure)
+			jumpToNextIteration(constructor)
 		constructor.select(exitBlock)
 		context.printDebugLine(constructor, "Loop exit block")
 	}
@@ -254,6 +259,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 	}
 
 	fun jumpToNextIteration(constructor: LlvmConstructor) {
+		advance?.invoke()
 		constructor.buildJump(entryBlock)
 	}
 

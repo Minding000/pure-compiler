@@ -13,6 +13,7 @@ class ByteArrayNatives(val context: Context) {
 		registry.registerNativeImplementation("ByteArray + ByteArray: ByteArray", ::concatenate)
 		registry.registerNativeImplementation("ByteArray[Int]: Byte", ::get)
 		registry.registerNativeImplementation("ByteArray[Int](Byte)", ::set)
+		registry.registerNativeImplementation("ByteArray == Any?: Bool", ::equalTo)
 	}
 
 	private fun fromPluralType(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
@@ -148,5 +149,65 @@ class ByteArrayNatives(val context: Context) {
 		val elementElement = constructor.buildGetArrayElementPointer(elementType, thisArrayValue, index, "elementElement")
 		constructor.buildStore(element, elementElement)
 		constructor.buildReturn()
+	}
+
+	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
+		// check type
+		val other = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
+		val byteArrayBlock = constructor.createBlock("byteArray")
+		val notByteArrayBlock = constructor.createBlock("notByteArray")
+		val isOtherByteArray =
+			constructor.buildPointerEqualTo(context.getClassDefinition(constructor, other), context.byteArrayClassDefinition,
+				"isOtherByteArray")
+		constructor.buildJump(isOtherByteArray, byteArrayBlock, notByteArrayBlock)
+		constructor.select(notByteArrayBlock)
+		constructor.buildReturn(constructor.buildBoolean(false))
+		constructor.select(byteArrayBlock)
+		// compare size
+		val thisByteArray = context.getThisParameter(constructor)
+		val thisSizeProperty = context.resolveMember(constructor, thisByteArray, "size")
+		val thisSize = constructor.buildLoad(constructor.i32Type, thisSizeProperty, "thisSize")
+		val otherProperty = context.resolveMember(constructor, other, "size")
+		val otherSize = constructor.buildLoad(constructor.i32Type, otherProperty, "otherSize")
+		val sameSizeBlock = constructor.createBlock("sameSize")
+		val differentSizeBlock = constructor.createBlock("differentSize")
+		val hasSameSize = constructor.buildSignedIntegerEqualTo(otherSize, thisSize, "hasSameSize")
+		constructor.buildJump(hasSameSize, sameSizeBlock, differentSizeBlock)
+		constructor.select(differentSizeBlock)
+		constructor.buildReturn(constructor.buildBoolean(false))
+		constructor.select(sameSizeBlock)
+		// compare bytes
+		val thisValueProperty =
+			constructor.buildGetPropertyPointer(context.byteArrayDeclarationType, thisByteArray, context.byteArrayValueIndex,
+				"thisValueProperty")
+		val otherValueProperty =
+			constructor.buildGetPropertyPointer(context.byteArrayDeclarationType, other, context.byteArrayValueIndex, "otherValueProperty")
+		val thisValue = constructor.buildLoad(constructor.pointerType, thisValueProperty, "thisValue")
+		val otherValue = constructor.buildLoad(constructor.pointerType, otherValueProperty, "otherValue")
+		val loopStartBlock = constructor.createBlock("loopStart")
+		val loopBodyBlock = constructor.createBlock("loopBody")
+		val sameBytesBlock = constructor.createBlock("sameBytes")
+		val differentByteBlock = constructor.createBlock("differentByte")
+		val indexVariable = constructor.buildStackAllocation(constructor.i32Type, "indexVariable")
+		constructor.buildStore(constructor.buildInt32(0), indexVariable)
+		constructor.buildJump(loopStartBlock)
+		constructor.select(loopStartBlock)
+		val index = constructor.buildLoad(constructor.i32Type, indexVariable, "index")
+		val isDone = constructor.buildSignedIntegerGreaterThanOrEqualTo(index, thisSize, "isDone")
+		constructor.buildJump(isDone, sameBytesBlock, loopBodyBlock)
+		constructor.select(loopBodyBlock)
+		val thisByteLocation = constructor.buildGetArrayElementPointer(constructor.byteType, thisValue, index, "thisByteLocation")
+		val otherByteLocation = constructor.buildGetArrayElementPointer(constructor.byteType, otherValue, index, "otherByteLocation")
+		val thisByte = constructor.buildLoad(constructor.byteType, thisByteLocation, "thisByte")
+		val otherByte = constructor.buildLoad(constructor.byteType, otherByteLocation, "otherByte")
+		val areBytesEqual = constructor.buildSignedIntegerEqualTo(thisByte, otherByte, "areBytesEqual")
+		val newIndex = constructor.buildIntegerAddition(index, constructor.buildInt32(1), "newIndex")
+		constructor.buildStore(newIndex, indexVariable)
+		constructor.buildJump(areBytesEqual, loopStartBlock, differentByteBlock)
+		constructor.select(sameBytesBlock)
+		constructor.buildReturn(constructor.buildBoolean(true))
+		constructor.select(differentByteBlock)
+		constructor.buildReturn(constructor.buildBoolean(false))
 	}
 }

@@ -53,6 +53,56 @@ internal class Loop {
 	}
 
 	@Test
+	fun `break statement jumps to always block within loop`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getOne(): Int {
+					return sum(1, 2, 3)
+				}
+				to sum(...numbers: ...Int): Int {
+					var sum = 0
+					loop over numbers as number {
+						{
+							break
+						} always {
+							sum += number
+						}
+					}
+					return sum
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne")
+		assertEquals(1, result)
+	}
+
+	@Test
+	fun `break statement doesn't jump to always block outside of loop`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getThirteen(): Int {
+					return sum(1, 2, 1)
+				}
+				to sum(...numbers: ...Int): Int {
+					var sum = 0
+					{
+						loop over numbers as number {
+							sum += number
+							break
+						}
+						sum += 10
+					} always {
+						sum += 2
+					}
+					return sum
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThirteen")
+		assertEquals(13, result)
+	}
+
+	@Test
 	fun `compiles next statements`() {
 		val sourceCode = """
 			SimplestApp object {
@@ -71,6 +121,98 @@ internal class Loop {
 		""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getZero")
 		assertEquals(0, result)
+	}
+
+	@Test
+	fun `next statement advances loop over plural type`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getSix(): Int {
+					return sum(1, 2, 3)
+				}
+				to sum(...numbers: ...Int): Int {
+					var sum = 0
+					loop over numbers as number {
+						sum += number
+						next
+					}
+					return sum
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
+		assertEquals(6, result)
+	}
+
+	@Test
+	fun `next statement advances loop over iterable`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				to getSix(): Int {
+					return sum(List(1, 2, 3))
+				}
+				to sum(numbers: <Int>List): Int {
+					var sum = 0
+					loop over numbers as number {
+						sum += number
+						next
+					}
+					return sum
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix", true)
+		assertEquals(6, result)
+	}
+
+	@Test
+	fun `next statement jumps to always block within loop`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getSix(): Int {
+					return sum(1, 2, 3)
+				}
+				to sum(...numbers: ...Int): Int {
+					var sum = 0
+					loop over numbers as number {
+						{
+							next
+						} always {
+							sum += number
+						}
+					}
+					return sum
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
+		assertEquals(6, result)
+	}
+
+	@Test
+	fun `next statement doesn't jump to always block outside of loop`() {
+		val sourceCode = """
+			SimplestApp object {
+				to getSix(): Int {
+					return sum(1, 2, 1)
+				}
+				to sum(...numbers: ...Int): Int {
+					var sum = 0
+					{
+						loop over numbers as number {
+							sum += number
+							next
+						}
+					} always {
+						sum += 2
+					}
+					return sum
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSix")
+		assertEquals(6, result)
 	}
 
 	@Test

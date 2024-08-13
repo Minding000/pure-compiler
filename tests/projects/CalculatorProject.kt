@@ -18,8 +18,8 @@ internal class CalculatorProject {
 		Main.main(arrayOf("build", "D:\\Daten\\Projekte\\Pure\\Example projects\\Calculator", "Calculator.Main:CalculatorApp.run"))
 		val expectedOutput = """
 				Please enter an equation:
-				The result is: 5
+				The result is: 9
 			""".trimIndent()
-		TestUtil.assertExecutablePrintsLine(expectedOutput, "5" + Character.toString(10))
+		TestUtil.assertExecutablePrintsLine(expectedOutput, "3 * 3" + Character.toString(10))
 	}
 }

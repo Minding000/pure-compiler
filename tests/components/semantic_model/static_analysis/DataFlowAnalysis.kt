@@ -255,6 +255,85 @@ internal class DataFlowAnalysis {
 	}
 
 	@Test
+	fun `works with try block containing loops`() {
+		val sourceCode = """
+			var a = 10
+			{
+				loop over Range(0, 3) as modifier {
+					a *= modifier
+				}
+			} always {
+				a
+			}
+			a = 2
+		""".trimIndent()
+		val report = """
+			start -> 1
+			1: declaration & write -> 3, 7e (Int, 10)
+			3: hint -> 4, 7, 7e (Int, null)
+			4: read & mutation -> 4, 7, 7e (Int, null)
+			7: read -> 9 (Int, null)
+			7e: read -> continues raise (Int, null)
+			9: write -> end (Int, 2)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertStringEquals(report, tracker.getReportFor("a"))
+	}
+
+	@Test
+	fun `works with handle block containing loops`() {
+		val sourceCode = """
+			var a = 10
+			{
+				a
+			} handle Error {
+				loop over Range(0, 3) as modifier {
+					a *= modifier
+				}
+			}
+			a = 2
+		""".trimIndent()
+		val report = """
+			start -> 1
+			1: declaration & write -> 3, 5 (Int, 10)
+			3: read -> 5, 9 (Int, 10)
+			5: hint -> 6, 9 (Int, null)
+			6: read & mutation -> 6, 9 (Int, null)
+			9: write -> end (Int, 2)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertStringEquals(report, tracker.getReportFor("a"))
+	}
+
+	//TODO minor improvement: 6e isn't marked with 'continues raise'
+	@Test
+	fun `works with always block containing loops`() {
+		val sourceCode = """
+			var a = 10
+			{
+				a
+			} always {
+				loop over Range(0, 3) as modifier {
+					a *= modifier
+				}
+			}
+			a = 2
+		""".trimIndent()
+		val report = """
+			start -> 1
+			1: declaration & write -> 3, 5e (Int, 10)
+			3: read -> 5, 5e (Int, 10)
+			5: hint -> 6, 9 (Int, null)
+			6: read & mutation -> 6, 9 (Int, null)
+			5e: hint -> 6e (Int, null)
+			6e: read & mutation -> 6e (Int, null)
+			9: write -> end (Int, 2)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertStringEquals(report, tracker.getReportFor("a"))
+	}
+
+	@Test
 	fun `works with switch statements with else branches`() {
 		val sourceCode = """
 			var d = -1
