@@ -220,8 +220,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			if(implementation == null) {
 				//TODO add captured variables as parameters
 				val closureLocation = function.getLlvmValue(constructor)
-				constructor.buildGetPropertyPointer(context.closureStruct, closureLocation, Context.CLOSURE_FUNCTION_ADDRESS_PROPERTY_INDEX,
-					"_functionAddress")
+				constructor.buildGetPropertyPointer(context.runtimeStructs.closure, closureLocation,
+					Context.CLOSURE_FUNCTION_ADDRESS_PROPERTY_INDEX, "_functionAddress")
 			} else {
 				implementation.llvmValue
 			}

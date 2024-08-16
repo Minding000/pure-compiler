@@ -18,7 +18,7 @@ class ByteArrayNatives(val context: Context) {
 
 	private fun fromPluralType(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.byteType
-		val elementList = constructor.buildStackAllocation(context.variadicParameterListStruct, "elementList")
+		val elementList = constructor.buildStackAllocation(context.runtimeStructs.variadicParameterList, "elementList")
 		constructor.buildFunctionCall(context.externalFunctions.variableParameterIterationStart, listOf(elementList))
 		val elementCount = constructor.getLastParameter(llvmFunctionValue)
 		val arrayType = context.byteArrayDeclarationType

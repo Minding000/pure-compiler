@@ -2,6 +2,10 @@ package components.semantic_model.context
 
 import code.Main
 import components.code_generation.llvm.ExternalFunctions
+import components.code_generation.llvm.runtime_definitions.RuntimeFunctions
+import components.code_generation.llvm.runtime_definitions.RuntimeGlobals
+import components.code_generation.llvm.runtime_definitions.RuntimeStructs
+import components.code_generation.llvm.runtime_definitions.RuntimeTypes
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmType
 import components.code_generation.llvm.wrapper.LlvmValue
@@ -26,28 +30,14 @@ class Context {
 	val surroundingLoops = LinkedList<LoopStatement>()
 	val memberIdentities = IdentityMap<String>()
 	val externalFunctions = ExternalFunctions()
+	val runtimeTypes = RuntimeTypes()
+	val runtimeStructs = RuntimeStructs()
+	val runtimeGlobals = RuntimeGlobals()
+	val runtimeFunctions = RuntimeFunctions()
 	val nativeRegistry = NativeRegistry(this)
 	var primitiveCompilationTarget: TypeDeclaration? = null
-	// Pure runtime
-	lateinit var symbolTable: LlvmValue
-	lateinit var classDefinitionStruct: LlvmType
-	lateinit var variadicParameterListStruct: LlvmType
-	lateinit var llvmConstantOffsetFunction: LlvmValue
-	lateinit var llvmPropertyOffsetFunction: LlvmValue
-	lateinit var llvmFunctionAddressFunction: LlvmValue
-	lateinit var llvmConstantOffsetFunctionType: LlvmType
-	lateinit var llvmPropertyOffsetFunctionType: LlvmType
-	lateinit var llvmFunctionAddressFunctionType: LlvmType
-	lateinit var llvmMemberIndexType: LlvmType
-	lateinit var llvmMemberIdType: LlvmType
-	lateinit var llvmMemberOffsetType: LlvmType
-	lateinit var llvmMemberAddressType: LlvmType
-	lateinit var llvmStandardInputStreamGlobal: LlvmValue
-	lateinit var llvmStandardOutputStreamGlobal: LlvmValue
-	lateinit var llvmStandardErrorStreamGlobal: LlvmValue
 	// Standard library
 	var exceptionAddLocationFunctionType: LlvmType? = null
-	lateinit var closureStruct: LlvmType
 	lateinit var arrayDeclarationType: LlvmType
 	lateinit var booleanDeclarationType: LlvmType
 	lateinit var byteArrayDeclarationType: LlvmType
@@ -152,6 +142,7 @@ class Context {
 		}
 
 		//TODO move this into an LLVM function
+		//TODO deduplicate strings (file name is likely to be used multiple times for example)
 
 		val ignoredExceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable")
 		constructor.buildStore(constructor.nullPointer, ignoredExceptionVariable)
@@ -236,21 +227,20 @@ class Context {
 	fun resolveMember(constructor: LlvmConstructor, targetLocation: LlvmValue, memberIdentifier: String,
 					  isStaticMember: Boolean = false): LlvmValue {
 		val classDefinition = getClassDefinition(constructor, targetLocation)
-		val resolutionFunctionType = if(isStaticMember) llvmConstantOffsetFunctionType else llvmPropertyOffsetFunctionType
-		val resolutionFunction = if(isStaticMember) llvmConstantOffsetFunction else llvmPropertyOffsetFunction
-		val memberOffset = constructor.buildFunctionCall(resolutionFunctionType, resolutionFunction,
+		val resolutionFunction = if(isStaticMember) runtimeFunctions.constantOffsetResolution else runtimeFunctions.propertyOffsetResolution
+		val memberOffset = constructor.buildFunctionCall(resolutionFunction,
 			listOf(classDefinition, constructor.buildInt32(memberIdentities.getId(memberIdentifier))), "_memberOffset")
 		return constructor.buildGetArrayElementPointer(constructor.byteType, targetLocation, memberOffset, "_memberAddress")
 	}
 
 	fun resolveFunction(constructor: LlvmConstructor, targetLocation: LlvmValue, signatureIdentifier: String): LlvmValue {
 		val classDefinition = getClassDefinition(constructor, targetLocation)
-		return constructor.buildFunctionCall(llvmFunctionAddressFunctionType, llvmFunctionAddressFunction,
+		return constructor.buildFunctionCall(runtimeFunctions.functionAddressResolution,
 			listOf(classDefinition, constructor.buildInt32(memberIdentities.getId(signatureIdentifier))), "_functionAddress")
 	}
 
 	fun resolveMemberIdentifier(constructor: LlvmConstructor, memberId: LlvmValue): LlvmValue {
-		val memberIdentifierElement = constructor.buildGetArrayElementPointer(constructor.pointerType, symbolTable, memberId,
+		val memberIdentifierElement = constructor.buildGetArrayElementPointer(constructor.pointerType, runtimeGlobals.symbolTable, memberId,
 			"_memberIdentifierElement")
 		return constructor.buildLoad(constructor.pointerType, memberIdentifierElement, "_memberIdentifier")
 	}
@@ -292,7 +282,7 @@ class Context {
 
 		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("pure_debug_formatString", formatString)
 
-		val handle = constructor.buildLoad(constructor.pointerType, llvmStandardOutputStreamGlobal, "handle")
+		val handle = constructor.buildLoad(constructor.pointerType, runtimeGlobals.standardOutputStream, "handle")
 		constructor.buildFunctionCall(externalFunctions.print, listOf(handle, formatStringGlobal, *values))
 		constructor.buildFunctionCall(externalFunctions.streamFlush, listOf(handle))
 	}

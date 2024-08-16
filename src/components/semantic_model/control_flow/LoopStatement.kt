@@ -124,7 +124,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			variableDeclaration.compile(constructor)
 		val function = constructor.getParentFunction()
 		val elementCount = constructor.getLastParameter(function)
-		val elementList = constructor.buildStackAllocation(context.variadicParameterListStruct, "_overGenerator_elementList")
+		val elementList = constructor.buildStackAllocation(context.runtimeStructs.variadicParameterList, "_overGenerator_elementList")
 		constructor.buildFunctionCall(context.externalFunctions.variableParameterIterationStart, listOf(elementList))
 		val indexType = constructor.i32Type
 		val indexVariable = generator.currentIndexVariable?.llvmLocation

@@ -22,7 +22,7 @@ class ProcessNatives(val context: Context) {
 		constructor.buildStore(context.nativeInputStreamClassDefinition, classDefinitionProperty)
 		val handleProperty = constructor.buildGetPropertyPointer(objectType, newObject,
 			context.nativeInputStreamValueIndex, "handleProperty")
-		val handle = constructor.buildLoad(constructor.pointerType, context.llvmStandardInputStreamGlobal, "handle")
+		val handle = constructor.buildLoad(constructor.pointerType, context.runtimeGlobals.standardInputStream, "handle")
 		constructor.buildStore(handle, handleProperty)
 		constructor.buildReturn(newObject)
 	}
@@ -36,7 +36,7 @@ class ProcessNatives(val context: Context) {
 		constructor.buildStore(context.nativeOutputStreamClassDefinition, classDefinitionProperty)
 		val handleProperty = constructor.buildGetPropertyPointer(objectType, newObject,
 			context.nativeOutputStreamValueIndex, "handleProperty")
-		val handle = constructor.buildLoad(constructor.pointerType, context.llvmStandardOutputStreamGlobal, "handle")
+		val handle = constructor.buildLoad(constructor.pointerType, context.runtimeGlobals.standardOutputStream, "handle")
 		constructor.buildStore(handle, handleProperty)
 		constructor.buildReturn(newObject)
 	}
@@ -50,7 +50,7 @@ class ProcessNatives(val context: Context) {
 		constructor.buildStore(context.nativeOutputStreamClassDefinition, classDefinitionProperty)
 		val handleProperty = constructor.buildGetPropertyPointer(objectType, newObject,
 			context.nativeOutputStreamValueIndex, "handleProperty")
-		val handle = constructor.buildLoad(constructor.pointerType, context.llvmStandardErrorStreamGlobal, "handle")
+		val handle = constructor.buildLoad(constructor.pointerType, context.runtimeGlobals.standardErrorStream, "handle")
 		constructor.buildStore(handle, handleProperty)
 		constructor.buildReturn(newObject)
 	}
