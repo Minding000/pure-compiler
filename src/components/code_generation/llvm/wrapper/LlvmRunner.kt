@@ -1,7 +1,7 @@
-package components.code_generation.llvm
+package components.code_generation.llvm.wrapper
 
 import org.bytedeco.javacpp.Pointer
-import org.bytedeco.llvm.global.LLVM.*
+import org.bytedeco.llvm.global.LLVM
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -14,8 +14,8 @@ object LlvmRunner {
 	private fun initialize() {
 		if(isInitialized)
 			return
-		LLVMInitializeNativeTarget()
-		LLVMInitializeNativeAsmPrinter()
+		LLVM.LLVMInitializeNativeTarget()
+		LLVM.LLVMInitializeNativeAsmPrinter()
 		isInitialized = true
 	}
 
@@ -34,7 +34,7 @@ object LlvmRunner {
 		LlvmOrc.addModuleToLibrary(jit, library, threadSafeModule)
 		val function = LlvmOrc.lookupInMainLibrary(jit, functionName)
 		runner(function)
-		LLVMOrcDisposeLLJIT(jit)
-		LLVMShutdown()
+		LLVM.LLVMOrcDisposeLLJIT(jit)
+		LLVM.LLVMShutdown()
 	}
 }

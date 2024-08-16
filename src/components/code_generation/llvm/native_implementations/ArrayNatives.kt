@@ -1,8 +1,8 @@
 package components.code_generation.llvm.native_implementations
 
-import components.code_generation.llvm.Llvm
-import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.wrapper.Llvm
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 
@@ -19,8 +19,7 @@ class ArrayNatives(val context: Context) {
 	private fun fromPluralType(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.pointerType
 		val elementList = constructor.buildStackAllocation(context.variadicParameterListStruct, "elementList")
-		constructor.buildFunctionCall(context.llvmVariableParameterIterationStartFunctionType,
-			context.llvmVariableParameterIterationStartFunction, listOf(elementList))
+		constructor.buildFunctionCall(context.externalFunctions.variableParameterIterationStart, listOf(elementList))
 		val elementCount = constructor.getLastParameter(llvmFunctionValue)
 		val arrayType = context.arrayDeclarationType
 		val thisArray = context.getThisParameter(constructor)
@@ -52,8 +51,7 @@ class ArrayNatives(val context: Context) {
 		constructor.buildStore(newIndex, indexVariable)
 		constructor.buildJump(entryBlock)
 		constructor.select(exitBlock)
-		constructor.buildFunctionCall(context.llvmVariableParameterIterationEndFunctionType,
-			context.llvmVariableParameterIterationEndFunction, listOf(elementList))
+		constructor.buildFunctionCall(context.externalFunctions.variableParameterIterationEnd, listOf(elementList))
 	}
 
 	private fun fromValueToBeRepeated(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
@@ -115,11 +113,10 @@ class ArrayNatives(val context: Context) {
 		val combinedSize = constructor.buildIntegerAddition(thisSize, parameterSize, "combinedSize")
 		constructor.buildStore(combinedSize, combinedArraySizeProperty)
 		val combinedValue = constructor.buildHeapArrayAllocation(elementType, combinedSize, "combinedValue")
-		constructor.buildFunctionCall(context.llvmMemoryCopyFunctionType, context.llvmMemoryCopyFunction,
-			listOf(combinedValue, thisArrayValue, thisSizeInBytes))
+		constructor.buildFunctionCall(context.externalFunctions.memoryCopy, listOf(combinedValue, thisArrayValue, thisSizeInBytes))
 		val offsetCombinedArrayAddress = constructor.buildGetArrayElementPointer(elementType, combinedValue, thisSize,
 			"offsetCombinedArrayAddress")
-		constructor.buildFunctionCall(context.llvmMemoryCopyFunctionType, context.llvmMemoryCopyFunction,
+		constructor.buildFunctionCall(context.externalFunctions.memoryCopy,
 			listOf(offsetCombinedArrayAddress, parameterValue, parameterSizeInBytes))
 		val combinedArrayValueProperty = constructor.buildGetPropertyPointer(arrayType, combinedArray, context.arrayValueIndex,
 			"combinedArrayValueProperty")

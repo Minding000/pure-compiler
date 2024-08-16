@@ -2,7 +2,7 @@ package util
 
 import code.Builder
 import code.Main
-import components.code_generation.llvm.LlvmProgram
+import components.code_generation.llvm.wrapper.LlvmProgram
 import components.semantic_model.context.SemanticModelGenerator
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
@@ -172,7 +172,7 @@ object TestUtil {
 					!includeRequiredModules && specialTypePaths == Builder.specialTypePaths)
 			}
 			val intermediateRepresentation = program.getIntermediateRepresentation()
-			//print(intermediateRepresentation)
+			print(intermediateRepresentation)
 			println("----------")
 			program.verify()
 			program.compile()

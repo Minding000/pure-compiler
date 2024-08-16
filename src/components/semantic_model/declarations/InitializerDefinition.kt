@@ -1,8 +1,8 @@
 package components.semantic_model.declarations
 
-import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmType
-import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmType
+import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.ComparisonResult
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType

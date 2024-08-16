@@ -1,6 +1,10 @@
 package components.semantic_model.declarations
 
-import components.code_generation.llvm.*
+import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmDebugInfoMetadata
+import components.code_generation.llvm.wrapper.LlvmType
+import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker

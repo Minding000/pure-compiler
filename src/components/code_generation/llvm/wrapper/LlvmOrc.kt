@@ -1,10 +1,13 @@
-package components.code_generation.llvm
+package components.code_generation.llvm.wrapper
 
 import errors.internal.CompilerError
 import org.bytedeco.javacpp.BytePointer
 import org.bytedeco.javacpp.LongPointer
 import org.bytedeco.javacpp.Pointer
-import org.bytedeco.llvm.LLVM.*
+import org.bytedeco.llvm.LLVM.LLVMOrcCJITDylibSearchOrderElement
+import org.bytedeco.llvm.LLVM.LLVMOrcCLookupSetElement
+import org.bytedeco.llvm.LLVM.LLVMOrcCSymbolMapPair
+import org.bytedeco.llvm.LLVM.LLVMOrcExecutionSessionLookupHandleResultFunction
 import org.bytedeco.llvm.global.LLVM.*
 import java.util.concurrent.CompletableFuture
 
@@ -79,7 +82,7 @@ object LlvmOrc {
 		searchOrder.JDLookupFlags(LLVMOrcJITDylibLookupFlagsMatchAllSymbols)
 		val resultHandler = object: LLVMOrcExecutionSessionLookupHandleResultFunction() {
 
-			override fun call(error: LLVMErrorRef?, result: LLVMOrcCSymbolMapPair?, count: Long, context: Pointer?) {
+			override fun call(error: LlvmError?, result: LLVMOrcCSymbolMapPair?, count: Long, context: Pointer?) {
 				try {
 					Llvm.handleError(error, "Failed to resolve symbol in JIT")
 					if(result == null)
@@ -98,11 +101,3 @@ object LlvmOrc {
 		return Llvm.longToPointer(addressAsLong)
 	}
 }
-
-typealias OrcThreadSafeModule = LLVMOrcThreadSafeModuleRef
-typealias OrcExecutionSession = LLVMOrcExecutionSessionRef
-typealias OrcJit = LLVMOrcLLJITRef
-typealias OrcJitBuilder = LLVMOrcLLJITBuilderRef
-typealias OrcTargetMachineBuilder = LLVMOrcJITTargetMachineBuilderRef
-typealias OrcString = LLVMOrcSymbolStringPoolEntryRef
-typealias OrcLibrary = LLVMOrcJITDylibRef

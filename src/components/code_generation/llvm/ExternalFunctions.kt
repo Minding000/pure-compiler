@@ -1,0 +1,110 @@
+package components.code_generation.llvm
+
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmFunction
+
+class ExternalFunctions {
+	lateinit var print: LlvmFunction
+	lateinit var printToBuffer: LlvmFunction
+	lateinit var printSize: LlvmFunction
+	lateinit var streamOpen: LlvmFunction
+	lateinit var streamError: LlvmFunction
+	lateinit var streamClose: LlvmFunction
+	lateinit var streamWrite: LlvmFunction
+	lateinit var streamReadByte: LlvmFunction
+	lateinit var streamRead: LlvmFunction
+	lateinit var streamFlush: LlvmFunction
+	lateinit var sleep: LlvmFunction
+	lateinit var exit: LlvmFunction
+	lateinit var memoryCopy: LlvmFunction
+	lateinit var variableParameterIterationStart: LlvmFunction
+	lateinit var variableParameterListCopy: LlvmFunction
+	lateinit var variableParameterIterationEnd: LlvmFunction
+
+	fun load(constructor: LlvmConstructor) {
+		addPrintFunction(constructor)
+		addPrintToBufferFunction(constructor)
+		addPrintSizeFunction(constructor)
+		addStreamOpenFunction(constructor)
+		addStreamErrorFunction(constructor)
+		addStreamCloseFunction(constructor)
+		addStreamWriteFunction(constructor)
+		addStreamReadByteFunction(constructor)
+		addStreamReadFunction(constructor)
+		addStreamFlushFunction(constructor)
+		addSleepFunction(constructor)
+		addExitFunction(constructor)
+		addMemoryCopyFunction(constructor)
+		addVariadicIntrinsics(constructor)
+	}
+
+	private fun addPrintFunction(constructor: LlvmConstructor) {
+		print = LlvmFunction(constructor, "fprintf", listOf(constructor.pointerType, constructor.pointerType), constructor.i32Type, true)
+	}
+
+	private fun addPrintToBufferFunction(constructor: LlvmConstructor) {
+		printToBuffer =
+			LlvmFunction(constructor, "sprintf", listOf(constructor.pointerType, constructor.pointerType), constructor.i32Type, true)
+	}
+
+	private fun addPrintSizeFunction(constructor: LlvmConstructor) {
+		printSize = LlvmFunction(constructor, "snprintf", listOf(constructor.pointerType, constructor.i64Type, constructor.pointerType),
+			constructor.i32Type, true)
+	}
+
+	private fun addStreamOpenFunction(constructor: LlvmConstructor) {
+		val targetTriple = constructor.getTargetTriple()
+		val name = if(targetTriple.contains("linux")) "fdopen" else "__acrt_iob_func"
+		streamOpen = LlvmFunction(constructor, name, listOf(constructor.i32Type), constructor.pointerType)
+
+		//val name = if(targetTriple.contains("linux")) "fdopen" else "__iob_func"
+		//llvmStreamOpenFunctionType = constructor.buildFunctionType(listOf(), constructor.pointerType)
+		//val name = if(targetTriple.contains("linux")) "fdopen" else "_fdopen"
+		//llvmStreamOpenFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type, constructor.pointerType), constructor.pointerType)
+	}
+
+	private fun addStreamErrorFunction(constructor: LlvmConstructor) {
+		streamError = LlvmFunction(constructor, "ferror", listOf(constructor.pointerType), constructor.i32Type)
+	}
+
+	private fun addStreamCloseFunction(constructor: LlvmConstructor) {
+		streamClose = LlvmFunction(constructor, "fclose", listOf(constructor.pointerType), constructor.i32Type)
+	}
+
+	private fun addStreamWriteFunction(constructor: LlvmConstructor) {
+		streamWrite = LlvmFunction(constructor, "fwrite",
+			listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
+	}
+
+	private fun addStreamReadByteFunction(constructor: LlvmConstructor) {
+		streamReadByte = LlvmFunction(constructor, "fgetc", listOf(constructor.pointerType), constructor.i32Type)
+	}
+
+	private fun addStreamReadFunction(constructor: LlvmConstructor) {
+		streamRead = LlvmFunction(constructor, "fread",
+			listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
+	}
+
+	private fun addStreamFlushFunction(constructor: LlvmConstructor) {
+		streamFlush = LlvmFunction(constructor, "fflush", listOf(constructor.pointerType), constructor.i32Type)
+	}
+
+	private fun addSleepFunction(constructor: LlvmConstructor) {
+		sleep = LlvmFunction(constructor, "Sleep", listOf(constructor.i32Type))
+	}
+
+	private fun addExitFunction(constructor: LlvmConstructor) {
+		exit = LlvmFunction(constructor, "exit", listOf(constructor.i32Type))
+	}
+
+	private fun addMemoryCopyFunction(constructor: LlvmConstructor) {
+		memoryCopy = LlvmFunction(constructor, "memcpy", listOf(constructor.pointerType, constructor.pointerType, constructor.i64Type),
+			constructor.pointerType)
+	}
+
+	private fun addVariadicIntrinsics(constructor: LlvmConstructor) {
+		variableParameterIterationStart = LlvmFunction(constructor, "llvm.va_start", listOf(constructor.pointerType))
+		variableParameterListCopy = LlvmFunction(constructor, "llvm.va_copy", listOf(constructor.pointerType, constructor.pointerType))
+		variableParameterIterationEnd = LlvmFunction(constructor, "llvm.va_end", listOf(constructor.pointerType))
+	}
+}

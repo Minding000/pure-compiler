@@ -1,4 +1,4 @@
-package components.code_generation.llvm
+package components.code_generation.llvm.wrapper
 
 import components.semantic_model.general.Program
 import source_structure.Project

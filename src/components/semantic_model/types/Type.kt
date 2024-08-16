@@ -1,8 +1,8 @@
 package components.semantic_model.types
 
-import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmDebugInfoMetadata
-import components.code_generation.llvm.LlvmType
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmDebugInfoMetadata
+import components.code_generation.llvm.wrapper.LlvmType
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.*
 import components.semantic_model.general.SemanticModel

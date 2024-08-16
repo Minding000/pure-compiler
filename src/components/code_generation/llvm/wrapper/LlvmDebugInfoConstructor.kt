@@ -1,7 +1,7 @@
-package components.code_generation.llvm
+package components.code_generation.llvm.wrapper
 
 import errors.internal.CompilerError
-import org.bytedeco.llvm.global.LLVM.*
+import org.bytedeco.llvm.global.LLVM
 import util.toLlvmList
 
 class LlvmDebugInfoConstructor(module: LlvmModule) {
@@ -21,13 +21,14 @@ class LlvmDebugInfoConstructor(module: LlvmModule) {
 		val sysRoot = ""
 		val sdk = ""
 		val runtimeVersion = 0
-		return LLVMDIBuilderCreateCompileUnit(builder, LLVMDWARFSourceLanguageC, entrypointFile, producerName, producerName.length.toLong(),
-			Llvm.NO, flags, flags.length.toLong(), runtimeVersion, splitName, splitName.length.toLong(), LLVMDWARFEmissionFull, 0,
+		return LLVM.LLVMDIBuilderCreateCompileUnit(builder, LLVM.LLVMDWARFSourceLanguageC, entrypointFile, producerName,
+			producerName.length.toLong(),
+			Llvm.NO, flags, flags.length.toLong(), runtimeVersion, splitName, splitName.length.toLong(), LLVM.LLVMDWARFEmissionFull, 0,
 			Llvm.NO, Llvm.NO, sysRoot, sysRoot.length.toLong(), sdk, sdk.length.toLong())
 	}
 
 	fun createFile(fileName: String, path: String): LlvmDebugInfoMetadata {
-		return LLVMDIBuilderCreateFile(builder, fileName, fileName.length.toLong(), path, path.length.toLong())
+		return LLVM.LLVMDIBuilderCreateFile(builder, fileName, fileName.length.toLong(), path, path.length.toLong())
 	}
 
 	fun createFunction(parent: LlvmDebugInfoMetadata, name: String, parentFile: LlvmDebugInfoMetadata,
@@ -36,13 +37,13 @@ class LlvmDebugInfoConstructor(module: LlvmModule) {
 		val lineNumber = 0
 		val lineNumberInScope = 0
 		val flags = 0
-		return LLVMDIBuilderCreateFunction(builder, parent, name, name.length.toLong(), linkageName, linkageName.length.toLong(),
+		return LLVM.LLVMDIBuilderCreateFunction(builder, parent, name, name.length.toLong(), linkageName, linkageName.length.toLong(),
 			parentFile, lineNumber, functionType, Llvm.NO, Llvm.YES, lineNumberInScope, flags, Llvm.NO)
 	}
 
 	fun createFunctionType(parentFile: LlvmDebugInfoMetadata, parameters: List<LlvmDebugInfoMetadata?>): LlvmDebugInfoMetadata {
 		val flags = 0
-		return LLVMDIBuilderCreateSubroutineType(builder, parentFile, parameters.toLlvmList(), parameters.size, flags)
+		return LLVM.LLVMDIBuilderCreateSubroutineType(builder, parentFile, parameters.toLlvmList(), parameters.size, flags)
 	}
 
 	fun createTypeDeclaration(parent: LlvmDebugInfoMetadata, name: String, parentFile: LlvmDebugInfoMetadata,
@@ -52,7 +53,7 @@ class LlvmDebugInfoConstructor(module: LlvmModule) {
 		val vtable = null
 		val uniqueIdentifier = ""
 		val lineNumber = 0
-		return LLVMDIBuilderCreateClassType(builder, parent, name, name.length.toLong(), parentFile, lineNumber, sizeInBits,
+		return LLVM.LLVMDIBuilderCreateClassType(builder, parent, name, name.length.toLong(), parentFile, lineNumber, sizeInBits,
 			alignmentInBits, offsetInBits, flags, null, elements.toLlvmList(), elements.size, vtable,
 			null, uniqueIdentifier, uniqueIdentifier.length.toLong())
 	}
@@ -60,14 +61,14 @@ class LlvmDebugInfoConstructor(module: LlvmModule) {
 	fun createType(typeDeclarationMetadata: LlvmDebugInfoMetadata?): LlvmDebugInfoMetadata {
 		if(typeDeclarationMetadata == null)
 			throw CompilerError("Missing type declaration in object type.")
-		return LLVMDIBuilderCreateObjectPointerType(builder, typeDeclarationMetadata)
+		return LLVM.LLVMDIBuilderCreateObjectPointerType(builder, typeDeclarationMetadata)
 	}
 
 	fun attach(metadata: LlvmDebugInfoMetadata, function: LlvmValue) {
-		LLVMSetSubprogram(function, metadata)
+		LLVM.LLVMSetSubprogram(function, metadata)
 	}
 
 	fun finish() {
-		LLVMDIBuilderFinalize(builder)
+		LLVM.LLVMDIBuilderFinalize(builder)
 	}
 }

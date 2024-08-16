@@ -1,9 +1,9 @@
 package components.semantic_model.control_flow
 
-import components.code_generation.llvm.LlvmBlock
-import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmValue
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.wrapper.LlvmBlock
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.ComputedPropertyDeclaration
@@ -125,8 +125,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		val function = constructor.getParentFunction()
 		val elementCount = constructor.getLastParameter(function)
 		val elementList = constructor.buildStackAllocation(context.variadicParameterListStruct, "_overGenerator_elementList")
-		constructor.buildFunctionCall(context.llvmVariableParameterIterationStartFunctionType,
-			context.llvmVariableParameterIterationStartFunction, listOf(elementList))
+		constructor.buildFunctionCall(context.externalFunctions.variableParameterIterationStart, listOf(elementList))
 		val indexType = constructor.i32Type
 		val indexVariable = generator.currentIndexVariable?.llvmLocation
 			?: constructor.buildStackAllocation(indexType, "_overGenerator_indexVariable")
@@ -164,8 +163,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 			jumpToNextIteration(constructor)
 		constructor.select(exitBlock)
 		//TODO also call this if the loop body returns / raises? (like always block)
-		constructor.buildFunctionCall(context.llvmVariableParameterIterationEndFunctionType,
-			context.llvmVariableParameterIterationEndFunction, listOf(elementList))
+		constructor.buildFunctionCall(context.externalFunctions.variableParameterIterationEnd, listOf(elementList))
 	}
 
 	private fun compileIteratorOverLoop(constructor: LlvmConstructor, generator: OverGenerator, iterableType: Type?) {

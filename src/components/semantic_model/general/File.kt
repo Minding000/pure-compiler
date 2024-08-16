@@ -1,8 +1,8 @@
 package components.semantic_model.general
 
-import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmType
-import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmType
+import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.scopes.FileScope
 import logger.issues.resolution.ReferencedFileNotFound

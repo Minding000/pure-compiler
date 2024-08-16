@@ -1,7 +1,7 @@
 package components.semantic_model.declarations
 
-import components.code_generation.llvm.LlvmConstructor
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.general.File
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.FileScope

@@ -1,4 +1,4 @@
-package components.code_generation.llvm
+package components.code_generation.llvm.wrapper
 
 import errors.internal.CompilerError
 import org.bytedeco.llvm.global.LLVM.*
@@ -148,6 +148,14 @@ class LlvmConstructor(name: String) {
 		val kind = LLVMGetEnumAttributeKindForName(attributeName, attributeName.length.toLong())
 		val attribute = LLVMCreateEnumAttribute(context, kind, Llvm.YES.toLong())
 		LLVMAddAttributeAtIndex(function, LLVMAttributeReturnIndex, attribute)
+	}
+
+	fun buildFunctionCall(function: LlvmFunction, parameters: List<LlvmValue?> = emptyList()) {
+		buildFunctionCall(function.type, function.value, parameters)
+	}
+
+	fun buildFunctionCall(function: LlvmFunction, parameters: List<LlvmValue?> = emptyList(), name: String): LlvmValue {
+		return buildFunctionCall(function.type, function.value, parameters, name)
 	}
 
 	fun buildFunctionCall(functionType: LlvmType?, function: LlvmValue, parameters: List<LlvmValue?> = emptyList()) {
@@ -320,7 +328,8 @@ class LlvmConstructor(name: String) {
 
 	fun buildCastFromIntegerToPointer(value: LlvmValue, name: String): LlvmValue = LLVMBuildIntToPtr(builder, value, pointerType, name)
 
-	fun buildCastFromIntegerToBoolean(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, booleanType, name)
+	fun buildCastFromIntegerToBoolean(integer: LlvmValue, name: String): LlvmValue =
+		LLVMBuildIntCast(builder, integer, booleanType, name)
 
 	fun buildCastFromBooleanToByte(boolean: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, boolean, byteType, name)
 	fun buildCastFromIntegerToByte(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, byteType, name)
@@ -329,7 +338,8 @@ class LlvmConstructor(name: String) {
 	fun buildCastFromIntegerToLong(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, i64Type, name)
 	fun buildCastFromLongToInteger(long: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, long, i32Type, name)
 
-	fun buildCastFromSignedIntegerToFloat(integer: LlvmValue, name: String): LlvmValue = LLVMBuildSIToFP(builder, integer, floatType, name)
+	fun buildCastFromSignedIntegerToFloat(integer: LlvmValue, name: String): LlvmValue =
+		LLVMBuildSIToFP(builder, integer, floatType, name)
 
 	fun buildIsNull(value: LlvmValue, name: String): LlvmValue = LLVMBuildIsNull(builder, value, name)
 	fun buildIsNotNull(value: LlvmValue, name: String): LlvmValue = LLVMBuildIsNotNull(builder, value, name)
@@ -348,8 +358,12 @@ class LlvmConstructor(name: String) {
 	fun buildIntegerLeftShift(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildShl(builder, left, right, name)
 	fun buildIntegerRightShift(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildAShr(builder, left, right, name)
 	fun buildIntegerSubtraction(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildSub(builder, left, right, name)
-	fun buildIntegerMultiplication(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildMul(builder, left, right, name)
-	fun buildSignedIntegerDivision(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildSDiv(builder, left, right, name)
+	fun buildIntegerMultiplication(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
+		LLVMBuildMul(builder, left, right, name)
+
+	fun buildSignedIntegerDivision(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
+		LLVMBuildSDiv(builder, left, right, name)
+
 	fun buildSignedIntegerLessThan(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildICmp(builder, Llvm.SignedIntegerOperation.LESS_THAN, left, right, name)
 
@@ -377,7 +391,9 @@ class LlvmConstructor(name: String) {
 	fun buildFloatNegation(value: LlvmValue, name: String): LlvmValue = LLVMBuildFNeg(builder, value, name)
 	fun buildFloatAddition(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildFAdd(builder, left, right, name)
 	fun buildFloatSubtraction(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildFSub(builder, left, right, name)
-	fun buildFloatMultiplication(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildFMul(builder, left, right, name)
+	fun buildFloatMultiplication(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
+		LLVMBuildFMul(builder, left, right, name)
+
 	fun buildFloatDivision(left: LlvmValue, right: LlvmValue, name: String): LlvmValue = LLVMBuildFDiv(builder, left, right, name)
 	fun buildFloatLessThan(left: LlvmValue, right: LlvmValue, name: String): LlvmValue =
 		LLVMBuildFCmp(builder, Llvm.FloatOperation.LESS_THAN, left, right, name)

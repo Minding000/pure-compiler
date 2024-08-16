@@ -1,9 +1,10 @@
 package components.semantic_model.context
 
 import code.Main
-import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmType
-import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.ExternalFunctions
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmType
+import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.control_flow.LoopStatement
 import components.semantic_model.control_flow.Try
 import components.semantic_model.declarations.ComputedPropertyDeclaration
@@ -23,8 +24,14 @@ class Context {
 	val logger = Logger("compiler")
 	val declarationStack = DeclarationStack(logger)
 	val surroundingLoops = LinkedList<LoopStatement>()
+	val memberIdentities = IdentityMap<String>()
+	val externalFunctions = ExternalFunctions()
+	val nativeRegistry = NativeRegistry(this)
+	var primitiveCompilationTarget: TypeDeclaration? = null
+	// Pure runtime
 	lateinit var symbolTable: LlvmValue
 	lateinit var classDefinitionStruct: LlvmType
+	lateinit var variadicParameterListStruct: LlvmType
 	lateinit var llvmConstantOffsetFunction: LlvmValue
 	lateinit var llvmPropertyOffsetFunction: LlvmValue
 	lateinit var llvmFunctionAddressFunction: LlvmValue
@@ -38,39 +45,7 @@ class Context {
 	lateinit var llvmStandardInputStreamGlobal: LlvmValue
 	lateinit var llvmStandardOutputStreamGlobal: LlvmValue
 	lateinit var llvmStandardErrorStreamGlobal: LlvmValue
-	lateinit var llvmPrintFunctionType: LlvmType
-	lateinit var llvmPrintFunction: LlvmValue
-	lateinit var llvmPrintToBufferFunctionType: LlvmType
-	lateinit var llvmPrintToBufferFunction: LlvmValue
-	lateinit var llvmPrintSizeFunctionType: LlvmType
-	lateinit var llvmPrintSizeFunction: LlvmValue
-	lateinit var llvmStreamOpenFunctionType: LlvmType
-	lateinit var llvmStreamOpenFunction: LlvmValue
-	lateinit var llvmStreamErrorFunctionType: LlvmType
-	lateinit var llvmStreamErrorFunction: LlvmValue
-	lateinit var llvmStreamCloseFunctionType: LlvmType
-	lateinit var llvmStreamCloseFunction: LlvmValue
-	lateinit var llvmStreamWriteFunctionType: LlvmType
-	lateinit var llvmStreamWriteFunction: LlvmValue
-	lateinit var llvmStreamReadByteFunctionType: LlvmType
-	lateinit var llvmStreamReadByteFunction: LlvmValue
-	lateinit var llvmStreamReadFunctionType: LlvmType
-	lateinit var llvmStreamReadFunction: LlvmValue
-	lateinit var llvmStreamFlushFunctionType: LlvmType
-	lateinit var llvmStreamFlushFunction: LlvmValue
-	lateinit var llvmSleepFunctionType: LlvmType
-	lateinit var llvmSleepFunction: LlvmValue
-	lateinit var llvmExitFunctionType: LlvmType
-	lateinit var llvmExitFunction: LlvmValue
-	lateinit var llvmMemoryCopyFunctionType: LlvmType
-	lateinit var llvmMemoryCopyFunction: LlvmValue
-	lateinit var variadicParameterListStruct: LlvmType
-	lateinit var llvmVariableParameterIterationStartFunctionType: LlvmType
-	lateinit var llvmVariableParameterIterationStartFunction: LlvmValue
-	lateinit var llvmVariableParameterListCopyFunctionType: LlvmType
-	lateinit var llvmVariableParameterListCopyFunction: LlvmValue
-	lateinit var llvmVariableParameterIterationEndFunctionType: LlvmType
-	lateinit var llvmVariableParameterIterationEndFunction: LlvmValue
+	// Standard library
 	var exceptionAddLocationFunctionType: LlvmType? = null
 	lateinit var closureStruct: LlvmType
 	lateinit var arrayDeclarationType: LlvmType
@@ -100,9 +75,6 @@ class Context {
 	var stringTypeDeclaration: TypeDeclaration? = null
 	lateinit var llvmStringByteArrayInitializerType: LlvmType
 	lateinit var llvmStringByteArrayInitializer: LlvmValue
-	val memberIdentities = IdentityMap<String>()
-	val nativeRegistry = NativeRegistry(this)
-	var primitiveCompilationTarget: TypeDeclaration? = null
 
 	companion object {
 		const val CLASS_DEFINITION_PROPERTY_INDEX = 0
@@ -151,7 +123,7 @@ class Context {
 		val exceptionBlock = constructor.createBlock("exception")
 		val noExceptionBlock = constructor.createBlock("noException")
 		constructor.buildJump(doesExceptionExist, exceptionBlock, noExceptionBlock)
-		constructor.select(exceptionBlock) //TODO deduplicate LLVM-IR in these blocks (bloats the application)
+		constructor.select(exceptionBlock)
 		val surroundingCallable =
 			model.scope.getSurroundingInitializer() ?: model.scope.getSurroundingFunction() ?: model.scope.getSurroundingComputedProperty()
 		if(surroundingCallable != null)
@@ -164,11 +136,10 @@ class Context {
 								surroundingCallable: SemanticModel) {
 		if(!nativeRegistry.has(SpecialType.EXCEPTION))
 			return
-		val ignoredExceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable")
-		constructor.buildStore(constructor.nullPointer, ignoredExceptionVariable)
+
 		val line = model.source.start.line
-		val moduleName = createStringObject(constructor, line.file.module.localName)
-		val fileName = createStringObject(constructor, line.file.name)
+		val moduleNameString = line.file.module.localName
+		val fileNameString = line.file.name
 		val lineNumber = constructor.buildInt32(line.number)
 		val description = if(surroundingCallable is ComputedPropertyDeclaration) {
 			val getter = surroundingCallable.getterErrorHandlingContext
@@ -179,6 +150,13 @@ class Context {
 		} else {
 			surroundingCallable.toString()
 		}
+
+		//TODO move this into an LLVM function
+
+		val ignoredExceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable")
+		constructor.buildStore(constructor.nullPointer, ignoredExceptionVariable)
+		val moduleName = createStringObject(constructor, moduleNameString)
+		val fileName = createStringObject(constructor, fileNameString)
 		val descriptionString = createStringObject(constructor, description)
 
 		val addLocationFunctionAddress = resolveFunction(constructor, exception, "addLocation(String, String, Int, String)")
@@ -302,7 +280,7 @@ class Context {
 	fun panic(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
 		printLine(constructor, formatString, *values)
 		val exitCode = constructor.buildInt32(1)
-		constructor.buildFunctionCall(llvmExitFunctionType, llvmExitFunction, listOf(exitCode))
+		constructor.buildFunctionCall(externalFunctions.exit, listOf(exitCode))
 	}
 
 	fun printLine(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
@@ -315,7 +293,7 @@ class Context {
 		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("pure_debug_formatString", formatString)
 
 		val handle = constructor.buildLoad(constructor.pointerType, llvmStandardOutputStreamGlobal, "handle")
-		constructor.buildFunctionCall(llvmPrintFunctionType, llvmPrintFunction, listOf(handle, formatStringGlobal, *values))
-		constructor.buildFunctionCall(llvmStreamFlushFunctionType, llvmStreamFlushFunction, listOf(handle))
+		constructor.buildFunctionCall(externalFunctions.print, listOf(handle, formatStringGlobal, *values))
+		constructor.buildFunctionCall(externalFunctions.streamFlush, listOf(handle))
 	}
 }

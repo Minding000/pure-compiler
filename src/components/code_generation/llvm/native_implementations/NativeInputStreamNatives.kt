@@ -1,7 +1,7 @@
 package components.code_generation.llvm.native_implementations
 
-import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 
@@ -20,8 +20,7 @@ class NativeInputStreamNatives(val context: Context) {
 		val handleProperty = constructor.buildGetPropertyPointer(context.nativeInputStreamDeclarationType, thisObject,
 			context.nativeInputStreamValueIndex, "handleProperty")
 		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
-		val byteAsInteger = constructor.buildFunctionCall(context.llvmStreamReadByteFunctionType, context.llvmStreamReadByteFunction,
-			listOf(handle), "byteAsInteger")
+		val byteAsInteger = constructor.buildFunctionCall(context.externalFunctions.streamReadByte, listOf(handle), "byteAsInteger")
 
 		val endOfFileIndicator = constructor.buildInt32(-1)
 		val hasFailed = constructor.buildSignedIntegerEqualTo(byteAsInteger, endOfFileIndicator, "hasFailed")
@@ -32,8 +31,7 @@ class NativeInputStreamNatives(val context: Context) {
 		val byte = constructor.buildCastFromIntegerToByte(byteAsInteger, "byte")
 		constructor.buildReturn(byte)
 		constructor.select(errorBlock)
-		val errorCode = constructor.buildFunctionCall(context.llvmStreamErrorFunctionType, context.llvmStreamErrorFunction,
-			listOf(handle), "errorCode")
+		val errorCode = constructor.buildFunctionCall(context.externalFunctions.streamError, listOf(handle), "errorCode")
 		context.panic(constructor, "Failed to read byte: %i", errorCode)
 		constructor.markAsUnreachable()
 	}
@@ -61,8 +59,9 @@ class NativeInputStreamNatives(val context: Context) {
 		constructor.buildStore(buffer, arrayValueProperty)
 
 		val byteSize = constructor.buildInt64(1)
-		val actualNumberOfBytesAsLong = constructor.buildFunctionCall(context.llvmStreamReadFunctionType, context.llvmStreamReadFunction,
-			listOf(buffer, byteSize, desiredNumberOfBytes, handle), "actualNumberOfBytesAsLong")
+		val actualNumberOfBytesAsLong =
+			constructor.buildFunctionCall(context.externalFunctions.streamRead, listOf(buffer, byteSize, desiredNumberOfBytes, handle),
+				"actualNumberOfBytesAsLong")
 
 		val actualNumberOfBytes = constructor.buildCastFromIntegerToLong(actualNumberOfBytesAsLong, "actualNumberOfBytes")
 

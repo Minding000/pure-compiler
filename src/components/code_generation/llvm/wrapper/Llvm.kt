@@ -1,10 +1,8 @@
-package components.code_generation.llvm
+package components.code_generation.llvm.wrapper
 
 import errors.internal.CompilerError
 import org.bytedeco.javacpp.BytePointer
 import org.bytedeco.javacpp.Pointer
-import org.bytedeco.javacpp.PointerPointer
-import org.bytedeco.llvm.LLVM.*
 import org.bytedeco.llvm.global.LLVM.*
 import util.toLlvmList
 
@@ -106,7 +104,7 @@ object Llvm {
 		return message
 	}
 
-	fun handleError(error: LLVMErrorRef?, messagePrefix: String) {
+	fun handleError(error: LlvmError?, messagePrefix: String) {
 		if(error == null)
 			return
 		val errorMessage = LLVMGetErrorMessage(error)
@@ -123,13 +121,3 @@ object Llvm {
 		}
 	}
 }
-
-typealias LlvmContext = LLVMContextRef
-typealias LlvmModule = LLVMModuleRef
-typealias LlvmBuilder = LLVMBuilderRef
-typealias LlvmBlock = LLVMBasicBlockRef
-typealias LlvmValue = LLVMValueRef
-typealias LlvmGenericValue = LLVMGenericValueRef
-typealias LlvmType = LLVMTypeRef
-typealias LlvmExecutionEngine = LLVMExecutionEngineRef
-typealias LlvmList<T> = PointerPointer<T>

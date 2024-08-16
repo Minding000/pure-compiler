@@ -1,6 +1,6 @@
 package util
 
-import components.code_generation.llvm.LlvmList
+import components.code_generation.llvm.wrapper.LlvmList
 import errors.internal.CompilerError
 import org.bytedeco.javacpp.Pointer
 

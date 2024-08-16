@@ -1,4 +1,4 @@
-package components.code_generation.llvm
+package components.code_generation.llvm.wrapper
 
 import code.Main
 import components.code_generation.ForeignFunctionInterface
@@ -10,7 +10,7 @@ import org.bytedeco.javacpp.FloatPointer
 import org.bytedeco.javacpp.IntPointer
 import org.bytedeco.llvm.LLVM.LLVMTargetRef
 import org.bytedeco.llvm.LLVM.LLVMValueRef
-import org.bytedeco.llvm.global.LLVM.*
+import org.bytedeco.llvm.global.LLVM
 import java.io.File
 
 class LlvmProgram(name: String) {
@@ -35,42 +35,43 @@ class LlvmProgram(name: String) {
 
 	fun verify() {
 		val error = BytePointer()
-		if(LLVMVerifyModule(constructor.module, Llvm.ModuleVerificationAction.PRINT, error) != Llvm.OK) {
-			LLVMDisposeMessage(error)
+		if(LLVM.LLVMVerifyModule(constructor.module, Llvm.ModuleVerificationAction.PRINT, error) != Llvm.OK) {
+			LLVM.LLVMDisposeMessage(error)
 			throw CompilerError("Failed to compile to LLVM target.")
 		}
 	}
 
 	fun compile() {
-		val passManager = LLVMCreatePassManager()
-		LLVMRunPassManager(passManager, constructor.module)
-		LLVMDisposePassManager(passManager)
+		val passManager = LLVM.LLVMCreatePassManager()
+		LLVM.LLVMRunPassManager(passManager, constructor.module)
+		LLVM.LLVMDisposePassManager(passManager)
 	}
 
 	fun writeObjectFileTo(objectFilePath: String) {
-		LLVMInitializeAllTargetInfos()
-		LLVMInitializeAllTargets()
-		LLVMInitializeAllTargetMCs()
-		LLVMInitializeAllAsmParsers()
-		LLVMInitializeAllAsmPrinters()
+		LLVM.LLVMInitializeAllTargetInfos()
+		LLVM.LLVMInitializeAllTargets()
+		LLVM.LLVMInitializeAllTargetMCs()
+		LLVM.LLVMInitializeAllAsmParsers()
+		LLVM.LLVMInitializeAllAsmPrinters()
 		val target = LLVMTargetRef()
 		val error = BytePointer()
 		val triplePointer = BytePointer(targetTriple)
-		if(LLVMGetTargetFromTriple(triplePointer, target, error) != Llvm.OK)
+		if(LLVM.LLVMGetTargetFromTriple(triplePointer, target, error) != Llvm.OK)
 			throw CompilerError("Failed get LLVM target from target triple: ${Llvm.getMessage(error)}")
 		val cpu = "generic"
 		val features = ""
-		val targetMachine = LLVMCreateTargetMachine(target, targetTriple, cpu, features, Llvm.OptimizationLevel.DEBUGGABLE, LLVMRelocPIC,
-			LLVMCodeModelDefault)
-		val dataLayout = LLVMCreateTargetDataLayout(targetMachine)
+		val targetMachine =
+			LLVM.LLVMCreateTargetMachine(target, targetTriple, cpu, features, Llvm.OptimizationLevel.DEBUGGABLE, LLVM.LLVMRelocPIC,
+				LLVM.LLVMCodeModelDefault)
+		val dataLayout = LLVM.LLVMCreateTargetDataLayout(targetMachine)
 		val dataLayoutPointer = BytePointer(dataLayout)
-		LLVMSetDataLayout(constructor.module, dataLayoutPointer)
-		if(LLVMTargetMachineEmitToFile(targetMachine, constructor.module, objectFilePath, LLVMObjectFile, error) != Llvm.OK)
+		LLVM.LLVMSetDataLayout(constructor.module, dataLayoutPointer)
+		if(LLVM.LLVMTargetMachineEmitToFile(targetMachine, constructor.module, objectFilePath, LLVM.LLVMObjectFile, error) != Llvm.OK)
 			throw CompilerError("Failed to emit object file: ${Llvm.getMessage(error)}")
 	}
 
 	fun getIntermediateRepresentation(): String {
-		val string = LLVMPrintModuleToString(constructor.module)
+		val string = LLVM.LLVMPrintModuleToString(constructor.module)
 		return Llvm.getMessage(string)
 	}
 

@@ -1,6 +1,6 @@
 package components.semantic_model.general
 
-import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.scopes.BlockScope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode

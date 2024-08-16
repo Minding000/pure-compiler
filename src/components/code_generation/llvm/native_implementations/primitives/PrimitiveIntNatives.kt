@@ -1,6 +1,6 @@
 package components.code_generation.llvm.native_implementations.primitives
 
-import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 import components.semantic_model.context.PrimitiveImplementation

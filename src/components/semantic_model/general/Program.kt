@@ -1,8 +1,8 @@
 package components.semantic_model.general
 
 import code.Main
-import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.FunctionImplementation
@@ -82,23 +82,11 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		context.llvmMemberIdType = constructor.i32Type
 		context.llvmMemberOffsetType = constructor.i32Type
 		context.llvmMemberAddressType = constructor.pointerType
-		addPrintFunction(constructor)
-		addPrintToBufferFunction(constructor)
-		addPrintSizeFunction(constructor)
-		addStreamOpenFunction(constructor)
-		addStreamErrorFunction(constructor)
-		addStreamCloseFunction(constructor)
-		addStreamWriteFunction(constructor)
-		addStreamReadByteFunction(constructor)
-		addStreamReadFunction(constructor)
-		addStreamFlushFunction(constructor)
-		addSleepFunction(constructor)
-		addExitFunction(constructor)
-		addMemoryCopyFunction(constructor)
-		addVariadicIntrinsics(constructor)
+		context.externalFunctions.load(constructor)
 		declareStandardStreams(constructor)
 		declareClosureStruct(constructor)
 		declareSystemStructs(constructor)
+		declareVariadicParameterListStruct(constructor)
 		context.nativeRegistry.loadNativeImplementations(constructor)
 		for(file in files)
 			file.declare(constructor)
@@ -195,8 +183,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		}
 
 		//TODO remove: this flush is for debugging
-		val handle = constructor.buildLoad(constructor.pointerType, context.llvmStandardOutputStreamGlobal, "handle")
-		constructor.buildFunctionCall(context.llvmStreamFlushFunctionType, context.llvmStreamFlushFunction, listOf(handle))
+		//val handle = constructor.buildLoad(constructor.pointerType, context.llvmStandardOutputStreamGlobal, "handle")
+		//constructor.buildFunctionCall(context.llvmStreamFlushFunctionType, context.llvmStreamFlushFunction, listOf(handle))
 
 		if(userEntryPointReturnsVoid)
 			result = constructor.buildInt32(ExitCode.SUCCESS)
@@ -227,7 +215,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			val arrayValue = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "arrayValue")
 			context.printMessage(constructor, "Unhandled error: %.*s", arraySize, arrayValue)
 			val exitCode = constructor.buildInt32(1)
-			constructor.buildFunctionCall(context.llvmExitFunctionType, context.llvmExitFunction, listOf(exitCode))
+			constructor.buildFunctionCall(context.externalFunctions.exit, listOf(exitCode))
 		} else {
 			context.panic(constructor, "Unhandled error at '%p'.", exception)
 		}
@@ -259,8 +247,8 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	private fun createStandardStream(constructor: LlvmConstructor, identifier: Int, mode: LlvmValue, global: LlvmValue) {
-		val handle = constructor.buildFunctionCall(context.llvmStreamOpenFunctionType, context.llvmStreamOpenFunction,
-			listOf(constructor.buildInt32(identifier)), "handle")
+		val handle =
+			constructor.buildFunctionCall(context.externalFunctions.streamOpen, listOf(constructor.buildInt32(identifier)), "handle")
 		//val handle = constructor.buildGetArrayElementPointer(constructor.pointerType, handleArray, constructor.buildInt32(identifier), "handle")
 		constructor.buildStore(handle, global)
 	}
@@ -273,106 +261,6 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.defineGlobal(context.llvmStandardInputStreamGlobal, constructor.nullPointer)
 		constructor.defineGlobal(context.llvmStandardOutputStreamGlobal, constructor.nullPointer)
 		constructor.defineGlobal(context.llvmStandardErrorStreamGlobal, constructor.nullPointer)
-	}
-
-	private fun addPrintFunction(constructor: LlvmConstructor) {
-		context.llvmPrintFunctionType =
-			constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), constructor.i32Type, true)
-		context.llvmPrintFunction = constructor.buildFunction("fprintf", context.llvmPrintFunctionType)
-	}
-
-	private fun addPrintToBufferFunction(constructor: LlvmConstructor) {
-		context.llvmPrintToBufferFunctionType =
-			constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), constructor.i32Type, true)
-		context.llvmPrintToBufferFunction = constructor.buildFunction("sprintf", context.llvmPrintToBufferFunctionType)
-	}
-
-	private fun addPrintSizeFunction(constructor: LlvmConstructor) {
-		context.llvmPrintSizeFunctionType =
-			constructor.buildFunctionType(listOf(constructor.pointerType, constructor.i64Type, constructor.pointerType),
-				constructor.i32Type, true)
-		context.llvmPrintSizeFunction = constructor.buildFunction("snprintf", context.llvmPrintSizeFunctionType)
-	}
-
-	private fun addStreamOpenFunction(constructor: LlvmConstructor) {
-		val targetTriple = constructor.getTargetTriple()
-		val name = if(targetTriple.contains("linux")) "fdopen" else "__acrt_iob_func"
-		context.llvmStreamOpenFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type), constructor.pointerType)
-		//val name = if(targetTriple.contains("linux")) "fdopen" else "__iob_func"
-		//context.llvmStreamOpenFunctionType = constructor.buildFunctionType(listOf(), constructor.pointerType)
-		//val name = if(targetTriple.contains("linux")) "fdopen" else "_fdopen"
-		//context.llvmStreamOpenFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type, constructor.pointerType), constructor.pointerType)
-		context.llvmStreamOpenFunction = constructor.buildFunction(name, context.llvmStreamOpenFunctionType)
-	}
-
-	private fun addStreamErrorFunction(constructor: LlvmConstructor) {
-		context.llvmStreamErrorFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.i32Type)
-		context.llvmStreamErrorFunction = constructor.buildFunction("ferror", context.llvmStreamErrorFunctionType)
-	}
-
-	private fun addStreamCloseFunction(constructor: LlvmConstructor) {
-		context.llvmStreamCloseFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.i32Type)
-		context.llvmStreamCloseFunction = constructor.buildFunction("fclose", context.llvmStreamCloseFunctionType)
-	}
-
-	private fun addStreamWriteFunction(constructor: LlvmConstructor) {
-		context.llvmStreamWriteFunctionType = constructor.buildFunctionType(
-			listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
-		context.llvmStreamWriteFunction = constructor.buildFunction("fwrite", context.llvmStreamWriteFunctionType)
-	}
-
-	private fun addStreamReadByteFunction(constructor: LlvmConstructor) {
-		context.llvmStreamReadByteFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.i32Type)
-		context.llvmStreamReadByteFunction = constructor.buildFunction("fgetc", context.llvmStreamReadByteFunctionType)
-	}
-
-	private fun addStreamReadFunction(constructor: LlvmConstructor) {
-		context.llvmStreamReadFunctionType = constructor.buildFunctionType(
-			listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
-		context.llvmStreamReadFunction = constructor.buildFunction("fread", context.llvmStreamReadFunctionType)
-	}
-
-	private fun addStreamFlushFunction(constructor: LlvmConstructor) {
-		context.llvmStreamFlushFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType), constructor.i32Type)
-		context.llvmStreamFlushFunction = constructor.buildFunction("fflush", context.llvmStreamFlushFunctionType)
-	}
-
-	private fun addSleepFunction(constructor: LlvmConstructor) {
-		context.llvmSleepFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type))
-		context.llvmSleepFunction = constructor.buildFunction("Sleep", context.llvmSleepFunctionType)
-	}
-
-	private fun addExitFunction(constructor: LlvmConstructor) {
-		context.llvmExitFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type))
-		context.llvmExitFunction = constructor.buildFunction("exit", context.llvmExitFunctionType)
-	}
-
-	private fun addMemoryCopyFunction(constructor: LlvmConstructor) {
-		context.llvmMemoryCopyFunctionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType,
-			constructor.i64Type), constructor.pointerType)
-		context.llvmMemoryCopyFunction = constructor.buildFunction("memcpy", context.llvmMemoryCopyFunctionType)
-	}
-
-	private fun addVariadicIntrinsics(constructor: LlvmConstructor) {
-		context.variadicParameterListStruct = constructor.declareStruct("${RUNTIME_PREFIX}variadicParameterList")
-		val targetTriple = constructor.getTargetTriple()
-		val variadicParameterListStructMembers = if(targetTriple.contains("x86_64-unknown-linux"))
-			listOf(constructor.i32Type, constructor.i32Type, constructor.pointerType, constructor.pointerType)
-		else
-			listOf(constructor.pointerType)
-		constructor.defineStruct(context.variadicParameterListStruct, variadicParameterListStructMembers)
-		context.llvmVariableParameterIterationStartFunctionType =
-			constructor.buildFunctionType(listOf(constructor.pointerType), constructor.voidType)
-		context.llvmVariableParameterIterationStartFunction =
-			constructor.buildFunction("llvm.va_start", context.llvmVariableParameterIterationStartFunctionType)
-		context.llvmVariableParameterListCopyFunctionType =
-			constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), constructor.voidType)
-		context.llvmVariableParameterListCopyFunction =
-			constructor.buildFunction("llvm.va_copy", context.llvmVariableParameterListCopyFunctionType)
-		context.llvmVariableParameterIterationEndFunctionType =
-			constructor.buildFunctionType(listOf(constructor.pointerType), constructor.voidType)
-		context.llvmVariableParameterIterationEndFunction =
-			constructor.buildFunction("llvm.va_end", context.llvmVariableParameterIterationEndFunctionType)
 	}
 
 	private fun declareClosureStruct(constructor: LlvmConstructor) {
@@ -394,6 +282,16 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			memberCountType, memberIdArrayType, memberAddressArrayType
 		)
 		constructor.defineStruct(context.classDefinitionStruct, classDefinitionMemberTypes)
+	}
+
+	private fun declareVariadicParameterListStruct(constructor: LlvmConstructor) {
+		context.variadicParameterListStruct = constructor.declareStruct("${RUNTIME_PREFIX}variadicParameterList")
+		val targetTriple = constructor.getTargetTriple()
+		val variadicParameterListStructMembers = if(targetTriple.contains("x86_64-unknown-linux"))
+			listOf(constructor.i32Type, constructor.i32Type, constructor.pointerType, constructor.pointerType)
+		else
+			listOf(constructor.pointerType)
+		constructor.defineStruct(context.variadicParameterListStruct, variadicParameterListStructMembers)
 	}
 
 	private fun buildSystemFunctions(constructor: LlvmConstructor) {

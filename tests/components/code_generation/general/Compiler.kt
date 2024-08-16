@@ -1,6 +1,6 @@
 package components.code_generation.general
 
-import components.code_generation.llvm.LlvmProgram
+import components.code_generation.llvm.wrapper.LlvmProgram
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import util.TestUtil

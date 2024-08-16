@@ -1,7 +1,7 @@
 package code
 
 import components.code_generation.Linker
-import components.code_generation.llvm.LlvmCompiler
+import components.code_generation.llvm.wrapper.LlvmCompiler
 import components.semantic_model.context.SemanticModelGenerator
 import components.semantic_model.context.SpecialType
 import components.semantic_model.general.Program

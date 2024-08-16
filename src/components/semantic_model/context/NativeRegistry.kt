@@ -1,9 +1,9 @@
 package components.semantic_model.context
 
-import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmValue
 import components.code_generation.llvm.native_implementations.*
 import components.code_generation.llvm.native_implementations.primitives.PrimitiveIntNatives
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.scopes.FileScope

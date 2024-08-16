@@ -1,7 +1,7 @@
 package components.code_generation.llvm.native_implementations
 
-import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmValue
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.NativeRegistry
 import errors.internal.CompilerError
@@ -39,8 +39,7 @@ class IdentifiableNatives(val context: Context) {
 		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, context.byteArrayValueIndex,
 			"_arrayValueProperty")
 		val buffer = constructor.buildHeapArrayAllocation(constructor.byteType, size, "characters")
-		constructor.buildFunctionCall(context.llvmPrintToBufferFunctionType, context.llvmPrintToBufferFunction,
-			listOf(buffer, format, thisIdentifiable))
+		constructor.buildFunctionCall(context.externalFunctions.printToBuffer, listOf(buffer, format, thisIdentifiable))
 		constructor.buildStore(buffer, arrayValueProperty)
 		context.printDebugLine(constructor, "buffer: %s", buffer)
 

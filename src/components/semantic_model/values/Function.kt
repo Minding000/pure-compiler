@@ -1,6 +1,6 @@
 package components.semantic_model.values
 
-import components.code_generation.llvm.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration

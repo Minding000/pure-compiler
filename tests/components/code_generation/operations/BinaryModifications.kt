@@ -6,6 +6,68 @@ import kotlin.test.assertEquals
 
 internal class BinaryModifications {
 
+	//TODO implement these tests
+	// - also test other operators on bytes
+	//@Test
+	//fun `compiles byte addition assignments`() {
+	//	val sourceCode = """
+	//		SimplestApp object {
+	//			to getFive(): Byte {
+	//				var a: Byte = 3
+	//				a += 2
+	//				return a
+	//			}
+	//		}
+	//		""".trimIndent()
+	//	val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getFive")
+	//	assertEquals(5, result)
+	//}
+	//
+	//@Test
+	//fun `compiles byte subtraction assignments`() {
+	//	val sourceCode = """
+	//		SimplestApp object {
+	//			to getFive(): Byte {
+	//				var a: Byte = 8
+	//				a -= 3
+	//				return a
+	//			}
+	//		}
+	//		""".trimIndent()
+	//	val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getFive")
+	//	assertEquals(5, result)
+	//}
+	//
+	//@Test
+	//fun `compiles byte multiplication assignments`() {
+	//	val sourceCode = """
+	//		SimplestApp object {
+	//			to getFive(): Byte {
+	//				var a: Byte = 1
+	//				a *= 5
+	//				return a
+	//			}
+	//		}
+	//		""".trimIndent()
+	//	val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getFive")
+	//	assertEquals(5, result)
+	//}
+	//
+	//@Test
+	//fun `compiles byte division assignments`() {
+	//	val sourceCode = """
+	//		SimplestApp object {
+	//			to getFive(): Byte {
+	//				var a: Byte = 20
+	//				a /= 4
+	//				return a
+	//			}
+	//		}
+	//		""".trimIndent()
+	//	val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getFive")
+	//	assertEquals(5, result)
+	//}
+
 	@Test
 	fun `compiles integer addition assignments`() {
 		val sourceCode = """

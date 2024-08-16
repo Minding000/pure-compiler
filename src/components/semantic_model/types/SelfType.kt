@@ -1,7 +1,7 @@
 package components.semantic_model.types
 
-import components.code_generation.llvm.LlvmConstructor
-import components.code_generation.llvm.LlvmType
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmType
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.InitializerDefinition
 import components.semantic_model.declarations.TypeDeclaration
