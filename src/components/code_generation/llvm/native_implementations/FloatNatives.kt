@@ -99,10 +99,7 @@ class FloatNatives(val context: Context) {
 
 	private fun add(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisFloat = context.getThisParameter(constructor)
-		val runtimeClass = context.standardLibrary.float
-		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisFloat, runtimeClass.valuePropertyIndex,
-			"thisValueProperty")
+		val thisValueProperty = context.standardLibrary.float.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
@@ -113,10 +110,7 @@ class FloatNatives(val context: Context) {
 
 	private fun subtract(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisFloat = context.getThisParameter(constructor)
-		val runtimeClass = context.standardLibrary.float
-		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisFloat, runtimeClass.valuePropertyIndex,
-			"thisValueProperty")
+		val thisValueProperty = context.standardLibrary.float.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
@@ -127,10 +121,7 @@ class FloatNatives(val context: Context) {
 
 	private fun multiply(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisFloat = context.getThisParameter(constructor)
-		val runtimeClass = context.standardLibrary.float
-		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisFloat, runtimeClass.valuePropertyIndex,
-			"thisValueProperty")
+		val thisValueProperty = context.standardLibrary.float.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
@@ -141,10 +132,7 @@ class FloatNatives(val context: Context) {
 
 	private fun divide(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisFloat = context.getThisParameter(constructor)
-		val runtimeClass = context.standardLibrary.float
-		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisFloat, runtimeClass.valuePropertyIndex,
-			"thisValueProperty")
+		val thisValueProperty = context.standardLibrary.float.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
 			Context.VALUE_PARAMETER_OFFSET))
@@ -191,11 +179,7 @@ class FloatNatives(val context: Context) {
 
 	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisFloat = context.getThisParameter(constructor)
-		val runtimeClass = context.standardLibrary.float
-		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisFloat, runtimeClass.valuePropertyIndex,
-			"thisValueProperty")
-		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
+		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveFloat = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildFloatEqualTo(thisPrimitiveFloat, parameterPrimitiveFloat, "equalToResult")
 		constructor.buildReturn(result)
@@ -203,11 +187,7 @@ class FloatNatives(val context: Context) {
 
 	private fun notEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisFloat = context.getThisParameter(constructor)
-		val runtimeClass = context.standardLibrary.float
-		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisFloat, runtimeClass.valuePropertyIndex,
-			"thisValueProperty")
-		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
+		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveFloat = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildFloatNotEqualTo(thisPrimitiveFloat, parameterPrimitiveFloat, "notEqualToResult")
 		constructor.buildReturn(result)

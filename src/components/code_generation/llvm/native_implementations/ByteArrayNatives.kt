@@ -21,13 +21,11 @@ class ByteArrayNatives(val context: Context) {
 		val elementList = constructor.buildStackAllocation(context.runtimeStructs.variadicParameterList, "elementList")
 		constructor.buildFunctionCall(context.externalFunctions.variableParameterIterationStart, listOf(elementList))
 		val elementCount = constructor.getLastParameter(llvmFunctionValue)
-		val runtimeClass = context.standardLibrary.byteArray
-		val thisArray = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisArray, runtimeClass.valuePropertyIndex,
-			"thisValueProperty")
+		val thisByteArray = context.getThisParameter(constructor)
+		val thisValueProperty = context.standardLibrary.byteArray.getNativeValueProperty(constructor, thisByteArray)
 		val thisValue = constructor.buildHeapArrayAllocation(elementType, elementCount, "thisValue")
 		constructor.buildStore(thisValue, thisValueProperty)
-		val thisSizeProperty = context.resolveMember(constructor, thisArray, "size")
+		val thisSizeProperty = context.resolveMember(constructor, thisByteArray, "size")
 		constructor.buildStore(elementCount, thisSizeProperty)
 		val indexType = constructor.i32Type
 		val indexVariable = constructor.buildStackAllocation(indexType, "indexVariable")
@@ -58,10 +56,7 @@ class ByteArrayNatives(val context: Context) {
 		val elementType = constructor.byteType
 		val element = constructor.getParameter(Context.VALUE_PARAMETER_OFFSET)
 		val elementCount = constructor.getLastParameter(llvmFunctionValue)
-		val runtimeClass = context.standardLibrary.byteArray
-		val thisArray = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisArray, runtimeClass.valuePropertyIndex,
-			"thisValueProperty")
+		val thisValueProperty = context.standardLibrary.byteArray.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisValue = constructor.buildHeapArrayAllocation(elementType, elementCount, "thisValue")
 		constructor.buildStore(thisValue, thisValueProperty)
 		val indexType = constructor.i32Type
@@ -89,16 +84,13 @@ class ByteArrayNatives(val context: Context) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val runtimeClass = context.standardLibrary.byteArray
 		val thisArray = context.getThisParameter(constructor)
-		val thisArrayValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisArray, runtimeClass.valuePropertyIndex,
-			"thisArrayValueProperty")
+		val thisArrayValueProperty = runtimeClass.getNativeValueProperty(constructor, thisArray)
 		val thisArrayValue = constructor.buildLoad(constructor.pointerType, thisArrayValueProperty, "thisArrayValue")
 		val thisSizeProperty = context.resolveMember(constructor, thisArray, "size")
 		val thisSize = constructor.buildLoad(constructor.i32Type, thisSizeProperty, "thisSize")
 		val thisSizeAsLong = constructor.buildCastFromIntegerToLong(thisSize, "thisSizeAsLong")
 		val parameterArray = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
-		val parameterValueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, parameterArray, runtimeClass.valuePropertyIndex,
-			"parameterValueProperty")
+		val parameterValueProperty = runtimeClass.getNativeValueProperty(constructor, parameterArray)
 		val parameterValue = constructor.buildLoad(constructor.pointerType, parameterValueProperty, "parameterValue")
 		val parameterSizeProperty = context.resolveMember(constructor, parameterArray, "size")
 		val parameterSize = constructor.buildLoad(constructor.i32Type, parameterSizeProperty, "parameterSize")
@@ -116,9 +108,7 @@ class ByteArrayNatives(val context: Context) {
 			"offsetCombinedArrayAddress")
 		constructor.buildFunctionCall(context.externalFunctions.memoryCopy,
 			listOf(offsetCombinedArrayAddress, parameterValue, parameterSizeAsLong))
-		val combinedArrayValueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, combinedArray, runtimeClass.valuePropertyIndex,
-			"combinedArrayValueProperty")
+		val combinedArrayValueProperty = runtimeClass.getNativeValueProperty(constructor, combinedArray)
 		constructor.buildStore(combinedValue, combinedArrayValueProperty)
 		constructor.buildReturn(combinedArray)
 	}
@@ -126,10 +116,8 @@ class ByteArrayNatives(val context: Context) {
 	private fun get(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.byteType
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisArray = context.getThisParameter(constructor)
-		val runtimeClass = context.standardLibrary.byteArray
 		val thisArrayValueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, thisArray, runtimeClass.valuePropertyIndex, "thisArrayValueProperty")
+			context.standardLibrary.byteArray.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisArrayValue = constructor.buildLoad(constructor.pointerType, thisArrayValueProperty, "thisArrayValue")
 		val index = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val elementElement = constructor.buildGetArrayElementPointer(elementType, thisArrayValue, index, "elementElement")
@@ -140,10 +128,8 @@ class ByteArrayNatives(val context: Context) {
 	private fun set(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.byteType
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisArray = context.getThisParameter(constructor)
-		val runtimeClass = context.standardLibrary.byteArray
 		val thisArrayValueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, thisArray, runtimeClass.valuePropertyIndex, "thisArrayValueProperty")
+			context.standardLibrary.byteArray.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisArrayValue = constructor.buildLoad(constructor.pointerType, thisArrayValueProperty, "thisArrayValue")
 		val index = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val element = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET + 1)
@@ -180,10 +166,8 @@ class ByteArrayNatives(val context: Context) {
 		constructor.buildReturn(constructor.buildBoolean(false))
 		constructor.select(sameSizeBlock)
 		// compare bytes
-		val thisValueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, thisByteArray, runtimeClass.valuePropertyIndex, "thisValueProperty")
-		val otherValueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, other, runtimeClass.valuePropertyIndex, "otherValueProperty")
+		val thisValueProperty = runtimeClass.getNativeValueProperty(constructor, thisByteArray)
+		val otherValueProperty = runtimeClass.getNativeValueProperty(constructor, other)
 		val thisValue = constructor.buildLoad(constructor.pointerType, thisValueProperty, "thisValue")
 		val otherValue = constructor.buildLoad(constructor.pointerType, otherValueProperty, "otherValue")
 		val loopStartBlock = constructor.createBlock("loopStart")

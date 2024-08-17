@@ -52,10 +52,7 @@ class BoolNatives(val context: Context) {
 
 	private fun toggle(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisBool = context.getThisParameter(constructor)
-		val runtimeClass = context.standardLibrary.boolean
-		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisBool, runtimeClass.valuePropertyIndex,
-			"thisValueProperty")
+		val thisValueProperty = context.standardLibrary.boolean.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
 		val result = constructor.buildBooleanNegation(thisPrimitiveBool, "negationResult")
 		constructor.buildStore(result, thisValueProperty)
@@ -64,11 +61,7 @@ class BoolNatives(val context: Context) {
 
 	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisBool = context.getThisParameter(constructor)
-		val runtimeClass = context.standardLibrary.boolean
-		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisBool, runtimeClass.valuePropertyIndex,
-			"thisValueProperty")
-		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
+		val thisPrimitiveBool = ValueConverter.unwrapBool(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildBooleanEqualTo(thisPrimitiveBool, parameterPrimitiveBool, "equalToResult")
 		constructor.buildReturn(result)
@@ -76,11 +69,7 @@ class BoolNatives(val context: Context) {
 
 	private fun notEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisBool = context.getThisParameter(constructor)
-		val runtimeClass = context.standardLibrary.boolean
-		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisBool, runtimeClass.valuePropertyIndex,
-			"thisValueProperty")
-		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
+		val thisPrimitiveBool = ValueConverter.unwrapBool(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val result = constructor.buildBooleanNotEqualTo(thisPrimitiveBool, parameterPrimitiveBool, "notEqualToResult")
 		constructor.buildReturn(result)

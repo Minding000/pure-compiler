@@ -17,9 +17,7 @@ class NativeInputStreamNatives(val context: Context) {
 		val exceptionAddress = context.getExceptionParameter(constructor) //TODO error handling
 		val thisObject = context.getThisParameter(constructor)
 
-		val runtimeClass = context.standardLibrary.nativeInputStream
-		val handleProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, thisObject, runtimeClass.valuePropertyIndex, "handleProperty")
+		val handleProperty = context.standardLibrary.nativeInputStream.getNativeValueProperty(constructor, thisObject)
 		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 		val byteAsInteger = constructor.buildFunctionCall(context.externalFunctions.streamReadByte, listOf(handle), "byteAsInteger")
 
@@ -43,9 +41,7 @@ class NativeInputStreamNatives(val context: Context) {
 		val thisObject = context.getThisParameter(constructor)
 		val amount = constructor.getLastParameter()
 
-		val runtimeClass = context.standardLibrary.nativeInputStream
-		val handleProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, thisObject, runtimeClass.valuePropertyIndex, "handleProperty")
+		val handleProperty = context.standardLibrary.nativeInputStream.getNativeValueProperty(constructor, thisObject)
 		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 
 		val byteArrayRuntimeClass = context.standardLibrary.byteArray
@@ -55,9 +51,7 @@ class NativeInputStreamNatives(val context: Context) {
 		constructor.buildStore(byteArrayRuntimeClass.classDefinition, arrayClassDefinitionProperty)
 		val desiredNumberOfBytes = constructor.buildCastFromIntegerToLong(amount, "desiredNumberOfBytes")
 
-		val arrayValueProperty =
-			constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray, byteArrayRuntimeClass.valuePropertyIndex,
-			"arrayValueProperty")
+		val arrayValueProperty = byteArrayRuntimeClass.getNativeValueProperty(constructor, byteArray)
 		val buffer = constructor.buildHeapArrayAllocation(constructor.byteType, amount, "byteArray")
 		constructor.buildStore(buffer, arrayValueProperty)
 

@@ -182,8 +182,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 			val arraySize = constructor.buildLoad(constructor.i32Type, arraySizeProperty, "size")
 			val byteArrayRuntimeClass = context.standardLibrary.byteArray
-			val arrayValueProperty = constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray,
-				byteArrayRuntimeClass.valuePropertyIndex, "arrayValueProperty")
+			val arrayValueProperty = byteArrayRuntimeClass.getNativeValueProperty(constructor, byteArray)
 			val arrayValue = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "arrayValue")
 			context.printMessage(constructor, "Unhandled error: %.*s", arraySize, arrayValue)
 			val exitCode = constructor.buildInt32(1)

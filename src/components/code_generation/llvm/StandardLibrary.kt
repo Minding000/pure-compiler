@@ -10,7 +10,6 @@ import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.general.Program.Companion.RUNTIME_PREFIX
 import components.semantic_model.types.FunctionType
 import errors.internal.CompilerError
-import kotlin.properties.Delegates
 
 class StandardLibrary {
 	lateinit var array: NativeRuntimeClass
@@ -102,17 +101,13 @@ class StandardLibrary {
 			(exceptionAddLocationPropertyType as? FunctionType)?.signatures?.firstOrNull()?.getLlvmType(constructor)
 	}
 
-	class NativeRuntimeClass(val struct: LlvmType, val classDefinition: LlvmValue) {
-		var valuePropertyIndex by Delegates.notNull<Int>()
+	class NativeRuntimeClass(val struct: LlvmType, val classDefinition: LlvmValue, private val valuePropertyIndex: Int) {
 
-		constructor(struct: LlvmType, classDefinition: LlvmValue, valuePropertyIndex: Int): this(struct, classDefinition) {
-			this.valuePropertyIndex = valuePropertyIndex
-		}
+		constructor(typeDeclaration: TypeDeclaration, valuePropertyIndex: Int):
+			this(typeDeclaration.llvmType, typeDeclaration.llvmClassDefinition, valuePropertyIndex)
 
-		constructor(typeDeclaration: TypeDeclaration): this(typeDeclaration.llvmType, typeDeclaration.llvmClassDefinition)
-
-		constructor(typeDeclaration: TypeDeclaration, valuePropertyIndex: Int): this(typeDeclaration) {
-			this.valuePropertyIndex = valuePropertyIndex
+		fun getNativeValueProperty(constructor: LlvmConstructor, structPointer: LlvmValue): LlvmValue {
+			return constructor.buildGetPropertyPointer(struct, structPointer, valuePropertyIndex, "_nativeValueProperty")
 		}
 	}
 }

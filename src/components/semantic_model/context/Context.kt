@@ -179,9 +179,7 @@ class Context {
 		val arraySizeProperty = resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(constructor.buildInt32(content.length), arraySizeProperty)
 
-		val arrayValueProperty =
-			constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray, byteArrayRuntimeClass.valuePropertyIndex,
-			"_arrayValueProperty")
+		val arrayValueProperty = byteArrayRuntimeClass.getNativeValueProperty(constructor, byteArray)
 		val charArray = constructor.buildGlobalAsciiCharArray("_asciiStringLiteral", content, false)
 		constructor.buildStore(charArray, arrayValueProperty)
 

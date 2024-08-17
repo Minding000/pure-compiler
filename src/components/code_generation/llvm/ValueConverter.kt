@@ -207,17 +207,13 @@ object ValueConverter {
 			constructor.buildGetPropertyPointer(runtimeClass.struct, bool, Context.CLASS_DEFINITION_PROPERTY_INDEX,
 			"_classDefinitionProperty")
 		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
-		val valueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, bool, runtimeClass.valuePropertyIndex, "_valueProperty")
+		val valueProperty = runtimeClass.getNativeValueProperty(constructor, bool)
 		constructor.buildStore(primitiveLlvmValue, valueProperty)
 		return bool
 	}
 
 	fun unwrapBool(context: Context, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue): LlvmValue {
-		val runtimeClass = context.standardLibrary.boolean
-		val valueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, wrappedLlvmValue, runtimeClass.valuePropertyIndex,
-				"_valueProperty")
+		val valueProperty = context.standardLibrary.boolean.getNativeValueProperty(constructor, wrappedLlvmValue)
 		return constructor.buildLoad(constructor.booleanType, valueProperty, "_value")
 	}
 
@@ -228,17 +224,13 @@ object ValueConverter {
 			constructor.buildGetPropertyPointer(runtimeClass.struct, byte, Context.CLASS_DEFINITION_PROPERTY_INDEX,
 			"_classDefinitionProperty")
 		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
-		val valueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, byte, runtimeClass.valuePropertyIndex, "_valueProperty")
+		val valueProperty = runtimeClass.getNativeValueProperty(constructor, byte)
 		constructor.buildStore(primitiveLlvmValue, valueProperty)
 		return byte
 	}
 
 	fun unwrapByte(context: Context, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue): LlvmValue {
-		val runtimeClass = context.standardLibrary.byte
-		val valueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, wrappedLlvmValue, runtimeClass.valuePropertyIndex,
-				"_valueProperty")
+		val valueProperty = context.standardLibrary.byte.getNativeValueProperty(constructor, wrappedLlvmValue)
 		return constructor.buildLoad(constructor.byteType, valueProperty, "_value")
 	}
 
@@ -249,17 +241,13 @@ object ValueConverter {
 			constructor.buildGetPropertyPointer(runtimeClass.struct, integer, Context.CLASS_DEFINITION_PROPERTY_INDEX,
 				"_classDefinitionProperty")
 		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
-		val valueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, integer, runtimeClass.valuePropertyIndex, "_valueProperty")
+		val valueProperty = runtimeClass.getNativeValueProperty(constructor, integer)
 		constructor.buildStore(primitiveLlvmValue, valueProperty)
 		return integer
 	}
 
 	fun unwrapInteger(context: Context, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue): LlvmValue {
-		val runtimeClass = context.standardLibrary.integer
-		val valueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, wrappedLlvmValue, runtimeClass.valuePropertyIndex,
-				"_valueProperty")
+		val valueProperty = context.standardLibrary.integer.getNativeValueProperty(constructor, wrappedLlvmValue)
 		return constructor.buildLoad(constructor.i32Type, valueProperty, "_value")
 	}
 
@@ -270,17 +258,13 @@ object ValueConverter {
 			constructor.buildGetPropertyPointer(runtimeClass.struct, float, Context.CLASS_DEFINITION_PROPERTY_INDEX,
 				"_classDefinitionProperty")
 		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
-		val valueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, float, runtimeClass.valuePropertyIndex, "_valueProperty")
+		val valueProperty = runtimeClass.getNativeValueProperty(constructor, float)
 		constructor.buildStore(primitiveLlvmValue, valueProperty)
 		return float
 	}
 
 	fun unwrapFloat(context: Context, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue): LlvmValue {
-		val runtimeClass = context.standardLibrary.float
-		val valueProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, wrappedLlvmValue, runtimeClass.valuePropertyIndex,
-				"_valueProperty")
+		val valueProperty = context.standardLibrary.float.getNativeValueProperty(constructor, wrappedLlvmValue)
 		return constructor.buildLoad(constructor.floatType, valueProperty, "_value")
 	}
 }

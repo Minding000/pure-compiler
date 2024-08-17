@@ -20,8 +20,7 @@ class ProcessNatives(val context: Context) {
 		val classDefinitionProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, newObject,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionProperty")
 		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
-		val handleProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, newObject,
-			runtimeClass.valuePropertyIndex, "handleProperty")
+		val handleProperty = runtimeClass.getNativeValueProperty(constructor, newObject)
 		val handle = constructor.buildLoad(constructor.pointerType, context.runtimeGlobals.standardInputStream, "handle")
 		constructor.buildStore(handle, handleProperty)
 		constructor.buildReturn(newObject)
@@ -34,8 +33,7 @@ class ProcessNatives(val context: Context) {
 		val classDefinitionProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, newObject,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionProperty")
 		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
-		val handleProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, newObject,
-			runtimeClass.valuePropertyIndex, "handleProperty")
+		val handleProperty = runtimeClass.getNativeValueProperty(constructor, newObject)
 		val handle = constructor.buildLoad(constructor.pointerType, context.runtimeGlobals.standardOutputStream, "handle")
 		constructor.buildStore(handle, handleProperty)
 		constructor.buildReturn(newObject)
@@ -48,8 +46,7 @@ class ProcessNatives(val context: Context) {
 		val classDefinitionProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, newObject,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionProperty")
 		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
-		val handleProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, newObject,
-			runtimeClass.valuePropertyIndex, "handleProperty")
+		val handleProperty = runtimeClass.getNativeValueProperty(constructor, newObject)
 		val handle = constructor.buildLoad(constructor.pointerType, context.runtimeGlobals.standardErrorStream, "handle")
 		constructor.buildStore(handle, handleProperty)
 		constructor.buildReturn(newObject)

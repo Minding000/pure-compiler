@@ -36,9 +36,7 @@ class IdentifiableNatives(val context: Context) {
 		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(sizeWithoutTermination, arraySizeProperty)
 
-		val arrayValueProperty =
-			constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray, byteArrayRuntimeClass.valuePropertyIndex,
-			"_arrayValueProperty")
+		val arrayValueProperty = byteArrayRuntimeClass.getNativeValueProperty(constructor, byteArray)
 		val buffer = constructor.buildHeapArrayAllocation(constructor.byteType, size, "characters")
 		constructor.buildFunctionCall(context.externalFunctions.printToBuffer, listOf(buffer, format, thisIdentifiable))
 		constructor.buildStore(buffer, arrayValueProperty)

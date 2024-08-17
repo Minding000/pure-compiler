@@ -18,9 +18,7 @@ class NativeOutputStreamNatives(val context: Context) {
 		val thisObject = context.getThisParameter(constructor)
 		val byte = constructor.getLastParameter()
 
-		val runtimeClass = context.standardLibrary.nativeOutputStream
-		val handleProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, thisObject, runtimeClass.valuePropertyIndex, "handleProperty")
+		val handleProperty = context.standardLibrary.nativeOutputStream.getNativeValueProperty(constructor, thisObject)
 		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 
 		val byteVariable = constructor.buildStackAllocation(constructor.byteType, "byteVariable")
@@ -40,9 +38,7 @@ class NativeOutputStreamNatives(val context: Context) {
 		val thisObject = context.getThisParameter(constructor)
 		val arrayObject = constructor.getLastParameter()
 
-		val runtimeClass = context.standardLibrary.nativeOutputStream
-		val handleProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, thisObject, runtimeClass.valuePropertyIndex, "handleProperty")
+		val handleProperty = context.standardLibrary.nativeOutputStream.getNativeValueProperty(constructor, thisObject)
 		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 
 		val arraySizeProperty = context.resolveMember(constructor, arrayObject, "size")
@@ -50,8 +46,7 @@ class NativeOutputStreamNatives(val context: Context) {
 		val arraySizeAsLong = constructor.buildCastFromIntegerToLong(arraySize, "sizeAsLong")
 
 		val byteArrayRuntimeClass = context.standardLibrary.byteArray
-		val arrayValueProperty = constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, arrayObject,
-			byteArrayRuntimeClass.valuePropertyIndex, "arrayValueProperty")
+		val arrayValueProperty = byteArrayRuntimeClass.getNativeValueProperty(constructor, arrayObject)
 		val arrayValue = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "arrayValue")
 		val byteSize = constructor.buildInt64(1)
 		constructor.buildFunctionCall(context.externalFunctions.streamWrite, listOf(arrayValue, byteSize, arraySizeAsLong, handle))
