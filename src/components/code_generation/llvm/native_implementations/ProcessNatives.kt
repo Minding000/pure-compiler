@@ -15,13 +15,13 @@ class ProcessNatives(val context: Context) {
 
 	private fun getStandardInputStream(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val objectType = context.nativeInputStreamDeclarationType
-		val newObject = constructor.buildHeapAllocation(objectType, "standardInputStream")
-		val classDefinitionProperty = constructor.buildGetPropertyPointer(objectType, newObject,
+		val runtimeClass = context.standardLibrary.nativeInputStream
+		val newObject = constructor.buildHeapAllocation(runtimeClass.struct, "standardInputStream")
+		val classDefinitionProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, newObject,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionProperty")
-		constructor.buildStore(context.nativeInputStreamClassDefinition, classDefinitionProperty)
-		val handleProperty = constructor.buildGetPropertyPointer(objectType, newObject,
-			context.nativeInputStreamValueIndex, "handleProperty")
+		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
+		val handleProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, newObject,
+			runtimeClass.valuePropertyIndex, "handleProperty")
 		val handle = constructor.buildLoad(constructor.pointerType, context.runtimeGlobals.standardInputStream, "handle")
 		constructor.buildStore(handle, handleProperty)
 		constructor.buildReturn(newObject)
@@ -29,13 +29,13 @@ class ProcessNatives(val context: Context) {
 
 	private fun getStandardOutputStream(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val objectType = context.nativeOutputStreamDeclarationType
-		val newObject = constructor.buildHeapAllocation(objectType, "standardOutputStream")
-		val classDefinitionProperty = constructor.buildGetPropertyPointer(objectType, newObject,
+		val runtimeClass = context.standardLibrary.nativeOutputStream
+		val newObject = constructor.buildHeapAllocation(runtimeClass.struct, "standardOutputStream")
+		val classDefinitionProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, newObject,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionProperty")
-		constructor.buildStore(context.nativeOutputStreamClassDefinition, classDefinitionProperty)
-		val handleProperty = constructor.buildGetPropertyPointer(objectType, newObject,
-			context.nativeOutputStreamValueIndex, "handleProperty")
+		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
+		val handleProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, newObject,
+			runtimeClass.valuePropertyIndex, "handleProperty")
 		val handle = constructor.buildLoad(constructor.pointerType, context.runtimeGlobals.standardOutputStream, "handle")
 		constructor.buildStore(handle, handleProperty)
 		constructor.buildReturn(newObject)
@@ -43,13 +43,13 @@ class ProcessNatives(val context: Context) {
 
 	private fun getStandardErrorStream(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val objectType = context.nativeOutputStreamDeclarationType
-		val newObject = constructor.buildHeapAllocation(objectType, "standardErrorStream")
-		val classDefinitionProperty = constructor.buildGetPropertyPointer(objectType, newObject,
+		val runtimeClass = context.standardLibrary.nativeOutputStream
+		val newObject = constructor.buildHeapAllocation(runtimeClass.struct, "standardErrorStream")
+		val classDefinitionProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, newObject,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionProperty")
-		constructor.buildStore(context.nativeOutputStreamClassDefinition, classDefinitionProperty)
-		val handleProperty = constructor.buildGetPropertyPointer(objectType, newObject,
-			context.nativeOutputStreamValueIndex, "handleProperty")
+		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
+		val handleProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, newObject,
+			runtimeClass.valuePropertyIndex, "handleProperty")
 		val handle = constructor.buildLoad(constructor.pointerType, context.runtimeGlobals.standardErrorStream, "handle")
 		constructor.buildStore(handle, handleProperty)
 		constructor.buildReturn(newObject)

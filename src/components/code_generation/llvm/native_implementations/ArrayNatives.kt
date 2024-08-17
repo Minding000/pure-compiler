@@ -21,9 +21,10 @@ class ArrayNatives(val context: Context) {
 		val elementList = constructor.buildStackAllocation(context.runtimeStructs.variadicParameterList, "elementList")
 		constructor.buildFunctionCall(context.externalFunctions.variableParameterIterationStart, listOf(elementList))
 		val elementCount = constructor.getLastParameter(llvmFunctionValue)
-		val arrayType = context.arrayDeclarationType
+		val arrayRuntimeClass = context.standardLibrary.array
 		val thisArray = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(arrayType, thisArray, context.arrayValueIndex,
+		val thisValueProperty =
+			constructor.buildGetPropertyPointer(arrayRuntimeClass.struct, thisArray, arrayRuntimeClass.valuePropertyIndex,
 			"thisValueProperty")
 		val thisValue = constructor.buildHeapArrayAllocation(elementType, elementCount, "thisValue")
 		constructor.buildStore(thisValue, thisValueProperty)
@@ -58,9 +59,10 @@ class ArrayNatives(val context: Context) {
 		val elementType = constructor.pointerType
 		val element = constructor.getParameter(Context.VALUE_PARAMETER_OFFSET)
 		val elementCount = constructor.getLastParameter(llvmFunctionValue)
-		val arrayType = context.arrayDeclarationType
+		val arrayRuntimeClass = context.standardLibrary.array
 		val thisArray = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(arrayType, thisArray, context.arrayValueIndex,
+		val thisValueProperty =
+			constructor.buildGetPropertyPointer(arrayRuntimeClass.struct, thisArray, arrayRuntimeClass.valuePropertyIndex,
 			"thisValueProperty")
 		val thisValue = constructor.buildHeapArrayAllocation(elementType, elementCount, "thisValue")
 		constructor.buildStore(thisValue, thisValueProperty)
@@ -88,27 +90,27 @@ class ArrayNatives(val context: Context) {
 		val elementType = constructor.pointerType
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val pointerSizeInBytes = Llvm.getTypeSizeInBytes(constructor.pointerType)
-		val arrayType = context.arrayDeclarationType
+		val arrayRuntimeClass = context.standardLibrary.array
 		val thisArray = context.getThisParameter(constructor)
-		val thisArrayValueProperty = constructor.buildGetPropertyPointer(arrayType, thisArray, context.arrayValueIndex,
-			"thisArrayValueProperty")
+		val thisArrayValueProperty = constructor.buildGetPropertyPointer(arrayRuntimeClass.struct, thisArray,
+			arrayRuntimeClass.valuePropertyIndex, "thisArrayValueProperty")
 		val thisArrayValue = constructor.buildLoad(constructor.pointerType, thisArrayValueProperty, "thisArrayValue")
 		val thisSizeProperty = context.resolveMember(constructor, thisArray, "size")
 		val thisSize = constructor.buildLoad(constructor.i32Type, thisSizeProperty, "thisSize")
 		val thisSizeAsLong = constructor.buildCastFromIntegerToLong(thisSize, "thisSizeAsLong")
 		val thisSizeInBytes = constructor.buildIntegerMultiplication(thisSizeAsLong, pointerSizeInBytes, "thisSizeInBytes")
 		val parameterArray = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
-		val parameterValueProperty = constructor.buildGetPropertyPointer(arrayType, parameterArray, context.arrayValueIndex,
-			"parameterValueProperty")
+		val parameterValueProperty = constructor.buildGetPropertyPointer(arrayRuntimeClass.struct, parameterArray,
+			arrayRuntimeClass.valuePropertyIndex, "parameterValueProperty")
 		val parameterValue = constructor.buildLoad(constructor.pointerType, parameterValueProperty, "parameterValue")
 		val parameterSizeProperty = context.resolveMember(constructor, parameterArray, "size")
 		val parameterSize = constructor.buildLoad(constructor.i32Type, parameterSizeProperty, "parameterSize")
 		val parameterSizeAsLong = constructor.buildCastFromIntegerToLong(parameterSize, "parameterSizeAsLong")
 		val parameterSizeInBytes = constructor.buildIntegerMultiplication(parameterSizeAsLong, pointerSizeInBytes, "parameterSizeInBytes")
-		val combinedArray = constructor.buildHeapAllocation(arrayType, "combinedArray")
-		val combinedArrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayType, combinedArray,
+		val combinedArray = constructor.buildHeapAllocation(arrayRuntimeClass.struct, "combinedArray")
+		val combinedArrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayRuntimeClass.struct, combinedArray,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "combinedArrayClassDefinitionProperty")
-		constructor.buildStore(context.arrayClassDefinition, combinedArrayClassDefinitionProperty)
+		constructor.buildStore(arrayRuntimeClass.classDefinition, combinedArrayClassDefinitionProperty)
 		val combinedArraySizeProperty = context.resolveMember(constructor, combinedArray, "size")
 		val combinedSize = constructor.buildIntegerAddition(thisSize, parameterSize, "combinedSize")
 		constructor.buildStore(combinedSize, combinedArraySizeProperty)
@@ -118,8 +120,8 @@ class ArrayNatives(val context: Context) {
 			"offsetCombinedArrayAddress")
 		constructor.buildFunctionCall(context.externalFunctions.memoryCopy,
 			listOf(offsetCombinedArrayAddress, parameterValue, parameterSizeInBytes))
-		val combinedArrayValueProperty = constructor.buildGetPropertyPointer(arrayType, combinedArray, context.arrayValueIndex,
-			"combinedArrayValueProperty")
+		val combinedArrayValueProperty = constructor.buildGetPropertyPointer(arrayRuntimeClass.struct, combinedArray,
+			arrayRuntimeClass.valuePropertyIndex, "combinedArrayValueProperty")
 		constructor.buildStore(combinedValue, combinedArrayValueProperty)
 		constructor.buildReturn(combinedArray)
 	}
@@ -128,8 +130,9 @@ class ArrayNatives(val context: Context) {
 		val elementType = constructor.pointerType
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisArray = context.getThisParameter(constructor)
-		val thisArrayValueProperty = constructor.buildGetPropertyPointer(context.arrayDeclarationType, thisArray,
-			context.arrayValueIndex, "thisArrayValueProperty")
+		val arrayRuntimeClass = context.standardLibrary.array
+		val thisArrayValueProperty = constructor.buildGetPropertyPointer(arrayRuntimeClass.struct, thisArray,
+			arrayRuntimeClass.valuePropertyIndex, "thisArrayValueProperty")
 		val thisArrayValue = constructor.buildLoad(constructor.pointerType, thisArrayValueProperty, "thisArrayValue")
 		val index = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val elementElement = constructor.buildGetArrayElementPointer(elementType, thisArrayValue, index, "elementElement")
@@ -141,13 +144,13 @@ class ArrayNatives(val context: Context) {
 		val elementType = constructor.pointerType
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisArray = context.getThisParameter(constructor)
-		val thisArrayValueProperty = constructor.buildGetPropertyPointer(context.arrayDeclarationType, thisArray,
-			context.arrayValueIndex, "thisArrayValueProperty")
+		val arrayRuntimeClass = context.standardLibrary.array
+		val thisArrayValueProperty = constructor.buildGetPropertyPointer(arrayRuntimeClass.struct, thisArray,
+			arrayRuntimeClass.valuePropertyIndex, "thisArrayValueProperty")
 		val thisArrayValue = constructor.buildLoad(constructor.pointerType, thisArrayValueProperty, "thisArrayValue")
 		val index = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val element = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET + 1)
-		val elementElement = constructor.buildGetArrayElementPointer(elementType, thisArrayValue, index,
-			"elementElement")
+		val elementElement = constructor.buildGetArrayElementPointer(elementType, thisArrayValue, index, "elementElement")
 		constructor.buildStore(element, elementElement)
 		constructor.buildReturn()
 	}

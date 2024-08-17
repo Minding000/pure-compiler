@@ -18,8 +18,9 @@ class NativeOutputStreamNatives(val context: Context) {
 		val thisObject = context.getThisParameter(constructor)
 		val byte = constructor.getLastParameter()
 
-		val handleProperty = constructor.buildGetPropertyPointer(context.nativeOutputStreamDeclarationType, thisObject,
-			context.nativeOutputStreamValueIndex, "handleProperty")
+		val runtimeClass = context.standardLibrary.nativeOutputStream
+		val handleProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, thisObject, runtimeClass.valuePropertyIndex, "handleProperty")
 		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 
 		val byteVariable = constructor.buildStackAllocation(constructor.byteType, "byteVariable")
@@ -39,16 +40,18 @@ class NativeOutputStreamNatives(val context: Context) {
 		val thisObject = context.getThisParameter(constructor)
 		val arrayObject = constructor.getLastParameter()
 
-		val handleProperty = constructor.buildGetPropertyPointer(context.nativeOutputStreamDeclarationType, thisObject,
-			context.nativeOutputStreamValueIndex, "handleProperty")
+		val runtimeClass = context.standardLibrary.nativeOutputStream
+		val handleProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, thisObject, runtimeClass.valuePropertyIndex, "handleProperty")
 		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 
 		val arraySizeProperty = context.resolveMember(constructor, arrayObject, "size")
 		val arraySize = constructor.buildLoad(constructor.i32Type, arraySizeProperty, "size")
 		val arraySizeAsLong = constructor.buildCastFromIntegerToLong(arraySize, "sizeAsLong")
 
-		val arrayValueProperty = constructor.buildGetPropertyPointer(context.byteArrayDeclarationType, arrayObject,
-			context.byteArrayValueIndex, "arrayValueProperty")
+		val byteArrayRuntimeClass = context.standardLibrary.byteArray
+		val arrayValueProperty = constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, arrayObject,
+			byteArrayRuntimeClass.valuePropertyIndex, "arrayValueProperty")
 		val arrayValue = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "arrayValue")
 		val byteSize = constructor.buildInt64(1)
 		constructor.buildFunctionCall(context.externalFunctions.streamWrite, listOf(arrayValue, byteSize, arraySizeAsLong, handle))

@@ -201,70 +201,86 @@ object ValueConverter {
 	}
 
 	fun wrapBool(context: Context, constructor: LlvmConstructor, primitiveLlvmValue: LlvmValue): LlvmValue {
-		val boolType = context.booleanDeclarationType
-		val bool = constructor.buildHeapAllocation(boolType, "_bool")
-		val classDefinitionProperty = constructor.buildGetPropertyPointer(boolType, bool, Context.CLASS_DEFINITION_PROPERTY_INDEX,
+		val runtimeClass = context.standardLibrary.boolean
+		val bool = constructor.buildHeapAllocation(runtimeClass.struct, "_bool")
+		val classDefinitionProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, bool, Context.CLASS_DEFINITION_PROPERTY_INDEX,
 			"_classDefinitionProperty")
-		constructor.buildStore(context.booleanClassDefinition, classDefinitionProperty)
-		val valueProperty = constructor.buildGetPropertyPointer(boolType, bool, context.booleanValueIndex, "_valueProperty")
+		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
+		val valueProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, bool, runtimeClass.valuePropertyIndex, "_valueProperty")
 		constructor.buildStore(primitiveLlvmValue, valueProperty)
 		return bool
 	}
 
 	fun unwrapBool(context: Context, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue): LlvmValue {
-		val valueProperty = constructor.buildGetPropertyPointer(context.booleanDeclarationType, wrappedLlvmValue, context.booleanValueIndex,
-			"_valueProperty")
+		val runtimeClass = context.standardLibrary.boolean
+		val valueProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, wrappedLlvmValue, runtimeClass.valuePropertyIndex,
+				"_valueProperty")
 		return constructor.buildLoad(constructor.booleanType, valueProperty, "_value")
 	}
 
 	fun wrapByte(context: Context, constructor: LlvmConstructor, primitiveLlvmValue: LlvmValue): LlvmValue {
-		val byteType = context.byteDeclarationType
-		val byte = constructor.buildHeapAllocation(byteType, "_byte")
-		val classDefinitionProperty = constructor.buildGetPropertyPointer(byteType, byte, Context.CLASS_DEFINITION_PROPERTY_INDEX,
+		val runtimeClass = context.standardLibrary.byte
+		val byte = constructor.buildHeapAllocation(runtimeClass.struct, "_byte")
+		val classDefinitionProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, byte, Context.CLASS_DEFINITION_PROPERTY_INDEX,
 			"_classDefinitionProperty")
-		constructor.buildStore(context.byteClassDefinition, classDefinitionProperty)
-		val valueProperty = constructor.buildGetPropertyPointer(byteType, byte, context.byteValueIndex, "_valueProperty")
+		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
+		val valueProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, byte, runtimeClass.valuePropertyIndex, "_valueProperty")
 		constructor.buildStore(primitiveLlvmValue, valueProperty)
 		return byte
 	}
 
 	fun unwrapByte(context: Context, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue): LlvmValue {
-		val valueProperty = constructor.buildGetPropertyPointer(context.byteDeclarationType, wrappedLlvmValue, context.byteValueIndex,
-			"_valueProperty")
+		val runtimeClass = context.standardLibrary.byte
+		val valueProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, wrappedLlvmValue, runtimeClass.valuePropertyIndex,
+				"_valueProperty")
 		return constructor.buildLoad(constructor.byteType, valueProperty, "_value")
 	}
 
 	fun wrapInteger(context: Context, constructor: LlvmConstructor, primitiveLlvmValue: LlvmValue): LlvmValue {
-		val integerType = context.integerDeclarationType
-		val integer = constructor.buildHeapAllocation(integerType, "_integer")
-		val classDefinitionProperty = constructor.buildGetPropertyPointer(integerType, integer, Context.CLASS_DEFINITION_PROPERTY_INDEX,
-			"_classDefinitionProperty")
-		constructor.buildStore(context.integerClassDefinition, classDefinitionProperty)
-		val valueProperty = constructor.buildGetPropertyPointer(integerType, integer, context.integerValueIndex, "_valueProperty")
+		val runtimeClass = context.standardLibrary.integer
+		val integer = constructor.buildHeapAllocation(runtimeClass.struct, "_integer")
+		val classDefinitionProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, integer, Context.CLASS_DEFINITION_PROPERTY_INDEX,
+				"_classDefinitionProperty")
+		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
+		val valueProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, integer, runtimeClass.valuePropertyIndex, "_valueProperty")
 		constructor.buildStore(primitiveLlvmValue, valueProperty)
 		return integer
 	}
 
 	fun unwrapInteger(context: Context, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue): LlvmValue {
-		val valueProperty = constructor.buildGetPropertyPointer(context.integerDeclarationType, wrappedLlvmValue, context.integerValueIndex,
-			"_valueProperty")
+		val runtimeClass = context.standardLibrary.integer
+		val valueProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, wrappedLlvmValue, runtimeClass.valuePropertyIndex,
+				"_valueProperty")
 		return constructor.buildLoad(constructor.i32Type, valueProperty, "_value")
 	}
 
 	fun wrapFloat(context: Context, constructor: LlvmConstructor, primitiveLlvmValue: LlvmValue): LlvmValue {
-		val floatType = context.floatDeclarationType
-		val float = constructor.buildHeapAllocation(floatType, "_float")
-		val classDefinitionProperty = constructor.buildGetPropertyPointer(floatType, float, Context.CLASS_DEFINITION_PROPERTY_INDEX,
-			"_classDefinitionProperty")
-		constructor.buildStore(context.floatClassDefinition, classDefinitionProperty)
-		val valueProperty = constructor.buildGetPropertyPointer(floatType, float, context.floatValueIndex, "_valueProperty")
+		val runtimeClass = context.standardLibrary.float
+		val float = constructor.buildHeapAllocation(runtimeClass.struct, "_float")
+		val classDefinitionProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, float, Context.CLASS_DEFINITION_PROPERTY_INDEX,
+				"_classDefinitionProperty")
+		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
+		val valueProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, float, runtimeClass.valuePropertyIndex, "_valueProperty")
 		constructor.buildStore(primitiveLlvmValue, valueProperty)
 		return float
 	}
 
 	fun unwrapFloat(context: Context, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue): LlvmValue {
-		val valueProperty = constructor.buildGetPropertyPointer(context.floatDeclarationType, wrappedLlvmValue, context.floatValueIndex,
-			"_valueProperty")
+		val runtimeClass = context.standardLibrary.float
+		val valueProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, wrappedLlvmValue, runtimeClass.valuePropertyIndex,
+				"_valueProperty")
 		return constructor.buildLoad(constructor.floatType, valueProperty, "_value")
 	}
 }

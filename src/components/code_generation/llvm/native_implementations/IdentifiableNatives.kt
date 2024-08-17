@@ -28,29 +28,31 @@ class IdentifiableNatives(val context: Context) {
 		context.printDebugLine(constructor, "sizeWithoutTermination: %d", sizeWithoutTermination)
 		context.printDebugLine(constructor, "size: %d", size)
 
-		val arrayType = context.byteArrayDeclarationType
-		val byteArray = constructor.buildHeapAllocation(arrayType, "_byteArray")
-		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayType, byteArray,
+		val byteArrayRuntimeClass = context.standardLibrary.byteArray
+		val byteArray = constructor.buildHeapAllocation(byteArrayRuntimeClass.struct, "_byteArray")
+		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_arrayClassDefinitionProperty")
-		constructor.buildStore(context.byteArrayClassDefinition, arrayClassDefinitionProperty)
+		constructor.buildStore(byteArrayRuntimeClass.classDefinition, arrayClassDefinitionProperty)
 		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(sizeWithoutTermination, arraySizeProperty)
 
-		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, context.byteArrayValueIndex,
+		val arrayValueProperty =
+			constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray, byteArrayRuntimeClass.valuePropertyIndex,
 			"_arrayValueProperty")
 		val buffer = constructor.buildHeapArrayAllocation(constructor.byteType, size, "characters")
 		constructor.buildFunctionCall(context.externalFunctions.printToBuffer, listOf(buffer, format, thisIdentifiable))
 		constructor.buildStore(buffer, arrayValueProperty)
 		context.printDebugLine(constructor, "buffer: %s", buffer)
 
-		val stringAddress = constructor.buildHeapAllocation(context.stringTypeDeclaration?.llvmType, "_stringAddress")
-		val stringClassDefinitionProperty = constructor.buildGetPropertyPointer(context.stringTypeDeclaration?.llvmType, stringAddress,
+		val stringAddress = constructor.buildHeapAllocation(context.standardLibrary.stringTypeDeclaration?.llvmType, "_stringAddress")
+		val stringClassDefinitionProperty =
+			constructor.buildGetPropertyPointer(context.standardLibrary.stringTypeDeclaration?.llvmType, stringAddress,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_stringClassDefinitionProperty")
-		val stringClassDefinition = context.stringTypeDeclaration?.llvmClassDefinition
+		val stringClassDefinition = context.standardLibrary.stringTypeDeclaration?.llvmClassDefinition
 			?: throw CompilerError("Missing string type declaration.")
 		constructor.buildStore(stringClassDefinition, stringClassDefinitionProperty)
 		val parameters = listOf(exceptionAddress, stringAddress, byteArray)
-		constructor.buildFunctionCall(context.llvmStringByteArrayInitializerType, context.llvmStringByteArrayInitializer, parameters)
+		constructor.buildFunctionCall(context.standardLibrary.stringByteArrayInitializer, parameters)
 
 		constructor.buildReturn(stringAddress)
 	}

@@ -8,9 +8,7 @@ import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.Object
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
-import components.semantic_model.types.FunctionType
 import components.semantic_model.values.Function
-import errors.internal.CompilerError
 import errors.user.UserError
 import util.ExitCode
 import java.util.*
@@ -87,16 +85,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		context.runtimeGlobals.declare(constructor, context)
 		context.runtimeFunctions.build(constructor, context)
 		context.nativeRegistry.loadNativeImplementations(constructor)
-		findArrayTypeDeclaration()
-		findBooleanTypeDeclaration(constructor)
-		findByteTypeDeclaration(constructor)
-		findByteArrayTypeDeclaration()
-		findIntegerTypeDeclaration(constructor)
-		findFloatTypeDeclaration(constructor)
-		findNativeInputStreamTypeDeclaration()
-		findNativeOutputStreamTypeDeclaration()
-		findStringInitializer()
-		findExceptionAddLocationSignature(constructor)
+		context.standardLibrary.load(constructor, context)
 		for(file in files)
 			file.compile(constructor)
 		var userEntryPointObject: ValueDeclaration? = null
@@ -192,8 +181,9 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			val byteArray = constructor.buildLoad(constructor.pointerType, byteArrayProperty, "bytes")
 			val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 			val arraySize = constructor.buildLoad(constructor.i32Type, arraySizeProperty, "size")
-			val arrayValueProperty = constructor.buildGetPropertyPointer(context.byteArrayDeclarationType, byteArray,
-				context.byteArrayValueIndex, "arrayValueProperty")
+			val byteArrayRuntimeClass = context.standardLibrary.byteArray
+			val arrayValueProperty = constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray,
+				byteArrayRuntimeClass.valuePropertyIndex, "arrayValueProperty")
 			val arrayValue = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "arrayValue")
 			context.printMessage(constructor, "Unhandled error: %.*s", arraySize, arrayValue)
 			val exitCode = constructor.buildInt32(1)
@@ -233,118 +223,6 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			constructor.buildFunctionCall(context.externalFunctions.streamOpen, listOf(constructor.buildInt32(identifier)), "handle")
 		//val handle = constructor.buildGetArrayElementPointer(constructor.pointerType, handleArray, constructor.buildInt32(identifier), "handle")
 		constructor.buildStore(handle, global)
-	}
-
-	private fun findArrayTypeDeclaration() {
-		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.ARRAY]
-		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.ARRAY.className) ?: return
-		context.arrayDeclarationType = typeDeclaration.llvmType
-		context.arrayClassDefinition = typeDeclaration.llvmClassDefinition
-	}
-
-	private fun findBooleanTypeDeclaration(constructor: LlvmConstructor) {
-		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.BOOLEAN]
-		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.BOOLEAN.className)
-		context.booleanClassDefinition = if(typeDeclaration == null) {
-			// Note: This is only here for compilation without the base library
-			context.booleanValueIndex = 1
-			context.booleanDeclarationType = constructor.declareStruct("${RUNTIME_PREFIX}Bool")
-			constructor.defineStruct(context.booleanDeclarationType, listOf(constructor.pointerType, constructor.booleanType))
-			constructor.nullPointer
-		} else {
-			context.booleanDeclarationType = typeDeclaration.llvmType
-			typeDeclaration.llvmClassDefinition
-		}
-	}
-
-	private fun findByteArrayTypeDeclaration() {
-		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.BYTE_ARRAY]
-		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.BYTE_ARRAY.className) ?: return
-		context.byteArrayDeclarationType = typeDeclaration.llvmType
-		context.byteArrayClassDefinition = typeDeclaration.llvmClassDefinition
-	}
-
-	private fun findByteTypeDeclaration(constructor: LlvmConstructor) {
-		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.BYTE]
-		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.BYTE.className)
-		context.byteClassDefinition = if(typeDeclaration == null) {
-			// Note: This is only here for compilation without the base library
-			context.byteValueIndex = 1
-			context.byteDeclarationType = constructor.declareStruct("${RUNTIME_PREFIX}Byte")
-			constructor.defineStruct(context.byteDeclarationType, listOf(constructor.pointerType, constructor.byteType))
-			constructor.nullPointer
-		} else {
-			context.byteDeclarationType = typeDeclaration.llvmType
-			typeDeclaration.llvmClassDefinition
-		}
-	}
-
-	private fun findIntegerTypeDeclaration(constructor: LlvmConstructor) {
-		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.INTEGER]
-		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.INTEGER.className)
-		context.integerClassDefinition = if(typeDeclaration == null) {
-			// Note: This is only here for compilation without the base library
-			context.integerValueIndex = 1
-			context.integerDeclarationType = constructor.declareStruct("${RUNTIME_PREFIX}Int")
-			constructor.defineStruct(context.integerDeclarationType, listOf(constructor.pointerType, constructor.i32Type))
-			constructor.nullPointer
-		} else {
-			context.integerDeclarationType = typeDeclaration.llvmType
-			typeDeclaration.llvmClassDefinition
-		}
-	}
-
-	private fun findFloatTypeDeclaration(constructor: LlvmConstructor) {
-		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.FLOAT]
-		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.FLOAT.className)
-		context.floatClassDefinition = if(typeDeclaration == null) {
-			// Note: This is only here for compilation without the base library
-			context.floatValueIndex = 1
-			context.floatDeclarationType = constructor.declareStruct("${RUNTIME_PREFIX}Float")
-			constructor.defineStruct(context.floatDeclarationType, listOf(constructor.pointerType, constructor.floatType))
-			constructor.nullPointer
-		} else {
-			context.floatDeclarationType = typeDeclaration.llvmType
-			typeDeclaration.llvmClassDefinition
-		}
-	}
-
-	private fun findNativeInputStreamTypeDeclaration() {
-		val scope = context.nativeRegistry.specialTypeScopes[SpecialType.NATIVE_INPUT_STREAM]
-		val typeDeclaration = scope?.getTypeDeclaration(SpecialType.NATIVE_INPUT_STREAM.className) ?: return
-		context.nativeInputStreamDeclarationType = typeDeclaration.llvmType
-		context.nativeInputStreamClassDefinition = typeDeclaration.llvmClassDefinition
-	}
-
-	private fun findNativeOutputStreamTypeDeclaration() {
-		val scope = context.nativeRegistry.specialTypeScopes[SpecialType.NATIVE_OUTPUT_STREAM]
-		val typeDeclaration = scope?.getTypeDeclaration(SpecialType.NATIVE_OUTPUT_STREAM.className) ?: return
-		context.nativeOutputStreamDeclarationType = typeDeclaration.llvmType
-		context.nativeOutputStreamClassDefinition = typeDeclaration.llvmClassDefinition
-	}
-
-	private fun findStringInitializer() {
-		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.STRING]
-		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.STRING.className)
-		context.stringTypeDeclaration = typeDeclaration
-		if(typeDeclaration == null)
-			return
-		val byteArrayInitializer = typeDeclaration.getAllInitializers().find { initializerDefinition ->
-			val parameters = initializerDefinition.parameters
-			if(parameters.size != 1) return@find false
-			val firstParameter = parameters.first()
-			firstParameter.isPropertySetter && firstParameter.name == "bytes"
-		} ?: throw CompilerError(typeDeclaration.source, "Failed to find String byte array initializer.")
-		context.llvmStringByteArrayInitializer = byteArrayInitializer.llvmValue
-		context.llvmStringByteArrayInitializerType = byteArrayInitializer.llvmType
-	}
-
-	private fun findExceptionAddLocationSignature(constructor: LlvmConstructor) {
-		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.EXCEPTION] ?: return
-		val typeDeclaration = fileScope.getTypeDeclaration(SpecialType.EXCEPTION.className) ?: return
-		val exceptionAddLocationPropertyType = typeDeclaration.scope.getValueDeclaration("addLocation")?.type
-		context.exceptionAddLocationFunctionType =
-			(exceptionAddLocationPropertyType as? FunctionType)?.signatures?.firstOrNull()?.getLlvmType(constructor)
 	}
 
 	fun getEntryPoint(entryPointPath: String): Pair<ValueDeclaration?, FunctionImplementation> {

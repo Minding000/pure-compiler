@@ -53,7 +53,8 @@ class BoolNatives(val context: Context) {
 	private fun toggle(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisBool = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.booleanDeclarationType, thisBool, context.booleanValueIndex,
+		val runtimeClass = context.standardLibrary.boolean
+		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisBool, runtimeClass.valuePropertyIndex,
 			"thisValueProperty")
 		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
 		val result = constructor.buildBooleanNegation(thisPrimitiveBool, "negationResult")
@@ -64,7 +65,8 @@ class BoolNatives(val context: Context) {
 	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisBool = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.booleanDeclarationType, thisBool, context.booleanValueIndex,
+		val runtimeClass = context.standardLibrary.boolean
+		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisBool, runtimeClass.valuePropertyIndex,
 			"thisValueProperty")
 		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
 		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
@@ -75,7 +77,8 @@ class BoolNatives(val context: Context) {
 	private fun notEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisBool = context.getThisParameter(constructor)
-		val thisValueProperty = constructor.buildGetPropertyPointer(context.booleanDeclarationType, thisBool, context.booleanValueIndex,
+		val runtimeClass = context.standardLibrary.boolean
+		val thisValueProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, thisBool, runtimeClass.valuePropertyIndex,
 			"thisValueProperty")
 		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
 		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)

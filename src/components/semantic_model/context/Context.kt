@@ -2,6 +2,7 @@ package components.semantic_model.context
 
 import code.Main
 import components.code_generation.llvm.ExternalFunctions
+import components.code_generation.llvm.StandardLibrary
 import components.code_generation.llvm.runtime_definitions.RuntimeFunctions
 import components.code_generation.llvm.runtime_definitions.RuntimeGlobals
 import components.code_generation.llvm.runtime_definitions.RuntimeStructs
@@ -22,7 +23,6 @@ import logger.Issue
 import logger.Logger
 import util.count
 import java.util.*
-import kotlin.properties.Delegates
 
 class Context {
 	val logger = Logger("compiler")
@@ -34,37 +34,9 @@ class Context {
 	val runtimeStructs = RuntimeStructs()
 	val runtimeGlobals = RuntimeGlobals()
 	val runtimeFunctions = RuntimeFunctions()
+	val standardLibrary = StandardLibrary()
 	val nativeRegistry = NativeRegistry(this)
 	var primitiveCompilationTarget: TypeDeclaration? = null
-	// Standard library
-	var exceptionAddLocationFunctionType: LlvmType? = null
-	lateinit var arrayDeclarationType: LlvmType
-	lateinit var booleanDeclarationType: LlvmType
-	lateinit var byteArrayDeclarationType: LlvmType
-	lateinit var byteDeclarationType: LlvmType
-	lateinit var integerDeclarationType: LlvmType
-	lateinit var floatDeclarationType: LlvmType
-	lateinit var nativeInputStreamDeclarationType: LlvmType
-	lateinit var nativeOutputStreamDeclarationType: LlvmType
-	lateinit var arrayClassDefinition: LlvmValue
-	lateinit var booleanClassDefinition: LlvmValue
-	lateinit var byteArrayClassDefinition: LlvmValue
-	lateinit var byteClassDefinition: LlvmValue
-	lateinit var integerClassDefinition: LlvmValue
-	lateinit var floatClassDefinition: LlvmValue
-	lateinit var nativeInputStreamClassDefinition: LlvmValue
-	lateinit var nativeOutputStreamClassDefinition: LlvmValue
-	var arrayValueIndex by Delegates.notNull<Int>()
-	var booleanValueIndex by Delegates.notNull<Int>()
-	var byteArrayValueIndex by Delegates.notNull<Int>()
-	var byteValueIndex by Delegates.notNull<Int>()
-	var integerValueIndex by Delegates.notNull<Int>()
-	var floatValueIndex by Delegates.notNull<Int>()
-	var nativeInputStreamValueIndex by Delegates.notNull<Int>()
-	var nativeOutputStreamValueIndex by Delegates.notNull<Int>()
-	var stringTypeDeclaration: TypeDeclaration? = null
-	lateinit var llvmStringByteArrayInitializerType: LlvmType
-	lateinit var llvmStringByteArrayInitializer: LlvmValue
 
 	companion object {
 		const val CLASS_DEFINITION_PROPERTY_INDEX = 0
@@ -151,7 +123,7 @@ class Context {
 		val descriptionString = createStringObject(constructor, description)
 
 		val addLocationFunctionAddress = resolveFunction(constructor, exception, "addLocation(String, String, Int, String)")
-		constructor.buildFunctionCall(exceptionAddLocationFunctionType, addLocationFunctionAddress,
+		constructor.buildFunctionCall(standardLibrary.exceptionAddLocationFunctionType, addLocationFunctionAddress,
 			listOf(ignoredExceptionVariable, exception, moduleName, fileName, lineNumber, descriptionString))
 	}
 
@@ -199,28 +171,30 @@ class Context {
 	// also: search project for other missed pre-initializer calls
 	// also: this doesn't check for exceptions - same choice as above applies
 	fun createStringObject(constructor: LlvmConstructor, content: String): LlvmValue {
-		val arrayType = byteArrayDeclarationType
-		val byteArray = constructor.buildHeapAllocation(arrayType, "_byteArray")
-		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayType, byteArray,
+		val byteArrayRuntimeClass = standardLibrary.byteArray
+		val byteArray = constructor.buildHeapAllocation(byteArrayRuntimeClass.struct, "_byteArray")
+		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray,
 			CLASS_DEFINITION_PROPERTY_INDEX, "_arrayClassDefinitionProperty")
-		constructor.buildStore(byteArrayClassDefinition, arrayClassDefinitionProperty)
+		constructor.buildStore(byteArrayRuntimeClass.classDefinition, arrayClassDefinitionProperty)
 		val arraySizeProperty = resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(constructor.buildInt32(content.length), arraySizeProperty)
 
-		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, byteArrayValueIndex,
+		val arrayValueProperty =
+			constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray, byteArrayRuntimeClass.valuePropertyIndex,
 			"_arrayValueProperty")
 		val charArray = constructor.buildGlobalAsciiCharArray("_asciiStringLiteral", content, false)
 		constructor.buildStore(charArray, arrayValueProperty)
 
-		val stringAddress = constructor.buildHeapAllocation(stringTypeDeclaration?.llvmType, "_stringAddress")
-		val stringClassDefinitionProperty = constructor.buildGetPropertyPointer(stringTypeDeclaration?.llvmType, stringAddress,
+		val stringAddress = constructor.buildHeapAllocation(standardLibrary.stringTypeDeclaration?.llvmType, "_stringAddress")
+		val stringClassDefinitionProperty =
+			constructor.buildGetPropertyPointer(standardLibrary.stringTypeDeclaration?.llvmType, stringAddress,
 			CLASS_DEFINITION_PROPERTY_INDEX, "_stringClassDefinitionProperty")
-		val stringClassDefinition = stringTypeDeclaration?.llvmClassDefinition
+		val stringClassDefinition = standardLibrary.stringTypeDeclaration?.llvmClassDefinition
 			?: throw CompilerError("Missing string type declaration.")
 		constructor.buildStore(stringClassDefinition, stringClassDefinitionProperty)
 		val exceptionAddress = getExceptionParameter(constructor)
 		val parameters = listOf(exceptionAddress, stringAddress, byteArray)
-		constructor.buildFunctionCall(llvmStringByteArrayInitializerType, llvmStringByteArrayInitializer, parameters)
+		constructor.buildFunctionCall(standardLibrary.stringByteArrayInitializer, parameters)
 		return stringAddress
 	}
 

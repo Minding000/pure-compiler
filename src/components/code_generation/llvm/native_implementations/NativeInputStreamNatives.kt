@@ -17,8 +17,9 @@ class NativeInputStreamNatives(val context: Context) {
 		val exceptionAddress = context.getExceptionParameter(constructor) //TODO error handling
 		val thisObject = context.getThisParameter(constructor)
 
-		val handleProperty = constructor.buildGetPropertyPointer(context.nativeInputStreamDeclarationType, thisObject,
-			context.nativeInputStreamValueIndex, "handleProperty")
+		val runtimeClass = context.standardLibrary.nativeInputStream
+		val handleProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, thisObject, runtimeClass.valuePropertyIndex, "handleProperty")
 		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 		val byteAsInteger = constructor.buildFunctionCall(context.externalFunctions.streamReadByte, listOf(handle), "byteAsInteger")
 
@@ -42,18 +43,20 @@ class NativeInputStreamNatives(val context: Context) {
 		val thisObject = context.getThisParameter(constructor)
 		val amount = constructor.getLastParameter()
 
-		val handleProperty = constructor.buildGetPropertyPointer(context.nativeInputStreamDeclarationType, thisObject,
-			context.nativeInputStreamValueIndex, "handleProperty")
+		val runtimeClass = context.standardLibrary.nativeInputStream
+		val handleProperty =
+			constructor.buildGetPropertyPointer(runtimeClass.struct, thisObject, runtimeClass.valuePropertyIndex, "handleProperty")
 		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 
-		val arrayType = context.byteArrayDeclarationType
-		val byteArray = constructor.buildHeapAllocation(arrayType, "byteArrayObject")
-		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayType, byteArray,
+		val byteArrayRuntimeClass = context.standardLibrary.byteArray
+		val byteArray = constructor.buildHeapAllocation(byteArrayRuntimeClass.struct, "byteArrayObject")
+		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "arrayClassDefinitionProperty")
-		constructor.buildStore(context.byteArrayClassDefinition, arrayClassDefinitionProperty)
+		constructor.buildStore(byteArrayRuntimeClass.classDefinition, arrayClassDefinitionProperty)
 		val desiredNumberOfBytes = constructor.buildCastFromIntegerToLong(amount, "desiredNumberOfBytes")
 
-		val arrayValueProperty = constructor.buildGetPropertyPointer(arrayType, byteArray, context.byteArrayValueIndex,
+		val arrayValueProperty =
+			constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray, byteArrayRuntimeClass.valuePropertyIndex,
 			"arrayValueProperty")
 		val buffer = constructor.buildHeapArrayAllocation(constructor.byteType, amount, "byteArray")
 		constructor.buildStore(buffer, arrayValueProperty)

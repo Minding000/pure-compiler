@@ -1,5 +1,6 @@
 package components.semantic_model.declarations
 
+import components.code_generation.llvm.StandardLibrary
 import components.code_generation.llvm.ValueConverter
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmDebugInfoMetadata
@@ -415,28 +416,28 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 
 	private fun addNativeProperties(constructor: LlvmConstructor, llvmProperties: LinkedList<LlvmType?>) {
 		if(SpecialType.ARRAY.matches(this)) {
-			context.arrayValueIndex = llvmProperties.size
+			context.standardLibrary.array = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
 			llvmProperties.add(constructor.pointerType)
 		} else if(SpecialType.BOOLEAN.matches(this)) {
-			context.booleanValueIndex = llvmProperties.size
+			context.standardLibrary.boolean = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
 			llvmProperties.add(constructor.booleanType)
 		} else if(SpecialType.BYTE.matches(this)) {
-			context.byteValueIndex = llvmProperties.size
+			context.standardLibrary.byte = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
 			llvmProperties.add(constructor.byteType)
 		} else if(SpecialType.BYTE_ARRAY.matches(this)) {
-			context.byteArrayValueIndex = llvmProperties.size
+			context.standardLibrary.byteArray = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
 			llvmProperties.add(constructor.pointerType)
 		} else if(SpecialType.INTEGER.matches(this)) {
-			context.integerValueIndex = llvmProperties.size
+			context.standardLibrary.integer = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
 			llvmProperties.add(constructor.i32Type)
 		} else if(SpecialType.FLOAT.matches(this)) {
-			context.floatValueIndex = llvmProperties.size
+			context.standardLibrary.float = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
 			llvmProperties.add(constructor.floatType)
 		} else if(SpecialType.NATIVE_INPUT_STREAM.matches(this)) {
-			context.nativeInputStreamValueIndex = llvmProperties.size
+			context.standardLibrary.nativeInputStream = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
 			llvmProperties.add(constructor.pointerType)
 		} else if(SpecialType.NATIVE_OUTPUT_STREAM.matches(this)) {
-			context.nativeOutputStreamValueIndex = llvmProperties.size
+			context.standardLibrary.nativeOutputStream = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
 			llvmProperties.add(constructor.pointerType)
 		}
 	}
