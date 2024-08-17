@@ -203,10 +203,7 @@ object ValueConverter {
 	fun wrapBool(context: Context, constructor: LlvmConstructor, primitiveLlvmValue: LlvmValue): LlvmValue {
 		val runtimeClass = context.standardLibrary.boolean
 		val bool = constructor.buildHeapAllocation(runtimeClass.struct, "_bool")
-		val classDefinitionProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, bool, Context.CLASS_DEFINITION_PROPERTY_INDEX,
-			"_classDefinitionProperty")
-		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
+		runtimeClass.setClassDefinition(constructor, bool)
 		val valueProperty = runtimeClass.getNativeValueProperty(constructor, bool)
 		constructor.buildStore(primitiveLlvmValue, valueProperty)
 		return bool
@@ -220,10 +217,7 @@ object ValueConverter {
 	fun wrapByte(context: Context, constructor: LlvmConstructor, primitiveLlvmValue: LlvmValue): LlvmValue {
 		val runtimeClass = context.standardLibrary.byte
 		val byte = constructor.buildHeapAllocation(runtimeClass.struct, "_byte")
-		val classDefinitionProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, byte, Context.CLASS_DEFINITION_PROPERTY_INDEX,
-			"_classDefinitionProperty")
-		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
+		runtimeClass.setClassDefinition(constructor, byte)
 		val valueProperty = runtimeClass.getNativeValueProperty(constructor, byte)
 		constructor.buildStore(primitiveLlvmValue, valueProperty)
 		return byte
@@ -237,10 +231,7 @@ object ValueConverter {
 	fun wrapInteger(context: Context, constructor: LlvmConstructor, primitiveLlvmValue: LlvmValue): LlvmValue {
 		val runtimeClass = context.standardLibrary.integer
 		val integer = constructor.buildHeapAllocation(runtimeClass.struct, "_integer")
-		val classDefinitionProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, integer, Context.CLASS_DEFINITION_PROPERTY_INDEX,
-				"_classDefinitionProperty")
-		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
+		runtimeClass.setClassDefinition(constructor, integer)
 		val valueProperty = runtimeClass.getNativeValueProperty(constructor, integer)
 		constructor.buildStore(primitiveLlvmValue, valueProperty)
 		return integer
@@ -254,10 +245,7 @@ object ValueConverter {
 	fun wrapFloat(context: Context, constructor: LlvmConstructor, primitiveLlvmValue: LlvmValue): LlvmValue {
 		val runtimeClass = context.standardLibrary.float
 		val float = constructor.buildHeapAllocation(runtimeClass.struct, "_float")
-		val classDefinitionProperty =
-			constructor.buildGetPropertyPointer(runtimeClass.struct, float, Context.CLASS_DEFINITION_PROPERTY_INDEX,
-				"_classDefinitionProperty")
-		constructor.buildStore(runtimeClass.classDefinition, classDefinitionProperty)
+		runtimeClass.setClassDefinition(constructor, float)
 		val valueProperty = runtimeClass.getNativeValueProperty(constructor, float)
 		constructor.buildStore(primitiveLlvmValue, valueProperty)
 		return float

@@ -102,9 +102,7 @@ class ArrayNatives(val context: Context) {
 		val parameterSizeAsLong = constructor.buildCastFromIntegerToLong(parameterSize, "parameterSizeAsLong")
 		val parameterSizeInBytes = constructor.buildIntegerMultiplication(parameterSizeAsLong, pointerSizeInBytes, "parameterSizeInBytes")
 		val combinedArray = constructor.buildHeapAllocation(arrayRuntimeClass.struct, "combinedArray")
-		val combinedArrayClassDefinitionProperty = constructor.buildGetPropertyPointer(arrayRuntimeClass.struct, combinedArray,
-			Context.CLASS_DEFINITION_PROPERTY_INDEX, "combinedArrayClassDefinitionProperty")
-		constructor.buildStore(arrayRuntimeClass.classDefinition, combinedArrayClassDefinitionProperty)
+		arrayRuntimeClass.setClassDefinition(constructor, combinedArray)
 		val combinedArraySizeProperty = context.resolveMember(constructor, combinedArray, "size")
 		val combinedSize = constructor.buildIntegerAddition(thisSize, parameterSize, "combinedSize")
 		constructor.buildStore(combinedSize, combinedArraySizeProperty)

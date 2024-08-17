@@ -96,9 +96,7 @@ class ByteArrayNatives(val context: Context) {
 		val parameterSize = constructor.buildLoad(constructor.i32Type, parameterSizeProperty, "parameterSize")
 		val parameterSizeAsLong = constructor.buildCastFromIntegerToLong(parameterSize, "parameterSizeAsLong")
 		val combinedArray = constructor.buildHeapAllocation(runtimeClass.struct, "combinedArray")
-		val combinedArrayClassDefinitionProperty = constructor.buildGetPropertyPointer(runtimeClass.struct, combinedArray,
-			Context.CLASS_DEFINITION_PROPERTY_INDEX, "combinedArrayClassDefinitionProperty")
-		constructor.buildStore(runtimeClass.classDefinition, combinedArrayClassDefinitionProperty)
+		runtimeClass.setClassDefinition(constructor, combinedArray)
 		val combinedArraySizeProperty = context.resolveMember(constructor, combinedArray, "size")
 		val combinedSize = constructor.buildIntegerAddition(thisSize, parameterSize, "combinedSize")
 		constructor.buildStore(combinedSize, combinedArraySizeProperty)

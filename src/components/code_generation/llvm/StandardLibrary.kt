@@ -106,6 +106,12 @@ class StandardLibrary {
 		constructor(typeDeclaration: TypeDeclaration, valuePropertyIndex: Int):
 			this(typeDeclaration.llvmType, typeDeclaration.llvmClassDefinition, valuePropertyIndex)
 
+		fun setClassDefinition(constructor: LlvmConstructor, targetObject: LlvmValue) {
+			val classDefinitionProperty = constructor.buildGetPropertyPointer(struct, targetObject, Context.CLASS_DEFINITION_PROPERTY_INDEX,
+				"_classDefinitionProperty")
+			constructor.buildStore(classDefinition, classDefinitionProperty)
+		}
+
 		fun getNativeValueProperty(constructor: LlvmConstructor, structPointer: LlvmValue): LlvmValue {
 			return constructor.buildGetPropertyPointer(struct, structPointer, valuePropertyIndex, "_nativeValueProperty")
 		}

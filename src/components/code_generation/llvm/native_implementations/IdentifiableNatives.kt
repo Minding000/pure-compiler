@@ -30,9 +30,7 @@ class IdentifiableNatives(val context: Context) {
 
 		val byteArrayRuntimeClass = context.standardLibrary.byteArray
 		val byteArray = constructor.buildHeapAllocation(byteArrayRuntimeClass.struct, "_byteArray")
-		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray,
-			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_arrayClassDefinitionProperty")
-		constructor.buildStore(byteArrayRuntimeClass.classDefinition, arrayClassDefinitionProperty)
+		byteArrayRuntimeClass.setClassDefinition(constructor, byteArray)
 		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(sizeWithoutTermination, arraySizeProperty)
 

@@ -46,9 +46,7 @@ class NativeInputStreamNatives(val context: Context) {
 
 		val byteArrayRuntimeClass = context.standardLibrary.byteArray
 		val byteArray = constructor.buildHeapAllocation(byteArrayRuntimeClass.struct, "byteArrayObject")
-		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray,
-			Context.CLASS_DEFINITION_PROPERTY_INDEX, "arrayClassDefinitionProperty")
-		constructor.buildStore(byteArrayRuntimeClass.classDefinition, arrayClassDefinitionProperty)
+		byteArrayRuntimeClass.setClassDefinition(constructor, byteArray)
 		val desiredNumberOfBytes = constructor.buildCastFromIntegerToLong(amount, "desiredNumberOfBytes")
 
 		val arrayValueProperty = byteArrayRuntimeClass.getNativeValueProperty(constructor, byteArray)

@@ -173,9 +173,7 @@ class Context {
 	fun createStringObject(constructor: LlvmConstructor, content: String): LlvmValue {
 		val byteArrayRuntimeClass = standardLibrary.byteArray
 		val byteArray = constructor.buildHeapAllocation(byteArrayRuntimeClass.struct, "_byteArray")
-		val arrayClassDefinitionProperty = constructor.buildGetPropertyPointer(byteArrayRuntimeClass.struct, byteArray,
-			CLASS_DEFINITION_PROPERTY_INDEX, "_arrayClassDefinitionProperty")
-		constructor.buildStore(byteArrayRuntimeClass.classDefinition, arrayClassDefinitionProperty)
+		byteArrayRuntimeClass.setClassDefinition(constructor, byteArray)
 		val arraySizeProperty = resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(constructor.buildInt32(content.length), arraySizeProperty)
 
