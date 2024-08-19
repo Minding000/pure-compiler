@@ -13,18 +13,15 @@ class IdentifiableNatives(val context: Context) {
 		registry.registerNativeImplementation("Identifiable === Any?: Bool", ::identicalTo)
 	}
 
-	//TODO write test
 	private fun stringRepresentation(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionAddress = context.getExceptionParameter(constructor, llvmFunctionValue)
 		val thisIdentifiable = context.getThisParameter(constructor, llvmFunctionValue)
 
 		val format = constructor.buildGlobalAsciiCharArray("pointerToStringFormat", "%p")
-		//val sizeWithoutTermination = constructor.buildFunctionCall(context.llvmPrintSizeFunctionType, context.llvmPrintSizeFunction,
-		//	listOf(constructor.nullPointer, constructor.buildInt64(0), format, thisIdentifiable), "sizeWithoutTermination")
-		//val size = constructor.buildIntegerAddition(sizeWithoutTermination, constructor.buildInt32(1), "size")
-		val sizeWithoutTermination = constructor.buildInt32(16)
-		val size = constructor.buildInt32(17)
+		val sizeWithoutTermination = constructor.buildFunctionCall(context.externalFunctions.printSize,
+			listOf(constructor.nullPointer, constructor.buildInt64(0), format, thisIdentifiable), "sizeWithoutTermination")
+		val size = constructor.buildIntegerAddition(sizeWithoutTermination, constructor.buildInt32(1), "size")
 		context.printDebugLine(constructor, "sizeWithoutTermination: %d", sizeWithoutTermination)
 		context.printDebugLine(constructor, "size: %d", size)
 

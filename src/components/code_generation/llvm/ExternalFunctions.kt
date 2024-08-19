@@ -48,7 +48,9 @@ class ExternalFunctions {
 	}
 
 	private fun addPrintSizeFunction(constructor: LlvmConstructor) {
-		printSize = LlvmFunction(constructor, "snprintf", listOf(constructor.pointerType, constructor.i64Type, constructor.pointerType),
+		val targetTriple = constructor.getTargetTriple()
+		val name = if(targetTriple.contains("linux")) "snprintf" else "_snprintf"
+		printSize = LlvmFunction(constructor, name, listOf(constructor.pointerType, constructor.i64Type, constructor.pointerType),
 			constructor.i32Type, true)
 	}
 
