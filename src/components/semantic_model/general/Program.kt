@@ -1,5 +1,6 @@
 package components.semantic_model.general
 
+import components.code_generation.llvm.wrapper.LlvmBlock
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
@@ -14,7 +15,6 @@ import util.ExitCode
 import java.util.*
 import components.syntax_parser.syntax_tree.general.Program as ProgramSyntaxTree
 
-//TODO check if memory is assumed to be zero on allocation anywhere (not guaranteed!)
 class Program(val context: Context, val source: ProgramSyntaxTree) {
 	val files = LinkedList<File>()
 
@@ -108,35 +108,31 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		val globalEntryPointType = constructor.buildFunctionType(emptyList(), globalEntryPointReturnType)
 		val globalEntryPoint = constructor.buildFunction(GLOBAL_ENTRYPOINT_NAME, globalEntryPointType)
 		constructor.createAndSelectEntrypointBlock(globalEntryPoint)
+		val uncaughtExceptionBlock = constructor.createBlock("uncaughtException")
 		createStandardStreams(constructor)
 		context.printDebugLine(constructor, "Initializing program...")
-
-		//TODO remove: this print is for debugging
-		//val handle = constructor.buildLoad(constructor.pointerType, context.llvmStandardOutputStreamGlobal, "handle")
-		//val test = constructor.buildGlobalAsciiCharArray("test", "Test")
-		//constructor.buildFunctionCall(context.llvmStreamWriteFunctionType, context.llvmStreamWriteFunction,
-		//	listOf(test, constructor.buildInt64(1), constructor.buildInt64(4), handle))
-		//context.printDebugMessage(constructor, "Test: %d", constructor.buildInt32(42))
-		//context.printDebugMessage(constructor, "Test: %p", context.llvmStandardErrorStreamGlobal)
-
 		val exceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "__exceptionVariable")
 		constructor.buildStore(constructor.nullPointer, exceptionVariable)
-		for(file in files)
-			constructor.buildFunctionCall(file.llvmInitializerType, file.llvmInitializerValue, listOf(exceptionVariable))
+		for(file in files) {
+			constructor.buildFunctionCall(file.initializer, listOf(exceptionVariable))
+			checkForUnhandledError(constructor, exceptionVariable, uncaughtExceptionBlock)
+		}
 		context.printDebugLine(constructor, "Program initialized.")
 		context.printDebugLine(constructor, "Starting program...")
-		//TODO check for uncaught exception in all initializer calls (write tests!)
 		var result: LlvmValue? = null
 		if(userEntryPointFunction == null) {
-			for(file in files)
-				constructor.buildFunctionCall(file.llvmRunnerType, file.llvmRunnerValue, listOf(exceptionVariable))
+			for(file in files) {
+				constructor.buildFunctionCall(file.runner, listOf(exceptionVariable))
+				checkForUnhandledError(constructor, exceptionVariable, uncaughtExceptionBlock)
+			}
 			context.printDebugLine(constructor, "Files executed.")
 		} else {
 			val filesToInitialize = LinkedHashSet<File>()
 			userEntryPointFunction.getSurrounding<File>()?.determineFileInitializationOrder(filesToInitialize)
 			for(file in filesToInitialize.reversed()) {
 				println("Initializing '${file.file.name}'")
-				constructor.buildFunctionCall(file.llvmRunnerType, file.llvmRunnerValue, listOf(exceptionVariable))
+				constructor.buildFunctionCall(file.runner, listOf(exceptionVariable))
+				checkForUnhandledError(constructor, exceptionVariable, uncaughtExceptionBlock)
 			}
 			context.printDebugLine(constructor, "Files executed.")
 			context.printDebugLine(constructor, "Calling entrypoint...")
@@ -149,27 +145,20 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			}
 			result = constructor.buildFunctionCall(userEntryPointFunction.signature.getLlvmType(constructor),
 				userEntryPointFunction.llvmValue, parameters, if(userEntryPointReturnsVoid) "" else "programResult")
-			handleUnhandledError(constructor, exceptionVariable)
+			checkForUnhandledError(constructor, exceptionVariable, uncaughtExceptionBlock)
 			context.printDebugLine(constructor, "Entrypoint returned.")
 		}
-
-		//TODO remove: this flush is for debugging
-		//val handle = constructor.buildLoad(constructor.pointerType, context.llvmStandardOutputStreamGlobal, "handle")
-		//constructor.buildFunctionCall(context.llvmStreamFlushFunctionType, context.llvmStreamFlushFunction, listOf(handle))
 
 		if(userEntryPointReturnsVoid)
 			result = constructor.buildInt32(ExitCode.SUCCESS)
 		constructor.buildReturn(result)
+		constructor.select(uncaughtExceptionBlock)
+		reportUnhandledError(constructor, exceptionVariable)
 		return globalEntryPoint
 	}
 
-	private fun handleUnhandledError(constructor: LlvmConstructor, exceptionVariable: LlvmValue) {
+	private fun reportUnhandledError(constructor: LlvmConstructor, exceptionVariable: LlvmValue) {
 		val exception = constructor.buildLoad(constructor.pointerType, exceptionVariable, "exception")
-		val doesExceptionExist = constructor.buildIsNotNull(exception, "doesExceptionExist")
-		val panicBlock = constructor.createBlock("uncaughtException")
-		val noExceptionBlock = constructor.createBlock("noException")
-		constructor.buildJump(doesExceptionExist, panicBlock, noExceptionBlock)
-		constructor.select(panicBlock)
 		if(context.nativeRegistry.has(SpecialType.EXCEPTION, SpecialType.STRING, SpecialType.ARRAY)) {
 			val stringRepresentationGetterAddress = context.resolveFunction(constructor, exception, "get stringRepresentation: String")
 			val ignoredExceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable")
@@ -191,6 +180,13 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			context.panic(constructor, "Unhandled error at '%p'.", exception)
 		}
 		constructor.markAsUnreachable()
+	}
+
+	private fun checkForUnhandledError(constructor: LlvmConstructor, exceptionVariable: LlvmValue, uncaughtExceptionBlock: LlvmBlock) {
+		val exception = constructor.buildLoad(constructor.pointerType, exceptionVariable, "exception")
+		val doesExceptionExist = constructor.buildIsNotNull(exception, "doesExceptionExist")
+		val noExceptionBlock = constructor.createBlock("noException")
+		constructor.buildJump(doesExceptionExist, uncaughtExceptionBlock, noExceptionBlock)
 		constructor.select(noExceptionBlock)
 	}
 

@@ -2,10 +2,7 @@ package components.semantic_model.declarations
 
 import components.code_generation.llvm.StandardLibrary
 import components.code_generation.llvm.ValueConverter
-import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmDebugInfoMetadata
-import components.code_generation.llvm.wrapper.LlvmType
-import components.code_generation.llvm.wrapper.LlvmValue
+import components.code_generation.llvm.wrapper.*
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
@@ -41,10 +38,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	private lateinit var functions: List<LlvmMemberFunction>
 	lateinit var llvmType: LlvmType
 	lateinit var llvmClassDefinition: LlvmValue
-	lateinit var llvmClassInitializer: LlvmValue
-	lateinit var llvmClassInitializerType: LlvmType
-	lateinit var llvmCommonPreInitializer: LlvmValue
-	lateinit var llvmCommonPreInitializerType: LlvmType
+	lateinit var classInitializer: LlvmFunction
+	lateinit var commonClassPreInitializer: LlvmFunction
 	lateinit var llvmStaticType: LlvmType
 	private val staticMemberOffsets = HashMap<ValueDeclaration, LlvmValue>()
 	private var cachedLlvmMetadata: LlvmDebugInfoMetadata? = null
@@ -257,8 +252,8 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		return scope.getGenericTypeDeclarations().map { genericTypeDeclaration -> ObjectType(genericTypeDeclaration) }
 	}
 
-	fun acceptsSubstituteType(
-		substituteType: Type): Boolean { //TODO fix: it's not clear that Identifiable inherits from Any when running without STD lib
+	//TODO fix: it's not clear that Identifiable inherits from Any when running without STD lib
+	fun acceptsSubstituteType(substituteType: Type): Boolean {
 		if(superType == null)
 			return false
 		if(SpecialType.ANY.matches(superType))
@@ -290,8 +285,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	}
 
 	private fun declareClassInitializer(constructor: LlvmConstructor) {
-		llvmClassInitializerType = constructor.buildFunctionType(listOf(constructor.pointerType))
-		llvmClassInitializer = constructor.buildFunction("${getFullName()}_ClassInitializer", llvmClassInitializerType)
+		classInitializer = LlvmFunction(constructor, "${getFullName()}_ClassInitializer", listOf(constructor.pointerType))
 	}
 
 	private fun declareCommonPreInitializer(constructor: LlvmConstructor) {
@@ -308,8 +302,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			genericTypeDeclaration.index = parameterIndex
 			parameterIndex++
 		}
-		llvmCommonPreInitializerType = constructor.buildFunctionType(parameterTypes)
-		llvmCommonPreInitializer = constructor.buildFunction("${getFullName()}_CommonPreInitializer", llvmCommonPreInitializerType)
+		commonClassPreInitializer = LlvmFunction(constructor, "${getFullName()}_CommonPreInitializer", parameterTypes)
 	}
 
 	override fun define(constructor: LlvmConstructor) {
@@ -462,13 +455,12 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 										  properties: List<ValueDeclaration>, functions: List<LlvmMemberFunction>) {
 		context.printDebugMessage("'${getFullName()}' class initializer:")
 		val previousBlock = constructor.getCurrentBlock()
-		constructor.createAndSelectEntrypointBlock(llvmClassInitializer)
+		constructor.createAndSelectEntrypointBlock(classInitializer.value)
 		context.printDebugLine(constructor, "Initializing class '${getFullName()}' with class definition at '%p'.",
 			llvmClassDefinition)
 		for(typeDeclaration in scope.typeDeclarations.values) {
 			if(typeDeclaration.isDefinition)
-				constructor.buildFunctionCall(typeDeclaration.llvmClassInitializerType, typeDeclaration.llvmClassInitializer,
-					listOf(context.getExceptionParameter(constructor, llvmClassInitializer)))
+				constructor.buildFunctionCall(typeDeclaration.classInitializer, listOf(context.getExceptionParameter(constructor)))
 		}
 		val staticMemberCount = constructor.buildInt32(staticMembers.size)
 		val staticMemberIdArray = constructor.buildHeapArrayAllocation(context.runtimeTypes.memberId, staticMemberCount,
@@ -600,19 +592,19 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 
 	private fun buildLlvmCommonPreInitializer(constructor: LlvmConstructor, properties: List<ValueDeclaration>) {
 		val previousBlock = constructor.getCurrentBlock()
-		constructor.createAndSelectEntrypointBlock(llvmCommonPreInitializer)
-		val exceptionParameter = context.getExceptionParameter(constructor, llvmCommonPreInitializer)
-		val thisValue = constructor.getParameter(llvmCommonPreInitializer, Context.THIS_PARAMETER_INDEX)
+		constructor.createAndSelectEntrypointBlock(commonClassPreInitializer.value)
+		val exceptionParameter = context.getExceptionParameter(constructor)
+		val thisValue = constructor.getParameter(Context.THIS_PARAMETER_INDEX)
 		context.printDebugLine(constructor, "Running '${getFullName()}' pre-initialization of object at '%p'.", thisValue)
 		if(isBound) {
-			val parentValue = constructor.getParameter(llvmCommonPreInitializer, Context.PARENT_PARAMETER_OFFSET)
+			val parentValue = constructor.getParameter(Context.PARENT_PARAMETER_OFFSET)
 			val parentProperty = constructor.buildGetPropertyPointer(llvmType, thisValue, Context.PARENT_PROPERTY_INDEX,
 				"_parentProperty")
 			constructor.buildStore(parentValue, parentProperty)
 		}
 		for(genericTypeDeclaration in scope.getGenericTypeDeclarations()) {
 			val propertyAddress = context.resolveMember(constructor, thisValue, genericTypeDeclaration.name)
-			constructor.buildStore(constructor.getParameter(llvmCommonPreInitializer, genericTypeDeclaration.index), propertyAddress)
+			constructor.buildStore(constructor.getParameter(genericTypeDeclaration.index), propertyAddress)
 		}
 		for(superType in getDirectSuperTypes()) {
 			if(SpecialType.IDENTIFIABLE.matches(superType) || SpecialType.ANY.matches(superType))
@@ -627,8 +619,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 					?: throw CompilerError(typeParameter.source, "Only object types are allowed as type parameters.")
 				parameters.add(objectType.getStaticLlvmValue(constructor))
 			}
-			constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer,
-				parameters)
+			constructor.buildFunctionCall(typeDeclaration.commonClassPreInitializer, parameters)
 			context.continueRaise(constructor, this)
 		}
 		for(memberDeclaration in properties) {

@@ -106,7 +106,7 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 		val parameters = LinkedList<LlvmValue?>()
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
-		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
+		constructor.buildFunctionCall(typeDeclaration.commonClassPreInitializer, parameters)
 		context.continueRaise(constructor, this)
 	}
 

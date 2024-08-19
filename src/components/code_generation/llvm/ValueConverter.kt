@@ -140,7 +140,7 @@ object ValueConverter {
 		val parameters = LinkedList<LlvmValue?>()
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionParameter)
 		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
-		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
+		constructor.buildFunctionCall(typeDeclaration.commonClassPreInitializer, parameters)
 		context.continueRaise(constructor, model)
 	}
 

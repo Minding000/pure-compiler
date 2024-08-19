@@ -1,8 +1,7 @@
 package components.semantic_model.general
 
 import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmType
-import components.code_generation.llvm.wrapper.LlvmValue
+import components.code_generation.llvm.wrapper.LlvmFunction
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.scopes.FileScope
 import logger.issues.resolution.ReferencedFileNotFound
@@ -14,10 +13,8 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 	SemanticModel(source, scope) {
 	private val referencedFiles = LinkedList<File>()
 	lateinit var variableTracker: VariableTracker
-	lateinit var llvmInitializerValue: LlvmValue
-	lateinit var llvmInitializerType: LlvmType
-	lateinit var llvmRunnerValue: LlvmValue
-	lateinit var llvmRunnerType: LlvmType
+	lateinit var initializer: LlvmFunction
+	lateinit var runner: LlvmFunction
 
 	init {
 		addSemanticModels(statements)
@@ -62,10 +59,8 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)
-		llvmInitializerType = constructor.buildFunctionType(listOf(constructor.pointerType))
-		llvmInitializerValue = constructor.buildFunction("${file.name}_FileInitializer", llvmInitializerType)
-		llvmRunnerType = constructor.buildFunctionType(listOf(constructor.pointerType))
-		llvmRunnerValue = constructor.buildFunction("${file.name}_FileRunner", llvmRunnerType)
+		initializer = LlvmFunction(constructor, "${file.name}_FileInitializer", listOf(constructor.pointerType))
+		runner = LlvmFunction(constructor, "${file.name}_FileRunner", listOf(constructor.pointerType))
 	}
 
 	override fun compile(constructor: LlvmConstructor) {
@@ -74,13 +69,12 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 	}
 
 	private fun compileInitializer(constructor: LlvmConstructor) {
-		constructor.createAndSelectEntrypointBlock(llvmInitializerValue)
+		constructor.createAndSelectEntrypointBlock(initializer.value)
 		context.printDebugLine(constructor, "Initializing file '${file.name}'.")
 		val exceptionParameter = context.getExceptionParameter(constructor)
 		for(typeDeclaration in scope.typeDeclarations.values) {
 			if(typeDeclaration.isDefinition) {
-				constructor.buildFunctionCall(typeDeclaration.llvmClassInitializerType, typeDeclaration.llvmClassInitializer,
-					listOf(exceptionParameter))
+				constructor.buildFunctionCall(typeDeclaration.classInitializer, listOf(exceptionParameter))
 				context.continueRaise(constructor, this)
 			}
 		}
@@ -89,7 +83,7 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 	}
 
 	private fun compileRunner(constructor: LlvmConstructor) {
-		constructor.createAndSelectEntrypointBlock(llvmRunnerValue)
+		constructor.createAndSelectEntrypointBlock(runner.value)
 		context.printDebugLine(constructor, "Executing file '${file.name}'.")
 		super.compile(constructor)
 		context.printDebugLine(constructor, "File '${file.name}' executed.")

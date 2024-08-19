@@ -338,7 +338,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				?: throw CompilerError(typeParameter.source, "Only object types are allowed as type parameters.")
 			parameters.add(objectType.getStaticLlvmValue(constructor))
 		}
-		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
+		constructor.buildFunctionCall(typeDeclaration.commonClassPreInitializer, parameters)
 		context.continueRaise(constructor, this)
 	}
 

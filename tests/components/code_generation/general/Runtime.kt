@@ -108,4 +108,27 @@ internal class Runtime {
 			""".trimIndent()
 		app.shouldPrintLine(expectedOutput, "", 1)
 	}
+
+	@Test
+	fun `reports errors during file initialization`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				computed name: String gets {
+					raise Exception("Whoops")
+				}
+				val id = name
+				to run() {
+					raise Exception("Interference")
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Whoops
+			 at Test:Test:4:get name: String
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
 }

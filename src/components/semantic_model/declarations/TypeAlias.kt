@@ -111,7 +111,7 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, scope: TypeScope, name
 		val parameters = LinkedList<LlvmValue?>()
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
-		constructor.buildFunctionCall(typeDeclaration.llvmCommonPreInitializerType, typeDeclaration.llvmCommonPreInitializer, parameters)
+		constructor.buildFunctionCall(typeDeclaration.commonClassPreInitializer, parameters)
 		context.continueRaise(constructor, this)
 	}
 }
