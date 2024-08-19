@@ -40,7 +40,7 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		return context.createStringObject(constructor, value)
+		return context.createStringObject(constructor, value, context.getExceptionParameter(constructor))
 	}
 
 	override fun hashCode(): Int {

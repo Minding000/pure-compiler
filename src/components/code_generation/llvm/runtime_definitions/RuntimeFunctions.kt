@@ -4,17 +4,25 @@ import code.Main
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmFunction
 import components.semantic_model.context.Context
+import components.semantic_model.context.SpecialType
 import components.semantic_model.general.Program.Companion.RUNTIME_PREFIX
+import errors.internal.CompilerError
 
 class RuntimeFunctions {
 	lateinit var constantOffsetResolution: LlvmFunction
 	lateinit var propertyOffsetResolution: LlvmFunction
 	lateinit var functionAddressResolution: LlvmFunction
+	lateinit var createString: LlvmFunction
+	lateinit var addExceptionLocation: LlvmFunction
 
 	fun build(constructor: LlvmConstructor, context: Context) {
 		buildMemberResolutionFunction(constructor, context, "Constant")
 		buildMemberResolutionFunction(constructor, context, "Property")
 		buildFunctionResolutionFunction(constructor, context)
+		if(context.nativeRegistry.has(SpecialType.STRING))
+			buildCreateStringFunction(constructor, context)
+		if(context.nativeRegistry.has(SpecialType.EXCEPTION))
+			buildAddExceptionLocationFunction(constructor, context)
 	}
 
 	private fun buildMemberResolutionFunction(constructor: LlvmConstructor, context: Context, type: String) {
@@ -176,5 +184,74 @@ class RuntimeFunctions {
 		}
 		constructor.buildReturn(functionAddress)
 		functionAddressResolution = LlvmFunction(function, functionType)
+	}
+
+	//TODO this function is not calling the pre-initializer. Either:
+	// - call it for String and ByteArray
+	// - add comments marking this as an optimization, because the pre-initializer is empty
+	//   - consider generalizing and automating this optimization
+	// also: search project for other missed pre-initializer calls
+	// also: this doesn't check for exceptions - same choice as above applies
+	private fun buildCreateStringFunction(constructor: LlvmConstructor, context: Context) {
+		val functionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType, constructor.i32Type),
+			constructor.pointerType)
+		val function = constructor.buildFunction("${RUNTIME_PREFIX}createString", functionType)
+		constructor.createAndSelectEntrypointBlock(function)
+		val exceptionParameter = context.getExceptionParameter(constructor)
+		val charArray = constructor.getParameter(1)
+		val length = constructor.getParameter(2)
+
+		val byteArrayRuntimeClass = context.standardLibrary.byteArray
+		val byteArray = constructor.buildHeapAllocation(byteArrayRuntimeClass.struct, "_byteArray")
+		byteArrayRuntimeClass.setClassDefinition(constructor, byteArray)
+		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
+		constructor.buildStore(length, arraySizeProperty)
+
+		val arrayValueProperty = byteArrayRuntimeClass.getNativeValueProperty(constructor, byteArray)
+		constructor.buildStore(charArray, arrayValueProperty)
+
+		val string = constructor.buildHeapAllocation(context.standardLibrary.stringTypeDeclaration?.llvmType, "_string")
+		val stringClassDefinitionProperty =
+			constructor.buildGetPropertyPointer(context.standardLibrary.stringTypeDeclaration?.llvmType, string,
+				Context.CLASS_DEFINITION_PROPERTY_INDEX, "_stringClassDefinitionProperty")
+		val stringClassDefinition = context.standardLibrary.stringTypeDeclaration?.llvmClassDefinition
+			?: throw CompilerError("Missing string type declaration.")
+		constructor.buildStore(stringClassDefinition, stringClassDefinitionProperty)
+		val parameters = listOf(exceptionParameter, string, byteArray)
+		constructor.buildFunctionCall(context.standardLibrary.stringByteArrayInitializer, parameters)
+		constructor.buildReturn(string)
+		createString = LlvmFunction(function, functionType)
+	}
+
+	private fun buildAddExceptionLocationFunction(constructor: LlvmConstructor, context: Context) {
+		val functionType = constructor.buildFunctionType(
+			listOf(constructor.pointerType, constructor.pointerType, constructor.i32Type, constructor.pointerType, constructor.i32Type,
+				constructor.pointerType, constructor.i32Type, constructor.i32Type))
+		val function = constructor.buildFunction("${RUNTIME_PREFIX}addExceptionLocation", functionType)
+		constructor.createAndSelectEntrypointBlock(function)
+		val exception = context.getExceptionParameter(constructor)
+		val moduleNameBytes = constructor.getParameter(1)
+		val moduleNameLength = constructor.getParameter(2)
+		val fileNameBytes = constructor.getParameter(3)
+		val fileNameLength = constructor.getParameter(4)
+		val descriptionBytes = constructor.getParameter(5)
+		val descriptionLength = constructor.getParameter(6)
+		val lineNumber = constructor.getParameter(7)
+
+		val ignoredExceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable")
+		constructor.buildStore(constructor.nullPointer, ignoredExceptionVariable)
+		val moduleName =
+			constructor.buildFunctionCall(createString, listOf(ignoredExceptionVariable, moduleNameBytes, moduleNameLength), "moduleName")
+		val fileName =
+			constructor.buildFunctionCall(createString, listOf(ignoredExceptionVariable, fileNameBytes, fileNameLength), "fileName")
+		val descriptionString =
+			constructor.buildFunctionCall(createString, listOf(ignoredExceptionVariable, descriptionBytes, descriptionLength),
+				"description")
+
+		val addLocationFunctionAddress = context.resolveFunction(constructor, exception, "addLocation(String, String, Int, String)")
+		constructor.buildFunctionCall(context.standardLibrary.exceptionAddLocationFunctionType, addLocationFunctionAddress,
+			listOf(ignoredExceptionVariable, exception, moduleName, fileName, lineNumber, descriptionString))
+		constructor.buildReturn()
+		addExceptionLocation = LlvmFunction(function, functionType)
 	}
 }

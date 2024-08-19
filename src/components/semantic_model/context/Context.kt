@@ -18,7 +18,6 @@ import components.semantic_model.general.SemanticModel
 import components.semantic_model.types.Type
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
-import errors.internal.CompilerError
 import logger.Issue
 import logger.Logger
 import util.count
@@ -36,6 +35,7 @@ class Context {
 	val runtimeFunctions = RuntimeFunctions()
 	val standardLibrary = StandardLibrary()
 	val nativeRegistry = NativeRegistry(this)
+	val constantCharArrayGlobals = HashMap<String, LlvmValue>()
 	var primitiveCompilationTarget: TypeDeclaration? = null
 
 	companion object {
@@ -98,11 +98,9 @@ class Context {
 								surroundingCallable: SemanticModel) {
 		if(!nativeRegistry.has(SpecialType.EXCEPTION))
 			return
-
 		val line = model.source.start.line
-		val moduleNameString = line.file.module.localName
-		val fileNameString = line.file.name
-		val lineNumber = constructor.buildInt32(line.number)
+		val moduleName = line.file.module.localName
+		val fileName = line.file.name
 		val description = if(surroundingCallable is ComputedPropertyDeclaration) {
 			val getter = surroundingCallable.getterErrorHandlingContext
 			if(getter != null && model.isIn(getter))
@@ -112,19 +110,16 @@ class Context {
 		} else {
 			surroundingCallable.toString()
 		}
-
-		//TODO move this into an LLVM function
-		//TODO deduplicate strings (file name is likely to be used multiple times for example)
-
-		val ignoredExceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable")
-		constructor.buildStore(constructor.nullPointer, ignoredExceptionVariable)
-		val moduleName = createStringObject(constructor, moduleNameString)
-		val fileName = createStringObject(constructor, fileNameString)
-		val descriptionString = createStringObject(constructor, description)
-
-		val addLocationFunctionAddress = resolveFunction(constructor, exception, "addLocation(String, String, Int, String)")
-		constructor.buildFunctionCall(standardLibrary.exceptionAddLocationFunctionType, addLocationFunctionAddress,
-			listOf(ignoredExceptionVariable, exception, moduleName, fileName, lineNumber, descriptionString))
+		val moduleNameBytes = getConstantCharArrayGlobal(constructor, moduleName)
+		val moduleNameLength = constructor.buildInt32(moduleName.length)
+		val fileNameBytes = getConstantCharArrayGlobal(constructor, fileName)
+		val fileNameLength = constructor.buildInt32(fileName.length)
+		val descriptionBytes = getConstantCharArrayGlobal(constructor, description)
+		val descriptionLength = constructor.buildInt32(description.length)
+		val lineNumber = constructor.buildInt32(line.number)
+		constructor.buildFunctionCall(runtimeFunctions.addExceptionLocation,
+			listOf(exception, moduleNameBytes, moduleNameLength, fileNameBytes, fileNameLength, descriptionBytes, descriptionLength,
+				lineNumber))
 	}
 
 	fun handleException(constructor: LlvmConstructor, parent: SemanticModel?) {
@@ -164,34 +159,16 @@ class Context {
 		}
 	}
 
-	//TODO this function is not calling the pre-initializer. Either:
-	// - call it for String and ByteArray
-	// - add comments marking this as an optimization, because the pre-initializer is empty
-	//   - consider generalizing and automating this optimization
-	// also: search project for other missed pre-initializer calls
-	// also: this doesn't check for exceptions - same choice as above applies
-	fun createStringObject(constructor: LlvmConstructor, content: String): LlvmValue {
-		val byteArrayRuntimeClass = standardLibrary.byteArray
-		val byteArray = constructor.buildHeapAllocation(byteArrayRuntimeClass.struct, "_byteArray")
-		byteArrayRuntimeClass.setClassDefinition(constructor, byteArray)
-		val arraySizeProperty = resolveMember(constructor, byteArray, "size")
-		constructor.buildStore(constructor.buildInt32(content.length), arraySizeProperty)
+	fun getConstantCharArrayGlobal(constructor: LlvmConstructor, content: String): LlvmValue {
+		return constantCharArrayGlobals.getOrPut(content) {
+			constructor.buildGlobalAsciiCharArray("_constantCharArray", content, false)
+		}
+	}
 
-		val arrayValueProperty = byteArrayRuntimeClass.getNativeValueProperty(constructor, byteArray)
-		val charArray = constructor.buildGlobalAsciiCharArray("_asciiStringLiteral", content, false)
-		constructor.buildStore(charArray, arrayValueProperty)
-
-		val stringAddress = constructor.buildHeapAllocation(standardLibrary.stringTypeDeclaration?.llvmType, "_stringAddress")
-		val stringClassDefinitionProperty =
-			constructor.buildGetPropertyPointer(standardLibrary.stringTypeDeclaration?.llvmType, stringAddress,
-			CLASS_DEFINITION_PROPERTY_INDEX, "_stringClassDefinitionProperty")
-		val stringClassDefinition = standardLibrary.stringTypeDeclaration?.llvmClassDefinition
-			?: throw CompilerError("Missing string type declaration.")
-		constructor.buildStore(stringClassDefinition, stringClassDefinitionProperty)
-		val exceptionAddress = getExceptionParameter(constructor)
-		val parameters = listOf(exceptionAddress, stringAddress, byteArray)
-		constructor.buildFunctionCall(standardLibrary.stringByteArrayInitializer, parameters)
-		return stringAddress
+	fun createStringObject(constructor: LlvmConstructor, content: String, exceptionParameter: LlvmValue): LlvmValue {
+		val charArray = getConstantCharArrayGlobal(constructor, content)
+		val length = constructor.buildInt32(content.length)
+		return constructor.buildFunctionCall(runtimeFunctions.createString, listOf(exceptionParameter, charArray, length), "_string")
 	}
 
 	fun resolveMember(constructor: LlvmConstructor, targetLocation: LlvmValue, memberIdentifier: String,

@@ -82,10 +82,10 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			file.declare(constructor)
 		for(file in files)
 			file.define(constructor)
+		context.standardLibrary.load(constructor, context)
 		context.runtimeGlobals.declare(constructor, context)
 		context.runtimeFunctions.build(constructor, context)
 		context.nativeRegistry.loadNativeImplementations(constructor)
-		context.standardLibrary.load(constructor, context)
 		for(file in files)
 			file.compile(constructor)
 		var userEntryPointObject: ValueDeclaration? = null
