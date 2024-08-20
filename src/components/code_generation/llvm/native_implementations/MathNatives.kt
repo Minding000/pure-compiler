@@ -11,7 +11,6 @@ class MathNatives(val context: Context) {
 		registry.registerNativeImplementation("Math.getRemainder(Int, Int): Int", ::getRemainder)
 	}
 
-	//TODO write test
 	private fun getRemainder(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val dividend = constructor.getParameter(Context.VALUE_PARAMETER_OFFSET)

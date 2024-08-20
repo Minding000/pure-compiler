@@ -11,7 +11,7 @@ internal class ByteArray {
 	fun `plural type initializer sets size`() {
 		val sourceCode = """
 			SimplestApp object {
-				to getOne(): Int {
+				to getThree(): Int {
 					val array = ByteArray(3, 2, 1)
 					return array.size
 				}
@@ -21,7 +21,7 @@ internal class ByteArray {
 				native init(...values: ...Byte)
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne", mapOf(
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", mapOf(
 			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME
 		))
 		assertEquals(3, result)
