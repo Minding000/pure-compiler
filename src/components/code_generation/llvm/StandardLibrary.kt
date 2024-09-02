@@ -21,7 +21,8 @@ class StandardLibrary {
 	lateinit var nativeInputStream: NativeRuntimeClass
 	lateinit var nativeOutputStream: NativeRuntimeClass
 
-	var stringTypeDeclaration: TypeDeclaration? = null
+	lateinit var byteArrayTypeDeclaration: TypeDeclaration
+	lateinit var stringTypeDeclaration: TypeDeclaration
 	lateinit var stringByteArrayInitializer: LlvmFunction
 	var exceptionAddLocationFunctionType: LlvmType? = null
 
@@ -80,16 +81,14 @@ class StandardLibrary {
 
 	private fun findStringInitializer(context: Context) {
 		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.STRING]
-		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.STRING.className)
-		stringTypeDeclaration = typeDeclaration
-		if(typeDeclaration == null)
-			return
+		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.STRING.className) ?: return
 		val byteArrayInitializer = typeDeclaration.getAllInitializers().find { initializerDefinition ->
 			val parameters = initializerDefinition.parameters
 			if(parameters.size != 1) return@find false
 			val firstParameter = parameters.first()
 			firstParameter.isPropertySetter && firstParameter.name == "bytes"
 		} ?: throw CompilerError(typeDeclaration.source, "Failed to find String byte array initializer.")
+		stringTypeDeclaration = typeDeclaration
 		stringByteArrayInitializer = LlvmFunction(byteArrayInitializer.llvmValue, byteArrayInitializer.llvmType)
 	}
 

@@ -6,7 +6,6 @@ import components.code_generation.llvm.wrapper.LlvmFunction
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.general.Program.Companion.RUNTIME_PREFIX
-import errors.internal.CompilerError
 
 class RuntimeFunctions {
 	lateinit var constantOffsetResolution: LlvmFunction
@@ -186,12 +185,9 @@ class RuntimeFunctions {
 		functionAddressResolution = LlvmFunction(function, functionType)
 	}
 
-	//TODO this function is not calling the pre-initializer. Either:
-	// - call it for String and ByteArray
-	// - add comments marking this as an optimization, because the pre-initializer is empty
-	//   - consider generalizing and automating this optimization
-	// also: search project for other missed pre-initializer calls
-	// also: this doesn't check for exceptions - same choice as above applies
+	/**
+	 * Note: This function does not propagate exceptions to improve performance.
+	 */
 	private fun buildCreateStringFunction(constructor: LlvmConstructor, context: Context) {
 		val functionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType, constructor.i32Type),
 			constructor.pointerType)
@@ -201,22 +197,27 @@ class RuntimeFunctions {
 		val charArray = constructor.getParameter(1)
 		val length = constructor.getParameter(2)
 
+		val byteArrayTypeDeclaration = context.standardLibrary.byteArrayTypeDeclaration
 		val byteArrayRuntimeClass = context.standardLibrary.byteArray
 		val byteArray = constructor.buildHeapAllocation(byteArrayRuntimeClass.struct, "_byteArray")
 		byteArrayRuntimeClass.setClassDefinition(constructor, byteArray)
+		if(!byteArrayTypeDeclaration.commonClassPreInitializer.isNoop)
+			constructor.buildFunctionCall(byteArrayTypeDeclaration.commonClassPreInitializer, listOf(exceptionParameter, byteArray))
 		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(length, arraySizeProperty)
 
 		val arrayValueProperty = byteArrayRuntimeClass.getNativeValueProperty(constructor, byteArray)
 		constructor.buildStore(charArray, arrayValueProperty)
 
-		val string = constructor.buildHeapAllocation(context.standardLibrary.stringTypeDeclaration?.llvmType, "_string")
+		val stringTypeDeclaration = context.standardLibrary.stringTypeDeclaration
+		val string = constructor.buildHeapAllocation(stringTypeDeclaration.llvmType, "_string")
 		val stringClassDefinitionProperty =
-			constructor.buildGetPropertyPointer(context.standardLibrary.stringTypeDeclaration?.llvmType, string,
+			constructor.buildGetPropertyPointer(stringTypeDeclaration.llvmType, string,
 				Context.CLASS_DEFINITION_PROPERTY_INDEX, "_stringClassDefinitionProperty")
-		val stringClassDefinition = context.standardLibrary.stringTypeDeclaration?.llvmClassDefinition
-			?: throw CompilerError("Missing string type declaration.")
+		val stringClassDefinition = stringTypeDeclaration.llvmClassDefinition
 		constructor.buildStore(stringClassDefinition, stringClassDefinitionProperty)
+		if(!stringTypeDeclaration.commonClassPreInitializer.isNoop)
+			constructor.buildFunctionCall(stringTypeDeclaration.commonClassPreInitializer, listOf(exceptionParameter, string))
 		val parameters = listOf(exceptionParameter, string, byteArray)
 		constructor.buildFunctionCall(context.standardLibrary.stringByteArrayInitializer, parameters)
 		constructor.buildReturn(string)

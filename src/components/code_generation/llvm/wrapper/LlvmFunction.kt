@@ -1,6 +1,7 @@
 package components.code_generation.llvm.wrapper
 
 class LlvmFunction(val value: LlvmValue, val type: LlvmType) {
+	var isNoop = false
 
 	constructor(constructor: LlvmConstructor, name: String, type: LlvmType): this(constructor.buildFunction(name, type), type)
 

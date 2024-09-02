@@ -418,6 +418,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			context.standardLibrary.byte = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
 			llvmProperties.add(constructor.byteType)
 		} else if(SpecialType.BYTE_ARRAY.matches(this)) {
+			context.standardLibrary.byteArrayTypeDeclaration = this
 			context.standardLibrary.byteArray = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
 			llvmProperties.add(constructor.pointerType)
 		} else if(SpecialType.INTEGER.matches(this)) {
@@ -591,6 +592,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	}
 
 	private fun buildLlvmCommonPreInitializer(constructor: LlvmConstructor, properties: List<ValueDeclaration>) {
+		var isNoop = true
 		val previousBlock = constructor.getCurrentBlock()
 		constructor.createAndSelectEntrypointBlock(commonClassPreInitializer.value)
 		val exceptionParameter = context.getExceptionParameter(constructor)
@@ -601,10 +603,12 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 			val parentProperty = constructor.buildGetPropertyPointer(llvmType, thisValue, Context.PARENT_PROPERTY_INDEX,
 				"_parentProperty")
 			constructor.buildStore(parentValue, parentProperty)
+			isNoop = false
 		}
 		for(genericTypeDeclaration in scope.getGenericTypeDeclarations()) {
 			val propertyAddress = context.resolveMember(constructor, thisValue, genericTypeDeclaration.name)
 			constructor.buildStore(constructor.getParameter(genericTypeDeclaration.index), propertyAddress)
+			isNoop = false
 		}
 		for(superType in getDirectSuperTypes()) {
 			if(SpecialType.IDENTIFIABLE.matches(superType) || SpecialType.ANY.matches(superType))
@@ -619,20 +623,23 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 					?: throw CompilerError(typeParameter.source, "Only object types are allowed as type parameters.")
 				parameters.add(objectType.getStaticLlvmValue(constructor))
 			}
+			if(typeDeclaration.commonClassPreInitializer.isNoop) //TODO requires target pre-initializer to be built already
+				continue
 			constructor.buildFunctionCall(typeDeclaration.commonClassPreInitializer, parameters)
 			context.continueRaise(constructor, this)
+			isNoop = false
 		}
 		for(memberDeclaration in properties) {
-			val memberValue = memberDeclaration.value
-			if(memberValue != null) {
-				val convertedValue = ValueConverter.convertIfRequired(memberDeclaration, constructor,
-					memberValue.buildLlvmValue(constructor), memberValue.effectiveType, memberValue.hasGenericType,
-					memberDeclaration.effectiveType,
-					false, memberDeclaration.conversion)
-				val memberAddress = context.resolveMember(constructor, thisValue, memberDeclaration.name)
-				constructor.buildStore(convertedValue, memberAddress)
-			}
+			val memberValue = memberDeclaration.value ?: continue
+			val convertedValue = ValueConverter.convertIfRequired(memberDeclaration, constructor,
+				memberValue.buildLlvmValue(constructor), memberValue.effectiveType, memberValue.hasGenericType,
+				memberDeclaration.effectiveType,
+				false, memberDeclaration.conversion)
+			val memberAddress = context.resolveMember(constructor, thisValue, memberDeclaration.name)
+			constructor.buildStore(convertedValue, memberAddress)
+			isNoop = false
 		}
+		commonClassPreInitializer.isNoop = isNoop
 		context.printDebugLine(constructor, "Finished '${getFullName()}' pre-initialization of object at '%p'.", thisValue)
 		constructor.buildReturn()
 		constructor.select(previousBlock)
