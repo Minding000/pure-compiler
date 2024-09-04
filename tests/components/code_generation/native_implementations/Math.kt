@@ -9,6 +9,9 @@ internal class Math {
 
 	@TestFactory
 	fun getRemainder() = listOf(
+		listOf(-5, 77) to -5,
+		listOf(-100, 10) to 0,
+		listOf(-2, 2) to 0,
 		listOf(0, 1) to 0,
 		listOf(25, 20) to 5,
 	).map { (parameters, remainder) ->
