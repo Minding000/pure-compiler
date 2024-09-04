@@ -136,6 +136,29 @@ class Context {
 		}
 	}
 
+	fun raiseException(constructor: LlvmConstructor, model: SemanticModel, description: String) {
+		val parent = model.parent
+		val exceptionParameter = getExceptionParameter(constructor)
+		val descriptionString = createStringObject(constructor, description, exceptionParameter)
+		val exceptionTypeDeclaration = standardLibrary.exceptionTypeDeclaration
+		val exception = constructor.buildHeapAllocation(exceptionTypeDeclaration.llvmType, "exception")
+		val exceptionClassDefinitionProperty =
+			constructor.buildGetPropertyPointer(exceptionTypeDeclaration.llvmType, exception,
+				CLASS_DEFINITION_PROPERTY_INDEX, "exceptionClassDefinitionProperty")
+		constructor.buildStore(exceptionTypeDeclaration.llvmClassDefinition, exceptionClassDefinitionProperty)
+		if(!exceptionTypeDeclaration.commonClassPreInitializer.isNoop)
+			constructor.buildFunctionCall(exceptionTypeDeclaration.commonClassPreInitializer, listOf(exceptionParameter, exception))
+		val parameters = listOf(exceptionParameter, exception, descriptionString)
+		constructor.buildFunctionCall(standardLibrary.exceptionDescriptionInitializer, parameters)
+
+		val surroundingCallable =
+			model.scope.getSurroundingInitializer() ?: model.scope.getSurroundingFunction() ?: model.scope.getSurroundingComputedProperty()
+		if(surroundingCallable != null)
+			addLocationToStacktrace(model, constructor, exception, surroundingCallable)
+		constructor.buildStore(exception, exceptionParameter)
+		handleException(constructor, parent)
+	}
+
 	fun getNullValue(constructor: LlvmConstructor, type: Type?): LlvmValue {
 		return if(SpecialType.BOOLEAN.matches(type))
 			constructor.buildBoolean(false)

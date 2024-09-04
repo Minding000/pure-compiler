@@ -280,10 +280,28 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 						constructor.buildIntegerMultiplication(leftValue, rightValue, resultName)
 				}
 				Operator.Kind.SLASH -> {
-					return if(isFloatOperation)
+					val validDivisionBlock = constructor.createBlock("validDivision")
+					val divisionByZeroBlock = constructor.createBlock("divisionByZero")
+					val previousBlock = constructor.getCurrentBlock()
+					constructor.select(divisionByZeroBlock)
+					if(context.nativeRegistry.has(SpecialType.EXCEPTION)) {
+						context.raiseException(constructor, this, "Division by zero")
+					} else {
+						context.panic(constructor, "Division by zero")
+						constructor.markAsUnreachable()
+					}
+					constructor.select(previousBlock)
+					return if(isFloatOperation) {
+						val isDivisorZero = constructor.buildFloatEqualTo(rightValue, constructor.buildFloat(0.0), "isDivisorZero")
+						constructor.buildJump(isDivisorZero, divisionByZeroBlock, validDivisionBlock)
+						constructor.select(validDivisionBlock)
 						constructor.buildFloatDivision(leftValue, rightValue, resultName)
-					else
+					} else {
+						val isDivisorZero = constructor.buildSignedIntegerEqualTo(rightValue, constructor.buildInt32(0), "isDivisorZero")
+						constructor.buildJump(isDivisorZero, divisionByZeroBlock, validDivisionBlock)
+						constructor.select(validDivisionBlock)
 						constructor.buildSignedIntegerDivision(leftValue, rightValue, resultName)
+					}
 				}
 				Operator.Kind.SMALLER_THAN -> {
 					return if(isFloatOperation)

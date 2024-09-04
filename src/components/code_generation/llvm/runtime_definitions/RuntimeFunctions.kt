@@ -214,8 +214,7 @@ class RuntimeFunctions {
 		val stringClassDefinitionProperty =
 			constructor.buildGetPropertyPointer(stringTypeDeclaration.llvmType, string,
 				Context.CLASS_DEFINITION_PROPERTY_INDEX, "_stringClassDefinitionProperty")
-		val stringClassDefinition = stringTypeDeclaration.llvmClassDefinition
-		constructor.buildStore(stringClassDefinition, stringClassDefinitionProperty)
+		constructor.buildStore(stringTypeDeclaration.llvmClassDefinition, stringClassDefinitionProperty)
 		if(!stringTypeDeclaration.commonClassPreInitializer.isNoop)
 			constructor.buildFunctionCall(stringTypeDeclaration.commonClassPreInitializer, listOf(exceptionParameter, string))
 		val parameters = listOf(exceptionParameter, string, byteArray)

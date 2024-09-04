@@ -22,6 +22,8 @@ class StandardLibrary {
 	lateinit var nativeOutputStream: NativeRuntimeClass
 
 	lateinit var byteArrayTypeDeclaration: TypeDeclaration
+	lateinit var exceptionTypeDeclaration: TypeDeclaration
+	lateinit var exceptionDescriptionInitializer: LlvmFunction
 	lateinit var stringTypeDeclaration: TypeDeclaration
 	lateinit var stringByteArrayInitializer: LlvmFunction
 	var exceptionAddLocationFunctionType: LlvmType? = null
@@ -31,8 +33,8 @@ class StandardLibrary {
 		findByteTypeDeclaration(constructor, context)
 		findIntegerTypeDeclaration(constructor, context)
 		findFloatTypeDeclaration(constructor, context)
-		findStringInitializer(context)
-		findExceptionAddLocationSignature(constructor, context)
+		findStringTypeDeclaration(context)
+		findExceptionTypeDeclaration(constructor, context)
 	}
 
 	private fun findBooleanTypeDeclaration(constructor: LlvmConstructor, context: Context) {
@@ -79,7 +81,7 @@ class StandardLibrary {
 		}
 	}
 
-	private fun findStringInitializer(context: Context) {
+	private fun findStringTypeDeclaration(context: Context) {
 		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.STRING]
 		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.STRING.className) ?: return
 		val byteArrayInitializer = typeDeclaration.getAllInitializers().find { initializerDefinition ->
@@ -92,10 +94,18 @@ class StandardLibrary {
 		stringByteArrayInitializer = LlvmFunction(byteArrayInitializer.llvmValue, byteArrayInitializer.llvmType)
 	}
 
-	private fun findExceptionAddLocationSignature(constructor: LlvmConstructor, context: Context) {
+	private fun findExceptionTypeDeclaration(constructor: LlvmConstructor, context: Context) {
 		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.EXCEPTION] ?: return
 		val typeDeclaration = fileScope.getTypeDeclaration(SpecialType.EXCEPTION.className) ?: return
+		val descriptionInitializer = typeDeclaration.getAllInitializers().find { initializerDefinition ->
+			val parameters = initializerDefinition.parameters
+			if(parameters.size != 1) return@find false
+			val firstParameter = parameters.first()
+			firstParameter.isPropertySetter && firstParameter.name == "description"
+		} ?: throw CompilerError(typeDeclaration.source, "Failed to find Exception description initializer.")
 		val exceptionAddLocationPropertyType = typeDeclaration.scope.getValueDeclaration("addLocation")?.type
+		exceptionTypeDeclaration = typeDeclaration
+		exceptionDescriptionInitializer = LlvmFunction(descriptionInitializer.llvmValue, descriptionInitializer.llvmType)
 		exceptionAddLocationFunctionType =
 			(exceptionAddLocationPropertyType as? FunctionType)?.signatures?.firstOrNull()?.getLlvmType(constructor)
 	}

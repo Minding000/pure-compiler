@@ -1,6 +1,7 @@
 package components.code_generation.operations
 
 import org.junit.jupiter.api.Test
+import util.TestApp
 import util.TestUtil
 import kotlin.test.assertEquals
 
@@ -56,6 +57,26 @@ internal class BinaryFloatOperators {
 			""".trimIndent()
 		val result = TestUtil.runAndReturnFloat(sourceCode, "Test:SimplestApp.getTwoPointFive")
 		assertEquals(2.5, result)
+	}
+
+	//TODO same for binary modification
+	//TODO also check for overflow
+	@Test
+	fun `throws on division by zero`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					7 / 0
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Division by zero
+			 at Test:Test:3:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
 	}
 
 	@Test

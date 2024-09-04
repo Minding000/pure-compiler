@@ -127,9 +127,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			}
 			context.printDebugLine(constructor, "Files executed.")
 		} else {
-			val filesToInitialize = LinkedHashSet<File>()
-			userEntryPointFunction.getSurrounding<File>()?.determineFileInitializationOrder(filesToInitialize)
-			for(file in filesToInitialize.reversed()) {
+			for(file in getFilesToInitialize(userEntryPointFunction).reversed()) {
 				println("Initializing '${file.file.name}'")
 				constructor.buildFunctionCall(file.runner, listOf(exceptionVariable))
 				checkForUnhandledError(constructor, exceptionVariable, uncaughtExceptionBlock)
@@ -155,6 +153,17 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		constructor.select(uncaughtExceptionBlock)
 		reportUnhandledError(constructor, exceptionVariable)
 		return globalEntryPoint
+	}
+
+	private fun getFilesToInitialize(userEntryPointFunction: FunctionImplementation): LinkedHashSet<File> {
+		val filesToInitialize = LinkedHashSet<File>()
+		userEntryPointFunction.getSurrounding<File>()?.determineFileInitializationOrder(filesToInitialize)
+		// Ensure that classes instantiated by the runtime are initialized
+		if(context.nativeRegistry.has(SpecialType.EXCEPTION))
+			context.standardLibrary.exceptionTypeDeclaration.determineFileInitializationOrder(filesToInitialize)
+		else if(context.nativeRegistry.has(SpecialType.STRING))
+			context.standardLibrary.stringTypeDeclaration.determineFileInitializationOrder(filesToInitialize)
+		return filesToInitialize
 	}
 
 	private fun reportUnhandledError(constructor: LlvmConstructor, exceptionVariable: LlvmValue) {
