@@ -144,6 +144,8 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			Operator.Kind.SLASH -> {
 				val leftValue = left.getComputedValue() as? NumberLiteral ?: return
 				val rightValue = right.getComputedValue() as? NumberLiteral ?: return
+				if(rightValue.value.toDouble() == 0.0)
+					return
 				NumberLiteral(this, leftValue.value / rightValue.value)
 			}
 			Operator.Kind.SMALLER_THAN -> {

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 
 internal class StaticOperatorEvaluation {
 
@@ -119,6 +120,17 @@ internal class StaticOperatorEvaluation {
 		val staticResult = lintResult.find<BinaryOperator>()?.getComputedValue()
 		assertIs<NumberLiteral>(staticResult)
 		assertEquals(32, staticResult.value.toInt())
+	}
+
+	@Test
+	fun `ignores division by zero`() {
+		val sourceCode =
+			"""
+				383 / 0
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val staticResult = lintResult.find<BinaryOperator>()?.getComputedValue()
+		assertNull(staticResult)
 	}
 
 	@Test

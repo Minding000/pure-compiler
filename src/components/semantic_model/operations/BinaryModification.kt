@@ -69,7 +69,11 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 			Operator.Kind.PLUS_EQUALS -> targetValue + modifierValue
 			Operator.Kind.MINUS_EQUALS -> targetValue - modifierValue
 			Operator.Kind.STAR_EQUALS -> targetValue * modifierValue
-			Operator.Kind.SLASH_EQUALS -> targetValue / modifierValue
+			Operator.Kind.SLASH_EQUALS -> {
+				if(modifierValue.toDouble() == 0.0)
+					return null
+				targetValue / modifierValue
+			}
 			else -> throw CompilerError(source, "Static evaluation is not implemented for operators of kind '$kind'.")
 		}
 		return NumberLiteral(this, resultingValue)

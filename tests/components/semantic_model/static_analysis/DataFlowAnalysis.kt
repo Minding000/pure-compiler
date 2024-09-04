@@ -482,8 +482,6 @@ internal class DataFlowAnalysis {
 		assertStringEquals(report, tracker.childTrackers["A.init()"]?.getReportFor("a"))
 	}
 
-	//TODO add warning on expected division by zero
-
 	@Test
 	fun `branches on boolean and`() {
 		val sourceCode = """
@@ -576,6 +574,22 @@ internal class DataFlowAnalysis {
 			start -> 1
 			1: declaration & write -> 2 (Int, 1)
 			2: read & mutation -> end (Int, 3)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertStringEquals(report, tracker.getReportFor("a"))
+	}
+
+	//TODO add warning on expected division by zero
+	@Test
+	fun `ignores division by zero`() {
+		val sourceCode = """
+			var a = 1
+			a /= 0
+		""".trimIndent()
+		val report = """
+			start -> 1
+			1: declaration & write -> 2 (Int, 1)
+			2: read & mutation -> end (Int, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertStringEquals(report, tracker.getReportFor("a"))
