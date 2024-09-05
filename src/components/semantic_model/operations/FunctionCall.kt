@@ -31,7 +31,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	var conversions: Map<Value, InitializerDefinition>? = null
 	val globalTypeParameters = LinkedList<Type>()
 	override val hasGenericType: Boolean
-		get() = targetSignature?.original?.returnType != targetSignature?.returnType
+		get() = targetSignature?.hasGenericType ?: false
 	val isPrimaryCall: Boolean
 		get() = function !is InitializerReference && (function as? MemberAccess)?.member !is InitializerReference
 	override val isInterruptingExecutionBasedOnStructure
@@ -204,6 +204,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 			} else {
 				//TODO detect class-generic parameter type
 				val parameterType = targetSignature?.getParameterTypeAt(index)?.effectiveType
+				//TODO isTargetGeneric: check: if parameter has SelfType, function is overridden and type is primitive add an extraneous conversion (same for operators)
 				parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
 					valueParameter.effectiveType, valueParameter.hasGenericType, parameterType,
 					parameterType != targetSignature?.original?.getParameterTypeAt(index), conversions?.get(valueParameter)))
@@ -226,8 +227,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				implementation.llvmValue
 			}
 		} else if(typeDefinition.isLlvmPrimitive()) {
-			//TODO same for operators and getters
-			//TODO does this work for optional primitives?
+			//TODO same for operators (write test!)
+			//TODO does this work for optional primitives? (write test!) (same for: operators, getters)
 			val targetValue = if(function is MemberAccess)
 				function.target.getLlvmValue(constructor)
 			else

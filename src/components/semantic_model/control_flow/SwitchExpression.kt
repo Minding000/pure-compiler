@@ -268,7 +268,7 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		val resultLlvmType = providedType?.getLlvmType(constructor)
+		val resultLlvmType = effectiveType?.getLlvmType(constructor)
 		val result = constructor.buildStackAllocation(resultLlvmType, "switch_resultVariable")
 		val function = constructor.getParentFunction()
 		val elseBlock = constructor.createBlock(function, "switch_elseBlock")

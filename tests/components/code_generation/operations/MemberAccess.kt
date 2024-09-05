@@ -1,5 +1,6 @@
 package components.code_generation.operations
 
+import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -150,5 +151,27 @@ internal class MemberAccess {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getA")
 		assertEquals(0, result)
+	}
+
+	@Test
+	fun `compiles getter calls on primitives`() {
+		val sourceCode = """
+			native copied Int class {
+				computed absolute: Self
+					gets if this >= 0 this else -this
+				native init(value: Int)
+				native operator -: Self
+			}
+			SimplestApp object {
+				to getThree(): Int {
+					val a = -3
+					return a.absolute
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", mapOf(
+			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
+		))
+		assertEquals(3, result)
 	}
 }

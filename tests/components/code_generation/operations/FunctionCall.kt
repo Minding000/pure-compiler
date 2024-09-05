@@ -1,5 +1,6 @@
 package components.code_generation.operations
 
+import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -114,5 +115,26 @@ internal class FunctionCall {
 			""".trimIndent()
 		val result = TestUtil.runAndReturnBoolean(sourceCode, "Test:SimplestApp.getYes")
 		assertEquals(true, result)
+	}
+
+	@Test
+	fun `compiles function calls on primitives`() {
+		val sourceCode = """
+			native copied Int class {
+				native init(value: Int)
+				it doubled(): Int {
+					return this * 2
+				}
+			}
+			SimplestApp object {
+				to getFour(): Int {
+					return 2.doubled()
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFour", mapOf(
+			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
+		))
+		assertEquals(4, result)
 	}
 }

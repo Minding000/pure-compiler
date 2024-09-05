@@ -61,13 +61,15 @@ class SelfType(source: SyntaxTreeNode, scope: Scope): Type(source, scope) {
 
 	override fun isAssignableTo(unresolvedTargetType: Type): Boolean {
 		val targetType = unresolvedTargetType.effectiveType
-		if(targetType is ObjectType) {
-			if(targetType.getTypeDeclaration() == typeDeclaration)
-				return true
-			val superType = typeDeclaration?.getLinkedSuperType() ?: return false
-			return targetType.accepts(superType)
+		val targetTypeDeclaration = when(targetType) {
+			is ObjectType -> targetType.getTypeDeclaration()
+			is SelfType -> targetType.typeDeclaration
+			else -> return false
 		}
-		return targetType is SelfType
+		if(targetTypeDeclaration == typeDeclaration)
+			return true
+		val superType = typeDeclaration?.getLinkedSuperType() ?: return false
+		return targetType.accepts(superType)
 	}
 
 	override fun resolveTypeDeclarations() {
@@ -76,6 +78,16 @@ class SelfType(source: SyntaxTreeNode, scope: Scope): Type(source, scope) {
 		typeDeclaration = scope.getSurroundingTypeDeclaration()
 		if(typeDeclaration == null)
 			context.addIssue(InvalidSelfTypeLocation(source))
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if(other !is SelfType)
+			return false
+		return typeDeclaration == other.typeDeclaration
+	}
+
+	override fun hashCode(): Int {
+		return typeDeclaration?.hashCode() ?: 0
 	}
 
 	override fun toString() = "Self"

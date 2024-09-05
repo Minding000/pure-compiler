@@ -143,7 +143,7 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		val resultLlvmType = providedType?.getLlvmType(constructor)
+		val resultLlvmType = effectiveType?.getLlvmType(constructor)
 		val result = constructor.buildStackAllocation(resultLlvmType, "if_resultVariable")
 		val function = constructor.getParentFunction()
 		val condition = condition.getLlvmValue(constructor)

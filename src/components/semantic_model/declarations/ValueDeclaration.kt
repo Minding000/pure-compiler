@@ -23,7 +23,7 @@ import java.util.*
 abstract class ValueDeclaration(override val source: SyntaxTreeNode, override val scope: MutableScope, val name: String,
 								var providedType: Type? = null, value: Value? = null, val isConstant: Boolean = true,
 								val isMutable: Boolean = false): SemanticModel(source, scope) {
-	val effectiveType: Type? get() = providedType?.effectiveType
+	val effectiveType: Type? get() = providedType?.effectiveType?.simplified()
 	private var hasDeterminedTypes = false
 	open val value = value
 	val usages = LinkedList<VariableValue>()

@@ -1,5 +1,7 @@
 package components.semantic_model.types
 
+import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmType
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.declarations.InitializerDefinition
@@ -89,5 +91,9 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 		return types.sortedBy(Type::toString).joinToString(" | ") { type ->
 			if(type is AndUnionType || type is OrUnionType) "($type)" else "$type"
 		}
+	}
+
+	override fun createLlvmType(constructor: LlvmConstructor): LlvmType {
+		return constructor.pointerType
 	}
 }

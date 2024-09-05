@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 internal class TypeSimplification {
 
 	@Test
-	fun `creates or union of independent classes`() {
+	fun `creates or-union of independent classes`() {
 		val sourceCode =
 			"""
 				Cat class
@@ -27,7 +27,7 @@ internal class TypeSimplification {
 	}
 
 	@Test
-	fun `doesn't create or union with duplicate class`() {
+	fun `doesn't create or-union with duplicate class`() {
 		val sourceCode =
 			"""
 				Cat class
@@ -43,7 +43,7 @@ internal class TypeSimplification {
 	}
 
 	@Test
-	fun `doesn't create or union of super and sub class`() {
+	fun `doesn't create or-union of super and sub class`() {
 		val sourceCode =
 			"""
 				Animal class
@@ -75,7 +75,7 @@ internal class TypeSimplification {
 	}
 
 	@Test
-	fun `merges additional types into existing or union`() {
+	fun `merges additional types into existing or-union`() {
 		val sourceCode =
 			"""
 				Monkey class
@@ -93,7 +93,7 @@ internal class TypeSimplification {
 	}
 
 	@Test
-	fun `merges multiple or unions`() {
+	fun `merges multiple or-unions`() {
 		val sourceCode =
 			"""
 				Human class
@@ -113,7 +113,7 @@ internal class TypeSimplification {
 	}
 
 	@Test
-	fun `creates or union of independent complex types`() {
+	fun `creates or-union of independent complex types`() {
 		val sourceCode =
 			"""
 				Human class
@@ -155,7 +155,7 @@ internal class TypeSimplification {
 
 	@Disabled
 	@Test
-	fun `simplifies and unions`() {
+	fun `simplifies and-unions`() {
 		val sourceCode =
 			"""
 				Human class

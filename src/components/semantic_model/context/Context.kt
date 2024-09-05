@@ -36,6 +36,7 @@ class Context {
 	val standardLibrary = StandardLibrary()
 	val nativeRegistry = NativeRegistry(this)
 	val constantCharArrayGlobals = HashMap<String, LlvmValue>()
+	/**  While set, the selected primitive will be treated as a wrapped primitive object */
 	var primitiveCompilationTarget: TypeDeclaration? = null
 
 	companion object {

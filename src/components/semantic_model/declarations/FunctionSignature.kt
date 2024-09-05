@@ -26,9 +26,12 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 	val root: FunctionSignature
 		get() = superFunctionSignature?.root ?: original
 	val isVariadic = associatedImplementation?.isVariadic ?: false
+	val isMonomorphic = associatedImplementation?.isMonomorphic ?: false
 	val fixedParameterTypes: List<Type?>
 	private val variadicParameterType: Type?
 	val returnType = returnType ?: LiteralType(source, scope, SpecialType.NOTHING)
+	val hasGenericType: Boolean
+		get() = returnType.effectiveType != root.returnType.effectiveType && (parentTypeDeclaration?.isLlvmPrimitive() != true)
 	var superFunctionSignature: FunctionSignature? = null
 	var parentTypeDeclaration: TypeDeclaration? = null
 		get() = if(this === original) field else original.parentTypeDeclaration

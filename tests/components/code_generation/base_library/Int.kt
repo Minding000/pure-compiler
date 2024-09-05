@@ -35,7 +35,7 @@ internal class Int {
 		app.includeRequiredModules = true
 		val expectedOutput = """
 			Unhandled error: Invalid digit at index 1
-			 at Pure:Int:17:Int(String)
+			 at Pure:Int:25:Int(String)
 			 at Test:Test:4:SimplestApp.getFortySeven(): Int
 			""".trimIndent()
 		app.shouldPrintLine(expectedOutput, "", 1)

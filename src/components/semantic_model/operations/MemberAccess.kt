@@ -2,6 +2,7 @@ package components.semantic_model.operations
 
 import components.code_generation.llvm.ValueConverter
 import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmType
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
@@ -162,12 +163,21 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 	}
 
 	private fun buildGetterCall(constructor: LlvmConstructor, computedPropertyDeclaration: ComputedPropertyDeclaration): LlvmValue {
-		//TODO allow for getter calls on (optional) primitives (similar to function calls on primitives)
+		val exceptionParameter = context.getExceptionParameter(constructor)
 		val targetValue = target.getLlvmValue(constructor)
-		val functionAddress = context.resolveFunction(constructor, targetValue, computedPropertyDeclaration.getterIdentifier)
-		val exceptionAddress = context.getExceptionParameter(constructor)
-		val returnValue = constructor.buildFunctionCall(computedPropertyDeclaration.llvmGetterType, functionAddress,
-			listOf(exceptionAddress, targetValue), "_computedPropertyGetterResult")
+		val llvmType: LlvmType?
+		val llvmValue: LlvmValue
+		if(target.effectiveType?.isLlvmPrimitive() == true) {
+			val primitiveImplementation =
+				context.nativeRegistry.resolvePrimitiveImplementation(computedPropertyDeclaration.getGetterSignature())
+			llvmType = primitiveImplementation.llvmType
+			llvmValue = primitiveImplementation.llvmValue
+		} else {
+			llvmType = computedPropertyDeclaration.llvmGetterType
+			llvmValue = context.resolveFunction(constructor, targetValue, computedPropertyDeclaration.getterIdentifier)
+		}
+		val returnValue =
+			constructor.buildFunctionCall(llvmType, llvmValue, listOf(exceptionParameter, targetValue), "_computedPropertyGetterResult")
 		context.continueRaise(constructor, this)
 		return returnValue
 	}

@@ -297,7 +297,11 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 						constructor.select(validDivisionBlock)
 						constructor.buildFloatDivision(leftValue, rightValue, resultName)
 					} else {
-						val isDivisorZero = constructor.buildSignedIntegerEqualTo(rightValue, constructor.buildInt32(0), "isDivisorZero")
+						val zero = if(isRightInteger)
+							constructor.buildInt32(0)
+						else
+							constructor.buildByte(0)
+						val isDivisorZero = constructor.buildSignedIntegerEqualTo(rightValue, zero, "isDivisorZero")
 						constructor.buildJump(isDivisorZero, divisionByZeroBlock, validDivisionBlock)
 						constructor.select(validDivisionBlock)
 						constructor.buildSignedIntegerDivision(leftValue, rightValue, resultName)

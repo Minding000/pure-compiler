@@ -209,6 +209,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 		llvmValue = constructor.buildFunction(memberIdentifier, signature.getLlvmType(constructor))
 		if(parentTypeDeclaration?.isLlvmPrimitive() == true) {
 			context.primitiveCompilationTarget = null
+			// Assumption: Native declarations are inlined, so there is no need for an implementation
 			if(!isNative)
 				declarePrimitiveImplementation(constructor)
 		}

@@ -128,7 +128,8 @@ class FunctionType(override val source: SyntaxTreeNode, scope: Scope): ObjectTyp
 					for(parameterIndex in signature.parameterTypes.indices) {
 						val superParameterType = superSignature.parameterTypes[parameterIndex] ?: continue
 						val baseParameterType = signature.parameterTypes[parameterIndex] ?: continue
-						if(!baseParameterType.accepts(superParameterType))
+						if(!(baseParameterType.accepts(
+								superParameterType) || (baseParameterType is SelfType && superParameterType is SelfType && signature.isMonomorphic && superSignature.isMonomorphic)))
 							continue@superSignatureLoop
 					}
 					signature.superFunctionSignature = superSignature

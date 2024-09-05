@@ -87,4 +87,43 @@ internal class MemberResolution {
 	}
 
 	//TODO test resolution when calling member with multiple super members
+
+	@Test
+	fun `resolves member on and-union`() {
+		val sourceCode = """
+			Playable class {
+				val duration = 55
+			}
+			Stoppable class
+			SoundTrack class: Playable & Stoppable
+			SimplestApp object {
+				to getFiftyFive(): Int {
+					val container: Playable & Stoppable = SoundTrack()
+					return container.duration
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiftyFive")
+		assertEquals(55, result)
+	}
+
+	@Test
+	fun `resolves member on or-union`() {
+		val sourceCode = """
+			Bottle class {
+				val volume = 9
+			}
+			Bucket class {
+				val volume = 83
+			}
+			SimplestApp object {
+				to getEightyThree(): Int {
+					val container: Bottle | Bucket = Bucket()
+					return container.volume
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyThree")
+		assertEquals(83, result)
+	}
 }
