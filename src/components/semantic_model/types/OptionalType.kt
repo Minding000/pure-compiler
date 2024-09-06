@@ -28,6 +28,11 @@ class OptionalType(override val source: SyntaxTreeNode, scope: Scope, val baseTy
 		return OptionalType(source, scope, baseType.simplified())
 	}
 
+	override fun resolveTypeDeclarations() {
+		super.determineTypes()
+		effectiveType = simplified()
+	}
+
 	override fun getLocalType(value: Value, sourceType: Type): Type {
 		return OptionalType(source, scope, baseType.getLocalType(value, sourceType))
 	}

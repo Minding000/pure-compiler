@@ -19,7 +19,7 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, scope: TypeScope, name
 				val instances: List<Instance>): TypeDeclaration(source, name, scope, null, null, instances) {
 	override val isDefinition = false
 	private var hasDeterminedEffectiveType = false
-	private var effectiveType = referenceType
+	private var effectiveType = referenceType.effectiveType
 
 	init {
 		scope.typeDeclaration = this

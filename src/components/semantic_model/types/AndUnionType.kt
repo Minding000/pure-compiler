@@ -30,6 +30,11 @@ class AndUnionType(override val source: SyntaxTreeNode, scope: Scope, val types:
 		return AndUnionType(source, scope, types.map(Type::simplified))
 	}
 
+	override fun resolveTypeDeclarations() {
+		super.determineTypes()
+		effectiveType = simplified()
+	}
+
 	override fun getLocalType(value: Value, sourceType: Type): Type {
 		//TODO call combine function directly instead of creating an intermediate type
 		return AndUnionType(source, scope, types.map { type -> type.getLocalType(value, sourceType) }).simplified()

@@ -349,7 +349,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		if(kind == Operator.Kind.EQUAL_TO) {
 			if(SpecialType.NULL.matches(left.effectiveType)) {
 				return constructor.buildPointerEqualTo(constructor.nullPointer, rightValue, resultName)
-			} else if(left.effectiveType is OptionalType) { //TODO check is effectiveType simplified?
+			} else if(left.effectiveType is OptionalType) {
 				val resultVariable = constructor.buildStackAllocation(constructor.booleanType, "_resultVariable")
 				val isLeftNull = constructor.buildPointerEqualTo(constructor.nullPointer, leftValue, "_isLeftNull")
 				val leftNullBlock = constructor.createBlock("leftNull")

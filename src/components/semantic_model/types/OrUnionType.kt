@@ -30,6 +30,11 @@ class OrUnionType(override val source: SyntaxTreeNode, scope: Scope, val types: 
 		return types.combineOrUnion(this)
 	}
 
+	override fun resolveTypeDeclarations() {
+		super.determineTypes()
+		effectiveType = simplified()
+	}
+
 	override fun getLocalType(value: Value, sourceType: Type): Type {
 		return types.map { type -> type.getLocalType(value, sourceType) }.combineOrUnion(this)
 	}
