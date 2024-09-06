@@ -114,43 +114,75 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		var modifierValue = ValueConverter.convertIfRequired(this, constructor, modifier.getLlvmValue(constructor),
 			modifier.effectiveType, modifier.hasGenericType, modifierType, modifierType != originalModifierType,
 			conversions?.get(modifier))
-		val isTargetInteger = SpecialType.BYTE.matches(target.effectiveType) || SpecialType.INTEGER.matches(target.effectiveType)
-		val isTargetPrimitiveNumber = isTargetInteger || SpecialType.FLOAT.matches(target.effectiveType)
-		val isModifierInteger = SpecialType.BYTE.matches(modifier.effectiveType) || SpecialType.INTEGER.matches(modifier.effectiveType)
-		val isModifierPrimitiveNumber = isModifierInteger || SpecialType.FLOAT.matches(modifier.effectiveType)
+		val isTargetFloat = SpecialType.FLOAT.matches(target.effectiveType)
+		val isTargetInteger = SpecialType.INTEGER.matches(target.effectiveType)
+		val isTargetPrimitiveNumber = SpecialType.BYTE.matches(target.effectiveType) || isTargetInteger || isTargetFloat
+		val isModifierFloat = SpecialType.FLOAT.matches(modifier.effectiveType)
+		val isModifierInteger = SpecialType.INTEGER.matches(modifier.effectiveType)
+		val isModifierPrimitiveNumber = SpecialType.BYTE.matches(modifier.effectiveType) || isModifierInteger || isModifierFloat
 		if(isTargetPrimitiveNumber && isModifierPrimitiveNumber) {
-			val isIntegerOperation = isTargetInteger && isModifierInteger
-			if(!isIntegerOperation) {
+			val isFloatOperation = isTargetFloat || isModifierFloat
+			if(isFloatOperation) {
 				if(isTargetInteger)
 					throw CompilerError(source, "Integer target with float modifier in binary modification.")
 				else if(isModifierInteger)
 					modifierValue = constructor.buildCastFromSignedIntegerToFloat(modifierValue, "_implicitlyCastBinaryModifier")
+			} else {
+				val isIntegerOperation = isTargetInteger || isModifierInteger
+				if(isIntegerOperation) {
+					if(!isTargetInteger)
+						throw CompilerError(source, "Byte target with integer modifier in binary modification.")
+					else if(!isModifierInteger)
+						modifierValue = constructor.buildCastFromByteToInteger(modifierValue, "_implicitlyCastBinaryModifier")
+				}
 			}
 			val intermediateResultName = "_modifiedValue"
 			val operation = when(kind) {
 				Operator.Kind.PLUS_EQUALS -> {
-					if(isIntegerOperation)
-						constructor.buildIntegerAddition(targetValue, modifierValue, intermediateResultName)
-					else
+					if(isFloatOperation)
 						constructor.buildFloatAddition(targetValue, modifierValue, intermediateResultName)
+					else
+						constructor.buildIntegerAddition(targetValue, modifierValue, intermediateResultName)
 				}
 				Operator.Kind.MINUS_EQUALS -> {
-					if(isIntegerOperation)
-						constructor.buildIntegerSubtraction(targetValue, modifierValue, intermediateResultName)
-					else
+					if(isFloatOperation)
 						constructor.buildFloatSubtraction(targetValue, modifierValue, intermediateResultName)
+					else
+						constructor.buildIntegerSubtraction(targetValue, modifierValue, intermediateResultName)
 				}
 				Operator.Kind.STAR_EQUALS -> {
-					if(isIntegerOperation)
-						constructor.buildIntegerMultiplication(targetValue, modifierValue, intermediateResultName)
-					else
+					if(isFloatOperation)
 						constructor.buildFloatMultiplication(targetValue, modifierValue, intermediateResultName)
+					else
+						constructor.buildIntegerMultiplication(targetValue, modifierValue, intermediateResultName)
 				}
 				Operator.Kind.SLASH_EQUALS -> {
-					if(isIntegerOperation)
-						constructor.buildSignedIntegerDivision(targetValue, modifierValue, intermediateResultName)
-					else
+					val validDivisionBlock = constructor.createBlock("validDivision")
+					val divisionByZeroBlock = constructor.createBlock("divisionByZero")
+					val previousBlock = constructor.getCurrentBlock()
+					constructor.select(divisionByZeroBlock)
+					if(context.nativeRegistry.has(SpecialType.EXCEPTION)) {
+						context.raiseException(constructor, this, "Division by zero")
+					} else {
+						context.panic(constructor, "Division by zero")
+						constructor.markAsUnreachable()
+					}
+					constructor.select(previousBlock)
+					if(isFloatOperation) {
+						val isDivisorZero = constructor.buildFloatEqualTo(modifierValue, constructor.buildFloat(0.0), "isDivisorZero")
+						constructor.buildJump(isDivisorZero, divisionByZeroBlock, validDivisionBlock)
+						constructor.select(validDivisionBlock)
 						constructor.buildFloatDivision(targetValue, modifierValue, intermediateResultName)
+					} else {
+						val zero = if(isModifierInteger)
+							constructor.buildInt32(0)
+						else
+							constructor.buildByte(0)
+						val isDivisorZero = constructor.buildSignedIntegerEqualTo(modifierValue, zero, "isDivisorZero")
+						constructor.buildJump(isDivisorZero, divisionByZeroBlock, validDivisionBlock)
+						constructor.select(validDivisionBlock)
+						constructor.buildSignedIntegerDivision(targetValue, modifierValue, intermediateResultName)
+					}
 				}
 				else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
 			}

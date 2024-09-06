@@ -1,6 +1,7 @@
 package components.code_generation.operations
 
 import org.junit.jupiter.api.Test
+import util.TestApp
 import util.TestUtil
 import kotlin.test.assertEquals
 
@@ -126,6 +127,25 @@ internal class BinaryModifications {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
 		assertEquals(5, result)
+	}
+
+	@Test
+	fun `throws on division by zero`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					var a = 20
+					a /= 0
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Division by zero
+			 at Test:Test:4:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
 	}
 
 	@Test

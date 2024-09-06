@@ -59,14 +59,13 @@ internal class BinaryFloatOperators {
 		assertEquals(2.5, result)
 	}
 
-	//TODO same for binary modification
 	//TODO also check for overflow
 	@Test
 	fun `throws on division by zero`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
-					7 / 0
+					7.0 / 0.0
 				}
 			}
 			""".trimIndent()
