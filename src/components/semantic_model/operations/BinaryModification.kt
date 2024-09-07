@@ -122,19 +122,17 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		val isModifierPrimitiveNumber = SpecialType.BYTE.matches(modifier.effectiveType) || isModifierInteger || isModifierFloat
 		if(isTargetPrimitiveNumber && isModifierPrimitiveNumber) {
 			val isFloatOperation = isTargetFloat || isModifierFloat
+			val isIntegerOperation = isTargetInteger || isModifierInteger
 			if(isFloatOperation) {
 				if(isTargetInteger)
 					throw CompilerError(source, "Integer target with float modifier in binary modification.")
 				else if(isModifierInteger)
 					modifierValue = constructor.buildCastFromSignedIntegerToFloat(modifierValue, "_implicitlyCastBinaryModifier")
-			} else {
-				val isIntegerOperation = isTargetInteger || isModifierInteger
-				if(isIntegerOperation) {
-					if(!isTargetInteger)
-						throw CompilerError(source, "Byte target with integer modifier in binary modification.")
-					else if(!isModifierInteger)
-						modifierValue = constructor.buildCastFromByteToInteger(modifierValue, "_implicitlyCastBinaryModifier")
-				}
+			} else if(isIntegerOperation) {
+				if(!isTargetInteger)
+					throw CompilerError(source, "Byte target with integer modifier in binary modification.")
+				else if(!isModifierInteger)
+					modifierValue = constructor.buildCastFromByteToInteger(modifierValue, "_implicitlyCastBinaryModifier")
 			}
 			val intermediateResultName = "_modifiedValue"
 			val operation = when(kind) {
@@ -157,7 +155,7 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 						constructor.buildIntegerMultiplication(targetValue, modifierValue, intermediateResultName)
 				}
 				Operator.Kind.SLASH_EQUALS -> {
-					val validDivisionBlock = constructor.createBlock("validDivision")
+					val noDivisionByZeroBlock = constructor.createBlock("validDivision")
 					val divisionByZeroBlock = constructor.createBlock("divisionByZero")
 					val previousBlock = constructor.getCurrentBlock()
 					constructor.select(divisionByZeroBlock)
@@ -170,17 +168,39 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 					constructor.select(previousBlock)
 					if(isFloatOperation) {
 						val isDivisorZero = constructor.buildFloatEqualTo(modifierValue, constructor.buildFloat(0.0), "isDivisorZero")
-						constructor.buildJump(isDivisorZero, divisionByZeroBlock, validDivisionBlock)
-						constructor.select(validDivisionBlock)
+						constructor.buildJump(isDivisorZero, divisionByZeroBlock, noDivisionByZeroBlock)
+						constructor.select(noDivisionByZeroBlock)
 						constructor.buildFloatDivision(targetValue, modifierValue, intermediateResultName)
 					} else {
-						val zero = if(isModifierInteger)
+						val zero = if(isIntegerOperation)
 							constructor.buildInt32(0)
 						else
 							constructor.buildByte(0)
 						val isDivisorZero = constructor.buildSignedIntegerEqualTo(modifierValue, zero, "isDivisorZero")
-						constructor.buildJump(isDivisorZero, divisionByZeroBlock, validDivisionBlock)
-						constructor.select(validDivisionBlock)
+						constructor.buildJump(isDivisorZero, divisionByZeroBlock, noDivisionByZeroBlock)
+						constructor.select(noDivisionByZeroBlock)
+						val noOverflowBlock = constructor.createBlock("noOverflowBlock")
+						val overflowBlock = constructor.createBlock("overflowBlock")
+						val negativeMin = if(isIntegerOperation)
+							constructor.buildInt32(Int.MIN_VALUE)
+						else
+							constructor.buildByte(Byte.MIN_VALUE)
+						val isDividendNegativeMin = constructor.buildSignedIntegerEqualTo(targetValue, negativeMin, "isDividendNegativeMin")
+						val negativeOne = if(isIntegerOperation)
+							constructor.buildInt32(-1)
+						else
+							constructor.buildByte(-1)
+						val isDivisorNegativeOne = constructor.buildSignedIntegerEqualTo(modifierValue, negativeOne, "isDivisorNegativeOne")
+						val doesDivisionOverflow = constructor.buildAnd(isDividendNegativeMin, isDivisorNegativeOne, "doesDivisionOverflow")
+						constructor.buildJump(doesDivisionOverflow, overflowBlock, noOverflowBlock)
+						constructor.select(overflowBlock)
+						if(context.nativeRegistry.has(SpecialType.EXCEPTION)) {
+							context.raiseException(constructor, this, "Division overflowed")
+						} else {
+							context.panic(constructor, "Division overflowed")
+							constructor.markAsUnreachable()
+						}
+						constructor.select(noOverflowBlock)
 						constructor.buildSignedIntegerDivision(targetValue, modifierValue, intermediateResultName)
 					}
 				}

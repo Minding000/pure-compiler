@@ -149,6 +149,25 @@ internal class BinaryModifications {
 	}
 
 	@Test
+	fun `throws on overflowing division`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					var a = -2147483648
+					a /= -1
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Division overflowed
+			 at Test:Test:4:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
 	fun `compiles float addition assignments`() {
 		val sourceCode = """
 			SimplestApp object {
