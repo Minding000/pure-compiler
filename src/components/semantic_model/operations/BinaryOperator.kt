@@ -144,6 +144,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			Operator.Kind.SLASH -> {
 				val leftValue = left.getComputedValue() as? NumberLiteral ?: return
 				val rightValue = right.getComputedValue() as? NumberLiteral ?: return
+				//TODO report exceptions on division by zero and overflow
 				if(rightValue.value.toDouble() == 0.0)
 					return
 				NumberLiteral(this, leftValue.value / rightValue.value)
@@ -246,19 +247,17 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		if(isLeftPrimitiveNumber && isRightPrimitiveNumber) {
 			val intermediateOperandName = "_implicitlyCastBinaryOperand"
 			val isFloatOperation = isLeftFloat || isRightFloat
+			val isIntegerOperation = isLeftInteger || isRightInteger
 			if(isFloatOperation) {
 				if(!isLeftFloat)
 					leftValue = constructor.buildCastFromSignedIntegerToFloat(leftValue, intermediateOperandName)
 				else if(!isRightFloat)
 					rightValue = constructor.buildCastFromSignedIntegerToFloat(rightValue, intermediateOperandName)
-			} else {
-				val isIntegerOperation = isLeftInteger || isRightInteger
-				if(isIntegerOperation) {
-					if(!isLeftInteger)
-						leftValue = constructor.buildCastFromByteToInteger(leftValue, intermediateOperandName)
-					else if(!isRightInteger)
-						rightValue = constructor.buildCastFromByteToInteger(rightValue, intermediateOperandName)
-				}
+			} else if(isIntegerOperation) {
+				if(!isLeftInteger)
+					leftValue = constructor.buildCastFromByteToInteger(leftValue, intermediateOperandName)
+				else if(!isRightInteger)
+					rightValue = constructor.buildCastFromByteToInteger(rightValue, intermediateOperandName)
 			}
 			when(kind) {
 				Operator.Kind.PLUS -> {
@@ -280,7 +279,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 						constructor.buildIntegerMultiplication(leftValue, rightValue, resultName)
 				}
 				Operator.Kind.SLASH -> {
-					val validDivisionBlock = constructor.createBlock("validDivision")
+					val noDivisionByZeroBlock = constructor.createBlock("validDivision")
 					val divisionByZeroBlock = constructor.createBlock("divisionByZero")
 					val previousBlock = constructor.getCurrentBlock()
 					constructor.select(divisionByZeroBlock)
@@ -292,18 +291,41 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 					}
 					constructor.select(previousBlock)
 					return if(isFloatOperation) {
+						//TODO report overflow? (check for infinity)
 						val isDivisorZero = constructor.buildFloatEqualTo(rightValue, constructor.buildFloat(0.0), "isDivisorZero")
-						constructor.buildJump(isDivisorZero, divisionByZeroBlock, validDivisionBlock)
-						constructor.select(validDivisionBlock)
+						constructor.buildJump(isDivisorZero, divisionByZeroBlock, noDivisionByZeroBlock)
+						constructor.select(noDivisionByZeroBlock)
 						constructor.buildFloatDivision(leftValue, rightValue, resultName)
 					} else {
-						val zero = if(isRightInteger)
+						val zero = if(isIntegerOperation)
 							constructor.buildInt32(0)
 						else
 							constructor.buildByte(0)
 						val isDivisorZero = constructor.buildSignedIntegerEqualTo(rightValue, zero, "isDivisorZero")
-						constructor.buildJump(isDivisorZero, divisionByZeroBlock, validDivisionBlock)
-						constructor.select(validDivisionBlock)
+						constructor.buildJump(isDivisorZero, divisionByZeroBlock, noDivisionByZeroBlock)
+						constructor.select(noDivisionByZeroBlock)
+						val noOverflowBlock = constructor.createBlock("noOverflowBlock")
+						val overflowBlock = constructor.createBlock("overflowBlock")
+						val negativeMin = if(isIntegerOperation)
+							constructor.buildInt32(Int.MIN_VALUE)
+						else
+							constructor.buildByte(Byte.MIN_VALUE)
+						val isDividendNegativeMin = constructor.buildSignedIntegerEqualTo(leftValue, negativeMin, "isDividendNegativeMin")
+						val negativeOne = if(isIntegerOperation)
+							constructor.buildInt32(-1)
+						else
+							constructor.buildByte(-1)
+						val isDivisorNegativeOne = constructor.buildSignedIntegerEqualTo(rightValue, negativeOne, "isDivisorNegativeOne")
+						val doesDivisionOverflow = constructor.buildAnd(isDividendNegativeMin, isDivisorNegativeOne, "doesDivisionOverflow")
+						constructor.buildJump(doesDivisionOverflow, overflowBlock, noOverflowBlock)
+						constructor.select(overflowBlock)
+						if(context.nativeRegistry.has(SpecialType.EXCEPTION)) {
+							context.raiseException(constructor, this, "Division overflowed")
+						} else {
+							context.panic(constructor, "Division overflowed")
+							constructor.markAsUnreachable()
+						}
+						constructor.select(noOverflowBlock)
 						constructor.buildSignedIntegerDivision(leftValue, rightValue, resultName)
 					}
 				}

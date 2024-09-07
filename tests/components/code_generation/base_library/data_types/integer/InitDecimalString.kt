@@ -1,11 +1,11 @@
-package components.code_generation.base_library
+package components.code_generation.base_library.data_types.integer
 
 import org.junit.jupiter.api.Test
 import util.TestApp
 import util.TestUtil
 import kotlin.test.assertEquals
 
-internal class Int {
+internal class InitDecimalString {
 
 	@Test
 	fun `can be constructed from a string`() {

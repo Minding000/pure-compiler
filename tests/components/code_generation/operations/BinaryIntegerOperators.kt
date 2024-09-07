@@ -61,6 +61,24 @@ internal class BinaryIntegerOperators {
 	}
 
 	@Test
+	fun `throws on overflowing division`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					-2147483648 / -1
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Division overflowed
+			 at Test:Test:3:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
 	fun `throws on division by zero`() {
 		val sourceCode = """
 			SimplestApp object {

@@ -94,6 +94,8 @@ class LlvmConstructor(name: String) {
 		return LLVMConstInt(booleanType, Llvm.bool(value).toLong(), Llvm.NO)
 	}
 
+	fun buildByte(value: Byte): LlvmValue = buildByte(value.toLong())
+	fun buildByte(value: Int): LlvmValue = buildByte(value.toLong())
 	fun buildByte(value: Long): LlvmValue {
 		return LLVMConstInt(byteType, value, Llvm.NO)
 	}

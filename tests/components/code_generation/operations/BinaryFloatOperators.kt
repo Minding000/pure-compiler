@@ -1,5 +1,6 @@
 package components.code_generation.operations
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestApp
 import util.TestUtil
@@ -59,7 +60,6 @@ internal class BinaryFloatOperators {
 		assertEquals(2.5, result)
 	}
 
-	//TODO also check for overflow
 	@Test
 	fun `throws on division by zero`() {
 		val sourceCode = """
@@ -73,6 +73,28 @@ internal class BinaryFloatOperators {
 		app.includeRequiredModules = true
 		val expectedOutput = """
 			Unhandled error: Division by zero
+			 at Test:Test:3:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	//TODO re-structure tests: e.g.: Byte->plus->positive/cast/negative/overflow
+	//TODO also check for overflow in other operators e.g. addition
+	//TODO determine desired float behavior i.e. Infinity vs. Exception
+	@Disabled
+	@Test
+	fun `throws on overflowing division`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					-2147483648.0 / -1.0
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Division overflowed
 			 at Test:Test:3:SimplestApp.run()
 			""".trimIndent()
 		app.shouldPrintLine(expectedOutput, "", 1)
