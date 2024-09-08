@@ -79,7 +79,6 @@ internal class BinaryFloatOperators {
 	}
 
 	//TODO re-structure tests: e.g.: Byte->plus->positive/cast/negative/overflow
-	//TODO also check for overflow in other operators e.g. addition
 	//TODO determine desired float behavior i.e. Infinity vs. Exception
 	@Disabled
 	@Test

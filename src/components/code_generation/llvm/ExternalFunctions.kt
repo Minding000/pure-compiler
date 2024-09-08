@@ -20,6 +20,12 @@ class ExternalFunctions {
 	lateinit var variableParameterIterationStart: LlvmFunction
 	lateinit var variableParameterListCopy: LlvmFunction
 	lateinit var variableParameterIterationEnd: LlvmFunction
+	lateinit var si32Addition: LlvmFunction
+	lateinit var si32Subtraction: LlvmFunction
+	lateinit var si32Multiplication: LlvmFunction
+	lateinit var si8Addition: LlvmFunction
+	lateinit var si8Subtraction: LlvmFunction
+	lateinit var si8Multiplication: LlvmFunction
 
 	fun load(constructor: LlvmConstructor) {
 		addPrintFunction(constructor)
@@ -36,6 +42,7 @@ class ExternalFunctions {
 		addExitFunction(constructor)
 		addMemoryCopyFunction(constructor)
 		addVariadicIntrinsics(constructor)
+		addMathematicalIntrinsics(constructor)
 	}
 
 	private fun addPrintFunction(constructor: LlvmConstructor) {
@@ -108,5 +115,22 @@ class ExternalFunctions {
 		variableParameterIterationStart = LlvmFunction(constructor, "llvm.va_start", listOf(constructor.pointerType))
 		variableParameterListCopy = LlvmFunction(constructor, "llvm.va_copy", listOf(constructor.pointerType, constructor.pointerType))
 		variableParameterIterationEnd = LlvmFunction(constructor, "llvm.va_end", listOf(constructor.pointerType))
+	}
+
+	private fun addMathematicalIntrinsics(constructor: LlvmConstructor) {
+		val i32ReturnType = constructor.buildAggregateType(constructor.i32Type, constructor.booleanType)
+		si32Addition =
+			LlvmFunction(constructor, "llvm.sadd.with.overflow.i32", listOf(constructor.i32Type, constructor.i32Type), i32ReturnType)
+		si32Subtraction =
+			LlvmFunction(constructor, "llvm.ssub.with.overflow.i32", listOf(constructor.i32Type, constructor.i32Type), i32ReturnType)
+		si32Multiplication =
+			LlvmFunction(constructor, "llvm.smul.with.overflow.i32", listOf(constructor.i32Type, constructor.i32Type), i32ReturnType)
+		val byteReturnType = constructor.buildAggregateType(constructor.byteType, constructor.booleanType)
+		si8Addition =
+			LlvmFunction(constructor, "llvm.sadd.with.overflow.i8", listOf(constructor.byteType, constructor.byteType), byteReturnType)
+		si8Subtraction =
+			LlvmFunction(constructor, "llvm.ssub.with.overflow.i8", listOf(constructor.byteType, constructor.byteType), byteReturnType)
+		si8Multiplication =
+			LlvmFunction(constructor, "llvm.smul.with.overflow.i8", listOf(constructor.byteType, constructor.byteType), byteReturnType)
 	}
 }

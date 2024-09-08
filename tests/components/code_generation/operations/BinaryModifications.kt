@@ -85,6 +85,45 @@ internal class BinaryModifications {
 	}
 
 	@Test
+	fun `throws on overflowing byte addition`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				to run() {
+					var a: Byte = 127
+					a += 1
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Addition overflowed
+			 at Test:Test:5:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
+	fun `throws on overflowing integer addition`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					var a = 2147483647
+					a += 1
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Addition overflowed
+			 at Test:Test:4:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
 	fun `compiles integer subtraction assignments`() {
 		val sourceCode = """
 			SimplestApp object {
@@ -100,6 +139,45 @@ internal class BinaryModifications {
 	}
 
 	@Test
+	fun `throws on overflowing byte subtraction`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				to run() {
+					var a: Byte = -128
+					a -= 1
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Subtraction overflowed
+			 at Test:Test:5:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
+	fun `throws on overflowing integer subtraction`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					var a = -2147483648
+					a -= 1
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Subtraction overflowed
+			 at Test:Test:4:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
 	fun `compiles integer multiplication assignments`() {
 		val sourceCode = """
 			SimplestApp object {
@@ -112,6 +190,45 @@ internal class BinaryModifications {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive")
 		assertEquals(5, result)
+	}
+
+	@Test
+	fun `throws on overflowing byte multiplication`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				to run() {
+					var a: Byte = 120
+					a *= 2
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Multiplication overflowed
+			 at Test:Test:5:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
+	fun `throws on overflowing integer multiplication`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					var a = 2100200300
+					a *= 2
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Multiplication overflowed
+			 at Test:Test:4:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
 	}
 
 	@Test

@@ -8,6 +8,7 @@ import components.code_generation.llvm.runtime_definitions.RuntimeGlobals
 import components.code_generation.llvm.runtime_definitions.RuntimeStructs
 import components.code_generation.llvm.runtime_definitions.RuntimeTypes
 import components.code_generation.llvm.wrapper.LlvmConstructor
+import components.code_generation.llvm.wrapper.LlvmFunction
 import components.code_generation.llvm.wrapper.LlvmType
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.control_flow.LoopStatement
@@ -158,6 +159,25 @@ class Context {
 			addLocationToStacktrace(model, constructor, exception, surroundingCallable)
 		constructor.buildStore(exception, exceptionParameter)
 		handleException(constructor, parent)
+	}
+
+	fun raiseOnOverflow(constructor: LlvmConstructor, model: SemanticModel, targetValue: LlvmValue, modifierValue: LlvmValue,
+						function: LlvmFunction, exceptionDescription: String, resultName: String): LlvmValue {
+		val aggregateResult = constructor.buildFunctionCall(function, listOf(targetValue, modifierValue), "additionResult")
+		val result = constructor.extractValueFromAggregateValue(aggregateResult, 0, resultName)
+		val didOverflow = constructor.extractValueFromAggregateValue(aggregateResult, 1, "didOverflow")
+		val overflowBlock = constructor.createBlock("overflow")
+		val noOverflowBlock = constructor.createBlock("noOverflow")
+		constructor.buildJump(didOverflow, overflowBlock, noOverflowBlock)
+		constructor.select(overflowBlock)
+		if(nativeRegistry.has(SpecialType.EXCEPTION)) {
+			raiseException(constructor, model, exceptionDescription)
+		} else {
+			panic(constructor, exceptionDescription)
+			constructor.markAsUnreachable()
+		}
+		constructor.select(noOverflowBlock)
+		return result
 	}
 
 	fun getNullValue(constructor: LlvmConstructor, type: Type?): LlvmValue {

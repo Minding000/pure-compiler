@@ -22,6 +22,24 @@ internal class BinaryIntegerOperators {
 	}
 
 	@Test
+	fun `throws on overflowing addition`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					2147483647 + 100
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Addition overflowed
+			 at Test:Test:3:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
 	fun `compiles integer subtractions`() {
 		val sourceCode = """
 			SimplestApp object {
@@ -35,6 +53,24 @@ internal class BinaryIntegerOperators {
 	}
 
 	@Test
+	fun `throws on overflowing subtraction`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					-2147483648 - 90
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Subtraction overflowed
+			 at Test:Test:3:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
 	fun `compiles integer multiplications`() {
 		val sourceCode = """
 			SimplestApp object {
@@ -45,6 +81,24 @@ internal class BinaryIntegerOperators {
 			""".trimIndent()
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTen")
 		assertEquals(10, result)
+	}
+
+	@Test
+	fun `throws on overflowing multiplication`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					2100200300 * 8
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Multiplication overflowed
+			 at Test:Test:3:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
 	}
 
 	@Test

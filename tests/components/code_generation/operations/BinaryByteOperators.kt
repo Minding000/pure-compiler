@@ -23,6 +23,27 @@ internal class BinaryByteOperators {
 	}
 
 	@Test
+	fun `throws on overflowing addition`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				to run() {
+					val left: Byte = 112
+					val right: Byte = 90
+					left + right
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Addition overflowed
+			 at Test:Test:6:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
 	fun `compiles byte subtractions`() {
 		val sourceCode = """
 			SimplestApp object {
@@ -38,6 +59,27 @@ internal class BinaryByteOperators {
 	}
 
 	@Test
+	fun `throws on overflowing subtraction`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				to run() {
+					val left: Byte = -112
+					val right: Byte = 90
+					left - right
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Subtraction overflowed
+			 at Test:Test:6:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
 	fun `compiles byte multiplications`() {
 		val sourceCode = """
 			SimplestApp object {
@@ -50,6 +92,27 @@ internal class BinaryByteOperators {
 			""".trimIndent()
 		val result = TestUtil.runAndReturnByte(sourceCode, "Test:SimplestApp.getTen")
 		assertEquals(10, result)
+	}
+
+	@Test
+	fun `throws on overflowing multiplication`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				to run() {
+					val left: Byte = 120
+					val right: Byte = 3
+					left * right
+				}
+			}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.run")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: Multiplication overflowed
+			 at Test:Test:6:SimplestApp.run()
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
 	}
 
 	@Test

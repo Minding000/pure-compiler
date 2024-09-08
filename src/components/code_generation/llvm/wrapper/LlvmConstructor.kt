@@ -113,6 +113,14 @@ class LlvmConstructor(name: String) {
 		return LLVMConstReal(floatType, value)
 	}
 
+	fun buildAggregateType(vararg types: LlvmType): LlvmType {
+		return LLVMStructTypeInContext(context, LlvmList(*types), types.size, Llvm.NO)
+	}
+
+	fun extractValueFromAggregateValue(aggregateValue: LlvmValue, index: Int, name: String): LlvmValue {
+		return LLVMBuildExtractValue(builder, aggregateValue, index, name)
+	}
+
 	fun getMemberOffsetInBytes(structType: LlvmType, memberIndex: Int): Long {
 		return LLVMOffsetOfElement(dataLayout, structType, memberIndex)
 	}

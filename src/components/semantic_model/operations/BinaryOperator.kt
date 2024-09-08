@@ -261,22 +261,40 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			}
 			when(kind) {
 				Operator.Kind.PLUS -> {
-					return if(isFloatOperation)
+					return if(isFloatOperation) {
 						constructor.buildFloatAddition(leftValue, rightValue, resultName)
-					else
-						constructor.buildIntegerAddition(leftValue, rightValue, resultName)
+					} else {
+						val function = if(isIntegerOperation)
+							context.externalFunctions.si32Addition
+						else
+							context.externalFunctions.si8Addition
+						context.raiseOnOverflow(constructor, this, leftValue, rightValue, function,
+							"Addition overflowed", resultName)
+					}
 				}
 				Operator.Kind.MINUS -> {
-					return if(isFloatOperation)
+					return if(isFloatOperation) {
 						constructor.buildFloatSubtraction(leftValue, rightValue, resultName)
-					else
-						constructor.buildIntegerSubtraction(leftValue, rightValue, resultName)
+					} else {
+						val function = if(isIntegerOperation)
+							context.externalFunctions.si32Subtraction
+						else
+							context.externalFunctions.si8Subtraction
+						context.raiseOnOverflow(constructor, this, leftValue, rightValue, function,
+							"Subtraction overflowed", resultName)
+					}
 				}
 				Operator.Kind.STAR -> {
-					return if(isFloatOperation)
+					return if(isFloatOperation) {
 						constructor.buildFloatMultiplication(leftValue, rightValue, resultName)
-					else
-						constructor.buildIntegerMultiplication(leftValue, rightValue, resultName)
+					} else {
+						val function = if(isIntegerOperation)
+							context.externalFunctions.si32Multiplication
+						else
+							context.externalFunctions.si8Multiplication
+						context.raiseOnOverflow(constructor, this, leftValue, rightValue, function,
+							"Multiplication overflowed", resultName)
+					}
 				}
 				Operator.Kind.SLASH -> {
 					val noDivisionByZeroBlock = constructor.createBlock("validDivision")
@@ -304,8 +322,8 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 						val isDivisorZero = constructor.buildSignedIntegerEqualTo(rightValue, zero, "isDivisorZero")
 						constructor.buildJump(isDivisorZero, divisionByZeroBlock, noDivisionByZeroBlock)
 						constructor.select(noDivisionByZeroBlock)
-						val noOverflowBlock = constructor.createBlock("noOverflowBlock")
-						val overflowBlock = constructor.createBlock("overflowBlock")
+						val noOverflowBlock = constructor.createBlock("noOverflow")
+						val overflowBlock = constructor.createBlock("overflow")
 						val negativeMin = if(isIntegerOperation)
 							constructor.buildInt32(Int.MIN_VALUE)
 						else

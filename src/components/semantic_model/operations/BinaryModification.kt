@@ -137,22 +137,40 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 			val intermediateResultName = "_modifiedValue"
 			val operation = when(kind) {
 				Operator.Kind.PLUS_EQUALS -> {
-					if(isFloatOperation)
+					if(isFloatOperation) {
 						constructor.buildFloatAddition(targetValue, modifierValue, intermediateResultName)
-					else
-						constructor.buildIntegerAddition(targetValue, modifierValue, intermediateResultName)
+					} else {
+						val function = if(isIntegerOperation)
+							context.externalFunctions.si32Addition
+						else
+							context.externalFunctions.si8Addition
+						context.raiseOnOverflow(constructor, this, targetValue, modifierValue, function,
+							"Addition overflowed", intermediateResultName)
+					}
 				}
 				Operator.Kind.MINUS_EQUALS -> {
-					if(isFloatOperation)
+					if(isFloatOperation) {
 						constructor.buildFloatSubtraction(targetValue, modifierValue, intermediateResultName)
-					else
-						constructor.buildIntegerSubtraction(targetValue, modifierValue, intermediateResultName)
+					} else {
+						val function = if(isIntegerOperation)
+							context.externalFunctions.si32Subtraction
+						else
+							context.externalFunctions.si8Subtraction
+						context.raiseOnOverflow(constructor, this, targetValue, modifierValue, function,
+							"Subtraction overflowed", intermediateResultName)
+					}
 				}
 				Operator.Kind.STAR_EQUALS -> {
-					if(isFloatOperation)
+					if(isFloatOperation) {
 						constructor.buildFloatMultiplication(targetValue, modifierValue, intermediateResultName)
-					else
-						constructor.buildIntegerMultiplication(targetValue, modifierValue, intermediateResultName)
+					} else {
+						val function = if(isIntegerOperation)
+							context.externalFunctions.si32Multiplication
+						else
+							context.externalFunctions.si8Multiplication
+						context.raiseOnOverflow(constructor, this, targetValue, modifierValue, function,
+							"Multiplication overflowed", intermediateResultName)
+					}
 				}
 				Operator.Kind.SLASH_EQUALS -> {
 					val noDivisionByZeroBlock = constructor.createBlock("validDivision")
@@ -179,8 +197,8 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 						val isDivisorZero = constructor.buildSignedIntegerEqualTo(modifierValue, zero, "isDivisorZero")
 						constructor.buildJump(isDivisorZero, divisionByZeroBlock, noDivisionByZeroBlock)
 						constructor.select(noDivisionByZeroBlock)
-						val noOverflowBlock = constructor.createBlock("noOverflowBlock")
-						val overflowBlock = constructor.createBlock("overflowBlock")
+						val noOverflowBlock = constructor.createBlock("noOverflow")
+						val overflowBlock = constructor.createBlock("overflow")
 						val negativeMin = if(isIntegerOperation)
 							constructor.buildInt32(Int.MIN_VALUE)
 						else
