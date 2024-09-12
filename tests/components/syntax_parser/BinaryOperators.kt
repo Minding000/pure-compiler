@@ -81,7 +81,7 @@ internal class BinaryOperators {
 
 	@Test
 	fun `parses binary number operators with correct precedence`() {
-		val sourceCode = "3 + 345 * 2 - (2 + 1)"
+		val sourceCode = "3 + 345 * 2 - (2 + 1 - 1)"
 		val expected =
 			"""
 				BinaryOperator {
@@ -90,7 +90,9 @@ internal class BinaryOperators {
 							NumberLiteral { 345 } Operator { * } NumberLiteral { 2 }
 						}
 					} Operator { - } BinaryOperator {
-						NumberLiteral { 2 } Operator { + } NumberLiteral { 1 }
+						BinaryOperator {
+							NumberLiteral { 2 } Operator { + } NumberLiteral { 1 }
+						} Operator { - } NumberLiteral { 1 }
 					}
 				}
             """.trimIndent()

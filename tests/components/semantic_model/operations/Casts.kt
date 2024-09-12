@@ -16,6 +16,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+//TODO allow optional types as reference type (meaning Null is also accepted)
 internal class Casts {
 
 	@Test

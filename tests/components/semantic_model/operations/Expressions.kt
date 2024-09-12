@@ -12,6 +12,7 @@ import logger.issues.access.OptionalAccessWithoutHasValueCheck
 import logger.issues.constant_conditions.StaticHasValueCheckResult
 import logger.issues.constant_conditions.TypeSpecificationOutsideOfInitializerCall
 import logger.issues.resolution.NotFound
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
@@ -170,6 +171,50 @@ internal class Expressions {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<StaticHasValueCheckResult>("Has-value check always returns 'no'.", Severity.WARNING)
+	}
+
+	//TODO extract LLVM compilation from semantic model
+	// advantages:
+	//  - smaller classes
+	//  - clear separation of properties in their domain (e.g. effective type could be a special LLVM type)
+	//  - allows for desugaring
+	//    - not desired in most cases
+	//  - easier support for other targets
+	//    - not very important
+	// disadvantages:
+	//  - more code / "duplication" of classes
+
+	//TODO implement this
+	// Options:
+	//   1 - change type temporarily
+	//   	 - not possible, because type may be read out-of-order
+	//   2 - take scope into account when accessing type
+	//       - not very efficient
+	//       - unless done only once per variable value <-- try this first; before that split semantic model and compiler
+	//   3 - create an implicit copy of the variable
+	//       - may interfere with other systems that track the variable e.g. shadow lint issue
+	//   4 - change the syntax to create an explicit variable
+	//   	- extra syntax
+	//      - choosing a new name for a non-optional version is not helpful
+	//   5 - just use 'is! Null' - does this work? (or use not-as?)
+	//		- probably doesn't as this is the same concept
+	//      - using 'as' is not an option as it requires the user to define another variable with a different name
+	@Disabled
+	@Test
+	fun `variable is non-optional after has-value check`() {
+		val sourceCode =
+			"""
+				Cable class
+				var cable: Cable? = Cable()
+				if cable? {
+					cable
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		val type =
+			lintResult.find<VariableValue> { variableValue -> variableValue.name == "cable" && variableValue.parent !is HasValueCheck }?.providedType
+		assertIs<ObjectType>(type)
+		assertEquals("Cable", type.toString())
 	}
 
 	@Test

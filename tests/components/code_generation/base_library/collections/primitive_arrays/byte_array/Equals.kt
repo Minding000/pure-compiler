@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 
+//TODO array and byte array index out of bounds exceptions
 internal class Equals {
 
 	@Test

@@ -56,10 +56,9 @@ class HasValueCheck(override val source: HasValueCheckSyntaxTree, scope: Scope, 
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		if(SpecialType.NULL.matches(subject.providedType))
+		if(SpecialType.NULL.matches(subject.effectiveType))
 			return constructor.buildBoolean(false)
-		//TODO also mind OrUnionType containing Null type everywhere where OptionalType is used
-		if(subject.providedType !is OptionalType)
+		if(subject.effectiveType !is OptionalType)
 			return constructor.buildBoolean(true)
 		return constructor.buildIsNotNull(subject.getLlvmValue(constructor), "_hasValueCheck_result")
 	}
