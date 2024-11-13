@@ -1,9 +1,9 @@
 package components.code_generation.llvm.native_implementations.primitives
 
+import components.code_generation.llvm.context.NativeRegistry
+import components.code_generation.llvm.context.PrimitiveImplementation
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.Context
-import components.semantic_model.context.NativeRegistry
-import components.semantic_model.context.PrimitiveImplementation
 
 class PrimitiveIntNatives(val context: Context) {
 

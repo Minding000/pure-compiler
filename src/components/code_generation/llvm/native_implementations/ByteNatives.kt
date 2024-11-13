@@ -1,10 +1,10 @@
 package components.code_generation.llvm.native_implementations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.context.NativeRegistry
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
-import components.semantic_model.context.NativeRegistry
 import errors.internal.CompilerError
 
 class ByteNatives(val context: Context) {

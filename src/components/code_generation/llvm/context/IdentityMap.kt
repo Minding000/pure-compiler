@@ -1,4 +1,4 @@
-package components.semantic_model.context
+package components.code_generation.llvm.context
 
 import errors.internal.CompilerError
 

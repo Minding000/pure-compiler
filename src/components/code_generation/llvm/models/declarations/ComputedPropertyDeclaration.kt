@@ -1,12 +1,12 @@
 package components.code_generation.llvm.models.declarations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.context.PrimitiveImplementation
 import components.code_generation.llvm.models.general.ErrorHandlingContext
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmType
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
-import components.semantic_model.context.PrimitiveImplementation
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import errors.internal.CompilerError
 import java.util.*

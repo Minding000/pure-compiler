@@ -3,6 +3,8 @@ package components.semantic_model.context
 import code.Main
 import components.code_generation.llvm.ExternalFunctions
 import components.code_generation.llvm.StandardLibrary
+import components.code_generation.llvm.context.IdentityMap
+import components.code_generation.llvm.context.NativeRegistry
 import components.code_generation.llvm.runtime_definitions.RuntimeFunctions
 import components.code_generation.llvm.runtime_definitions.RuntimeGlobals
 import components.code_generation.llvm.runtime_definitions.RuntimeStructs
