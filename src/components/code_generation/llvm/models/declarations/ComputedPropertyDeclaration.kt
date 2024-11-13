@@ -48,8 +48,8 @@ class ComputedPropertyDeclaration(override val model: ComputedPropertyDeclaratio
 	private fun declarePrimitiveGetterImplementation(constructor: LlvmConstructor) {
 		val llvmType = model.effectiveType?.getLlvmType(constructor)
 		val functionType =
-			constructor.buildFunctionType(listOf(constructor.pointerType, model.parentTypeDeclaration.getLlvmReferenceType(constructor)),
-				llvmType)
+			constructor.buildFunctionType(listOf(constructor.pointerType,
+				model.parentTypeDeclaration.unit.getLlvmReferenceType(constructor)), llvmType)
 		val signature = getGetterSignature()
 		val functionValue = constructor.buildFunction("${signature}_PrimitiveImplementation", functionType)
 		context.nativeRegistry.registerPrimitiveImplementation(signature, PrimitiveImplementation(functionValue, functionType))

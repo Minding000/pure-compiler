@@ -346,7 +346,8 @@ abstract class TypeDeclaration(override val model: TypeDeclaration, val members:
 			}
 			val staticMemberValue = staticMember.model.value?.getComputedValue()
 			val staticMemberLlvmValue = if(staticMemberValue?.effectiveType?.isLlvmPrimitive() == true) {
-				staticMemberValue.getLlvmValue(constructor)
+				//TODO is 'toUnit' call ok here?
+				staticMemberValue.toUnit().getLlvmValue(constructor)
 			} else {
 				val value = staticMember.value?.getLlvmValue(constructor)
 					?: throw CompilerError(staticMember, "Static member is missing a value.")

@@ -1,10 +1,6 @@
 package components.semantic_model.operations
 
-import components.code_generation.llvm.ValueConverter
 import components.code_generation.llvm.models.operations.UnaryModification
-import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmValue
-import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.FunctionSignature
@@ -20,7 +16,6 @@ import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.resolution.NotFound
 import java.math.BigDecimal
-import java.util.*
 import components.syntax_parser.syntax_tree.operations.UnaryModification as UnaryModificationSyntaxTree
 
 class UnaryModification(override val source: UnaryModificationSyntaxTree, scope: Scope, val target: Value, val kind: Operator.Kind):
@@ -89,36 +84,4 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 	}
 
 	override fun toUnit() = UnaryModification(this, target.toUnit())
-
-	override fun compile(constructor: LlvmConstructor) {
-		val targetValue = ValueConverter.convertIfRequired(this, constructor, target.getLlvmValue(constructor),
-			target.effectiveType, target.hasGenericType, target.effectiveType, false)
-		val isTargetInteger = SpecialType.INTEGER.matches(target.providedType)
-		if(isTargetInteger || SpecialType.BYTE.matches(target.providedType)) {
-			val modifierValue = if(isTargetInteger)
-				constructor.buildInt32(STEP_SIZE.longValueExact())
-			else
-				constructor.buildByte(STEP_SIZE.longValueExact())
-			val intermediateResultName = "_modifiedValue"
-			val operation = when(kind) {
-				Operator.Kind.DOUBLE_PLUS -> constructor.buildIntegerAddition(targetValue, modifierValue, intermediateResultName)
-				Operator.Kind.DOUBLE_MINUS -> constructor.buildIntegerSubtraction(targetValue, modifierValue, intermediateResultName)
-				else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
-			}
-			constructor.buildStore(ValueConverter.convertIfRequired(this, constructor, operation, target.effectiveType,
-				false, target.effectiveType, target.hasGenericType), target.getLlvmLocation(constructor))
-			return
-		}
-		val signature = targetSignature?.original ?: throw CompilerError(source, "Unary modification is missing a target.")
-		createLlvmFunctionCall(constructor, signature, targetValue)
-	}
-
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, targetValue: LlvmValue) {
-		val parameters = LinkedList<LlvmValue>()
-		parameters.add(context.getExceptionParameter(constructor))
-		parameters.add(targetValue)
-		val functionAddress = context.resolveFunction(constructor, targetValue, signature.getIdentifier(kind))
-		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
-		context.continueRaise(constructor, this)
-	}
 }

@@ -1,7 +1,5 @@
 package components.semantic_model.values
 
-import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.SpecialType
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
@@ -38,19 +36,6 @@ class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value
 	}
 
 	override fun toUnit() = NumberLiteralUnit(this)
-
-	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		return createLlvmValue(constructor, value)
-	}
-
-	fun createLlvmValue(constructor: LlvmConstructor, value: BigDecimal): LlvmValue {
-		return if(SpecialType.BYTE.matches(providedType))
-			constructor.buildByte(value.longValueExact())
-		else if(SpecialType.INTEGER.matches(providedType))
-			constructor.buildInt32(value.longValueExact())
-		else
-			constructor.buildFloat(value.toDouble())
-	}
 
 	override fun hashCode(): Int {
 		var result = super.hashCode()

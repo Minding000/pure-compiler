@@ -1,11 +1,5 @@
 package components.semantic_model.declarations
 
-import components.code_generation.llvm.ValueConverter
-import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmType
-import components.code_generation.llvm.wrapper.LlvmValue
-import components.semantic_model.context.Context
-import components.semantic_model.context.PrimitiveImplementation
 import components.semantic_model.context.SpecialType
 import components.semantic_model.control_flow.ReturnStatement
 import components.semantic_model.general.ErrorHandlingContext
@@ -17,13 +11,11 @@ import components.semantic_model.types.FunctionType
 import components.semantic_model.types.LiteralType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Value
-import errors.internal.CompilerError
 import logger.issues.declaration.MissingBody
 import logger.issues.modifiers.OverridingMemberKindMismatch
 import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
 import logger.issues.modifiers.VariablePropertyOverriddenByValue
-import java.util.*
 import components.code_generation.llvm.models.declarations.ComputedPropertyDeclaration as ComputedPropertyDeclarationUnit
 import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclaration as ComputedPropertySyntaxTree
 
@@ -45,10 +37,6 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		get() = superComputedProperty?.getterIdentifier ?: "get $memberIdentifier"
 	val setterIdentifier: String
 		get() = superComputedProperty?.setterIdentifier ?: "set $memberIdentifier"
-	var llvmGetterType: LlvmType? = null
-	var llvmSetterType: LlvmType? = null
-	var llvmGetterValue: LlvmValue? = null
-	var llvmSetterValue: LlvmValue? = null
 	val getterErrorHandlingContext: ErrorHandlingContext?
 	val setterErrorHandlingContext: ErrorHandlingContext?
 	val getterReturnType: Type?
@@ -124,105 +112,5 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 		this.unit = unit
 		computedPropertyUnit = unit
 		return unit
-	}
-
-	override fun declare(constructor: LlvmConstructor) {
-		super.declare(constructor)
-		if(isGettable || getterErrorHandlingContext != null) {
-			if(!isAbstract && parentTypeDeclaration.isLlvmPrimitive())
-				context.primitiveCompilationTarget = parentTypeDeclaration
-			val llvmType = root.effectiveType?.getLlvmType(constructor)
-			val functionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), llvmType)
-			llvmGetterType = functionType
-			if(!isAbstract) {
-				llvmGetterValue = constructor.buildFunction(getGetterSignature(), functionType)
-				if(parentTypeDeclaration.isLlvmPrimitive()) {
-					context.primitiveCompilationTarget = null
-					declarePrimitiveGetterImplementation(constructor)
-				}
-			}
-		}
-		if(isSettable || setterErrorHandlingContext != null) {
-			val llvmType = root.effectiveType?.getLlvmType(constructor)
-			val functionType = constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType, llvmType))
-			llvmSetterType = functionType
-			if(!isAbstract)
-				llvmSetterValue = constructor.buildFunction(setterIdentifier, functionType)
-		}
-	}
-
-	private fun declarePrimitiveGetterImplementation(constructor: LlvmConstructor) {
-		val llvmType = effectiveType?.getLlvmType(constructor)
-		val functionType =
-			constructor.buildFunctionType(listOf(constructor.pointerType, parentTypeDeclaration.getLlvmReferenceType(constructor)),
-				llvmType)
-		val signature = getGetterSignature()
-		val functionValue = constructor.buildFunction("${signature}_PrimitiveImplementation", functionType)
-		context.nativeRegistry.registerPrimitiveImplementation(signature, PrimitiveImplementation(functionValue, functionType))
-	}
-
-	override fun compile(constructor: LlvmConstructor) {
-		if(isAbstract)
-			return
-		val previousBlock = constructor.getCurrentBlock()
-		if(isNative) {
-			if(isGettable) {
-				val llvmGetterValue = llvmGetterValue ?: throw CompilerError(source, "Missing getter value")
-				context.nativeRegistry.compileNativeImplementation(constructor, source, "computed property getter", getterIdentifier,
-					llvmGetterValue)
-			}
-			if(isSettable) {
-				val llvmSetterValue = llvmSetterValue ?: throw CompilerError(source, "Missing setter value")
-				context.nativeRegistry.compileNativeImplementation(constructor, source, "computed property setter", setterIdentifier,
-					llvmSetterValue)
-			}
-			constructor.select(previousBlock)
-			return
-		}
-		if(parentTypeDeclaration.isLlvmPrimitive()) {
-			compilePrimitiveGetterImplementation(constructor)
-			compileObjectGetterImplementationBasedOnPrimitiveImplementation(constructor)
-			constructor.select(previousBlock)
-			return
-		}
-		val llvmGetterValue = llvmGetterValue
-		if(llvmGetterValue != null && getterErrorHandlingContext != null) {
-			constructor.createAndSelectEntrypointBlock(llvmGetterValue)
-			getterErrorHandlingContext.compile(constructor)
-		}
-		val llvmSetterValue = llvmSetterValue
-		if(llvmSetterValue != null && setterErrorHandlingContext != null) {
-			constructor.createAndSelectEntrypointBlock(llvmSetterValue)
-			setterErrorHandlingContext.compile(constructor)
-			if(!setterErrorHandlingContext.isInterruptingExecutionBasedOnStructure)
-				constructor.buildReturn()
-		}
-		constructor.select(previousBlock)
-	}
-
-	private fun compilePrimitiveGetterImplementation(constructor: LlvmConstructor) {
-		val primitiveImplementation = context.nativeRegistry.resolvePrimitiveImplementation(getGetterSignature())
-		constructor.createAndSelectEntrypointBlock(primitiveImplementation.llvmValue)
-		getterErrorHandlingContext?.compile(constructor)
-	}
-
-	private fun compileObjectGetterImplementationBasedOnPrimitiveImplementation(constructor: LlvmConstructor) {
-		val llvmGetterValue = llvmGetterValue ?: throw CompilerError(source, "Missing getter value")
-		constructor.createAndSelectEntrypointBlock(llvmGetterValue)
-		val unwrappedParameters = LinkedList<LlvmValue?>()
-		unwrappedParameters.add(Context.EXCEPTION_PARAMETER_INDEX, context.getExceptionParameter(constructor))
-		val thisParameter = context.getThisParameter(constructor)
-		unwrappedParameters.add(Context.THIS_PARAMETER_INDEX,
-			ValueConverter.unwrapPrimitive(this, constructor, thisParameter, parentTypeDeclaration))
-		val signature = getGetterSignature()
-		val primitiveImplementation = context.nativeRegistry.resolvePrimitiveImplementation(signature)
-		var result = constructor.buildFunctionCall(primitiveImplementation.llvmType, primitiveImplementation.llvmValue, unwrappedParameters,
-			signature)
-		result = ValueConverter.wrapPrimitive(this, constructor, result, effectiveType)
-		constructor.buildReturn(result)
-	}
-
-	fun getGetterSignature(): String {
-		return "${parentTypeDeclaration.name}.get $memberIdentifier"
 	}
 }

@@ -1,7 +1,6 @@
 package components.semantic_model.values
 
 import components.code_generation.llvm.models.values.FunctionObject
-import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration
@@ -59,10 +58,4 @@ open class Function(source: SyntaxTreeNode, scope: Scope, val name: String = "<a
 	}
 
 	override fun toUnit() = FunctionObject(this, implementations.map(FunctionImplementation::toUnit))
-
-	override fun compile(constructor: LlvmConstructor) {
-		//TODO compile closures (write tests!)
-		for(semanticModel in semanticModels)
-			semanticModel.compile(constructor)
-	}
 }

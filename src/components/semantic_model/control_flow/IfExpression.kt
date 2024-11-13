@@ -1,16 +1,12 @@
 package components.semantic_model.control_flow
 
 import components.code_generation.llvm.models.control_flow.IfExpression
-import components.code_generation.llvm.wrapper.LlvmBlock
-import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.Type
 import components.semantic_model.values.BooleanLiteral
 import components.semantic_model.values.Value
-import errors.internal.CompilerError
 import logger.issues.expressions.BranchMissesValue
 import logger.issues.expressions.ExpressionMissesElse
 import logger.issues.expressions.ExpressionNeverReturns
@@ -123,65 +119,4 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 	}
 
 	override fun toUnit() = IfExpression(this, condition.toUnit(), positiveBranch.toUnit(), negativeBranch?.toUnit())
-
-	override fun compile(constructor: LlvmConstructor) {
-		val function = constructor.getParentFunction()
-		val condition = condition.getLlvmValue(constructor)
-		val trueBlock = constructor.createBlock(function, "if_trueBlock")
-		val falseBlock = constructor.createBlock(function, "if_falseBlock")
-		val exitBlock = constructor.createDetachedBlock("if_exitBlock")
-		constructor.buildJump(condition, trueBlock, falseBlock)
-		constructor.select(trueBlock)
-		positiveBranch.compile(constructor)
-		if(!positiveBranch.isInterruptingExecutionBasedOnStructure)
-			constructor.buildJump(exitBlock)
-		constructor.select(falseBlock)
-		negativeBranch?.compile(constructor)
-		if(negativeBranch?.isInterruptingExecutionBasedOnStructure != true)
-			constructor.buildJump(exitBlock)
-		if(!isInterruptingExecutionBasedOnStructure) {
-			constructor.addBlockToFunction(function, exitBlock)
-			constructor.select(exitBlock)
-		}
-	}
-
-	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		val resultLlvmType = effectiveType?.getLlvmType(constructor)
-		val result = constructor.buildStackAllocation(resultLlvmType, "if_resultVariable")
-		val function = constructor.getParentFunction()
-		val condition = condition.getLlvmValue(constructor)
-		val trueBlock = constructor.createBlock(function, "if_trueBlock")
-		val falseBlock = constructor.createBlock(function, "if_falseBlock")
-		val exitBlock = constructor.createDetachedBlock("if_exitBlock")
-		constructor.buildJump(condition, trueBlock, falseBlock)
-		constructor.select(trueBlock)
-		compileBranch(constructor, positiveBranch, result, exitBlock)
-		constructor.select(falseBlock)
-		val negativeBranch = negativeBranch ?: throw CompilerError(source, "If expression is missing a negative branch.")
-		compileBranch(constructor, negativeBranch, result, exitBlock)
-		if(!isInterruptingExecutionBasedOnStructure) {
-			constructor.addBlockToFunction(function, exitBlock)
-			constructor.select(exitBlock)
-		}
-		return constructor.buildLoad(resultLlvmType, result, "if_result")
-	}
-
-	private fun compileBranch(constructor: LlvmConstructor, branch: ErrorHandlingContext, result: LlvmValue, exitBlock: LlvmBlock) {
-		if(branch.isInterruptingExecutionBasedOnStructure) {
-			branch.compile(constructor)
-			return
-		}
-		val statements = branch.mainBlock.statements
-		val lastStatementIndex = statements.size - 1
-		for((statementIndex, statement) in statements.withIndex()) {
-			if(statementIndex == lastStatementIndex) {
-				val value = statement as? Value ?: throw CompilerError(statement.source,
-					"Last statement in if expression branch block doesn't provide a value.")
-				constructor.buildStore(value.getLlvmValue(constructor), result)
-			} else {
-				statement.compile(constructor)
-			}
-		}
-		constructor.buildJump(exitBlock)
-	}
 }

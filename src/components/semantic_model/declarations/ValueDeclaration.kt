@@ -1,15 +1,9 @@
 package components.semantic_model.declarations
 
-import components.code_generation.llvm.ValueConverter
-import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.general.File
 import components.semantic_model.general.SemanticModel
-import components.semantic_model.scopes.FileScope
 import components.semantic_model.scopes.MutableScope
-import components.semantic_model.scopes.TypeScope
-import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
-import components.semantic_model.values.Function
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
@@ -17,7 +11,6 @@ import errors.internal.CompilerError
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.declaration.DeclarationMissingTypeOrValue
 import logger.issues.resolution.ConversionAmbiguity
-import org.bytedeco.llvm.LLVM.LLVMValueRef
 import java.util.*
 import components.code_generation.llvm.models.declarations.ValueDeclaration as ValueDeclarationUnit
 
@@ -31,7 +24,6 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 	var conversion: InitializerDefinition? = null
 	//TODO set this in each sub-class
 	lateinit var unit: ValueDeclarationUnit
-	lateinit var llvmLocation: LLVMValueRef
 
 	init {
 		addSemanticModels(providedType, value)
@@ -90,33 +82,6 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 	}
 
 	abstract override fun toUnit(): ValueDeclarationUnit
-
-	override fun declare(constructor: LlvmConstructor) {
-		super.declare(constructor)
-		if(providedType is StaticType)
-			return
-		if(scope is FileScope)
-			llvmLocation = constructor.declareGlobal("${name}_Global", effectiveType?.getLlvmType(constructor))
-	}
-
-	override fun compile(constructor: LlvmConstructor) {
-		val value = value
-		if(scope is TypeScope || providedType is StaticType) {
-			if(value is Function)
-				value.compile(constructor)
-			return
-		}
-		if(scope is FileScope) {
-			constructor.defineGlobal(llvmLocation, constructor.nullPointer)
-		} else {
-			llvmLocation = constructor.buildStackAllocation(effectiveType?.getLlvmType(constructor), "${name}_Variable")
-		}
-		if(value != null) {
-			val llvmValue = ValueConverter.convertIfRequired(this, constructor, value.getLlvmValue(constructor), value.effectiveType,
-				value.hasGenericType, effectiveType, false, conversion)
-			constructor.buildStore(llvmValue, llvmLocation)
-		}
-	}
 
 	override fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
 		if(hasDeterminedFileInitializationOrder)

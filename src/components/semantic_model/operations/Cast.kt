@@ -1,18 +1,16 @@
 package components.semantic_model.operations
 
-import components.code_generation.llvm.ValueConverter
 import components.code_generation.llvm.models.operations.Cast
-import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.control_flow.IfExpression
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
-import components.semantic_model.types.*
+import components.semantic_model.types.LiteralType
+import components.semantic_model.types.OptionalType
+import components.semantic_model.types.Type
 import components.semantic_model.values.*
-import errors.internal.CompilerError
 import logger.issues.constant_conditions.*
 import components.syntax_parser.syntax_tree.operations.Cast as CastSyntaxTree
 
@@ -133,72 +131,6 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 	}
 
 	override fun toUnit() = Cast(this, subject.toUnit(), variableDeclaration?.toUnit())
-
-	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-
-		//TODO implement special cases:
-		// - Cast from optional primitive to primitive: unbox and check
-		// - Cast from primitive to optional primitive: box
-		// - Cast from primitive to pointer type: construct wrapper
-		// - Cast from pointer type to primitive: destruct wrapper
-		// -
-		// - Cast from primitive to primitive: LLVM cast (could be combined with casts above)
-		// - Cast null value (no type info)
-
-
-		val subjectValue = subject.getLlvmValue(constructor)
-		when(operator) {
-			Operator.SAFE_CAST -> {
-				return ValueConverter.convertIfRequired(this, constructor, subjectValue, subject.providedType, referenceType)
-			}
-			Operator.OPTIONAL_CAST -> {
-				//TODO check if value can be converted
-				// else: return null pointer
-				return ValueConverter.convertIfRequired(this, constructor, subjectValue, subject.providedType, referenceType)
-			}
-			Operator.RAISING_CAST -> {
-				//TODO check if value can be converted
-				// else: raise
-				return ValueConverter.convertIfRequired(this, constructor, subjectValue, subject.providedType, referenceType)
-			}
-			Operator.CAST_CONDITION, Operator.NEGATED_CAST_CONDITION -> {
-				//TODO check if value can be converted
-				// - get specified type (is class definition address)
-				// - get value
-				// - check if values class definition matches specified class definition
-				//   - if yes: result = true
-				// - else:
-				//   - get parent class definitions => need to be part of definition
-				//   - recursively check is match
-				//     - if yes for any: result = true
-				// - fallback: result = false
-				// => advanced feature: support complex types
-
-				//TODO if subject is primitive:
-				// - skip comparison
-				// - statically determine result
-
-				val subjectClassDefinition = context.getClassDefinition(constructor, subjectValue)
-				val referenceTypeDeclaration = when(referenceType) {
-					is ObjectType -> referenceType.getTypeDeclaration()
-					is SelfType -> referenceType.typeDeclaration
-					else -> throw CompilerError(referenceType.source,
-						"Conditional casts do not support complex types at the moment. Provided type: $referenceType")
-				}
-				val referenceClassDefinition = referenceTypeDeclaration?.llvmClassDefinition
-					?: throw CompilerError(referenceType.source, "Missing class definition for type '$referenceType'.")
-				if(variableDeclaration != null) {
-					variableDeclaration.compile(constructor)
-					constructor.buildStore(subjectValue, variableDeclaration.llvmLocation)
-				}
-				val resultName = "_castConditionResult"
-				return if(operator == Operator.CAST_CONDITION)
-					constructor.buildPointerEqualTo(subjectClassDefinition, referenceClassDefinition, resultName)
-				else
-					constructor.buildPointerNotEqualTo(subjectClassDefinition, referenceClassDefinition, resultName)
-			}
-		}
-	}
 
 	enum class Operator(val stringRepresentation: String, val isConditional: Boolean = false,
 						val returnsBoolean: Boolean = false) {

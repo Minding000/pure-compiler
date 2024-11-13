@@ -36,7 +36,7 @@ class IfExpression(override val model: IfExpression, val condition: Value, val p
 		val resultLlvmType = model.effectiveType?.getLlvmType(constructor)
 		val result = constructor.buildStackAllocation(resultLlvmType, "if_resultVariable")
 		val function = constructor.getParentFunction()
-		val condition = model.condition.getLlvmValue(constructor)
+		val condition = condition.getLlvmValue(constructor)
 		val trueBlock = constructor.createBlock(function, "if_trueBlock")
 		val falseBlock = constructor.createBlock(function, "if_falseBlock")
 		val exitBlock = constructor.createDetachedBlock("if_exitBlock")

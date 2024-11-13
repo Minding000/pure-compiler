@@ -302,7 +302,7 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 			return constructor.debug.i32Type
 		if(SpecialType.FLOAT.matches(this))
 			return constructor.debug.floatType
-		return constructor.debug.createType(getTypeDeclaration()?.getLlvmMetadata(constructor))
+		return constructor.debug.createType(getTypeDeclaration()?.unit?.getLlvmMetadata(constructor))
 	}
 
 	fun getStaticLlvmValue(constructor: LlvmConstructor): LlvmValue {

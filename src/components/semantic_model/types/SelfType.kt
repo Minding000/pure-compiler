@@ -102,7 +102,7 @@ class SelfType(source: SyntaxTreeNode, scope: Scope): Type(source, scope) {
 	override fun createLlvmType(constructor: LlvmConstructor): LlvmType {
 		val typeDeclaration = typeDeclaration
 		if(typeDeclaration != null && isLlvmPrimitive())
-			return typeDeclaration.getLlvmReferenceType(constructor)
+			return typeDeclaration.unit.getLlvmReferenceType(constructor)
 		return constructor.pointerType
 	}
 }

@@ -1,7 +1,5 @@
 package components.semantic_model.values
 
-import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.SpecialType
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
@@ -21,10 +19,6 @@ class BooleanLiteral(override val source: SyntaxTreeNode, scope: Scope, val valu
 	}
 
 	override fun toUnit() = BooleanLiteralUnit(this)
-
-	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		return constructor.buildBoolean(value)
-	}
 
 	override fun hashCode(): Int {
 		var result = super.hashCode()

@@ -174,7 +174,7 @@ class Program(val context: Context, val model: Program, val files: List<File>) {
 		constructor.buildStore(handle, global)
 	}
 
-	private fun getEntrypoint(entrypointPath: String?): UserEntrypoint? {
+	fun getEntrypoint(entrypointPath: String?): UserEntrypoint? {
 		if(entrypointPath == null) return null
 		try {
 			val pathSections = entrypointPath.split(":")

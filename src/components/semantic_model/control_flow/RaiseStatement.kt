@@ -1,7 +1,6 @@
 package components.semantic_model.control_flow
 
 import components.code_generation.llvm.models.control_flow.RaiseStatement
-import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.FunctionImplementation
@@ -50,14 +49,4 @@ class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope
 	}
 
 	override fun toUnit() = RaiseStatement(this, value.toUnit())
-
-	override fun compile(constructor: LlvmConstructor) {
-		val exceptionParameter = context.getExceptionParameter(constructor)
-		val exception = value.getLlvmValue(constructor)
-		val surroundingCallable =
-			targetInitializer ?: targetFunction ?: targetComputedProperty ?: throw CompilerError(source, "Missing target callable.")
-		context.addLocationToStacktrace(this, constructor, exception, surroundingCallable)
-		constructor.buildStore(exception, exceptionParameter)
-		context.handleException(constructor, parent)
-	}
 }

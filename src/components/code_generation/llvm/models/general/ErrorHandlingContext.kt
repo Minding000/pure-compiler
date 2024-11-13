@@ -4,6 +4,7 @@ import components.code_generation.llvm.wrapper.LlvmBlock
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.general.ErrorHandlingContext
+import components.semantic_model.general.SemanticModel
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.SelfType
 import errors.internal.CompilerError
@@ -12,7 +13,7 @@ import java.util.*
 class ErrorHandlingContext(override val model: ErrorHandlingContext, val mainBlock: StatementBlock,
 						   val handleBlocks: List<HandleBlock> = emptyList(), val alwaysBlock: StatementBlock? = null):
 	Unit(model, listOfNotNull(mainBlock, *handleBlocks.toTypedArray(), alwaysBlock)) {
-	private var entryBlocks = HashMap<Unit, LlvmBlock>()
+	private var entryBlocks = HashMap<SemanticModel, LlvmBlock>()
 	private lateinit var exitBlock: LlvmBlock
 	private var returnAddressVariable: LlvmValue? = null
 	private val returnBlocks = LinkedList<LlvmBlock>()
@@ -70,11 +71,11 @@ class ErrorHandlingContext(override val model: ErrorHandlingContext, val mainBlo
 		val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "exception")
 		val exceptionClass = context.getClassDefinition(constructor, exception)
 		var currentBlock = entryBlock
-		entryBlocks[mainBlock] = entryBlock
+		entryBlocks[mainBlock.model] = entryBlock
 		for(handleBlock in handleBlocks) {
 			val matchBlock = constructor.createBlock(function, "errorHandling_match")
 			val noMatchBlock = constructor.createBlock(function, "errorHandling_noMatch")
-			entryBlocks[handleBlock] = noMatchBlock
+			entryBlocks[handleBlock.model] = noMatchBlock
 			handleBlock.compile(constructor)
 			if(!handleBlock.model.isInterruptingExecutionBasedOnStructure)
 				constructor.buildJump(exitBlock)
@@ -86,7 +87,7 @@ class ErrorHandlingContext(override val model: ErrorHandlingContext, val mainBlo
 				else -> throw CompilerError(referenceType.source,
 					"Handle blocks do not support complex types at the moment. Provided type: $referenceType")
 			}
-			val referenceClassDefinition = referenceTypeDeclaration?.llvmClassDefinition
+			val referenceClassDefinition = referenceTypeDeclaration?.unit?.llvmClassDefinition
 				?: throw CompilerError(referenceType.source, "Missing class definition for type '$referenceType'.")
 			val matchesErrorType = constructor.buildPointerEqualTo(exceptionClass, referenceClassDefinition, "matchesErrorType")
 			constructor.buildJump(matchesErrorType, matchBlock, noMatchBlock)
@@ -102,7 +103,7 @@ class ErrorHandlingContext(override val model: ErrorHandlingContext, val mainBlo
 		constructor.select(previousBlock)
 	}
 
-	fun jumpTo(constructor: LlvmConstructor, source: Unit) {
+	fun jumpTo(constructor: LlvmConstructor, source: SemanticModel) {
 		val entryBlock = entryBlocks[source]
 		if(entryBlock == null) {
 			context.handleException(constructor, model.parent)

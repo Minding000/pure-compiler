@@ -17,7 +17,7 @@ internal class EntryPoint {
 		""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		assertDoesNotThrow {
-			lintResult.program.getEntryPoint("Test:run")
+			lintResult.program.toUnit().getEntrypoint("Test:run")
 		}
 	}
 
@@ -30,7 +30,7 @@ internal class EntryPoint {
 		""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		assertDoesNotThrow {
-			lintResult.program.getEntryPoint("Test:Main.run")
+			lintResult.program.toUnit().getEntrypoint("Test:Main.run")
 		}
 	}
 
@@ -38,7 +38,7 @@ internal class EntryPoint {
 	fun `detects malformed entry point path`() {
 		val lintResult = TestUtil.lint("")
 		assertThrows<UserError>("Malformed entry point path '123'.") {
-			lintResult.program.getEntryPoint("123")
+			lintResult.program.toUnit().getEntrypoint("123")
 		}
 	}
 
@@ -46,7 +46,7 @@ internal class EntryPoint {
 	fun `handles missing file name`() {
 		val lintResult = TestUtil.lint("")
 		assertThrows<UserError>("File '' not found.") {
-			lintResult.program.getEntryPoint(":run")
+			lintResult.program.toUnit().getEntrypoint(":run")
 		}
 	}
 
@@ -54,7 +54,7 @@ internal class EntryPoint {
 	fun `handles missing function name`() {
 		val lintResult = TestUtil.lint("")
 		assertThrows<UserError>("Function '' not found.") {
-			lintResult.program.getEntryPoint("Main:")
+			lintResult.program.toUnit().getEntrypoint("Main:")
 		}
 	}
 
@@ -62,7 +62,7 @@ internal class EntryPoint {
 	fun `detects nonexistent files`() {
 		val lintResult = TestUtil.lint("")
 		assertThrows<UserError>("File 'Nonexistent' not found.") {
-			lintResult.program.getEntryPoint("Nonexistent:main")
+			lintResult.program.toUnit().getEntrypoint("Nonexistent:main")
 		}
 	}
 
@@ -70,7 +70,7 @@ internal class EntryPoint {
 	fun `detects nonexistent objects`() {
 		val lintResult = TestUtil.lint("")
 		assertThrows<UserError>("Object 'Main' not found.") {
-			lintResult.program.getEntryPoint("Test:Main.run")
+			lintResult.program.toUnit().getEntrypoint("Test:Main.run")
 		}
 	}
 
@@ -79,7 +79,7 @@ internal class EntryPoint {
 	fun `detects nonexistent global functions`() {
 		val lintResult = TestUtil.lint("")
 		assertThrows<UserError>("Function 'run' not found.") {
-			lintResult.program.getEntryPoint("Test:run")
+			lintResult.program.toUnit().getEntrypoint("Test:run")
 		}
 	}
 
@@ -90,7 +90,7 @@ internal class EntryPoint {
 		""".trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		assertThrows<UserError>("Function 'run' not found.") {
-			lintResult.program.getEntryPoint("Test:Main.run")
+			lintResult.program.toUnit().getEntrypoint("Test:Main.run")
 		}
 	}
 }

@@ -1,7 +1,5 @@
 package components.semantic_model.values
 
-import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
@@ -19,7 +17,6 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 	protected open var staticValue: Value? = null
 	protected var positiveState: VariableTracker.VariableState? = null
 	protected var negativeState: VariableTracker.VariableState? = null
-	private var llvmValue: LlvmValue? = null
 	open val hasGenericType = false
 
 	open fun isAssignableTo(targetType: Type?): Boolean {
@@ -99,28 +96,6 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 			return ValueUnit(this)
 		}
 		TODO("${source.getStartString()}: '${javaClass.simpleName}.toUnit' is not implemented yet.")
-	}
-
-	open fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue? {
-		throw CompilerError(source, "Tried to access '${javaClass.simpleName}' LLVM location.")
-	}
-
-	fun getLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		var llvmValue = llvmValue
-		if(llvmValue == null) {
-			llvmValue = buildLlvmValue(constructor)
-			this.llvmValue = llvmValue
-		}
-		return llvmValue
-	}
-
-	override fun compile(constructor: LlvmConstructor) {
-		// In case it is not used as a value
-		buildLlvmValue(constructor)
-	}
-
-	open fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		TODO("${source.getStartString()}: '${javaClass.simpleName}.buildLlvmValue' is not implemented yet.")
 	}
 
 	override fun hashCode(): Int {

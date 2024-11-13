@@ -1,7 +1,6 @@
 package components.semantic_model.general
 
 import components.code_generation.llvm.models.general.Unit
-import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.Context
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.FunctionImplementation
@@ -85,21 +84,6 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 	}
 
 	open fun toUnit(): Unit? = null
-
-	open fun declare(constructor: LlvmConstructor) {
-		for(semanticModel in semanticModels)
-			semanticModel.declare(constructor)
-	}
-
-	open fun define(constructor: LlvmConstructor) {
-		for(semanticModel in semanticModels)
-			semanticModel.define(constructor)
-	}
-
-	open fun compile(constructor: LlvmConstructor) {
-		for(semanticModel in semanticModels)
-			semanticModel.compile(constructor)
-	}
 
 	open fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
 		//println("Checking '${javaClass.simpleName}' '$this' in '${getSurrounding<File>()?.file?.name}'")

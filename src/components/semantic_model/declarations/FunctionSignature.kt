@@ -240,7 +240,7 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 			val implicitSelfType = if(parentTypeDeclaration == context.primitiveCompilationTarget)
 				constructor.pointerType
 			else
-				parentTypeDeclaration.getLlvmReferenceType(constructor)
+				parentTypeDeclaration.unit.getLlvmReferenceType(constructor)
 			parameterTypes.add(Context.THIS_PARAMETER_INDEX, implicitSelfType)
 		}
 		return constructor.buildFunctionType(parameterTypes, getEffectiveReturnType().getLlvmType(constructor), isVariadic)

@@ -1,9 +1,6 @@
 package components.semantic_model.operations
 
-import components.code_generation.llvm.ValueConverter
 import components.code_generation.llvm.models.operations.IndexAccess
-import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.FunctionSignature
 import components.semantic_model.scopes.Scope
@@ -11,12 +8,10 @@ import components.semantic_model.types.ObjectType
 import components.semantic_model.types.Type
 import components.semantic_model.values.Operator
 import components.semantic_model.values.Value
-import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.access.AbstractMonomorphicAccess
 import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.resolution.NotFound
-import java.util.*
 import components.syntax_parser.syntax_tree.access.IndexAccess as IndexAccessSyntaxTree
 
 class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val target: Value, val typeParameters: List<Type>,
@@ -93,28 +88,6 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 	}
 
 	override fun toUnit() = IndexAccess(this, target.toUnit(), indices.map(Value::toUnit))
-
-	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		val signature = targetSignature?.original ?: throw CompilerError(source, "Index access is missing a target.")
-		return createLlvmGetterCall(constructor, signature)
-	}
-
-	private fun createLlvmGetterCall(constructor: LlvmConstructor, signature: FunctionSignature): LlvmValue {
-		val targetValue = target.getLlvmValue(constructor) //TODO convert (write test)
-		val parameters = LinkedList<LlvmValue>()
-		parameters.add(context.getExceptionParameter(constructor))
-		parameters.add(targetValue)
-		for((indexIndex, index) in indices.withIndex()) {
-			val parameterType = signature.getParameterTypeAt(indexIndex)
-			parameters.add(ValueConverter.convertIfRequired(this, constructor, index.getLlvmValue(constructor), index.effectiveType,
-				index.hasGenericType, parameterType, parameterType != signature.original.getParameterTypeAt(indexIndex)))
-		}
-		val functionAddress = context.resolveFunction(constructor, targetValue, signature.getIdentifier(getOperatorKind()))
-		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,
-			"_indexAccess_result")
-		context.continueRaise(constructor, this)
-		return returnValue
-	}
 
 	private fun getSignature(targetType: Type, includeParentType: Boolean = true): String {
 		var signature = ""

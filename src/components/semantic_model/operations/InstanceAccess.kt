@@ -1,13 +1,9 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.models.operations.InstanceAccess
-import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.Instance
-import components.semantic_model.declarations.TypeAlias
 import components.semantic_model.scopes.Scope
-import components.semantic_model.types.ObjectType
 import components.semantic_model.types.OptionalType
 import components.semantic_model.types.Type
 import components.semantic_model.values.VariableValue
@@ -43,16 +39,4 @@ class InstanceAccess(override val source: InstanceAccessSyntaxTree, scope: Scope
 	}
 
 	override fun toUnit(): VariableValueUnit = InstanceAccess(this)
-
-	override fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue {
-		val typeDeclaration = (providedType as? ObjectType)?.getTypeDeclaration()
-		if(typeDeclaration is TypeAlias) {
-			val instance = typeDeclaration.instances.find { instance -> instance.name == name }
-			if(instance != null)
-				return instance.llvmLocation
-		}
-		val objectType = effectiveType as? ObjectType
-			?: throw CompilerError(source, "Instance access is only allowed on object types.")
-		return context.resolveMember(constructor, objectType.getStaticLlvmValue(constructor), name, true)
-	}
 }

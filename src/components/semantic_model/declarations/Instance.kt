@@ -1,10 +1,6 @@
 package components.semantic_model.declarations
 
-import components.code_generation.llvm.ValueConverter
 import components.code_generation.llvm.models.declarations.Instance
-import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmValue
-import components.semantic_model.context.Context
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.ObjectType
 import components.semantic_model.types.SelfType
@@ -13,7 +9,6 @@ import components.semantic_model.values.Value
 import errors.internal.CompilerError
 import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.resolution.NotFound
-import java.util.*
 import components.syntax_parser.syntax_tree.definitions.Instance as InstanceSyntaxTree
 
 //TODO disallow instances in bound classes
@@ -74,47 +69,6 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 		val unit = Instance(this, valueParameters.map(Value::toUnit))
 		this.unit = unit
 		return unit
-	}
-
-	fun getLlvmValue(constructor: LlvmConstructor): LlvmValue {
-		val initializer = initializer ?: throw CompilerError(source, "Missing initializer in instance declaration.")
-		val exceptionAddress = context.getExceptionParameter(constructor)
-		val parameters = LinkedList<LlvmValue?>()
-		for((index, valueParameter) in valueParameters.withIndex())
-			parameters.add(ValueConverter.convertIfRequired(this, constructor, valueParameter.getLlvmValue(constructor),
-				valueParameter.providedType, initializer.getParameterTypeAt(index), conversions?.get(valueParameter)))
-		if(initializer.isVariadic) {
-			val fixedParameterCount = initializer.fixedParameters.size
-			val variadicParameterCount = parameters.size - fixedParameterCount
-			parameters.add(fixedParameterCount, constructor.buildInt32(variadicParameterCount))
-		}
-		if(initializer.parentTypeDeclaration.isLlvmPrimitive()) {
-			val signature = initializer.toString()
-			if(initializer.isNative)
-				return context.nativeRegistry.inlineNativePrimitiveInitializer(constructor, "$signature: Self", parameters)
-			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
-			return constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters, signature)
-		}
-		val typeDeclaration = initializer.parentTypeDeclaration
-		val instance = constructor.buildHeapAllocation(typeDeclaration.llvmType, "${typeDeclaration.name}_${name}_Instance")
-		val classDefinitionProperty = constructor.buildGetPropertyPointer(typeDeclaration.llvmType, instance,
-			Context.CLASS_DEFINITION_PROPERTY_INDEX, "classDefinitionProperty")
-		constructor.buildStore(typeDeclaration.llvmClassDefinition, classDefinitionProperty)
-		buildLlvmCommonPreInitializerCall(constructor, typeDeclaration, exceptionAddress, instance)
-		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
-		parameters.add(Context.THIS_PARAMETER_INDEX, instance)
-		constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters)
-		context.continueRaise(constructor, this)
-		return instance
-	}
-
-	private fun buildLlvmCommonPreInitializerCall(constructor: LlvmConstructor, typeDeclaration: TypeDeclaration,
-												  exceptionAddress: LlvmValue, newObject: LlvmValue) {
-		val parameters = LinkedList<LlvmValue?>()
-		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
-		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
-		constructor.buildFunctionCall(typeDeclaration.commonClassPreInitializer, parameters)
-		context.continueRaise(constructor, this)
 	}
 
 	override fun requiresFileRunner(): Boolean {

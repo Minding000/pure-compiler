@@ -1,7 +1,6 @@
 package components.semantic_model.declarations
 
 import components.code_generation.llvm.models.declarations.Parameter
-import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.scopes.MutableScope
@@ -59,14 +58,5 @@ class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: 
 		val unit = Parameter(this)
 		this.unit = unit
 		return unit
-	}
-
-	override fun compile(constructor: LlvmConstructor) {
-		if(isVariadic)
-			return
-		val function = constructor.getParentFunction()
-		val value = constructor.getParameter(function, index)
-		llvmLocation = constructor.buildStackAllocation(constructor.getParameterType(function, index), name)
-		constructor.buildStore(value, llvmLocation)
 	}
 }

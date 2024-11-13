@@ -1,10 +1,6 @@
 package components.semantic_model.operations
 
-import components.code_generation.llvm.ValueConverter
 import components.code_generation.llvm.models.operations.BinaryModification
-import components.code_generation.llvm.wrapper.LlvmConstructor
-import components.code_generation.llvm.wrapper.LlvmValue
-import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.FunctionSignature
@@ -21,7 +17,6 @@ import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.access.AbstractMonomorphicAccess
 import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.resolution.NotFound
-import java.util.*
 import components.syntax_parser.syntax_tree.operations.BinaryModification as BinaryModificationSyntaxTree
 
 class BinaryModification(override val source: BinaryModificationSyntaxTree, scope: Scope, val target: Value, val modifier: Value,
@@ -107,142 +102,4 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 	}
 
 	override fun toUnit() = BinaryModification(this, target.toUnit(), modifier.toUnit())
-
-	//TODO test optional target (also for other operators)
-	override fun compile(constructor: LlvmConstructor) {
-		val targetValue = ValueConverter.convertIfRequired(this, constructor, target.getLlvmValue(constructor),
-			target.effectiveType, target.hasGenericType, target.effectiveType, false)
-		val modifierType = targetSignature?.parameterTypes?.firstOrNull() ?: modifier.effectiveType
-		val originalModifierType = targetSignature?.original?.parameterTypes?.firstOrNull() ?: modifier.effectiveType
-		var modifierValue = ValueConverter.convertIfRequired(this, constructor, modifier.getLlvmValue(constructor),
-			modifier.effectiveType, modifier.hasGenericType, modifierType, modifierType != originalModifierType,
-			conversions?.get(modifier))
-		val isTargetFloat = SpecialType.FLOAT.matches(target.effectiveType)
-		val isTargetInteger = SpecialType.INTEGER.matches(target.effectiveType)
-		val isTargetPrimitiveNumber = SpecialType.BYTE.matches(target.effectiveType) || isTargetInteger || isTargetFloat
-		val isModifierFloat = SpecialType.FLOAT.matches(modifier.effectiveType)
-		val isModifierInteger = SpecialType.INTEGER.matches(modifier.effectiveType)
-		val isModifierPrimitiveNumber = SpecialType.BYTE.matches(modifier.effectiveType) || isModifierInteger || isModifierFloat
-		if(isTargetPrimitiveNumber && isModifierPrimitiveNumber) {
-			val isFloatOperation = isTargetFloat || isModifierFloat
-			val isIntegerOperation = isTargetInteger || isModifierInteger
-			if(isFloatOperation) {
-				if(isTargetInteger)
-					throw CompilerError(source, "Integer target with float modifier in binary modification.")
-				else if(isModifierInteger)
-					modifierValue = constructor.buildCastFromSignedIntegerToFloat(modifierValue, "_implicitlyCastBinaryModifier")
-			} else if(isIntegerOperation) {
-				if(!isTargetInteger)
-					throw CompilerError(source, "Byte target with integer modifier in binary modification.")
-				else if(!isModifierInteger)
-					modifierValue = constructor.buildCastFromByteToInteger(modifierValue, "_implicitlyCastBinaryModifier")
-			}
-			val intermediateResultName = "_modifiedValue"
-			val operation = when(kind) {
-				Operator.Kind.PLUS_EQUALS -> {
-					if(isFloatOperation) {
-						constructor.buildFloatAddition(targetValue, modifierValue, intermediateResultName)
-					} else {
-						val function = if(isIntegerOperation)
-							context.externalFunctions.si32Addition
-						else
-							context.externalFunctions.si8Addition
-						context.raiseOnOverflow(constructor, this, targetValue, modifierValue, function,
-							"Addition overflowed", intermediateResultName)
-					}
-				}
-				Operator.Kind.MINUS_EQUALS -> {
-					if(isFloatOperation) {
-						constructor.buildFloatSubtraction(targetValue, modifierValue, intermediateResultName)
-					} else {
-						val function = if(isIntegerOperation)
-							context.externalFunctions.si32Subtraction
-						else
-							context.externalFunctions.si8Subtraction
-						context.raiseOnOverflow(constructor, this, targetValue, modifierValue, function,
-							"Subtraction overflowed", intermediateResultName)
-					}
-				}
-				Operator.Kind.STAR_EQUALS -> {
-					if(isFloatOperation) {
-						constructor.buildFloatMultiplication(targetValue, modifierValue, intermediateResultName)
-					} else {
-						val function = if(isIntegerOperation)
-							context.externalFunctions.si32Multiplication
-						else
-							context.externalFunctions.si8Multiplication
-						context.raiseOnOverflow(constructor, this, targetValue, modifierValue, function,
-							"Multiplication overflowed", intermediateResultName)
-					}
-				}
-				Operator.Kind.SLASH_EQUALS -> {
-					val noDivisionByZeroBlock = constructor.createBlock("validDivision")
-					val divisionByZeroBlock = constructor.createBlock("divisionByZero")
-					val previousBlock = constructor.getCurrentBlock()
-					constructor.select(divisionByZeroBlock)
-					if(context.nativeRegistry.has(SpecialType.EXCEPTION)) {
-						context.raiseException(constructor, this, "Division by zero")
-					} else {
-						context.panic(constructor, "Division by zero")
-						constructor.markAsUnreachable()
-					}
-					constructor.select(previousBlock)
-					if(isFloatOperation) {
-						val isDivisorZero = constructor.buildFloatEqualTo(modifierValue, constructor.buildFloat(0.0), "isDivisorZero")
-						constructor.buildJump(isDivisorZero, divisionByZeroBlock, noDivisionByZeroBlock)
-						constructor.select(noDivisionByZeroBlock)
-						constructor.buildFloatDivision(targetValue, modifierValue, intermediateResultName)
-					} else {
-						val zero = if(isIntegerOperation)
-							constructor.buildInt32(0)
-						else
-							constructor.buildByte(0)
-						val isDivisorZero = constructor.buildSignedIntegerEqualTo(modifierValue, zero, "isDivisorZero")
-						constructor.buildJump(isDivisorZero, divisionByZeroBlock, noDivisionByZeroBlock)
-						constructor.select(noDivisionByZeroBlock)
-						val noOverflowBlock = constructor.createBlock("noOverflow")
-						val overflowBlock = constructor.createBlock("overflow")
-						val negativeMin = if(isIntegerOperation)
-							constructor.buildInt32(Int.MIN_VALUE)
-						else
-							constructor.buildByte(Byte.MIN_VALUE)
-						val isDividendNegativeMin = constructor.buildSignedIntegerEqualTo(targetValue, negativeMin, "isDividendNegativeMin")
-						val negativeOne = if(isIntegerOperation)
-							constructor.buildInt32(-1)
-						else
-							constructor.buildByte(-1)
-						val isDivisorNegativeOne = constructor.buildSignedIntegerEqualTo(modifierValue, negativeOne, "isDivisorNegativeOne")
-						val doesDivisionOverflow = constructor.buildAnd(isDividendNegativeMin, isDivisorNegativeOne, "doesDivisionOverflow")
-						constructor.buildJump(doesDivisionOverflow, overflowBlock, noOverflowBlock)
-						constructor.select(overflowBlock)
-						if(context.nativeRegistry.has(SpecialType.EXCEPTION)) {
-							context.raiseException(constructor, this, "Division overflowed")
-						} else {
-							context.panic(constructor, "Division overflowed")
-							constructor.markAsUnreachable()
-						}
-						constructor.select(noOverflowBlock)
-						constructor.buildSignedIntegerDivision(targetValue, modifierValue, intermediateResultName)
-					}
-				}
-				else -> throw CompilerError(source, "Unknown native unary integer modification of kind '$kind'.")
-			}
-			constructor.buildStore(ValueConverter.convertIfRequired(this, constructor, operation, target.effectiveType,
-				false, target.effectiveType, target.hasGenericType), target.getLlvmLocation(constructor))
-			return
-		}
-		val signature = targetSignature?.original ?: throw CompilerError(source, "Binary modification is missing a target.")
-		createLlvmFunctionCall(constructor, signature, targetValue, modifierValue)
-	}
-
-	private fun createLlvmFunctionCall(constructor: LlvmConstructor, signature: FunctionSignature, targetValue: LlvmValue,
-									   modifierValue: LlvmValue) {
-		val parameters = LinkedList<LlvmValue>()
-		parameters.add(context.getExceptionParameter(constructor))
-		parameters.add(targetValue)
-		parameters.add(modifierValue)
-		val functionAddress = context.resolveFunction(constructor, targetValue, signature.getIdentifier(kind))
-		constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters)
-		context.continueRaise(constructor, this)
-	}
 }

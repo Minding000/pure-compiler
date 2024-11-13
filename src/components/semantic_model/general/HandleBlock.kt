@@ -1,8 +1,6 @@
 package components.semantic_model.general
 
 import components.code_generation.llvm.models.general.HandleBlock
-import components.code_generation.llvm.wrapper.LlvmBlock
-import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ValueDeclaration
 import components.semantic_model.scopes.Scope
@@ -11,7 +9,6 @@ import components.syntax_parser.syntax_tree.general.HandleBlock as HandleBlockSy
 
 class HandleBlock(override val source: HandleBlockSyntaxTree, scope: Scope, val eventType: Type, val eventVariable: ValueDeclaration?,
 				  val block: StatementBlock): SemanticModel(source, scope) {
-	private lateinit var entryBlock: LlvmBlock
 	override val isInterruptingExecutionBasedOnStructure
 		get() = block.isInterruptingExecutionBasedOnStructure
 	override val isInterruptingExecutionBasedOnStaticEvaluation
@@ -28,22 +25,4 @@ class HandleBlock(override val source: HandleBlockSyntaxTree, scope: Scope, val 
 	}
 
 	override fun toUnit() = HandleBlock(this, eventVariable?.toUnit(), block.toUnit())
-
-	override fun compile(constructor: LlvmConstructor) {
-		val function = constructor.getParentFunction()
-		entryBlock = constructor.createBlock(function, "handle_block_entry")
-		constructor.select(entryBlock)
-		val exceptionParameter = context.getExceptionParameter(constructor, function)
-		if(eventVariable != null) {
-			val exception = constructor.buildLoad(constructor.pointerType, exceptionParameter, "exception")
-			eventVariable.compile(constructor)
-			constructor.buildStore(exception, eventVariable.llvmLocation)
-		}
-		constructor.buildStore(constructor.nullPointer, exceptionParameter)
-		block.compile(constructor)
-	}
-
-	fun jumpTo(constructor: LlvmConstructor) {
-		constructor.buildJump(entryBlock)
-	}
 }

@@ -1,8 +1,6 @@
 package components.semantic_model.control_flow
 
-import components.code_generation.llvm.ValueConverter
 import components.code_generation.llvm.models.control_flow.ReturnStatement
-import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ComputedPropertyDeclaration
@@ -109,21 +107,4 @@ class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val val
 	}
 
 	override fun toUnit() = ReturnStatement(this, value?.toUnit())
-
-	override fun compile(constructor: LlvmConstructor) {
-		val errorHandlingContext = scope.getSurroundingAlwaysBlock()
-		if(value == null) {
-			errorHandlingContext?.runAlwaysBlock(constructor)
-			constructor.buildReturn()
-			return
-		}
-		val targetFunction = targetFunction
-		val targetComputedProperty = targetComputedProperty
-		val declaredReturnType = targetFunction?.signature?.returnType ?: targetComputedProperty?.getterReturnType
-		val isTargetTypeGeneric = targetFunction?.signature?.hasGenericType ?: (targetComputedProperty?.hasGenericType ?: false)
-		val returnValue = ValueConverter.convertIfRequired(this, constructor, value.getLlvmValue(constructor), value.effectiveType,
-			value.hasGenericType, declaredReturnType, isTargetTypeGeneric, conversion)
-		errorHandlingContext?.runAlwaysBlock(constructor)
-		constructor.buildReturn(returnValue)
-	}
 }

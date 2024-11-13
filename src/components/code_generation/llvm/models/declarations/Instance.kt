@@ -28,7 +28,7 @@ class Instance(override val model: Instance, val valueParameters: List<Value>): 
 			if(initializer.isNative)
 				return context.nativeRegistry.inlineNativePrimitiveInitializer(constructor, "$signature: Self", parameters)
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
-			return constructor.buildFunctionCall(initializer.llvmType, initializer.llvmValue, parameters, signature)
+			return constructor.buildFunctionCall(initializer.unit.llvmType, initializer.unit.llvmValue, parameters, signature)
 		}
 		val typeDeclaration = initializer.parentTypeDeclaration.unit
 		val instance = constructor.buildHeapAllocation(typeDeclaration.llvmType, "${typeDeclaration.model.name}_${model.name}_Instance")
