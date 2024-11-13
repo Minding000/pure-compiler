@@ -1,6 +1,7 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.operations.MemberAccess
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmType
 import components.code_generation.llvm.wrapper.LlvmValue
@@ -104,6 +105,8 @@ class MemberAccess(override val source: MemberAccessSyntaxTree, scope: Scope, va
 		}
 		return possibleTargetTypes
 	}
+
+	override fun toUnit() = MemberAccess(this, target.toUnit(), member.toUnit())
 
 	override fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue {
 		if(member !is VariableValue)

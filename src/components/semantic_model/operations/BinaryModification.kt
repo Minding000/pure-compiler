@@ -1,6 +1,7 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.operations.BinaryModification
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.SpecialType
@@ -104,6 +105,8 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 			context.addIssue(AbstractMonomorphicAccess(source, "operator",
 				signature.toString(false, kind), valueType))
 	}
+
+	override fun toUnit() = BinaryModification(this, target.toUnit(), modifier.toUnit())
 
 	//TODO test optional target (also for other operators)
 	override fun compile(constructor: LlvmConstructor) {

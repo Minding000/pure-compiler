@@ -1,5 +1,6 @@
 package components.semantic_model.control_flow
 
+import components.code_generation.llvm.models.control_flow.RaiseStatement
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ComputedPropertyDeclaration
@@ -14,9 +15,9 @@ import components.syntax_parser.syntax_tree.control_flow.RaiseStatement as Raise
 class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope, val value: Value): SemanticModel(source, scope) {
 	override val isInterruptingExecutionBasedOnStructure = true
 	override val isInterruptingExecutionBasedOnStaticEvaluation = true
-	private var targetInitializer: InitializerDefinition? = null
-	private var targetFunction: FunctionImplementation? = null
-	private var targetComputedProperty: ComputedPropertyDeclaration? = null
+	var targetInitializer: InitializerDefinition? = null
+	var targetFunction: FunctionImplementation? = null
+	var targetComputedProperty: ComputedPropertyDeclaration? = null
 
 	init {
 		addSemanticModels(value)
@@ -47,6 +48,8 @@ class RaiseStatement(override val source: RaiseStatementSyntaxTree, scope: Scope
 		value.analyseDataFlow(tracker)
 		tracker.registerRaiseStatement()
 	}
+
+	override fun toUnit() = RaiseStatement(this, value.toUnit())
 
 	override fun compile(constructor: LlvmConstructor) {
 		val exceptionParameter = context.getExceptionParameter(constructor)

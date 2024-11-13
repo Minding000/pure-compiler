@@ -6,6 +6,7 @@ import components.semantic_model.context.VariableTracker
 import components.semantic_model.scopes.FileScope
 import logger.issues.resolution.ReferencedFileNotFound
 import java.util.*
+import components.code_generation.llvm.models.general.File as FileUnit
 import components.syntax_parser.syntax_tree.general.File as FileSyntaxTree
 import source_structure.File as SourceFile
 
@@ -56,6 +57,8 @@ class File(override val source: FileSyntaxTree, val file: SourceFile, override v
 		variableTracker.calculateEndState()
 		variableTracker.validate()
 	}
+
+	override fun toUnit() = FileUnit(this)
 
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)

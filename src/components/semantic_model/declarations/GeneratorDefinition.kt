@@ -3,6 +3,7 @@ package components.semantic_model.declarations
 import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.scopes.BlockScope
 import components.semantic_model.types.Type
+import components.code_generation.llvm.models.declarations.ValueDeclaration as ValueDeclarationUnit
 import components.syntax_parser.syntax_tree.definitions.GeneratorDefinition as GeneratorDefinitionSyntaxTree
 
 class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, override val scope: BlockScope, name: String,
@@ -17,5 +18,9 @@ class GeneratorDefinition(override val source: GeneratorDefinitionSyntaxTree, ov
 	override fun validate() {
 		super.validate()
 		scope.validate()
+	}
+
+	override fun toUnit(): ValueDeclarationUnit {
+		TODO("Not yet implemented")
 	}
 }

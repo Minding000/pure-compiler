@@ -1,5 +1,6 @@
 package components.semantic_model.declarations
 
+import components.code_generation.llvm.models.declarations.LocalValueDeclaration
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.StaticType
@@ -17,5 +18,11 @@ class LocalVariableDeclaration(source: SyntaxTreeNode, scope: MutableScope, name
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		super.analyseDataFlow(tracker)
 		tracker.declare(this, providedType is StaticType)
+	}
+
+	override fun toUnit(): LocalValueDeclaration {
+		val unit = LocalValueDeclaration(this, value?.toUnit())
+		this.unit = unit
+		return unit
 	}
 }

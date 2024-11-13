@@ -1,5 +1,6 @@
 package components.semantic_model.values
 
+import components.code_generation.llvm.models.values.SelfReference
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
@@ -12,7 +13,7 @@ import logger.issues.resolution.SelfReferenceOutsideOfTypeDefinition
 import logger.issues.resolution.SelfReferenceSpecifierNotBound
 import components.syntax_parser.syntax_tree.literals.SelfReference as SelfReferenceSyntaxTree
 
-open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Scope, private val specifier: ObjectType?):
+open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Scope, val specifier: ObjectType?):
 	Value(source, scope) {
 	var typeDeclaration: TypeDeclaration? = null
 
@@ -58,6 +59,8 @@ open class SelfReference(override val source: SelfReferenceSyntaxTree, scope: Sc
 		}
 		return false
 	}
+
+	override fun toUnit() = SelfReference(this)
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		var currentValue = context.getThisParameter(constructor)

@@ -19,6 +19,7 @@ import logger.issues.declaration.DeclarationMissingTypeOrValue
 import logger.issues.resolution.ConversionAmbiguity
 import org.bytedeco.llvm.LLVM.LLVMValueRef
 import java.util.*
+import components.code_generation.llvm.models.declarations.ValueDeclaration as ValueDeclarationUnit
 
 abstract class ValueDeclaration(override val source: SyntaxTreeNode, override val scope: MutableScope, val name: String,
 								var providedType: Type? = null, value: Value? = null, val isConstant: Boolean = true,
@@ -28,6 +29,8 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 	open val value = value
 	val usages = LinkedList<VariableValue>()
 	var conversion: InitializerDefinition? = null
+	//TODO set this in each sub-class
+	lateinit var unit: ValueDeclarationUnit
 	lateinit var llvmLocation: LLVMValueRef
 
 	init {
@@ -85,6 +88,8 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		}
 		context.addIssue(TypeNotAssignable(source, sourceType, targetType))
 	}
+
+	abstract override fun toUnit(): ValueDeclarationUnit
 
 	override fun declare(constructor: LlvmConstructor) {
 		super.declare(constructor)

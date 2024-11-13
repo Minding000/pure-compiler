@@ -15,6 +15,7 @@ class SemanticModelGenerator(val context: Context) {
 		logger.addPhase("Literal scope resolution")
 		for((specialType, pathParts) in specialTypePaths)
 			context.nativeRegistry.specialTypeScopes[specialType] = getSpecialTypeFileScope(semanticProgramModel, pathParts) ?: continue
+		context.nativeRegistry.specialTypePaths.putAll(specialTypePaths)
 		logger.addPhase("Declaration")
 		semanticProgramModel.declare()
 		logger.addPhase("File reference resolution")

@@ -20,7 +20,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
-internal class FunctionResolution {
+internal class FunctionDefinitionResolution {
 
 	@Test
 	fun `resolves function calls`() {

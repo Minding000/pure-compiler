@@ -10,16 +10,19 @@ import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import errors.internal.CompilerError
 import java.util.*
+import components.code_generation.llvm.models.declarations.TypeAlias as TypeAliasUnit
 import components.syntax_parser.syntax_tree.definitions.TypeAlias as TypeAliasSyntaxTree
 
 // Consideration:
 // Should TypeAliases mask the instances of the aliased type?
 // Should the behaviour be toggleable using a keyword flag e.g. "masking alias ExitCode = Int"
 class TypeAlias(override val source: TypeAliasSyntaxTree, scope: TypeScope, name: String, val referenceType: Type,
-				val instances: List<Instance>): TypeDeclaration(source, name, scope, null, null, instances) {
+				val instances: List<Instance>):
+	TypeDeclaration(source, name, scope, null, null, instances.toMutableList()) {
 	override val isDefinition = false
 	private var hasDeterminedEffectiveType = false
 	private var effectiveType = referenceType.effectiveType
+	val finalEffectiveType get() = effectiveType
 
 	init {
 		scope.typeDeclaration = this
@@ -60,6 +63,8 @@ class TypeAlias(override val source: TypeAliasSyntaxTree, scope: TypeScope, name
 	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
 		return referenceType.getConversionsFrom(sourceType)
 	}
+
+	override fun toUnit() = TypeAliasUnit(this, instances.map(Instance::toUnit))
 
 	override fun define(constructor: LlvmConstructor) {
 		super.declare(constructor)

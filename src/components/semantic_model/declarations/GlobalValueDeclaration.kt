@@ -1,5 +1,6 @@
 package components.semantic_model.declarations
 
+import components.code_generation.llvm.models.declarations.GlobalValueDeclaration
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
@@ -11,5 +12,11 @@ class GlobalValueDeclaration(source: SyntaxTreeNode, scope: MutableScope, name: 
 
 	override fun requiresFileRunner(): Boolean {
 		return providedType !is StaticType
+	}
+
+	override fun toUnit(): GlobalValueDeclaration {
+		val unit = GlobalValueDeclaration(this, value?.toUnit())
+		this.unit = unit
+		return unit
 	}
 }

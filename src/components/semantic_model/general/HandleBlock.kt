@@ -1,5 +1,6 @@
 package components.semantic_model.general
 
+import components.code_generation.llvm.models.general.HandleBlock
 import components.code_generation.llvm.wrapper.LlvmBlock
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.VariableTracker
@@ -25,6 +26,8 @@ class HandleBlock(override val source: HandleBlockSyntaxTree, scope: Scope, val 
 			tracker.declare(eventVariable, true)
 		block.analyseDataFlow(tracker)
 	}
+
+	override fun toUnit() = HandleBlock(this, eventVariable?.toUnit(), block.toUnit())
 
 	override fun compile(constructor: LlvmConstructor) {
 		val function = constructor.getParentFunction()

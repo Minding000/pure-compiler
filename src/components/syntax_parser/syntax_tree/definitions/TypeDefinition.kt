@@ -90,7 +90,7 @@ class TypeDefinition(private val identifier: Identifier, private val type: Word,
 		return typeDefinition
 	}
 
-	private fun getSemanticMemberModels(typeScope: TypeScope, definitionType: WordAtom): List<SemanticModel> {
+	private fun getSemanticMemberModels(typeScope: TypeScope, definitionType: WordAtom): MutableList<SemanticModel> {
 		val explicitMembers = getSemanticModelsOfExplicitlyDeclaredMembers(typeScope, definitionType)
 		val members = LinkedList<SemanticModel>()
 		val functions = HashMap<String, Function>()

@@ -1,5 +1,6 @@
 package components.semantic_model.declarations
 
+import components.code_generation.llvm.models.declarations.Initializer
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmType
 import components.code_generation.llvm.wrapper.LlvmValue
@@ -7,6 +8,7 @@ import components.semantic_model.context.ComparisonResult
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
+import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.BlockScope
 import components.semantic_model.types.PluralType
@@ -29,8 +31,8 @@ import kotlin.math.max
 //TODO disallow converting initializers in bound classes
 class InitializerDefinition(override val source: SyntaxTreeNode, override val scope: BlockScope,
 							val localTypeParameters: List<TypeDeclaration> = emptyList(), val parameters: List<Parameter> = emptyList(),
-							val body: SemanticModel? = null, override val isAbstract: Boolean = false, val isConverting: Boolean = false,
-							val isNative: Boolean = false, val isOverriding: Boolean = false):
+							val body: ErrorHandlingContext? = null, override val isAbstract: Boolean = false,
+							val isConverting: Boolean = false, val isNative: Boolean = false, val isOverriding: Boolean = false):
 	SemanticModel(source, scope), MemberDeclaration, Callable {
 	override lateinit var parentTypeDeclaration: TypeDeclaration
 	override val memberIdentifier
@@ -45,6 +47,7 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 	lateinit var llvmValue: LlvmValue
 	lateinit var llvmType: LlvmType
+	lateinit var unit: Initializer
 
 	init {
 		scope.semanticModel = this
@@ -291,6 +294,12 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 	// - disallow 'return' in primitive initializer
 	// - disallow 'this' in primitive initializer
 	// - require initializer call in primitive initializer as last statement of each block
+
+	override fun toUnit(): Initializer {
+		val unit = Initializer(this, parameters.map(Parameter::toUnit), body?.toUnit())
+		this.unit = unit
+		return unit
+	}
 
 	override fun declare(constructor: LlvmConstructor) {
 		if(isAbstract)

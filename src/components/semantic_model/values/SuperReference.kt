@@ -1,5 +1,6 @@
 package components.semantic_model.values
 
+import components.code_generation.llvm.models.values.SuperReference
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.declarations.TypeDeclaration
@@ -77,6 +78,8 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 			return true
 		return false
 	}
+
+	override fun toUnit() = SuperReference(this)
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		return context.getThisParameter(constructor)

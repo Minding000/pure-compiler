@@ -20,6 +20,7 @@ import logger.issues.access.StaticAccessFromInstanceContext
 import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.initialization.NotInitialized
 import logger.issues.resolution.NotFound
+import components.code_generation.llvm.models.values.VariableValue as VariableValueUnit
 
 open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val name: String): Value(source, scope) {
 	var declaration: ValueDeclaration? = null
@@ -95,6 +96,8 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 		}
 	}
 
+	override fun toUnit() = VariableValueUnit(this)
+
 	override fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue? {
 		if(declaration is ComputedPropertyDeclaration)
 			throw CompilerError(source, "Computed properties do not have a location.")
@@ -107,7 +110,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 				if(!currentTypeDeclaration.isBound)
 					throw CompilerError(source,
 						"Type declaration of property referenced by variable value not found in its surrounding type declaration.")
-				val parentProperty = constructor.buildGetPropertyPointer(currentTypeDeclaration.llvmType, currentValue,
+				val parentProperty = constructor.buildGetPropertyPointer(currentTypeDeclaration.unit.llvmType, currentValue,
 					Context.PARENT_PROPERTY_INDEX, "_parentProperty")
 				currentValue = constructor.buildLoad(constructor.pointerType, parentProperty, "_parent")
 				currentTypeDeclaration = currentTypeDeclaration.parentTypeDeclaration
@@ -116,7 +119,7 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 			}
 			context.resolveMember(constructor, currentValue, name, (declaration as? InterfaceMember)?.isStatic ?: false)
 		} else {
-			declaration?.llvmLocation
+			declaration?.unit?.llvmLocation
 		}
 	}
 

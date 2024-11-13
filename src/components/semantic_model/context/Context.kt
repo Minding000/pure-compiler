@@ -77,6 +77,7 @@ class Context {
 		return constructor.getParameter(function, THIS_PARAMETER_INDEX)
 	}
 
+	//TODO accept Unit as second parameter instead of SemanticModel
 	fun continueRaise(constructor: LlvmConstructor, model: SemanticModel) {
 		val parent = model.parent
 		if(parent is Try && parent.isOptional)

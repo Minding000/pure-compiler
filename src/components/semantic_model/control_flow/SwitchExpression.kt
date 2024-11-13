@@ -1,5 +1,6 @@
 package components.semantic_model.control_flow
 
+import components.code_generation.llvm.models.control_flow.SwitchExpression
 import components.code_generation.llvm.wrapper.LlvmBlock
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
@@ -225,6 +226,8 @@ class SwitchExpression(override val source: SwitchStatementSyntaxTree, scope: Sc
 		//}
 		return false
 	}
+
+	override fun toUnit() = SwitchExpression(this, subject.toUnit(), cases.map(Case::toUnit), elseBranch?.toUnit())
 
 	override fun compile(constructor: LlvmConstructor) {
 		val function = constructor.getParentFunction()

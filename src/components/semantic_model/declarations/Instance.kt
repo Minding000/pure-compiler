@@ -1,6 +1,7 @@
 package components.semantic_model.declarations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.declarations.Instance
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
@@ -67,6 +68,12 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 		signature += valueParameters.joinToString { parameter -> parameter.providedType.toString() }
 		signature += ")"
 		return signature
+	}
+
+	override fun toUnit(): Instance {
+		val unit = Instance(this, valueParameters.map(Value::toUnit))
+		this.unit = unit
+		return unit
 	}
 
 	fun getLlvmValue(constructor: LlvmConstructor): LlvmValue {

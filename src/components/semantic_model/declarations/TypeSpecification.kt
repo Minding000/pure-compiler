@@ -26,6 +26,8 @@ class TypeSpecification(override val source: TypeSpecificationSyntaxTree, scope:
 		providedType = baseType //TODO actually return <TypeParameters>StaticType here (similar to how ObjectTypes handle type parameters)
 	}
 
+	override fun toUnit() = baseValue.toUnit()
+
 	override fun toString(): String {
 		val globalTypeList = globalTypes.joinToString(", ", "<", ">")
 		return "$globalTypeList${baseValue.name}"

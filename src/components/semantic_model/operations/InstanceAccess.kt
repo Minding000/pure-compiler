@@ -1,5 +1,6 @@
 package components.semantic_model.operations
 
+import components.code_generation.llvm.models.operations.InstanceAccess
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.VariableTracker
@@ -11,6 +12,7 @@ import components.semantic_model.types.OptionalType
 import components.semantic_model.types.Type
 import components.semantic_model.values.VariableValue
 import errors.internal.CompilerError
+import components.code_generation.llvm.models.values.VariableValue as VariableValueUnit
 import components.syntax_parser.syntax_tree.access.InstanceAccess as InstanceAccessSyntaxTree
 
 class InstanceAccess(override val source: InstanceAccessSyntaxTree, scope: Scope, name: String): VariableValue(source, scope, name) {
@@ -39,6 +41,8 @@ class InstanceAccess(override val source: InstanceAccessSyntaxTree, scope: Scope
 			return isAssignableTo(targetType.baseType)
 		return targetType?.interfaceScope?.hasInstance(name) ?: false
 	}
+
+	override fun toUnit(): VariableValueUnit = InstanceAccess(this)
 
 	override fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue {
 		val typeDeclaration = (providedType as? ObjectType)?.getTypeDeclaration()

@@ -7,6 +7,7 @@ import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.LiteralType
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
+import components.code_generation.llvm.models.values.BooleanLiteral as BooleanLiteralUnit
 
 class BooleanLiteral(override val source: SyntaxTreeNode, scope: Scope, val value: Boolean): LiteralValue(source, scope) {
 
@@ -18,6 +19,8 @@ class BooleanLiteral(override val source: SyntaxTreeNode, scope: Scope, val valu
 		providedType = LiteralType(source, scope, SpecialType.BOOLEAN)
 		addSemanticModels(providedType)
 	}
+
+	override fun toUnit() = BooleanLiteralUnit(this)
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		return constructor.buildBoolean(value)

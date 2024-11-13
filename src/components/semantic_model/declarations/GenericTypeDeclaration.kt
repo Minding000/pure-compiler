@@ -4,6 +4,7 @@ import components.semantic_model.scopes.TypeScope
 import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import kotlin.properties.Delegates
+import components.code_generation.llvm.models.declarations.GenericTypeDeclaration as GenericTypeDeclarationUnit
 import components.syntax_parser.syntax_tree.definitions.Parameter as ParameterSyntaxTree
 
 class GenericTypeDeclaration(override val source: ParameterSyntaxTree, name: String, scope: TypeScope, superType: Type?):
@@ -36,5 +37,11 @@ class GenericTypeDeclaration(override val source: ParameterSyntaxTree, name: Str
 
 	override fun getConversionsFrom(sourceType: Type): List<InitializerDefinition> {
 		return getLinkedSuperType()?.getConversionsFrom(sourceType) ?: emptyList()
+	}
+
+	override fun toUnit(): GenericTypeDeclarationUnit {
+		val unit = GenericTypeDeclarationUnit(this, staticValueDeclaration.toUnit())
+		this.unit = unit
+		return unit
 	}
 }

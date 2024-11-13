@@ -1,5 +1,6 @@
 package components.semantic_model.declarations
 
+import components.code_generation.llvm.models.declarations.Enum
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.TypeScope
 import components.semantic_model.types.ObjectType
@@ -8,7 +9,7 @@ import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?, superType: Type?,
-		   members: List<SemanticModel>, isBound: Boolean):
+		   members: MutableList<SemanticModel>, isBound: Boolean):
 	TypeDeclaration(source, name, scope, explicitParentType, superType, members, isBound) {
 
 	init {
@@ -34,5 +35,11 @@ class Enum(override val source: TypeDefinitionSyntaxTree, name: String, scope: T
 	override fun validate() {
 		super.validate()
 		scope.ensureNoAbstractMembers()
+	}
+
+	override fun toUnit(): Enum {
+		val unit = Enum(this, members.mapNotNull(SemanticModel::toUnit), staticValueDeclaration.toUnit())
+		this.unit = unit
+		return unit
 	}
 }

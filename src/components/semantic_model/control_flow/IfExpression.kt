@@ -1,5 +1,6 @@
 package components.semantic_model.control_flow
 
+import components.code_generation.llvm.models.control_flow.IfExpression
 import components.code_generation.llvm.wrapper.LlvmBlock
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
@@ -120,6 +121,8 @@ class IfExpression(override val source: IfStatementSyntaxTree, scope: Scope, val
 				context.addIssue(BranchMissesValue(negativeBranch.source, EXPRESSION_TYPE))
 		}
 	}
+
+	override fun toUnit() = IfExpression(this, condition.toUnit(), positiveBranch.toUnit(), negativeBranch?.toUnit())
 
 	override fun compile(constructor: LlvmConstructor) {
 		val function = constructor.getParentFunction()

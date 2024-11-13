@@ -1,5 +1,6 @@
 package components.semantic_model.declarations
 
+import components.code_generation.llvm.models.declarations.Class
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.TypeScope
 import components.semantic_model.types.ObjectType
@@ -8,7 +9,7 @@ import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.definitions.TypeDefinition as TypeDefinitionSyntaxTree
 
 class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: TypeScope, explicitParentType: ObjectType?,
-			superType: Type?, members: List<SemanticModel>, val isAbstract: Boolean, isBound: Boolean, val isCopied: Boolean,
+			superType: Type?, members: MutableList<SemanticModel>, val isAbstract: Boolean, isBound: Boolean, val isCopied: Boolean,
 			val isNative: Boolean, val isMutable: Boolean):
 	TypeDeclaration(source, name, scope, explicitParentType, superType, members, isBound) {
 
@@ -42,5 +43,11 @@ class Class(override val source: TypeDefinitionSyntaxTree, name: String, scope: 
 		return scope.memberDeclarations.any { memberDeclaration ->
 			memberDeclaration is FunctionImplementation && memberDeclaration.isMonomorphic && !memberDeclaration.isAbstract
 		}
+	}
+
+	override fun toUnit(): Class {
+		val unit = Class(this, members.mapNotNull(SemanticModel::toUnit), staticValueDeclaration.toUnit())
+		this.unit = unit
+		return unit
 	}
 }

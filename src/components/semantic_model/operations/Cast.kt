@@ -1,6 +1,7 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.operations.Cast
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.SpecialType
@@ -130,6 +131,8 @@ class Cast(override val source: CastSyntaxTree, scope: Scope, val subject: Value
 			}
 		}
 	}
+
+	override fun toUnit() = Cast(this, subject.toUnit(), variableDeclaration?.toUnit())
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 

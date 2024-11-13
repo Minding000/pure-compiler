@@ -11,6 +11,7 @@ import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.resolution.MissingType
+import components.code_generation.llvm.models.values.Value as ValueUnit
 
 open class Value(override val source: SyntaxTreeNode, override var scope: Scope, var providedType: Type? = null):
 	SemanticModel(source, scope) {
@@ -91,6 +92,13 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 		super.validate()
 		if(providedType == null)
 			context.addIssue(MissingType(source))
+	}
+
+	override fun toUnit(): ValueUnit {
+		if(this.javaClass.simpleName == "Value") {
+			return ValueUnit(this)
+		}
+		TODO("${source.getStartString()}: '${javaClass.simpleName}.toUnit' is not implemented yet.")
 	}
 
 	open fun getLlvmLocation(constructor: LlvmConstructor): LlvmValue? {

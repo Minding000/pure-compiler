@@ -9,4 +9,8 @@ class YieldStatement(override val source: YieldStatementSyntaxTree, scope: Scope
 	init {
 		addSemanticModels(key, value)
 	}
+
+	override fun toUnit(): components.code_generation.llvm.models.values.Value {
+		TODO("Not yet implemented")
+	}
 }

@@ -1,12 +1,13 @@
 package components.code_generation.llvm
 
+import components.code_generation.llvm.models.declarations.Initializer
+import components.code_generation.llvm.models.general.Program
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmFunction
 import components.code_generation.llvm.wrapper.LlvmType
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
-import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.general.Program.Companion.RUNTIME_PREFIX
 import components.semantic_model.types.FunctionType
 import errors.internal.CompilerError
@@ -21,20 +22,20 @@ class StandardLibrary {
 	lateinit var nativeInputStream: NativeRuntimeClass
 	lateinit var nativeOutputStream: NativeRuntimeClass
 
-	lateinit var byteArrayTypeDeclaration: TypeDeclaration
-	lateinit var exceptionTypeDeclaration: TypeDeclaration
+	lateinit var byteArrayTypeDeclaration: components.code_generation.llvm.models.declarations.TypeDeclaration
+	lateinit var exceptionTypeDeclaration: components.code_generation.llvm.models.declarations.TypeDeclaration
 	lateinit var exceptionDescriptionInitializer: LlvmFunction
-	lateinit var stringTypeDeclaration: TypeDeclaration
+	lateinit var stringTypeDeclaration: components.code_generation.llvm.models.declarations.TypeDeclaration
 	lateinit var stringByteArrayInitializer: LlvmFunction
 	var exceptionAddLocationFunctionType: LlvmType? = null
 
-	fun load(constructor: LlvmConstructor, context: Context) {
+	fun load(constructor: LlvmConstructor, context: Context, program: Program) {
 		findBooleanTypeDeclaration(constructor, context)
 		findByteTypeDeclaration(constructor, context)
 		findIntegerTypeDeclaration(constructor, context)
 		findFloatTypeDeclaration(constructor, context)
-		findStringTypeDeclaration(context)
-		findExceptionTypeDeclaration(constructor, context)
+		findStringTypeDeclaration(context, program)
+		findExceptionTypeDeclaration(constructor, context, program)
 	}
 
 	private fun findBooleanTypeDeclaration(constructor: LlvmConstructor, context: Context) {
@@ -81,30 +82,38 @@ class StandardLibrary {
 		}
 	}
 
-	private fun findStringTypeDeclaration(context: Context) {
+	private fun findStringTypeDeclaration(context: Context,
+										  program: Program) { //TODO get LLVM TypeDeclaration instead (see: Program.getEntrypoint)
+		//val specialTypePath = context.nativeRegistry.specialTypePaths[SpecialType.STRING] ?: return
+		//val file = program.getFile(specialTypePath) ?: return
+		//val typeDeclaration = file.units.filterIsInstance<components.code_generation.llvm.models.declarations.TypeDeclaration>().find { declaration -> declaration.model.name == SpecialType.STRING.className }
+
+
+
 		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.STRING]
 		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.STRING.className) ?: return
-		val byteArrayInitializer = typeDeclaration.getAllInitializers().find { initializerDefinition ->
-			val parameters = initializerDefinition.parameters
+		val byteArrayInitializer = typeDeclaration.unit.units.filterIsInstance<Initializer>().find { initializer ->
+			val parameters = initializer.model.parameters
 			if(parameters.size != 1) return@find false
 			val firstParameter = parameters.first()
 			firstParameter.isPropertySetter && firstParameter.name == "bytes"
 		} ?: throw CompilerError(typeDeclaration.source, "Failed to find String byte array initializer.")
-		stringTypeDeclaration = typeDeclaration
+		stringTypeDeclaration = typeDeclaration.unit
 		stringByteArrayInitializer = LlvmFunction(byteArrayInitializer.llvmValue, byteArrayInitializer.llvmType)
 	}
 
-	private fun findExceptionTypeDeclaration(constructor: LlvmConstructor, context: Context) {
+	private fun findExceptionTypeDeclaration(constructor: LlvmConstructor, context: Context,
+											 program: Program) { //TODO get LLVM TypeDeclaration instead
 		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.EXCEPTION] ?: return
 		val typeDeclaration = fileScope.getTypeDeclaration(SpecialType.EXCEPTION.className) ?: return
-		val descriptionInitializer = typeDeclaration.getAllInitializers().find { initializerDefinition ->
-			val parameters = initializerDefinition.parameters
+		val descriptionInitializer = typeDeclaration.unit.units.filterIsInstance<Initializer>().find { initializerDefinition ->
+			val parameters = initializerDefinition.model.parameters
 			if(parameters.size != 1) return@find false
 			val firstParameter = parameters.first()
 			firstParameter.isPropertySetter && firstParameter.name == "description"
 		} ?: throw CompilerError(typeDeclaration.source, "Failed to find Exception description initializer.")
 		val exceptionAddLocationPropertyType = typeDeclaration.scope.getValueDeclaration("addLocation")?.type
-		exceptionTypeDeclaration = typeDeclaration
+		exceptionTypeDeclaration = typeDeclaration.unit
 		exceptionDescriptionInitializer = LlvmFunction(descriptionInitializer.llvmValue, descriptionInitializer.llvmType)
 		exceptionAddLocationFunctionType =
 			(exceptionAddLocationPropertyType as? FunctionType)?.signatures?.firstOrNull()?.getLlvmType(constructor)
@@ -112,7 +121,7 @@ class StandardLibrary {
 
 	class NativeRuntimeClass(val struct: LlvmType, val classDefinition: LlvmValue, private val valuePropertyIndex: Int) {
 
-		constructor(typeDeclaration: TypeDeclaration, valuePropertyIndex: Int):
+		constructor(typeDeclaration: components.code_generation.llvm.models.declarations.TypeDeclaration, valuePropertyIndex: Int):
 			this(typeDeclaration.llvmType, typeDeclaration.llvmClassDefinition, valuePropertyIndex)
 
 		fun setClassDefinition(constructor: LlvmConstructor, targetObject: LlvmValue) {

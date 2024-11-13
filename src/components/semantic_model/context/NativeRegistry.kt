@@ -16,6 +16,7 @@ class NativeRegistry(val context: Context) {
 	private val nativeImplementations = HashMap<String, (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit>()
 	private val primitiveImplementations = HashMap<String, PrimitiveImplementation>()
 	val specialTypeScopes = HashMap<SpecialType, FileScope>()
+	val specialTypePaths = HashMap<SpecialType, List<String>>()
 
 	fun loadNativeImplementations(constructor: LlvmConstructor) {
 		PrimitiveIntNatives(context).load(this, constructor)

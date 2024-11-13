@@ -5,6 +5,7 @@ import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.SpecialType
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.LiteralType
+import components.code_generation.llvm.models.values.StringLiteral as StringLiteralUnit
 import components.syntax_parser.syntax_tree.literals.StringLiteral as StringLiteralSyntaxTree
 
 class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, val value: String): LiteralValue(source, scope) {
@@ -58,4 +59,6 @@ class StringLiteral(override val source: StringLiteralSyntaxTree, scope: Scope, 
 	override fun toString(): String {
 		return "\"$value\""
 	}
+
+	override fun toUnit() = StringLiteralUnit(this)
 }

@@ -27,7 +27,8 @@ class LlvmProgram(name: String) {
 
 	fun loadSemanticModel(program: Program, entryPointPath: String? = null) {
 		constructor.setTargetTriple(targetTriple)
-		entrypoint = program.compile(constructor, entryPointPath)
+		val unit = program.toUnit()
+		entrypoint = unit.compile(constructor, entryPointPath)
 		constructor.debug.finish()
 		if(Main.shouldWriteIntermediateRepresentation)
 			File("out\\program.ll").printWriter().use { out -> out.print(getIntermediateRepresentation()) }

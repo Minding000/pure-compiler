@@ -1,5 +1,6 @@
 package components.semantic_model.control_flow
 
+import components.code_generation.llvm.models.control_flow.OverGenerator
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.LocalVariableDeclaration
@@ -100,4 +101,7 @@ class OverGenerator(override val source: OverGeneratorSyntaxTree, scope: Scope, 
 			error.log(source, "function", "createIterator()")
 		}
 	}
+
+	override fun toUnit() = OverGenerator(this, iterable.toUnit(), iteratorVariableDeclaration?.toUnit(),
+		variableDeclarations.map(LocalVariableDeclaration::toUnit))
 }

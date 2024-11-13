@@ -1,6 +1,7 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.operations.FunctionCall
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
@@ -182,6 +183,8 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 				signature.toString(false), targetType))
 	}
 
+	override fun toUnit() = FunctionCall(this, function.toUnit(), valueParameters.map(Value::toUnit))
+
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val exceptionAddress = context.getExceptionParameter(constructor)
 		val functionSignature = targetSignature
@@ -343,7 +346,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 		context.continueRaise(constructor, this)
 	}
 
-	private fun getSignature(includeParentType: Boolean = true): String {
+	fun getSignature(includeParentType: Boolean = true): String {
 		var signature = ""
 		signature += when(function) {
 			is InitializerReference -> function.providedType

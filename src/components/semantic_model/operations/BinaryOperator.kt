@@ -1,6 +1,7 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.operations.BinaryOperator
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.SpecialType
@@ -19,6 +20,7 @@ import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.resolution.NotFound
 import util.combineOrUnion
 import java.util.*
+import components.code_generation.llvm.models.values.Value as ValueUnit
 import components.syntax_parser.syntax_tree.operations.BinaryOperator as BinaryOperatorSyntaxTree
 
 class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope, val left: Value, val right: Value,
@@ -217,6 +219,10 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			&& !leftType.isMemberAccessible(signature, true))
 			context.addIssue(AbstractMonomorphicAccess(source, "operator",
 				signature.toString(false, kind), leftType))
+	}
+
+	override fun toUnit(): ValueUnit {
+		return BinaryOperator(this, left.toUnit(), right.toUnit())
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {

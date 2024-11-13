@@ -1,6 +1,7 @@
 package components.semantic_model.declarations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.declarations.FunctionDefinition
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
@@ -33,7 +34,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 							 val isSpecific: Boolean = false, val isMonomorphic: Boolean = false):
 	SemanticModel(source, scope), MemberDeclaration, Callable {
 	override var parentTypeDeclaration: TypeDeclaration? = null
-	private lateinit var parentFunction: Function
+	lateinit var parentFunction: Function
 	val memberType: String
 		get() = parentFunction.memberType
 	override val memberIdentifier: String
@@ -54,6 +55,7 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 	override val propertiesRequiredToBeInitialized = LinkedList<PropertyDeclaration>()
 	override val propertiesBeingInitialized = LinkedList<PropertyDeclaration>()
 	lateinit var llvmValue: LlvmValue
+	lateinit var unit: FunctionDefinition
 
 	init {
 		scope.semanticModel = this
@@ -195,6 +197,12 @@ class FunctionImplementation(override val source: SyntaxTreeNode, override val s
 			if(body == null)
 				context.addIssue(MissingBody(source, memberType, toString()))
 		}
+	}
+
+	override fun toUnit(): FunctionDefinition {
+		val unit = FunctionDefinition(this, parameters.map(Parameter::toUnit), body?.toUnit())
+		this.unit = unit
+		return unit
 	}
 
 	override fun declare(constructor: LlvmConstructor) {

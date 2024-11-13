@@ -1,5 +1,6 @@
 package components.semantic_model.values
 
+import components.code_generation.llvm.models.values.InitializerReference
 import components.semantic_model.operations.MemberAccess
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
@@ -29,4 +30,6 @@ open class InitializerReference(override val source: InitializerReferenceSyntaxT
 			}
 		}
 	}
+
+	override fun toUnit() = InitializerReference(this)
 }

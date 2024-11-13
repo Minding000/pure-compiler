@@ -11,6 +11,7 @@ import components.semantic_model.types.Type
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import util.isRepresentedAsAnInteger
 import java.math.BigDecimal
+import components.code_generation.llvm.models.values.NumberLiteral as NumberLiteralUnit
 
 class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value: BigDecimal): LiteralValue(source, scope) {
 
@@ -35,6 +36,8 @@ class NumberLiteral(override val source: SyntaxTreeNode, scope: Scope, val value
 		if(SpecialType.BYTE.matches(inferredBaseType) || SpecialType.FLOAT.matches(inferredBaseType))
 			providedType = inferredBaseType
 	}
+
+	override fun toUnit() = NumberLiteralUnit(this)
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		return createLlvmValue(constructor, value)

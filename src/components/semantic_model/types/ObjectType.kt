@@ -316,7 +316,7 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 				if(!currentTypeDeclaration.isBound)
 					throw CompilerError(source,
 						"Type declaration of generic type referenced by super type not found in the type declaration.")
-				val parentProperty = constructor.buildGetPropertyPointer(currentTypeDeclaration.llvmType, targetValue,
+				val parentProperty = constructor.buildGetPropertyPointer(currentTypeDeclaration.unit.llvmType, targetValue,
 					Context.PARENT_PROPERTY_INDEX, "_parentProperty")
 				targetValue = constructor.buildLoad(constructor.pointerType, parentProperty, "_parent")
 				currentTypeDeclaration = currentTypeDeclaration.parentTypeDeclaration
@@ -327,7 +327,7 @@ open class ObjectType(override val source: SyntaxTreeNode, scope: Scope, var enc
 			return constructor.buildLoad(constructor.pointerType, typeProperty,
 				"${typeDeclaration.getFullName()}_Type")
 		} else {
-			val value = typeDeclaration?.staticValueDeclaration?.llvmLocation
+			val value = typeDeclaration?.unit?.staticValueDeclaration?.llvmLocation
 			if(value == null) {
 				// Note: This is only here for compilation without the base library
 				if(isLlvmPrimitive())

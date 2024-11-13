@@ -1,6 +1,7 @@
 package components.semantic_model.control_flow
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.control_flow.LoopStatement
 import components.code_generation.llvm.wrapper.LlvmBlock
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
@@ -38,6 +39,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 	private lateinit var entryBlock: LlvmBlock
 	private lateinit var exitBlock: LlvmBlock
 	private var advance: (() -> Unit)? = null
+	lateinit var unit: LoopStatement
 
 	init {
 		scope.semanticModel = this
@@ -88,6 +90,12 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 	override fun validate() {
 		super.validate()
 		scope.validate()
+	}
+
+	override fun toUnit(): LoopStatement {
+		val unit = LoopStatement(this, generator?.toUnit(), body.toUnit())
+		this.unit = unit
+		return unit
 	}
 
 	override fun compile(constructor: LlvmConstructor) {

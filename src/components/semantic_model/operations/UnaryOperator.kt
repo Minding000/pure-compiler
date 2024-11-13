@@ -1,6 +1,7 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.operations.UnaryOperator
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.SpecialType
@@ -18,6 +19,7 @@ import errors.user.SignatureResolutionAmbiguityError
 import logger.issues.access.WhereClauseUnfulfilled
 import logger.issues.resolution.NotFound
 import java.util.*
+import components.code_generation.llvm.models.values.Value as ValueUnit
 import components.syntax_parser.syntax_tree.operations.UnaryOperator as UnaryOperatorSyntaxTree
 
 //TODO disallow spread operation (triple dot) outside of parameter list-
@@ -103,6 +105,10 @@ class UnaryOperator(override val source: UnaryOperatorSyntaxTree, scope: Scope, 
 				context.addIssue(WhereClauseUnfulfilled(source, "Operator",
 					signature.original.toString(false, kind), subjectType, condition))
 		}
+	}
+
+	override fun toUnit(): ValueUnit {
+		return UnaryOperator(this, subject.toUnit())
 	}
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {

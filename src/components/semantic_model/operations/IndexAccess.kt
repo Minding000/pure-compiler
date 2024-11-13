@@ -1,6 +1,7 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.operations.IndexAccess
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.VariableTracker
@@ -91,6 +92,8 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		}
 	}
 
+	override fun toUnit() = IndexAccess(this, target.toUnit(), indices.map(Value::toUnit))
+
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val signature = targetSignature?.original ?: throw CompilerError(source, "Index access is missing a target.")
 		return createLlvmGetterCall(constructor, signature)
@@ -132,7 +135,7 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 		return signature
 	}
 
-	private fun getOperatorKind(): Operator.Kind {
+	fun getOperatorKind(): Operator.Kind {
 		return if(sourceExpression == null) Operator.Kind.BRACKETS_GET else Operator.Kind.BRACKETS_SET
 	}
 }

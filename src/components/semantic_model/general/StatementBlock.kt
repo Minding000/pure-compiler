@@ -1,5 +1,6 @@
 package components.semantic_model.general
 
+import components.code_generation.llvm.models.general.StatementBlock
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.scopes.BlockScope
@@ -41,6 +42,8 @@ class StatementBlock(override val source: SyntaxTreeNode, override val scope: Bl
 				isCodeReachableBasedOnStaticEvaluation = false
 		}
 	}
+
+	override fun toUnit() = StatementBlock(this, statements.mapNotNull(SemanticModel::toUnit))
 
 	override fun compile(constructor: LlvmConstructor) {
 		for(statement in statements) {

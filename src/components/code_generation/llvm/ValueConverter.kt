@@ -1,17 +1,18 @@
 package components.code_generation.llvm
 
+import components.code_generation.llvm.models.declarations.TypeDeclaration
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmType
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.InitializerDefinition
-import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.types.OptionalType
 import components.semantic_model.types.Type
 import errors.internal.CompilerError
 import java.util.*
+import components.semantic_model.declarations.TypeDeclaration as TypeDeclarationModel
 
 object ValueConverter {
 	//TODO use this function in these places (write tests!):
@@ -34,6 +35,7 @@ object ValueConverter {
 			conversion)
 	}
 
+	//TODO accept Unit as first parameter instead of SemanticModel
 	fun convertIfRequired(model: SemanticModel, constructor: LlvmConstructor, sourceValue: LlvmValue, sourceType: Type?,
 						  isSourceGeneric: Boolean, targetType: Type?, isTargetGeneric: Boolean,
 						  conversion: InitializerDefinition? = null): LlvmValue {
@@ -119,7 +121,7 @@ object ValueConverter {
 								conversion: InitializerDefinition): LlvmValue {
 		val context = model.context
 		val exceptionParameter = context.getExceptionParameter(constructor)
-		val typeDeclaration = conversion.parentTypeDeclaration
+		val typeDeclaration = conversion.parentTypeDeclaration.unit
 		val newObject = constructor.buildHeapAllocation(typeDeclaration.llvmType, "_newObject")
 		val classDefinitionProperty = constructor.buildGetPropertyPointer(typeDeclaration.llvmType, newObject,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_classDefinitionProperty")
@@ -129,7 +131,7 @@ object ValueConverter {
 		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
 		parameters.add(sourceValue)
 		buildLlvmCommonPreInitializerCall(model, constructor, typeDeclaration, exceptionParameter, newObject)
-		constructor.buildFunctionCall(conversion.llvmType, conversion.llvmValue, parameters)
+		constructor.buildFunctionCall(conversion.unit.llvmType, conversion.unit.llvmValue, parameters)
 		context.continueRaise(constructor, model)
 		return newObject
 	}
@@ -185,7 +187,7 @@ object ValueConverter {
 	}
 
 	fun unwrapPrimitive(model: SemanticModel, constructor: LlvmConstructor, wrappedLlvmValue: LlvmValue,
-						typeDeclaration: TypeDeclaration?): LlvmValue {
+						typeDeclaration: TypeDeclarationModel?): LlvmValue {
 		val context = model.context
 		return if(SpecialType.BOOLEAN.matches(typeDeclaration)) {
 			unwrapBool(context, constructor, wrappedLlvmValue)

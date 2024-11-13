@@ -1,6 +1,7 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.operations.UnaryModification
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.SpecialType
@@ -27,7 +28,7 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 	var targetSignature: FunctionSignature? = null
 
 	companion object {
-		private val STEP_SIZE = BigDecimal(1)
+		val STEP_SIZE = BigDecimal(1)
 	}
 
 	init {
@@ -86,6 +87,8 @@ class UnaryModification(override val source: UnaryModificationSyntaxTree, scope:
 					signature.original.toString(false, kind), targetType, condition))
 		}
 	}
+
+	override fun toUnit() = UnaryModification(this, target.toUnit())
 
 	override fun compile(constructor: LlvmConstructor) {
 		val targetValue = ValueConverter.convertIfRequired(this, constructor, target.getLlvmValue(constructor),

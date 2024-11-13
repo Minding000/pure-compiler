@@ -1,5 +1,6 @@
 package components.semantic_model.declarations
 
+import components.code_generation.llvm.models.declarations.Parameter
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
@@ -52,6 +53,12 @@ class Parameter(override val source: SyntaxTreeNode, scope: MutableScope, name: 
 		} else {
 			tracker.declare(this, true)
 		}
+	}
+
+	override fun toUnit(): Parameter {
+		val unit = Parameter(this)
+		this.unit = unit
+		return unit
 	}
 
 	override fun compile(constructor: LlvmConstructor) {

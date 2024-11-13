@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 
-internal class FunctionCall {
+internal class FunctionDefinitionCall {
 
 	@Test
 	fun `compiles function call with primitive generic value as provided parameter`() {

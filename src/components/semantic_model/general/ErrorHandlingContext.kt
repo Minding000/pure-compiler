@@ -1,5 +1,6 @@
 package components.semantic_model.general
 
+import components.code_generation.llvm.models.general.ErrorHandlingContext
 import components.code_generation.llvm.wrapper.LlvmBlock
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
@@ -23,6 +24,7 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 	private lateinit var exitBlock: LlvmBlock
 	private var returnAddressVariable: LlvmValue? = null
 	private val returnBlocks = LinkedList<LlvmBlock>()
+	lateinit var unit: ErrorHandlingContext
 
 	init {
 		addSemanticModels(mainBlock, alwaysBlock)
@@ -93,6 +95,12 @@ class ErrorHandlingContext(override val source: SyntaxTreeNode, scope: Scope, va
 
 	fun getValue(): Value? {
 		return getLastStatement() as? Value
+	}
+
+	override fun toUnit(): ErrorHandlingContext {
+		val unit = ErrorHandlingContext(this, mainBlock.toUnit(), handleBlocks.map(HandleBlock::toUnit), alwaysBlock?.toUnit())
+		this.unit = unit
+		return unit
 	}
 
 	fun needsToBeCalled(): Boolean {

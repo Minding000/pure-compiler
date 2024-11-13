@@ -1,6 +1,7 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.operations.Assignment
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.VariableTracker
@@ -22,7 +23,7 @@ import components.syntax_parser.syntax_tree.operations.Assignment as AssignmentS
 
 class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val targets: List<Value>, val sourceExpression: Value):
 	SemanticModel(source, scope) {
-	private var conversions = HashMap<Value, InitializerDefinition>()
+	var conversions = HashMap<Value, InitializerDefinition>()
 
 	init {
 		addSemanticModels(sourceExpression)
@@ -96,6 +97,8 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 			target.analyseDataFlow(tracker)
 		}
 	}
+
+	override fun toUnit() = Assignment(this, targets.map(Value::toUnit), sourceExpression.toUnit())
 
 	override fun compile(constructor: LlvmConstructor) {
 		val rawLlvmValue = sourceExpression.getLlvmValue(constructor)

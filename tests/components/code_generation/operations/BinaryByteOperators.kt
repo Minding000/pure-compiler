@@ -174,7 +174,6 @@ internal class BinaryByteOperators {
 
 	@Test
 	fun `compiles byte smaller than`() {
-
 		val sourceCode = """
 			SimplestApp object {
 				to getNo(): Bool {

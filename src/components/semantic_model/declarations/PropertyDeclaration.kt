@@ -1,5 +1,7 @@
 package components.semantic_model.declarations
 
+import components.code_generation.llvm.models.declarations.PropertyDeclaration
+import components.code_generation.llvm.models.declarations.ValueDeclaration
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.FunctionType
 import components.semantic_model.types.Type
@@ -56,5 +58,11 @@ open class PropertyDeclaration(source: SyntaxTreeNode, scope: MutableScope, name
 			if(type != superMemberType)
 				context.addIssue(OverridingPropertyTypeMismatch(type, superMemberType))
 		}
+	}
+
+	override fun toUnit(): ValueDeclaration {
+		val unit = PropertyDeclaration(this, value?.toUnit())
+		this.unit = unit
+		return unit
 	}
 }

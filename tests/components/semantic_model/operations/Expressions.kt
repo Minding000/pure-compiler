@@ -181,6 +181,8 @@ internal class Expressions {
 	//    - not desired in most cases
 	//  - easier support for other targets
 	//    - not very important
+	//  - context and constructor can be added as properties when construction the new classes to avoid passing them around
+	//  - context can be split into LlvmContext and SemanticModelContext
 	// disadvantages:
 	//  - more code / "duplication" of classes
 

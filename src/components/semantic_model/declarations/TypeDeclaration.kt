@@ -18,10 +18,12 @@ import errors.internal.CompilerError
 import logger.issues.declaration.*
 import logger.issues.modifiers.NoParentToBindTo
 import java.util.*
+import components.code_generation.llvm.models.declarations.TypeDeclaration as TypeDeclarationUnit
 
 abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: String, override val scope: TypeScope,
 							   val explicitParentType: ObjectType? = null, val superType: Type? = null,
-							   val members: List<SemanticModel> = emptyList(), val isBound: Boolean = false): SemanticModel(source, scope) {
+							   val members: MutableList<SemanticModel> = mutableListOf(), val isBound: Boolean = false):
+	SemanticModel(source, scope) {
 	open val isDefinition = true
 	override var parent: SemanticModel?
 		get() = super.parent
@@ -33,6 +35,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 	private var hasCircularInheritance = false
 	private var hasDeterminedTypes = false
 	lateinit var staticValueDeclaration: ValueDeclaration
+	lateinit var unit: TypeDeclarationUnit
 	private lateinit var staticMembers: List<ValueDeclaration>
 	lateinit var properties: List<ValueDeclaration>
 	private lateinit var functions: List<LlvmMemberFunction>
@@ -212,6 +215,7 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		val defaultInitializer = InitializerDefinition(source, BlockScope(scope))
 		defaultInitializer.determineSignatureTypes()
 		addSemanticModels(defaultInitializer)
+		members.add(defaultInitializer)
 	}
 
 	private fun inheritsFrom(definition: TypeDeclaration): Boolean {
@@ -409,29 +413,29 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 
 	private fun addNativeProperties(constructor: LlvmConstructor, llvmProperties: LinkedList<LlvmType?>) {
 		if(SpecialType.ARRAY.matches(this)) {
-			context.standardLibrary.array = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
+			context.standardLibrary.array = StandardLibrary.NativeRuntimeClass(unit, llvmProperties.size)
 			llvmProperties.add(constructor.pointerType)
 		} else if(SpecialType.BOOLEAN.matches(this)) {
-			context.standardLibrary.boolean = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
+			context.standardLibrary.boolean = StandardLibrary.NativeRuntimeClass(unit, llvmProperties.size)
 			llvmProperties.add(constructor.booleanType)
 		} else if(SpecialType.BYTE.matches(this)) {
-			context.standardLibrary.byte = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
+			context.standardLibrary.byte = StandardLibrary.NativeRuntimeClass(unit, llvmProperties.size)
 			llvmProperties.add(constructor.byteType)
 		} else if(SpecialType.BYTE_ARRAY.matches(this)) {
-			context.standardLibrary.byteArrayTypeDeclaration = this
-			context.standardLibrary.byteArray = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
+			context.standardLibrary.byteArrayTypeDeclaration = unit
+			context.standardLibrary.byteArray = StandardLibrary.NativeRuntimeClass(unit, llvmProperties.size)
 			llvmProperties.add(constructor.pointerType)
 		} else if(SpecialType.INTEGER.matches(this)) {
-			context.standardLibrary.integer = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
+			context.standardLibrary.integer = StandardLibrary.NativeRuntimeClass(unit, llvmProperties.size)
 			llvmProperties.add(constructor.i32Type)
 		} else if(SpecialType.FLOAT.matches(this)) {
-			context.standardLibrary.float = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
+			context.standardLibrary.float = StandardLibrary.NativeRuntimeClass(unit, llvmProperties.size)
 			llvmProperties.add(constructor.floatType)
 		} else if(SpecialType.NATIVE_INPUT_STREAM.matches(this)) {
-			context.standardLibrary.nativeInputStream = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
+			context.standardLibrary.nativeInputStream = StandardLibrary.NativeRuntimeClass(unit, llvmProperties.size)
 			llvmProperties.add(constructor.pointerType)
 		} else if(SpecialType.NATIVE_OUTPUT_STREAM.matches(this)) {
-			context.standardLibrary.nativeOutputStream = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
+			context.standardLibrary.nativeOutputStream = StandardLibrary.NativeRuntimeClass(unit, llvmProperties.size)
 			llvmProperties.add(constructor.pointerType)
 		}
 	}
@@ -631,10 +635,9 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		}
 		for(memberDeclaration in properties) {
 			val memberValue = memberDeclaration.value ?: continue
-			val convertedValue = ValueConverter.convertIfRequired(memberDeclaration, constructor,
-				memberValue.buildLlvmValue(constructor), memberValue.effectiveType, memberValue.hasGenericType,
-				memberDeclaration.effectiveType,
-				false, memberDeclaration.conversion)
+			val convertedValue = ValueConverter.convertIfRequired(memberDeclaration, constructor, memberValue.buildLlvmValue(constructor),
+				memberValue.effectiveType, memberValue.hasGenericType, memberDeclaration.effectiveType, false,
+				memberDeclaration.conversion)
 			val memberAddress = context.resolveMember(constructor, thisValue, memberDeclaration.name)
 			constructor.buildStore(convertedValue, memberAddress)
 			isNoop = false

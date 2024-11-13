@@ -1,5 +1,6 @@
 package components.semantic_model.general
 
+import components.code_generation.llvm.models.general.Program
 import components.code_generation.llvm.wrapper.LlvmBlock
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
@@ -71,9 +72,16 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 	}
 
 	/**
+	 * Creates a LLVM representation of the program.
+	 */
+	fun toUnit(): Program {
+		return Program(context, this, files.map(File::toUnit))
+	}
+
+	/**
 	 * Compiles code to LLVM IR.
 	 */
-	fun compile(constructor: LlvmConstructor, userEntryPointPath: String? = null): LlvmValue {
+	fun compile(constructor: LlvmConstructor, userEntryPointPath: String? = null): LlvmValue { //TODO remove
 		context.logger.addPhase("Compilation")
 		context.externalFunctions.load(constructor)
 		context.runtimeTypes.declare(constructor)
@@ -82,7 +90,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			file.declare(constructor)
 		for(file in files)
 			file.define(constructor)
-		context.standardLibrary.load(constructor, context)
+		//context.standardLibrary.load(constructor, context)
 		context.runtimeGlobals.declare(constructor, context)
 		context.runtimeFunctions.build(constructor, context)
 		context.nativeRegistry.loadNativeImplementations(constructor)
@@ -160,9 +168,9 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 		userEntryPointFunction.getSurrounding<File>()?.determineFileInitializationOrder(filesToInitialize)
 		// Ensure that classes instantiated by the runtime are initialized
 		if(context.nativeRegistry.has(SpecialType.EXCEPTION))
-			context.standardLibrary.exceptionTypeDeclaration.determineFileInitializationOrder(filesToInitialize)
+			context.standardLibrary.exceptionTypeDeclaration.model.determineFileInitializationOrder(filesToInitialize)
 		else if(context.nativeRegistry.has(SpecialType.STRING))
-			context.standardLibrary.stringTypeDeclaration.determineFileInitializationOrder(filesToInitialize)
+			context.standardLibrary.stringTypeDeclaration.model.determineFileInitializationOrder(filesToInitialize)
 		return filesToInitialize
 	}
 
@@ -251,8 +259,7 @@ class Program(val context: Context, val source: ProgramSyntaxTree) {
 			val function = functionVariable.value as? Function ?: throw UserError("Variable '$functionName' is not a function.")
 			val functionImplementation = function.implementations.find { functionImplementation ->
 				!functionImplementation.signature.requiresParameters()
-			}
-				?: throw UserError("Function '$functionName' has no overload without parameters.")
+			} ?: throw UserError("Function '$functionName' has no overload without parameters.")
 			var objectValue: ValueDeclaration? = null
 			if(objectDefinition != null)
 				objectValue = (objectDefinition.parentTypeDeclaration?.scope ?: objectDefinition.scope)

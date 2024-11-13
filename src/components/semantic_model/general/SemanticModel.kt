@@ -1,5 +1,6 @@
 package components.semantic_model.general
 
+import components.code_generation.llvm.models.general.Unit
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.Context
 import components.semantic_model.context.VariableTracker
@@ -82,6 +83,8 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 		for(semanticModel in semanticModels)
 			semanticModel.validate()
 	}
+
+	open fun toUnit(): Unit? = null
 
 	open fun declare(constructor: LlvmConstructor) {
 		for(semanticModel in semanticModels)

@@ -1,6 +1,7 @@
 package components.semantic_model.control_flow
 
 import components.code_generation.llvm.ValueConverter
+import components.code_generation.llvm.models.control_flow.Try
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.SpecialType
@@ -24,6 +25,8 @@ class Try(override val source: TrySyntaxTree, scope: Scope, val expression: Valu
 				expressionType
 		}
 	}
+
+	override fun toUnit() = Try(this, expression.toUnit())
 
 	override fun buildLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val expressionResult = expression.getLlvmValue(constructor)

@@ -1,5 +1,6 @@
 package components.semantic_model.control_flow
 
+import components.code_generation.llvm.models.control_flow.Case
 import components.semantic_model.general.ErrorHandlingContext
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.Scope
@@ -12,4 +13,6 @@ class Case(override val source: CaseSyntaxTree, scope: Scope, val condition: Val
 	init {
 		addSemanticModels(condition, result)
 	}
+
+	override fun toUnit() = Case(this, condition.toUnit(), result.toUnit())
 }

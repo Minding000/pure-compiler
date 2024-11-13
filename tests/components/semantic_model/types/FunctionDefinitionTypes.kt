@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import util.TestUtil
 import kotlin.test.assertEquals
 
-internal class FunctionTypes {
+internal class FunctionDefinitionTypes {
 
 	@Test
 	fun `can represent the type of a single contained signature`() {

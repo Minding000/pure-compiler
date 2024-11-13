@@ -24,6 +24,7 @@ import logger.issues.modifiers.OverridingPropertyTypeMismatch
 import logger.issues.modifiers.OverridingPropertyTypeNotAssignable
 import logger.issues.modifiers.VariablePropertyOverriddenByValue
 import java.util.*
+import components.code_generation.llvm.models.declarations.ComputedPropertyDeclaration as ComputedPropertyDeclarationUnit
 import components.syntax_parser.syntax_tree.definitions.ComputedPropertyDeclaration as ComputedPropertySyntaxTree
 
 //TODO allow read/write base on 'gettable' and 'settable' modifiers for abstract and native computed properties
@@ -53,6 +54,7 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 	val getterReturnType: Type?
 		get() = providedType
 	val setterReturnType = LiteralType(source, scope, SpecialType.NOTHING)
+	lateinit var computedPropertyUnit: ComputedPropertyDeclarationUnit
 
 	init {
 		getterScope.semanticModel = this
@@ -114,6 +116,14 @@ class ComputedPropertyDeclaration(override val source: ComputedPropertySyntaxTre
 			return
 		if(getterErrorHandlingContext == null && setterErrorHandlingContext == null)
 			context.addIssue(MissingBody(source, "Computed property", "$name: $providedType"))
+	}
+
+	override fun toUnit(): ComputedPropertyDeclarationUnit {
+		val unit = ComputedPropertyDeclarationUnit(this, getterErrorHandlingContext?.toUnit(),
+			setterErrorHandlingContext?.toUnit())
+		this.unit = unit
+		computedPropertyUnit = unit
+		return unit
 	}
 
 	override fun declare(constructor: LlvmConstructor) {
