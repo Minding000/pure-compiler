@@ -4,6 +4,7 @@ import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.context.Context
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.general.SemanticModel
+import java.util.*
 
 abstract class Unit(open val model: SemanticModel, val units: List<Unit> = emptyList()) {
 	val context: Context
@@ -64,7 +65,7 @@ abstract class Unit(open val model: SemanticModel, val units: List<Unit> = empty
 		return parent?.getSurrounding(`class`)
 	}
 
-	open fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
+	open fun determineFileInitializationOrder(filesToInitialize: LinkedList<File>) {
 		//println("Checking '${javaClass.simpleName}' '$this' in '${getSurrounding<File>()?.file?.name}'")
 		//if(this is PropertyDeclaration)
 		//	println("Property declaration: $name")

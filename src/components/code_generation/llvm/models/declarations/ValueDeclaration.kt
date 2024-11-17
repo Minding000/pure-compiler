@@ -12,6 +12,7 @@ import components.semantic_model.scopes.TypeScope
 import components.semantic_model.types.StaticType
 import errors.internal.CompilerError
 import org.bytedeco.llvm.LLVM.LLVMValueRef
+import java.util.*
 import components.semantic_model.general.File as SemanticFileModel
 
 abstract class ValueDeclaration(override val model: ValueDeclaration, val value: Value? = null, units: List<Unit> = emptyList()):
@@ -45,20 +46,14 @@ abstract class ValueDeclaration(override val model: ValueDeclaration, val value:
 		}
 	}
 
-	override fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
+	override fun determineFileInitializationOrder(filesToInitialize: LinkedList<File>) {
 		if(hasDeterminedFileInitializationOrder)
 			return
-		val file = getSurrounding<File>()
-			?: throw CompilerError(model, "Value declaration outside of file.")
-		if(requiresFileRunner()) {
-			println("${javaClass.simpleName} '${model.name}' adds file '${file.name}'")
-			filesToInitialize.add(file)
-		} else {
-			//println("${javaClass.simpleName} '${name}' is not at top level of '${file.file.name}'")
-		}
 		super.determineFileInitializationOrder(filesToInitialize)
+		val file = getSurrounding<File>() ?: throw CompilerError(model, "Value declaration outside of file.")
+		if(requiresFileRunner())
+			file.requiresFileRunner = true
 		file.determineFileInitializationOrder(filesToInitialize)
-		hasDeterminedFileInitializationOrder = true
 	}
 
 	open fun requiresFileRunner(): Boolean {

@@ -71,7 +71,7 @@ class Program(val context: Context, val model: Program, val files: List<File>) {
 			}
 			context.printDebugLine(constructor, "Files executed.")
 		} else {
-			for(file in getFilesToInitialize(userEntrypoint.file).reversed()) {
+			for(file in getFilesToInitialize(userEntrypoint.file)) {
 				println("Initializing '${file.name}'")
 				constructor.buildFunctionCall(file.runner, listOf(exceptionVariable))
 				checkForUnhandledError(constructor, exceptionVariable, uncaughtExceptionBlock)
@@ -100,8 +100,8 @@ class Program(val context: Context, val model: Program, val files: List<File>) {
 		return globalEntryPoint
 	}
 
-	private fun getFilesToInitialize(userEntrypointFile: File): LinkedHashSet<File> {
-		val filesToInitialize = LinkedHashSet<File>()
+	private fun getFilesToInitialize(userEntrypointFile: File): LinkedList<File> {
+		val filesToInitialize = LinkedList<File>()
 		userEntrypointFile.determineFileInitializationOrder(filesToInitialize)
 		// Ensure that classes instantiated by the runtime are initialized
 		if(context.nativeRegistry.has(SpecialType.EXCEPTION))

@@ -70,9 +70,4 @@ class Instance(override val source: InstanceSyntaxTree, scope: MutableScope, nam
 		this.unit = unit
 		return unit
 	}
-
-	override fun requiresFileRunner(): Boolean {
-		//TODO What about isNative?
-		return !isAbstract
-	}
 }

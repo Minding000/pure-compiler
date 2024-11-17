@@ -9,6 +9,7 @@ import components.semantic_model.types.StaticType
 import components.semantic_model.types.Type
 import components.semantic_model.values.VariableValue
 import errors.internal.CompilerError
+import java.util.*
 
 //TODO rename to VariableUsage / Reference
 open class VariableValue(override val model: VariableValue): Value(model) {
@@ -74,10 +75,9 @@ open class VariableValue(override val model: VariableValue): Value(model) {
 		return returnValue
 	}
 
-	override fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
+	override fun determineFileInitializationOrder(filesToInitialize: LinkedList<File>) {
 		if(hasDeterminedFileInitializationOrder)
 			return
-		hasDeterminedFileInitializationOrder = true
 		super.determineFileInitializationOrder(filesToInitialize)
 		model.declaration?.unit?.determineFileInitializationOrder(filesToInitialize)
 	}

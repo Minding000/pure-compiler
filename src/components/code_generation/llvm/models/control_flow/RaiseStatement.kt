@@ -6,7 +6,7 @@ import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.semantic_model.control_flow.RaiseStatement
 import errors.internal.CompilerError
 
-class RaiseStatement(override val model: RaiseStatement, val value: Value): Unit(model) {
+class RaiseStatement(override val model: RaiseStatement, val value: Value): Unit(model, listOf(value)) {
 
 	override fun compile(constructor: LlvmConstructor) {
 		val exceptionParameter = context.getExceptionParameter(constructor)

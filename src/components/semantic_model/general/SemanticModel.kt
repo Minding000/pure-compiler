@@ -85,17 +85,6 @@ abstract class SemanticModel(open val source: SyntaxTreeNode, open val scope: Sc
 
 	open fun toUnit(): Unit? = null
 
-	open fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
-		//println("Checking '${javaClass.simpleName}' '$this' in '${getSurrounding<File>()?.file?.name}'")
-		//if(this is PropertyDeclaration)
-		//	println("Property declaration: $name")
-		if(hasDeterminedFileInitializationOrder)
-			return
-		hasDeterminedFileInitializationOrder = true
-		for(semanticModel in semanticModels)
-			semanticModel.determineFileInitializationOrder(filesToInitialize)
-	}
-
 	inline fun <reified T: SemanticModel> getSurrounding(): T? {
 		if(this is T)
 			return this

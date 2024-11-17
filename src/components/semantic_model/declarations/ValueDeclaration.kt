@@ -1,13 +1,11 @@
 package components.semantic_model.declarations
 
-import components.semantic_model.general.File
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.Type
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
-import errors.internal.CompilerError
 import logger.issues.constant_conditions.TypeNotAssignable
 import logger.issues.declaration.DeclarationMissingTypeOrValue
 import logger.issues.resolution.ConversionAmbiguity
@@ -82,27 +80,6 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 	}
 
 	abstract override fun toUnit(): ValueDeclarationUnit
-
-	override fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
-		if(hasDeterminedFileInitializationOrder)
-			return
-		val file = getSurrounding<File>() ?: throw CompilerError(source, "Value declaration outside of file.")
-		if(requiresFileRunner()) {
-			println("${javaClass.simpleName} '${name}' adds file '${file.file.name}'")
-			filesToInitialize.add(file)
-		} else {
-			//println("${javaClass.simpleName} '${name}' is not at top level of '${file.file.name}'")
-		}
-		super.determineFileInitializationOrder(filesToInitialize)
-		file.determineFileInitializationOrder(filesToInitialize)
-		hasDeterminedFileInitializationOrder = true
-	}
-
-	open fun requiresFileRunner(): Boolean {
-		//TODO what about nested bound enums and objects?
-		// - enums are partly handled by instances (but isBound is not taken into consideration)
-		return parent is File
-	}
 
 	data class Match(val declaration: ValueDeclaration, val whereClauseConditions: List<WhereClauseCondition>?, val type: Type?) {
 

@@ -3,11 +3,14 @@ package components.code_generation.llvm.models.general
 import components.code_generation.llvm.models.declarations.TypeDeclaration
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmFunction
-import components.semantic_model.general.File
+import java.util.*
+import components.semantic_model.general.File as SemanticFileModel
 
-class File(override val model: File): Unit(model, model.semanticModels.mapNotNull { semanticModel -> semanticModel.toUnit() }) {
+class File(override val model: SemanticFileModel):
+	Unit(model, model.semanticModels.mapNotNull { semanticModel -> semanticModel.toUnit() }) {
 	val name: String
 		get() = model.file.name
+	var requiresFileRunner = false
 	lateinit var initializer: LlvmFunction
 	lateinit var runner: LlvmFunction
 
@@ -42,5 +45,13 @@ class File(override val model: File): Unit(model, model.semanticModels.mapNotNul
 		super.compile(constructor)
 		context.printDebugLine(constructor, "File '$name' executed.")
 		constructor.buildReturn()
+	}
+
+	override fun determineFileInitializationOrder(filesToInitialize: LinkedList<File>) {
+		if(hasDeterminedFileInitializationOrder)
+			return
+		super.determineFileInitializationOrder(filesToInitialize)
+		if(requiresFileRunner)
+			filesToInitialize.add(this)
 	}
 }

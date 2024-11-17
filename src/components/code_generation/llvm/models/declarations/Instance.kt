@@ -9,7 +9,12 @@ import components.semantic_model.declarations.Instance
 import errors.internal.CompilerError
 import java.util.*
 
-class Instance(override val model: Instance, val valueParameters: List<Value>): ValueDeclaration(model) {
+class Instance(override val model: Instance, val valueParameters: List<Value>): ValueDeclaration(model, null, valueParameters) {
+
+	override fun requiresFileRunner(): Boolean {
+		//TODO What about isNative?
+		return !model.isAbstract
+	}
 
 	fun getLlvmValue(constructor: LlvmConstructor): LlvmValue {
 		val initializer = model.initializer ?: throw CompilerError(model, "Missing initializer in instance declaration.")

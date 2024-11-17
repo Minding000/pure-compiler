@@ -3,7 +3,6 @@ package components.semantic_model.values
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.*
-import components.semantic_model.general.File
 import components.semantic_model.scopes.InterfaceScope
 import components.semantic_model.scopes.Scope
 import components.semantic_model.types.ObjectType
@@ -92,14 +91,6 @@ open class VariableValue(override val source: SyntaxTreeNode, scope: Scope, val 
 	}
 
 	override fun toUnit() = VariableValueUnit(this)
-
-	override fun determineFileInitializationOrder(filesToInitialize: LinkedHashSet<File>) {
-		if(hasDeterminedFileInitializationOrder)
-			return
-		hasDeterminedFileInitializationOrder = true
-		super.determineFileInitializationOrder(filesToInitialize)
-		declaration?.determineFileInitializationOrder(filesToInitialize)
-	}
 
 	override fun hashCode(): Int {
 		var result = super.hashCode()
