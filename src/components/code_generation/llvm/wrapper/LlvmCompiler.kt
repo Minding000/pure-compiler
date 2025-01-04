@@ -20,7 +20,7 @@ object LlvmCompiler {
 		}
 	}
 
-	fun build(project: Project, semanticModel: Program, entryPointPath: String) {
+	fun build(project: Project, semanticModel: Program, entryPointPath: String): LlvmProgram {
 		val program = LlvmProgram(project.name)
 		try {
 			program.loadSemanticModel(semanticModel, entryPointPath)
@@ -30,6 +30,7 @@ object LlvmCompiler {
 		} finally {
 			program.dispose()
 		}
+		return program
 	}
 
 	fun buildAndRun(project: Project, semanticModel: Program, entryPointPath: String) {

@@ -11,10 +11,11 @@ import org.bytedeco.javacpp.IntPointer
 import org.bytedeco.llvm.LLVM.LLVMTargetRef
 import org.bytedeco.llvm.LLVM.LLVMValueRef
 import org.bytedeco.llvm.global.LLVM
+import util.isRunningOnWindows
 import java.io.File
 
-class LlvmProgram(name: String) {
-	val targetTriple = "x86_64-pc-windows"
+class LlvmProgram(name: String,
+				  val targetTriple: String = if(isRunningOnWindows()) "x86_64-unknown-windows-msvc" else "x86_64-unknown-linux-gnu") {
 	val constructor = LlvmConstructor(name)
 
 	private var _entrypoint: LLVMValueRef? = null

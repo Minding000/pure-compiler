@@ -168,8 +168,10 @@ class Program(val context: Context, val model: Program, val files: List<File>) {
 	}
 
 	private fun createStandardStream(constructor: LlvmConstructor, identifier: Int, mode: LlvmValue, global: LlvmValue) {
+		//val handle =
+		//	constructor.buildFunctionCall(context.externalFunctions.streamOpen, listOf(constructor.buildInt32(identifier)), "handle")
 		val handle =
-			constructor.buildFunctionCall(context.externalFunctions.streamOpen, listOf(constructor.buildInt32(identifier)), "handle")
+			constructor.buildFunctionCall(context.externalFunctions.streamOpen, listOf(constructor.buildInt32(identifier), mode), "handle")
 		//val handle = constructor.buildGetArrayElementPointer(constructor.pointerType, handleArray, constructor.buildInt32(identifier), "handle")
 		constructor.buildStore(handle, global)
 	}

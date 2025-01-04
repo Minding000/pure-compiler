@@ -63,9 +63,10 @@ object Builder {
 				project.context.logger.printReport(Main.logLevel)
 				Main.exitWithError("Source code contains errors.")
 			}
-			LlvmCompiler.build(project, semanticModel, entryPointPath)
+			val program = LlvmCompiler.build(project, semanticModel, entryPointPath)
 			project.context.logger.printReport(Main.logLevel)
-			Linker.link("${project.outputPath}${File.separator}program.o", "${project.outputPath}${File.separator}program.exe")
+			Linker.link(program.targetTriple, "${project.outputPath}${File.separator}program.o",
+				"${project.outputPath}${File.separator}program.exe")
 		} catch(error: UserError) {
 			System.err.println("Failed to compile: ${error.message}")
 			if(Main.shouldPrintCompileTimeDebugOutput)

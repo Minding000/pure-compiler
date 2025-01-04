@@ -63,13 +63,13 @@ class ExternalFunctions {
 
 	private fun addStreamOpenFunction(constructor: LlvmConstructor) {
 		val targetTriple = constructor.getTargetTriple()
-		val name = if(targetTriple.contains("linux")) "fdopen" else "__acrt_iob_func"
-		streamOpen = LlvmFunction(constructor, name, listOf(constructor.i32Type), constructor.pointerType)
+		//val name = if(targetTriple.contains("linux")) "fdopen" else "__acrt_iob_func"
+		//streamOpen = LlvmFunction(constructor, name, listOf(constructor.i32Type), constructor.pointerType)
 
 		//val name = if(targetTriple.contains("linux")) "fdopen" else "__iob_func"
-		//llvmStreamOpenFunctionType = constructor.buildFunctionType(listOf(), constructor.pointerType)
-		//val name = if(targetTriple.contains("linux")) "fdopen" else "_fdopen"
-		//llvmStreamOpenFunctionType = constructor.buildFunctionType(listOf(constructor.i32Type, constructor.pointerType), constructor.pointerType)
+		//streamOpen = LlvmFunction(constructor, name, listOf(), constructor.pointerType)
+		val name = if(targetTriple.contains("windows")) "_fdopen" else "fdopen"
+		streamOpen = LlvmFunction(constructor, name, listOf(constructor.i32Type, constructor.pointerType), constructor.pointerType)
 	}
 
 	private fun addStreamErrorFunction(constructor: LlvmConstructor) {

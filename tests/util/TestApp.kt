@@ -47,7 +47,7 @@ class TestApp(private val files: Map<String, String>, private val entryPointPath
 			val executablePath = "${basePath}${File.separator}${id}.exe"
 			try {
 				program.writeObjectFileTo(objectFilePath)
-				Linker.link(objectFilePath, executablePath)
+				Linker.link(program.targetTriple, objectFilePath, executablePath)
 				TestUtil.assertExecutablePrints(expectedOutput, input, executablePath,
 					expectedExitCode)
 			} finally {
