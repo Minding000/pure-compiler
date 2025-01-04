@@ -2,6 +2,7 @@ package code
 
 import logger.Severity
 import java.util.*
+import kotlin.system.exitProcess
 
 object Main {
 	//TODO these should probably not be global (this would simplify testing)
@@ -20,70 +21,50 @@ object Main {
 					"--compile-time-debug-output" -> shouldPrintCompileTimeDebugOutput = true
 					"--runtime-debug-output" -> shouldPrintRuntimeDebugOutput = true
 					"--log-level" -> {
-						if(!argumentIterator.hasNext()) {
-							reportParsingIssue("Missing log level.")
-							return
-						}
+						if(!argumentIterator.hasNext())
+							exitWithParsingIssue("Missing log level.")
 						val logLevelInput = argumentIterator.next()
 						try {
 							logLevel = Severity.valueOf(logLevelInput.uppercase())
 						} catch(exception: IllegalArgumentException) {
-							reportParsingIssue("Unknown log level '$logLevelInput'.")
 							if(shouldPrintCompileTimeDebugOutput)
 								exception.printStackTrace()
-							return
+							exitWithParsingIssue("Unknown log level '$logLevelInput'.")
 						}
 					}
 					else -> {
-						reportParsingIssue("Unknown named argument '$argument'.")
-						return
+						exitWithParsingIssue("Unknown named argument '$argument'.")
 					}
 				}
 			} else {
 				positionalArguments.add(argument)
 			}
 		}
-		if(positionalArguments.isEmpty()) {
-			reportParsingIssue("Missing sub-command.")
-			return
-		}
+		if(positionalArguments.isEmpty())
+			exitWithParsingIssue("Missing sub-command.")
 		when(val subCommand = positionalArguments.first()) {
 			"run" -> {
-				if(positionalArguments.size < 3) {
-					reportParsingIssue("Too few arguments.", "run")
-					return
-				}
-				if(positionalArguments.size > 3) {
-					reportParsingIssue("Too many arguments.", "run")
-					return
-				}
+				if(positionalArguments.size < 3)
+					exitWithParsingIssue("Too few arguments.", "run")
+				if(positionalArguments.size > 3)
+					exitWithParsingIssue("Too many arguments.", "run")
 				Builder.run(positionalArguments[1], positionalArguments[2])
 			}
 			"build" -> {
-				if(positionalArguments.size < 3) {
-					reportParsingIssue("Too few arguments.", "build")
-					return
-				}
-				if(positionalArguments.size > 3) {
-					reportParsingIssue("Too many arguments.", "build")
-					return
-				}
+				if(positionalArguments.size < 3)
+					exitWithParsingIssue("Too few arguments.", "build")
+				if(positionalArguments.size > 3)
+					exitWithParsingIssue("Too many arguments.", "build")
 				Builder.build(positionalArguments[1], positionalArguments[2])
 			}
 			"print" -> {
-				if(positionalArguments.size < 4) {
-					reportParsingIssue("Too few arguments.", "print")
-					return
-				}
-				if(positionalArguments.size > 4) {
-					reportParsingIssue("Too many arguments.", "print")
-					return
-				}
+				if(positionalArguments.size < 4)
+					exitWithParsingIssue("Too few arguments.", "print")
+				if(positionalArguments.size > 4)
+					exitWithParsingIssue("Too many arguments.", "print")
 				val subject = positionalArguments[1].lowercase()
-				if(!Builder.PRINT_SUBJECTS.contains(subject)) {
-					reportParsingIssue("Unknown subject '$subject'.", "print")
-					return
-				}
+				if(!Builder.PRINT_SUBJECTS.contains(subject))
+					exitWithParsingIssue("Unknown subject '$subject'.", "print")
 				Builder.print(subject, positionalArguments[2], positionalArguments[3])
 			}
 			"?",
@@ -95,13 +76,23 @@ object Main {
 				}
 			}
 			else -> {
-				reportParsingIssue("Sub-command '$subCommand' does not exist.")
+				exitWithParsingIssue("Sub-command '$subCommand' does not exist.")
 			}
 		}
 	}
 
-	private fun reportParsingIssue(message: String, subCommand: String = "") {
+	private fun exitWithParsingIssue(message: String, subCommand: String = ""): Nothing {
 		System.err.println(message)
 		Helper.help(subCommand)
+		exitWithError()
+	}
+
+	fun exitWithError(message: String): Nothing {
+		System.err.println(message)
+		exitWithError()
+	}
+
+	fun exitWithError(): Nothing {
+		exitProcess(1)
 	}
 }

@@ -72,7 +72,7 @@ class Program(val context: Context, val model: Program, val files: List<File>) {
 			context.printDebugLine(constructor, "Files executed.")
 		} else {
 			for(file in getFilesToInitialize(userEntrypoint.file)) {
-				println("Initializing '${file.name}'")
+				context.printDebugMessage("Initializing '${file.name}'")
 				constructor.buildFunctionCall(file.runner, listOf(exceptionVariable))
 				checkForUnhandledError(constructor, exceptionVariable, uncaughtExceptionBlock)
 			}

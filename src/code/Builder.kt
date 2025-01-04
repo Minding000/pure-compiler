@@ -51,6 +51,7 @@ object Builder {
 			System.err.println("Failed to compile: ${error.message}")
 			if(Main.shouldPrintCompileTimeDebugOutput)
 				error.printStackTrace()
+			Main.exitWithError()
 		}
 	}
 
@@ -60,16 +61,16 @@ object Builder {
 			val semanticModel = createSemanticModel(project)
 			if(project.context.logger.containsErrors()) {
 				project.context.logger.printReport(Main.logLevel)
-				System.err.println("Source code contains errors.")
-				return
+				Main.exitWithError("Source code contains errors.")
 			}
 			LlvmCompiler.build(project, semanticModel, entryPointPath)
 			project.context.logger.printReport(Main.logLevel)
-			Linker.link("${project.outputPath}\\program.o", "${project.outputPath}\\program.exe")
+			Linker.link("${project.outputPath}${File.separator}program.o", "${project.outputPath}${File.separator}program.exe")
 		} catch(error: UserError) {
 			System.err.println("Failed to compile: ${error.message}")
 			if(Main.shouldPrintCompileTimeDebugOutput)
 				error.printStackTrace()
+			Main.exitWithError()
 		}
 	}
 
@@ -89,8 +90,7 @@ object Builder {
 		val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree, specialTypePaths)
 		if(project.context.logger.containsErrors()) {
 			project.context.logger.printReport(Main.logLevel)
-			System.err.println("Source code contains errors.")
-			return
+			Main.exitWithError("Source code contains errors.")
 		}
 		val intermediateRepresentation = LlvmCompiler.getIntermediateRepresentation(project, semanticModel, entryPointPath)
 		println(intermediateRepresentation)
@@ -99,6 +99,10 @@ object Builder {
 	private fun createSemanticModel(project: Project): Program {
 		loadRequiredModules(project)
 		val abstractSyntaxTree = SyntaxTreeGenerator(project).parseProgram()
+		if(project.context.logger.containsErrors()) {
+			project.context.logger.printReport(Main.logLevel)
+			Main.exitWithError("Source code contains errors.")
+		}
 		val semanticModelGenerator = SemanticModelGenerator(project.context)
 		val semanticModel = semanticModelGenerator.createSemanticModel(abstractSyntaxTree, specialTypePaths)
 		return semanticModel
@@ -106,21 +110,30 @@ object Builder {
 
 	private fun loadProject(path: String): Project {
 		try {
+			if(path == "-") {
+				val project = Project("STDIN")
+				val projectModule = Module(project, project.name)
+				project.targetPath = project.name
+				val source = System.`in`.readAllBytes().toString(Charsets.UTF_8)
+				projectModule.addFile(emptyList(), "Main", source)
+				project.addModule(projectModule)
+				return project
+			}
 			val source = File(path)
 			val project = Project(source.nameWithoutExtension)
 			val projectModule = Module(project, project.name)
 			if(source.isFile) {
 				project.targetPath = source.parent
-				addFile(projectModule, LinkedList(), source)
+				addFile(projectModule, emptyList(), source)
 			} else {
 				project.targetPath = path
 				val files = source.listFiles()
 					?: throw IOException("Failed to list directory contents of '${source.name}' at '${source.path}'.")
 				for(file in files) {
 					if(file.isFile)
-						addFile(projectModule, LinkedList(), file)
+						addFile(projectModule, emptyList(), file)
 					else
-						addDirectory(projectModule, LinkedList(), file)
+						addDirectory(projectModule, emptyList(), file)
 				}
 			}
 			project.addModule(projectModule)
@@ -133,7 +146,7 @@ object Builder {
 	fun loadRequiredModules(project: Project) {
 		val langModule = Module(project, "Pure")
 		val path = System.getenv("BASE_MODULE_PATH") ?: LANG_MODULE_PATH
-		addDirectory(langModule, LinkedList(), File(path))
+		addDirectory(langModule, emptyList(), File(path))
 		project.addModule(langModule)
 	}
 

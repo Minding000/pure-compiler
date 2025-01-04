@@ -13,6 +13,7 @@ import logger.Severity
 import source_structure.Module
 import source_structure.Project
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.PrintStream
 import java.util.concurrent.TimeUnit
 import kotlin.contracts.ExperimentalContracts
@@ -21,6 +22,7 @@ import kotlin.contracts.contract
 import kotlin.test.*
 
 object TestUtil {
+	const val EXAMPLE_PROJECTS_PATH = "D:\\Daten\\Projekte\\Pure\\Example projects"
 	const val TEST_PROJECT_NAME = "Test"
 	const val TEST_MODULE_NAME = "Test"
 	const val TEST_FILE_NAME = "Test"
@@ -188,7 +190,7 @@ object TestUtil {
 		}
 	}
 
-	fun runExecutable(path: String = ".\\out\\program.exe") {
+	fun runExecutable(path: String = ".${File.separator}out${File.separator}program.exe") {
 		println("----- Program output: -----")
 		val process = ProcessBuilder(path).inheritIO().start()
 		val exitCode = process.waitFor()
@@ -196,12 +198,14 @@ object TestUtil {
 			fail(createExitCodeMessage(exitCode))
 	}
 
-	fun assertExecutablePrintsLine(expectedString: String, input: String = "", path: String = ".\\out\\program.exe",
+	fun assertExecutablePrintsLine(expectedString: String, input: String = "",
+								   path: String = ".${File.separator}out${File.separator}program.exe",
 								   expectedExitCode: Int = ExitCode.SUCCESS) {
 		assertExecutablePrints("$expectedString\n", input, path, expectedExitCode)
 	}
 
-	fun assertExecutablePrints(expectedOutput: String, input: String = "", path: String = ".\\out\\program.exe",
+	fun assertExecutablePrints(expectedOutput: String, input: String = "",
+							   path: String = ".${File.separator}out${File.separator}program.exe",
 							   expectedExitCode: Int = ExitCode.SUCCESS) {
 		val process = ProcessBuilder(path).start()
 		val outputStreamReader = process.inputStream.bufferedReader()

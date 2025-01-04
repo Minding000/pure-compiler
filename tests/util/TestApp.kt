@@ -3,6 +3,7 @@ package util
 import code.Builder
 import components.code_generation.Linker
 import components.semantic_model.context.SpecialType
+import java.io.File
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.io.path.Path
 import kotlin.io.path.deleteIfExists
@@ -40,10 +41,10 @@ class TestApp(private val files: Map<String, String>, private val entryPointPath
 
 	fun shouldPrint(expectedOutput: String, input: String = "", expectedExitCode: Int = ExitCode.SUCCESS) {
 		TestUtil.run(files, entryPointPath, includeRequiredModules, specialTypePaths) { program ->
-			val basePath = ".\\out\\tests"
+			val basePath = ".${File.separator}out${File.separator}tests"
 			val id = testProgramCounter.getAndIncrement()
-			val objectFilePath = "${basePath}\\${id}.o"
-			val executablePath = "${basePath}\\${id}.exe"
+			val objectFilePath = "${basePath}${File.separator}${id}.o"
+			val executablePath = "${basePath}${File.separator}${id}.exe"
 			try {
 				program.writeObjectFileTo(objectFilePath)
 				Linker.link(objectFilePath, executablePath)

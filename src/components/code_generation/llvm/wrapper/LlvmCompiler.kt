@@ -2,6 +2,7 @@ package components.code_generation.llvm.wrapper
 
 import components.semantic_model.general.Program
 import source_structure.Project
+import java.io.File
 
 /**
  * @see: https://github.com/bytedeco/javacpp-presets/tree/master/llvm
@@ -25,7 +26,7 @@ object LlvmCompiler {
 			program.loadSemanticModel(semanticModel, entryPointPath)
 			program.verify()
 			program.compile()
-			program.writeObjectFileTo("${project.outputPath}\\program.o")
+			program.writeObjectFileTo("${project.outputPath}${File.separator}program.o")
 		} finally {
 			program.dispose()
 		}

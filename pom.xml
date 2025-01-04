@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.minding.pure</groupId>
     <artifactId>PureCompiler</artifactId>
-    <version>0.0.0</version>
+	<version>0.1.0</version>
     <properties>
         <exec.mainClass>Main</exec.mainClass>
 		<kotlin.version>2.0.0</kotlin.version>

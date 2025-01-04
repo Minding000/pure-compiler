@@ -31,7 +31,7 @@ class LlvmProgram(name: String) {
 		entrypoint = unit.compile(constructor, entryPointPath)
 		constructor.debug.finish()
 		if(Main.shouldWriteIntermediateRepresentation)
-			File("out\\program.ll").printWriter().use { out -> out.print(getIntermediateRepresentation()) }
+			File("out${File.separator}program.ll").printWriter().use { out -> out.print(getIntermediateRepresentation()) }
 	}
 
 	fun verify() {

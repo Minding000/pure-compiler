@@ -8,8 +8,12 @@ object Helper {
 			"run" -> println("Usage: run <path> <entrypoint>")
 			"build" -> println("Usage: build <path> <entrypoint>")
 			"print" -> println("Usage: print source|ast|llvm-ir <path> <entrypoint>")
-			else -> printHelp()
+			else -> {
+				printHelp()
+				return
+			}
 		}
+		println("Use '-' as the path to read from STDIN instead.")
 	}
 
 	private fun printHelp() {
