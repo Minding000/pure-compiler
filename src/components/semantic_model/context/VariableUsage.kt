@@ -41,8 +41,9 @@ class VariableUsage(val kinds: List<Kind>, val semanticModel: SemanticModel, var
 		if(initializationStateCache != InitializationState.UNKNOWN)
 			return initializationStateCache
 		initializationStateCache = InitializationState.PENDING
-		initializationStateCache = if(kinds.contains(Kind.WRITE) || !(previousUsages.isEmpty()
-				|| previousUsages.any { usage -> usage.getInitializationState() == InitializationState.UNINITIALIZED }))
+		initializationStateCache = if(kinds.contains(Kind.WRITE) ||
+			(previousUsages.any { usage -> usage.getInitializationState() == InitializationState.INITIALIZED }
+				&& previousUsages.none { usage -> usage.getInitializationState() == InitializationState.UNINITIALIZED }))
 			InitializationState.INITIALIZED
 		else
 			InitializationState.UNINITIALIZED
@@ -62,8 +63,7 @@ class VariableUsage(val kinds: List<Kind>, val semanticModel: SemanticModel, var
 		if(isPossiblyInitialized != null)
 			return isPossiblyInitialized
 		isPossiblyInitializedCache = false
-		isPossiblyInitialized = kinds.contains(Kind.WRITE)
-			|| (previousUsages.isNotEmpty() && previousUsages.any(VariableUsage::isNowPossiblyInitialized))
+		isPossiblyInitialized = kinds.contains(Kind.WRITE) || previousUsages.any(VariableUsage::isNowPossiblyInitialized)
 		isPossiblyInitializedCache = isPossiblyInitialized
 		return isPossiblyInitialized
 	}

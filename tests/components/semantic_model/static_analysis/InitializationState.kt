@@ -5,10 +5,80 @@ import logger.issues.initialization.ConstantReassignment
 import logger.issues.initialization.NotInitialized
 import logger.issues.initialization.ReliesOnUninitializedProperties
 import logger.issues.initialization.UninitializedProperties
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
 internal class InitializationState {
+
+	//TODO implement: this is a niche feature that requires an extra "initializing [function]" keyword
+	@Disabled
+	@Test
+	fun `allow assignment of constants in functions`() {
+		val sourceCode =
+			"""
+				SantaApp object {
+					val remainingHos
+					init {
+						loadHos()
+					}
+					to loadHos() {
+						remainingHos = 5
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ConstantReassignment>()
+	}
+
+	@Disabled
+	@Test
+	fun `disallow initialization functions to be called outside of the constructor`() {
+		val sourceCode =
+			"""
+				SantaApp object {
+					val remainingHos
+					init {
+						loadHos()
+					}
+					to start() {
+						loadHos()
+					}
+					to loadHos() {
+						remainingHos = 5
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ConstantReassignment>()
+	}
+
+	@Test
+	fun `does not mistake value usage for property initialization`() {
+		val sourceCode =
+			"""
+				 Printer object {
+					val speed = 20
+					to print() {
+						checkSpeed()
+					}
+					to checkSpeed() {
+						loop {
+							speed
+							if yes
+								break
+						}
+					}
+				}
+            """.trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<ConstantReassignment>()
+	}
+
+
+
+
+
 
 	@Test
 	fun `allows use of initialized local variables`() {

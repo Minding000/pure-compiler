@@ -50,6 +50,7 @@ object Main {
 					exitWithParsingIssue("Too many arguments.", "run")
 				Builder.run(positionalArguments[1], positionalArguments[2])
 			}
+			//TODO add build output path option
 			"build" -> {
 				if(positionalArguments.size < 3)
 					exitWithParsingIssue("Too few arguments.", "build")
