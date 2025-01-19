@@ -23,6 +23,7 @@ object Helper {
 		println(" - print")
 		println(" - help [<sub-command>]")
 		println("List of options:")
+		println(" - --output-directory <path>")
 		println(" - --compile-time-debug-output")
 		println(" - --runtime-debug-output")
 		println(" - --log-level ${Severity.entries.joinToString("|") { severity -> severity.name.lowercase() }}")

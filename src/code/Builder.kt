@@ -13,6 +13,7 @@ import source_structure.Project
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.*
 
 object Builder {
@@ -55,18 +56,19 @@ object Builder {
 		}
 	}
 
-	fun build(path: String, entryPointPath: String) {
+	fun build(path: String, entryPointPath: String, outputDirectory: String? = null) {
 		try {
-			val project = loadProject(path)
+			val project = loadProject(path, outputDirectory)
 			val semanticModel = createSemanticModel(project)
 			if(project.context.logger.containsErrors()) {
 				project.context.logger.printReport(Main.logLevel)
 				Main.exitWithError("Source code contains errors.")
 			}
+			Files.createDirectories(Paths.get(project.outputDirectory))
 			val program = LlvmCompiler.build(project, semanticModel, entryPointPath)
 			project.context.logger.printReport(Main.logLevel)
-			Linker.link(program.targetTriple, "${project.outputPath}${File.separator}program.o",
-				"${project.outputPath}${File.separator}program.exe")
+			Linker.link(program.targetTriple, "${project.outputDirectory}${File.separator}program.o",
+				"${project.outputDirectory}${File.separator}program.exe")
 		} catch(error: UserError) {
 			System.err.println("Failed to compile: ${error.message}")
 			if(Main.shouldPrintCompileTimeDebugOutput)
@@ -109,10 +111,10 @@ object Builder {
 		return semanticModel
 	}
 
-	private fun loadProject(path: String): Project {
+	private fun loadProject(path: String, outputDirectory: String? = null): Project {
 		try {
 			if(path == "-") {
-				val project = Project("STDIN")
+				val project = Project("STDIN", outputDirectory)
 				val projectModule = Module(project, project.name)
 				project.targetPath = project.name
 				val source = System.`in`.readAllBytes().toString(Charsets.UTF_8)
@@ -121,7 +123,7 @@ object Builder {
 				return project
 			}
 			val source = File(path)
-			val project = Project(source.nameWithoutExtension)
+			val project = Project(source.nameWithoutExtension, outputDirectory)
 			val projectModule = Module(project, project.name)
 			if(source.isFile) {
 				project.targetPath = source.parent

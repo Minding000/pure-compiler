@@ -26,7 +26,7 @@ object LlvmCompiler {
 			program.loadSemanticModel(semanticModel, entryPointPath)
 			program.verify()
 			program.compile()
-			program.writeObjectFileTo("${project.outputPath}${File.separator}program.o")
+			program.writeObjectFileTo("${project.outputDirectory}${File.separator}program.o")
 		} finally {
 			program.dispose()
 		}

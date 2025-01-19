@@ -6,11 +6,11 @@ import util.toLines
 import java.io.File
 import java.util.*
 
-class Project(val name: String) {
+class Project(val name: String, outputDirectory: String? = null) {
 	val context = Context()
 	lateinit var targetPath: String
 	val modules = LinkedList<Module>()
-	val outputPath = ".${File.separator}out"
+	val outputDirectory: String = outputDirectory ?: ".${File.separator}out"
 
 	fun addModule(module: Module) {
 		modules.add(module)

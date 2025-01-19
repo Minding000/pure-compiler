@@ -14,6 +14,7 @@ object Main {
 	@JvmStatic
 	fun main(arguments: Array<String>) {
 		val positionalArguments = LinkedList<String>()
+		val additionalArguments = HashMap<String, String>()
 		val argumentIterator = arguments.iterator()
 		for(argument in argumentIterator) {
 			if(argument.startsWith("--")) {
@@ -32,6 +33,11 @@ object Main {
 							exitWithParsingIssue("Unknown log level '$logLevelInput'.")
 						}
 					}
+					"--output-directory" -> {
+						if(!argumentIterator.hasNext())
+							exitWithParsingIssue("Missing output directory.")
+						additionalArguments["output-directory"] = argumentIterator.next()
+					}
 					else -> {
 						exitWithParsingIssue("Unknown named argument '$argument'.")
 					}
@@ -45,27 +51,32 @@ object Main {
 		when(val subCommand = positionalArguments.first()) {
 			"run" -> {
 				if(positionalArguments.size < 3)
-					exitWithParsingIssue("Too few arguments.", "run")
+					exitWithParsingIssue("Too few positional arguments.", "run")
 				if(positionalArguments.size > 3)
-					exitWithParsingIssue("Too many arguments.", "run")
+					exitWithParsingIssue("Too many positional arguments.", "run")
+				if(additionalArguments.isNotEmpty())
+					exitWithParsingIssue("Extraneous arguments: ${additionalArguments.map { argument -> argument.key }.joinToString(", ")}",
+						"run")
 				Builder.run(positionalArguments[1], positionalArguments[2])
 			}
-			//TODO add build output path option
 			"build" -> {
 				if(positionalArguments.size < 3)
-					exitWithParsingIssue("Too few arguments.", "build")
+					exitWithParsingIssue("Too few positional arguments.", "build")
 				if(positionalArguments.size > 3)
-					exitWithParsingIssue("Too many arguments.", "build")
-				Builder.build(positionalArguments[1], positionalArguments[2])
+					exitWithParsingIssue("Too many positional arguments.", "build")
+				Builder.build(positionalArguments[1], positionalArguments[2], additionalArguments["output-directory"])
 			}
 			"print" -> {
 				if(positionalArguments.size < 4)
-					exitWithParsingIssue("Too few arguments.", "print")
+					exitWithParsingIssue("Too few positional arguments.", "print")
 				if(positionalArguments.size > 4)
-					exitWithParsingIssue("Too many arguments.", "print")
+					exitWithParsingIssue("Too many positional arguments.", "print")
 				val subject = positionalArguments[1].lowercase()
 				if(!Builder.PRINT_SUBJECTS.contains(subject))
 					exitWithParsingIssue("Unknown subject '$subject'.", "print")
+				if(additionalArguments.isNotEmpty())
+					exitWithParsingIssue("Extraneous arguments: ${additionalArguments.map { argument -> argument.key }.joinToString(", ")}",
+						"print")
 				Builder.print(subject, positionalArguments[2], positionalArguments[3])
 			}
 			"?",
