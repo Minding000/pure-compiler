@@ -513,9 +513,11 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 	private fun parseInstanceList(): InstanceList {
 		val start = consume(WordAtom.INSTANCES).start
 		val instances = LinkedList<Instance>()
+		consumeLineBreaks()
 		instances.add(parseInstance())
 		while(currentWord?.type == WordAtom.COMMA) {
 			consume(WordAtom.COMMA)
+			consumeLineBreaks()
 			instances.add(parseInstance())
 		}
 		return InstanceList(start, instances)

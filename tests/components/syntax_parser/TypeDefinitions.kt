@@ -52,7 +52,10 @@ internal class TypeDefinitions {
 		val sourceCode =
 			"""
 				DeliveryStatus enum {
-					instances Pending, Cancelled, Delivered
+					instances
+						Pending,
+						Cancelled,
+						Delivered
 				}
             """.trimIndent()
 		val expected =
