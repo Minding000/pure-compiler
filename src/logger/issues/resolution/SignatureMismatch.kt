@@ -23,4 +23,5 @@ class SignatureMismatch(val function: Value, val typeParameters: List<Type>, val
 		}
 	override val description =
 		"The callable exists, but there is no overload with parameters that accept the provided types and values."
+	override val isInternal = valueParameters.any { valueParameter -> valueParameter.providedType == null }
 }

@@ -19,7 +19,7 @@ class Logger(private val systemName: String) {
 		phase.add(issue)
 	}
 
-	fun printReport(verbosity: Severity, ignoreInternalIssues: Boolean = false) {
+	fun printReport(verbosity: Severity, ignoreInternalIssues: Boolean = true) {
 		val capitalizedSystemName = systemName.uppercaseFirstChar()
 		val totalIssueTypeCounts = Array(Severity.entries.size) { 0 }
 		for(phase in phases) {

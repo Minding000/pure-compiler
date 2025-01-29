@@ -74,7 +74,7 @@ object TestUtil {
 		val syntaxTreeGenerator = SyntaxTreeGenerator(project)
 		val program = syntaxTreeGenerator.parseProgram()
 		if(printReport)
-			syntaxTreeGenerator.project.context.logger.printReport(Severity.INFO)
+			syntaxTreeGenerator.project.context.logger.printReport(Severity.INFO, false)
 		return ParseResult(syntaxTreeGenerator, program)
 	}
 
