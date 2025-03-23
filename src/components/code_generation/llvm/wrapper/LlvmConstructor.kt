@@ -15,6 +15,7 @@ class LlvmConstructor(name: String) {
 	val i32Type = Llvm.create32BitIntegerType(context)
 	val i64Type = Llvm.create64BitIntegerType(context)
 	val floatType = Llvm.createFloatType(context)
+	val doubleType = Llvm.createDoubleType(context)
 	val voidType = Llvm.createVoidType(context)
 	val pointerType = Llvm.createPointerType(context)
 	val nullPointer = LLVMConstPointerNull(pointerType)
@@ -348,8 +349,9 @@ class LlvmConstructor(name: String) {
 	fun buildCastFromIntegerToLong(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, i64Type, name)
 	fun buildCastFromLongToInteger(long: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, long, i32Type, name)
 
-	fun buildCastFromSignedIntegerToFloat(integer: LlvmValue, name: String): LlvmValue =
-		LLVMBuildSIToFP(builder, integer, floatType, name)
+	fun buildCastFromSignedIntegerToFloat(integer: LlvmValue, name: String): LlvmValue = LLVMBuildSIToFP(builder, integer, floatType, name)
+
+	fun buildCastFromFloatToDouble(float: LlvmValue, name: String): LlvmValue = LLVMBuildFPCast(builder, float, doubleType, name)
 
 	fun buildIsNull(value: LlvmValue, name: String): LlvmValue = LLVMBuildIsNull(builder, value, name)
 	fun buildIsNotNull(value: LlvmValue, name: String): LlvmValue = LLVMBuildIsNotNull(builder, value, name)

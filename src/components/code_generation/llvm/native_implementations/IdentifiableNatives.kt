@@ -35,7 +35,6 @@ class IdentifiableNatives(val context: Context) {
 		val buffer = constructor.buildHeapArrayAllocation(constructor.byteType, size, "characters")
 		constructor.buildFunctionCall(context.externalFunctions.printToBuffer, listOf(buffer, format, thisIdentifiable))
 		constructor.buildStore(buffer, arrayValueProperty)
-		context.printDebugLine(constructor, "buffer: %s", buffer)
 
 		val stringAddress = constructor.buildHeapAllocation(context.standardLibrary.stringTypeDeclaration?.llvmType, "_stringAddress")
 		val stringClassDefinitionProperty =

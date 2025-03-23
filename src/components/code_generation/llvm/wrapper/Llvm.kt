@@ -72,6 +72,7 @@ object Llvm {
 	fun create64BitIntegerType(context: LlvmContext): LlvmType = LLVMInt64TypeInContext(context)
 
 	fun createFloatType(context: LlvmContext): LlvmType = LLVMFloatTypeInContext(context)
+	fun createDoubleType(context: LlvmContext): LlvmType = LLVMDoubleTypeInContext(context)
 
 	fun createVoidType(context: LlvmContext): LlvmType = LLVMVoidTypeInContext(context)
 

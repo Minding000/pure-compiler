@@ -1,6 +1,7 @@
 package components.code_generation.llvm
 
 import components.code_generation.llvm.models.declarations.Initializer
+import components.code_generation.llvm.models.declarations.TypeDeclaration
 import components.code_generation.llvm.models.general.Program
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmFunction
@@ -22,10 +23,10 @@ class StandardLibrary {
 	lateinit var nativeInputStream: NativeRuntimeClass
 	lateinit var nativeOutputStream: NativeRuntimeClass
 
-	lateinit var byteArrayTypeDeclaration: components.code_generation.llvm.models.declarations.TypeDeclaration
-	lateinit var exceptionTypeDeclaration: components.code_generation.llvm.models.declarations.TypeDeclaration
+	lateinit var byteArrayTypeDeclaration: TypeDeclaration
+	lateinit var exceptionTypeDeclaration: TypeDeclaration
 	lateinit var exceptionDescriptionInitializer: LlvmFunction
-	lateinit var stringTypeDeclaration: components.code_generation.llvm.models.declarations.TypeDeclaration
+	lateinit var stringTypeDeclaration: TypeDeclaration
 	lateinit var stringByteArrayInitializer: LlvmFunction
 	var exceptionAddLocationFunctionType: LlvmType? = null
 
@@ -121,7 +122,7 @@ class StandardLibrary {
 
 	class NativeRuntimeClass(val struct: LlvmType, val classDefinition: LlvmValue, private val valuePropertyIndex: Int) {
 
-		constructor(typeDeclaration: components.code_generation.llvm.models.declarations.TypeDeclaration, valuePropertyIndex: Int):
+		constructor(typeDeclaration: TypeDeclaration, valuePropertyIndex: Int):
 			this(typeDeclaration.llvmType, typeDeclaration.llvmClassDefinition, valuePropertyIndex)
 
 		fun setClassDefinition(constructor: LlvmConstructor, targetObject: LlvmValue) {

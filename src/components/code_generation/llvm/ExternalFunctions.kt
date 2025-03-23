@@ -4,8 +4,11 @@ import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmFunction
 
 class ExternalFunctions {
+	/** Always adds null-termination */
 	lateinit var print: LlvmFunction
+	/** Always adds null-termination */
 	lateinit var printToBuffer: LlvmFunction
+	/** Always excludes null-termination */
 	lateinit var printSize: LlvmFunction
 	lateinit var streamOpen: LlvmFunction
 	lateinit var streamError: LlvmFunction

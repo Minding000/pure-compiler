@@ -35,6 +35,7 @@ class NativeRegistry(val context: Context) {
 		NullNatives(context).load(this)
 		NativeInputStreamNatives(context).load(this)
 		NativeOutputStreamNatives(context).load(this)
+		StringNatives(context).load(this)
 	}
 
 	fun registerNativePrimitiveInitializer(identifier: String,
