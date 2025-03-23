@@ -23,18 +23,21 @@ class Logger(private val systemName: String) {
 		val capitalizedSystemName = systemName.uppercaseFirstChar()
 		val totalIssueTypeCounts = Array(Severity.entries.size) { 0 }
 		for(phase in phases) {
-			if(!phase.containsVisibleIssues(verbosity))
+			if(!phase.containsVisibleIssues(verbosity, ignoreInternalIssues))
 				continue
 			if(verbosity <= Severity.INFO) {
 				println()
-				println("----- $capitalizedSystemName phase: ${phase.name} (${phase.getTypeCountString()}) -----")
+				println("----- $capitalizedSystemName phase: ${phase.name} (${phase.getTypeCountString(ignoreInternalIssues)}) -----")
 			}
 			for(issue in phase.issues) {
 				if(issue.severity >= verbosity && !(ignoreInternalIssues && issue.isInternal))
 					println("${issue.severity.name}: $issue")
 			}
-			for(issueTypeOrdinal in phase.issueTypeCounts.indices)
+			for(issueTypeOrdinal in phase.issueTypeCounts.indices) {
 				totalIssueTypeCounts[issueTypeOrdinal] += phase.issueTypeCounts[issueTypeOrdinal]
+				if(!ignoreInternalIssues)
+					totalIssueTypeCounts[issueTypeOrdinal] += phase.internalIssueTypeCounts[issueTypeOrdinal]
+			}
 		}
 		println("Total issues in $systemName: "
 			+ "${totalIssueTypeCounts[Severity.ERROR.ordinal]} errors, "
@@ -59,25 +62,31 @@ class Logger(private val systemName: String) {
 	private inner class Phase(val name: String) {
 		val issues = LinkedList<Issue>()
 		val issueTypeCounts = Array(Severity.entries.size) { 0 }
+		val internalIssueTypeCounts = Array(Severity.entries.size) { 0 }
 
 		fun add(issue: Issue) {
 			issues.add(issue)
-			issueTypeCounts[issue.severity.ordinal]++
+			if(issue.isInternal)
+				internalIssueTypeCounts[issue.severity.ordinal]++
+			else
+				issueTypeCounts[issue.severity.ordinal]++
 		}
 
-		fun containsVisibleIssues(verbosity: Severity): Boolean {
+		fun containsVisibleIssues(verbosity: Severity, ignoreInternalIssues: Boolean): Boolean {
 			for(issueType in Severity.entries) {
 				if(issueType >= verbosity) {
 					if(issueTypeCounts[issueType.ordinal] > 0)
+						return true
+					if(!ignoreInternalIssues && internalIssueTypeCounts[issueType.ordinal] > 0)
 						return true
 				}
 			}
 			return false
 		}
 
-		fun getTypeCountString(): String {
+		fun getTypeCountString(ignoreInternalIssues: Boolean): String {
 			return Severity.entries.reversed().joinToString { issueType ->
-				"${issueType.name.first()}${issueTypeCounts[issueType.ordinal]}"
+				"${issueType.name.first()}${issueTypeCounts[issueType.ordinal] + (if(ignoreInternalIssues) 0 else internalIssueTypeCounts[issueType.ordinal])}"
 			}
 		}
 	}
