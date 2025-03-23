@@ -15,7 +15,7 @@ class StringNatives(val context: Context) {
 		val thisParameter = context.getThisParameter(constructor, llvmFunctionValue)
 		val float = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val double = constructor.buildCastFromFloatToDouble(float, "_double")
-		val format = constructor.buildGlobalAsciiCharArray("floatToStringFormat", "%f")
+		val format = constructor.buildGlobalAsciiCharArray("floatToStringFormat", "%.9g")
 		val sizeWithoutTermination = constructor.buildFunctionCall(context.externalFunctions.printSize,
 			listOf(constructor.nullPointer, constructor.buildInt64(0), format, double), "sizeWithoutTermination")
 		val size = constructor.buildIntegerAddition(sizeWithoutTermination, constructor.buildInt32(1), "size")
