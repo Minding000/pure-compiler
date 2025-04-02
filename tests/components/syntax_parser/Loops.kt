@@ -91,6 +91,46 @@ internal class Loops {
 	}
 
 	@Test
+	fun `parses pre-until-loops`() {
+		val sourceCode = """
+			loop until x < 5 {
+				x++
+			}
+			""".trimIndent()
+		val expected =
+			"""
+				Loop [ WhileGenerator [pre negated] {
+					BinaryOperator {
+						Identifier { x } Operator { < } NumberLiteral { 5 }
+					}
+				} ] { StatementSection { StatementBlock {
+					UnaryModification { Identifier { x } Operator { ++ } }
+				} } }
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
+
+	@Test
+	fun `parses post-until-loops`() {
+		val sourceCode = """
+			loop {
+				x--
+			} until x > 5
+			""".trimIndent()
+		val expected =
+			"""
+				Loop [ WhileGenerator [post negated] {
+					BinaryOperator {
+						Identifier { x } Operator { > } NumberLiteral { 5 }
+					}
+				} ] { StatementSection { StatementBlock {
+					UnaryModification { Identifier { x } Operator { -- } }
+				} } }
+            """.trimIndent()
+		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
+	}
+
+	@Test
 	fun `parses over-loops without variable`() {
 		val sourceCode = """
 			loop over files {}

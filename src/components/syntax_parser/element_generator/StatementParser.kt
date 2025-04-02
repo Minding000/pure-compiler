@@ -265,12 +265,12 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 	private fun parseLoopStatement(): LoopStatement {
 		val start = consume(WordAtom.LOOP).start
 		var generator = when(currentWord?.type) {
-			WordAtom.WHILE -> parseWhileGenerator()
+			WordAtom.WHILE, WordAtom.UNTIL -> parseWhileGenerator()
 			WordAtom.OVER -> parseOverGenerator()
 			else -> null
 		}
 		val body = parseStatementSection()
-		if(currentWord?.type == WordAtom.WHILE)
+		if(WordType.CONDITIONAL_GENERATOR.includes(currentWord?.type))
 			generator = parseWhileGenerator(true)
 		return LoopStatement(start, generator, body)
 	}
@@ -278,11 +278,12 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 	/**
 	 * WhileGenerator:
 	 *   while <Expression>
+	 *   until <Expression>
 	 */
 	private fun parseWhileGenerator(isPostCondition: Boolean = false): WhileGenerator {
-		val start = consume(WordAtom.WHILE).start
+		val conditionalGeneratorWord = consume(WordType.CONDITIONAL_GENERATOR)
 		val condition = parseExpression()
-		return WhileGenerator(start, condition, isPostCondition)
+		return WhileGenerator(conditionalGeneratorWord, condition, isPostCondition)
 	}
 
 	/**

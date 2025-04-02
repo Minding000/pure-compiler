@@ -87,6 +87,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	OVER("over\\b"),
 	USING("using\\b"),
 	WHILE("while\\b"),
+	UNTIL("until\\b"),
 	BREAK("break\\b"),
 	NEXT("next\\b"),
 	RETURN("return\\b"),

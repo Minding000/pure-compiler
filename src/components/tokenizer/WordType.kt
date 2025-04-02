@@ -115,6 +115,10 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.OBJECT,
 		WordAtom.ENUM
 	),
+	CONDITIONAL_GENERATOR(
+		WordAtom.WHILE,
+		WordAtom.UNTIL
+	),
 	MODIFIER(
 		WordAtom.ABSTRACT,
 		WordAtom.BOUND,

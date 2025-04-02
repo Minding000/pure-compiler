@@ -23,6 +23,7 @@ internal class Statements {
 		TestUtil.assertTokenType("using", WordAtom.USING)
 		TestUtil.assertTokenType("as", WordAtom.AS)
 		TestUtil.assertTokenType("while", WordAtom.WHILE)
+		TestUtil.assertTokenType("until", WordAtom.UNTIL)
 		TestUtil.assertTokenType("break", WordAtom.BREAK)
 		TestUtil.assertTokenType("next", WordAtom.NEXT)
 	}
