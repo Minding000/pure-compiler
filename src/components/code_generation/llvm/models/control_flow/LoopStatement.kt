@@ -33,15 +33,27 @@ class LoopStatement(override val model: LoopStatement, val generator: Unit?, val
 		exitBlock = constructor.createDetachedBlock("loop_exit")
 		constructor.buildJump(entryBlock)
 		constructor.select(entryBlock)
-		if(generator is WhileGenerator) {
+		if(generator is WhileGenerator && !generator.model.isPostCondition) {
 			val condition = generator.condition.getLlvmValue(constructor)
 			val bodyBlock = constructor.createBlock(function, "loop_body")
-			constructor.buildJump(condition, bodyBlock, exitBlock)
+			if(generator.model.isExitCondition)
+				constructor.buildJump(condition, exitBlock, bodyBlock)
+			else
+				constructor.buildJump(condition, bodyBlock, exitBlock)
 			constructor.select(bodyBlock)
 		}
 		body.compile(constructor)
-		if(!body.model.isInterruptingExecutionBasedOnStructure)
-			constructor.buildJump(entryBlock)
+		if(!body.model.isInterruptingExecutionBasedOnStructure) {
+			if(generator is WhileGenerator && generator.model.isPostCondition) {
+				val condition = generator.condition.getLlvmValue(constructor)
+				if(generator.model.isExitCondition)
+					constructor.buildJump(condition, exitBlock, entryBlock)
+				else
+					constructor.buildJump(condition, entryBlock, exitBlock)
+			} else {
+				constructor.buildJump(entryBlock)
+			}
+		}
 		if(generator is WhileGenerator || model.mightGetBrokenOutOf) {
 			constructor.addBlockToFunction(function, exitBlock)
 			constructor.select(exitBlock)

@@ -99,7 +99,7 @@ internal class Loops {
 			""".trimIndent()
 		val expected =
 			"""
-				Loop [ WhileGenerator [pre negated] {
+				Loop [ WhileGenerator [exit pre] {
 					BinaryOperator {
 						Identifier { x } Operator { < } NumberLiteral { 5 }
 					}
@@ -119,7 +119,7 @@ internal class Loops {
 			""".trimIndent()
 		val expected =
 			"""
-				Loop [ WhileGenerator [post negated] {
+				Loop [ WhileGenerator [exit post] {
 					BinaryOperator {
 						Identifier { x } Operator { > } NumberLiteral { 5 }
 					}

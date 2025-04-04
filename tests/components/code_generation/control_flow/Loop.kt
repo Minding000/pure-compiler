@@ -216,7 +216,7 @@ internal class Loop {
 	}
 
 	@Test
-	fun `compiles while loops`() {
+	fun `compiles pre while loops`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
@@ -241,6 +241,101 @@ internal class Loop {
 			loop_body:                                        ; preds = %loop_entry
 			  store i1 false, ptr %x_Variable, align 1
 			  br label %loop_entry
+
+			loop_exit:                                        ; preds = %loop_entry
+			  ret void
+			}
+			""".trimIndent())
+	}
+
+	@Test
+	fun `compiles post while loops`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					var x = yes
+					loop {
+						x = no
+					} while x
+				}
+			}
+			""".trimIndent()
+		val intermediateRepresentation = TestUtil.getIntermediateRepresentation(sourceCode)
+		assertContains(intermediateRepresentation, """
+			define void @"run()"(ptr %0, ptr %1) {
+			entrypoint:
+			  %x_Variable = alloca i1, align 1
+			  store i1 true, ptr %x_Variable, align 1
+			  br label %loop_entry
+
+			loop_entry:                                       ; preds = %loop_entry, %entrypoint
+			  store i1 false, ptr %x_Variable, align 1
+			  %x = load i1, ptr %x_Variable, align 1
+			  br i1 %x, label %loop_entry, label %loop_exit
+
+			loop_exit:                                        ; preds = %loop_entry
+			  ret void
+			}
+			""".trimIndent())
+	}
+
+	@Test
+	fun `compiles pre until loops`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					var x = yes
+					loop until x
+						x = no
+				}
+			}
+			""".trimIndent()
+		val intermediateRepresentation = TestUtil.getIntermediateRepresentation(sourceCode)
+		assertContains(intermediateRepresentation, """
+			define void @"run()"(ptr %0, ptr %1) {
+			entrypoint:
+			  %x_Variable = alloca i1, align 1
+			  store i1 true, ptr %x_Variable, align 1
+			  br label %loop_entry
+
+			loop_entry:                                       ; preds = %loop_body, %entrypoint
+			  %x = load i1, ptr %x_Variable, align 1
+			  br i1 %x, label %loop_exit, label %loop_body
+
+			loop_body:                                        ; preds = %loop_entry
+			  store i1 false, ptr %x_Variable, align 1
+			  br label %loop_entry
+
+			loop_exit:                                        ; preds = %loop_entry
+			  ret void
+			}
+			""".trimIndent())
+	}
+
+	@Test
+	fun `compiles post until loops`() {
+		val sourceCode = """
+			SimplestApp object {
+				to run() {
+					var x = yes
+					loop {
+						x = no
+					} until x
+				}
+			}
+			""".trimIndent()
+		val intermediateRepresentation = TestUtil.getIntermediateRepresentation(sourceCode)
+		assertContains(intermediateRepresentation, """
+			define void @"run()"(ptr %0, ptr %1) {
+			entrypoint:
+			  %x_Variable = alloca i1, align 1
+			  store i1 true, ptr %x_Variable, align 1
+			  br label %loop_entry
+
+			loop_entry:                                       ; preds = %loop_entry, %entrypoint
+			  store i1 false, ptr %x_Variable, align 1
+			  %x = load i1, ptr %x_Variable, align 1
+			  br i1 %x, label %loop_exit, label %loop_entry
 
 			loop_exit:                                        ; preds = %loop_entry
 			  ret void
