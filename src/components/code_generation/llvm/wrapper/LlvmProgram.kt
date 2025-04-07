@@ -39,7 +39,6 @@ class LlvmProgram(name: String,
 		val error = BytePointer()
 		if(LLVM.LLVMVerifyModule(constructor.module, Llvm.ModuleVerificationAction.PRINT, error) != Llvm.OK) {
 			LLVM.LLVMDisposeMessage(error)
-			//println(getIntermediateRepresentation())
 			throw CompilerError("Failed to compile to LLVM target.")
 		}
 	}

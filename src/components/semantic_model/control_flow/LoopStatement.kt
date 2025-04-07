@@ -21,7 +21,7 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 				return false
 			} else if(generator is WhileGenerator) {
 				val condition = generator.condition.getComputedValue()
-				if(condition is BooleanLiteral && condition.value)
+				if(condition is BooleanLiteral && condition.value.xor(generator.isExitCondition))
 					return false
 			}
 			return true
@@ -78,7 +78,8 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 		tracker.breakStatementStates.clear()
 		tracker.currentState.removeReferencePoint(loopReferencePoint)
 		if(!(hasFiniteGenerator || mightGetBrokenOutOf)) {
-			isInterruptingExecutionBasedOnStructure = true
+			if(generator == null)
+				isInterruptingExecutionBasedOnStructure = true
 			isInterruptingExecutionBasedOnStaticEvaluation = true
 		}
 	}

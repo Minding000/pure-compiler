@@ -107,6 +107,7 @@ object TestUtil {
 			program.verify()
 			return program.getIntermediateRepresentation()
 		} finally {
+			println(program.getIntermediateRepresentation())
 			program.dispose()
 			Main.shouldPrintRuntimeDebugOutput = previousFlag
 		}

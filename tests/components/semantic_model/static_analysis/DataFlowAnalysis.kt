@@ -211,23 +211,23 @@ internal class DataFlowAnalysis {
 	fun `works with loops with post until generator`() {
 		val sourceCode = """
 			Int class
-			var result: Int? = Int()
+			var result: Int? = null
 			loop {
 				result
-				result = null
+				result = Int()
 			} until result?
 			result
 		""".trimIndent()
 		val report = """
 			start -> 2
-			2: declaration & write -> 3 (Int, Expression)
+			2: declaration & write -> 3 (Null, null)
 			3: hint -> 4 (Int?, null)
 			4: read -> 5 (Int?, null)
-			5: write -> 6 (Null, null)
-			6: read -> 6, 6 (Null, null)
-			6: hint -> 7 (Int, null)
+			5: write -> 6 (Int, Expression)
+			6: read -> 6, 6 (Int, Expression)
+			6: hint -> 7 (Int, Expression)
 			6: hint -> 4 (Null, null)
-			7: read -> end (Int, null)
+			7: read -> end (Int, Expression)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertStringEquals(report, tracker.getReportFor("result"))
