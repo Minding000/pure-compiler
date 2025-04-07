@@ -100,6 +100,7 @@ internal class ExecutionFlowAnalysis {
 		lintResult.assertIssueDetected<UnreachableStatement>()
 	}
 
+	//TODO consider until and post condition
 	@Test
 	fun `considers infinite while loops that wont be broken`() {
 		val sourceCode =

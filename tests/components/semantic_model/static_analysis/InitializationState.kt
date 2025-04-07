@@ -11,7 +11,7 @@ import util.TestUtil
 
 internal class InitializationState {
 
-	//TODO implement: this is a niche feature that requires an extra "initializing [function]" keyword
+	//TODO implement: this is a niche feature that requires an extra "initializing [function]" keyword to ensure the functions are only called from initializers (and only once)
 	@Disabled
 	@Test
 	fun `allow assignment of constants in functions`() {
@@ -74,11 +74,6 @@ internal class InitializationState {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueNotDetected<ConstantReassignment>()
 	}
-
-
-
-
-
 
 	@Test
 	fun `allows use of initialized local variables`() {

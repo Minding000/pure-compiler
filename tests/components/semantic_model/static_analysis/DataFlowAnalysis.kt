@@ -130,7 +130,7 @@ internal class DataFlowAnalysis {
 	}
 
 	@Test
-	fun `works with loops with while generator`() {
+	fun `works with loops with pre while generator`() {
 		val sourceCode = """
 			Int class
 			var result: Int? = Int()
@@ -150,6 +150,84 @@ internal class DataFlowAnalysis {
 			4: read -> 5 (Int, null)
 			5: write -> 3 (Null, null)
 			7: read -> end (Null, null)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertStringEquals(report, tracker.getReportFor("result"))
+	}
+
+	@Test
+	fun `works with loops with post while generator`() {
+		val sourceCode = """
+			Int class
+			var result: Int? = Int()
+			loop {
+				result
+				result = null
+			} while result?
+			result
+		""".trimIndent()
+		val report = """
+			start -> 2
+			2: declaration & write -> 3 (Int, Expression)
+			3: hint -> 4 (Int?, null)
+			4: read -> 5 (Int?, null)
+			5: write -> 6 (Null, null)
+			6: read -> 6, 6 (Null, null)
+			6: hint -> 4 (Int, null)
+			6: hint -> 7 (Null, null)
+			7: read -> end (Null, null)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertStringEquals(report, tracker.getReportFor("result"))
+	}
+
+	@Test
+	fun `works with loops with pre until generator`() {
+		val sourceCode = """
+			Int class
+			var result: Int? = Int()
+			loop until result? {
+				result
+				result = null
+			}
+			result
+		""".trimIndent()
+		val report = """
+			start -> 2
+			2: declaration & write -> 3 (Int, Expression)
+			3: hint -> 3 (Int?, null)
+			3: read -> 3, 3 (Int?, null)
+			3: hint -> 7 (Int, null)
+			3: hint -> 4 (Null, null)
+			4: read -> 5 (Null, null)
+			5: write -> 3 (Null, null)
+			7: read -> end (Int, null)
+		""".trimIndent()
+		val tracker = TestUtil.analyseDataFlow(sourceCode)
+		assertStringEquals(report, tracker.getReportFor("result"))
+	}
+
+	@Test
+	fun `works with loops with post until generator`() {
+		val sourceCode = """
+			Int class
+			var result: Int? = Int()
+			loop {
+				result
+				result = null
+			} until result?
+			result
+		""".trimIndent()
+		val report = """
+			start -> 2
+			2: declaration & write -> 3 (Int, Expression)
+			3: hint -> 4 (Int?, null)
+			4: read -> 5 (Int?, null)
+			5: write -> 6 (Null, null)
+			6: read -> 6, 6 (Null, null)
+			6: hint -> 7 (Int, null)
+			6: hint -> 4 (Null, null)
+			7: read -> end (Int, null)
 		""".trimIndent()
 		val tracker = TestUtil.analyseDataFlow(sourceCode)
 		assertStringEquals(report, tracker.getReportFor("result"))

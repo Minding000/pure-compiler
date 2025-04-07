@@ -43,17 +43,25 @@ class LoopStatement(override val source: LoopStatementSyntaxTree, override val s
 	override fun analyseDataFlow(tracker: VariableTracker) {
 		for(declaration in mutatedVariables)
 			tracker.add(VariableUsage.Kind.HINT, declaration, this, declaration.providedType, null)
+		val isPostCondition = generator is WhileGenerator && generator.isPostCondition
 		val (loopReferencePoint, loopEndState) = if(generator is WhileGenerator) {
-			//TODO fix: does not work if WhileGenerator.isPostCondition
 			val referencePoint = tracker.currentState.createReferencePoint()
+			if(isPostCondition)
+				body.analyseDataFlow(tracker)
 			generator.analyseDataFlow(tracker)
-			tracker.setVariableStates(generator.condition.getPositiveEndState())
-			Pair(referencePoint, generator.condition.getNegativeEndState())
+			if(generator.isExitCondition) {
+				tracker.setVariableStates(generator.condition.getNegativeEndState())
+				Pair(referencePoint, generator.condition.getPositiveEndState())
+			} else {
+				tracker.setVariableStates(generator.condition.getPositiveEndState())
+				Pair(referencePoint, generator.condition.getNegativeEndState())
+			}
 		} else {
 			generator?.analyseDataFlow(tracker)
 			Pair(tracker.currentState.createReferencePoint(), tracker.currentState.copy())
 		}
-		body.analyseDataFlow(tracker)
+		if(!isPostCondition)
+			body.analyseDataFlow(tracker)
 		tracker.linkBackTo(loopReferencePoint)
 		for(variableState in tracker.nextStatementStates)
 			tracker.link(variableState, loopReferencePoint)
