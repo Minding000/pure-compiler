@@ -9,14 +9,14 @@ internal class String {
 
 	@TestFactory
 	fun `can be constructed from a Float`() = listOf(
-		100.45 to "100.449997",
-		7 to "7",
-		-2 to "-2",
-		0 to "0",
+		100.45f to "100.449997",
+		7f to "7",
+		-2f to "-2",
+		0f to "0",
 	).map { (float, string) ->
 		DynamicTest.dynamicTest("String representation of float $float should be $string") {
 			val sourceCode = """
-				SimplestApp object {
+				App object {
 					bound Process object {
 						val outputStream = getStandardOutputStream()
 						native to getStandardOutputStream(): NativeOutputStream
@@ -37,7 +37,7 @@ internal class String {
 					native converting init(float: Float)
 				}
 			""".trimIndent()
-			val app = TestApp(sourceCode, "Test:SimplestApp.printFloat")
+			val app = TestApp(sourceCode, "Test:App.printFloat")
 			app.setSpecialTypeDeclarations(SpecialType.NATIVE_OUTPUT_STREAM, SpecialType.BYTE_ARRAY, SpecialType.STRING)
 			app.shouldPrint(string)
 		}

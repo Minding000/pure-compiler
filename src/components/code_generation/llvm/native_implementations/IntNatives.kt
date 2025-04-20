@@ -35,7 +35,7 @@ class IntNatives(val context: Context) {
 	private fun fromByte(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Int(Byte): Self"
 		if(parameters.size != 1)
-			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
 		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
 		return constructor.buildCastFromByteToInteger(firstParameter, name)
 	}
@@ -43,7 +43,7 @@ class IntNatives(val context: Context) {
 	private fun fromInt(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Int(Int): Self"
 		if(parameters.size != 1)
-			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
 		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
 		return firstParameter
 	}

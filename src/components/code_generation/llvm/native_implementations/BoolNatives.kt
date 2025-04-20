@@ -22,7 +22,7 @@ class BoolNatives(val context: Context) {
 	private fun fromBool(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Bool(Bool): Self"
 		if(parameters.size != 1)
-			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
 		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
 		return firstParameter
 	}

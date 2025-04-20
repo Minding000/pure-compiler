@@ -31,6 +31,13 @@ class TestApp(private val files: Map<String, String>, private val entryPointPath
 		}
 	}
 
+	fun shouldExitWith(expectedValue: Float) {
+		TestUtil.run(files, entryPointPath, includeRequiredModules, specialTypePaths) { program ->
+			val result = program.runAndReturnFloat()
+			assertEquals(expectedValue, result, "The test app exited with an unexpected value.")
+		}
+	}
+
 	fun shouldExitWith(expectedValue: Int, input: String) {
 		shouldPrint("", input, expectedValue)
 	}
@@ -48,8 +55,7 @@ class TestApp(private val files: Map<String, String>, private val entryPointPath
 			try {
 				program.writeObjectFileTo(objectFilePath)
 				Linker.link(program.targetTriple, objectFilePath, executablePath)
-				TestUtil.assertExecutablePrints(expectedOutput, input, executablePath,
-					expectedExitCode)
+				TestUtil.assertExecutablePrints(expectedOutput, input, executablePath, expectedExitCode)
 			} finally {
 				Path(objectFilePath).deleteIfExists()
 				Path(executablePath).deleteIfExists()

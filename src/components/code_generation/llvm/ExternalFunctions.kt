@@ -10,6 +10,7 @@ class ExternalFunctions {
 	lateinit var printToBuffer: LlvmFunction
 	/** Always excludes null-termination */
 	lateinit var printSize: LlvmFunction
+	lateinit var parseDouble: LlvmFunction
 	lateinit var streamOpen: LlvmFunction
 	lateinit var streamError: LlvmFunction
 	lateinit var streamClose: LlvmFunction
@@ -34,6 +35,7 @@ class ExternalFunctions {
 		addPrintFunction(constructor)
 		addPrintToBufferFunction(constructor)
 		addPrintSizeFunction(constructor)
+		addParseDoubleFunction(constructor)
 		addStreamOpenFunction(constructor)
 		addStreamErrorFunction(constructor)
 		addStreamCloseFunction(constructor)
@@ -62,6 +64,10 @@ class ExternalFunctions {
 		val name = if(targetTriple.contains("linux")) "snprintf" else "_snprintf"
 		printSize = LlvmFunction(constructor, name, listOf(constructor.pointerType, constructor.i64Type, constructor.pointerType),
 			constructor.i32Type, true)
+	}
+
+	private fun addParseDoubleFunction(constructor: LlvmConstructor) {
+		parseDouble = LlvmFunction(constructor, "strtod", listOf(constructor.pointerType, constructor.pointerType), constructor.doubleType)
 	}
 
 	private fun addStreamOpenFunction(constructor: LlvmConstructor) {

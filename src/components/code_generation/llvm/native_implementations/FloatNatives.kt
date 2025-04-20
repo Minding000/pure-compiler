@@ -13,6 +13,7 @@ class FloatNatives(val context: Context) {
 		registry.registerNativePrimitiveInitializer("Float(Byte): Self", ::fromByte)
 		registry.registerNativePrimitiveInitializer("Float(Int): Self", ::fromInt)
 		registry.registerNativePrimitiveInitializer("Float(Float): Self", ::fromFloat)
+		registry.registerNativePrimitiveInitializer("Float(String): Self", ::fromString)
 		registry.registerNativeImplementation("Float-: Self", ::negative)
 		registry.registerNativeImplementation("Float + Self: Self", ::plus)
 		registry.registerNativeImplementation("Float - Self: Self", ::minus)
@@ -33,7 +34,7 @@ class FloatNatives(val context: Context) {
 	private fun fromByte(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Float(Byte): Self"
 		if(parameters.size != 1)
-			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
 		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
 		return constructor.buildCastFromSignedIntegerToFloat(firstParameter, name)
 	}
@@ -41,7 +42,7 @@ class FloatNatives(val context: Context) {
 	private fun fromInt(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Float(Int): Self"
 		if(parameters.size != 1)
-			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
 		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
 		return constructor.buildCastFromSignedIntegerToFloat(firstParameter, name)
 	}
@@ -49,9 +50,25 @@ class FloatNatives(val context: Context) {
 	private fun fromFloat(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Float(Float): Self"
 		if(parameters.size != 1)
-			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
 		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
 		return firstParameter
+	}
+
+	private fun fromString(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+		val name = "Float(String): Self"
+		if(parameters.size != 1)
+			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
+		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
+
+		val bytesProperty = context.resolveMember(constructor, firstParameter, "bytes")
+		val byteArray = constructor.buildLoad(constructor.pointerType, bytesProperty, "byteArray")
+
+		val arrayValueProperty = context.standardLibrary.byteArray.getNativeValueProperty(constructor, byteArray)
+		val buffer = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "buffer")
+
+		val double = constructor.buildFunctionCall(context.externalFunctions.parseDouble, listOf(buffer, constructor.nullPointer), "double")
+		return constructor.buildCastFromDoubleToFloat(double, "float")
 	}
 
 	private fun negative(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {

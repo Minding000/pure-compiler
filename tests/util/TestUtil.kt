@@ -29,8 +29,8 @@ object TestUtil {
 	private val defaultErrorStream = System.err
 	private val testErrorStream = ByteArrayOutputStream()
 	private val EXTERNAL_FUNCTIONS = listOf("i32 @fprintf(ptr, ptr, ...)", "i32 @sprintf(ptr, ptr, ...)",
-		"i32 @snprintf(ptr, i64, ptr, ...)", "i32 @_snprintf(ptr, i64, ptr, ...)", "i32 @fflush(ptr)", "ptr @fdopen(i32, ptr)",
-		"ptr @_fdopen(i32, ptr)", "i32 @_tmainCRTStartup()", "i1 @__vcrt_initialize()", "i1 @__acrt_initialize()",
+		"i32 @snprintf(ptr, i64, ptr, ...)", "i32 @_snprintf(ptr, i64, ptr, ...)", "double @strtod(ptr, ptr)", "i32 @fflush(ptr)",
+		"ptr @fdopen(i32, ptr)", "ptr @_fdopen(i32, ptr)", "i32 @_tmainCRTStartup()", "i1 @__vcrt_initialize()", "i1 @__acrt_initialize()",
 		"i32 @__acrt_initialize_stdio()", "ptr @__acrt_iob_func(i32)", "i32 @ferror(ptr)", "i32 @fclose(ptr)",
 		"i64 @fwrite(ptr, i64, i64, ptr)", "i64 @fread(ptr, i64, i64, ptr)", "i32 @fgetc(ptr)", "void @Sleep(i32)", "void @exit(i32)",
 		"ptr @memcpy(ptr, ptr, i64)", "void @llvm.va_start(ptr)", "void @llvm.va_copy(ptr, ptr)", "void @llvm.va_end(ptr)",

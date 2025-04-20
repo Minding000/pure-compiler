@@ -352,6 +352,7 @@ class LlvmConstructor(name: String) {
 	fun buildCastFromSignedIntegerToFloat(integer: LlvmValue, name: String): LlvmValue = LLVMBuildSIToFP(builder, integer, floatType, name)
 
 	fun buildCastFromFloatToDouble(float: LlvmValue, name: String): LlvmValue = LLVMBuildFPCast(builder, float, doubleType, name)
+	fun buildCastFromDoubleToFloat(double: LlvmValue, name: String): LlvmValue = LLVMBuildFPCast(builder, double, floatType, name)
 
 	fun buildIsNull(value: LlvmValue, name: String): LlvmValue = LLVMBuildIsNull(builder, value, name)
 	fun buildIsNotNull(value: LlvmValue, name: String): LlvmValue = LLVMBuildIsNotNull(builder, value, name)

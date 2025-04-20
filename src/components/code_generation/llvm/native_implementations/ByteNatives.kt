@@ -34,7 +34,7 @@ class ByteNatives(val context: Context) {
 	private fun fromByte(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Byte(Byte): Self"
 		if(parameters.size != 1)
-			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
 		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
 		return firstParameter
 	}
@@ -42,7 +42,7 @@ class ByteNatives(val context: Context) {
 	private fun fromInteger(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Byte(Int, Int): Self"
 		if(parameters.size != 2)
-			throw CompilerError("Invalid number of arguments passed to '$name': ${parameters.size}")
+			throw CompilerError("'$name' declares ${parameters.size} parameters, but 2 are expected")
 		val firstParameter = parameters.firstOrNull() ?: throw CompilerError("Parameter for '$name' is null.")
 		return constructor.buildCastFromIntegerToByte(firstParameter, "byte")
 	}
