@@ -3,7 +3,7 @@ package components.syntax_parser
 import org.junit.jupiter.api.Test
 import util.TestUtil
 
-internal class FunctionDefinitionDefinitions {
+internal class FunctionDefinitions {
 
 	@Test
 	fun `parses function definitions`() {
