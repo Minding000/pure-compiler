@@ -85,6 +85,13 @@ open class Value(override val source: SyntaxTreeNode, override var scope: Scope,
 	fun getComputedValue(): Value? = staticValue
 	open fun getComputedType(): Type? = getComputedValue()?.providedType ?: providedType
 
+	/** The provided type adjusted by computed nullability */
+	fun getDisplayType(): Type? {
+		val providedType = providedType
+		val computedType = getComputedType()
+		return if(providedType is OptionalType && computedType != null && computedType !is OptionalType) providedType.baseType else providedType
+	}
+
 	override fun validate() {
 		super.validate()
 		if(providedType == null)

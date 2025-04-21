@@ -53,7 +53,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 		try {
 			val match = leftType.interfaceScope.getOperator(kind, right)
 			if(match == null) {
-				context.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.providedType}"))
+				context.addIssue(NotFound(source, "Operator", "$leftType $kind ${right.getDisplayType()}"))
 				return
 			}
 			targetSignature = match.signature
@@ -61,7 +61,7 @@ class BinaryOperator(override val source: BinaryOperatorSyntaxTree, scope: Scope
 			setUnextendedType(match.returnType.getLocalType(this, leftType))
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
-			error.log(source, "operator", "$leftType $kind ${right.providedType}")
+			error.log(source, "operator", "$leftType $kind ${right.getDisplayType()}")
 		}
 	}
 

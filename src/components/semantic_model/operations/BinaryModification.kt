@@ -32,18 +32,17 @@ class BinaryModification(override val source: BinaryModificationSyntaxTree, scop
 		super.determineTypes()
 		context.registerWrite(target)
 		val targetType = target.effectiveType ?: return
-		val modifierType = modifier.effectiveType ?: return
 		try {
 			val match = targetType.interfaceScope.getOperator(kind, modifier)
 			if(match == null) {
-				context.addIssue(NotFound(source, "Operator", "$targetType $kind $modifierType"))
+				context.addIssue(NotFound(source, "Operator", "$targetType $kind ${modifier.getDisplayType()}"))
 				return
 			}
 			targetSignature = match.signature
 			conversions = match.conversions
 		} catch(error: SignatureResolutionAmbiguityError) {
 			//TODO write test for this
-			error.log(source, "operator", "$targetType $kind $modifierType")
+			error.log(source, "operator", "$targetType $kind ${modifier.getDisplayType()}")
 		}
 	}
 
