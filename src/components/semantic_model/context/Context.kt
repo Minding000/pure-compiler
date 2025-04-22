@@ -142,9 +142,14 @@ class Context {
 	}
 
 	fun raiseException(constructor: LlvmConstructor, model: SemanticModel, description: String) {
-		val parent = model.parent
 		val exceptionParameter = getExceptionParameter(constructor)
 		val descriptionString = createStringObject(constructor, description, exceptionParameter)
+		raiseException(constructor, model, descriptionString)
+	}
+
+	fun raiseException(constructor: LlvmConstructor, model: SemanticModel, descriptionString: LlvmValue) {
+		val parent = model.parent
+		val exceptionParameter = getExceptionParameter(constructor)
 		val exceptionTypeDeclaration = standardLibrary.exceptionTypeDeclaration
 		val exception = constructor.buildHeapAllocation(exceptionTypeDeclaration.llvmType, "exception")
 		val exceptionClassDefinitionProperty =
@@ -272,7 +277,8 @@ class Context {
 	}
 
 	fun printMessage(constructor: LlvmConstructor, formatString: String, vararg values: LlvmValue) {
-		assert(formatString.count('%') + formatString.count("%.") == values.size) { "Wrong template count!" }
+		val requiredParameterCount = formatString.count('%') + formatString.count("%.*")
+		assert(requiredParameterCount == values.size) { "Wrong template count! Expected $requiredParameterCount but got ${values.size}" }
 
 		val formatStringGlobal = constructor.buildGlobalAsciiCharArray("pure_debug_formatString", formatString)
 

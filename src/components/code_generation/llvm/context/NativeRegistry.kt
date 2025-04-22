@@ -8,13 +8,15 @@ import components.semantic_model.context.Context
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.InitializerDefinition
+import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.FileScope
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.declaration.MissingNativeImplementation
 
 class NativeRegistry(val context: Context) {
-	private val nativePrimitiveInitializers = HashMap<String, (constructor: LlvmConstructor, parameters: List<LlvmValue?>) -> LlvmValue>()
+	private val nativePrimitiveInitializers =
+		HashMap<String, (model: SemanticModel, constructor: LlvmConstructor, parameters: List<LlvmValue?>) -> LlvmValue>()
 	private val nativeImplementations = HashMap<String, (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit>()
 	private val primitiveImplementations = HashMap<String, PrimitiveImplementation>()
 	val specialTypeScopes = HashMap<SpecialType, FileScope>()
@@ -39,16 +41,17 @@ class NativeRegistry(val context: Context) {
 	}
 
 	fun registerNativePrimitiveInitializer(identifier: String,
-										   instance: (constructor: LlvmConstructor, parameters: List<LlvmValue?>) -> LlvmValue) {
+										   instance: (model: SemanticModel, constructor: LlvmConstructor, parameters: List<LlvmValue?>) -> LlvmValue) {
 		val existingInstance = nativePrimitiveInitializers.putIfAbsent(identifier, instance)
 		if(existingInstance != null)
 			throw CompilerError("Duplicate native primitive initializer for identifier '$identifier'.")
 	}
 
-	fun inlineNativePrimitiveInitializer(constructor: LlvmConstructor, identifier: String, parameters: List<LlvmValue?>): LlvmValue {
+	fun inlineNativePrimitiveInitializer(model: SemanticModel, constructor: LlvmConstructor, identifier: String,
+										 parameters: List<LlvmValue?>): LlvmValue {
 		val getPrimitiveInitializerResult = nativePrimitiveInitializers[identifier]
 			?: throw CompilerError("Missing native primitive initializer for identifier '$identifier'.")
-		return getPrimitiveInitializerResult(constructor, parameters)
+		return getPrimitiveInitializerResult(model, constructor, parameters)
 	}
 
 	fun registerNativeImplementation(identifier: String, implementation: (constructor: LlvmConstructor, llvmValue: LlvmValue) -> Unit) {

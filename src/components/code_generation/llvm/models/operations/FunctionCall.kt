@@ -129,7 +129,7 @@ class FunctionCall(override val model: FunctionCall, val function: Value, val va
 			if(initializerModel.parentTypeDeclaration.isLlvmPrimitive()) {
 				val signature = initializerModel.toString()
 				if(initializerModel.isNative)
-					return context.nativeRegistry.inlineNativePrimitiveInitializer(constructor, "$signature: Self", parameters)
+					return context.nativeRegistry.inlineNativePrimitiveInitializer(model, constructor, "$signature: Self", parameters)
 				parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 				val result =
 					constructor.buildFunctionCall(initializerModel.unit.llvmType, initializerModel.unit.llvmValue, parameters, signature)

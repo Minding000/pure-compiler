@@ -12,7 +12,7 @@ internal class SplitByString {
 			referencing Pure
 			SimplestApp object {
 				to getThree(): Int {
-					val digits = "1,2,3".split(",")
+					val digits = "1,2,3".splitBy(",")
 					return digits.size
 				}
 			}

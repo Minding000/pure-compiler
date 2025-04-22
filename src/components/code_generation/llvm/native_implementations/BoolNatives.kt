@@ -5,6 +5,7 @@ import components.code_generation.llvm.context.NativeRegistry
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
+import components.semantic_model.general.SemanticModel
 import errors.internal.CompilerError
 
 class BoolNatives(val context: Context) {
@@ -19,7 +20,7 @@ class BoolNatives(val context: Context) {
 		registry.registerNativeImplementation("Bool != Bool: Bool", ::notEqualTo)
 	}
 
-	private fun fromBool(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+	private fun fromBool(model: SemanticModel, constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Bool(Bool): Self"
 		if(parameters.size != 1)
 			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")

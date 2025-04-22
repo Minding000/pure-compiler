@@ -37,4 +37,31 @@ internal class Float {
 			app.shouldExitWith(float)
 		}
 	}
+
+	@TestFactory
+	fun `raises an exception when parsing an invalid String`() = listOf(
+		"abc" to "a",
+		"2:3" to ":",
+		"-+1" to "-",
+		"123,456" to ",",
+		"12.34.56" to ".",
+	).map { (string, invalidCharacter) ->
+		DynamicTest.dynamicTest("Float parsed from $string should be $invalidCharacter") {
+			val sourceCode = """
+				referencing Pure
+				App object {
+					to parseFloat(): Float {
+						return Float("$string")
+					}
+				}
+			""".trimIndent()
+			val app = TestApp(sourceCode, "Test:App.parseFloat")
+			app.includeRequiredModules = true
+			val expectedOutput = """
+				Unhandled error: Failed to parse float: Invalid character '$invalidCharacter'
+				 at Test:Test:4:App.parseFloat(): Float
+				""".trimIndent()
+			app.shouldPrintLine(expectedOutput, "", 1)
+		}
+	}
 }

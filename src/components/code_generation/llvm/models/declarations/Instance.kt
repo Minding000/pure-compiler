@@ -31,7 +31,7 @@ class Instance(override val model: Instance, val valueParameters: List<Value>): 
 		if(initializer.parentTypeDeclaration.isLlvmPrimitive()) {
 			val signature = initializer.toString()
 			if(initializer.isNative)
-				return context.nativeRegistry.inlineNativePrimitiveInitializer(constructor, "$signature: Self", parameters)
+				return context.nativeRegistry.inlineNativePrimitiveInitializer(model, constructor, "$signature: Self", parameters)
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			return constructor.buildFunctionCall(initializer.unit.llvmType, initializer.unit.llvmValue, parameters, signature)
 		}

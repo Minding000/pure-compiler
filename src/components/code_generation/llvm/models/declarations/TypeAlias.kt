@@ -44,7 +44,7 @@ class TypeAlias(override val model: TypeAlias, val instances: List<Instance>): T
 		if(initializerModel.parentTypeDeclaration.isLlvmPrimitive()) {
 			val signature = initializerModel.toString()
 			if(initializerModel.isNative)
-				return context.nativeRegistry.inlineNativePrimitiveInitializer(constructor, "${signature}: Self", parameters)
+				return context.nativeRegistry.inlineNativePrimitiveInitializer(model, constructor, "${signature}: Self", parameters)
 			parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 			return constructor.buildFunctionCall(initializerModel.unit.llvmType, initializerModel.unit.llvmValue, parameters, signature)
 		}

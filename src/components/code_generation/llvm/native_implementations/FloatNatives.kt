@@ -5,6 +5,8 @@ import components.code_generation.llvm.context.NativeRegistry
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
+import components.semantic_model.context.SpecialType
+import components.semantic_model.general.SemanticModel
 import errors.internal.CompilerError
 
 class FloatNatives(val context: Context) {
@@ -31,7 +33,7 @@ class FloatNatives(val context: Context) {
 		registry.registerNativeImplementation("Float != Float: Bool", ::notEqualTo)
 	}
 
-	private fun fromByte(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+	private fun fromByte(model: SemanticModel, constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Float(Byte): Self"
 		if(parameters.size != 1)
 			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
@@ -39,7 +41,7 @@ class FloatNatives(val context: Context) {
 		return constructor.buildCastFromSignedIntegerToFloat(firstParameter, name)
 	}
 
-	private fun fromInt(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+	private fun fromInt(model: SemanticModel, constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Float(Int): Self"
 		if(parameters.size != 1)
 			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
@@ -47,7 +49,7 @@ class FloatNatives(val context: Context) {
 		return constructor.buildCastFromSignedIntegerToFloat(firstParameter, name)
 	}
 
-	private fun fromFloat(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+	private fun fromFloat(model: SemanticModel, constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Float(Float): Self"
 		if(parameters.size != 1)
 			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
@@ -55,7 +57,7 @@ class FloatNatives(val context: Context) {
 		return firstParameter
 	}
 
-	private fun fromString(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+	private fun fromString(model: SemanticModel, constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Float(String): Self"
 		if(parameters.size != 1)
 			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
@@ -67,7 +69,37 @@ class FloatNatives(val context: Context) {
 		val arrayValueProperty = context.standardLibrary.byteArray.getNativeValueProperty(constructor, byteArray)
 		val buffer = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "buffer")
 
-		val double = constructor.buildFunctionCall(context.externalFunctions.parseDouble, listOf(buffer, constructor.nullPointer), "double")
+		val firstInvalidCharacterStringAddress =
+			constructor.buildStackAllocation(constructor.pointerType, "firstInvalidCharacterStringAddress")
+		val double =
+			constructor.buildFunctionCall(context.externalFunctions.parseDouble, listOf(buffer, firstInvalidCharacterStringAddress),
+				"double")
+
+		val firstInvalidCharacterAddress =
+			constructor.buildLoad(constructor.pointerType, firstInvalidCharacterStringAddress, "firstInvalidCharacterAddress")
+		val firstInvalidCharacter = constructor.buildLoad(constructor.byteType, firstInvalidCharacterAddress, "firstInvalidCharacter")
+		val isNullTerminator = constructor.buildSignedIntegerEqualTo(firstInvalidCharacter, constructor.buildByte(0), "isNullTerminator")
+		val successBlock = constructor.createBlock("success")
+		val errorBlock = constructor.createBlock("error")
+		constructor.buildJump(isNullTerminator, successBlock, errorBlock)
+		constructor.select(errorBlock)
+		val template = "Failed to parse float: Invalid character '%.1s'"
+		if(context.nativeRegistry.has(SpecialType.EXCEPTION)) {
+			val templateLengthExpansion = -3
+			val exceptionParameter = context.getExceptionParameter(constructor)
+			val templateCharArray = context.getConstantCharArrayGlobal(constructor, template)
+			val messageLength = constructor.buildInt32(template.length + templateLengthExpansion)
+			val messageCharArray = constructor.buildHeapArrayAllocation(constructor.byteType, messageLength, "message")
+			constructor.buildFunctionCall(context.externalFunctions.printToBuffer,
+				listOf(messageCharArray, templateCharArray, firstInvalidCharacterAddress))
+			val stringObject = constructor.buildFunctionCall(context.runtimeFunctions.createString,
+				listOf(exceptionParameter, messageCharArray, messageLength), "messageString")
+			context.raiseException(constructor, model, stringObject)
+		} else {
+			context.panic(constructor, template, firstInvalidCharacterAddress)
+			constructor.markAsUnreachable()
+		}
+		constructor.select(successBlock)
 		return constructor.buildCastFromDoubleToFloat(double, "float")
 	}
 
@@ -105,6 +137,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn(ValueConverter.wrapFloat(context, constructor, result))
 	}
 
+	//TODO add division by zero
 	private fun dividedBy(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
@@ -147,6 +180,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
+	//TODO add division by zero
 	private fun divide(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.float.getNativeValueProperty(constructor, context.getThisParameter(constructor))

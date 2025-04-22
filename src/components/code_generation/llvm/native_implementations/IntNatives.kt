@@ -5,6 +5,7 @@ import components.code_generation.llvm.context.NativeRegistry
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
+import components.semantic_model.general.SemanticModel
 import errors.internal.CompilerError
 
 class IntNatives(val context: Context) {
@@ -32,7 +33,7 @@ class IntNatives(val context: Context) {
 		registry.registerNativeImplementation("Int != Int: Bool", ::notEqualTo)
 	}
 
-	private fun fromByte(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+	private fun fromByte(model: SemanticModel, constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Int(Byte): Self"
 		if(parameters.size != 1)
 			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
@@ -40,7 +41,7 @@ class IntNatives(val context: Context) {
 		return constructor.buildCastFromByteToInteger(firstParameter, name)
 	}
 
-	private fun fromInt(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+	private fun fromInt(model: SemanticModel, constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Int(Int): Self"
 		if(parameters.size != 1)
 			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
@@ -112,6 +113,7 @@ class IntNatives(val context: Context) {
 		constructor.buildReturn(ValueConverter.wrapInteger(context, constructor, result))
 	}
 
+	//TODO add division by zero
 	private fun dividedBy(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveInt = ValueConverter.unwrapInteger(context, constructor, context.getThisParameter(constructor))
@@ -154,6 +156,7 @@ class IntNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
+	//TODO add division by zero
 	private fun divide(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.integer.getNativeValueProperty(constructor, context.getThisParameter(constructor))

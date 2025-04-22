@@ -5,6 +5,7 @@ import components.code_generation.llvm.context.NativeRegistry
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
+import components.semantic_model.general.SemanticModel
 import errors.internal.CompilerError
 
 class ByteNatives(val context: Context) {
@@ -31,7 +32,7 @@ class ByteNatives(val context: Context) {
 		registry.registerNativeImplementation("Byte != Byte: Bool", ::notEqualTo)
 	}
 
-	private fun fromByte(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+	private fun fromByte(model: SemanticModel, constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Byte(Byte): Self"
 		if(parameters.size != 1)
 			throw CompilerError("'$name' declares ${parameters.size} parameters, but 1 is expected")
@@ -39,7 +40,7 @@ class ByteNatives(val context: Context) {
 		return firstParameter
 	}
 
-	private fun fromInteger(constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
+	private fun fromInteger(model: SemanticModel, constructor: LlvmConstructor, parameters: List<LlvmValue?>): LlvmValue {
 		val name = "Byte(Int, Int): Self"
 		if(parameters.size != 2)
 			throw CompilerError("'$name' declares ${parameters.size} parameters, but 2 are expected")
@@ -99,6 +100,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn(ValueConverter.wrapByte(context, constructor, result))
 	}
 
+	//TODO add division by zero
 	private fun dividedBy(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveByte = ValueConverter.unwrapByte(context, constructor, context.getThisParameter(constructor))
@@ -141,6 +143,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
+	//TODO add division by zero
 	private fun divide(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.byte.getNativeValueProperty(constructor, context.getThisParameter(constructor))
