@@ -18,9 +18,11 @@ import components.semantic_model.control_flow.Try
 import components.semantic_model.declarations.ComputedPropertyDeclaration
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.general.SemanticModel
+import components.semantic_model.operations.FunctionCall
 import components.semantic_model.types.Type
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
+import errors.internal.CompilerError
 import logger.Issue
 import logger.Logger
 import util.count
@@ -147,7 +149,7 @@ class Context {
 		raiseException(constructor, model, descriptionString)
 	}
 
-	fun raiseException(constructor: LlvmConstructor, model: SemanticModel, descriptionString: LlvmValue) {
+	fun raiseException(constructor: LlvmConstructor, model: SemanticModel, descriptionString: LlvmValue, isNativeCall: Boolean = false) {
 		val parent = model.parent
 		val exceptionParameter = getExceptionParameter(constructor)
 		val exceptionTypeDeclaration = standardLibrary.exceptionTypeDeclaration
@@ -161,6 +163,12 @@ class Context {
 		val parameters = listOf(exceptionParameter, exception, descriptionString)
 		constructor.buildFunctionCall(standardLibrary.exceptionDescriptionInitializer, parameters)
 
+		if(isNativeCall) {
+			val nativeCall = model as? FunctionCall
+			val nativeDeclaration =
+				nativeCall?.targetSignature ?: nativeCall?.targetInitializer ?: throw CompilerError("Native call target is missing")
+			addLocationToStacktrace(nativeDeclaration, constructor, exception, nativeDeclaration)
+		}
 		val surroundingCallable =
 			model.scope.getSurroundingInitializer() ?: model.scope.getSurroundingFunction() ?: model.scope.getSurroundingComputedProperty()
 		if(surroundingCallable != null)

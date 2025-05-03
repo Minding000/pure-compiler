@@ -66,6 +66,26 @@ class FloatNatives(val context: Context) {
 		val bytesProperty = context.resolveMember(constructor, firstParameter, "bytes")
 		val byteArray = constructor.buildLoad(constructor.pointerType, bytesProperty, "byteArray")
 
+		val sizeProperty = context.resolveMember(constructor, byteArray, "size")
+		val size = constructor.buildLoad(constructor.i32Type, sizeProperty, "size")
+		val isStringEmpty = constructor.buildSignedIntegerEqualTo(size, constructor.buildInt32(0), "isStringEmpty")
+		val emptyBlock = constructor.createBlock("empty")
+		val notEmptyBlock = constructor.createBlock("notEmpty")
+		constructor.buildJump(isStringEmpty, emptyBlock, notEmptyBlock)
+		constructor.select(emptyBlock)
+		val emptyStringMessage = "Failed to parse float: Empty string"
+		if(context.nativeRegistry.has(SpecialType.EXCEPTION)) {
+			val exceptionParameter = context.getExceptionParameter(constructor)
+			val messageCharArray = context.getConstantCharArrayGlobal(constructor, emptyStringMessage)
+			val messageLength = constructor.buildInt32(emptyStringMessage.length)
+			val stringObject = constructor.buildFunctionCall(context.runtimeFunctions.createString,
+				listOf(exceptionParameter, messageCharArray, messageLength), "messageString")
+			context.raiseException(constructor, model, stringObject, true)
+		} else {
+			context.panic(constructor, emptyStringMessage)
+			constructor.markAsUnreachable()
+		}
+		constructor.select(notEmptyBlock)
 		val arrayValueProperty = context.standardLibrary.byteArray.getNativeValueProperty(constructor, byteArray)
 		val buffer = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "buffer")
 
@@ -83,20 +103,20 @@ class FloatNatives(val context: Context) {
 		val errorBlock = constructor.createBlock("error")
 		constructor.buildJump(isNullTerminator, successBlock, errorBlock)
 		constructor.select(errorBlock)
-		val template = "Failed to parse float: Invalid character '%.1s'"
+		val invalidCharacterMessageTemplate = "Failed to parse float: Invalid character '%.1s'"
 		if(context.nativeRegistry.has(SpecialType.EXCEPTION)) {
 			val templateLengthExpansion = -3
 			val exceptionParameter = context.getExceptionParameter(constructor)
-			val templateCharArray = context.getConstantCharArrayGlobal(constructor, template)
-			val messageLength = constructor.buildInt32(template.length + templateLengthExpansion)
+			val templateCharArray = context.getConstantCharArrayGlobal(constructor, invalidCharacterMessageTemplate)
+			val messageLength = constructor.buildInt32(invalidCharacterMessageTemplate.length + templateLengthExpansion)
 			val messageCharArray = constructor.buildHeapArrayAllocation(constructor.byteType, messageLength, "message")
 			constructor.buildFunctionCall(context.externalFunctions.printToBuffer,
 				listOf(messageCharArray, templateCharArray, firstInvalidCharacterAddress))
 			val stringObject = constructor.buildFunctionCall(context.runtimeFunctions.createString,
 				listOf(exceptionParameter, messageCharArray, messageLength), "messageString")
-			context.raiseException(constructor, model, stringObject)
+			context.raiseException(constructor, model, stringObject, true)
 		} else {
-			context.panic(constructor, template, firstInvalidCharacterAddress)
+			context.panic(constructor, invalidCharacterMessageTemplate, firstInvalidCharacterAddress)
 			constructor.markAsUnreachable()
 		}
 		constructor.select(successBlock)

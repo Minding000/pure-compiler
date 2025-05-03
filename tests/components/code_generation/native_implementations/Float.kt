@@ -2,6 +2,7 @@ package components.code_generation.native_implementations
 
 import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import util.TestApp
 
@@ -59,9 +60,30 @@ internal class Float {
 			app.includeRequiredModules = true
 			val expectedOutput = """
 				Unhandled error: Failed to parse float: Invalid character '$invalidCharacter'
+				 at Pure:Float:17:Float(String)
 				 at Test:Test:4:App.parseFloat(): Float
 				""".trimIndent()
 			app.shouldPrintLine(expectedOutput, "", 1)
 		}
+	}
+
+	@Test
+	fun `raises an exception when parsing an empty String`() {
+		val sourceCode = """
+				referencing Pure
+				App object {
+					to parseFloat(): Float {
+						return Float("")
+					}
+				}
+			""".trimIndent()
+		val app = TestApp(sourceCode, "Test:App.parseFloat")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+				Unhandled error: Failed to parse float: Empty string
+				 at Pure:Float:17:Float(String)
+				 at Test:Test:4:App.parseFloat(): Float
+				""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
 	}
 }
