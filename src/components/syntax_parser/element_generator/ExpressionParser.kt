@@ -7,7 +7,10 @@ import components.syntax_parser.syntax_tree.control_flow.*
 import components.syntax_parser.syntax_tree.definitions.LambdaFunctionDefinition
 import components.syntax_parser.syntax_tree.definitions.Operator
 import components.syntax_parser.syntax_tree.definitions.TypeSpecification
-import components.syntax_parser.syntax_tree.general.*
+import components.syntax_parser.syntax_tree.general.ForeignLanguageExpression
+import components.syntax_parser.syntax_tree.general.StatementSection
+import components.syntax_parser.syntax_tree.general.TypeSyntaxTreeNode
+import components.syntax_parser.syntax_tree.general.ValueSyntaxTreeNode
 import components.syntax_parser.syntax_tree.literals.*
 import components.syntax_parser.syntax_tree.operations.BinaryOperator
 import components.syntax_parser.syntax_tree.operations.Cast
@@ -377,7 +380,7 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 			consume(WordAtom.SEMICOLON)
 		}
 		val valueParameters = LinkedList<ValueSyntaxTreeNode>()
-		if(currentWord?.type != endWord) {
+		if(currentWord?.type != endWord && currentWord?.type != null) {
 			valueParameters.add(parseExpression())
 			while(currentWord?.type == WordAtom.COMMA) {
 				consume(WordAtom.COMMA)

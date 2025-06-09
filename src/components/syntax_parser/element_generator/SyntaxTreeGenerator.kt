@@ -65,10 +65,7 @@ class SyntaxTreeGenerator(val project: Project): Generator() {
 
 	/**
 	 * File:
-	 *   <empty>
-	 *   <Program>\n
-	 *   <Statement>
-	 *   <Program>\n<Statement>
+	 *   [<Statement>]...
 	 */
 	private fun parseFile(): File {
 		val file = wordGenerator.getFile()
