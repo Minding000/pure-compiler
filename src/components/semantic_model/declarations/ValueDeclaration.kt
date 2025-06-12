@@ -1,5 +1,6 @@
 package components.semantic_model.declarations
 
+import components.semantic_model.control_flow.OverGenerator
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.MutableScope
 import components.semantic_model.types.Type
@@ -54,7 +55,7 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 		val value = value
 		if(value == null) {
 			if(providedType == null)
-				context.addIssue(DeclarationMissingTypeOrValue(source))
+				context.addIssue(DeclarationMissingTypeOrValue(source, parent !is OverGenerator))
 			return
 		}
 		val targetType = providedType
