@@ -346,4 +346,30 @@ internal class ValueConversion {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEightyFive")
 		assertEquals(85, result)
 	}
+
+	@Test
+	fun `converts generic primitives used in primitive conversion`() {
+		val sourceCode = """
+			Container class {
+				containing N
+				var a: N
+				init(a)
+			}
+			Target class {
+				val b: Int
+				converting init(b)
+			}
+			SimplestApp object {
+				to getNinetyTwo(): Int {
+					val container = Container(92)
+					return getNumber(container.a)
+				}
+				to getNumber(target: Target): Int {
+					return target.b
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyTwo")
+		assertEquals(92, result)
+	}
 }

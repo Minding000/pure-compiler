@@ -65,7 +65,7 @@ object ValueConverter {
 		// - converting init accepts optional Int
 		// - converting init accepts union with Int
 		if(conversion != null)
-			return buildConversion(model, constructor, sourceValue, conversion)
+			return buildConversion(model, constructor, sourceValue, isSourcePrimitive, conversion)
 		return sourceValue
 	}
 
@@ -117,7 +117,7 @@ object ValueConverter {
 		}
 	}
 
-	private fun buildConversion(model: SemanticModel, constructor: LlvmConstructor, sourceValue: LlvmValue,
+	private fun buildConversion(model: SemanticModel, constructor: LlvmConstructor, sourceValue: LlvmValue, isSourcePrimitive: Boolean,
 								conversion: InitializerDefinition): LlvmValue {
 		val context = model.context
 		val exceptionParameter = context.getExceptionParameter(constructor)
@@ -129,7 +129,15 @@ object ValueConverter {
 		val parameters = LinkedList<LlvmValue?>()
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionParameter)
 		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
-		parameters.add(sourceValue)
+		//TODO what if a primitive is passed into an optional conversion parameter? should it be boxed?
+		// also consider generic primitive (wrapped) -> optional primitive (boxed)
+		val conversionParameterType =
+			conversion.fixedParameters.firstOrNull()?.effectiveType ?: throw CompilerError("Converting initializer has no fixed parameters")
+		parameters.add(
+			if(conversionParameterType.isLlvmPrimitive() && !isSourcePrimitive)
+				unwrapPrimitive(model, constructor, sourceValue, conversionParameterType)
+			else
+				sourceValue)
 		buildLlvmCommonPreInitializerCall(model, constructor, typeDeclaration, exceptionParameter, newObject)
 		constructor.buildFunctionCall(conversion.unit.llvmType, conversion.unit.llvmValue, parameters)
 		context.continueRaise(constructor, model)
