@@ -32,6 +32,7 @@ object Builder {
 		SpecialType.NATIVE_INPUT_STREAM to listOf("Pure", "lang", "core", "NativeInputStream"),
 		SpecialType.NATIVE_OUTPUT_STREAM to listOf("Pure", "lang", "core", "NativeOutputStream"),
 		SpecialType.EXCEPTION to listOf("Pure", "lang", "core", "Exception"),
+		SpecialType.MAP to listOf("Pure", "lang", "collections", "Map"),
 		SpecialType.ITERABLE to listOf("Pure", "lang", "collections", "Iterable"),
 		SpecialType.INDEX_ITERATOR to listOf("Pure", "lang", "collections", "iterators", "IndexIterator"),
 		SpecialType.KEY_ITERATOR to listOf("Pure", "lang", "collections", "iterators", "KeyIterator"),

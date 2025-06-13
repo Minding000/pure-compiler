@@ -18,6 +18,7 @@ enum class SpecialType(val className: String) {
 	NATIVE_INPUT_STREAM("NativeInputStream"),
 	NATIVE_OUTPUT_STREAM("NativeOutputStream"),
 	EXCEPTION("Exception"),
+	MAP("Map"),
 	ITERABLE("Iterable"),
 	INDEX_ITERATOR("IndexIterator"),
 	KEY_ITERATOR("KeyIterator"),

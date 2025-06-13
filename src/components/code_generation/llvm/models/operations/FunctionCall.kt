@@ -169,7 +169,7 @@ class FunctionCall(override val model: FunctionCall, val function: Value, val va
 		parameters.add(Context.EXCEPTION_PARAMETER_INDEX, exceptionAddress)
 		parameters.add(Context.THIS_PARAMETER_INDEX, newObject)
 		if(typeDeclaration.model.isBound) {
-			val parent = (function as? components.code_generation.llvm.models.operations.MemberAccess)?.target?.getLlvmValue(constructor)
+			val parent = (function as? MemberAccess)?.target?.getLlvmValue(constructor)
 				?: context.getThisParameter(constructor)
 			parameters.add(Context.PARENT_PARAMETER_OFFSET, parent)
 		}

@@ -5,13 +5,12 @@ import components.semantic_model.context.VariableTracker
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.BlockScope
 import components.semantic_model.scopes.TypeScope
-import components.semantic_model.types.AndUnionType
-import components.semantic_model.types.ObjectType
-import components.semantic_model.types.Type
+import components.semantic_model.types.*
 import components.syntax_parser.syntax_tree.general.SyntaxTreeNode
 import errors.internal.CompilerError
 import logger.issues.declaration.*
 import logger.issues.modifiers.NoParentToBindTo
+import logger.issues.resolution.LiteralTypeNotFound
 import java.util.*
 import components.code_generation.llvm.models.declarations.TypeDeclaration as TypeDeclarationUnit
 
@@ -83,13 +82,35 @@ abstract class TypeDeclaration(override val source: SyntaxTreeNode, val name: St
 		for(semanticModel in semanticModels)
 			if(semanticModel is InitializerDefinition)
 				semanticModel.determineTypes()
-		if(isDefinition && scope.initializers.isEmpty())
-			addDefaultInitializer()
+		if(isDefinition) {
+			if(members.any { member -> member is Instance })
+				addStaticProperties()
+			if(scope.initializers.isEmpty())
+				addDefaultInitializer()
+		}
 		for(semanticModel in semanticModels)
 			if(semanticModel !is InitializerDefinition && semanticModel !== explicitParentType)
 				semanticModel.determineTypes()
 		scope.ensureUniqueInitializerSignatures()
 		scope.inheritSignatures()
+	}
+
+	//TODO how is this supposed to interact with inheritance?
+	// example: Color.RED - TranslucentColor.RED?
+	private fun addStaticProperties() {
+		val stringType = LiteralType(source, scope, SpecialType.STRING)
+		val selfType = SelfType(this)
+		val mapTypeDeclaration = context.nativeRegistry.specialTypeScopes[SpecialType.MAP]?.getTypeDeclaration("Map")
+		if(mapTypeDeclaration == null) {
+			context.addIssue(LiteralTypeNotFound(source, "Map"))
+			return
+		}
+		val type = ObjectType(listOf(stringType, selfType), mapTypeDeclaration)
+		val property = PropertyDeclaration(source, scope, "staticInstances", type, null, true)
+		members.add(property)
+		property.parentTypeDeclaration = this
+		addSemanticModels(property)
+		scope.addValueDeclaration(property)
 	}
 
 	override fun analyseDataFlow(tracker: VariableTracker) {

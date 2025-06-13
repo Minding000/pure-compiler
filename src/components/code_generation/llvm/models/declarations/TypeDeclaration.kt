@@ -6,6 +6,7 @@ import components.code_generation.llvm.models.general.Unit
 import components.code_generation.llvm.models.values.FunctionObject
 import components.code_generation.llvm.wrapper.*
 import components.semantic_model.context.Context
+import components.semantic_model.context.Context.Companion.CLASS_DEFINITION_PROPERTY_INDEX
 import components.semantic_model.context.SpecialType
 import components.semantic_model.declarations.InterfaceMember
 import components.semantic_model.declarations.TypeDeclaration
@@ -93,12 +94,12 @@ abstract class TypeDeclaration(override val model: TypeDeclaration, val members:
 	}
 
 	/**
-	 * Returns instances
+	 * Returns instances and static properties (e.g. 'staticInstances')
 	 */
 	private fun getStaticMembers(): Map<String, ValueDeclaration> {
 		val staticMembers = HashMap<String, ValueDeclaration>()
 		for(member in members) {
-			if(member is Instance)
+			if(member is Instance || (member is PropertyDeclaration && member.model.isStatic && member.model.name == "staticInstances"))
 				staticMembers[member.model.name] = member
 		}
 		for(superType in model.getDirectSuperTypes()) {
@@ -330,8 +331,11 @@ abstract class TypeDeclaration(override val model: TypeDeclaration, val members:
 	}
 
 	private fun compileStaticMemberInitialization(constructor: LlvmConstructor, staticObject: LlvmValue) {
+		val exceptionParameter = context.getExceptionParameter(constructor)
 		val values = LinkedList<LlvmValue>()
 		values.add(llvmClassDefinition)
+		val instances = HashMap<Instance, LlvmValue>()
+		var instanceMap: LlvmValue? = null
 		for(staticMember in staticMembers) {
 			if(staticMember is Instance) {
 				values.add(context.getNullValue(constructor, staticMember.model.effectiveType))
@@ -341,24 +345,64 @@ abstract class TypeDeclaration(override val model: TypeDeclaration, val members:
 					?: throw CompilerError(staticMember, "Missing static member offset.")
 				val staticProperty = constructor.buildGetArrayElementPointer(constructor.byteType, staticObject, offset,
 					"_staticMemberAddress")
-				constructor.buildStore(staticMember.getLlvmValue(constructor), staticProperty)
+				val instance = staticMember.getLlvmValue(constructor)
+				instances[staticMember] = instance
+				constructor.buildStore(instance, staticProperty)
 				continue
 			}
 			val staticMemberValue = staticMember.model.value?.getComputedValue()
 			val staticMemberLlvmValue = if(staticMemberValue?.effectiveType?.isLlvmPrimitive() == true) {
 				//TODO is 'toUnit' call ok here?
 				staticMemberValue.toUnit().getLlvmValue(constructor)
+			} else if(staticMember.model.name == "staticInstances") {
+				if(context.nativeRegistry.has(SpecialType.MAP)) {
+					val mapTypeDeclaration = context.standardLibrary.mapTypeDeclaration
+					val map = constructor.buildHeapAllocation(mapTypeDeclaration.llvmType, "staticInstancesMap")
+					val mapClassDefinitionProperty =
+						constructor.buildGetPropertyPointer(mapTypeDeclaration.llvmType, map,
+							CLASS_DEFINITION_PROPERTY_INDEX, "mapClassDefinitionProperty")
+					constructor.buildStore(mapTypeDeclaration.llvmClassDefinition, mapClassDefinitionProperty)
+					if(!mapTypeDeclaration.commonClassPreInitializer.isNoop) {
+						val stringType = context.standardLibrary.stringTypeDeclaration.staticValueDeclaration?.llvmLocation
+						val selfType = staticValueDeclaration?.llvmLocation
+						constructor.buildFunctionCall(mapTypeDeclaration.commonClassPreInitializer,
+							listOf(exceptionParameter, map, stringType,
+								selfType)) //TODO requires target pre-initializer to be built already
+					}
+					val parameters = listOf(exceptionParameter, map)
+					constructor.buildFunctionCall(context.standardLibrary.mapInitializer, parameters)
+					instanceMap = map
+
+					val offset = staticMemberOffsets[staticMember]
+						?: throw CompilerError(staticMember, "Missing static member offset for '${staticMember.model.name}'.")
+					val staticProperty = constructor.buildGetArrayElementPointer(constructor.byteType, staticObject, offset,
+						"_staticMemberAddress")
+					constructor.buildStore(map, staticProperty)
+				}
+				constructor.nullPointer
 			} else {
 				val value = staticMember.value?.getLlvmValue(constructor)
-					?: throw CompilerError(staticMember, "Static member is missing a value.")
+					?: throw CompilerError(staticMember, "Static member '${staticMember.model.name}' is missing a value.")
 				val offset = staticMemberOffsets[staticMember]
-					?: throw CompilerError(staticMember, "Missing static member offset.")
+					?: throw CompilerError(staticMember, "Missing static member offset for '${staticMember.model.name}'.")
 				val staticProperty = constructor.buildGetArrayElementPointer(constructor.byteType, staticObject, offset,
 					"_staticMemberAddress")
 				constructor.buildStore(value, staticProperty)
 				constructor.nullPointer
 			}
 			values.add(staticMemberLlvmValue)
+		}
+		if(context.nativeRegistry.has(SpecialType.MAP)) {
+			for((instance, instanceValue) in instances) {
+				val map = instanceMap ?: throw CompilerError(model, "Missing static instance map")
+				val mapSetterFunctionAddress = context.resolveFunction(constructor, map, "[Key](Value)")
+				val instanceNameString = context.createStringObject(constructor, instance.model.name, exceptionParameter)
+				val convertedInstanceValue =
+					ValueConverter.convertIfRequired(model, constructor, instanceValue, instance.model.effectiveType, false,
+						instance.model.effectiveType, true)
+				constructor.buildFunctionCall(context.standardLibrary.mapSetterFunctionType, mapSetterFunctionAddress,
+					listOf(exceptionParameter, map, instanceNameString, convertedInstanceValue))
+			}
 		}
 		constructor.defineGlobal(staticObject, constructor.buildConstantStruct(llvmStaticType, values))
 	}

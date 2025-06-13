@@ -401,4 +401,21 @@ internal class TypeDefinitions {
 		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFiftyEight")
 		assertEquals(58, result)
 	}
+
+	@Test
+	fun `compiles static instances property`() {
+		val sourceCode = """
+			referencing Pure
+			Bit class {
+				instances ZERO, ONE
+			}
+			SimplestApp object {
+				to getTwo(): Int {
+					return Bit.staticInstances.size
+				}
+			}
+			""".trimIndent()
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getTwo", true)
+		assertEquals(2, result)
+	}
 }
