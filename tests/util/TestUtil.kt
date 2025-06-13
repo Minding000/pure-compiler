@@ -33,10 +33,10 @@ object TestUtil {
 		"ptr @fdopen(i32, ptr)", "ptr @_fdopen(i32, ptr)", "i32 @_tmainCRTStartup()", "i1 @__vcrt_initialize()", "i1 @__acrt_initialize()",
 		"i32 @__acrt_initialize_stdio()", "ptr @__acrt_iob_func(i32)", "i32 @ferror(ptr)", "i32 @fclose(ptr)",
 		"i64 @fwrite(ptr, i64, i64, ptr)", "i64 @fread(ptr, i64, i64, ptr)", "i32 @fgetc(ptr)", "void @Sleep(i32)", "void @exit(i32)",
-		"ptr @memcpy(ptr, ptr, i64)", "void @llvm.va_start.p0(ptr)", "void @llvm.va_copy(ptr, ptr)", "void @llvm.va_end.p0(ptr)",
-		"{ i32, i1 } @llvm.sadd.with.overflow.i32(i32, i32)", "{ i32, i1 } @llvm.ssub.with.overflow.i32(i32, i32)",
-		"{ i32, i1 } @llvm.smul.with.overflow.i32(i32, i32)", "noalias ptr @malloc(i32)",
-		"{ i8, i1 } @llvm.sadd.with.overflow.i8(i8, i8)", "{ i8, i1 } @llvm.ssub.with.overflow.i8(i8, i8)",
+		"ptr @memcpy(ptr, ptr, i64)", "void @llvm.va_start(ptr)", "void @llvm.va_start.p0(ptr)", "void @llvm.va_copy(ptr, ptr)",
+		"void @llvm.va_end(ptr)", "void @llvm.va_end.p0(ptr)", "{ i32, i1 } @llvm.sadd.with.overflow.i32(i32, i32)",
+		"{ i32, i1 } @llvm.ssub.with.overflow.i32(i32, i32)", "{ i32, i1 } @llvm.smul.with.overflow.i32(i32, i32)",
+		"noalias ptr @malloc(i32)", "{ i8, i1 } @llvm.sadd.with.overflow.i8(i8, i8)", "{ i8, i1 } @llvm.ssub.with.overflow.i8(i8, i8)",
 		"{ i8, i1 } @llvm.smul.with.overflow.i8(i8, i8)", "noalias ptr @malloc(i32)")
 
 	fun recordErrorStream() {

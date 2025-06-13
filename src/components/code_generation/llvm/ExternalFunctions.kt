@@ -121,9 +121,12 @@ class ExternalFunctions {
 	}
 
 	private fun addVariadicIntrinsics(constructor: LlvmConstructor) {
-		variableParameterIterationStart = LlvmFunction(constructor, "llvm.va_start.p0", listOf(constructor.pointerType))
+		val targetTriple = constructor.getTargetTriple()
+		val startName = if(targetTriple.contains("linux")) "llvm.va_start" else "llvm.va_start.p0"
+		variableParameterIterationStart = LlvmFunction(constructor, startName, listOf(constructor.pointerType))
 		variableParameterListCopy = LlvmFunction(constructor, "llvm.va_copy", listOf(constructor.pointerType, constructor.pointerType))
-		variableParameterIterationEnd = LlvmFunction(constructor, "llvm.va_end.p0", listOf(constructor.pointerType))
+		val endName = if(targetTriple.contains("linux")) "llvm.va_end" else "llvm.va_end.p0"
+		variableParameterIterationEnd = LlvmFunction(constructor, endName, listOf(constructor.pointerType))
 	}
 
 	private fun addMathematicalIntrinsics(constructor: LlvmConstructor) {
