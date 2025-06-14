@@ -52,7 +52,7 @@ class FunctionCall(override val source: SyntaxTreeNode, scope: Scope, val functi
 	private fun resolveInitializerCall(targetType: StaticType) {
 		val typeDeclaration = targetType.typeDeclaration
 		if(typeDeclaration is Class) {
-			if(typeDeclaration.isAbstract)
+			if(typeDeclaration.isAbstract && isPrimaryCall)
 				context.addIssue(AbstractClassInstantiation(source, typeDeclaration))
 		}
 		val globalTypeParameters = typeDeclaration.scope.getGenericTypeDeclarations()

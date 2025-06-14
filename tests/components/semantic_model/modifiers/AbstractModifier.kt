@@ -178,4 +178,18 @@ internal class AbstractModifier {
 		lintResult.assertIssueDetected<AbstractClassInstantiation>("Abstract class 'List' cannot be instantiated.",
 			Severity.ERROR)
 	}
+
+	@Test
+	fun `allows super initializer call to abstract super class`() {
+		val sourceCode = """
+			abstract Collection class
+			List class: Collection {
+				init {
+					super.init()
+				}
+			}
+			""".trimIndent()
+		val lintResult = TestUtil.lint(sourceCode)
+		lintResult.assertIssueNotDetected<AbstractClassInstantiation>()
+	}
 }
