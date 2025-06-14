@@ -313,7 +313,7 @@ object TestUtil {
 
 	fun assertSyntaxTreeEquals(expectedFileSyntaxTree: String, sourceCode: String) {
 		val actualSyntaxTree = parse(sourceCode).program.toString()
-		val expectedSyntaxTree = "Program {\n\tFile {${
+		val expectedSyntaxTree = "Program {\n\tFile [ $TEST_MODULE_NAME.$TEST_FILE_NAME ] {${
 			if(expectedFileSyntaxTree == "") ""
 			else "\n$expectedFileSyntaxTree".indent().indent()
 		}\n\t}\n}"

@@ -15,6 +15,6 @@ class File(private val file: SourceFile, private val statements: List<SyntaxTree
 	}
 
 	override fun toString(): String {
-		return "File {${statements.toLines().indent()}\n}"
+		return "File [ ${file.getIdentifier()} ] {${statements.toLines().indent()}\n}"
 	}
 }
