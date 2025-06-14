@@ -112,7 +112,7 @@ internal class Initializers {
 	}
 
 	@Test
-	fun `allows missing body on abstract operator`() {
+	fun `allows missing body on abstract initializer`() {
 		val sourceCode =
 			"""
 				abstract Number class {
@@ -124,7 +124,7 @@ internal class Initializers {
 	}
 
 	@Test
-	fun `detects body on abstract operator`() {
+	fun `detects body on abstract initializer`() {
 		val sourceCode =
 			"""
 				abstract Number class {
@@ -308,7 +308,7 @@ internal class Initializers {
 	}
 
 	@Test
-	fun `allows abstract classes to override abstract initializers of generic super type`() {
+	fun `allows non-abstract classes to override abstract initializers of generic super type`() {
 		val sourceCode =
 			"""
 				Int class

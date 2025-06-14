@@ -159,7 +159,7 @@ internal class SuperReference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<SuperMemberNotFound>(
-			"The specified member does not exist on any super type of this type definition.", Severity.ERROR)
+			"The specified property does not exist on any super type of this type definition.", Severity.ERROR)
 	}
 
 	@Test
@@ -194,7 +194,7 @@ internal class SuperReference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<SuperMemberNotFound>(
-			"The specified member does not exist on any super type of this type definition.")
+			"The specified initializer does not exist on any super type of this type definition.")
 	}
 
 	@Test
@@ -231,7 +231,7 @@ internal class SuperReference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<SuperMemberNotFound>(
-			"The specified member does not exist on any super type of this type definition.")
+			"The specified function does not exist on any super type of this type definition.")
 	}
 
 	@Test
@@ -267,7 +267,7 @@ internal class SuperReference {
             """.trimIndent()
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<SuperMemberNotFound>(
-			"The specified member does not exist on any super type of this type definition.")
+			"The specified index operator does not exist on any super type of this type definition.")
 	}
 
 	@Test

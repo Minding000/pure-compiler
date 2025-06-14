@@ -2,6 +2,7 @@ package components.semantic_model.values
 
 import components.code_generation.llvm.models.values.SuperReference
 import components.semantic_model.declarations.TypeDeclaration
+import components.semantic_model.operations.FunctionCall
 import components.semantic_model.operations.IndexAccess
 import components.semantic_model.operations.MemberAccess
 import components.semantic_model.scopes.Scope
@@ -41,17 +42,24 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 				listOf(superType)
 			}
 		}
+		var memberType: String
 		val possibleTargetTypes = when(val parent = parent) {
 			is MemberAccess -> {
 				if(parent.member is InitializerReference) {
+					memberType = "initializer"
 					if(!isInInitializer()) {
 						context.addIssue(SuperInitializerCallOutsideOfInitializer(source))
 						return
 					}
+				} else if(parent.parent is FunctionCall) {
+					memberType = "function"
+				} else {
+					memberType = "property"
 				}
 				parent.filterForPossibleTargetTypes(superTypes)
 			}
 			is IndexAccess -> {
+				memberType = "index operator"
 				parent.filterForPossibleTargetTypes(superTypes)
 			}
 			else -> {
@@ -60,7 +68,7 @@ open class SuperReference(override val source: SuperReferenceSyntaxTree, scope: 
 			}
 		}
 		if(possibleTargetTypes.isEmpty()) {
-			context.addIssue(SuperMemberNotFound(source))
+			context.addIssue(SuperMemberNotFound(source, memberType))
 		} else if(possibleTargetTypes.size > 1) {
 			context.addIssue(SuperReferenceAmbiguity(source, possibleTargetTypes))
 		} else {
