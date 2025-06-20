@@ -446,6 +446,8 @@ abstract class TypeDeclaration(override val model: TypeDeclaration, val members:
 			isNoop = false
 		}
 		for(memberDeclaration in properties) {
+			if(memberDeclaration.parent != this)
+				continue
 			val memberValue = memberDeclaration.value ?: continue
 			val convertedValue = ValueConverter.convertIfRequired(memberDeclaration.model, constructor,
 				memberValue.buildLlvmValue(constructor), memberValue.model.effectiveType, memberValue.model.hasGenericType,
