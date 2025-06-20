@@ -1,4 +1,6 @@
+.DS_Store
+.idea
+
 lib
 out
 target
-**/.DS_Store
