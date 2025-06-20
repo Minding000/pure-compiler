@@ -2,6 +2,22 @@
 
 This program compiles pure code to binary executables.
 
+## Command line interface
+
+### Sub-commands
+
+- `run <path> <entrypoint>`
+- `build <path> <entrypoint>`
+- `print <source|ast|llvm-ir> <path> <entrypoint>`
+- `help [<sub-command>]`
+
+### Options
+
+- `--output-directory <path>`
+- `--compile-time-debug-output`
+- `--runtime-debug-output`
+- `--log-level <debug|info|warning|error>`
+
 ## Environment variables
 
 - `BASE_MODULE_PATH` (optional; default: `D:\Daten\Projekte\Pure\packages\lang`)
