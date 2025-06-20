@@ -15,6 +15,8 @@ import java.util.*
 
 class Initializer(override val model: InitializerDefinition, val parameters: List<Parameter>, val body: ErrorHandlingContext?):
 	Unit(model, listOfNotNull(*parameters.toTypedArray(), body)) {
+	val isDefaultInitializer: Boolean
+		get() = body == null && parameters.isEmpty()
 	lateinit var llvmValue: LlvmValue
 	lateinit var llvmType: LlvmType
 
@@ -75,7 +77,7 @@ class Initializer(override val model: InitializerDefinition, val parameters: Lis
 		} else {
 			if(model.isNative)
 				context.nativeRegistry.compileNativeImplementation(constructor, model, llvmValue)
-			else if(body == null)
+			else if(isDefaultInitializer)
 				callTrivialSuperInitializers(constructor, thisValue)
 			else
 				super.compile(constructor)
