@@ -9,9 +9,10 @@ internal class HelloWorldProject {
 
 	@Test
 	fun `builds without errors`() {
-		TestUtil.recordErrorStream()
-		Main.main(arrayOf("build", "${TestUtil.EXAMPLE_PROJECTS_PATH}${File.separator}Hello World\\Main.pure", "Main:HelloWorldApp.run"))
-		TestUtil.assertErrorStreamEmpty()
+		TestUtil.assertErrorStreamEmpty {
+			Main.main(
+				arrayOf("build", "${TestUtil.EXAMPLE_PROJECTS_PATH}${File.separator}Hello World\\Main.pure", "Main:HelloWorldApp.run"))
+		}
 	}
 
 	@Test

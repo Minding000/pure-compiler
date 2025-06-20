@@ -39,14 +39,25 @@ object TestUtil {
 		"noalias ptr @malloc(i32)", "{ i8, i1 } @llvm.sadd.with.overflow.i8(i8, i8)", "{ i8, i1 } @llvm.ssub.with.overflow.i8(i8, i8)",
 		"{ i8, i1 } @llvm.smul.with.overflow.i8(i8, i8)", "noalias ptr @malloc(i32)")
 
-	fun recordErrorStream() {
+	fun assertErrorStreamEmpty(runnable: Runnable) {
 		System.setErr(PrintStream(testErrorStream))
-	}
-
-	fun assertErrorStreamEmpty() {
+		var exception: Exception? = null
+		try {
+			Main.shouldThrowInsteadOfExit = true
+			runnable.run()
+		} catch(localException: Exception) {
+			exception = localException
+		}
 		System.setErr(defaultErrorStream)
 		val actualErrorStream = testErrorStream.toString()
 		testErrorStream.reset()
+		if(exception != null) {
+			if(exception.message == "exitWithError() called")
+				System.err.println("exitWithError() called")
+			else
+				exception.printStackTrace()
+			System.err.flush()
+		}
 		assertEquals("", actualErrorStream, "Expected error stream to be empty")
 	}
 
