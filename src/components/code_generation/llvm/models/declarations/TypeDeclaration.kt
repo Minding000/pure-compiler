@@ -181,6 +181,7 @@ abstract class TypeDeclaration(override val model: TypeDeclaration, val members:
 
 	private fun addNativeProperties(constructor: LlvmConstructor, llvmProperties: LinkedList<LlvmType?>) {
 		if(SpecialType.ARRAY.matches(model)) {
+			context.standardLibrary.arrayTypeDeclaration = this
 			context.standardLibrary.array = StandardLibrary.NativeRuntimeClass(this, llvmProperties.size)
 			llvmProperties.add(constructor.pointerType)
 		} else if(SpecialType.BOOLEAN.matches(model)) {

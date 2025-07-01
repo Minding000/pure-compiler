@@ -15,6 +15,7 @@ import components.semantic_model.values.Operator
 import errors.internal.CompilerError
 
 class StandardLibrary {
+	// Classes with native properties
 	lateinit var array: NativeRuntimeClass
 	lateinit var boolean: NativeRuntimeClass
 	lateinit var byteArray: NativeRuntimeClass
@@ -23,12 +24,13 @@ class StandardLibrary {
 	lateinit var float: NativeRuntimeClass
 	lateinit var nativeInputStream: NativeRuntimeClass
 	lateinit var nativeOutputStream: NativeRuntimeClass
-
+	// Type declarations, initializers and functions to initialize objects in the runtime
 	lateinit var byteArrayTypeDeclaration: TypeDeclaration
 	lateinit var exceptionTypeDeclaration: TypeDeclaration
 	lateinit var exceptionDescriptionInitializer: LlvmFunction
 	lateinit var stringTypeDeclaration: TypeDeclaration
 	lateinit var stringByteArrayInitializer: LlvmFunction
+	lateinit var arrayTypeDeclaration: TypeDeclaration
 	lateinit var mapTypeDeclaration: TypeDeclaration
 	lateinit var mapInitializer: LlvmFunction
 	var exceptionAddLocationFunctionType: LlvmType? = null
@@ -131,8 +133,7 @@ class StandardLibrary {
 		val typeDeclaration = fileScope.getTypeDeclaration(SpecialType.MAP.className) ?: return
 		val defaultInitializer = typeDeclaration.unit.units.filterIsInstance<Initializer>().find { initializerDefinition ->
 			initializerDefinition.model.parameters.isEmpty()
-		}
-			?: throw CompilerError(typeDeclaration.source, "Failed to find default Map initializer.")
+		} ?: throw CompilerError(typeDeclaration.source, "Failed to find default Map initializer.")
 		val mapSetterPropertyType = typeDeclaration.scope.getValueDeclaration(Operator.Kind.BRACKETS_SET.stringRepresentation)?.type
 		mapTypeDeclaration = typeDeclaration.unit
 		mapInitializer = LlvmFunction(defaultInitializer.llvmValue, defaultInitializer.llvmType)

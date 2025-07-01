@@ -12,7 +12,6 @@ class Parameter(override val model: Parameter): ValueDeclaration(model) {
 			return
 		val function = constructor.getParentFunction()
 		val value = constructor.getParameter(function, index)
-		llvmLocation = constructor.buildStackAllocation(constructor.getParameterType(function, index), model.name)
-		constructor.buildStore(value, llvmLocation)
+		llvmLocation = constructor.buildStackAllocation(constructor.getParameterType(function, index), model.name, value)
 	}
 }

@@ -1,5 +1,6 @@
 package components.semantic_model.declarations
 
+import components.semantic_model.context.ComparisonResult
 import components.semantic_model.control_flow.OverGenerator
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.scopes.MutableScope
@@ -68,16 +69,27 @@ abstract class ValueDeclaration(override val source: SyntaxTreeNode, override va
 			providedType = sourceType
 			return
 		}
-		val conversions = targetType.getConversionsFrom(sourceType)
-		if(conversions.isNotEmpty()) {
-			if(conversions.size > 1) {
-				context.addIssue(ConversionAmbiguity(source, sourceType, targetType, conversions))
-				return
-			}
-			conversion = conversions.first()
+		val possibleConversions = targetType.getConversionsFrom(sourceType)
+		if(possibleConversions.isEmpty()) {
+			context.addIssue(TypeNotAssignable(source, sourceType, targetType))
 			return
 		}
-		context.addIssue(TypeNotAssignable(source, sourceType, targetType))
+		var mostSpecificConversion: InitializerDefinition? = null
+		specificityPrecedenceLoop@ for(conversion in possibleConversions) {
+			for(otherConversion in possibleConversions) {
+				if(otherConversion === conversion)
+					continue
+				if(conversion.compareSpecificity(otherConversion) != ComparisonResult.HIGHER)
+					continue@specificityPrecedenceLoop
+			}
+			value.setInferredType(conversion.getParameterTypeAt(0))
+			mostSpecificConversion = conversion
+		}
+		if(mostSpecificConversion == null) {
+			context.addIssue(ConversionAmbiguity(source, sourceType, targetType, possibleConversions))
+			return
+		}
+		conversion = mostSpecificConversion
 	}
 
 	abstract override fun toUnit(): ValueDeclarationUnit

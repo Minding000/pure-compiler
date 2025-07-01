@@ -128,15 +128,25 @@ class InitializerDefinition(override val source: SyntaxTreeNode, override val sc
 			if(!suppliedValue.isAssignableTo(parameterType)) {
 				val suppliedType = suppliedValue.providedType ?: return false
 				val possibleConversions = parameterType.getConversionsFrom(suppliedType)
-				if(possibleConversions.isNotEmpty()) {
-					if(possibleConversions.size > 1) {
-						context.addIssue(ConversionAmbiguity(source, suppliedType, parameterType, possibleConversions))
-						return false
+				if(possibleConversions.isEmpty())
+					return false
+				var mostSpecificConversion: InitializerDefinition? = null
+				specificityPrecedenceLoop@ for(conversion in possibleConversions) {
+					for(otherConversion in possibleConversions) {
+						if(otherConversion === conversion)
+							continue
+						if(conversion.compareSpecificity(otherConversion) != ComparisonResult.HIGHER)
+							continue@specificityPrecedenceLoop
 					}
-					conversions[suppliedValue] = possibleConversions.first()
-					continue
+					suppliedValue.setInferredType(conversion.getParameterTypeAt(0))
+					mostSpecificConversion = conversion
 				}
-				return false
+				if(mostSpecificConversion == null) {
+					context.addIssue(ConversionAmbiguity(source, suppliedType, parameterType, possibleConversions))
+					return false
+				}
+				conversions[suppliedValue] = mostSpecificConversion
+				continue
 			}
 		}
 		return true

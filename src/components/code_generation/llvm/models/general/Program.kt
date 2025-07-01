@@ -44,19 +44,21 @@ class Program(val context: Context, val model: Program, val files: List<File>) {
 
 	private fun createGlobalEntrypoint(constructor: LlvmConstructor, userEntrypoint: UserEntrypoint?): LlvmValue {
 		val userEntrypointFunction = userEntrypoint?.function
-		val userEntryPointReturnsVoid = SpecialType.NOTHING.matches(userEntrypointFunction?.model?.signature?.returnType)
+		val userEntryPointReturnsVoid =
+			userEntrypointFunction == null || SpecialType.NOTHING.matches(userEntrypointFunction.model.signature.returnType)
 		val globalEntryPointReturnType = if(userEntryPointReturnsVoid)
 			constructor.i32Type
 		else
-			userEntrypointFunction?.model?.signature?.returnType?.getLlvmType(constructor) ?: constructor.voidType
-		val globalEntryPointType = constructor.buildFunctionType(emptyList(), globalEntryPointReturnType)
+			userEntrypointFunction.model.signature.returnType.getLlvmType(constructor)
+		val globalEntryPointType =
+			constructor.buildFunctionType(listOf(constructor.i32Type, constructor.pointerType), globalEntryPointReturnType)
 		val globalEntryPoint = constructor.buildFunction(GLOBAL_ENTRYPOINT_NAME, globalEntryPointType)
 		constructor.createAndSelectEntrypointBlock(globalEntryPoint)
 		val uncaughtExceptionBlock = constructor.createBlock("uncaughtException")
+		readProgramArguments(constructor)
 		createStandardStreams(constructor)
 		context.printDebugLine(constructor, "Initializing program...")
-		val exceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "__exceptionVariable")
-		constructor.buildStore(constructor.nullPointer, exceptionVariable)
+		val exceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "__exceptionVariable", constructor.nullPointer)
 		for(file in files) {
 			constructor.buildFunctionCall(file.initializer, listOf(exceptionVariable))
 			checkForUnhandledError(constructor, exceptionVariable, uncaughtExceptionBlock)
@@ -115,8 +117,8 @@ class Program(val context: Context, val model: Program, val files: List<File>) {
 		val exception = constructor.buildLoad(constructor.pointerType, exceptionVariable, "exception")
 		if(context.nativeRegistry.has(SpecialType.EXCEPTION, SpecialType.STRING, SpecialType.ARRAY)) {
 			val stringRepresentationGetterAddress = context.resolveFunction(constructor, exception, "get stringRepresentation: String")
-			val ignoredExceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable")
-			constructor.buildStore(constructor.nullPointer, ignoredExceptionVariable)
+			val ignoredExceptionVariable =
+				constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable", constructor.nullPointer)
 			val stringRepresentation = constructor.buildFunctionCall(
 				constructor.buildFunctionType(listOf(constructor.pointerType, constructor.pointerType), constructor.pointerType),
 				stringRepresentationGetterAddress, listOf(ignoredExceptionVariable, exception), "stringRepresentation")
@@ -142,6 +144,11 @@ class Program(val context: Context, val model: Program, val files: List<File>) {
 		val noExceptionBlock = constructor.createBlock("noException")
 		constructor.buildJump(doesExceptionExist, uncaughtExceptionBlock, noExceptionBlock)
 		constructor.select(noExceptionBlock)
+	}
+
+	private fun readProgramArguments(constructor: LlvmConstructor) {
+		constructor.buildStore(constructor.getParameter(0), context.runtimeGlobals.programArgumentCount)
+		constructor.buildStore(constructor.getParameter(1), context.runtimeGlobals.programArgumentArray)
 	}
 
 	private fun createStandardStreams(constructor: LlvmConstructor) {

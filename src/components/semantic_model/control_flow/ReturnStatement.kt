@@ -1,6 +1,7 @@
 package components.semantic_model.control_flow
 
 import components.code_generation.llvm.models.control_flow.ReturnStatement
+import components.semantic_model.context.ComparisonResult
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.declarations.ComputedPropertyDeclaration
@@ -83,25 +84,36 @@ class ReturnStatement(override val source: SyntaxTreeNode, scope: Scope, val val
 		if(value == null) {
 			if(!SpecialType.NOTHING.matches(returnType))
 				context.addIssue(ReturnStatementMissingValue(source))
+			return
+		}
+		if(SpecialType.NOTHING.matches(returnType)) {
+			context.addIssue(RedundantReturnValue(source))
+		} else if(value.isAssignableTo(returnType)) {
+			value.setInferredType(returnType)
 		} else {
-			if(SpecialType.NOTHING.matches(returnType)) {
-				context.addIssue(RedundantReturnValue(source))
-			} else if(value.isAssignableTo(returnType)) {
-				value.setInferredType(returnType)
-			} else {
-				val valueType = value.providedType
-				if(valueType != null) {
-					val conversions = returnType.getConversionsFrom(valueType)
-					if(conversions.isNotEmpty()) {
-						if(conversions.size > 1) {
-							context.addIssue(ConversionAmbiguity(source, valueType, returnType, conversions))
-							return
-						}
-						conversion = conversions.first()
-						return
-					}
+			val valueType = value.providedType
+			if(valueType != null) {
+				val possibleConversions = returnType.getConversionsFrom(valueType)
+				if(possibleConversions.isEmpty()) {
 					context.addIssue(ReturnValueTypeMismatch(source, valueType, returnType))
+					return
 				}
+				var mostSpecificConversion: InitializerDefinition? = null
+				specificityPrecedenceLoop@ for(conversion in possibleConversions) {
+					for(otherConversion in possibleConversions) {
+						if(otherConversion === conversion)
+							continue
+						if(conversion.compareSpecificity(otherConversion) != ComparisonResult.HIGHER)
+							continue@specificityPrecedenceLoop
+					}
+					value.setInferredType(conversion.getParameterTypeAt(0))
+					mostSpecificConversion = conversion
+				}
+				if(mostSpecificConversion == null) {
+					context.addIssue(ConversionAmbiguity(source, valueType, returnType, possibleConversions))
+					return
+				}
+				conversion = mostSpecificConversion
 			}
 		}
 	}

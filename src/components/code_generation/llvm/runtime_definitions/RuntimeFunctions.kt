@@ -70,8 +70,7 @@ class RuntimeFunctions {
 		val memberOffsetArrayProperty = constructor.buildGetPropertyPointer(context.runtimeStructs.classDefinition, classDefinition,
 			memberOffsetArrayPropertyIndex, "memberOffsetArrayProperty")
 		val memberOffsetArray = constructor.buildLoad(constructor.pointerType, memberOffsetArrayProperty, "memberOffsetArray")
-		val indexVariable = constructor.buildStackAllocation(constructor.i32Type, "indexVariable")
-		constructor.buildStore(constructor.buildInt32(0), indexVariable)
+		val indexVariable = constructor.buildStackAllocation(constructor.i32Type, "indexVariable", constructor.buildInt32(0))
 		val loopBlock = constructor.createBlock(function, "loop")
 		constructor.buildJump(loopBlock)
 		constructor.select(loopBlock)
@@ -147,8 +146,7 @@ class RuntimeFunctions {
 			Context.FUNCTION_ADDRESS_ARRAY_PROPERTY_INDEX, "functionAddressArrayProperty")
 		val functionAddressArray = constructor.buildLoad(constructor.pointerType, functionAddressArrayProperty,
 			"functionAddressArray")
-		val indexVariable = constructor.buildStackAllocation(constructor.i32Type, "indexVariable")
-		constructor.buildStore(constructor.buildInt32(0), indexVariable)
+		val indexVariable = constructor.buildStackAllocation(constructor.i32Type, "indexVariable", constructor.buildInt32(0))
 		val loopBlock = constructor.createBlock(function, "loop")
 		constructor.buildJump(loopBlock)
 		constructor.select(loopBlock)
@@ -238,8 +236,8 @@ class RuntimeFunctions {
 		val descriptionLength = constructor.getParameter(6)
 		val lineNumber = constructor.getParameter(7)
 
-		val ignoredExceptionVariable = constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable")
-		constructor.buildStore(constructor.nullPointer, ignoredExceptionVariable)
+		val ignoredExceptionVariable =
+			constructor.buildStackAllocation(constructor.pointerType, "ignoredExceptionVariable", constructor.nullPointer)
 		val moduleName =
 			constructor.buildFunctionCall(createString, listOf(ignoredExceptionVariable, moduleNameBytes, moduleNameLength), "moduleName")
 		val fileName =

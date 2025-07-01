@@ -18,9 +18,13 @@ class ExternalFunctions {
 	lateinit var streamReadByte: LlvmFunction
 	lateinit var streamRead: LlvmFunction
 	lateinit var streamFlush: LlvmFunction
+	lateinit var stringLength: LlvmFunction
+	lateinit var stringSearchCharacter: LlvmFunction
 	lateinit var sleep: LlvmFunction
 	lateinit var exit: LlvmFunction
 	lateinit var memoryCopy: LlvmFunction
+	lateinit var windowsGetEnvironmentStrings: LlvmFunction
+	lateinit var windowsFreeEnvironmentStrings: LlvmFunction
 	lateinit var variableParameterIterationStart: LlvmFunction
 	lateinit var variableParameterListCopy: LlvmFunction
 	lateinit var variableParameterIterationEnd: LlvmFunction
@@ -43,9 +47,12 @@ class ExternalFunctions {
 		addStreamReadByteFunction(constructor)
 		addStreamReadFunction(constructor)
 		addStreamFlushFunction(constructor)
+		addStringLengthFunction(constructor)
+		addStringSearchCharacterFunction(constructor)
 		addSleepFunction(constructor)
 		addExitFunction(constructor)
 		addMemoryCopyFunction(constructor)
+		addWindowsEnvironmentStringsFunctions(constructor)
 		addVariadicIntrinsics(constructor)
 		addMathematicalIntrinsics(constructor)
 	}
@@ -107,6 +114,15 @@ class ExternalFunctions {
 		streamFlush = LlvmFunction(constructor, "fflush", listOf(constructor.pointerType), constructor.i32Type)
 	}
 
+	private fun addStringLengthFunction(constructor: LlvmConstructor) {
+		stringLength = LlvmFunction(constructor, "strlen", listOf(constructor.pointerType), constructor.i64Type)
+	}
+
+	private fun addStringSearchCharacterFunction(constructor: LlvmConstructor) {
+		stringSearchCharacter =
+			LlvmFunction(constructor, "strchr", listOf(constructor.pointerType, constructor.i32Type), constructor.pointerType)
+	}
+
 	private fun addSleepFunction(constructor: LlvmConstructor) {
 		sleep = LlvmFunction(constructor, "Sleep", listOf(constructor.i32Type))
 	}
@@ -118,6 +134,12 @@ class ExternalFunctions {
 	private fun addMemoryCopyFunction(constructor: LlvmConstructor) {
 		memoryCopy = LlvmFunction(constructor, "memcpy", listOf(constructor.pointerType, constructor.pointerType, constructor.i64Type),
 			constructor.pointerType)
+	}
+
+	private fun addWindowsEnvironmentStringsFunctions(constructor: LlvmConstructor) {
+		windowsGetEnvironmentStrings = LlvmFunction(constructor, "GetEnvironmentStrings", listOf(), constructor.pointerType)
+		windowsFreeEnvironmentStrings =
+			LlvmFunction(constructor, "FreeEnvironmentStrings", listOf(constructor.pointerType), constructor.i32Type)
 	}
 
 	private fun addVariadicIntrinsics(constructor: LlvmConstructor) {

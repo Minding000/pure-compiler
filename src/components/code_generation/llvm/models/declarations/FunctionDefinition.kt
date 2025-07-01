@@ -92,8 +92,9 @@ class FunctionDefinition(override val model: FunctionImplementation, val paramet
 		var result = constructor.buildFunctionCall(primitiveImplementation.llvmType, primitiveImplementation.llvmValue, unwrappedParameters,
 			resultName)
 		if(doesReturn) {
-			if(model.signature.returnType is SelfType && model.signature.returnType.typeDeclaration == model.parentTypeDeclaration)
-				result = ValueConverter.wrapPrimitive(model, constructor, result, model.signature.returnType)
+			val returnType = model.signature.returnType
+			if(returnType is SelfType && returnType.typeDeclaration == model.parentTypeDeclaration)
+				result = ValueConverter.wrapPrimitive(model, constructor, result, returnType)
 			constructor.buildReturn(result)
 		}
 		if(body?.model?.isInterruptingExecutionBasedOnStructure != true)

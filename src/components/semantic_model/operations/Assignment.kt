@@ -1,6 +1,7 @@
 package components.semantic_model.operations
 
 import components.code_generation.llvm.models.operations.Assignment
+import components.semantic_model.context.ComparisonResult
 import components.semantic_model.context.VariableTracker
 import components.semantic_model.context.VariableUsage
 import components.semantic_model.declarations.InitializerDefinition
@@ -42,16 +43,27 @@ class Assignment(override val source: AssignmentSyntaxTree, scope: Scope, val ta
 				target.providedType = sourceType
 				continue
 			}
-			val conversions = targetType.getConversionsFrom(sourceType)
-			if(conversions.isNotEmpty()) {
-				if(conversions.size > 1) {
-					context.addIssue(ConversionAmbiguity(source, sourceType, targetType, conversions))
-					continue
-				}
-				this.conversions[target] = conversions.first()
+			val possibleConversions = targetType.getConversionsFrom(sourceType)
+			if(possibleConversions.isEmpty()) {
+				context.addIssue(TypeNotAssignable(source, sourceType, targetType))
 				continue
 			}
-			context.addIssue(TypeNotAssignable(source, sourceType, targetType))
+			var mostSpecificConversion: InitializerDefinition? = null
+			specificityPrecedenceLoop@ for(conversion in possibleConversions) {
+				for(otherConversion in possibleConversions) {
+					if(otherConversion === conversion)
+						continue
+					if(conversion.compareSpecificity(otherConversion) != ComparisonResult.HIGHER)
+						continue@specificityPrecedenceLoop
+				}
+				target.setInferredType(conversion.getParameterTypeAt(0))
+				mostSpecificConversion = conversion
+			}
+			if(mostSpecificConversion == null) {
+				context.addIssue(ConversionAmbiguity(source, sourceType, targetType, possibleConversions))
+				continue
+			}
+			conversions[target] = mostSpecificConversion
 		}
 		registerSelfTypeUsages()
 	}

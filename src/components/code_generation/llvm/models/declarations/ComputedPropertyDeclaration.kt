@@ -8,6 +8,7 @@ import components.code_generation.llvm.wrapper.LlvmType
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.declarations.ComputedPropertyDeclaration
+import components.semantic_model.types.SelfType
 import errors.internal.CompilerError
 import java.util.*
 
@@ -112,7 +113,9 @@ class ComputedPropertyDeclaration(override val model: ComputedPropertyDeclaratio
 		val primitiveImplementation = context.nativeRegistry.resolvePrimitiveImplementation(signature)
 		var result = constructor.buildFunctionCall(primitiveImplementation.llvmType, primitiveImplementation.llvmValue, unwrappedParameters,
 			signature)
-		result = ValueConverter.wrapPrimitive(model, constructor, result, model.effectiveType)
+		val type = model.effectiveType
+		if(type is SelfType && type.typeDeclaration == model.parentTypeDeclaration)
+			result = ValueConverter.wrapPrimitive(model, constructor, result, type)
 		constructor.buildReturn(result)
 	}
 

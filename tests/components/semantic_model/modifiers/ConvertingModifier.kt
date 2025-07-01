@@ -149,8 +149,8 @@ internal class ConvertingModifier {
 		val lintResult = TestUtil.lint(sourceCode)
 		lintResult.assertIssueDetected<ConversionAmbiguity>("""
 			Conversion from 'Int' to 'Float | Int64' needs to be explicit, because there are multiple possible conversions:
-			 - Float
-			 - Int64
+			 - 'Float(Int)' declared at Test.Test:3:12
+			 - 'Int64(Int)' declared at Test.Test:6:12
 		""".trimIndent(), Severity.ERROR)
 	}
 

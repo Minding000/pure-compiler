@@ -42,11 +42,20 @@ class TestApp(private val files: Map<String, String>, private val entryPointPath
 		shouldPrint("", input, expectedValue)
 	}
 
+	fun shouldExitWith(expectedValue: Int, environmentVariables: Map<String, String>) {
+		shouldPrint("", "", expectedValue, environmentVariables)
+	}
+
+	fun shouldExitWith(expectedValue: Int, arguments: List<String>) {
+		shouldPrint("", "", expectedValue, emptyMap(), arguments)
+	}
+
 	fun shouldPrintLine(expectedOutput: String, input: String = "", expectedExitCode: Int = ExitCode.SUCCESS) {
 		shouldPrint("$expectedOutput\n", input, expectedExitCode)
 	}
 
-	fun shouldPrint(expectedOutput: String, input: String = "", expectedExitCode: Int = ExitCode.SUCCESS) {
+	fun shouldPrint(expectedOutput: String, input: String = "", expectedExitCode: Int = ExitCode.SUCCESS,
+					environmentVariables: Map<String, String> = emptyMap(), arguments: List<String> = emptyList()) {
 		TestUtil.run(files, entryPointPath, includeRequiredModules, specialTypePaths) { program ->
 			val basePath = ".${File.separator}out${File.separator}tests"
 			val id = testProgramCounter.getAndIncrement()
@@ -55,7 +64,7 @@ class TestApp(private val files: Map<String, String>, private val entryPointPath
 			try {
 				program.writeObjectFileTo(objectFilePath)
 				Linker.link(program.targetTriple, objectFilePath, executablePath)
-				TestUtil.assertExecutablePrints(expectedOutput, input, executablePath, expectedExitCode)
+				TestUtil.assertExecutablePrints(expectedOutput, input, executablePath, expectedExitCode, environmentVariables, arguments)
 			} finally {
 				Path(objectFilePath).deleteIfExists()
 				Path(executablePath).deleteIfExists()

@@ -22,8 +22,7 @@ class NativeOutputStreamNatives(val context: Context) {
 		val handleProperty = context.standardLibrary.nativeOutputStream.getNativeValueProperty(constructor, thisObject)
 		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 
-		val byteVariable = constructor.buildStackAllocation(constructor.byteType, "byteVariable")
-		constructor.buildStore(byte, byteVariable)
+		val byteVariable = constructor.buildStackAllocation(constructor.byteType, "byteVariable", byte)
 		val byteSize = constructor.buildInt64(1)
 		val byteCount = constructor.buildInt64(1)
 		constructor.buildFunctionCall(context.externalFunctions.streamWrite, listOf(byteVariable, byteSize, byteCount, handle))

@@ -60,7 +60,7 @@ internal class Float {
 			app.includeRequiredModules = true
 			val expectedOutput = """
 				Unhandled error: Failed to parse float: Invalid character '$invalidCharacter'
-				 at Pure:Float:17:Float(String)
+				 at Pure:Float:18:Float(String)
 				 at Test:Test:4:App.parseFloat(): Float
 				""".trimIndent()
 			app.shouldPrintLine(expectedOutput, "", 1)
@@ -81,7 +81,7 @@ internal class Float {
 		app.includeRequiredModules = true
 		val expectedOutput = """
 				Unhandled error: Failed to parse float: Empty string
-				 at Pure:Float:17:Float(String)
+				 at Pure:Float:18:Float(String)
 				 at Test:Test:4:App.parseFloat(): Float
 				""".trimIndent()
 		app.shouldPrintLine(expectedOutput, "", 1)

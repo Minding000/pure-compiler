@@ -8,6 +8,10 @@ import components.semantic_model.general.Program.Companion.RUNTIME_PREFIX
 
 class RuntimeGlobals {
 	lateinit var symbolTable: LlvmValue
+	/** Not available on Windows. See ExternalFunctions.windowsGetEnvironmentStrings */
+	lateinit var environmentStringArray: LlvmValue
+	lateinit var programArgumentCount: LlvmValue
+	lateinit var programArgumentArray: LlvmValue
 	lateinit var standardInputStream: LlvmValue
 	lateinit var standardOutputStream: LlvmValue
 	lateinit var standardErrorStream: LlvmValue
@@ -15,6 +19,7 @@ class RuntimeGlobals {
 	fun declare(constructor: LlvmConstructor, context: Context) {
 		if(Main.shouldPrintRuntimeDebugOutput)
 			createSymbolTable(constructor, context)
+		declareProgramInputs(constructor)
 		declareStandardStreams(constructor)
 	}
 
@@ -26,6 +31,16 @@ class RuntimeGlobals {
 		val symbolTableType = constructor.buildArrayType(constructor.pointerType, symbolTableSize)
 		symbolTable = constructor.declareGlobal("${RUNTIME_PREFIX}symbolTable", symbolTableType)
 		constructor.defineGlobal(symbolTable, constructor.buildConstantPointerArray(symbols.toList()))
+	}
+
+	private fun declareProgramInputs(constructor: LlvmConstructor) {
+		val targetTriple = constructor.getTargetTriple()
+		if(!targetTriple.contains("windows"))
+			environmentStringArray = constructor.declareGlobal("environ", constructor.pointerType)
+		programArgumentCount = constructor.declareGlobal("${RUNTIME_PREFIX}argument_count", constructor.i32Type)
+		programArgumentArray = constructor.declareGlobal("${RUNTIME_PREFIX}argument_array", constructor.pointerType)
+		constructor.defineGlobal(programArgumentCount, constructor.buildInt32(0))
+		constructor.defineGlobal(programArgumentArray, constructor.nullPointer)
 	}
 
 	private fun declareStandardStreams(constructor: LlvmConstructor) {

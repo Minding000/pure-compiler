@@ -28,6 +28,7 @@ object TestUtil {
 	const val TEST_FILE_NAME = "Test"
 	private val defaultErrorStream = System.err
 	private val testErrorStream = ByteArrayOutputStream()
+	private val EXTERNAL_GLOBALS = listOf("@environ = external global ptr")
 	private val EXTERNAL_FUNCTIONS = listOf("i32 @fprintf(ptr, ptr, ...)", "i32 @sprintf(ptr, ptr, ...)",
 		"i32 @snprintf(ptr, i64, ptr, ...)", "i32 @_snprintf(ptr, i64, ptr, ...)", "double @strtod(ptr, ptr)", "i32 @fflush(ptr)",
 		"ptr @fdopen(i32, ptr)", "ptr @_fdopen(i32, ptr)", "i32 @_tmainCRTStartup()", "i1 @__vcrt_initialize()", "i1 @__acrt_initialize()",
@@ -37,7 +38,8 @@ object TestUtil {
 		"void @llvm.va_end(ptr)", "void @llvm.va_end.p0(ptr)", "{ i32, i1 } @llvm.sadd.with.overflow.i32(i32, i32)",
 		"{ i32, i1 } @llvm.ssub.with.overflow.i32(i32, i32)", "{ i32, i1 } @llvm.smul.with.overflow.i32(i32, i32)",
 		"noalias ptr @malloc(i32)", "{ i8, i1 } @llvm.sadd.with.overflow.i8(i8, i8)", "{ i8, i1 } @llvm.ssub.with.overflow.i8(i8, i8)",
-		"{ i8, i1 } @llvm.smul.with.overflow.i8(i8, i8)", "noalias ptr @malloc(i32)")
+		"{ i8, i1 } @llvm.smul.with.overflow.i8(i8, i8)", "noalias ptr @malloc(i32)", "i64 @strlen(ptr)", "ptr @strchr(ptr, i32)",
+		"ptr @GetEnvironmentStrings()", "i32 @FreeEnvironmentStrings(ptr)")
 
 	fun assertErrorStreamEmpty(runnable: Runnable) {
 		System.setErr(PrintStream(testErrorStream))
@@ -207,7 +209,7 @@ object TestUtil {
 		val process = ProcessBuilder(path).inheritIO().start()
 		val exitCode = process.waitFor()
 		if(exitCode != ExitCode.SUCCESS)
-			fail(createExitCodeMessage(exitCode))
+			fail(createExitCodeMessage(exitCode, ExitCode.SUCCESS))
 	}
 
 	fun assertExecutablePrintsLine(expectedString: String, input: String = "",
@@ -218,8 +220,13 @@ object TestUtil {
 
 	fun assertExecutablePrints(expectedOutput: String, input: String = "",
 							   path: String = ".${File.separator}out${File.separator}program.exe",
-							   expectedExitCode: Int = ExitCode.SUCCESS) {
-		val process = ProcessBuilder(path).start()
+							   expectedExitCode: Int = ExitCode.SUCCESS,
+							   environmentVariables: Map<String, String> = emptyMap(),
+							   arguments: List<String> = emptyList()) {
+		val processBuilder = ProcessBuilder(path, *arguments.toTypedArray())
+		processBuilder.environment().clear()
+		processBuilder.environment().putAll(environmentVariables)
+		val process = processBuilder.start()
 		val outputStreamReader = process.inputStream.bufferedReader()
 		val errorStreamReader = process.errorStream.bufferedReader()
 		if(input.isNotEmpty()) {
@@ -257,7 +264,7 @@ object TestUtil {
 			process.waitFor(2, TimeUnit.SECONDS)
 			process.destroyForcibly()
 		} else if(programFailed) {
-			System.err.println(createExitCodeMessage(exitCode))
+			System.err.println(createExitCodeMessage(exitCode, expectedExitCode))
 		}
 		val errorStream = errorStreamBuilder.toString()
 		if(errorStream.isNotEmpty())
@@ -271,8 +278,10 @@ object TestUtil {
 	/**
 	 * Windows exit codes: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
 	 */
-	private fun createExitCodeMessage(exitCode: Int): String {
-		return "Program exited with exit code: $exitCode (0x${exitCode.toUInt().toString(16).uppercase()})"
+	private fun createExitCodeMessage(exitCode: Int, expectedExitCode: Int): String {
+		return "Program exited with exit code: $exitCode (0x${
+			exitCode.toUInt().toString(16).uppercase()
+		}) - expected $expectedExitCode instead"
 	}
 
 	private fun printDiagnostics(intermediateRepresentation: String) {
@@ -288,9 +297,10 @@ object TestUtil {
 			fail("Encountered unimplemented functions. Check output above for details.")
 		}
 		val externalGlobals = lines.filter { line -> line.contains("external global") }
-		if(externalGlobals.isNotEmpty()) {
-			println("Possibly non-existent globals (${externalGlobals.size}):")
-			externalGlobals.forEach { global -> println(global) }
+		val externalGlobalsMissingADefinition = externalGlobals.filter { externalGlobal -> !EXTERNAL_GLOBALS.contains(externalGlobal) }
+		if(externalGlobalsMissingADefinition.isNotEmpty()) {
+			println("Possibly non-existent globals (${externalGlobalsMissingADefinition.size}):")
+			externalGlobalsMissingADefinition.forEach { global -> println(global) }
 			fail("Encountered non-existent globals. Check output above for details.")
 		}
 	}

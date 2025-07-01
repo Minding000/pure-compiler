@@ -254,10 +254,13 @@ class LlvmConstructor(name: String) {
 		return LLVMBuildArrayMalloc(builder, elementType, size, name)
 	}
 
-	fun buildStackAllocation(type: LlvmType?, name: String): LlvmValue {
+	fun buildStackAllocation(type: LlvmType?, name: String, initialValue: LlvmValue? = null): LlvmValue {
 		if(type == null)
 			throw CompilerError("Missing type in stack allocation '$name'.")
-		return LLVMBuildAlloca(builder, type, name)
+		val variable = LLVMBuildAlloca(builder, type, name)
+		if(initialValue != null)
+			buildStore(initialValue, variable)
+		return variable
 	}
 
 	/**
@@ -338,6 +341,11 @@ class LlvmConstructor(name: String) {
 	}
 
 	fun buildCastFromIntegerToPointer(value: LlvmValue, name: String): LlvmValue = LLVMBuildIntToPtr(builder, value, pointerType, name)
+	fun buildPointerDifference(type: LlvmType?, left: LlvmValue, right: LlvmValue, name: String): LlvmValue {
+		if(type == null)
+			throw CompilerError("Missing type in pointer difference '$name'.")
+		return LLVMBuildPtrDiff2(builder, type, left, right, name)
+	}
 
 	fun buildCastFromIntegerToBoolean(integer: LlvmValue, name: String): LlvmValue =
 		LLVMBuildIntCast(builder, integer, booleanType, name)

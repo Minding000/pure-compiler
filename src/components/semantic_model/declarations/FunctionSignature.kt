@@ -132,11 +132,22 @@ class FunctionSignature(override val source: SyntaxTreeNode, override val scope:
 				val possibleConversions = parameterType.getConversionsFrom(suppliedType)
 				if(possibleConversions.isEmpty())
 					return null
-				if(possibleConversions.size > 1) {
+				var mostSpecificConversion: InitializerDefinition? = null
+				specificityPrecedenceLoop@ for(conversion in possibleConversions) {
+					for(otherConversion in possibleConversions) {
+						if(otherConversion === conversion)
+							continue
+						if(conversion.compareSpecificity(otherConversion) != ComparisonResult.HIGHER)
+							continue@specificityPrecedenceLoop
+					}
+					suppliedValue.setInferredType(conversion.getParameterTypeAt(0))
+					mostSpecificConversion = conversion
+				}
+				if(mostSpecificConversion == null) {
 					context.addIssue(ConversionAmbiguity(source, suppliedType, parameterType, possibleConversions))
 					return null
 				}
-				conversions[suppliedValue] = possibleConversions.first()
+				conversions[suppliedValue] = mostSpecificConversion
 			}
 		}
 		return FunctionType.Match(this, localTypeSubstitutions, conversions, numberLiteralTypeScore)
