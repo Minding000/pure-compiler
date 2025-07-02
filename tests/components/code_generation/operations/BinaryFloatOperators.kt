@@ -61,7 +61,7 @@ internal class BinaryFloatOperators {
 	}
 
 	@Test
-	fun `throws on division by zero`() {
+	fun `raises on division by zero`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
@@ -82,7 +82,7 @@ internal class BinaryFloatOperators {
 	//TODO determine desired float behavior i.e. Infinity vs. Exception
 	@Disabled
 	@Test
-	fun `throws on overflowing division`() {
+	fun `raises on overflowing division`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {

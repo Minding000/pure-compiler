@@ -23,7 +23,7 @@ internal class BinaryByteOperators {
 	}
 
 	@Test
-	fun `throws on overflowing addition`() {
+	fun `raises on overflowing addition`() {
 		val sourceCode = """
 			referencing Pure
 			SimplestApp object {
@@ -59,7 +59,7 @@ internal class BinaryByteOperators {
 	}
 
 	@Test
-	fun `throws on overflowing subtraction`() {
+	fun `raises on overflowing subtraction`() {
 		val sourceCode = """
 			referencing Pure
 			SimplestApp object {
@@ -95,7 +95,7 @@ internal class BinaryByteOperators {
 	}
 
 	@Test
-	fun `throws on overflowing multiplication`() {
+	fun `raises on overflowing multiplication`() {
 		val sourceCode = """
 			referencing Pure
 			SimplestApp object {
@@ -131,7 +131,7 @@ internal class BinaryByteOperators {
 	}
 
 	@Test
-	fun `throws on division by zero`() {
+	fun `raises on division by zero`() {
 		val sourceCode = """
 			referencing Pure
 			SimplestApp object {
@@ -152,7 +152,7 @@ internal class BinaryByteOperators {
 	}
 
 	@Test
-	fun `throws on overflowing division`() {
+	fun `raises on overflowing division`() {
 		val sourceCode = """
 			referencing Pure
 			SimplestApp object {

@@ -16,10 +16,12 @@ import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.control_flow.LoopStatement
 import components.semantic_model.control_flow.Try
 import components.semantic_model.declarations.ComputedPropertyDeclaration
+import components.semantic_model.declarations.FunctionImplementation
 import components.semantic_model.declarations.TypeDeclaration
 import components.semantic_model.general.SemanticModel
 import components.semantic_model.operations.FunctionCall
 import components.semantic_model.types.Type
+import components.semantic_model.values.Operator
 import components.semantic_model.values.Value
 import components.semantic_model.values.VariableValue
 import errors.internal.CompilerError
@@ -40,7 +42,7 @@ class Context {
 	val runtimeFunctions = RuntimeFunctions()
 	val standardLibrary = StandardLibrary()
 	val nativeRegistry = NativeRegistry(this)
-	val constantCharArrayGlobals = HashMap<String, LlvmValue>()
+	val constantCharArrayGlobals = HashMap<Pair<String, Boolean>, LlvmValue>()
 	/**  While set, the selected primitive will be treated as a wrapped primitive object */
 	var primitiveCompilationTarget: TypeDeclaration? = null
 
@@ -114,14 +116,20 @@ class Context {
 				"get $surroundingCallable"
 			else
 				"set $surroundingCallable"
+		} else if(surroundingCallable is FunctionImplementation) {
+			val parentFunction = surroundingCallable.parentFunction
+			if(parentFunction is Operator)
+				surroundingCallable.signature.toString(false, parentFunction.kind)
+			else
+				surroundingCallable.toString()
 		} else {
 			surroundingCallable.toString()
 		}
-		val moduleNameBytes = getConstantCharArrayGlobal(constructor, moduleName)
+		val moduleNameBytes = getConstantCharArrayGlobal(constructor, moduleName, false)
 		val moduleNameLength = constructor.buildInt32(moduleName.length)
-		val fileNameBytes = getConstantCharArrayGlobal(constructor, fileName)
+		val fileNameBytes = getConstantCharArrayGlobal(constructor, fileName, false)
 		val fileNameLength = constructor.buildInt32(fileName.length)
-		val descriptionBytes = getConstantCharArrayGlobal(constructor, description)
+		val descriptionBytes = getConstantCharArrayGlobal(constructor, description, false)
 		val descriptionLength = constructor.buildInt32(description.length)
 		val lineNumber = constructor.buildInt32(line.number)
 		constructor.buildFunctionCall(runtimeFunctions.addExceptionLocation,
@@ -143,10 +151,10 @@ class Context {
 		}
 	}
 
-	fun raiseException(constructor: LlvmConstructor, model: SemanticModel, description: String) {
+	fun raiseException(constructor: LlvmConstructor, model: SemanticModel, description: String, isNativeCall: Boolean = false) {
 		val exceptionParameter = getExceptionParameter(constructor)
 		val descriptionString = createStringObject(constructor, description, exceptionParameter)
-		raiseException(constructor, model, descriptionString)
+		raiseException(constructor, model, descriptionString, isNativeCall)
 	}
 
 	fun raiseException(constructor: LlvmConstructor, model: SemanticModel, descriptionString: LlvmValue, isNativeCall: Boolean = false) {
@@ -164,9 +172,10 @@ class Context {
 		constructor.buildFunctionCall(standardLibrary.exceptionDescriptionInitializer, parameters)
 
 		if(isNativeCall) {
-			val nativeCall = model as? FunctionCall
+			if(model !is FunctionCall)
+				throw CompilerError(model, "Unknown native call type: ${model.javaClass.simpleName}")
 			val nativeDeclaration =
-				nativeCall?.targetSignature ?: nativeCall?.targetInitializer ?: throw CompilerError("Native call target is missing")
+				model.targetSignature ?: model.targetInitializer ?: throw CompilerError(model, "Native call target is missing")
 			addLocationToStacktrace(nativeDeclaration, constructor, exception, nativeDeclaration)
 		}
 		val surroundingCallable =
@@ -179,7 +188,7 @@ class Context {
 
 	fun raiseOnOverflow(constructor: LlvmConstructor, model: SemanticModel, targetValue: LlvmValue, modifierValue: LlvmValue,
 						function: LlvmFunction, exceptionDescription: String, resultName: String): LlvmValue {
-		val aggregateResult = constructor.buildFunctionCall(function, listOf(targetValue, modifierValue), "additionResult")
+		val aggregateResult = constructor.buildFunctionCall(function, listOf(targetValue, modifierValue), "aggregateResult")
 		val result = constructor.extractValueFromAggregateValue(aggregateResult, 0, resultName)
 		val didOverflow = constructor.extractValueFromAggregateValue(aggregateResult, 1, "didOverflow")
 		val overflowBlock = constructor.createBlock("overflow")
@@ -219,14 +228,14 @@ class Context {
 		}
 	}
 
-	fun getConstantCharArrayGlobal(constructor: LlvmConstructor, content: String): LlvmValue {
-		return constantCharArrayGlobals.getOrPut(content) {
-			constructor.buildGlobalAsciiCharArray("_constantCharArray", content, false)
+	fun getConstantCharArrayGlobal(constructor: LlvmConstructor, content: String, shouldNullTerminate: Boolean = true): LlvmValue {
+		return constantCharArrayGlobals.getOrPut(content to shouldNullTerminate) {
+			constructor.buildGlobalAsciiCharArray("_constantCharArray", content, shouldNullTerminate)
 		}
 	}
 
 	fun createStringObject(constructor: LlvmConstructor, content: String, exceptionParameter: LlvmValue): LlvmValue {
-		val charArray = getConstantCharArrayGlobal(constructor, content)
+		val charArray = getConstantCharArrayGlobal(constructor, content, false)
 		val length = constructor.buildInt32(content.length)
 		return constructor.buildFunctionCall(runtimeFunctions.createString, listOf(exceptionParameter, charArray, length), "_string")
 	}

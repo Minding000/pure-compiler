@@ -4,6 +4,7 @@ import components.code_generation.llvm.context.NativeRegistry
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
+import components.semantic_model.general.SemanticModel
 
 class StringNatives(val context: Context) {
 
@@ -11,7 +12,7 @@ class StringNatives(val context: Context) {
 		registry.registerNativeImplementation("String(Float)", ::fromFloat)
 	}
 
-	private fun fromFloat(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun fromFloat(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val thisParameter = context.getThisParameter(constructor, llvmFunctionValue)
 		val float = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val double = constructor.buildCastFromFloatToDouble(float, "_double")

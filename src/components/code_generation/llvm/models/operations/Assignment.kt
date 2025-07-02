@@ -98,10 +98,11 @@ class Assignment(override val model: Assignment, val targets: List<Value>, val s
 		val parameters = LinkedList<LlvmValue>()
 		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)
-		for((indexIndex, index) in indexAccess.indices.withIndex()) {
+		for((indexIndex, indexValue) in indexAccess.indices.withIndex()) {
 			val parameterType = signature.getParameterTypeAt(indexIndex)
-			parameters.add(ValueConverter.convertIfRequired(model, constructor, index.getLlvmValue(constructor), index.model.effectiveType,
-				index.model.hasGenericType, parameterType, parameterType != signature.original.getParameterTypeAt(indexIndex)))
+			parameters.add(
+				ValueConverter.convertIfRequired(model, constructor, indexValue.getLlvmValue(constructor), indexValue.model.effectiveType,
+					indexValue.model.hasGenericType, parameterType, parameterType != signature.original.getParameterTypeAt(indexIndex)))
 		}
 		parameters.add(value)
 		constructor.buildFunctionCall(signature.getLlvmType(constructor), indexOperatorAddress, parameters)

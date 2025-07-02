@@ -4,6 +4,7 @@ import components.code_generation.llvm.context.NativeRegistry
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
+import components.semantic_model.general.SemanticModel
 
 class NativeInputStreamNatives(val context: Context) {
 
@@ -12,7 +13,7 @@ class NativeInputStreamNatives(val context: Context) {
 		registry.registerNativeImplementation("NativeInputStream.readBytes(Int): ByteArray", ::readBytes)
 	}
 
-	private fun readByte(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun readByte(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionAddress = context.getExceptionParameter(constructor) //TODO error handling
 		val thisObject = context.getThisParameter(constructor)
@@ -35,7 +36,7 @@ class NativeInputStreamNatives(val context: Context) {
 		constructor.markAsUnreachable()
 	}
 
-	private fun readBytes(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun readBytes(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionAddress = context.getExceptionParameter(constructor) //TODO error handling
 		val thisObject = context.getThisParameter(constructor)

@@ -48,7 +48,7 @@ class ByteNatives(val context: Context) {
 		return constructor.buildCastFromIntegerToByte(firstParameter, "byte")
 	}
 
-	private fun increment(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun increment(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.byte.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveByte = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveByte")
@@ -57,7 +57,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
-	private fun decrement(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun decrement(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.byte.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveByte = constructor.buildLoad(constructor.i32Type, thisValueProperty, "thisPrimitiveByte")
@@ -66,14 +66,14 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
-	private fun negative(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun negative(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveByte = ValueConverter.unwrapByte(context, constructor, context.getThisParameter(constructor))
 		val result = constructor.buildIntegerNegation(thisPrimitiveByte, "negationResult")
 		constructor.buildReturn(ValueConverter.wrapByte(context, constructor, result))
 	}
 
-	private fun plus(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun plus(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveByte = ValueConverter.unwrapByte(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -82,7 +82,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn(ValueConverter.wrapByte(context, constructor, result))
 	}
 
-	private fun minus(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun minus(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveByte = ValueConverter.unwrapByte(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -91,7 +91,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn(ValueConverter.wrapByte(context, constructor, result))
 	}
 
-	private fun times(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun times(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveByte = ValueConverter.unwrapByte(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -101,7 +101,7 @@ class ByteNatives(val context: Context) {
 	}
 
 	//TODO add division by zero
-	private fun dividedBy(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun dividedBy(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveByte = ValueConverter.unwrapByte(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -110,7 +110,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn(ValueConverter.wrapByte(context, constructor, result))
 	}
 
-	private fun add(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun add(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.byte.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveByte = constructor.buildLoad(constructor.byteType, thisValueProperty, "thisPrimitiveByte")
@@ -121,7 +121,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
-	private fun subtract(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun subtract(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.byte.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveByte = constructor.buildLoad(constructor.byteType, thisValueProperty, "thisPrimitiveByte")
@@ -132,7 +132,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
-	private fun multiply(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun multiply(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.byte.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveByte = constructor.buildLoad(constructor.byteType, thisValueProperty, "thisPrimitiveByte")
@@ -144,7 +144,7 @@ class ByteNatives(val context: Context) {
 	}
 
 	//TODO add division by zero
-	private fun divide(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun divide(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.byte.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveByte = constructor.buildLoad(constructor.byteType, thisValueProperty, "thisPrimitiveByte")
@@ -155,7 +155,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
-	private fun lessThan(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun lessThan(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveByte = ValueConverter.unwrapByte(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -164,7 +164,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun greaterThan(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun greaterThan(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveByte = ValueConverter.unwrapByte(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -173,7 +173,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun lessThanOrEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun lessThanOrEqualTo(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveByte = ValueConverter.unwrapByte(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -182,7 +182,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun greaterThanOrEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun greaterThanOrEqualTo(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveByte = ValueConverter.unwrapByte(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveByte = ValueConverter.unwrapByte(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -191,7 +191,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun equalTo(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveByte = ValueConverter.unwrapByte(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveByte = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
@@ -199,7 +199,7 @@ class ByteNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun notEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun notEqualTo(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveByte = ValueConverter.unwrapByte(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveByte = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)

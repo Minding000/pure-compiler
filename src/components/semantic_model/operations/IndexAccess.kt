@@ -89,9 +89,9 @@ class IndexAccess(override val source: IndexAccessSyntaxTree, scope: Scope, val 
 
 	override fun toUnit() = IndexAccess(this, target.toUnit(), indices.map(Value::toUnit))
 
-	private fun getSignature(targetType: Type, includeParentType: Boolean = true): String {
+	private fun getSignature(targetType: Type? = null): String {
 		var signature = ""
-		if(includeParentType)
+		if(targetType != null)
 			signature += targetType.toString()
 		signature += "["
 		if(typeParameters.isNotEmpty()) {

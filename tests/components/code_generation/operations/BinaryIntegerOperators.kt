@@ -22,7 +22,7 @@ internal class BinaryIntegerOperators {
 	}
 
 	@Test
-	fun `throws on overflowing addition`() {
+	fun `raises on overflowing addition`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
@@ -53,7 +53,7 @@ internal class BinaryIntegerOperators {
 	}
 
 	@Test
-	fun `throws on overflowing subtraction`() {
+	fun `raises on overflowing subtraction`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
@@ -84,7 +84,7 @@ internal class BinaryIntegerOperators {
 	}
 
 	@Test
-	fun `throws on overflowing multiplication`() {
+	fun `raises on overflowing multiplication`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
@@ -115,7 +115,7 @@ internal class BinaryIntegerOperators {
 	}
 
 	@Test
-	fun `throws on overflowing division`() {
+	fun `raises on overflowing division`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
@@ -133,7 +133,7 @@ internal class BinaryIntegerOperators {
 	}
 
 	@Test
-	fun `throws on division by zero`() {
+	fun `raises on division by zero`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {

@@ -22,7 +22,7 @@ internal class InitDecimalString {
 	}
 
 	@Test
-	fun `raises exception when constructing from a non-numeric string`() {
+	fun `raises an exception when constructing from a non-numeric string`() {
 		val sourceCode = """
 			referencing Pure
 			SimplestApp object {

@@ -2,6 +2,7 @@ package components.code_generation.native_implementations
 
 import components.semantic_model.context.SpecialType
 import org.junit.jupiter.api.Test
+import util.TestApp
 import util.TestUtil
 import kotlin.test.assertEquals
 
@@ -162,6 +163,46 @@ internal class Array {
 	}
 
 	@Test
+	fun `get operator raises if index is negative`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				to getThree(): Int {
+					return Array(1, 2, 3, 4)[-1]
+				}
+			}
+		""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.getThree")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: The index '-1' is outside the arrays bounds (0-3)
+			 at Pure:Array:28:[Int]: Element
+			 at Test:Test:4:SimplestApp.getThree(): Int
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
+	fun `get operator raises if index is out of range`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				to getThree(): Int {
+					return Array(1, 2, 3, 4)[4]
+				}
+			}
+		""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.getThree")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: The index '4' is outside the arrays bounds (0-3)
+			 at Pure:Array:28:[Int]: Element
+			 at Test:Test:4:SimplestApp.getThree(): Int
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
 	fun `set operator sets specified value`() {
 		val sourceCode = """
 			SimplestApp object {
@@ -184,5 +225,49 @@ internal class Array {
 			SpecialType.ARRAY to listOf(TestUtil.TEST_FILE_NAME)
 		))
 		assertEquals(14, result)
+	}
+
+	@Test
+	fun `set operator raises if index is negative`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				to getFourteen(): Int {
+					val bytes = Array(1, 2, 3, 4)
+					bytes[-1] = 14
+					return bytes[3]
+				}
+			}
+		""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.getFourteen")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: The index '-1' is outside the arrays bounds (0-3)
+			 at Pure:Array:29:[Int](Element)
+			 at Test:Test:5:SimplestApp.getFourteen(): Int
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
+	}
+
+	@Test
+	fun `set operator raises if index is out of range`() {
+		val sourceCode = """
+			referencing Pure
+			SimplestApp object {
+				to getFourteen(): Int {
+					val bytes = Array(1, 2, 3, 4)
+					bytes[4] = 14
+					return bytes[3]
+				}
+			}
+		""".trimIndent()
+		val app = TestApp(sourceCode, "Test:SimplestApp.getFourteen")
+		app.includeRequiredModules = true
+		val expectedOutput = """
+			Unhandled error: The index '4' is outside the arrays bounds (0-3)
+			 at Pure:Array:29:[Int](Element)
+			 at Test:Test:5:SimplestApp.getFourteen(): Int
+			""".trimIndent()
+		app.shouldPrintLine(expectedOutput, "", 1)
 	}
 }

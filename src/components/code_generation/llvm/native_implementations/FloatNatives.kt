@@ -75,12 +75,7 @@ class FloatNatives(val context: Context) {
 		constructor.select(emptyBlock)
 		val emptyStringMessage = "Failed to parse float: Empty string"
 		if(context.nativeRegistry.has(SpecialType.EXCEPTION)) {
-			val exceptionParameter = context.getExceptionParameter(constructor)
-			val messageCharArray = context.getConstantCharArrayGlobal(constructor, emptyStringMessage)
-			val messageLength = constructor.buildInt32(emptyStringMessage.length)
-			val stringObject = constructor.buildFunctionCall(context.runtimeFunctions.createString,
-				listOf(exceptionParameter, messageCharArray, messageLength), "messageString")
-			context.raiseException(constructor, model, stringObject, true)
+			context.raiseException(constructor, model, emptyStringMessage, true)
 		} else {
 			context.panic(constructor, emptyStringMessage)
 			constructor.markAsUnreachable()
@@ -105,15 +100,18 @@ class FloatNatives(val context: Context) {
 		constructor.select(errorBlock)
 		val invalidCharacterMessageTemplate = "Failed to parse float: Invalid character '%.1s'"
 		if(context.nativeRegistry.has(SpecialType.EXCEPTION)) {
+			//TODO multibyte support
 			val templateLengthExpansion = -3
 			val exceptionParameter = context.getExceptionParameter(constructor)
-			val templateCharArray = context.getConstantCharArrayGlobal(constructor, invalidCharacterMessageTemplate)
-			val messageLength = constructor.buildInt32(invalidCharacterMessageTemplate.length + templateLengthExpansion)
+			val templateCharArray = constructor.buildGlobalAsciiCharArray("floatInvalidCharacterMessage", invalidCharacterMessageTemplate)
+			val messageLengthWithoutTermination = constructor.buildInt32(invalidCharacterMessageTemplate.length + templateLengthExpansion)
+			val messageLength =
+				constructor.buildIntegerAddition(messageLengthWithoutTermination, constructor.buildInt32(1), "messageLength")
 			val messageCharArray = constructor.buildHeapArrayAllocation(constructor.byteType, messageLength, "message")
 			constructor.buildFunctionCall(context.externalFunctions.printToBuffer,
 				listOf(messageCharArray, templateCharArray, firstInvalidCharacterAddress))
 			val stringObject = constructor.buildFunctionCall(context.runtimeFunctions.createString,
-				listOf(exceptionParameter, messageCharArray, messageLength), "messageString")
+				listOf(exceptionParameter, messageCharArray, messageLengthWithoutTermination), "messageString")
 			context.raiseException(constructor, model, stringObject, true)
 		} else {
 			context.panic(constructor, invalidCharacterMessageTemplate, firstInvalidCharacterAddress)
@@ -123,14 +121,14 @@ class FloatNatives(val context: Context) {
 		return constructor.buildCastFromDoubleToFloat(double, "float")
 	}
 
-	private fun negative(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun negative(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val result = constructor.buildFloatNegation(thisPrimitiveFloat, "negationResult")
 		constructor.buildReturn(ValueConverter.wrapFloat(context, constructor, result))
 	}
 
-	private fun plus(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun plus(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -139,7 +137,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn(ValueConverter.wrapFloat(context, constructor, result))
 	}
 
-	private fun minus(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun minus(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -148,7 +146,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn(ValueConverter.wrapFloat(context, constructor, result))
 	}
 
-	private fun times(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun times(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -158,7 +156,7 @@ class FloatNatives(val context: Context) {
 	}
 
 	//TODO add division by zero
-	private fun dividedBy(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun dividedBy(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -167,7 +165,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn(ValueConverter.wrapFloat(context, constructor, result))
 	}
 
-	private fun add(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun add(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.float.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
@@ -178,7 +176,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
-	private fun subtract(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun subtract(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.float.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
@@ -189,7 +187,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
-	private fun multiply(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun multiply(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.float.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
@@ -201,7 +199,7 @@ class FloatNatives(val context: Context) {
 	}
 
 	//TODO add division by zero
-	private fun divide(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun divide(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.float.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveFloat = constructor.buildLoad(constructor.floatType, thisValueProperty, "thisPrimitiveFloat")
@@ -212,7 +210,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
-	private fun lessThan(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun lessThan(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -221,7 +219,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun greaterThan(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun greaterThan(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -230,7 +228,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun lessThanOrEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun lessThanOrEqualTo(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -239,7 +237,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun greaterThanOrEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun greaterThanOrEqualTo(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, constructor.getParameter(llvmFunctionValue,
@@ -248,7 +246,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun equalTo(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveFloat = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
@@ -256,7 +254,7 @@ class FloatNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun notEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun notEqualTo(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveFloat = ValueConverter.unwrapFloat(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveFloat = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)

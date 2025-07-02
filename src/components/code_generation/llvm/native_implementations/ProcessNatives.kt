@@ -4,6 +4,7 @@ import components.code_generation.llvm.context.NativeRegistry
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
+import components.semantic_model.general.SemanticModel
 
 class ProcessNatives(val context: Context) {
 
@@ -15,7 +16,7 @@ class ProcessNatives(val context: Context) {
 		registry.registerNativeImplementation("Process.getStandardErrorStream(): NativeOutputStream", ::getStandardErrorStream)
 	}
 
-	private fun getEnvironmentVariables(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun getEnvironmentVariables(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionParameter = context.getExceptionParameter(constructor, llvmFunctionValue)
 
@@ -119,7 +120,7 @@ class ProcessNatives(val context: Context) {
 		}
 	}
 
-	private fun getArguments(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun getArguments(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionParameter = context.getExceptionParameter(constructor, llvmFunctionValue)
 		val argumentCount = constructor.buildLoad(constructor.i32Type, context.runtimeGlobals.programArgumentCount, "argumentCount")
@@ -168,7 +169,7 @@ class ProcessNatives(val context: Context) {
 		constructor.buildReturn(array)
 	}
 
-	private fun getStandardInputStream(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun getStandardInputStream(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val runtimeClass = context.standardLibrary.nativeInputStream
 		val newObject = constructor.buildHeapAllocation(runtimeClass.struct, "standardInputStream")
@@ -179,7 +180,7 @@ class ProcessNatives(val context: Context) {
 		constructor.buildReturn(newObject)
 	}
 
-	private fun getStandardOutputStream(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun getStandardOutputStream(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val runtimeClass = context.standardLibrary.nativeOutputStream
 		val newObject = constructor.buildHeapAllocation(runtimeClass.struct, "standardOutputStream")
@@ -190,7 +191,7 @@ class ProcessNatives(val context: Context) {
 		constructor.buildReturn(newObject)
 	}
 
-	private fun getStandardErrorStream(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun getStandardErrorStream(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val runtimeClass = context.standardLibrary.nativeOutputStream
 		val newObject = constructor.buildHeapAllocation(runtimeClass.struct, "standardErrorStream")

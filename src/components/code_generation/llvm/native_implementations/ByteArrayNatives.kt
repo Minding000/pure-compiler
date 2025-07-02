@@ -4,6 +4,7 @@ import components.code_generation.llvm.context.NativeRegistry
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
+import components.semantic_model.general.SemanticModel
 
 class ByteArrayNatives(val context: Context) {
 
@@ -16,7 +17,7 @@ class ByteArrayNatives(val context: Context) {
 		registry.registerNativeImplementation("ByteArray == Any?: Bool", ::equalTo)
 	}
 
-	private fun fromPluralType(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun fromPluralType(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.byteType
 		val elementList = constructor.buildStackAllocation(context.runtimeStructs.variadicParameterList, "elementList")
 		constructor.buildFunctionCall(context.externalFunctions.variableParameterIterationStart, listOf(elementList))
@@ -51,7 +52,7 @@ class ByteArrayNatives(val context: Context) {
 		constructor.buildFunctionCall(context.externalFunctions.variableParameterIterationEnd, listOf(elementList))
 	}
 
-	private fun fromValueToBeRepeated(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun fromValueToBeRepeated(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.byteType
 		val element = constructor.getParameter(Context.VALUE_PARAMETER_OFFSET)
 		val elementCount = constructor.getLastParameter(llvmFunctionValue)
@@ -77,7 +78,7 @@ class ByteArrayNatives(val context: Context) {
 		constructor.select(exitBlock)
 	}
 
-	private fun concatenate(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun concatenate(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.byteType
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val runtimeClass = context.standardLibrary.byteArray
@@ -109,7 +110,7 @@ class ByteArrayNatives(val context: Context) {
 		constructor.buildReturn(combinedArray)
 	}
 
-	private fun get(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun get(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.byteType
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisArrayValueProperty =
@@ -121,7 +122,7 @@ class ByteArrayNatives(val context: Context) {
 		constructor.buildReturn(element)
 	}
 
-	private fun set(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun set(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.byteType
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisArrayValueProperty =
@@ -134,7 +135,7 @@ class ByteArrayNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
-	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun equalTo(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		// check type
 		val runtimeClass = context.standardLibrary.byteArray

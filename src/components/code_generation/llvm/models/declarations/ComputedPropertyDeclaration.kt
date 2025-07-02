@@ -63,12 +63,12 @@ class ComputedPropertyDeclaration(override val model: ComputedPropertyDeclaratio
 		if(model.isNative) {
 			if(model.isGettable) {
 				val llvmGetterValue = llvmGetterValue ?: throw CompilerError(this, "Missing getter value")
-				context.nativeRegistry.compileNativeImplementation(constructor, model.source, "computed property getter",
+				context.nativeRegistry.compileNativeImplementation(constructor, model, "computed property getter",
 					model.getterIdentifier, llvmGetterValue)
 			}
 			if(model.isSettable) {
 				val llvmSetterValue = llvmSetterValue ?: throw CompilerError(this, "Missing setter value")
-				context.nativeRegistry.compileNativeImplementation(constructor, model.source, "computed property setter",
+				context.nativeRegistry.compileNativeImplementation(constructor, model, "computed property setter",
 					model.setterIdentifier, llvmSetterValue)
 			}
 			constructor.select(previousBlock)

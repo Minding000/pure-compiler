@@ -4,6 +4,7 @@ import components.code_generation.llvm.context.NativeRegistry
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
+import components.semantic_model.general.SemanticModel
 
 class NativeOutputStreamNatives(val context: Context) {
 
@@ -13,7 +14,7 @@ class NativeOutputStreamNatives(val context: Context) {
 		registry.registerNativeImplementation("NativeOutputStream.flush()", ::flush)
 	}
 
-	private fun writeByte(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun writeByte(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionAddress = context.getExceptionParameter(constructor) //TODO error handling
 		val thisObject = context.getThisParameter(constructor)
@@ -30,7 +31,7 @@ class NativeOutputStreamNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
-	private fun writeBytes(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun writeBytes(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionAddress = context.getExceptionParameter(constructor) //TODO error handling
 		val thisObject = context.getThisParameter(constructor)
@@ -52,7 +53,7 @@ class NativeOutputStreamNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
-	private fun flush(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun flush(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val exceptionAddress = context.getExceptionParameter(constructor) //TODO error handling
 		val thisObject = context.getThisParameter(constructor)

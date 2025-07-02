@@ -28,14 +28,14 @@ class BoolNatives(val context: Context) {
 		return firstParameter
 	}
 
-	private fun negate(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun negate(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveBool = ValueConverter.unwrapBool(context, constructor, context.getThisParameter(constructor))
 		val result = constructor.buildBooleanNegation(thisPrimitiveBool, "negationResult")
 		constructor.buildReturn(result)
 	}
 
-	private fun and(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun and(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveBool = ValueConverter.unwrapBool(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
@@ -43,7 +43,7 @@ class BoolNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun or(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun or(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveBool = ValueConverter.unwrapBool(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
@@ -51,7 +51,7 @@ class BoolNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun toggle(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun toggle(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisValueProperty = context.standardLibrary.boolean.getNativeValueProperty(constructor, context.getThisParameter(constructor))
 		val thisPrimitiveBool = constructor.buildLoad(constructor.booleanType, thisValueProperty, "thisPrimitiveBool")
@@ -60,7 +60,7 @@ class BoolNatives(val context: Context) {
 		constructor.buildReturn()
 	}
 
-	private fun equalTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun equalTo(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveBool = ValueConverter.unwrapBool(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
@@ -68,7 +68,7 @@ class BoolNatives(val context: Context) {
 		constructor.buildReturn(result)
 	}
 
-	private fun notEqualTo(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun notEqualTo(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisPrimitiveBool = ValueConverter.unwrapBool(context, constructor, context.getThisParameter(constructor))
 		val parameterPrimitiveBool = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)

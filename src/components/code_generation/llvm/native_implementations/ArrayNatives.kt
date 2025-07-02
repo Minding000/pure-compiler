@@ -5,6 +5,8 @@ import components.code_generation.llvm.wrapper.Llvm
 import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
+import components.semantic_model.context.SpecialType
+import components.semantic_model.general.SemanticModel
 
 class ArrayNatives(val context: Context) {
 
@@ -16,7 +18,7 @@ class ArrayNatives(val context: Context) {
 		registry.registerNativeImplementation("Array[Int](Element)", ::set)
 	}
 
-	private fun fromPluralType(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun fromPluralType(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.pointerType
 		val elementList = constructor.buildStackAllocation(context.runtimeStructs.variadicParameterList, "elementList")
 		constructor.buildFunctionCall(context.externalFunctions.variableParameterIterationStart, listOf(elementList))
@@ -52,7 +54,7 @@ class ArrayNatives(val context: Context) {
 		constructor.buildFunctionCall(context.externalFunctions.variableParameterIterationEnd, listOf(elementList))
 	}
 
-	private fun fromValueToBeRepeated(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun fromValueToBeRepeated(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.pointerType
 		val element = constructor.getParameter(Context.VALUE_PARAMETER_OFFSET)
 		val elementCount = constructor.getLastParameter(llvmFunctionValue)
@@ -80,7 +82,7 @@ class ArrayNatives(val context: Context) {
 		constructor.select(exitBlock)
 	}
 
-	private fun concatenate(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun concatenate(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.pointerType
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val pointerSizeInBytes = Llvm.getTypeSizeInBytes(constructor.pointerType)
@@ -115,21 +117,21 @@ class ArrayNatives(val context: Context) {
 		constructor.buildReturn(combinedArray)
 	}
 
-	private fun get(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun get(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
 		val elementType = constructor.pointerType
-		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
-		val thisArray = context.getThisParameter(constructor)
-		val arrayRuntimeClass = context.standardLibrary.array
-		val thisArrayValueProperty = arrayRuntimeClass.getNativeValueProperty(constructor, thisArray)
-		val thisArrayValue = constructor.buildLoad(constructor.pointerType, thisArrayValueProperty, "thisArrayValue")
-		val index = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
-		//TODO bounds check! (write tests)
-		val elementElement = constructor.buildGetArrayElementPointer(elementType, thisArrayValue, index, "elementElement")
+		val elementElement = compileGetElement(model, constructor, llvmFunctionValue)
 		val element = constructor.buildLoad(elementType, elementElement, "value")
 		constructor.buildReturn(element)
 	}
 
-	private fun set(constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+	private fun set(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue) {
+		val elementElement = compileGetElement(model, constructor, llvmFunctionValue)
+		val element = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET + 1)
+		constructor.buildStore(element, elementElement)
+		constructor.buildReturn()
+	}
+
+	private fun compileGetElement(model: SemanticModel, constructor: LlvmConstructor, llvmFunctionValue: LlvmValue): LlvmValue {
 		val elementType = constructor.pointerType
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val thisArray = context.getThisParameter(constructor)
@@ -137,10 +139,36 @@ class ArrayNatives(val context: Context) {
 		val thisArrayValueProperty = arrayRuntimeClass.getNativeValueProperty(constructor, thisArray)
 		val thisArrayValue = constructor.buildLoad(constructor.pointerType, thisArrayValueProperty, "thisArrayValue")
 		val index = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
-		//TODO bounds check! (write tests)
-		val element = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET + 1)
-		val elementElement = constructor.buildGetArrayElementPointer(elementType, thisArrayValue, index, "elementElement")
-		constructor.buildStore(element, elementElement)
-		constructor.buildReturn()
+		val thisSizeProperty = context.resolveMember(constructor, thisArray, "size")
+		val thisSize = constructor.buildLoad(constructor.i32Type, thisSizeProperty, "thisSize")
+		val isIndexNegative = constructor.buildSignedIntegerLessThan(index, constructor.buildInt32(0), "isIndexNegative")
+		val isTooLarge = constructor.buildSignedIntegerGreaterThanOrEqualTo(index, thisSize, "isTooLarge")
+		val isOutOfBounds = constructor.buildOr(isIndexNegative, isTooLarge, "isOutOfBounds")
+		val inBoundsBlock = constructor.createBlock("inBounds")
+		val outOfBoundsBlock = constructor.createBlock("outOfBounds")
+		constructor.buildJump(isOutOfBounds, outOfBoundsBlock, inBoundsBlock)
+		constructor.select(outOfBoundsBlock)
+		val indexUpperBound = constructor.buildIntegerSubtraction(thisSize, constructor.buildInt32(1), "indexUpperBound")
+		val outOfBoundsMessageTemplate = "The index '%d' is outside the arrays bounds (0-%d)"
+		if(context.nativeRegistry.has(SpecialType.EXCEPTION)) {
+			val exceptionParameter = context.getExceptionParameter(constructor)
+			val templateCharArray = constructor.buildGlobalAsciiCharArray("arrayIndexOutOfBoundsMessage", outOfBoundsMessageTemplate)
+			val messageLengthWithoutTermination = constructor.buildFunctionCall(context.externalFunctions.printSize,
+				listOf(constructor.nullPointer, constructor.buildInt64(0), templateCharArray, index, indexUpperBound),
+				"messageLengthWithoutTermination")
+			val messageLength =
+				constructor.buildIntegerAddition(messageLengthWithoutTermination, constructor.buildInt32(1), "messageLength")
+			val messageCharArray = constructor.buildHeapArrayAllocation(constructor.byteType, messageLength, "message")
+			constructor.buildFunctionCall(context.externalFunctions.printToBuffer,
+				listOf(messageCharArray, templateCharArray, index, indexUpperBound))
+			val stringObject = constructor.buildFunctionCall(context.runtimeFunctions.createString,
+				listOf(exceptionParameter, messageCharArray, messageLengthWithoutTermination), "messageString")
+			context.raiseException(constructor, model, stringObject)
+		} else {
+			context.panic(constructor, outOfBoundsMessageTemplate, index, indexUpperBound)
+			constructor.markAsUnreachable()
+		}
+		constructor.select(inBoundsBlock)
+		return constructor.buildGetArrayElementPointer(elementType, thisArrayValue, index, "elementElement")
 	}
 }

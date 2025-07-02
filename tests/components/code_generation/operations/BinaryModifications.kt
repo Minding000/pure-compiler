@@ -85,7 +85,7 @@ internal class BinaryModifications {
 	}
 
 	@Test
-	fun `throws on overflowing byte addition`() {
+	fun `raises on overflowing byte addition`() {
 		val sourceCode = """
 			referencing Pure
 			SimplestApp object {
@@ -105,7 +105,7 @@ internal class BinaryModifications {
 	}
 
 	@Test
-	fun `throws on overflowing integer addition`() {
+	fun `raises on overflowing integer addition`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
@@ -139,7 +139,7 @@ internal class BinaryModifications {
 	}
 
 	@Test
-	fun `throws on overflowing byte subtraction`() {
+	fun `raises on overflowing byte subtraction`() {
 		val sourceCode = """
 			referencing Pure
 			SimplestApp object {
@@ -159,7 +159,7 @@ internal class BinaryModifications {
 	}
 
 	@Test
-	fun `throws on overflowing integer subtraction`() {
+	fun `raises on overflowing integer subtraction`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
@@ -193,7 +193,7 @@ internal class BinaryModifications {
 	}
 
 	@Test
-	fun `throws on overflowing byte multiplication`() {
+	fun `raises on overflowing byte multiplication`() {
 		val sourceCode = """
 			referencing Pure
 			SimplestApp object {
@@ -213,7 +213,7 @@ internal class BinaryModifications {
 	}
 
 	@Test
-	fun `throws on overflowing integer multiplication`() {
+	fun `raises on overflowing integer multiplication`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
@@ -247,7 +247,7 @@ internal class BinaryModifications {
 	}
 
 	@Test
-	fun `throws on division by zero`() {
+	fun `raises on division by zero`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {
@@ -266,7 +266,7 @@ internal class BinaryModifications {
 	}
 
 	@Test
-	fun `throws on overflowing division`() {
+	fun `raises on overflowing division`() {
 		val sourceCode = """
 			SimplestApp object {
 				to run() {

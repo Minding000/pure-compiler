@@ -22,10 +22,11 @@ class IndexAccess(override val model: IndexAccess, val target: Value, val indice
 		val parameters = LinkedList<LlvmValue>()
 		parameters.add(context.getExceptionParameter(constructor))
 		parameters.add(targetValue)
-		for((indexIndex, index) in indices.withIndex()) {
+		for((indexIndex, indexValue) in indices.withIndex()) {
 			val parameterType = signature.getParameterTypeAt(indexIndex)
-			parameters.add(ValueConverter.convertIfRequired(model, constructor, index.getLlvmValue(constructor), index.model.effectiveType,
-				index.model.hasGenericType, parameterType, parameterType != signature.original.getParameterTypeAt(indexIndex)))
+			parameters.add(
+				ValueConverter.convertIfRequired(model, constructor, indexValue.getLlvmValue(constructor), indexValue.model.effectiveType,
+					indexValue.model.hasGenericType, parameterType, parameterType != signature.original.getParameterTypeAt(indexIndex)))
 		}
 		val functionAddress = context.resolveFunction(constructor, targetValue, signature.getIdentifier(model.getOperatorKind()))
 		val returnValue = constructor.buildFunctionCall(signature.getLlvmType(constructor), functionAddress, parameters,
