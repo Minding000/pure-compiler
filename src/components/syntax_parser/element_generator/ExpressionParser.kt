@@ -454,7 +454,7 @@ class ExpressionParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Ge
 			WordAtom.NULL_LITERAL -> literalParser.parseNullLiteral()
 			WordAtom.BOOLEAN_LITERAL -> literalParser.parseBooleanLiteral()
 			WordAtom.NUMBER_LITERAL -> literalParser.parseNumberLiteral()
-			WordAtom.STRING_LITERAL -> literalParser.parseStringLiteral()
+			WordAtom.STRING_START -> literalParser.parseStringLiteral()
 			WordAtom.SELF_REFERENCE -> parseSelfReference()
 			WordAtom.SUPER_REFERENCE -> parseSuperReference()
 			WordAtom.INITIALIZER -> parseInitializerReference()

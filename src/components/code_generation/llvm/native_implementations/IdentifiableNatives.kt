@@ -5,7 +5,6 @@ import components.code_generation.llvm.wrapper.LlvmConstructor
 import components.code_generation.llvm.wrapper.LlvmValue
 import components.semantic_model.context.Context
 import components.semantic_model.general.SemanticModel
-import errors.internal.CompilerError
 
 class IdentifiableNatives(val context: Context) {
 
@@ -37,12 +36,11 @@ class IdentifiableNatives(val context: Context) {
 		constructor.buildFunctionCall(context.externalFunctions.printToBuffer, listOf(buffer, format, thisIdentifiable))
 		constructor.buildStore(buffer, arrayValueProperty)
 
-		val stringAddress = constructor.buildHeapAllocation(context.standardLibrary.stringTypeDeclaration?.llvmType, "_stringAddress")
+		val stringAddress = constructor.buildHeapAllocation(context.standardLibrary.stringTypeDeclaration.llvmType, "_stringAddress")
 		val stringClassDefinitionProperty =
-			constructor.buildGetPropertyPointer(context.standardLibrary.stringTypeDeclaration?.llvmType, stringAddress,
+			constructor.buildGetPropertyPointer(context.standardLibrary.stringTypeDeclaration.llvmType, stringAddress,
 			Context.CLASS_DEFINITION_PROPERTY_INDEX, "_stringClassDefinitionProperty")
-		val stringClassDefinition = context.standardLibrary.stringTypeDeclaration?.llvmClassDefinition
-			?: throw CompilerError("Missing string type declaration.")
+		val stringClassDefinition = context.standardLibrary.stringTypeDeclaration.llvmClassDefinition
 		constructor.buildStore(stringClassDefinition, stringClassDefinitionProperty)
 		val parameters = listOf(exceptionAddress, stringAddress, byteArray)
 		constructor.buildFunctionCall(context.standardLibrary.stringByteArrayInitializer, parameters)

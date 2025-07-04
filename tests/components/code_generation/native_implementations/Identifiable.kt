@@ -29,10 +29,10 @@ internal class Identifiable {
 				native init(value: Byte, size)
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getAddressLength", mapOf(
-			SpecialType.IDENTIFIABLE to TestUtil.TEST_FILE_NAME,
-			SpecialType.STRING to TestUtil.TEST_FILE_NAME,
-			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getAddressLength", listOf(
+			SpecialType.IDENTIFIABLE,
+			SpecialType.STRING,
+			SpecialType.BYTE_ARRAY
 		))
 		assertEquals(16, result)
 	}

@@ -5,7 +5,8 @@ import source_structure.*
 import util.NOT_FOUND
 import java.util.regex.Pattern
 
-class WordGenerator(private val project: Project) {
+class WordGenerator(private val project: Project, stack: StateStack? = null) {
+	private val stateStack = stack ?: StateStack()
 	private val matcher = Pattern.compile("").matcher("")
 	private var moduleIndex = -1
 	private var fileIndex = -1
@@ -94,9 +95,13 @@ class WordGenerator(private val project: Project) {
 			return null
 		matcher.region(position, file.content.length)
 		for(wordType in WordAtom.entries) {
+			if(wordType.requiresStringState != stateStack.isInString)
+				continue
 			matcher.usePattern(wordType.pattern)
 			if(!matcher.lookingAt())
 				continue
+			if(wordType.effect != null)
+				wordType.effect(stateStack)
 			val rawWord = file.content.substring(matcher.start(), matcher.end())
 			val wordStartIndex = position
 			position += rawWord.length

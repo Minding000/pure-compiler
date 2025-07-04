@@ -231,9 +231,7 @@ internal class ValueConversion {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", mapOf(
-			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyNine", listOf(SpecialType.INTEGER))
 		assertEquals(99, result)
 	}
 

@@ -23,9 +23,7 @@ internal class Array {
 				native init(...values: ...Element)
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", listOf(SpecialType.ARRAY))
 		assertEquals(3, result)
 	}
 
@@ -45,9 +43,7 @@ internal class Array {
 				native operator [index: Int]: Element
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", listOf(SpecialType.ARRAY))
 		assertEquals(3, result)
 	}
 
@@ -66,9 +62,7 @@ internal class Array {
 				native init(value: Element, size)
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive", listOf(SpecialType.ARRAY))
 		assertEquals(5, result)
 	}
 
@@ -88,9 +82,7 @@ internal class Array {
 				native operator [index: Int]: Element
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSeven", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSeven", listOf(SpecialType.ARRAY))
 		assertEquals(7, result)
 	}
 
@@ -111,9 +103,7 @@ internal class Array {
 				native operator +(right: <Element>Array): <Element>Array
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive", listOf(SpecialType.ARRAY))
 		assertEquals(5, result)
 	}
 
@@ -135,9 +125,7 @@ internal class Array {
 				native operator +(right: <Element>Array): <Element>Array
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", mapOf(
-			SpecialType.ARRAY to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", listOf(SpecialType.ARRAY))
 		assertEquals(3, result)
 	}
 
@@ -156,9 +144,7 @@ internal class Array {
 				native operator [index: Int]: Element
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", mapOf(
-			SpecialType.ARRAY to listOf(TestUtil.TEST_FILE_NAME)
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", listOf(SpecialType.ARRAY))
 		assertEquals(3, result)
 	}
 
@@ -221,9 +207,7 @@ internal class Array {
 				native operator [index: Int](element: Element)
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFourteen", mapOf(
-			SpecialType.ARRAY to listOf(TestUtil.TEST_FILE_NAME)
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFourteen", listOf(SpecialType.ARRAY))
 		assertEquals(14, result)
 	}
 

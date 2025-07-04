@@ -169,9 +169,7 @@ internal class MemberAccess {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", mapOf(
-			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", listOf(SpecialType.INTEGER))
 		assertEquals(3, result)
 	}
 }

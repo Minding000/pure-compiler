@@ -132,9 +132,7 @@ internal class FunctionDefinitionCall {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFour", mapOf(
-			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFour", listOf(SpecialType.INTEGER))
 		assertEquals(4, result)
 	}
 }

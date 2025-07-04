@@ -4,7 +4,9 @@ import components.syntax_parser.syntax_tree.literals.*
 import components.tokenizer.Word
 import components.tokenizer.WordAtom
 import components.tokenizer.WordDescriptor
+import components.tokenizer.WordType
 import source_structure.Position
+import java.util.*
 
 class LiteralParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Generator() {
 	override val currentWord: Word?
@@ -57,11 +59,21 @@ class LiteralParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gener
 
 	/**
 	 * StringLiteral:
-	 *   <string>
+	 *   <string-start>[<string-segment>|<TemplateExpression>]...<string-end>
 	 */
 	fun parseStringLiteral(): StringLiteral {
-		val word = consume(WordAtom.STRING_LITERAL)
-		val value = word.getValue()
-		return StringLiteral(word, value.substring(1, value.length - 1))
+		val word = consume(WordAtom.STRING_START)
+		val parts = LinkedList<StringPart>()
+		while(currentWord?.type != WordAtom.STRING_END && currentWord?.type != null) {
+			val word = consume(WordType.STRING_CONTENT)
+			if(word.type == WordAtom.TEMPLATE_EXPRESSION_START) {
+				parts.add(StringPart.Template(syntaxTreeGenerator.expressionParser.parseExpression()))
+				consume(WordAtom.CLOSING_BRACE)
+				continue
+			}
+			parts.add(StringPart.Segment(word.getValue()))
+		}
+		consume(WordAtom.STRING_END)
+		return StringLiteral(word, parts)
 	}
 }

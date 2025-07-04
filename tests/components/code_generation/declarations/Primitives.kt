@@ -22,9 +22,7 @@ internal class Primitives {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyFive", mapOf(
-			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getNinetyFive", listOf(SpecialType.INTEGER))
 		assertEquals(95, result)
 	}
 
@@ -41,9 +39,7 @@ internal class Primitives {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThirtyTwo", mapOf(
-			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThirtyTwo", listOf(SpecialType.INTEGER))
 		assertEquals(32, result)
 	}
 
@@ -61,9 +57,7 @@ internal class Primitives {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSeventyFour", mapOf(
-			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getSeventyFour", listOf(SpecialType.INTEGER))
 		assertEquals(74, result)
 	}
 
@@ -80,9 +74,7 @@ internal class Primitives {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne", mapOf(
-			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne", listOf(SpecialType.INTEGER))
 		assertEquals(1, result)
 	}
 }

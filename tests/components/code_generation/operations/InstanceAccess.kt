@@ -71,9 +71,7 @@ internal class InstanceAccess {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getZero", mapOf(
-			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getZero", listOf(SpecialType.INTEGER))
 		assertEquals(0, result)
 	}
 }

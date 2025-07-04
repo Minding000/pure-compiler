@@ -7,6 +7,7 @@ import components.semantic_model.context.SemanticModelGenerator
 import components.semantic_model.context.SpecialType
 import components.semantic_model.context.VariableTracker
 import components.syntax_parser.element_generator.SyntaxTreeGenerator
+import components.tokenizer.StateStack
 import components.tokenizer.WordAtom
 import components.tokenizer.WordGenerator
 import logger.Severity
@@ -63,7 +64,7 @@ object TestUtil {
 		assertEquals("", actualErrorStream, "Expected error stream to be empty")
 	}
 
-	private fun createTestProject(sourceCode: String, includeRequiredModules: Boolean = false): Project {
+	fun createTestProject(sourceCode: String, includeRequiredModules: Boolean = false): Project {
 		return createTestProject(mapOf(TEST_FILE_NAME to sourceCode), includeRequiredModules)
 	}
 
@@ -153,13 +154,8 @@ object TestUtil {
 		return result
 	}
 
-	@JvmName("runTestFile")
-	fun run(sourceCode: String, entryPointPath: String, specialTypePaths: Map<SpecialType, String>): Int {
-		return run(sourceCode, entryPointPath, false, specialTypePaths.mapValues { (_, fileName) -> listOf(fileName) })
-	}
-
-	fun run(sourceCode: String, entryPointPath: String, specialTypePaths: Map<SpecialType, List<String>>): Int {
-		return run(sourceCode, entryPointPath, false, specialTypePaths)
+	fun run(sourceCode: String, entryPointPath: String, specialTypePaths: List<SpecialType>, source: String = TEST_FILE_NAME): Int {
+		return run(sourceCode, entryPointPath, false, specialTypePaths.associateWith { listOf(source) })
 	}
 
 	fun run(sourceCode: String, entryPointPath: String, includeRequiredModules: Boolean = false,
@@ -323,9 +319,9 @@ object TestUtil {
 		assertNull(word?.getValue(), "Token is not ignored")
 	}
 
-	fun assertTokenType(sourceCode: String, type: WordAtom) {
+	fun assertTokenType(sourceCode: String, type: WordAtom, stack: StateStack? = null) {
 		val project = createTestProject(sourceCode)
-		val wordGenerator = WordGenerator(project)
+		val wordGenerator = WordGenerator(project, stack)
 		val word = wordGenerator.getNextWord()
 		assertNotNull(word, "No token found")
 		assertEquals(sourceCode, word.getValue(), "The generated token doesn't match the entire input")

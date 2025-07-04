@@ -1,5 +1,6 @@
 package components.code_generation.llvm
 
+import components.code_generation.llvm.models.declarations.ComputedPropertyDeclaration
 import components.code_generation.llvm.models.declarations.Initializer
 import components.code_generation.llvm.models.declarations.TypeDeclaration
 import components.code_generation.llvm.models.general.Program
@@ -33,17 +34,29 @@ class StandardLibrary {
 	lateinit var arrayTypeDeclaration: TypeDeclaration
 	lateinit var mapTypeDeclaration: TypeDeclaration
 	lateinit var mapInitializer: LlvmFunction
+	var anyStringRepresentationComputedPropertyDeclaration: ComputedPropertyDeclaration? = null
 	var exceptionAddLocationFunctionType: LlvmType? = null
+	var stringAppendFunctionType: LlvmType? = null
 	var mapSetterFunctionType: LlvmType? = null
 
 	fun load(constructor: LlvmConstructor, context: Context, program: Program) {
+		findAnyTypeDeclaration(context)
 		findBooleanTypeDeclaration(constructor, context)
 		findByteTypeDeclaration(constructor, context)
 		findIntegerTypeDeclaration(constructor, context)
 		findFloatTypeDeclaration(constructor, context)
-		findStringTypeDeclaration(context, program)
+		findStringTypeDeclaration(constructor, context, program)
 		findExceptionTypeDeclaration(constructor, context, program)
 		findMapTypeDeclaration(constructor, context, program)
+	}
+
+	private fun findAnyTypeDeclaration(context: Context) {
+		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.ANY]
+		val typeDeclaration = fileScope?.getTypeDeclaration(SpecialType.ANY.className) ?: return
+		anyStringRepresentationComputedPropertyDeclaration =
+			typeDeclaration.unit.units.filterIsInstance<ComputedPropertyDeclaration>().find { declaration ->
+				declaration.model.name == "stringRepresentation"
+			}
 	}
 
 	private fun findBooleanTypeDeclaration(constructor: LlvmConstructor, context: Context) {
@@ -90,12 +103,11 @@ class StandardLibrary {
 		}
 	}
 
-	private fun findStringTypeDeclaration(context: Context,
+	private fun findStringTypeDeclaration(constructor: LlvmConstructor, context: Context,
 										  program: Program) { //TODO get LLVM TypeDeclaration instead (see: Program.getEntrypoint)
 		//val specialTypePath = context.nativeRegistry.specialTypePaths[SpecialType.STRING] ?: return
 		//val file = program.getFile(specialTypePath) ?: return
 		//val typeDeclaration = file.units.filterIsInstance<components.code_generation.llvm.models.declarations.TypeDeclaration>().find { declaration -> declaration.model.name == SpecialType.STRING.className }
-
 
 
 		val fileScope = context.nativeRegistry.specialTypeScopes[SpecialType.STRING]
@@ -106,8 +118,10 @@ class StandardLibrary {
 			val firstParameter = parameters.first()
 			firstParameter.isPropertySetter && firstParameter.name == "bytes"
 		} ?: throw CompilerError(typeDeclaration.source, "Failed to find String byte array initializer.")
+		val stringAppendPropertyType = typeDeclaration.scope.getValueDeclaration("+")?.type
 		stringTypeDeclaration = typeDeclaration.unit
 		stringByteArrayInitializer = LlvmFunction(byteArrayInitializer.llvmValue, byteArrayInitializer.llvmType)
+		stringAppendFunctionType = (stringAppendPropertyType as? FunctionType)?.signatures?.firstOrNull()?.getLlvmType(constructor)
 	}
 
 	private fun findExceptionTypeDeclaration(constructor: LlvmConstructor, context: Context,

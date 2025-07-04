@@ -13,7 +13,9 @@ internal class Mutability {
 		val expected =
 			"""
 				VariableSection [ val ] {
-					LocalVariableDeclaration { Identifier { text } = StringLiteral { "Irreplaceable!" } }
+					LocalVariableDeclaration { Identifier { text } = StringLiteral {
+						"Irreplaceable!"
+					} }
 				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
@@ -60,7 +62,9 @@ internal class Mutability {
 			"""
 				TypeDefinition [ Identifier { Display } class ] { TypeBody {
 					VariableSection [ const ] {
-						PropertyDeclaration { Identifier { PERIPHERAL_TYPE } = StringLiteral { "graphics" } }
+						PropertyDeclaration { Identifier { PERIPHERAL_TYPE } = StringLiteral {
+							"graphics"
+						} }
 					}
 				} }
             """.trimIndent()

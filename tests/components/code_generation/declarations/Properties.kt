@@ -59,9 +59,7 @@ internal class Properties {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne", mapOf(
-			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getOne", listOf(SpecialType.INTEGER))
 		assertEquals(1, result)
 	}
 }

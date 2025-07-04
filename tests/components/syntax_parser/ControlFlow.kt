@@ -177,7 +177,9 @@ internal class ControlFlow {
 				FunctionCall [ MemberAccess {
 					Identifier { peter }.Identifier { speak }
 				} ] {
-					StringLiteral { "Keep up the good work!" }
+					StringLiteral {
+						"Keep up the good work!"
+					}
 				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
@@ -223,7 +225,9 @@ internal class ControlFlow {
 						Function [ Identifier { speak } ParameterList {
 							Parameter { Identifier { words }: ObjectType { Identifier { String } } }
 						}: ObjectType { Identifier { String } } ] { StatementSection { StatementBlock {
-							Return { StringLiteral { "Done" } }
+							Return { StringLiteral {
+								"Done"
+							} }
 						} } }
 					}
 				} }
@@ -248,12 +252,16 @@ internal class ControlFlow {
 						Identifier { ExitCode }.Identifier { SUCCESS }
 					} ] {
 						StatementSection { StatementBlock {
-							StringLiteral { "Success" }
+							StringLiteral {
+								"Success"
+							}
 						} }
 					}
 				} Else {
 					StatementSection { StatementBlock {
-						StringLiteral { "Failed" }
+						StringLiteral {
+							"Failed"
+						}
 					} }
 				}
             """.trimIndent()
@@ -277,14 +285,18 @@ internal class ControlFlow {
 						Identifier { ExitCode }.Identifier { SUCCESS }
 					} ] {
 						StatementSection { StatementBlock {
-							StringLiteral { "Success" }
+							StringLiteral {
+								"Success"
+							}
 						} }
 					}
 					Case [ MemberAccess {
 						Identifier { ExitCode }.Identifier { FAILURE }
 					} ] {
 						StatementSection { StatementBlock {
-							StringLiteral { "Failure" }
+							StringLiteral {
+								"Failure"
+							}
 						} }
 					}
 				}
@@ -310,14 +322,18 @@ internal class ControlFlow {
 							Identifier { ExitCode }.Identifier { SUCCESS }
 						} ] {
 							StatementSection { StatementBlock {
-								StringLiteral { "Success" }
+								StringLiteral {
+									"Success"
+								}
 							} }
 						}
 						Case [ MemberAccess {
 							Identifier { ExitCode }.Identifier { FAILURE }
 						} ] {
 							StatementSection { StatementBlock {
-								StringLiteral { "Failure" }
+								StringLiteral {
+									"Failure"
+								}
 							} }
 						}
 					} }

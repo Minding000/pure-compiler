@@ -121,9 +121,7 @@ internal class Initializers {
 				}
 			}
 			""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEight", mapOf(
-			SpecialType.INTEGER to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getEight", listOf(SpecialType.INTEGER))
 		assertEquals(8, result)
 	}
 }

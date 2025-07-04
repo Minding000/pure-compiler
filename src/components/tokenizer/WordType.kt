@@ -24,6 +24,10 @@ enum class WordType(private vararg val atoms: WordAtom): WordDescriptor {
 		WordAtom.STAR,
 		WordAtom.SLASH
 	),
+	STRING_CONTENT(
+		WordAtom.STRING_SEGMENT,
+		WordAtom.TEMPLATE_EXPRESSION_START
+	),
 	UNARY_OPERATOR(
 		WordAtom.NOT,
 		WordAtom.PLUS,

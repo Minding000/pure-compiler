@@ -74,7 +74,9 @@ internal class Literals {
 		val sourceCode = "\"hello world!\""
 		val expected =
 			"""
-				StringLiteral { "hello world!" }
+				StringLiteral {
+					"hello world!"
+				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
@@ -84,17 +86,27 @@ internal class Literals {
 		val sourceCode = "\"Hello!\\nDo you know the \\\"prue\\\" programming language?\""
 		val expected =
 			"""
-				StringLiteral { "Hello!\nDo you know the \"prue\" programming language?" }
+				StringLiteral {
+					"Hello!\nDo you know the \"prue\" programming language?"
+				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
 
 	@Test
 	fun `parses string literals with templates`() {
-		val sourceCode = "\"Hello \${user.salutation} \$username!\""
+		val sourceCode = "\"Hello {user.salutation} {username}!\""
 		val expected =
 			"""
-				StringLiteral { "Hello ${'$'}{user.salutation} ${'$'}username!" }
+				StringLiteral {
+					"Hello "
+					MemberAccess {
+						Identifier { user }.Identifier { salutation }
+					}
+					" "
+					Identifier { username }
+					"!"
+				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}
@@ -111,11 +123,13 @@ internal class Literals {
             """.trimIndent()
 		val expected =
 			"""
-				StringLiteral { "
-					These are
-					multiple lines
-					:)
-				" }
+				StringLiteral {
+					"
+						These are
+						multiple lines
+						:)
+					"
+				}
             """.trimIndent()
 		TestUtil.assertSyntaxTreeEquals(expected, sourceCode)
 	}

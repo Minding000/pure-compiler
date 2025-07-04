@@ -21,9 +21,7 @@ internal class ByteArray {
 				native init(...values: ...Byte)
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", mapOf(
-			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getThree", listOf(SpecialType.BYTE_ARRAY))
 		assertEquals(3, result)
 	}
 
@@ -62,9 +60,7 @@ internal class ByteArray {
 				native init(value: Byte, size)
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive", mapOf(
-			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive", listOf(SpecialType.BYTE_ARRAY))
 		assertEquals(5, result)
 	}
 
@@ -105,9 +101,7 @@ internal class ByteArray {
 				native operator +(right: ByteArray): ByteArray
 			}
 		""".trimIndent()
-		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive", mapOf(
-			SpecialType.BYTE_ARRAY to TestUtil.TEST_FILE_NAME
-		))
+		val result = TestUtil.run(sourceCode, "Test:SimplestApp.getFive", listOf(SpecialType.BYTE_ARRAY))
 		assertEquals(5, result)
 	}
 

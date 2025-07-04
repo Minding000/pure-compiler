@@ -2,7 +2,8 @@ package components.tokenizer
 
 import java.util.regex.Pattern
 
-enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultiline: Boolean = false): WordDescriptor {
+enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultiline: Boolean = false,
+					val requiresStringState: Boolean = false, val effect: ((stateStack: StateStack) -> Unit)? = null): WordDescriptor {
 	// Whitespace
 	LINE_BREAK("\\n"),
 	WHITESPACE("[^\\S\\n]+", true),
@@ -50,13 +51,16 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	CLOSING_PARENTHESIS("\\)"),
 	OPENING_BRACKET("\\["),
 	CLOSING_BRACKET("]"),
-	OPENING_BRACE("\\{"),
-	CLOSING_BRACE("\\}"),
+	OPENING_BRACE("\\{", false, false, false, { stack -> stack.incrementOpenBraceCount() }),
+	CLOSING_BRACE("\\}", false, false, false, { stack -> if(stack.openBraceCount == 0) stack.pop() else stack.decrementOpenBraceCount() }),
 	// Literals
 	NULL_LITERAL("null\\b"),
 	BOOLEAN_LITERAL("(yes|no)\\b"),
 	NUMBER_LITERAL("(?:[1-9][\\d_]*|0)(?:\\.\\d[\\d_]*)?(?:e-?\\d+)?"),
-	STRING_LITERAL("\"(?:[^\"\\\\]|\\\\.)*\"", false, true),
+	STRING_START("\"", false, false, false, { stack -> stack.push() }),
+	STRING_END("(?<!\\\\)(?:\\\\{2})*\"", false, false, true, { stack -> stack.pop() }),
+	TEMPLATE_EXPRESSION_START("(?<!\\\\)(?:\\\\{2})*\\{", false, false, true, { stack -> stack.push() }),
+	STRING_SEGMENT("(?:[^\"{\\\\]|\\\\.)+", false, true, true),
 	// Keywords
 	INSTANCES("instances\\b"),
 	CONST("const\\b"),
