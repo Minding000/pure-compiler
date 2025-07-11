@@ -25,7 +25,11 @@ class FunctionDefinition(override val model: FunctionImplementation, val paramet
 		//TODO add local type parameters
 		for(index in parameters.indices)
 			parameters[index].index = index + Context.VALUE_PARAMETER_OFFSET
-		llvmValue = constructor.buildFunction(model.memberIdentifier, model.signature.getLlvmType(constructor))
+		val functionName = if(context.nativeRegistry.hasNativeImplementation(model.toString()))
+			model.memberIdentifier
+		else
+			"pni_${model.source.start.line.file.name}_${model.parentTypeDeclaration?.name}_${model.parentFunction.name}"
+		llvmValue = constructor.buildFunction(functionName, model.signature.getLlvmType(constructor))
 		if(model.parentTypeDeclaration?.isLlvmPrimitive() == true) {
 			context.primitiveCompilationTarget = null
 			// Assumption: Native declarations are inlined, so there is no need for an implementation
@@ -46,8 +50,10 @@ class FunctionDefinition(override val model: FunctionImplementation, val paramet
 			return
 		val previousBlock = constructor.getCurrentBlock()
 		if(model.isNative) {
-			context.nativeRegistry.compileNativeImplementation(constructor, model, llvmValue)
-			constructor.select(previousBlock)
+			if(context.nativeRegistry.hasNativeImplementation(model.toString())) {
+				context.nativeRegistry.compileNativeImplementation(constructor, model, llvmValue)
+				constructor.select(previousBlock)
+			}
 			return
 		}
 		if(model.parentTypeDeclaration?.isLlvmPrimitive() == true) {

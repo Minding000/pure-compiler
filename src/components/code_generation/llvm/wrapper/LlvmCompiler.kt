@@ -1,5 +1,6 @@
 package components.code_generation.llvm.wrapper
 
+import code.Main
 import components.semantic_model.general.Program
 import source_structure.Project
 import java.io.File
@@ -33,8 +34,8 @@ object LlvmCompiler {
 		return program
 	}
 
-	fun buildAndRun(project: Project, semanticModel: Program, entryPointPath: String) {
-		val program = LlvmProgram(project.name)
+	fun buildAndRun(project: Project, semanticModel: Program, entryPointPath: String, libraryPaths: List<String> = emptyList()) {
+		val program = LlvmProgram(project.name, libraryPaths)
 		try {
 			program.loadSemanticModel(semanticModel, entryPointPath)
 			program.verify()
@@ -42,6 +43,8 @@ object LlvmCompiler {
 			println("----- JIT output: -----")
 			val result = program.runAndReturnInt()
 			println("Exit code: $result")
+			if(Main.shouldThrowInsteadOfExit)
+				throw Exception("JIT exit code: $result")
 		} finally {
 			program.dispose()
 		}

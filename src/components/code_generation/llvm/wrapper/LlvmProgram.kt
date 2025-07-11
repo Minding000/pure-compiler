@@ -14,7 +14,7 @@ import org.bytedeco.llvm.global.LLVM
 import util.isRunningOnWindows
 import java.io.File
 
-class LlvmProgram(name: String,
+class LlvmProgram(name: String, val libraryPaths: List<String> = emptyList(),
 				  val targetTriple: String = if(isRunningOnWindows()) "x86_64-unknown-windows-msvc" else "x86_64-unknown-linux-gnu") {
 	val constructor = LlvmConstructor(name)
 
@@ -78,7 +78,7 @@ class LlvmProgram(name: String,
 	}
 
 	fun run(entrypoint: String = Program.GLOBAL_ENTRYPOINT_NAME) {
-		LlvmRunner.run(constructor, entrypoint) { address ->
+		LlvmRunner.run(constructor, entrypoint, libraryPaths) { address ->
 			val functionInterface = ForeignFunctionInterface()
 			functionInterface.setSignature(emptyList(), ForeignFunctionInterface.voidType)
 			functionInterface.call(address)
@@ -87,7 +87,7 @@ class LlvmProgram(name: String,
 
 	fun runAndReturnBoolean(entrypoint: String = Program.GLOBAL_ENTRYPOINT_NAME): Boolean {
 		val result: Boolean
-		LlvmRunner.run(constructor, entrypoint) { address ->
+		LlvmRunner.run(constructor, entrypoint, libraryPaths) { address ->
 			val functionInterface = ForeignFunctionInterface()
 			functionInterface.setSignature(emptyList(), ForeignFunctionInterface.booleanType)
 			val returnValue = BoolPointer(1)
@@ -99,7 +99,7 @@ class LlvmProgram(name: String,
 
 	fun runAndReturnByte(entrypoint: String = Program.GLOBAL_ENTRYPOINT_NAME): Byte {
 		val result: Byte
-		LlvmRunner.run(constructor, entrypoint) { address ->
+		LlvmRunner.run(constructor, entrypoint, libraryPaths) { address ->
 			val functionInterface = ForeignFunctionInterface()
 			functionInterface.setSignature(emptyList(), ForeignFunctionInterface.signedByteType)
 			val returnValue = BytePointer(1L)
@@ -111,7 +111,7 @@ class LlvmProgram(name: String,
 
 	fun runAndReturnInt(entrypoint: String = Program.GLOBAL_ENTRYPOINT_NAME): Int {
 		val result: Int
-		LlvmRunner.run(constructor, entrypoint) { address ->
+		LlvmRunner.run(constructor, entrypoint, libraryPaths) { address ->
 			val functionInterface = ForeignFunctionInterface()
 			functionInterface.setSignature(emptyList(), ForeignFunctionInterface.signedIntegerType)
 			val returnValue = IntPointer(1)
@@ -123,7 +123,7 @@ class LlvmProgram(name: String,
 
 	fun runAndReturnFloat(entrypoint: String = Program.GLOBAL_ENTRYPOINT_NAME): Float {
 		val result: Float
-		LlvmRunner.run(constructor, entrypoint) { address ->
+		LlvmRunner.run(constructor, entrypoint, libraryPaths) { address ->
 			val functionInterface = ForeignFunctionInterface()
 			functionInterface.setSignature(emptyList(), ForeignFunctionInterface.floatType)
 			val returnValue = FloatPointer(1)

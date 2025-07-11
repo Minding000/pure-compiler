@@ -64,6 +64,26 @@ object TestUtil {
 		assertEquals("", actualErrorStream, "Expected error stream to be empty")
 	}
 
+	fun assertJitExitCode(expectedExitCode: Int, runnable: Runnable) {
+		var exception: Exception? = null
+		try {
+			Main.shouldThrowInsteadOfExit = true
+			runnable.run()
+		} catch(localException: Exception) {
+			exception = localException
+		}
+		var result: Int? = null
+		if(exception != null) {
+			val prefix = "JIT exit code: "
+			if(exception.message?.startsWith(prefix) ?: false)
+				result = exception.message?.substringAfter(prefix)?.toIntOrNull()
+			else
+				exception.printStackTrace()
+			System.err.flush()
+		}
+		assertEquals(expectedExitCode, result, "Expected different JIT exit code")
+	}
+
 	fun createTestProject(sourceCode: String, includeRequiredModules: Boolean = false): Project {
 		return createTestProject(mapOf(TEST_FILE_NAME to sourceCode), includeRequiredModules)
 	}

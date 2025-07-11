@@ -15,7 +15,7 @@ object Main {
 	@JvmStatic
 	fun main(arguments: Array<String>) {
 		val positionalArguments = LinkedList<String>()
-		val additionalArguments = HashMap<String, String>()
+		val additionalArguments = HashMap<String, MutableList<String>>()
 		val argumentIterator = arguments.iterator()
 		for(argument in argumentIterator) {
 			if(argument.startsWith("--")) {
@@ -37,7 +37,12 @@ object Main {
 					"--output-directory" -> {
 						if(!argumentIterator.hasNext())
 							exitWithParsingIssue("Missing output directory.")
-						additionalArguments["output-directory"] = argumentIterator.next()
+						additionalArguments.getOrPut("output-directory") { LinkedList() }.add(argumentIterator.next())
+					}
+					"--library" -> {
+						if(!argumentIterator.hasNext())
+							exitWithParsingIssue("Missing library.")
+						additionalArguments.getOrPut("library") { LinkedList() }.add(argumentIterator.next())
 					}
 					else -> {
 						exitWithParsingIssue("Unknown named argument '$argument'.")
@@ -55,17 +60,21 @@ object Main {
 					exitWithParsingIssue("Too few positional arguments.", "run")
 				if(positionalArguments.size > 3)
 					exitWithParsingIssue("Too many positional arguments.", "run")
-				if(additionalArguments.isNotEmpty())
-					exitWithParsingIssue("Extraneous arguments: ${additionalArguments.map { argument -> argument.key }.joinToString(", ")}",
-						"run")
-				Builder.run(positionalArguments[1], positionalArguments[2])
+				checkForUnexpectedArguments(additionalArguments, listOf("library"), "run")
+				val libraries = additionalArguments["library"] ?: emptyList()
+				Builder.run(positionalArguments[1], positionalArguments[2], libraries)
 			}
 			"build" -> {
 				if(positionalArguments.size < 3)
 					exitWithParsingIssue("Too few positional arguments.", "build")
 				if(positionalArguments.size > 3)
 					exitWithParsingIssue("Too many positional arguments.", "build")
-				Builder.build(positionalArguments[1], positionalArguments[2], additionalArguments["output-directory"])
+				checkForUnexpectedArguments(additionalArguments, listOf("output-directory", "library"), "build")
+				val outputDirectories = additionalArguments["output-directory"]
+				if(outputDirectories != null && outputDirectories.size > 1)
+					exitWithParsingIssue("Multiple output directories: ${outputDirectories.joinToString(", ")}", "build")
+				val libraries = additionalArguments["library"] ?: emptyList()
+				Builder.build(positionalArguments[1], positionalArguments[2], outputDirectories?.firstOrNull(), libraries)
 			}
 			"print" -> {
 				if(positionalArguments.size < 4)
@@ -75,9 +84,7 @@ object Main {
 				val subject = positionalArguments[1].lowercase()
 				if(!Builder.PRINT_SUBJECTS.contains(subject))
 					exitWithParsingIssue("Unknown subject '$subject'.", "print")
-				if(additionalArguments.isNotEmpty())
-					exitWithParsingIssue("Extraneous arguments: ${additionalArguments.map { argument -> argument.key }.joinToString(", ")}",
-						"print")
+				checkForUnexpectedArguments(additionalArguments, emptyList(), "print")
 				Builder.print(subject, positionalArguments[2], positionalArguments[3])
 			}
 			"?",
@@ -92,6 +99,18 @@ object Main {
 				exitWithParsingIssue("Sub-command '$subCommand' does not exist.")
 			}
 		}
+	}
+
+	private fun checkForUnexpectedArguments(additionalArguments: HashMap<String, MutableList<String>>, expectedArguments: List<String>,
+											subCommand: String) {
+		val unexpectedArguments = LinkedList<String>()
+		for(argumentName in additionalArguments.keys) {
+			if(expectedArguments.contains(argumentName))
+				continue
+			unexpectedArguments.add(argumentName)
+		}
+		if(unexpectedArguments.isNotEmpty())
+			exitWithParsingIssue("Unexpected arguments: ${unexpectedArguments.joinToString(", ")}", subCommand)
 	}
 
 	private fun exitWithParsingIssue(message: String, subCommand: String = ""): Nothing {

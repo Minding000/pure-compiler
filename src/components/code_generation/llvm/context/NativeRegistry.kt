@@ -69,6 +69,8 @@ class NativeRegistry(val context: Context) {
 		compileNativeImplementation(constructor, initializer, "initializer", initializer.toString(), llvmValue)
 	}
 
+	fun hasNativeImplementation(signature: String) = nativeImplementations.containsKey(signature)
+
 	fun compileNativeImplementation(constructor: LlvmConstructor, model: SemanticModel, type: String, signature: String,
 									llvmValue: LlvmValue) {
 		val compileImplementation = nativeImplementations[signature]

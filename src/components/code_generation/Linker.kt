@@ -5,11 +5,12 @@ import util.ExitCode
 
 object Linker {
 
-	fun link(targetTriple: String, objectFilePath: String, executableFilePath: String) {
+	fun link(targetTriple: String, objectFilePath: String, executableFilePath: String, libraryPaths: List<String> = emptyList()) {
 		val process = if(targetTriple.contains("windows")) {
 			// see: https://stackoverflow.com/questions/64413414/unresolved-external-symbol-printf-in-windows-x64-assembly-programming-with-nasm
 			ProcessBuilder(
 				"lld-link",
+				*libraryPaths.toTypedArray(),
 				objectFilePath,
 				"/out:$executableFilePath",
 				"/subsystem:console",
@@ -25,6 +26,7 @@ object Linker {
 				"$libraryPath/Scrt1.o",
 				"$libraryPath/crti.o",
 				"/usr/lib/gcc/x86_64-linux-gnu/12/crtbeginS.o",
+				*libraryPaths.toTypedArray(),
 				objectFilePath,
 				"-lgcc", "--as-needed",
 				"-lgcc_s", "--no-as-needed",

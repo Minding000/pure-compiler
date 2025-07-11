@@ -245,6 +245,8 @@ class StatementParser(private val syntaxTreeGenerator: SyntaxTreeGenerator): Gen
 		return YieldStatement(start, key, value)
 	}
 
+	//TODO raise should be an expression, to allow it to be used after inline optional check:
+	// val user = getUser() ?: raise Error("Failed to get user")
 	/**
 	 * RaiseStatement:
 	 *   raise <Expression>

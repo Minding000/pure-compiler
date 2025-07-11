@@ -10,7 +10,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	// Comments
 	SINGLE_LINE_COMMENT("\\/\\/.*", true),
 	MULTI_LINE_COMMENT("\\/\\*[\\s\\S]*?\\*\\/", true, true),
-	// Operators
+	// Operators //TODO implement ?: or ?? operator
 	CAPPED_ARROW("=>\\|"),
 	ARROW("=>"),
 	INCREMENT("\\+\\+"),
@@ -63,7 +63,7 @@ enum class WordAtom(pattern: String, val ignore: Boolean = false, val isMultilin
 	STRING_SEGMENT("(?:[^\"{\\\\]|\\\\.)+", false, true, true),
 	// Keywords
 	INSTANCES("instances\\b"),
-	CONST("const\\b"),
+	CONST("const\\b"), //TODO add semantic model checks: only allow as static member
 	VAL("val\\b"),
 	VAR("var\\b"),
 	COMPUTED("computed\\b"),

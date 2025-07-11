@@ -43,12 +43,12 @@ object Builder {
 		SpecialType.ANY to listOf("Pure", "lang", "dataTypes", "Any"),
 	)
 
-	fun run(path: String, entryPointPath: String) {
+	fun run(path: String, entryPointPath: String, libraryPaths: List<String> = emptyList()) {
 		try {
 			val project = loadProject(path)
 			val semanticModel = createSemanticModel(project)
 			project.context.logger.printReport(Main.logLevel)
-			LlvmCompiler.buildAndRun(project, semanticModel, entryPointPath)
+			LlvmCompiler.buildAndRun(project, semanticModel, entryPointPath, libraryPaths)
 		} catch(error: UserError) {
 			System.err.println("Failed to compile: ${error.message}")
 			if(Main.shouldPrintCompileTimeDebugOutput)
@@ -57,7 +57,7 @@ object Builder {
 		}
 	}
 
-	fun build(path: String, entryPointPath: String, outputDirectory: String? = null) {
+	fun build(path: String, entryPointPath: String, outputDirectory: String? = null, libraryPaths: List<String> = emptyList()) {
 		try {
 			val project = loadProject(path, outputDirectory)
 			val semanticModel = createSemanticModel(project)
@@ -69,7 +69,7 @@ object Builder {
 			val program = LlvmCompiler.build(project, semanticModel, entryPointPath)
 			project.context.logger.printReport(Main.logLevel)
 			Linker.link(program.targetTriple, "${project.outputDirectory}${File.separator}program.o",
-				"${project.outputDirectory}${File.separator}program.exe")
+				"${project.outputDirectory}${File.separator}program.exe", libraryPaths)
 		} catch(error: UserError) {
 			System.err.println("Failed to compile: ${error.message}")
 			if(Main.shouldPrintCompileTimeDebugOutput)

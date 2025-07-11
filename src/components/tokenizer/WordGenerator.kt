@@ -83,6 +83,12 @@ class WordGenerator(private val project: Project, stack: StateStack? = null) {
 		characterIndex = line.getLength()
 	}
 
+	//TODO consideration: simplify grammar to eliminate the need for this function
+	// type parameters: (Type: T;) -> (type Type: T)
+	// self reference: this<Human> -> this<Human> & this < 2 -> (this) < 2
+	//  - not great, as other classes may want to override and use the operator as well
+	//  - use whitespace as indicator?
+	//  - can be resolved in tokenization stage by differentiating between 'lower than' and 'specification start'
 	fun scanForCharacters(start: Position, pattern: Pattern): Char? {
 		matcher.region(start.index, file.content.length).usePattern(pattern)
 		if(!matcher.find())
