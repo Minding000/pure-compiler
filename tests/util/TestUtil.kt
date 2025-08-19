@@ -55,11 +55,11 @@ object TestUtil {
 		val actualErrorStream = testErrorStream.toString()
 		testErrorStream.reset()
 		if(exception != null) {
-			if(exception.message == "exitWithError() called")
-				System.err.println("exitWithError() called")
-			else
-				exception.printStackTrace()
-			System.err.flush()
+			if(exception.message == "exitWithError() called") {
+				fail("exitWithError() called")
+			} else {
+				fail("main function threw", exception)
+			}
 		}
 		assertEquals("", actualErrorStream, "Expected error stream to be empty")
 	}
