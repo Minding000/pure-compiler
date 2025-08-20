@@ -1,0 +1,8 @@
+referencing Pure
+
+SimplestApp object {
+
+	to getFive(): Int {
+		return 5
+	}
+}

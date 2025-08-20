@@ -1,0 +1,14 @@
+referencing Pure
+referencing multiple_files
+
+IntegerLiteral class: Expression & Identifiable {
+	val value: Int
+
+	init(rawValue: String) {
+		value = Int(rawValue)
+	}
+
+	overriding to evaluate(): Int {
+		return value
+	}
+}

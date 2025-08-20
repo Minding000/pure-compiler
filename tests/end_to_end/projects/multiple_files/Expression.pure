@@ -1,0 +1,6 @@
+referencing Pure
+
+abstract Expression class {
+	
+	abstract to evaluate(): Int
+}

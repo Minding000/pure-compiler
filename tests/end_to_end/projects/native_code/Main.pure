@@ -1,0 +1,10 @@
+referencing Pure
+
+NativeAdder object {
+
+	to run(): Int {
+		return add(77, 12)
+	}
+
+	native to add(a: Int, b: Int): Int
+}

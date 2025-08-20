@@ -23,7 +23,7 @@ import kotlin.contracts.contract
 import kotlin.test.*
 
 object TestUtil {
-	const val EXAMPLE_PROJECTS_PATH = "D:\\Daten\\Projekte\\Pure\\Example projects"
+	val EXAMPLE_PROJECTS_PATH = "tests${File.separator}end_to_end${File.separator}projects${File.separator}"
 	const val TEST_PROJECT_NAME = "Test"
 	const val TEST_MODULE_NAME = "Test"
 	const val TEST_FILE_NAME = "Test"
@@ -56,7 +56,9 @@ object TestUtil {
 		testErrorStream.reset()
 		if(exception != null) {
 			if(exception.message == "exitWithError() called") {
-				fail("exitWithError() called")
+				fail("exitWithError() called", exception)
+			} else if(exception.message?.startsWith("JIT exit code: ") ?: false) {
+				println(exception.message)
 			} else {
 				fail("main function threw", exception)
 			}

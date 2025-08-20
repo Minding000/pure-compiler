@@ -1,0 +1,19 @@
+referencing Pure
+referencing multiple_files
+
+Addition class: Expression & Identifiable {
+	val left: Expression
+	val right: Expression
+	val isAddition: Bool
+
+	init(left, right, isAddition)
+
+	overriding to evaluate(): Int {
+		val leftValue = left.evaluate()
+		val rightValue = right.evaluate()
+		return if isAddition
+			leftValue + rightValue
+		else
+			leftValue - rightValue
+	}
+}

@@ -1,0 +1,9 @@
+referencing Pure
+
+HelloWorldApp object: Application {
+	val cli = CommandLineInterface(Process)
+
+	to run() {
+		cli.writeLine("Hello world!")
+	}
+}

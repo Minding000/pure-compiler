@@ -1,0 +1,17 @@
+referencing Pure
+referencing multiple_files
+
+CalculatorApp object: Application {
+	val cli = CommandLineInterface(Process)
+
+	to run() {
+		//TODO: Push to git
+		cli.writeLine("Please enter an equation:")
+		val parser = EquasionParser(cli.readLine())
+		val equation = parser.parseExpression()
+		val result = equation.evaluate()
+		//TODO implement template strings
+		//cli.writeLine("The result is: $result")
+		cli.writeLine("The result is: " + result)
+	}
+}

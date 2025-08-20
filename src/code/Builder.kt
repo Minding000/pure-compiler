@@ -132,7 +132,7 @@ object Builder {
 			} else {
 				project.targetPath = path
 				val files = source.listFiles()
-					?: throw IOException("Failed to list directory contents of '${source.name}' at '${source.path}'.")
+					?: throw IOException("Failed to list directory contents of '${source.name}' at '${source.absolutePath}'.")
 				for(file in files) {
 					if(file.isFile)
 						addFile(projectModule, emptyList(), file)
@@ -156,7 +156,7 @@ object Builder {
 
 	private fun addDirectory(module: Module, parts: List<String>, directory: File) {
 		val files = directory.listFiles()
-			?: throw IOException("Failed to list directory contents of '${directory.name}' at '${directory.path}'.")
+			?: throw IOException("Failed to list directory contents of '${directory.name}' at '${directory.absolutePath}'.")
 		val childPathParts = LinkedList(parts)
 		childPathParts.add(directory.name)
 		for(file in files) {

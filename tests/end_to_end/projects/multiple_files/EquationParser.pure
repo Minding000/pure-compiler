@@ -1,0 +1,53 @@
+referencing Pure
+referencing multiple_files
+
+EquasionParser class {
+	val partIterator: <String>List.Iterator
+	computed nextToken: String? gets {
+		if partIterator.isDone
+			return null
+		return partIterator.currentValue
+	}
+
+	init(input: String) {
+		partIterator = input.splitBy(" ").createIterator()
+	}
+
+	to consume(): String {
+		val token = partIterator.currentValue
+		partIterator.advance()
+		return token
+	}
+
+	to parseExpression(): Expression {
+		val expression = parseAddition()
+		val nextTok: String? = nextToken
+		if nextTok?
+			raise Exception("Unexpected token: " + nextTok)
+		return expression
+	}
+
+	to parseAddition(): Expression {
+		var expression = parseMultiplication()
+		loop while nextToken == "+" or nextToken == "-" {
+			val token = consume()
+			val isAddition = token == "+"
+			expression = Addition(expression, parseMultiplication(), isAddition)
+		}
+		return expression
+	}
+
+	to parseMultiplication(): Expression {
+		var expression: Expression = parseInteger()
+		loop while nextToken == "*" or nextToken == "/" {
+			val token = consume()
+			val isMultiplication = token == "*"
+			expression = Multiplication(expression, parseInteger(), isMultiplication)
+		}
+		return expression
+	}
+
+	to parseInteger(): IntegerLiteral {
+		return IntegerLiteral(consume())
+	}
+}
