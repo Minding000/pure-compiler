@@ -1,0 +1,3 @@
+[submodule "base-library"]
+	path = base-library
+	url = git@github.com:Minding000/pure-base-library.git

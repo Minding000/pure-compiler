@@ -17,7 +17,7 @@ import java.nio.file.Paths
 import java.util.*
 
 object Builder {
-	private const val LANG_MODULE_PATH = "D:\\Daten\\Projekte\\Pure\\packages\\lang"
+	private val LANG_MODULE_PATH = "base-library${File.separator}lang"
 	val PRINT_SUBJECTS = listOf("source", "ast", "llvm-ir")
 	val specialTypePaths = mapOf(
 		SpecialType.ARRAY to listOf("Pure", "lang", "collections", "Array"),
@@ -149,7 +149,7 @@ object Builder {
 
 	fun loadRequiredModules(project: Project) {
 		val langModule = Module(project, "Pure")
-		val path = System.getenv("BASE_MODULE_PATH") ?: LANG_MODULE_PATH
+		val path = System.getenv("LANG_MODULE_PATH") ?: LANG_MODULE_PATH
 		addDirectory(langModule, emptyList(), File(path))
 		project.addModule(langModule)
 	}

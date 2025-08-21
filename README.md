@@ -20,6 +20,6 @@ This program compiles pure code to binary executables. Try it in the [playground
 
 ## Environment variables
 
-- `BASE_MODULE_PATH` (optional; default: `D:\Daten\Projekte\Pure\packages\lang`)
+- `LANG_MODULE_PATH` (optional; default: `base-library/lang`)
 	- Value: `{string}`
 	- Description: Path to the "Lang" module of the [base library](https://github.com/Minding000/pure-base-library).
