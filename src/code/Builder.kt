@@ -66,10 +66,10 @@ object Builder {
 				Main.exitWithError("Source code contains errors.")
 			}
 			Files.createDirectories(Paths.get(project.outputDirectory))
-			val program = LlvmCompiler.build(project, semanticModel, entryPointPath)
+			val program = LlvmCompiler.build(project, semanticModel, entryPointPath, libraryPaths)
 			project.context.logger.printReport(Main.logLevel)
 			Linker.link(program.targetTriple, "${project.outputDirectory}${File.separator}program.o",
-				"${project.outputDirectory}${File.separator}program.exe", libraryPaths)
+				"${project.outputDirectory}${File.separator}program.${program.executableFileExtension}", program.libraryPaths)
 		} catch(error: UserError) {
 			System.err.println("Failed to compile: ${error.message}")
 			if(Main.shouldPrintCompileTimeDebugOutput)

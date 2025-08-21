@@ -24,8 +24,8 @@ class NativeOutputStreamNatives(val context: Context) {
 		val handle = constructor.buildLoad(constructor.pointerType, handleProperty, "handle")
 
 		val byteVariable = constructor.buildStackAllocation(constructor.byteType, "byteVariable", byte)
-		val byteSize = constructor.buildInt64(1)
-		val byteCount = constructor.buildInt64(1)
+		val byteSize = constructor.buildSizeInt(1)
+		val byteCount = constructor.buildSizeInt(1)
 		constructor.buildFunctionCall(context.externalFunctions.streamWrite, listOf(byteVariable, byteSize, byteCount, handle))
 
 		constructor.buildReturn()
@@ -42,13 +42,13 @@ class NativeOutputStreamNatives(val context: Context) {
 
 		val arraySizeProperty = context.resolveMember(constructor, arrayObject, "size")
 		val arraySize = constructor.buildLoad(constructor.i32Type, arraySizeProperty, "size")
-		val arraySizeAsLong = constructor.buildCastFromIntegerToLong(arraySize, "sizeAsLong")
+		val sizeAsSizeType = constructor.buildCastFromIntegerToSizeType(arraySize, "sizeAsSizeType")
 
 		val byteArrayRuntimeClass = context.standardLibrary.byteArray
 		val arrayValueProperty = byteArrayRuntimeClass.getNativeValueProperty(constructor, arrayObject)
 		val arrayValue = constructor.buildLoad(constructor.pointerType, arrayValueProperty, "arrayValue")
-		val byteSize = constructor.buildInt64(1)
-		constructor.buildFunctionCall(context.externalFunctions.streamWrite, listOf(arrayValue, byteSize, arraySizeAsLong, handle))
+		val byteSize = constructor.buildSizeInt(1)
+		constructor.buildFunctionCall(context.externalFunctions.streamWrite, listOf(arrayValue, byteSize, sizeAsSizeType, handle))
 
 		constructor.buildReturn()
 	}

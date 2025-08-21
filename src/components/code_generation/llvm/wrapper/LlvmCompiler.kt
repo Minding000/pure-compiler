@@ -21,8 +21,8 @@ object LlvmCompiler {
 		}
 	}
 
-	fun build(project: Project, semanticModel: Program, entryPointPath: String): LlvmProgram {
-		val program = LlvmProgram(project.name)
+	fun build(project: Project, semanticModel: Program, entryPointPath: String, libraryPaths: List<String> = emptyList()): LlvmProgram {
+		val program = LlvmProgram(project.name, libraryPaths, "wasm32-unknown-emscripten") //TODO testing: remove target triple
 		try {
 			program.loadSemanticModel(semanticModel, entryPointPath)
 			program.verify()

@@ -86,21 +86,22 @@ class ArrayNatives(val context: Context) {
 		val elementType = constructor.pointerType
 		constructor.createAndSelectEntrypointBlock(llvmFunctionValue)
 		val pointerSizeInBytes = Llvm.getTypeSizeInBytes(constructor.pointerType)
+		val pointerSizeInBytesAsSizeType = constructor.buildCastFromLongToSizeType(pointerSizeInBytes, "pointerSizeInBytesAsSizeType")
 		val arrayRuntimeClass = context.standardLibrary.array
 		val thisArray = context.getThisParameter(constructor)
 		val thisArrayValueProperty = arrayRuntimeClass.getNativeValueProperty(constructor, thisArray)
 		val thisArrayValue = constructor.buildLoad(constructor.pointerType, thisArrayValueProperty, "thisArrayValue")
 		val thisSizeProperty = context.resolveMember(constructor, thisArray, "size")
 		val thisSize = constructor.buildLoad(constructor.i32Type, thisSizeProperty, "thisSize")
-		val thisSizeAsLong = constructor.buildCastFromIntegerToLong(thisSize, "thisSizeAsLong")
-		val thisSizeInBytes = constructor.buildIntegerMultiplication(thisSizeAsLong, pointerSizeInBytes, "thisSizeInBytes")
+		val thisSizeAsSizeType = constructor.buildCastFromIntegerToSizeType(thisSize, "thisSizeAsSizeType")
+		val thisSizeInBytes = constructor.buildIntegerMultiplication(thisSizeAsSizeType, pointerSizeInBytesAsSizeType, "thisSizeInBytes")
 		val parameterArray = constructor.getParameter(llvmFunctionValue, Context.VALUE_PARAMETER_OFFSET)
 		val parameterValueProperty = arrayRuntimeClass.getNativeValueProperty(constructor, parameterArray)
 		val parameterValue = constructor.buildLoad(constructor.pointerType, parameterValueProperty, "parameterValue")
 		val parameterSizeProperty = context.resolveMember(constructor, parameterArray, "size")
 		val parameterSize = constructor.buildLoad(constructor.i32Type, parameterSizeProperty, "parameterSize")
-		val parameterSizeAsLong = constructor.buildCastFromIntegerToLong(parameterSize, "parameterSizeAsLong")
-		val parameterSizeInBytes = constructor.buildIntegerMultiplication(parameterSizeAsLong, pointerSizeInBytes, "parameterSizeInBytes")
+		val parameterSizeAsSizeType = constructor.buildCastFromIntegerToSizeType(parameterSize, "parameterSizeAsSizeType")
+		val parameterSizeInBytes = constructor.buildIntegerMultiplication(parameterSizeAsSizeType, pointerSizeInBytesAsSizeType, "parameterSizeInBytes")
 		val combinedArray = constructor.buildHeapAllocation(arrayRuntimeClass.struct, "combinedArray")
 		arrayRuntimeClass.setClassDefinition(constructor, combinedArray)
 		val combinedArraySizeProperty = context.resolveMember(constructor, combinedArray, "size")
@@ -154,7 +155,7 @@ class ArrayNatives(val context: Context) {
 			val exceptionParameter = context.getExceptionParameter(constructor)
 			val templateCharArray = constructor.buildGlobalAsciiCharArray("arrayIndexOutOfBoundsMessage", outOfBoundsMessageTemplate)
 			val messageLengthWithoutTermination = constructor.buildFunctionCall(context.externalFunctions.printSize,
-				listOf(constructor.nullPointer, constructor.buildInt64(0), templateCharArray, index, indexUpperBound),
+				listOf(constructor.nullPointer, constructor.buildSizeInt(0), templateCharArray, index, indexUpperBound),
 				"messageLengthWithoutTermination")
 			val messageLength =
 				constructor.buildIntegerAddition(messageLengthWithoutTermination, constructor.buildInt32(1), "messageLength")

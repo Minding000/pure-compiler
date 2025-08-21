@@ -4,7 +4,7 @@ import errors.internal.CompilerError
 import org.bytedeco.llvm.global.LLVM.*
 import util.toLlvmList
 
-class LlvmConstructor(name: String) {
+class LlvmConstructor(name: String, has32BitTarget: Boolean) {
 	val threadSafeContext = LLVMOrcCreateNewThreadSafeContext()
 	val context = LLVMOrcThreadSafeContextGetContext(threadSafeContext)
 	val module = Llvm.createModule(context, name)
@@ -19,6 +19,7 @@ class LlvmConstructor(name: String) {
 	val voidType = Llvm.createVoidType(context)
 	val pointerType = Llvm.createPointerType(context)
 	val nullPointer = LLVMConstPointerNull(pointerType)
+	val sizeType = if(has32BitTarget) i32Type else i64Type
 
 	val debug = LlvmDebugInfoConstructor(module)
 
@@ -30,6 +31,10 @@ class LlvmConstructor(name: String) {
 
 	fun getTargetTriple(): String {
 		return LLVMGetTarget(module).string
+	}
+
+	fun setSourceFileName(fileName: String) {
+		LLVMSetSourceFileName(module, fileName, fileName.length.toLong())
 	}
 
 	fun getParameter(function: LlvmValue, index: Int): LlvmValue {
@@ -108,6 +113,10 @@ class LlvmConstructor(name: String) {
 
 	fun buildInt64(value: Long): LlvmValue {
 		return LLVMConstInt(i64Type, value, Llvm.NO)
+	}
+
+	fun buildSizeInt(value: Long): LlvmValue {
+		return LLVMConstInt(sizeType, value, Llvm.NO)
 	}
 
 	fun buildFloat(value: Double): LlvmValue {
@@ -353,9 +362,12 @@ class LlvmConstructor(name: String) {
 	fun buildCastFromBooleanToByte(boolean: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, boolean, byteType, name)
 	fun buildCastFromIntegerToByte(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, byteType, name)
 	fun buildCastFromByteToInteger(byte: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, byte, i32Type, name)
+	fun buildCastFromSizeTypeToInteger(size: LlvmValue, name: String): LlvmValue = if(sizeType == i32Type) size else buildCastFromLongToInteger(size, name)
 
 	fun buildCastFromIntegerToLong(integer: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, integer, i64Type, name)
+	fun buildCastFromIntegerToSizeType(integer: LlvmValue, name: String): LlvmValue = if(sizeType == i32Type) integer else buildCastFromIntegerToLong(integer, name)
 	fun buildCastFromLongToInteger(long: LlvmValue, name: String): LlvmValue = LLVMBuildIntCast(builder, long, i32Type, name)
+	fun buildCastFromLongToSizeType(long: LlvmValue, name: String): LlvmValue = if(sizeType == i64Type) long else buildCastFromLongToInteger(long, name)
 
 	fun buildCastFromSignedIntegerToFloat(integer: LlvmValue, name: String): LlvmValue = LLVMBuildSIToFP(builder, integer, floatType, name)
 

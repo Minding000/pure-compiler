@@ -9,7 +9,7 @@ object Main {
 	var logLevel = Severity.INFO
 	var shouldThrowInsteadOfExit = false
 	var shouldPrintCompileTimeDebugOutput = false
-	var shouldWriteIntermediateRepresentation = false
+	var shouldWriteIntermediateRepresentation = true
 	var shouldPrintRuntimeDebugOutput = false
 
 	@JvmStatic

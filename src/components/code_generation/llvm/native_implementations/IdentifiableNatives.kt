@@ -20,7 +20,7 @@ class IdentifiableNatives(val context: Context) {
 
 		val format = constructor.buildGlobalAsciiCharArray("pointerToStringFormat", "%p")
 		val sizeWithoutTermination = constructor.buildFunctionCall(context.externalFunctions.printSize,
-			listOf(constructor.nullPointer, constructor.buildInt64(0), format, thisIdentifiable), "sizeWithoutTermination")
+			listOf(constructor.nullPointer, constructor.buildSizeInt(0), format, thisIdentifiable), "sizeWithoutTermination")
 		val size = constructor.buildIntegerAddition(sizeWithoutTermination, constructor.buildInt32(1), "size")
 		context.printDebugLine(constructor, "sizeWithoutTermination: %d", sizeWithoutTermination)
 		context.printDebugLine(constructor, "size: %d", size)

@@ -16,7 +16,9 @@ import java.io.File
 
 class LlvmProgram(name: String, val libraryPaths: List<String> = emptyList(),
 				  val targetTriple: String = if(isRunningOnWindows()) "x86_64-unknown-windows-msvc" else "x86_64-unknown-linux-gnu") {
-	val constructor = LlvmConstructor(name)
+	val constructor = LlvmConstructor(name, targetTriple.contains("32"))
+	val executableFileExtension: String
+		get() = if(targetTriple.startsWith("wasm32")) "wasm" else "exe"
 
 	private var _entrypoint: LLVMValueRef? = null
 
@@ -53,7 +55,6 @@ class LlvmProgram(name: String, val libraryPaths: List<String> = emptyList(),
 		LLVM.LLVMInitializeAllTargetInfos()
 		LLVM.LLVMInitializeAllTargets()
 		LLVM.LLVMInitializeAllTargetMCs()
-		LLVM.LLVMInitializeAllAsmParsers()
 		LLVM.LLVMInitializeAllAsmPrinters()
 		val target = LLVMTargetRef()
 		val error = BytePointer()
@@ -70,6 +71,7 @@ class LlvmProgram(name: String, val libraryPaths: List<String> = emptyList(),
 		LLVM.LLVMSetDataLayout(constructor.module, dataLayoutPointer)
 		if(LLVM.LLVMTargetMachineEmitToFile(targetMachine, constructor.module, objectFilePath, LLVM.LLVMObjectFile, error) != Llvm.OK)
 			throw CompilerError("Failed to emit object file: ${Llvm.getMessage(error)}")
+		LLVM.LLVMDisposeTargetMachine(targetMachine)
 	}
 
 	fun getIntermediateRepresentation(): String {

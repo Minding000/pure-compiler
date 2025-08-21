@@ -151,6 +151,9 @@ class Program(val context: Context, val model: Program, val files: List<File>) {
 		constructor.buildStore(constructor.getParameter(1), context.runtimeGlobals.programArgumentArray)
 	}
 
+	//TODO fix: this somehow corrupts the program (segfault)
+	// - to test: make NativeAdder inherit from "Application" and run the in-memory test (on Windows)
+	// - check how the zig std creates output streams
 	private fun createStandardStreams(constructor: LlvmConstructor) {
 		val targetTriple = constructor.getTargetTriple()
 		if(targetTriple.contains("windows")) {

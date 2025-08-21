@@ -48,18 +48,18 @@ class NativeInputStreamNatives(val context: Context) {
 		val byteArrayRuntimeClass = context.standardLibrary.byteArray
 		val byteArray = constructor.buildHeapAllocation(byteArrayRuntimeClass.struct, "byteArrayObject")
 		byteArrayRuntimeClass.setClassDefinition(constructor, byteArray)
-		val desiredNumberOfBytes = constructor.buildCastFromIntegerToLong(amount, "desiredNumberOfBytes")
+		val desiredNumberOfBytes = constructor.buildCastFromIntegerToSizeType(amount, "desiredNumberOfBytes")
 
 		val arrayValueProperty = byteArrayRuntimeClass.getNativeValueProperty(constructor, byteArray)
 		val buffer = constructor.buildHeapArrayAllocation(constructor.byteType, amount, "byteArray")
 		constructor.buildStore(buffer, arrayValueProperty)
 
-		val byteSize = constructor.buildInt64(1)
-		val actualNumberOfBytesAsLong =
+		val byteSize = constructor.buildSizeInt(1)
+		val actualNumberOfBytesAsSizeType =
 			constructor.buildFunctionCall(context.externalFunctions.streamRead, listOf(buffer, byteSize, desiredNumberOfBytes, handle),
 				"actualNumberOfBytesAsLong")
 
-		val actualNumberOfBytes = constructor.buildCastFromIntegerToLong(actualNumberOfBytesAsLong, "actualNumberOfBytes")
+		val actualNumberOfBytes = constructor.buildCastFromSizeTypeToInteger(actualNumberOfBytesAsSizeType, "actualNumberOfBytes")
 
 		val arraySizeProperty = context.resolveMember(constructor, byteArray, "size")
 		constructor.buildStore(actualNumberOfBytes, arraySizeProperty)

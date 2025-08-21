@@ -18,7 +18,7 @@ class StringNatives(val context: Context) {
 		val double = constructor.buildCastFromFloatToDouble(float, "_double")
 		val format = constructor.buildGlobalAsciiCharArray("floatToStringFormat", "%.9g")
 		val sizeWithoutTermination = constructor.buildFunctionCall(context.externalFunctions.printSize,
-			listOf(constructor.nullPointer, constructor.buildInt64(0), format, double), "sizeWithoutTermination")
+			listOf(constructor.nullPointer, constructor.buildSizeInt(0), format, double), "sizeWithoutTermination")
 		val size = constructor.buildIntegerAddition(sizeWithoutTermination, constructor.buildInt32(1), "size")
 
 		val byteArrayRuntimeClass = context.standardLibrary.byteArray

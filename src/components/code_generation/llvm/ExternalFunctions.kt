@@ -69,7 +69,7 @@ class ExternalFunctions {
 	private fun addPrintSizeFunction(constructor: LlvmConstructor) {
 		val targetTriple = constructor.getTargetTriple()
 		val name = if(targetTriple.contains("linux")) "snprintf" else "_snprintf"
-		printSize = LlvmFunction(constructor, name, listOf(constructor.pointerType, constructor.i64Type, constructor.pointerType),
+		printSize = LlvmFunction(constructor, name, listOf(constructor.pointerType, constructor.sizeType, constructor.pointerType),
 			constructor.i32Type, true)
 	}
 
@@ -98,7 +98,7 @@ class ExternalFunctions {
 
 	private fun addStreamWriteFunction(constructor: LlvmConstructor) {
 		streamWrite = LlvmFunction(constructor, "fwrite",
-			listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
+			listOf(constructor.pointerType, constructor.sizeType, constructor.sizeType, constructor.pointerType), constructor.sizeType)
 	}
 
 	private fun addStreamReadByteFunction(constructor: LlvmConstructor) {
@@ -107,7 +107,7 @@ class ExternalFunctions {
 
 	private fun addStreamReadFunction(constructor: LlvmConstructor) {
 		streamRead = LlvmFunction(constructor, "fread",
-			listOf(constructor.pointerType, constructor.i64Type, constructor.i64Type, constructor.pointerType), constructor.i64Type)
+			listOf(constructor.pointerType, constructor.sizeType, constructor.sizeType, constructor.pointerType), constructor.sizeType)
 	}
 
 	private fun addStreamFlushFunction(constructor: LlvmConstructor) {
@@ -115,7 +115,7 @@ class ExternalFunctions {
 	}
 
 	private fun addStringLengthFunction(constructor: LlvmConstructor) {
-		stringLength = LlvmFunction(constructor, "strlen", listOf(constructor.pointerType), constructor.i64Type)
+		stringLength = LlvmFunction(constructor, "strlen", listOf(constructor.pointerType), constructor.sizeType)
 	}
 
 	private fun addStringSearchCharacterFunction(constructor: LlvmConstructor) {
@@ -132,7 +132,7 @@ class ExternalFunctions {
 	}
 
 	private fun addMemoryCopyFunction(constructor: LlvmConstructor) {
-		memoryCopy = LlvmFunction(constructor, "memcpy", listOf(constructor.pointerType, constructor.pointerType, constructor.i64Type),
+		memoryCopy = LlvmFunction(constructor, "memcpy", listOf(constructor.pointerType, constructor.pointerType, constructor.sizeType),
 			constructor.pointerType)
 	}
 

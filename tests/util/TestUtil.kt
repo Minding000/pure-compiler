@@ -231,17 +231,18 @@ object TestUtil {
 	}
 
 	fun assertExecutablePrintsLine(expectedString: String, input: String = "",
-								   path: String = ".${File.separator}out${File.separator}program.exe",
+								   path: String = ".${File.separator}out${File.separator}program.wasm",
 								   expectedExitCode: Int = ExitCode.SUCCESS) {
 		assertExecutablePrints("$expectedString\n", input, path, expectedExitCode)
 	}
 
 	fun assertExecutablePrints(expectedOutput: String, input: String = "",
-							   path: String = ".${File.separator}out${File.separator}program.exe",
+							   path: String = ".${File.separator}out${File.separator}program.wasm",
 							   expectedExitCode: Int = ExitCode.SUCCESS,
 							   environmentVariables: Map<String, String> = emptyMap(),
 							   arguments: List<String> = emptyList()) {
-		val processBuilder = ProcessBuilder(path, *arguments.toTypedArray())
+		//TODO testing: remove wasmtime
+		val processBuilder = ProcessBuilder("wasmtime", path, "--invoke", "main", "--", *arguments.toTypedArray())
 		processBuilder.environment().clear()
 		processBuilder.environment().putAll(environmentVariables)
 		val process = processBuilder.start()
