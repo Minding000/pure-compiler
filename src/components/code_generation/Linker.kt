@@ -32,9 +32,16 @@ object Linker {
 		//	"--export=main",
 		//	"--import-memory"
 		//)
+
+		//TODO also support docker
 		return ProcessBuilder(
-			"D:\\Daten\\Temporary\\emsdk\\python\\3.13.3_64bit\\python.exe",
-			"D:\\Daten\\Temporary\\emsdk\\upstream\\emscripten\\emcc.py",
+			"podman",
+			"run",
+			"--rm",
+			"-v",
+			"./out:/src/out:Z",
+			"emscripten/emsdk",
+			"emcc",
 			*libraryPaths.toTypedArray(),
 			objectFilePath,
 			"-o",
@@ -61,7 +68,7 @@ object Linker {
 	private fun createLinuxLinkingProcess(libraryPaths: List<String>, objectFilePath: String, executableFilePath: String): ProcessBuilder {
 		// Alternatively using clang:
 		// clang -fuse-ld=lld -o out/program.exe out/program.o
-		val libraryPath = "/lib/x86_64-linux-gnu"
+		val libraryPath = "/usr/lib64"
 		return ProcessBuilder(
 			"ld.lld",
 			"$libraryPath/Scrt1.o",
