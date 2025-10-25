@@ -23,3 +23,10 @@ This program compiles pure code to binary executables. Try it in the [playground
 - `LANG_MODULE_PATH` (optional; default: `base-library/lang`)
 	- Value: `{string}`
 	- Description: Path to the "Lang" module of the [base library](https://github.com/Minding000/pure-base-library).
+
+## Dependencies (Linux)
+
+- openjdk
+- lld
+- libc6
+- gcc
