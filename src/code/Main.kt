@@ -87,6 +87,9 @@ object Main {
 				checkForUnexpectedArguments(additionalArguments, emptyList(), "print")
 				Builder.print(subject, positionalArguments[2], positionalArguments[3])
 			}
+			"version" -> {
+				println("0.1.0")
+			}
 			"?",
 			"help" -> {
 				if(positionalArguments.size == 1) {
